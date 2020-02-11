@@ -18,7 +18,7 @@ jobs:
           name: Deploy Prod
           command: |
             yarn build
-            ssh -oStrictHostKeyChecking=no hkalodner@206.189.196.195 "rm -rf /var/www/developer.offchainlabs.com/html/tools/tokenbridge/local*"
+            ssh -oStrictHostKeyChecking=no hkalodner@206.189.196.195 "rm -rf /var/www/developer.offchainlabs.com/html/tools/tokenbridge/local/*"
             scp -oStrictHostKeyChecking=no -r dist/* hkalodner@206.189.196.195:/var/www/developer.offchainlabs.com/html/tools/tokenbridge/local
 
 workflows:
