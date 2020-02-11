@@ -19,7 +19,7 @@ jobs:
           command: |
             yarn build
             ssh -oStrictHostKeyChecking=no hkalodner@206.189.196.195 "rm -rf /var/www/developer.offchainlabs.com/html/tools/tokenbridge/*"
-            scp -oStrictHostKeyChecking=no -r dist/* hkalodner@206.189.196.195:/var/www/developer.offchainlabs.com/html/tools/tokenbridge
+            scp -oStrictHostKeyChecking=no -r dist/* hkalodner@206.189.196.195:/var/www/developer.offchainlabs.com/html/tools/tokenbridge/
 
 workflows:
   version: 2
