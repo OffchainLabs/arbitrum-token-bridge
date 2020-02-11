@@ -54,14 +54,15 @@ class App {
     }
 
     this.ethProvider = new ethers.providers.Web3Provider(standardProvider);
+    this.ethWallet = this.ethProvider.getSigner(0);
+    this.walletAddress = await this.ethWallet.getAddress();
+
     this.arbProvider = new ArbProvider(
       "http://localhost:1235",
       new ethers.providers.Web3Provider(standardProvider)
     );
-    this.ethWallet = this.ethProvider.getSigner(0);
     this.arbWallet = this.arbProvider.getSigner(0);
-
-    this.walletAddress = await this.ethWallet.getAddress();
+    
     return this.initContracts();
   }
 
@@ -226,6 +227,12 @@ class App {
     var content = $("#content");
     if (this.walletAddress) {
       $("#accountAddress").html(this.walletAddress);
+
+      const vmId = await this.arbProvider.getVmID();
+      $("#rollupAddress").html(vmId);
+
+      $("#bridgeloading").hide();
+      $("#bridgebody").show();
       try {
         await this.renderETHInfo();
       } catch (e) {
