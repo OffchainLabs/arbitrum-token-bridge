@@ -21,7 +21,7 @@
     "webpack-dev-server": "~3.10.2"
   },
   "dependencies": {
-    "arb-provider-ethers": "^0.3.0",
+    "arb-provider-ethers": "^0.3.7",
     "bootstrap": "^4.4.1",
     "ethers": "4.0.44",
     "jquery": "^3.4.1"
