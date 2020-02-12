@@ -790,8 +790,6 @@ class App {
   }
 }
 
-$(function() {
-  $(window).on("load", () => {
-    new App();
-  });
+window.addEventListener("DOMContentLoaded", () => {
+  new App()
 });
