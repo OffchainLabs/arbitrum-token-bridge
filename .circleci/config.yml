@@ -8,12 +8,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - yarn-{{ checksum "package.json" }}
+          - yarn-{{ checksum "yarn.lock" }}
       - run: yarn
       - save_cache:
           paths:
             - node_modules
-          key: yarn-{{ checksum "package.json" }}
+          key: yarn-{{ checksum "yarn.lock" }}
       - run:
           name: Deploy Prod
           command: |
