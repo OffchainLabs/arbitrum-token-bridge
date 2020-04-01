@@ -3,6 +3,7 @@ import * as ethers from 'ethers'
 interface InjectedEthereumProvider
   extends ethers.ethers.providers.AsyncSendable {
   enable?: () => Promise<string[]>
+  on: any
 }
 interface Template {
   [x: string]: any
