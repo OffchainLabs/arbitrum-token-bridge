@@ -4,6 +4,7 @@ import { providers, utils, Contract, constants } from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
 import useProvidersAndWallets from './providersWalletsHook'
+import { useLocalStorage } from '@rehooks/local-storage';
 
 const {
   ArbERC20Factory,
@@ -45,12 +46,13 @@ interface ArbSigner {
 
 export default (): [Template, Template, Template, Template] => {
   const [erc20s, setERC20s] = useState<Template>()
-  const [currentERC20, setCurrentERC20] = useState('')
+  let [currentERC20, setCurrentERC20] = useLocalStorage<string>('currentERC20')
+
 
   const [erc721s, setERC721s] = useState<Template>()
-  const [currentERC721, setCurrentERC721] = useState(
-    '0xAa63764C8942343c903aA3469afe664f6E24FFe2'
-  )
+
+
+  const [currentERC721, setCurrentERC721] = useLocalStorage<string>('currentERC721')
 
   const [ethBalances, setEthBalances] = useState<Balances>()
   const [erc20Balances, setERC20Balances] = useState<Balances>()
@@ -67,6 +69,7 @@ export default (): [Template, Template, Template, Template] => {
     console.warn('ASSERTION CONFIRMED', txnId, txn)
     await updateEthBalances()
   })
+
 
   /*
   ETH METHODS:
@@ -145,6 +148,9 @@ export default (): [Template, Template, Template, Template] => {
   const addERC20 = async (add: string | undefined) => {
     if (!ethProvider || !arbWallet || !ethWallet) return
     const address = add ? add : currentERC20
+    if (!address){
+      return
+    }
     const code = await ethProvider.getCode(address)
     // TODO ...
     if (code.length > 2) {
@@ -169,6 +175,9 @@ export default (): [Template, Template, Template, Template] => {
     if (!arbProvider || !erc20s) return
 
     const erc20Address = address ? address : currentERC20
+    if (!erc20Address){
+      return
+    }
     const inboxManager = await arbProvider.globalInboxConn()
     const tokenContract = erc20s[erc20Address]
     if (!tokenContract) return
@@ -185,7 +194,7 @@ export default (): [Template, Template, Template, Template] => {
   }
 
   const getCurrentERC20Contract = (): Contract | undefined => {
-    if (!erc20s) return
+    if (!erc20s || !currentERC20) return
     return erc20s[currentERC20]
   }
 
@@ -306,7 +315,7 @@ ERC 721 Methods
   }
 
   const getCurrentERC721Contract = (): Contract | undefined => {
-    if (!erc721s) return
+    if (!erc721s || !currentERC721) return
     return erc721s[currentERC721]
   }
 
@@ -314,6 +323,7 @@ ERC 721 Methods
     if (!arbProvider || !erc20s) return
 
     const erc721Address = address ? address : currentERC721
+    if (!erc721Address)return
     const inboxManager = await arbProvider.globalInboxConn()
     const tokenContract = erc20s[erc721Address]
     if (!tokenContract) return
