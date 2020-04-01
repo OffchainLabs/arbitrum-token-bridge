@@ -12,7 +12,12 @@ import TabsContainer from 'components/TabsContainer'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 const App = () => {
-  const [{ ethAddress, vmId }, {depositEthToArb}, {withdrawERC20}] = useArbHook()
+  const [
+    { ethAddress, vmId, ethBalances },
+    { depositEthToArb },
+    { withdrawERC20 },
+  ] = useArbHook()
+
 
   return (
     <div className="container">
