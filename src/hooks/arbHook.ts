@@ -3,6 +3,7 @@ import { getInjectedWeb3 } from '../util/web3'
 import { providers, utils, Contract, constants } from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
+import useProvidersAndWallets from './providersWalletsHook'
 
 const {
   ArbERC20Factory,
@@ -43,13 +44,6 @@ interface ArbSigner {
 }
 
 export default (): [Template, Template, Template, Template] => {
-  const [ethAddress, setEthAddress] = useState('')
-  const [ethProvider, setEthProvider] = useState<providers.JsonRpcProvider>()
-  const [arbProvider, setArbProviderf] = useState<ArbProvider>()
-  const [arbWallet, setArbWallet] = useState<ArbSigner>()
-  const [ethWallet, setEthWallet] = useState<providers.JsonRpcSigner>()
-  const [vmId, setVimId] = useState('')
-
   const [erc20s, setERC20s] = useState<Template>()
   const [currentERC20, setCurrentERC20] = useState('')
 
@@ -61,6 +55,18 @@ export default (): [Template, Template, Template, Template] => {
   const [ethBalances, setEthBalances] = useState<Balances>()
   const [erc20Balances, setERC20Balances] = useState<Balances>()
   const [erc721Balances, setErc721Balances] = useState<NFTBalances>()
+  const {
+    ethProvider,
+    arbProvider,
+    arbWallet,
+    ethWallet,
+    vmId,
+    ethAddress,
+  } = useProvidersAndWallets(async (txnId: string[], txn: Template) => {
+    // TODO
+    console.warn('ASSERTION CONFIRMED', txnId, txn)
+    await updateEthBalances()
+  })
 
   /*
   ETH METHODS:
@@ -113,6 +119,7 @@ export default (): [Template, Template, Template, Template] => {
 
   const updateEthBalances = async () => {
     if (!arbProvider || !ethWallet) return
+    console.warn('updating eth balances')
 
     const inboxManager = await arbProvider.globalInboxConn()
 
@@ -414,69 +421,19 @@ ERC 721 Methods
     })
   }
 
-  useEffect(() => {
-    ;(async () => {
-      const url = process.env.REACT_APP_ARB_VALIDATOR_URL || ''
-      const [ethProvider, standardProvider] = await getInjectedWeb3()
-      // set providers:
-      setEthProvider(ethProvider)
-      const arbProvider = new ArbProvider(
-        url,
-        new providers.Web3Provider(standardProvider)
-      )
-      setArbProviderf(arbProvider)
-      const vmId: string = await arbProvider.getVmID()
-      setVimId(vmId)
-
-      // set listeners:
-      const arbRollup = await arbProvider.arbRollupConn()
-      arbRollup.on('ConfirmedAssertion', async (txnId, txn) => {
-        // TODO
-        console.warn('ASSERTION CONFIRMED', txnId, txn)
-        await updateEthBalances()
-      })
-      // TODO: on wallet change listener
-      // window.setInterval(async () => {
-      //   if (arbWallet) {
-      //     const address = await arbWallet.getAddress()
-      //     // TODO
-      //     // if (address != this.account) {
-      //     //   this.account = address;
-      //     //   console.info('assertion confirmed; rerender');
-
-      //     // }
-      //   }
-      // }, 1000)
-    })()
-  }, [])
-
-  const updateWallets = (): void => {
-    ;(async () => {
-      if (ethProvider) {
-        const ethWallet = ethProvider.getSigner(0)
-        setEthWallet(ethWallet)
-
-        const ethAddress = await ethWallet.getAddress()
-        setEthAddress(ethAddress)
-      }
-
-      if (arbProvider) {
-        setArbWallet(arbProvider.getSigner(0))
-        const vmId: string = await arbProvider.getVmID()
-        setVimId(vmId)
-      }
-    })()
+  const updateAll = async () => {
+    await updateEthBalances()
+    await updateERC20Balances()
+    await updateERC721Balances()
   }
-
   useEffect(() => {
     ;(async () => {
-      await updateWallets()
-    })()
-  }, [vmId])
-
-  useEffect(() => {
-    ;(async () => {
-      await updateEthBalances()
+      console.warn('updating eth balances')
+      try {
+        await updateEthBalances()
+      } catch (e) {
+        console.warn(e)
+      }
     })()
   }, [arbWallet])
 
