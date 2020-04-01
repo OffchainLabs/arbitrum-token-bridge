@@ -1153,6 +1153,11 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.1.1.tgz#12c572ab88ef7345b43f21883fca26631c223085"
   integrity sha512-sLqWxCzC5/QHLhziXSCAksBxHfOnQlhPRVgPK0egEw+ktWvG75T2k+aYWVjVh9+WKeT3tlG3ZNbZQvZLmfuOIw==
 
+"@rehooks/local-storage@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.3.0.tgz#e2b90a93d3be70e7b7d69a5748abbcfa94261713"
+  integrity sha512-Lt7uVEse+Rxc1OBTy/dxSJoNtik2CAP+9w+2G2EzY04S+HPkNaUvnIHtWMCniqzZ6ctthvRPs1Pcriuexmr56A==
+
 "@restart/context@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@restart/context/-/context-2.1.4.tgz#a99d87c299a34c28bd85bb489cb07bfd23149c02"
