@@ -3,33 +3,34 @@ import { getInjectedWeb3 } from '../util/web3'
 import { providers, utils, Contract, constants } from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
+import { Listener } from 'ethers/providers'
 
 interface ArbSigner {
   [x: string]: any
 }
 
-interface Template {
-  [x: string]: any
-}
-export default (
-  handleConfirmedAssertion: (txnId: string[], txn: Template) => Promise<void>
-): Template => {
+// TODO figure out args passed
+// type ConfirmedAssertionListener = ([logsAccHash]: [string]) => void
+
+export const useArbProvider = (
+  // handleConfirmedAssertion: ConfirmedAssertionListener
+  handleConfirmedAssertion: Listener
+) => {
   const [ethAddress, setEthAddress] = useState('')
   const [ethProvider, setEthProvider] = useState<providers.JsonRpcProvider>()
   const [arbProvider, setArbProviderf] = useState<ArbProvider>()
   const [arbWallet, setArbWallet] = useState<ArbSigner>()
   const [ethWallet, setEthWallet] = useState<providers.JsonRpcSigner>()
   const [vmId, setVimId] = useState('')
-
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       const url = process.env.REACT_APP_ARB_VALIDATOR_URL || ''
-      const [ethProvider, standardProvider] = await getInjectedWeb3()
+      const provider = await getInjectedWeb3()
       // set providers:
-      setEthProvider(ethProvider)
+      setEthProvider(provider)
       const arbProvider = new ArbProvider(
         url,
-        new providers.Web3Provider(standardProvider)
+        provider
       )
       setArbProviderf(arbProvider)
       const vmId: string = await arbProvider.getVmID()
@@ -52,27 +53,23 @@ export default (
     })()
   }, [])
 
-  const updateWallets = (): void => {
-    ;(async () => {
-      if (ethProvider) {
-        const ethWallet = ethProvider.getSigner(0)
-        setEthWallet(ethWallet)
+  const updateWallets = async (): Promise<void> => {
+    if (ethProvider) {
+      const ethWallet = ethProvider.getSigner(0)
+      setEthWallet(ethWallet)
 
-        const ethAddress = await ethWallet.getAddress()
-        setEthAddress(ethAddress)
-      }
+      const ethAddress = await ethWallet.getAddress()
+      setEthAddress(ethAddress)
+    }
 
-      if (arbProvider) {
-        setArbWallet(arbProvider.getSigner(0))
-        const vmId: string = await arbProvider.getVmID()
-        setVimId(vmId)
-      }
-    })()
+    if (arbProvider) {
+      setArbWallet(arbProvider.getSigner(0))
+      const vmId: string = await arbProvider.getVmID()
+      setVimId(vmId)
+    }
   }
   useEffect(() => {
-    ;(async () => {
-      await updateWallets()
-    })()
+    updateWallets()
   }, [vmId])
 
   return {
