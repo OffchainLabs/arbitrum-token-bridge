@@ -21,18 +21,16 @@ export function web3Injected(
   return e !== undefined
 }
 
-export async function getInjectedWeb3(): Promise<
-  [ethers.providers.JsonRpcProvider, InjectedEthereumProvider]
-> {
+export async function getInjectedWeb3(): Promise<ethers.providers.JsonRpcProvider> {
   if (web3Injected(window.ethereum)) {
     try {
-      ;(await window.ethereum.enable?.()) ??
+      ; (await window.ethereum.enable?.()) ??
         console.warn('No window.ethereum.enable function')
     } catch (e) {
       throw new Error('Failed to enable window.ethereum: ' + e.message)
     }
 
-    return [new ethers.providers.Web3Provider(window.ethereum), window.ethereum]
+    return new ethers.providers.Web3Provider(window.ethereum)
   }
 
   throw new Error('No web3 injection detected')
