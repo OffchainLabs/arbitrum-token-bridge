@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { utils, Contract, constants } from 'ethers'
-import useProvidersAndWallets from './providersWalletsHook'
+import { useArbProvider } from './providersWalletsHook'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { Balances, Template, NFTBalances } from "types"
+import { ArbERC20 } from 'arb-provider-ethers/dist/lib/abi/ArbERC20'
+import { ArbERC721 } from 'arb-provider-ethers/dist/lib/abi/ArbERC721'
 const {
   ArbERC20Factory,
 } = require('arb-provider-ethers/dist/lib/abi/ArbERC20Factory')
@@ -17,11 +19,19 @@ interface Web3Data {
   vmId: string
 }
 
-
+interface ContractStorage<T> {
+  [contractAddress: string]: {
+    arb: T,
+    eth: any, // TODO
+    units: number,
+    symbol: string,
+    allowed: boolean
+  }
+}
 
 export default (): [Template, Template, Template, Template] => {
-  const [erc20Contracts, setERC20s] = useState<any>({})
-  const [erc721Contracts, setERC721s] = useState<any>({})
+  const [erc20Contracts, setERC20s] = useState<ContractStorage<ArbERC20>>({})
+  const [erc721Contracts, setERC721s] = useState<ContractStorage<ArbERC721>>({})
 
   // use local storage for current tokens and list of token addresses
   const [currentERC20, setCurrentERC20] = useLocalStorage<string>(
@@ -51,15 +61,15 @@ export default (): [Template, Template, Template, Template] => {
     ethWallet,
     vmId,
     ethAddress,
-  } = useProvidersAndWallets(async (txnId: string[], txn: any) => {
+  } = useArbProvider((listenerArgs) => {
     // callback runs on assertion confirmation listener
-    console.info('ASSERTION CONFIRMED', txnId, txn)
+    console.info('ASSERTION CONFIRMED', listenerArgs)
     // note that methods should update the relevant balances already; keeping this for unsurace
-    await updateAllBalances()
+    updateAllBalances()
   })
 
-  const currentERC20Contract = getCurrentERC20Contract()
-  const currentERC721Contract = getCurrentERC721Contract()
+  const currentERC20Contract = currentERC20 ? erc20Contracts[currentERC20] : undefined
+  const currentERC721Contract = currentERC721 ? erc721Contracts[currentERC721] : undefined
 
   /*
   ETH METHODS:
@@ -136,6 +146,7 @@ export default (): [Template, Template, Template, Template] => {
       retrieves ERC20 contract object and adds it to ERC20s array. Uses address param or currentERC20 address if no param given
     */
     if (
+      !arbProvider ||
       !ethProvider ||
       !arbWallet ||
       !ethWallet ||
@@ -152,12 +163,13 @@ export default (): [Template, Template, Template, Template] => {
     const code = await ethProvider.getCode(address)
     // TODO: better sanity check?
     if (code.length > 2) {
+      // TODO typechain types for ERC20 abi
       const inboxManager = await arbProvider.globalInboxConn()
       const ethTokenContractRaw = new Contract(address, erc20ABI, ethProvider)
       const arbTokenContractRaw = ArbERC20Factory.connect(address, arbProvider)
       const connectedEthContract = ethTokenContractRaw.connect(ethWallet)
 
-      const units = await connectedEthContract.decimals()
+      const units: number = await connectedEthContract.decimals()
       const allowance = await connectedEthContract.allowance(
         ethAddress,
         inboxManager.address
@@ -196,15 +208,9 @@ export default (): [Template, Template, Template, Template] => {
     }
     await txn.wait()
     const erc20Address: string = currentERC20Contract.eth.address
-    erc20Contracts[erc20Address] = {
-      ...currentERC20Contract,
-      ...{ allowed: true },
-    }
-  }
-
-  function getCurrentERC20Contract(): Contract | undefined {
-    if (!erc20Contracts || !currentERC20) return
-    return erc20Contracts[currentERC20]
+    setERC20s(contracts => {
+      return { ...contracts, [erc20Address]: { ...contracts[erc20Address], allowed: true } }
+    })
   }
 
   const depositERC20 = async (value: string) => {
@@ -231,13 +237,8 @@ export default (): [Template, Template, Template, Template] => {
       return
 
     const val = utils.parseUnits(value, currentERC20Contract.units)
-    let tx
     try {
-      tx = await currentERC20Contract.arb.withdraw(ethAddress, val)
-    } catch (e) {
-      console.warn(e)
-    }
-    try {
+      const tx = await currentERC20Contract.arb.withdraw(ethAddress, val)
       await tx.wait()
       await updateERC20Balances()
     } catch (e) {
@@ -292,6 +293,7 @@ ERC 721 Methods
 */
   const addERC721 = async (addressParam: string | undefined) => {
     if (
+      !arbProvider ||
       !ethProvider ||
       !arbWallet ||
       !ethWallet ||
@@ -325,11 +327,6 @@ ERC 721 Methods
       }
       await updateERC721Balances()
     }
-  }
-
-  function getCurrentERC721Contract(): Contract | undefined {
-    if (!erc721Contracts || !currentERC721) return
-    return erc721Contracts[currentERC721]
   }
 
   const approveERC721 = async () => {
@@ -384,11 +381,6 @@ ERC 721 Methods
     let tx
     try {
       tx = await currentERC721Contract.arb.withdraw(ethAddress, tokenId)
-    } catch (e) {
-      console.warn(e)
-    }
-
-    try {
       await tx.wait()
       await updateERC721Balances()
     } catch (e) {
@@ -458,7 +450,7 @@ ERC 721 Methods
   }
   useEffect(() => {
     /* update balances when wallet loads */
-    ;(async () => {
+    ; (async () => {
       try {
         await updateAllBalances()
       } catch (e) {
@@ -469,7 +461,7 @@ ERC 721 Methods
 
   useEffect(() => {
     /* add contract (if necessary) when new erc20 is selected */
-    ;(async () => {
+    ; (async () => {
       if (currentERC20) {
         await addERC20(currentERC20)
       }
@@ -479,7 +471,7 @@ ERC 721 Methods
   useEffect(() => {
     /* add contract (if necessary) when new erc721 is selected */
 
-    ;(async () => {
+    ; (async () => {
       if (currentERC721) {
         await addERC721(currentERC721)
       }
