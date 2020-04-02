@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { utils, Contract, constants } from 'ethers'
 import useProvidersAndWallets from './providersWalletsHook'
 import { useLocalStorage } from '@rehooks/local-storage'
-
+import { Balances, Template, NFTBalances } from "types"
 const {
   ArbERC20Factory,
 } = require('arb-provider-ethers/dist/lib/abi/ArbERC20Factory')
@@ -17,32 +17,14 @@ interface Web3Data {
   vmId: string
 }
 
-interface Balances {
-  balance: string
-  arbChainBalance: string
-  totalArbBalance: string
-  lockBoxBalance: string
-  asset: string
-}
 
-interface NFTBalances {
-  tokens: utils.BigNumber[]
-  arbChainTokens: utils.BigNumber[]
-  totalArbTokens: utils.BigNumber[]
-  lockBoxTokens: utils.BigNumber[]
-  asset: string
-}
-
-interface Template {
-  [x: string]: any
-}
 
 export default (): [Template, Template, Template, Template] => {
   const [erc20Contracts, setERC20s] = useState<any>({})
   const [erc721Contracts, setERC721s] = useState<any>({})
 
   // use local storage for current tokens and list of token addresses
-  const [currentERC20, setCurrentERC20State] = useLocalStorage<string>(
+  const [currentERC20, setCurrentERC20] = useLocalStorage<string>(
     'currentERC20'
   )
   const [currentERC721, setCurrentERC721State] = useLocalStorage<string>(
@@ -191,7 +173,7 @@ export default (): [Template, Template, Template, Template] => {
         allowed,
       }
       setERC20s({ ...erc20Contracts, ...newContracts })
-      setCurrentERC20State(address)
+      setCurrentERC20(address)
       // add to cache (if not already added)
       if (!erc20sCached.includes(address)) {
         setERC20sPersister([...erc20sCached, ...[address]])
@@ -507,7 +489,7 @@ ERC 721 Methods
   const expireCache = () => {
     setERC20sPersister([])
     setERC721sPersister([])
-    setCurrentERC20State('')
+    setCurrentERC20('')
     setCurrentERC721State('')
   }
 
@@ -534,7 +516,7 @@ ERC 721 Methods
       forceEthBalanceUpdate: updateEthBalances,
     },
     {
-      setCurrentERC20State,
+      setCurrentERC20,
       approveERC20,
       depositERC20,
       withdrawERC20,

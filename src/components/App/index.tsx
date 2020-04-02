@@ -13,20 +13,22 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 const App = () => {
   const [
-    { ethAddress, vmId, ethBalances },
-    { depositEthToArb },
-    { withdrawERC20 },
+    data,
+    { depositEthToArb, forceEthBalanceUpdate },
+    { withdrawERC20, setCurrentERC20 },
+    { addERC721, setCurrentERC721State },
   ] = useArbHook()
 
+  const { ethAddress, vmId, ethBalances } = data
 
   return (
-    <div className="container">
+    <div className="container" onClick={() => forceEthBalanceUpdate()}>
       <div className="row">
         <Header ethAddress={ethAddress} vmId={vmId} />
       </div>
       <div className="row">
         <div id="bridgebody">
-          <TabsContainer />
+          <TabsContainer ethBalances={ethBalances} />
         </div>
       </div>
     </div>
