@@ -11,8 +11,12 @@ export const useArbProvider = (
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
   walletIndex: number
-): { arbProvider: ArbProvider | undefined; vmId: string; address: string } => {
-  const [address, setAddress] = useState('')
+): {
+  arbProvider: ArbProvider | undefined
+  vmId: string
+  walletAddress: string
+} => {
+  const [walletAddress, setWalletAddress] = useState('')
   const [arbProvider, setProvider] = useState(
     ethProvider instanceof ethers.providers.JsonRpcProvider
       ? new ArbProvider(validatorUrl, ethProvider)
@@ -28,8 +32,8 @@ export const useArbProvider = (
     }
 
     if (arbProvider) {
-      if (!address) {
-        arbProvider.getSigner(walletIndex).getAddress().then(setAddress)
+      if (!walletAddress) {
+        arbProvider.getSigner(walletIndex).getAddress().then(setWalletAddress)
       }
       if (!vmId) {
         arbProvider.getVmID().then(setVmId)
@@ -47,11 +51,11 @@ export const useArbProvider = (
     //   }
 
     // })
-  }, [vmId, address])
+  }, [vmId, walletAddress])
 
   return {
     arbProvider,
     vmId,
-    address,
+    walletAddress,
   }
 }
