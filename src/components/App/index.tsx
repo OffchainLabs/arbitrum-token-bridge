@@ -5,11 +5,13 @@ import { getInjectedWeb3 } from 'util/web3'
 import * as ethers from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
-import useArbHook from 'hooks/arbHook'
+import { useArbTokenBridge } from 'hooks/arbHook'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
+
+const validatorUrl = process.env.REACT_APP_ARB_VALIDATOR_URL || ''
 
 const App = () => {
   const [
@@ -17,7 +19,7 @@ const App = () => {
     { depositEthToArb, forceEthBalanceUpdate },
     { withdrawERC20, setCurrentERC20 },
     { addERC721, setCurrentERC721State },
-  ] = useArbHook()
+  ] = useArbTokenBridge(validatorUrl, getInjectedWeb3())
 
   const { ethAddress, vmId, ethBalances } = data
 
