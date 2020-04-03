@@ -1,24 +1,39 @@
 import { useState, useEffect } from 'react'
-import { utils, Contract, constants, ethers } from 'ethers'
+import { utils, constants, ethers } from 'ethers'
 import { useArbProvider } from './providersWalletsHook'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { Balances, Template, NFTBalances } from 'types'
+import { Balances, NFTBalances } from 'types'
 import { ArbERC20 } from 'arb-provider-ethers/dist/lib/abi/ArbERC20'
 import { ArbERC721 } from 'arb-provider-ethers/dist/lib/abi/ArbERC721'
 import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
 import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
-import * as erc20ABI from 'contractABIs/ERC20.json'
-import * as erc721ABI from 'contractABIs/ERC721.json'
+import { ERC20Factory } from '../util/contracts/ERC20Factory'
+import { ERC20 } from '../util/contracts/ERC20'
+import { ERC721 } from '../util/contracts/ERC721'
+import { ERC721Factory } from '../util/contracts/ERC721Factory'
+
+interface BridgedToken<ArbContract, EthContract> {
+  arb: ArbContract
+  eth: EthContract
+  symbol: string
+  allowed: boolean
+  units?: number
+}
+
+interface ERC20BridgeToken extends BridgedToken<ArbERC20, ERC20> {
+  units: number
+}
+
+interface ERC721BridgeToken extends BridgedToken<ArbERC721, ERC721> {
+  units?: never
+}
 
 interface ContractStorage<T> {
-  [contractAddress: string]: {
-    arb: T
-    eth: any // TODO
-    units: number
-    symbol: string
-    allowed: boolean
-  }
+  [contractAddress: string]: T
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface ArbTokenBridge {}
 
 // would it be better to encourage a flatter structure by passing in the
 // ready arbProvider from the useArbProvider hook?
@@ -28,9 +43,13 @@ export const useArbTokenBridge = (
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
   walletIndex = 0
-): [Template, Template, Template, Template] => {
-  const [erc20Contracts, setERC20s] = useState<ContractStorage<ArbERC20>>({})
-  const [erc721Contracts, setERC721s] = useState<ContractStorage<ArbERC721>>({})
+): ArbTokenBridge => {
+  const [erc20Contracts, setERC20s] = useState<
+    ContractStorage<ERC20BridgeToken>
+  >({})
+  const [erc721Contracts, setERC721s] = useState<
+    ContractStorage<ERC721BridgeToken>
+  >({})
 
   // use local storage for current tokens and list of token addresses
   const [currentERC20, setCurrentERC20] = useLocalStorage<string>(
@@ -53,16 +72,12 @@ export const useArbTokenBridge = (
   const [erc721Balances, setErc721Balances] = useState<NFTBalances>()
 
   // get providers amd wallets from hook
-  const { arbProvider, vmId, address } = useArbProvider(
+  const { arbProvider, vmId, walletAddress } = useArbProvider(
     validatorUrl,
     ethProvider,
     walletIndex
   )
   if (!arbProvider) throw new Error('ap not present') // this is bad - fix async?
-
-  arbProvider
-    .arbRollupConn()
-    .then((rollup) => rollup.on('ConfirmedAssertion', updateAllBalances))
 
   const currentERC20Contract = currentERC20
     ? erc20Contracts[currentERC20]
@@ -83,8 +98,8 @@ export const useArbTokenBridge = (
 
     const ethBalanceWei = await ethWallet.getBalance()
     const arbChainEthBalanceWei = await inboxManager.getEthBalance(vmId)
-    const lockBoxBalanceWei = await inboxManager.getEthBalance(address)
-    const arbEthBalanceWei = await arbProvider.getBalance(address)
+    const lockBoxBalanceWei = await inboxManager.getEthBalance(walletAddress)
+    const arbEthBalanceWei = await arbProvider.getBalance(walletAddress)
 
     const { formatEther } = utils
     setEthBalances({
@@ -96,12 +111,11 @@ export const useArbTokenBridge = (
     })
   }
 
-
   const depositEth = async (ethValue: string) => {
     if (!arbWallet) return
     const weiValue: utils.BigNumber = utils.parseEther(ethValue)
     try {
-      const tx = await arbWallet.depositETH(address, weiValue)
+      const tx = await arbWallet.depositETH(walletAddress, weiValue)
       await tx.wait()
       await updateEthBalances()
     } catch (e) {
@@ -154,30 +168,33 @@ export const useArbTokenBridge = (
     if (code.length > 2) {
       // TODO typechain types for ERC20 abi
       const inboxManager = await arbProvider.globalInboxConn()
-      const ethTokenContractRaw = new Contract(
-        address,
-        erc20ABI,
-        arbProvider.provider
-      )
-      const arbTokenContractRaw = ArbERC20Factory.connect(address, arbProvider)
-      const connectedEthContract = ethTokenContractRaw.connect(ethWallet)
 
-      const units: number = await connectedEthContract.decimals()
-      const allowance = await connectedEthContract.allowance(
+      const ethTokenContract = ERC20Factory.connect(
+        address,
+        arbProvider.provider.getSigner(walletIndex)
+      )
+      const arbTokenContract = ArbERC20Factory.connect(
+        address,
+        arbProvider.getSigner(walletIndex)
+      )
+
+      // TODO should be checking against another number for `allowed` presumably
+      const allowance = await ethTokenContract.allowance(
         address,
         inboxManager.address
       )
       const allowed = allowance.gt(utils.bigNumberify(0))
 
-      const newContracts: Template = {}
-      newContracts[address] = {
-        arb: arbTokenContractRaw.connect(arbWallet),
-        eth: connectedEthContract,
-        units,
-        symbol: await connectedEthContract.symbol(),
-        allowed,
-      }
-      setERC20s({ ...erc20Contracts, ...newContracts })
+      setERC20s({
+        ...erc20Contracts,
+        [address]: {
+          arb: arbTokenContract,
+          eth: ethTokenContract,
+          units: await ethTokenContract.decimals(),
+          symbol: await ethTokenContract.symbol(),
+          allowed,
+        },
+      })
       setCurrentERC20(address)
       // add to cache (if not already added)
       if (!erc20sCached.includes(address)) {
@@ -190,16 +207,15 @@ export const useArbTokenBridge = (
     if (!arbProvider || !erc20Contracts || !currentERC20Contract) return
 
     const inboxManager = await arbProvider.globalInboxConn()
-    let txn
     try {
-      txn = await currentERC20Contract.eth.approve(
+      const tx = await currentERC20Contract.eth.approve(
         inboxManager.address,
         constants.MaxUint256
       )
+      await tx.wait()
     } catch (e) {
       console.warn(e)
     }
-    await txn.wait()
     const erc20Address: string = currentERC20Contract.eth.address
     setERC20s((contracts) => {
       return {
@@ -214,17 +230,19 @@ export const useArbTokenBridge = (
       return
 
     const inboxManager = await arbProvider.globalInboxConn()
-    const tokenBalanceRaw = await currentERC20Contract.eth.balanceOf(address)
+    const tokenBalanceRaw = await currentERC20Contract.eth.balanceOf(
+      walletAddress
+    )
     const totalArbBalance = await inboxManager.getERC20Balance(
       currentERC20Contract.eth.address,
       vmId
     )
     const lockBoxBalance = await inboxManager.getERC20Balance(
       currentERC20Contract.eth.address,
-      address
+      walletAddress
     )
 
-    const arbBalance = await currentERC20Contract.arb.balanceOf(address)
+    const arbBalance = await currentERC20Contract.arb.balanceOf(walletAddress)
     const format = (value: utils.BigNumber) =>
       utils.formatUnits(value, currentERC20Contract.units)
 
@@ -237,7 +255,6 @@ export const useArbTokenBridge = (
     })
   }
 
-
   const depositERC20 = async (value: string) => {
     if (!arbProvider || !erc20Contracts || !arbWallet || !currentERC20Contract)
       return
@@ -245,7 +262,7 @@ export const useArbTokenBridge = (
     const val = utils.parseUnits(value, currentERC20Contract.units)
     try {
       const tx = await arbWallet.depositERC20(
-        address,
+        walletAddress,
         currentERC20Contract.eth.address,
         val
       )
@@ -262,7 +279,7 @@ export const useArbTokenBridge = (
 
     const val = utils.parseUnits(value, currentERC20Contract.units)
     try {
-      const tx = await currentERC20Contract.arb.withdraw(address, val)
+      const tx = await currentERC20Contract.arb.withdraw(walletAddress, val)
       await tx.wait()
       await updateERC20Balances()
     } catch (e) {
@@ -273,8 +290,8 @@ export const useArbTokenBridge = (
   const withdrawLockboxERC20 = async () => {
     if (!arbWallet || !currentERC20Contract) return
 
-    const inboxManager = await arbWallet.globalInboxConn()
     try {
+      const inboxManager = await arbWallet.globalInboxConn()
       const tx = await inboxManager.withdrawERC20(
         currentERC20Contract.eth.address
       )
@@ -299,15 +316,19 @@ ERC 721 Methods
       return
 
     const inboxManager = await arbProvider.globalInboxConn()
-    const nftsOnEth = await currentERC721Contract.eth.tokensOfOwner(address)
-    const nftsOnArb = await currentERC721Contract.arb.tokensOfOwner(address)
+    const nftsOnEth = await currentERC721Contract.eth.tokensOfOwner(
+      walletAddress
+    )
+    const nftsOnArb = await currentERC721Contract.arb.tokensOfOwner(
+      walletAddress
+    )
     const totalArbNfts = await inboxManager.getERC721Tokens(
       currentERC721Contract.eth.address,
       vmId
     )
     const lockBoxNfts = await inboxManager.getERC721Tokens(
       currentERC721Contract.eth.address,
-      address
+      walletAddress
     )
 
     setErc721Balances({
@@ -327,27 +348,29 @@ ERC 721 Methods
     if (code.length > 2) {
       const inboxManager = await arbProvider.globalInboxConn()
 
-      const ethTokenContractRaw = new Contract(
+      const ethTokenContract = ERC721Factory.connect(
         address,
-        erc721ABI,
-        arbProvider.provider
+        arbProvider.provider.getSigner(walletIndex)
       )
-      const arbTokenContractRaw = ArbERC721Factory.connect(address, arbProvider)
-      const connectedEthContract = ethTokenContractRaw.connect(
-        arbProvider.provider
+      const arbTokenContract = ArbERC721Factory.connect(
+        address,
+        arbProvider.getSigner(walletIndex)
       )
-      const allowed = await connectedEthContract.isApprovedForAll(
+
+      const allowed = await ethTokenContract.isApprovedForAll(
         address,
         inboxManager.address
       )
-      const newContracts: Template = {}
-      newContracts[address] = {
-        arb: arbTokenContractRaw.connect(arbWallet),
-        eth: connectedEthContract,
-        symbol: await connectedEthContract.symbol(),
-        allowed,
-      }
-      setERC721s({ ...erc721Contracts, ...newContracts })
+
+      setERC721s({
+        ...erc721Contracts,
+        [address]: {
+          arb: arbTokenContract,
+          eth: ethTokenContract,
+          symbol: await ethTokenContract.symbol(),
+          allowed,
+        },
+      })
       if (!erc721sCached.includes(address)) {
         setERC721sPersister([...erc721sCached, ...[address]])
       }
@@ -382,7 +405,7 @@ ERC 721 Methods
 
     try {
       const tx = await arbWallet.depositERC721(
-        address,
+        walletAddress,
         currentERC721Contract.eth.address,
         tokenId
       )
@@ -403,7 +426,10 @@ ERC 721 Methods
       return
 
     try {
-      const tx = await currentERC721Contract.arb.withdraw(address, tokenId)
+      const tx = await currentERC721Contract.arb.withdraw(
+        walletAddress,
+        tokenId
+      )
       await tx.wait()
       await updateERC721Balances()
     } catch (e) {
@@ -439,6 +465,22 @@ ERC 721 Methods
     await updateERC20Balances()
     await updateERC721Balances()
   }
+
+  const expireCache = () => {
+    setERC20sPersister([])
+    setERC721sPersister([])
+    setCurrentERC20('')
+    setCurrentERC721State('')
+  }
+
+  // TODO only register once
+  arbProvider.arbRollupConn().then((rollup) =>
+    rollup.on('ConfirmedAssertion', () => {
+      console.log('event triggered balance update')
+      updateAllBalances()
+    })
+  )
+
   useEffect(() => {
     /* add contract (if necessary) when new erc20 is selected */
     if (currentERC20) {
@@ -451,21 +493,15 @@ ERC 721 Methods
     }
 
     /* update balances on render */
-    updateAllBalances()
-      .catch(e => console.error('updateAllBalances failed', e))
+    updateAllBalances().catch((e) =>
+      console.error('updateAllBalances failed', e)
+    )
   }, [currentERC20, currentERC721])
-
-  const expireCache = () => {
-    setERC20sPersister([])
-    setERC721sPersister([])
-    setCurrentERC20('')
-    setCurrentERC721State('')
-  }
 
   // [ data , eth methods, erc20 methods, erc721 methods]
   return [
     {
-      address,
+      address: walletAddress,
       ethBalances,
       erc20Balances,
       erc721Balances,
