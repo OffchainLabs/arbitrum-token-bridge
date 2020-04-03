@@ -24,7 +24,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\""
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\"",
+    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -47,6 +48,8 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^2.0.2"
+    "prettier": "^2.0.2",
+    "typechain": "^1.0.5",
+    "typechain-target-ethers": "^1.0.4"
   }
 }
