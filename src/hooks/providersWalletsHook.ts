@@ -1,83 +1,57 @@
 import { useState, useEffect } from 'react'
-import { getInjectedWeb3 } from '../util/web3'
-import { providers, utils, Contract, constants } from 'ethers'
-import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
 import { Listener } from 'ethers/providers'
+import * as ethers from 'ethers'
 
-interface ArbSigner {
-  [x: string]: any
-}
-
-// TODO figure out args passed
-// type ConfirmedAssertionListener = ([logsAccHash]: [string]) => void
-
+// should async provider arg be allowed? complicates logic
+// should vmId + address be managed here?
 export const useArbProvider = (
-  // handleConfirmedAssertion: ConfirmedAssertionListener
-  handleConfirmedAssertion: Listener
-) => {
-  const [ethAddress, setEthAddress] = useState('')
-  const [ethProvider, setEthProvider] = useState<providers.JsonRpcProvider>()
-  const [arbProvider, setArbProviderf] = useState<ArbProvider>()
-  const [arbWallet, setArbWallet] = useState<ArbSigner>()
-  const [ethWallet, setEthWallet] = useState<providers.JsonRpcSigner>()
-  const [vmId, setVimId] = useState('')
+  validatorUrl: string,
+  ethProvider:
+    | ethers.providers.JsonRpcProvider
+    | Promise<ethers.providers.JsonRpcProvider>,
+  walletIndex: number
+): { arbProvider: ArbProvider | undefined; vmId: string; address: string } => {
+  const [address, setAddress] = useState('')
+  const [arbProvider, setProvider] = useState(
+    ethProvider instanceof ethers.providers.JsonRpcProvider
+      ? new ArbProvider(validatorUrl, ethProvider)
+      : undefined
+  )
+  const [vmId, setVmId] = useState('')
+
   useEffect(() => {
-    ; (async () => {
-      const url = process.env.REACT_APP_ARB_VALIDATOR_URL || ''
-      const provider = await getInjectedWeb3()
-      // set providers:
-      setEthProvider(provider)
-      const arbProvider = new ArbProvider(
-        url,
-        provider
+    if (!arbProvider) {
+      Promise.resolve(ethProvider).then((ep) =>
+        setProvider(new ArbProvider(validatorUrl, ep))
       )
-      setArbProviderf(arbProvider)
-      const vmId: string = await arbProvider.getVmID()
-      setVimId(vmId)
-
-      // set listeners:
-      const arbRollup = await arbProvider.arbRollupConn()
-      arbRollup.on('ConfirmedAssertion', handleConfirmedAssertion)
-      // TODO: on wallet change listener
-      // standardProvider.on('accountsChanged', async function (accounts: string[]) {
-      //   // Time to reload your interface with accounts[0]!
-      //   console.warn(accounts);
-      //   if (accounts[0] !== ethAddress){
-      //     console.warn("updating");
-
-      //     updateWallets()
-      //   }
-
-      // })
-    })()
-  }, [])
-
-  const updateWallets = async (): Promise<void> => {
-    if (ethProvider) {
-      const ethWallet = ethProvider.getSigner(0)
-      setEthWallet(ethWallet)
-
-      const ethAddress = await ethWallet.getAddress()
-      setEthAddress(ethAddress)
     }
 
     if (arbProvider) {
-      setArbWallet(arbProvider.getSigner(0))
-      const vmId: string = await arbProvider.getVmID()
-      setVimId(vmId)
+      if (!address) {
+        arbProvider.getSigner(walletIndex).getAddress().then(setAddress)
+      }
+      if (!vmId) {
+        arbProvider.getVmID().then(setVmId)
+      }
     }
-  }
-  useEffect(() => {
-    updateWallets()
-  }, [vmId])
+
+    // TODO: on wallet change listener if metamask
+    // standardProvider.on('accountsChanged', async function (accounts: string[]) {
+    //   // Time to reload your interface with accounts[0]!
+    //   console.warn(accounts);
+    //   if (accounts[0] !== ethAddress){
+    //     console.warn("updating");
+
+    //     updateWallets()
+    //   }
+
+    // })
+  }, [vmId, address])
 
   return {
-    ethProvider,
     arbProvider,
-    arbWallet,
-    ethWallet,
     vmId,
-    ethAddress,
+    address,
   }
 }
