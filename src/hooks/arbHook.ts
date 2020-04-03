@@ -10,11 +10,6 @@ import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Fact
 import * as erc20ABI from 'contractABIs/ERC20.json'
 import * as erc721ABI from 'contractABIs/ERC721.json'
 
-interface Web3Data {
-  address: string
-  vmId: string
-}
-
 interface ContractStorage<T> {
   [contractAddress: string]: {
     arb: T
@@ -32,7 +27,7 @@ export const useArbTokenBridge = (
   ethProvider:
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
-  walletIndex: number = 0
+  walletIndex = 0
 ): [Template, Template, Template, Template] => {
   const [erc20Contracts, setERC20s] = useState<ContractStorage<ArbERC20>>({})
   const [erc721Contracts, setERC721s] = useState<ContractStorage<ArbERC721>>({})
@@ -81,6 +76,27 @@ export const useArbTokenBridge = (
   /*
   ETH METHODS:
   */
+  const updateEthBalances = async () => {
+    if (!arbProvider || !ethWallet) return
+
+    const inboxManager = await arbProvider.globalInboxConn()
+
+    const ethBalanceWei = await ethWallet.getBalance()
+    const arbChainEthBalanceWei = await inboxManager.getEthBalance(vmId)
+    const lockBoxBalanceWei = await inboxManager.getEthBalance(address)
+    const arbEthBalanceWei = await arbProvider.getBalance(address)
+
+    const { formatEther } = utils
+    setEthBalances({
+      balance: formatEther(ethBalanceWei),
+      arbChainBalance: formatEther(arbEthBalanceWei),
+      lockBoxBalance: formatEther(lockBoxBalanceWei),
+      totalArbBalance: formatEther(arbChainEthBalanceWei),
+      asset: 'ETH',
+    })
+  }
+
+
   const depositEth = async (ethValue: string) => {
     if (!arbWallet) return
     const weiValue: utils.BigNumber = utils.parseEther(ethValue)
@@ -117,26 +133,6 @@ export const useArbTokenBridge = (
     } catch (e) {
       console.error('withdrawLockboxETH err', e)
     }
-  }
-
-  const updateEthBalances = async () => {
-    if (!arbProvider || !ethWallet) return
-
-    const inboxManager = await arbProvider.globalInboxConn()
-
-    const ethBalanceWei = await ethWallet.getBalance()
-    const arbChainEthBalanceWei = await inboxManager.getEthBalance(vmId)
-    const lockBoxBalanceWei = await inboxManager.getEthBalance(address)
-    const arbEthBalanceWei = await arbProvider.getBalance(address)
-
-    const { formatEther } = utils
-    setEthBalances({
-      balance: formatEther(ethBalanceWei),
-      arbChainBalance: formatEther(arbEthBalanceWei),
-      lockBoxBalance: formatEther(lockBoxBalanceWei),
-      totalArbBalance: formatEther(arbChainEthBalanceWei),
-      asset: 'ETH',
-    })
   }
 
   /*
@@ -213,6 +209,35 @@ export const useArbTokenBridge = (
     })
   }
 
+  const updateERC20Balances = async () => {
+    if (!arbProvider || !erc20Contracts || !arbWallet || !currentERC20Contract)
+      return
+
+    const inboxManager = await arbProvider.globalInboxConn()
+    const tokenBalanceRaw = await currentERC20Contract.eth.balanceOf(address)
+    const totalArbBalance = await inboxManager.getERC20Balance(
+      currentERC20Contract.eth.address,
+      vmId
+    )
+    const lockBoxBalance = await inboxManager.getERC20Balance(
+      currentERC20Contract.eth.address,
+      address
+    )
+
+    const arbBalance = await currentERC20Contract.arb.balanceOf(address)
+    const format = (value: utils.BigNumber) =>
+      utils.formatUnits(value, currentERC20Contract.units)
+
+    setERC20Balances({
+      balance: format(tokenBalanceRaw),
+      arbChainBalance: format(arbBalance),
+      lockBoxBalance: format(lockBoxBalance),
+      totalArbBalance: format(totalArbBalance),
+      asset: currentERC20Contract.symbol,
+    })
+  }
+
+
   const depositERC20 = async (value: string) => {
     if (!arbProvider || !erc20Contracts || !arbWallet || !currentERC20Contract)
       return
@@ -260,37 +285,40 @@ export const useArbTokenBridge = (
     }
   }
 
-  const updateERC20Balances = async () => {
-    if (!arbProvider || !erc20Contracts || !arbWallet || !currentERC20Contract)
-      return
-
-    const inboxManager = await arbProvider.globalInboxConn()
-    const tokenBalanceRaw = await currentERC20Contract.eth.balanceOf(address)
-    const totalArbBalance = await inboxManager.getERC20Balance(
-      currentERC20Contract.eth.address,
-      vmId
-    )
-    const lockBoxBalance = await inboxManager.getERC20Balance(
-      currentERC20Contract.eth.address,
-      address
-    )
-
-    const arbBalance = await currentERC20Contract.arb.balanceOf(address)
-    const format = (value: utils.BigNumber) =>
-      utils.formatUnits(value, currentERC20Contract.units)
-
-    setERC20Balances({
-      balance: format(tokenBalanceRaw),
-      arbChainBalance: format(arbBalance),
-      lockBoxBalance: format(lockBoxBalance),
-      totalArbBalance: format(totalArbBalance),
-      asset: currentERC20Contract.symbol,
-    })
-  }
-
   /*
 ERC 721 Methods
 */
+
+  const updateERC721Balances = async () => {
+    if (
+      !arbProvider ||
+      !erc721Contracts ||
+      !arbWallet ||
+      !currentERC721Contract
+    )
+      return
+
+    const inboxManager = await arbProvider.globalInboxConn()
+    const nftsOnEth = await currentERC721Contract.eth.tokensOfOwner(address)
+    const nftsOnArb = await currentERC721Contract.arb.tokensOfOwner(address)
+    const totalArbNfts = await inboxManager.getERC721Tokens(
+      currentERC721Contract.eth.address,
+      vmId
+    )
+    const lockBoxNfts = await inboxManager.getERC721Tokens(
+      currentERC721Contract.eth.address,
+      address
+    )
+
+    setErc721Balances({
+      tokens: nftsOnEth,
+      arbChainTokens: nftsOnArb,
+      totalArbTokens: totalArbNfts,
+      lockBoxTokens: lockBoxNfts,
+      asset: await currentERC721Contract.eth.symbol(),
+    })
+  }
+
   const addERC721 = async (addressParam: string | undefined) => {
     if (!arbProvider || !currentERC721 || !erc721sCached) return
     const address = addressParam ? addressParam : currentERC721
@@ -404,36 +432,6 @@ ERC 721 Methods
     } catch (e) {
       console.error('withdrawLockboxERC721', e)
     }
-  }
-
-  const updateERC721Balances = async () => {
-    if (
-      !arbProvider ||
-      !erc721Contracts ||
-      !arbWallet ||
-      !currentERC721Contract
-    )
-      return
-
-    const inboxManager = await arbProvider.globalInboxConn()
-    const nftsOnEth = await currentERC721Contract.eth.tokensOfOwner(address)
-    const nftsOnArb = await currentERC721Contract.arb.tokensOfOwner(address)
-    const totalArbNfts = await inboxManager.getERC721Tokens(
-      currentERC721Contract.eth.address,
-      vmId
-    )
-    const lockBoxNfts = await inboxManager.getERC721Tokens(
-      currentERC721Contract.eth.address,
-      address
-    )
-
-    setErc721Balances({
-      tokens: nftsOnEth,
-      arbChainTokens: nftsOnArb,
-      totalArbTokens: totalArbNfts,
-      lockBoxTokens: lockBoxNfts,
-      asset: await currentERC721Contract.eth.symbol(),
-    })
   }
 
   const updateAllBalances = async () => {
