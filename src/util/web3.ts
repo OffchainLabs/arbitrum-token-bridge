@@ -5,13 +5,10 @@ interface InjectedEthereumProvider
   enable?: () => Promise<string[]>
   on: any
 }
-interface Template {
-  [x: string]: any
-}
+
 declare global {
   interface Window {
     ethereum?: InjectedEthereumProvider
-    all: Template
   }
 }
 
@@ -21,10 +18,13 @@ export function web3Injected(
   return e !== undefined
 }
 
-export async function getInjectedWeb3(): Promise<ethers.providers.JsonRpcProvider> {
+export async function getInjectedWeb3(): Promise<
+  ethers.providers.JsonRpcProvider
+> {
+  console.log('weth', window.ethereum, window.ethereum?.isMetaMask)
   if (web3Injected(window.ethereum)) {
     try {
-      ; (await window.ethereum.enable?.()) ??
+      ;(await window.ethereum.enable?.()) ??
         console.warn('No window.ethereum.enable function')
     } catch (e) {
       throw new Error('Failed to enable window.ethereum: ' + e.message)
