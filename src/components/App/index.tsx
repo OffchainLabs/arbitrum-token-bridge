@@ -18,7 +18,7 @@ const App = () => {
     data,
     { depositEthToArb, forceEthBalanceUpdate },
     { withdrawERC20, setCurrentERC20 },
-    { addERC721, setCurrentERC721State },
+    { addERC721, setCurrentERC721State }
   ] = useArbTokenBridge(validatorUrl, getInjectedWeb3())
 
   const { ethAddress, vmId, ethBalances } = data
