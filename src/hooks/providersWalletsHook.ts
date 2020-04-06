@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { ArbProvider } from 'arb-provider-ethers'
-import { Listener } from 'ethers/providers'
 import * as ethers from 'ethers'
 
 // should async provider arg be allowed? complicates logic
