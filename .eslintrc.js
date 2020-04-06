@@ -16,7 +16,9 @@ module.exports = {
     // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
     // e.g. "@typescript-eslint/explicit-function-return-type": "off",
     "no-fallthrough": "error",
-    "no-shadow": ["error", { "builtinGlobals": true, "hoist": "all" }]
+    "no-shadow": ["error", { "builtinGlobals": true, "hoist": "all" }],
+    "react/prop-types": [0],
+    "@typescript-eslint/explicit-function-return-type": ["warning", { allowExpressions: true }]
   },
   settings: {
     react: {
