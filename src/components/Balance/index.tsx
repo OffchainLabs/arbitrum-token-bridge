@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Balances } from 'types'
+import { BridgeBalance } from '../../hooks/arbHook';
 
 type BalanceProps = {
   assetName: string
-  balances: Balances
+  balances: BridgeBalance
 }
 
 const Balance = ({ balances, assetName }: BalanceProps) => {
