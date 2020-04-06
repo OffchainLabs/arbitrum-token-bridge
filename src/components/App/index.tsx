@@ -14,23 +14,19 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 const validatorUrl = process.env.REACT_APP_ARB_VALIDATOR_URL || ''
 
 const App = () => {
-  const [
-    data,
-    { depositEthToArb, forceEthBalanceUpdate },
-    { withdrawERC20, setCurrentERC20 },
-    { addERC721, setCurrentERC721State }
-  ] = useArbTokenBridge(validatorUrl, getInjectedWeb3())
-
-  const { ethAddress, vmId, ethBalances } = data
+  const { walletAddress, balances, vmId } = useArbTokenBridge(
+    validatorUrl,
+    getInjectedWeb3()
+  )
 
   return (
-    <div className="container" onClick={() => forceEthBalanceUpdate()}>
+    <div className="container" onClick={balances.update}>
       <div className="row">
-        <Header ethAddress={ethAddress} vmId={vmId} />
+        <Header ethAddress={walletAddress} vmId={vmId} />
       </div>
       <div className="row">
         <div id="bridgebody">
-          <TabsContainer ethBalances={ethBalances} />
+          <TabsContainer ethBalances={balances.eth} />
         </div>
       </div>
     </div>
