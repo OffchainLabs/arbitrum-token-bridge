@@ -4,7 +4,7 @@
 import {
   BigNumberish,
   EventDescription,
-  FunctionDescription,
+  FunctionDescription
 } from 'ethers/utils'
 
 export class TransactionOverrides {
