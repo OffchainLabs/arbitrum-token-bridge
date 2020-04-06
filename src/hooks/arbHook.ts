@@ -56,6 +56,7 @@ export interface BridgeBalance {
   lockBoxBalance: string
 }
 
+// removing 'tokens' / 'balance' could result in one interface
 export interface ERC721Balance {
   tokens: utils.BigNumber[]
   arbChainTokens: utils.BigNumber[]
