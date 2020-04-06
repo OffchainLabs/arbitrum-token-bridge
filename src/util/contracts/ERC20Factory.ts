@@ -18,23 +18,23 @@ const _abi = [
     inputs: [
       {
         name: 'spender',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'amount',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'approve',
     outputs: [
       {
         name: '',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -43,123 +43,123 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'sender',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'recipient',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'amount',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'transferFrom',
     outputs: [
       {
         name: '',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'account',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     name: 'balanceOf',
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'recipient',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'amount',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'transfer',
     outputs: [
       {
         name: '',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'owner',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'spender',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     name: 'allowance',
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     inputs: [
       {
         name: 'name',
-        type: 'string',
+        type: 'string'
       },
       {
         name: 'symbol',
-        type: 'string',
+        type: 'string'
       },
       {
         name: 'decimals',
-        type: 'uint8',
-      },
+        type: 'uint8'
+      }
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'constructor',
+    type: 'constructor'
   },
   {
     anonymous: false,
@@ -167,21 +167,21 @@ const _abi = [
       {
         indexed: true,
         name: 'from',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: false,
         name: 'value',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'Transfer',
-    type: 'event',
+    type: 'event'
   },
   {
     anonymous: false,
@@ -189,21 +189,21 @@ const _abi = [
       {
         indexed: true,
         name: 'owner',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'spender',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: false,
         name: 'value',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'Approval',
-    type: 'event',
+    type: 'event'
   },
   {
     constant: true,
@@ -212,12 +212,12 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -226,12 +226,12 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -240,11 +240,11 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'uint8',
-      },
+        type: 'uint8'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
-  },
+    type: 'function'
+  }
 ]

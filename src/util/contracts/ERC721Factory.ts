@@ -18,19 +18,19 @@ const _abi = [
     inputs: [
       {
         name: 'interfaceId',
-        type: 'bytes4',
-      },
+        type: 'bytes4'
+      }
     ],
     name: 'supportsInterface',
     outputs: [
       {
         name: '',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -39,49 +39,49 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'getApproved',
     outputs: [
       {
         name: '',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'approve',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -90,117 +90,117 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'from',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'transferFrom',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'owner',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'index',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'tokenOfOwnerByIndex',
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'from',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'safeTransferFrom',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'index',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'tokenByIndex',
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'ownerOf',
     outputs: [
       {
         name: '',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -209,31 +209,31 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'owner',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     name: 'balanceOf',
     outputs: [
       {
         name: '',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
@@ -242,132 +242,132 @@ const _abi = [
     outputs: [
       {
         name: '',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'approved',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     name: 'setApprovalForAll',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: false,
     inputs: [
       {
         name: 'from',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'tokenId',
-        type: 'uint256',
+        type: 'uint256'
       },
       {
         name: '_data',
-        type: 'bytes',
-      },
+        type: 'bytes'
+      }
     ],
     name: 'safeTransferFrom',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'tokenURI',
     outputs: [
       {
         name: '',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'owner',
-        type: 'address',
+        type: 'address'
       },
       {
         name: 'operator',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     name: 'isApprovedForAll',
     outputs: [
       {
         name: '',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     constant: true,
     inputs: [
       {
         name: 'owner',
-        type: 'address',
-      },
+        type: 'address'
+      }
     ],
     name: 'tokensOfOwner',
     outputs: [
       {
         name: '',
-        type: 'uint256[]',
-      },
+        type: 'uint256[]'
+      }
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
+    type: 'function'
   },
   {
     inputs: [
       {
         name: 'name',
-        type: 'string',
+        type: 'string'
       },
       {
         name: 'symbol',
-        type: 'string',
-      },
+        type: 'string'
+      }
     ],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'constructor',
+    type: 'constructor'
   },
   {
     anonymous: false,
@@ -375,21 +375,21 @@ const _abi = [
       {
         indexed: true,
         name: 'from',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'to',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'Transfer',
-    type: 'event',
+    type: 'event'
   },
   {
     anonymous: false,
@@ -397,21 +397,21 @@ const _abi = [
       {
         indexed: true,
         name: 'owner',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'approved',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'tokenId',
-        type: 'uint256',
-      },
+        type: 'uint256'
+      }
     ],
     name: 'Approval',
-    type: 'event',
+    type: 'event'
   },
   {
     anonymous: false,
@@ -419,20 +419,20 @@ const _abi = [
       {
         indexed: true,
         name: 'owner',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: true,
         name: 'operator',
-        type: 'address',
+        type: 'address'
       },
       {
         indexed: false,
         name: 'approved',
-        type: 'bool',
-      },
+        type: 'bool'
+      }
     ],
     name: 'ApprovalForAll',
-    type: 'event',
-  },
+    type: 'event'
+  }
 ]

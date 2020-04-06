@@ -7,7 +7,7 @@ import { Arrayish, BigNumber, BigNumberish, Interface } from 'ethers/utils'
 import {
   TransactionOverrides,
   TypedEventDescription,
-  TypedFunctionDescription,
+  TypedFunctionDescription
 } from '.'
 
 interface ERC20Interface extends Interface {

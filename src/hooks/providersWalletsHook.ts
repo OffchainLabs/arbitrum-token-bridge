@@ -25,7 +25,7 @@ export const useArbProvider = (
 
   useEffect(() => {
     if (!arbProvider) {
-      Promise.resolve(ethProvider).then((ep) =>
+      Promise.resolve(ethProvider).then(ep =>
         setProvider(new ArbProvider(validatorUrl, ep))
       )
     }
@@ -55,6 +55,6 @@ export const useArbProvider = (
   return {
     arbProvider,
     vmId,
-    walletAddress,
+    walletAddress
   }
 }

@@ -7,7 +7,7 @@ import { Arrayish, BigNumber, BigNumberish, Interface } from 'ethers/utils'
 import {
   TransactionOverrides,
   TypedEventDescription,
-  TypedFunctionDescription,
+  TypedFunctionDescription
 } from '.'
 
 interface ERC721Interface extends Interface {
