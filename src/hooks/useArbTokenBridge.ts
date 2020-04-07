@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { utils, constants, ethers, ContractTransaction } from 'ethers'
 import { useArbProvider } from './useArbProvider'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -64,6 +64,8 @@ export interface ERC721Balance {
   lockBoxTokens: utils.BigNumber[]
 }
 
+// it may be cleaner managing react state if the functions that rely on state
+// are separate from the react hook
 export const useArbTokenBridge = (
   validatorUrl: string,
   ethProvider:
@@ -99,20 +101,22 @@ export const useArbTokenBridge = (
     []
   )
 
+  const [vmId, setVmId] = useState('')
+  const [walletAddress, setWalletAddress] = useState('')
+
+  // TODO starting to think it's a better idea to just return the provider
+  // from the hook below since we need to check for vmId etc
   // get providers amd wallets from hook
-  const { arbProvider, vmId, walletAddress } = useArbProvider(
-    validatorUrl,
-    ethProvider,
-    walletIndex
-  )
+  const arbProvider = useArbProvider(validatorUrl, ethProvider)
 
   const arbWallet = arbProvider?.getSigner(walletIndex)
 
   /*
   ETH METHODS:
   */
-  const updateEthBalances = async () => {
-    if (!arbProvider) throw new Error('updateEthBalances no arb provider')
+  const updateEthBalances = useCallback(async () => {
+    if (!arbProvider || !vmId || !walletAddress)
+      throw new Error('updateEthBalances no arb provider')
 
     const inboxManager = await arbProvider.globalInboxConn()
     const ethWallet = arbProvider.provider.getSigner(walletIndex)
@@ -129,10 +133,11 @@ export const useArbTokenBridge = (
       lockBoxBalance: formatEther(lockBoxBalanceWei),
       totalArbBalance: formatEther(arbChainEthBalanceWei)
     })
-  }
+  }, [arbProvider, vmId, walletAddress, walletIndex])
 
   const depositEth = async (ethValue: string) => {
-    if (!arbWallet) throw new Error('depositEth no arb wallet')
+    if (!arbWallet || !walletAddress)
+      throw new Error('depositEth no arb wallet')
 
     const weiValue: utils.BigNumber = utils.parseEther(ethValue)
     try {
@@ -158,10 +163,10 @@ export const useArbTokenBridge = (
   }
 
   const withdrawLockboxETH = async () => {
-    if (!arbWallet) throw new Error('withdrawLockboxETH no arb wallet')
+    if (!arbProvider) throw new Error('withdrawLockboxETH no arb wallet')
 
     try {
-      const inboxManager = await arbWallet.globalInboxConn()
+      const inboxManager = await arbProvider.globalInboxConn()
       const tx = await inboxManager.withdrawEth()
       await tx.wait()
       await updateEthBalances()
@@ -173,68 +178,81 @@ export const useArbTokenBridge = (
   /* TOKEN METHODS */
   // TODO error handling promises with try catch
 
-  const updateTokenBalances = async (type?: TokenType): Promise<void> => {
-    if (!arbProvider) throw new Error('updateTokenBalances missing req')
+  // would be nice to support only updating an individual token balance
+  const updateTokenBalances = useCallback(
+    async (type?: TokenType): Promise<void> => {
+      if (!arbProvider || !walletAddress)
+        throw new Error('updateTokenBalances missing req')
 
-    const inboxManager = await arbProvider.globalInboxConn()
-    const filtered = Object.values(tokenContracts).filter(c => {
-      return !!c && (!type || c.type === type)
-    }) as BridgeToken[]
+      const inboxManager = await arbProvider.globalInboxConn()
 
-    const erc20Updates: typeof erc20Balances = {}
-    const erc721Updates: typeof erc721Balances = {}
+      const filtered = Object.values(tokenContracts).filter(c => {
+        return !!c && (!type || c.type === type)
+      }) as BridgeToken[]
 
-    for (const contract of filtered) {
-      switch (contract.type) {
-        case TokenType.ERC20: {
-          const format = (value: utils.BigNumber): string =>
-            utils.formatUnits(value, contract.units)
+      const erc20Updates: typeof erc20Balances = {}
+      const erc721Updates: typeof erc721Balances = {}
 
-          const updated = {
-            balance: format(await contract.eth.balanceOf(walletAddress)),
-            arbChainBalance: format(
-              await contract.arb.balanceOf(walletAddress)
-            ),
-            lockBoxBalance: format(
-              await inboxManager.getERC20Balance(
+      for (const contract of filtered) {
+        switch (contract.type) {
+          case TokenType.ERC20: {
+            const format = (value: utils.BigNumber): string =>
+              utils.formatUnits(value, contract.units)
+
+            const updated = {
+              balance: format(await contract.eth.balanceOf(walletAddress)),
+              arbChainBalance: format(
+                await contract.arb.balanceOf(walletAddress)
+              ),
+              lockBoxBalance: format(
+                await inboxManager.getERC20Balance(
+                  contract.eth.address,
+                  walletAddress
+                )
+              ),
+              totalArbBalance: format(
+                await inboxManager.getERC20Balance(contract.eth.address, vmId)
+              ),
+              asset: contract.symbol
+            }
+
+            erc20Updates[contract.eth.address] = updated
+            break
+          }
+          case TokenType.ERC721: {
+            const updated = {
+              tokens: await contract.eth.tokensOfOwner(walletAddress),
+              arbChainTokens: await contract.arb.tokensOfOwner(walletAddress),
+              totalArbTokens: await inboxManager.getERC721Tokens(
+                contract.eth.address,
+                vmId
+              ),
+              lockBoxTokens: await inboxManager.getERC721Tokens(
                 contract.eth.address,
                 walletAddress
               )
-            ),
-            totalArbBalance: format(
-              await inboxManager.getERC20Balance(contract.eth.address, vmId)
-            ),
-            asset: contract.symbol
-          }
+            }
 
-          erc20Updates[contract.eth.address] = updated
-          break
-        }
-        case TokenType.ERC721: {
-          const updated = {
-            tokens: await contract.eth.tokensOfOwner(walletAddress),
-            arbChainTokens: await contract.arb.tokensOfOwner(walletAddress),
-            totalArbTokens: await inboxManager.getERC721Tokens(
-              contract.eth.address,
-              vmId
-            ),
-            lockBoxTokens: await inboxManager.getERC721Tokens(
-              contract.eth.address,
-              walletAddress
-            )
+            erc721Updates[contract.eth.address] = updated
+            break
           }
-
-          erc721Updates[contract.eth.address] = updated
-          break
+          default:
+            assertNever(contract, 'updateTokenBalances exhaustive check failed')
         }
-        default:
-          assertNever(contract, 'updateTokenBalances exhaustive check failed')
       }
-    }
 
-    setErc20Balances(balances => ({ ...balances, ...erc20Updates }))
-    setErc721Balances(balances => ({ ...balances, ...erc721Updates }))
-  }
+      setErc20Balances(balances => ({ ...balances, ...erc20Updates }))
+      setErc721Balances(balances => ({ ...balances, ...erc721Updates }))
+    },
+    [
+      arbProvider,
+      erc20Balances,
+      erc721Balances,
+      tokenContracts,
+      vmId,
+      walletAddress
+    ]
+  )
 
   const approveToken = async (
     contractAddress: string
@@ -287,7 +305,7 @@ export const useArbTokenBridge = (
     contractAddress: string,
     amountOrTokenId: string
   ): Promise<ContractReceipt> => {
-    if (!arbWallet) throw new Error('deposit missing req')
+    if (!arbWallet || !walletAddress) throw new Error('deposit missing req')
 
     const contract = tokenContracts[contractAddress]
     if (!contract) throw new Error('contract not present')
@@ -321,6 +339,8 @@ export const useArbTokenBridge = (
     contractAddress: string,
     amountOrTokenId: string
   ): Promise<ContractReceipt> => {
+    if (!walletAddress) throw new Error('withdraw token no walletAddress')
+
     const contract = tokenContracts[contractAddress]
     if (!contract) throw new Error('contract not present')
 
@@ -344,12 +364,12 @@ export const useArbTokenBridge = (
     contractAddress: string,
     tokenId?: string
   ): Promise<ContractReceipt> => {
-    if (!arbWallet) throw new Error('withdrawLockboxToken missing req')
+    if (!arbProvider) throw new Error('withdrawLockboxToken missing req')
 
     const contract = tokenContracts[contractAddress]
     if (!contract) throw new Error('contract not present')
 
-    const inboxManager = await arbWallet.globalInboxConn()
+    const inboxManager = await arbProvider.globalInboxConn()
 
     // TODO error handle
     // TODO trigger balance updates
@@ -372,7 +392,7 @@ export const useArbTokenBridge = (
   }
 
   const addToken = async (contractAddress: string, type: TokenType) => {
-    if (!arbProvider) throw Error('addToken missing req')
+    if (!arbProvider || !walletAddress) throw Error('addToken missing req')
 
     // TODO is this the best test? is it needed - can we rely on connect err?
     const isContract =
@@ -449,32 +469,49 @@ export const useArbTokenBridge = (
         [contractAddress]: newContract
       }
     })
+
+    await updateTokenBalances(type)
   }
 
-  const updateAllBalances = async (): Promise<void> => {
-    await updateEthBalances()
-    await updateTokenBalances()
-  }
+  const updateAllBalances = useCallback(
+    () => Promise.all([updateEthBalances(), updateTokenBalances()]),
+    [updateEthBalances, updateTokenBalances]
+  )
 
   const expireCache = (): void => {
     setERC20Cache([])
     setERC721Cache([])
   }
 
-  // TODO only register once
-  arbProvider.arbRollupConn().then(rollup =>
-    rollup.on('ConfirmedAssertion', () => {
-      console.log('event triggered balance update')
-      updateAllBalances()
-    })
-  )
-
   useEffect(() => {
-    /* update balances on render */
-    updateAllBalances().catch(e => console.error('updateAllBalances failed', e))
-  })
+    if (arbProvider) {
+      if (!walletAddress) {
+        arbProvider.getSigner(walletIndex).getAddress().then(setWalletAddress)
+      }
 
-  // [ data , eth methods, erc20 methods, erc721 methods]
+      if (!vmId) {
+        arbProvider.getVmID().then(setVmId)
+      }
+
+      const CONFIRMED_ASSERTION = 'ConfirmedAssertion'
+      // is it worth registering the listener in state so the below isn't called?
+      arbProvider.arbRollupConn().then(rollup => {
+        const {
+          name: confirmedEvent
+        } = rollup.interface.events.ConfirmedAssertion
+        if (rollup.listeners(confirmedEvent).indexOf(updateAllBalances) < 0) {
+          rollup.on(confirmedEvent, updateAllBalances)
+        }
+      })
+
+      // TODO this may be overkill if we are monitoring blocks and txs
+      /* update balances on render */
+      // updateAllBalances().catch(e =>
+      //   console.error('updateAllBalances failed', e)
+      // )
+    }
+  }, [arbProvider, updateAllBalances, vmId, walletAddress, walletIndex])
+
   return {
     walletAddress,
     vmId,
