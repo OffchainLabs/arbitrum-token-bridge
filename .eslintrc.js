@@ -12,13 +12,15 @@ module.exports = {
       jsx: true // Allows for the parsing of JSX
     }
   },
+  ignorePatterns: ['src/util/contracts/*'],
   rules: {
     // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
     // e.g. "@typescript-eslint/explicit-function-return-type": "off",
     "no-fallthrough": "error",
     "no-shadow": ["error", { "builtinGlobals": true, "hoist": "all" }],
     "react/prop-types": [0],
-    "@typescript-eslint/explicit-function-return-type": [1, { allowExpressions: true }]
+    "@typescript-eslint/explicit-function-return-type": [1, { allowExpressions: true }],
+    // "sort-imports": [1], // it would be nice to use this but doens't autofix
   },
   settings: {
     react: {
