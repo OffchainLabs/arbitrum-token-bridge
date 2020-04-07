@@ -2,41 +2,26 @@ import { useState, useEffect } from 'react'
 import { ArbProvider } from 'arb-provider-ethers'
 import * as ethers from 'ethers'
 
-// should async provider arg be allowed? complicates logic
-// should vmId + address be managed here?
 export const useArbProvider = (
   validatorUrl: string,
   ethProvider:
     | ethers.providers.JsonRpcProvider
-    | Promise<ethers.providers.JsonRpcProvider>,
-  walletIndex: number
-): {
-  arbProvider: ArbProvider | undefined
-  vmId: string
-  walletAddress: string
-} => {
-  const [walletAddress, setWalletAddress] = useState('')
+    | Promise<ethers.providers.JsonRpcProvider>
+): ArbProvider | undefined => {
   const [arbProvider, setProvider] = useState(
-    ethProvider instanceof ethers.providers.JsonRpcProvider
-      ? new ArbProvider(validatorUrl, ethProvider)
-      : undefined
+    ethProvider instanceof Promise
+      ? undefined
+      : new ArbProvider(validatorUrl, ethProvider)
   )
-  const [vmId, setVmId] = useState('')
 
   useEffect(() => {
     if (!arbProvider) {
-      Promise.resolve(ethProvider).then(ep =>
-        setProvider(new ArbProvider(validatorUrl, ep))
-      )
-    }
-
-    if (arbProvider) {
-      if (!walletAddress) {
-        arbProvider.getSigner(walletIndex).getAddress().then(setWalletAddress)
-      }
-      if (!vmId) {
-        arbProvider.getVmID().then(setVmId)
-      }
+      Promise.resolve(ethProvider)
+        .then(ep => setProvider(new ArbProvider(validatorUrl, ep)))
+        .catch(e => {
+          console.log(e)
+          throw new Error('unable to resolve provider')
+        })
     }
 
     // TODO: on wallet change listener if metamask
@@ -50,11 +35,7 @@ export const useArbProvider = (
     //   }
 
     // })
-  }, [vmId, walletAddress])
+  })
 
-  return {
-    arbProvider,
-    vmId,
-    walletAddress
-  }
+  return arbProvider
 }
