@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Balance from 'components/Balance'
-import { BridgeBalance } from '../../hooks/arbHook'
+import { BridgeBalance } from 'hooks/useArbTokenBridge'
 
 type TabProps = {
   ethBalances: BridgeBalance
