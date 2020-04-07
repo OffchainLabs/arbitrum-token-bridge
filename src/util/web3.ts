@@ -21,7 +21,6 @@ export function web3Injected(
 export async function getInjectedWeb3(): Promise<
   ethers.providers.JsonRpcProvider
 > {
-  console.log('weth', window.ethereum, window.ethereum?.isMetaMask)
   if (web3Injected(window.ethereum)) {
     try {
       ;(await window.ethereum.enable?.()) ??
