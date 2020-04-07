@@ -18,7 +18,7 @@ module.exports = {
     "no-fallthrough": "error",
     "no-shadow": ["error", { "builtinGlobals": true, "hoist": "all" }],
     "react/prop-types": [0],
-    "@typescript-eslint/explicit-function-return-type": ["warning", { allowExpressions: true }]
+    "@typescript-eslint/explicit-function-return-type": [1, { allowExpressions: true }]
   },
   settings: {
     react: {
