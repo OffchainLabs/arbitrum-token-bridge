@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Balance from 'components/Balance'
-import { Balances, Template } from 'types'
+import { BridgeBalance } from 'hooks/useArbTokenBridge'
 
 type TabProps = {
-  ethBalances: Balances
+  ethBalances: BridgeBalance
 }
-const TabsContainer = (data: Template) => {
+const TabsContainer: React.FC<TabProps> = ({ ethBalances }) => {
   const [key, setKey] = useState('eth')
 
   return (
@@ -17,7 +17,7 @@ const TabsContainer = (data: Template) => {
       onSelect={(k: string) => setKey(k)}
     >
       <Tab eventKey="eth" title="ETH">
-        <Balance assetName={'ETH'} balances={data.ethBalances} />
+        <Balance assetName={'ETH'} balances={ethBalances} />
       </Tab>
       <Tab eventKey="erc20" title="ERC-20">
         <div>erc20</div>
