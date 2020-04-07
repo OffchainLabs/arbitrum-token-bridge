@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ArbProvider } from 'arb-provider-ethers'
 import * as ethers from 'ethers'
 
