@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BridgeBalance } from '../../hooks/arbHook';
+import { BridgeBalance } from '../../hooks/useArbTokenBridge'
 
 type BalanceProps = {
   assetName: string

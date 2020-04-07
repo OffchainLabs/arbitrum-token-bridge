@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { utils, constants, ethers, ContractTransaction } from 'ethers'
-import { useArbProvider } from './providersWalletsHook'
+import { useArbProvider } from './useArbProvider'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { ArbERC20 } from 'arb-provider-ethers/dist/lib/abi/ArbERC20'
 import { ArbERC721 } from 'arb-provider-ethers/dist/lib/abi/ArbERC721'
@@ -90,12 +90,12 @@ export const useArbTokenBridge = (
 
   // TODO load all contracts - in useEffect or on select?
   // use local storage for list of token addresses
-  const [erc20sCached, setERC20sPersister] = useLocalStorage<string[]>(
-    'erc20sCached',
+  const [ERC20Cache, setERC20Cache] = useLocalStorage<string[]>(
+    'ERC20Cache',
     []
   )
-  const [erc721sCached, setERC721sPersister] = useLocalStorage<string[]>(
-    'erc721sCached',
+  const [ERC721Cache, setERC721Cache] = useLocalStorage<string[]>(
+    'ERC721Cache',
     []
   )
 
@@ -105,18 +105,17 @@ export const useArbTokenBridge = (
     ethProvider,
     walletIndex
   )
-  if (!arbProvider) throw new Error('ap not present') // this is bad - fix async?
 
-  const arbWallet = arbProvider.getSigner(walletIndex)
-  const ethWallet = arbProvider.provider.getSigner(walletIndex)
+  const arbWallet = arbProvider?.getSigner(walletIndex)
 
   /*
   ETH METHODS:
   */
   const updateEthBalances = async () => {
-    if (!arbProvider || !ethWallet) return
+    if (!arbProvider) throw new Error('updateEthBalances no arb provider')
 
     const inboxManager = await arbProvider.globalInboxConn()
+    const ethWallet = arbProvider.provider.getSigner(walletIndex)
 
     const ethBalanceWei = await ethWallet.getBalance()
     const arbChainEthBalanceWei = await inboxManager.getEthBalance(vmId)
@@ -133,7 +132,8 @@ export const useArbTokenBridge = (
   }
 
   const depositEth = async (ethValue: string) => {
-    if (!arbWallet) return
+    if (!arbWallet) throw new Error('depositEth no arb wallet')
+
     const weiValue: utils.BigNumber = utils.parseEther(ethValue)
     try {
       const tx = await arbWallet.depositETH(walletAddress, weiValue)
@@ -145,7 +145,7 @@ export const useArbTokenBridge = (
   }
 
   const withdrawEth = async (ethValue: string) => {
-    if (!arbWallet) return
+    if (!arbWallet) throw new Error('withdrawETH no arb wallet')
 
     const weiValue: utils.BigNumber = utils.parseEther(ethValue)
     try {
@@ -158,7 +158,7 @@ export const useArbTokenBridge = (
   }
 
   const withdrawLockboxETH = async () => {
-    if (!arbWallet) return
+    if (!arbWallet) throw new Error('withdrawLockboxETH no arb wallet')
 
     try {
       const inboxManager = await arbWallet.globalInboxConn()
@@ -287,7 +287,7 @@ export const useArbTokenBridge = (
     contractAddress: string,
     amountOrTokenId: string
   ): Promise<ContractReceipt> => {
-    if (!arbProvider) throw new Error('deposit missing req')
+    if (!arbWallet) throw new Error('deposit missing req')
 
     const contract = tokenContracts[contractAddress]
     if (!contract) throw new Error('contract not present')
@@ -321,8 +321,6 @@ export const useArbTokenBridge = (
     contractAddress: string,
     amountOrTokenId: string
   ): Promise<ContractReceipt> => {
-    if (!arbProvider) throw new Error('withdrawToken missing req')
-
     const contract = tokenContracts[contractAddress]
     if (!contract) throw new Error('contract not present')
 
@@ -346,7 +344,7 @@ export const useArbTokenBridge = (
     contractAddress: string,
     tokenId?: string
   ): Promise<ContractReceipt> => {
-    if (!arbProvider) throw new Error('withdrawLockboxToken missing req')
+    if (!arbWallet) throw new Error('withdrawLockboxToken missing req')
 
     const contract = tokenContracts[contractAddress]
     if (!contract) throw new Error('contract not present')
@@ -413,8 +411,8 @@ export const useArbTokenBridge = (
           symbol: await ethERC20.symbol()
         }
 
-        if (erc20sCached && !erc20sCached.includes(contractAddress)) {
-          setERC20sPersister([...erc20sCached, contractAddress])
+        if (ERC20Cache && !ERC20Cache.includes(contractAddress)) {
+          setERC20Cache([...ERC20Cache, contractAddress])
         }
         break
       case TokenType.ERC721:
@@ -437,8 +435,8 @@ export const useArbTokenBridge = (
             inboxManager.address
           )
         }
-        if (erc721sCached && !erc721sCached.includes(contractAddress)) {
-          setERC721sPersister([...erc721sCached, contractAddress])
+        if (ERC721Cache && !ERC721Cache.includes(contractAddress)) {
+          setERC721Cache([...ERC721Cache, contractAddress])
         }
         break
       default:
@@ -453,14 +451,14 @@ export const useArbTokenBridge = (
     })
   }
 
-  const updateAllBalances = async () => {
+  const updateAllBalances = async (): Promise<void> => {
     await updateEthBalances()
     await updateTokenBalances()
   }
 
-  const expireCache = () => {
-    setERC20sPersister([])
-    setERC721sPersister([])
+  const expireCache = (): void => {
+    setERC20Cache([])
+    setERC721Cache([])
   }
 
   // TODO only register once
@@ -487,8 +485,8 @@ export const useArbTokenBridge = (
       update: updateAllBalances
     },
     cache: {
-      erc20: erc20sCached,
-      erc721: erc721sCached,
+      erc20: ERC20Cache,
+      erc721: ERC721Cache,
       expire: expireCache
     },
     eth: {
@@ -498,6 +496,7 @@ export const useArbTokenBridge = (
       updateBalances: updateEthBalances
     },
     token: {
+      add: addToken,
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,

@@ -5,7 +5,7 @@ import { getInjectedWeb3 } from 'util/web3'
 import * as ethers from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
-import { useArbTokenBridge } from 'hooks/arbHook'
+import { useArbTokenBridge } from 'hooks/useArbTokenBridge'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 
