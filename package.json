@@ -1,5 +1,5 @@
 {
-  "name": "arb-token-bride-react",
+  "name": "arb-token-bridge",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -51,5 +51,9 @@
     "prettier": "^2.0.2",
     "typechain": "^1.0.5",
     "typechain-target-ethers": "^1.0.4"
-  }
+  },
+  "files": [
+    "./src/hooks/*",
+    "./src/util/*"
+  ]
 }
