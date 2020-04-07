@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { utils, constants, ethers, ContractTransaction } from 'ethers'
+import { useCallback, useEffect, useState } from 'react'
+import { ContractTransaction, constants, ethers, utils } from 'ethers'
 import { useArbProvider } from './useArbProvider'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { ArbERC20 } from 'arb-provider-ethers/dist/lib/abi/ArbERC20'
@@ -7,8 +7,8 @@ import { ArbERC721 } from 'arb-provider-ethers/dist/lib/abi/ArbERC721'
 import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
 import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
 import {
-  ERC20Factory,
   ERC20,
+  ERC20Factory,
   ERC721,
   ERC721Factory,
   assertNever
@@ -493,7 +493,6 @@ export const useArbTokenBridge = (
         arbProvider.getVmID().then(setVmId)
       }
 
-      const CONFIRMED_ASSERTION = 'ConfirmedAssertion'
       // is it worth registering the listener in state so the below isn't called?
       arbProvider.arbRollupConn().then(rollup => {
         const {
