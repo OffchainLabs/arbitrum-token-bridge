@@ -8,8 +8,8 @@ import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factor
 import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
 import {
   ERC20,
-  ERC20Factory,
   ERC721,
+  ERC20Factory,
   ERC721Factory,
   assertNever
 } from '../util'
