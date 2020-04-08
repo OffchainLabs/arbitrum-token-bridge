@@ -21,11 +21,13 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:hooks": "rm -rf ./dist && tsc --outDir ./dist/ ./src/hooks/useArbTokenBridge.ts",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\"",
-    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'"
+    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
+    "prepare": "yarn build:hooks"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -53,7 +55,6 @@
     "typechain-target-ethers": "^1.0.4"
   },
   "files": [
-    "./src/hooks/*",
-    "./src/util/*"
+    "./dist"
   ]
 }
