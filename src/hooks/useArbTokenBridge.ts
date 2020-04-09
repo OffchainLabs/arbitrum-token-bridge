@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ContractTransaction, constants, ethers, utils } from 'ethers'
-import { useArbProvider } from './useArbProvider'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { ArbERC20 } from 'arb-provider-ethers/dist/lib/abi/ArbERC20'
 import { ArbERC721 } from 'arb-provider-ethers/dist/lib/abi/ArbERC721'
 import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
 import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
+import { ContractReceipt } from 'ethers/contract'
 import {
   ERC20,
   ERC721,
@@ -13,7 +13,10 @@ import {
   ERC721Factory,
   assertNever
 } from '../util'
-import { ContractReceipt } from 'ethers/contract'
+import { useArbProvider } from './useArbProvider'
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const deepEquals = require('lodash.isequal')
 
 /* eslint-disable no-shadow */
 enum TokenType {
@@ -50,10 +53,10 @@ interface ContractStorage<T> {
 }
 
 export interface BridgeBalance {
-  balance: string
-  arbChainBalance: string
-  totalArbBalance: string
-  lockBoxBalance: string
+  balance: utils.BigNumber
+  arbChainBalance: utils.BigNumber
+  totalArbBalance: utils.BigNumber
+  lockBoxBalance: utils.BigNumber
 }
 
 // removing 'tokens' / 'balance' could result in one interface
@@ -73,6 +76,8 @@ interface BridgeConfig {
 
 // may be worthwhile to separate state from token bridge fn
 // should there be a 'ready' property?
+// TODO error handling promises with try catch
+// TODO update balance after certain queries
 export const useArbTokenBridge = (
   validatorUrl: string,
   ethProvider:
@@ -85,10 +90,10 @@ export const useArbTokenBridge = (
   >({})
 
   const [ethBalances, setEthBalances] = useState<BridgeBalance>({
-    balance: '',
-    arbChainBalance: '',
-    totalArbBalance: '',
-    lockBoxBalance: ''
+    balance: constants.Zero,
+    arbChainBalance: constants.Zero,
+    totalArbBalance: constants.Zero,
+    lockBoxBalance: constants.Zero
   })
   const [erc20Balances, setErc20Balances] = useState<
     ContractStorage<BridgeBalance>
@@ -131,14 +136,24 @@ export const useArbTokenBridge = (
     const lockBoxBalanceWei = await inboxManager.getEthBalance(walletAddress)
     const arbEthBalanceWei = await arbProvider.getBalance(walletAddress)
 
-    const { formatEther } = utils
-    setEthBalances({
-      balance: formatEther(ethBalanceWei),
-      arbChainBalance: formatEther(arbEthBalanceWei),
-      lockBoxBalance: formatEther(lockBoxBalanceWei),
-      totalArbBalance: formatEther(arbChainEthBalanceWei)
-    })
-  }, [arbProvider, vmId, walletAddress, walletIndex])
+    const update: typeof ethBalances = {
+      balance: ethBalanceWei,
+      arbChainBalance: arbEthBalanceWei,
+      lockBoxBalance: lockBoxBalanceWei,
+      totalArbBalance: arbChainEthBalanceWei
+    }
+
+    let different = true
+    for (const key in ethBalances) {
+      const k = key as keyof typeof ethBalances
+      different = ethBalances[k] !== update[k]
+    }
+
+    if (!deepEquals(ethBalances, update)) {
+      // if (different) {
+      setEthBalances(update)
+    }
+  }, [arbProvider, ethBalances, vmId, walletAddress, walletIndex])
 
   const depositEth = async (ethValue: string) => {
     if (!arbWallet || !walletAddress)
@@ -181,9 +196,8 @@ export const useArbTokenBridge = (
   }
 
   /* TOKEN METHODS */
-  // TODO error handling promises with try catch
 
-  // would be nice to support only updating an individual token balance
+  // TODO targeted token updates to prevent unneeded iteration
   const updateTokenBalances = useCallback(
     async (type?: TokenType): Promise<void> => {
       if (!arbProvider || !walletAddress)
@@ -197,34 +211,34 @@ export const useArbTokenBridge = (
 
       const erc20Updates: typeof erc20Balances = {}
       const erc721Updates: typeof erc721Balances = {}
+      let update20 = false,
+        update721 = false
 
       for (const contract of filtered) {
         switch (contract.type) {
           case TokenType.ERC20: {
-            const format = (value: utils.BigNumber): string =>
-              utils.formatUnits(value, contract.units)
+            update20 = true
 
             const updated = {
-              balance: format(await contract.eth.balanceOf(walletAddress)),
-              arbChainBalance: format(
-                await contract.arb.balanceOf(walletAddress)
+              balance: await contract.eth.balanceOf(walletAddress),
+              arbChainBalance: await contract.arb.balanceOf(walletAddress),
+              lockBoxBalance: await inboxManager.getERC20Balance(
+                contract.eth.address,
+                walletAddress
               ),
-              lockBoxBalance: format(
-                await inboxManager.getERC20Balance(
-                  contract.eth.address,
-                  walletAddress
-                )
-              ),
-              totalArbBalance: format(
-                await inboxManager.getERC20Balance(contract.eth.address, vmId)
+              totalArbBalance: await inboxManager.getERC20Balance(
+                contract.eth.address,
+                vmId
               ),
               asset: contract.symbol
             }
 
             erc20Updates[contract.eth.address] = updated
+
             break
           }
           case TokenType.ERC721: {
+            update721 = true
             const updated = {
               tokens: await contract.eth.tokensOfOwner(walletAddress),
               arbChainTokens: await contract.arb.tokensOfOwner(walletAddress),
@@ -246,8 +260,12 @@ export const useArbTokenBridge = (
         }
       }
 
-      setErc20Balances(balances => ({ ...balances, ...erc20Updates }))
-      setErc721Balances(balances => ({ ...balances, ...erc721Updates }))
+      if (!deepEquals(erc20Balances, erc20Updates)) {
+        setErc20Balances(balances => ({ ...balances, ...erc20Updates }))
+      }
+      if (!deepEquals(erc721Balances, erc721Updates)) {
+        setErc721Balances(balances => ({ ...balances, ...erc721Updates }))
+      }
     },
     [
       arbProvider,
@@ -496,6 +514,12 @@ export const useArbTokenBridge = (
           arbProvider.getSigner(walletIndex).getAddress(),
           arbProvider.getVmID()
         ]).then(([addr, vm]) => setConfig({ walletAddress: addr, vmId: vm }))
+      } else {
+        // may be better to leave this to the user
+        /* update balances on render */
+        updateAllBalances().catch(e =>
+          console.error('updateAllBalances failed', e)
+        )
       }
 
       // is it worth registering the listener in state so the below isn't called?
@@ -507,12 +531,6 @@ export const useArbTokenBridge = (
           rollup.on(confirmedEvent, updateAllBalances)
         }
       })
-
-      // TODO this may be overkill if we are monitoring blocks and txs
-      /* update balances on render */
-      // updateAllBalances().catch(e =>
-      //   console.error('updateAllBalances failed', e)
-      // )
     }
   }, [arbProvider, updateAllBalances, vmId, walletAddress, walletIndex])
 
