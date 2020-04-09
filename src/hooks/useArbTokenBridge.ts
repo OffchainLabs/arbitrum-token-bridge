@@ -64,8 +64,15 @@ export interface ERC721Balance {
   lockBoxTokens: utils.BigNumber[]
 }
 
-// it may be cleaner managing react state if the functions that rely on state
-// are separate from the react hook
+interface BridgeConfig {
+  vmId: string
+  walletAddress: string
+}
+
+// interface ArbTokenBridge { }
+
+// may be worthwhile to separate state from token bridge fn
+// should there be a 'ready' property?
 export const useArbTokenBridge = (
   validatorUrl: string,
   ethProvider:
@@ -101,14 +108,12 @@ export const useArbTokenBridge = (
     []
   )
 
-  const [vmId, setVmId] = useState('')
-  const [walletAddress, setWalletAddress] = useState('')
+  const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
+    walletAddress: '',
+    vmId: ''
+  })
 
-  // TODO starting to think it's a better idea to just return the provider
-  // from the hook below since we need to check for vmId etc
-  // get providers amd wallets from hook
   const arbProvider = useArbProvider(validatorUrl, ethProvider)
-
   const arbWallet = arbProvider?.getSigner(walletIndex)
 
   /*
@@ -485,12 +490,12 @@ export const useArbTokenBridge = (
 
   useEffect(() => {
     if (arbProvider) {
-      if (!walletAddress) {
-        arbProvider.getSigner(walletIndex).getAddress().then(setWalletAddress)
-      }
-
-      if (!vmId) {
-        arbProvider.getVmID().then(setVmId)
+      if (!walletAddress || !vmId) {
+        // set both of these at the same time for cleaner external usage
+        Promise.all([
+          arbProvider.getSigner(walletIndex).getAddress(),
+          arbProvider.getVmID()
+        ]).then(([addr, vm]) => setConfig({ walletAddress: addr, vmId: vm }))
       }
 
       // is it worth registering the listener in state so the below isn't called?
