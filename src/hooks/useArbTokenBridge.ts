@@ -18,6 +18,8 @@ import { useArbProvider } from './useArbProvider'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const deepEquals = require('lodash.isequal')
 
+const MIN_APPROVAL = constants.MaxUint256
+
 /* eslint-disable no-shadow */
 enum TokenType {
   ERC20 = 'ERC20',
@@ -134,9 +136,9 @@ export const useArbTokenBridge = (
     const ethWallet = arbProvider.provider.getSigner(walletIndex)
 
     const ethBalanceWei = await ethWallet.getBalance()
+    const arbEthBalanceWei = await arbProvider.getBalance(walletAddress)
     const arbChainEthBalanceWei = await inboxManager.getEthBalance(vmId)
     const lockBoxBalanceWei = await inboxManager.getEthBalance(walletAddress)
-    const arbEthBalanceWei = await arbProvider.getBalance(walletAddress)
 
     const update: typeof ethBalances = {
       balance: ethBalanceWei,
@@ -284,7 +286,6 @@ export const useArbTokenBridge = (
       walletAddress
     ]
   )
-
   const approveToken = useCallback(
     async (contractAddress: string): Promise<ContractReceipt> => {
       if (!arbProvider) throw new Error('approve missing provider')
@@ -299,10 +300,7 @@ export const useArbTokenBridge = (
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
-          tx = await contract.eth.approve(
-            inboxManager.address,
-            constants.MaxUint256
-          )
+          tx = await contract.eth.approve(inboxManager.address, MIN_APPROVAL)
           break
         case TokenType.ERC721:
           tx = await contract.eth.setApprovalForAll(inboxManager.address, true)
@@ -461,7 +459,6 @@ export const useArbTokenBridge = (
             arbProvider.provider.getSigner(walletIndex)
           )
 
-          // TODO should be checking against another number for `allowed` presumably
           const allowance = await ethERC20.allowance(
             walletAddress,
             inboxManager.address
@@ -471,7 +468,7 @@ export const useArbTokenBridge = (
             arb: arbERC20,
             eth: ethERC20,
             type,
-            allowed: allowance.gt(utils.bigNumberify(0)),
+            allowed: allowance.gte(MIN_APPROVAL),
             units: await ethERC20.decimals(),
             symbol: await ethERC20.symbol()
           }
