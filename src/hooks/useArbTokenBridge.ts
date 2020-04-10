@@ -75,9 +75,11 @@ interface BridgeConfig {
 // interface ArbTokenBridge { }
 
 // may be worthwhile to separate state from token bridge fn
-// should there be a 'ready' property?
+// should there be a 'ready' property? this would make checks simpler int + ext
+// store inbox mgr in state?
 // TODO error handling promises with try catch
 // TODO update balance after certain queries
+// TODO more control & details about approvals
 export const useArbTokenBridge = (
   validatorUrl: string,
   ethProvider:
@@ -155,34 +157,40 @@ export const useArbTokenBridge = (
     }
   }, [arbProvider, ethBalances, vmId, walletAddress, walletIndex])
 
-  const depositEth = async (ethValue: string) => {
-    if (!arbWallet || !walletAddress)
-      throw new Error('depositEth no arb wallet')
+  const depositEth = useCallback(
+    async (ethValue: string) => {
+      if (!arbWallet || !walletAddress)
+        throw new Error('depositEth no arb wallet')
 
-    const weiValue: utils.BigNumber = utils.parseEther(ethValue)
-    try {
-      const tx = await arbWallet.depositETH(walletAddress, weiValue)
-      await tx.wait()
-      await updateEthBalances()
-    } catch (e) {
-      console.error('depositEth err: ' + e)
-    }
-  }
+      const weiValue: utils.BigNumber = utils.parseEther(ethValue)
+      try {
+        const tx = await arbWallet.depositETH(walletAddress, weiValue)
+        await tx.wait()
+        await updateEthBalances()
+      } catch (e) {
+        console.error('depositEth err: ' + e)
+      }
+    },
+    [arbWallet, walletAddress, updateEthBalances]
+  )
 
-  const withdrawEth = async (ethValue: string) => {
-    if (!arbWallet) throw new Error('withdrawETH no arb wallet')
+  const withdrawEth = useCallback(
+    async (ethValue: string) => {
+      if (!arbWallet) throw new Error('withdrawETH no arb wallet')
 
-    const weiValue: utils.BigNumber = utils.parseEther(ethValue)
-    try {
-      const tx = await arbWallet.withdrawEthFromChain(weiValue)
-      await tx.wait()
-      await updateEthBalances()
-    } catch (e) {
-      console.error('withdrawEth err', e)
-    }
-  }
+      const weiValue: utils.BigNumber = utils.parseEther(ethValue)
+      try {
+        const tx = await arbWallet.withdrawEthFromChain(weiValue)
+        await tx.wait()
+        await updateEthBalances()
+      } catch (e) {
+        console.error('withdrawEth err', e)
+      }
+    },
+    [arbWallet, updateEthBalances]
+  )
 
-  const withdrawLockboxETH = async () => {
+  const withdrawLockboxETH = useCallback(async () => {
     if (!arbProvider) throw new Error('withdrawLockboxETH no arb wallet')
 
     try {
@@ -193,7 +201,7 @@ export const useArbTokenBridge = (
     } catch (e) {
       console.error('withdrawLockboxETH err', e)
     }
-  }
+  }, [arbProvider, updateEthBalances])
 
   /* TOKEN METHODS */
 
@@ -277,224 +285,240 @@ export const useArbTokenBridge = (
     ]
   )
 
-  const approveToken = async (
-    contractAddress: string
-  ): Promise<ContractReceipt> => {
-    if (!arbProvider) throw new Error('approve missing provider')
+  const approveToken = useCallback(
+    async (contractAddress: string): Promise<ContractReceipt> => {
+      if (!arbProvider) throw new Error('approve missing provider')
 
-    const contract = tokenContracts[contractAddress]
-    if (!contract) {
-      throw new Error(`Contract ${contractAddress} not present`)
-    }
-
-    const inboxManager = await arbProvider.globalInboxConn()
-
-    let tx: ContractTransaction
-    switch (contract.type) {
-      case TokenType.ERC20:
-        tx = await contract.eth.approve(
-          inboxManager.address,
-          constants.MaxUint256
-        )
-        break
-      case TokenType.ERC721:
-        tx = await contract.eth.setApprovalForAll(inboxManager.address, true)
-        break
-      default:
-        assertNever(contract, 'approveToken exhaustive check failed')
-    }
-
-    const receipt = await tx.wait()
-
-    setTokenContracts(contracts => {
-      const target = contracts[contractAddress]
-      if (!target) throw Error('approved contract missing ' + contractAddress)
-
-      const updated = {
-        ...target,
-        allowed: true
+      const contract = tokenContracts[contractAddress]
+      if (!contract) {
+        throw new Error(`Contract ${contractAddress} not present`)
       }
 
-      return {
-        ...contracts,
-        [contractAddress]: updated
+      const inboxManager = await arbProvider.globalInboxConn()
+
+      let tx: ContractTransaction
+      switch (contract.type) {
+        case TokenType.ERC20:
+          tx = await contract.eth.approve(
+            inboxManager.address,
+            constants.MaxUint256
+          )
+          break
+        case TokenType.ERC721:
+          tx = await contract.eth.setApprovalForAll(inboxManager.address, true)
+          break
+        default:
+          assertNever(contract, 'approveToken exhaustive check failed')
       }
-    })
 
-    return receipt
-  }
+      const receipt = await tx.wait()
 
-  const depositToken = async (
-    contractAddress: string,
-    amountOrTokenId: string
-  ): Promise<ContractReceipt> => {
-    if (!arbWallet || !walletAddress) throw new Error('deposit missing req')
+      setTokenContracts(contracts => {
+        const target = contracts[contractAddress]
+        if (!target) throw Error('approved contract missing ' + contractAddress)
 
-    const contract = tokenContracts[contractAddress]
-    if (!contract) throw new Error('contract not present')
-
-    // TODO trigger balance updates
-    let tx: ContractTransaction
-    switch (contract.type) {
-      case TokenType.ERC20:
-        const amount = utils.parseUnits(amountOrTokenId, contract.units)
-        tx = await arbWallet.depositERC20(
-          walletAddress,
-          contract.eth.address,
-          amount
-        )
-        break
-      case TokenType.ERC721:
-        tx = await arbWallet.depositERC721(
-          walletAddress,
-          contract.eth.address,
-          amountOrTokenId
-        )
-        break
-      default:
-        assertNever(contract, 'depositToken exhaustive check failed')
-    }
-
-    return await tx.wait()
-  }
-
-  const withdrawToken = async (
-    contractAddress: string,
-    amountOrTokenId: string
-  ): Promise<ContractReceipt> => {
-    if (!walletAddress) throw new Error('withdraw token no walletAddress')
-
-    const contract = tokenContracts[contractAddress]
-    if (!contract) throw new Error('contract not present')
-
-    // TODO trigger balance updates
-    let tx: ContractTransaction
-    switch (contract.type) {
-      case TokenType.ERC20:
-        tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
-        break
-      case TokenType.ERC721:
-        tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
-        break
-      default:
-        assertNever(contract, 'withdrawToken exhaustive check failed')
-    }
-
-    return await tx.wait()
-  }
-
-  const withdrawLockboxToken = async (
-    contractAddress: string,
-    tokenId?: string
-  ): Promise<ContractReceipt> => {
-    if (!arbProvider) throw new Error('withdrawLockboxToken missing req')
-
-    const contract = tokenContracts[contractAddress]
-    if (!contract) throw new Error('contract not present')
-
-    const inboxManager = await arbProvider.globalInboxConn()
-
-    // TODO error handle
-    // TODO trigger balance updates
-    let tx: ContractTransaction
-    switch (contract.type) {
-      case TokenType.ERC20:
-        tx = await inboxManager.withdrawERC20(contract.eth.address)
-        break
-      case TokenType.ERC721:
-        if (!tokenId) {
-          throw Error('withdrawLockbox tokenId not present ' + contractAddress)
-        }
-        tx = await inboxManager.withdrawERC721(contract.eth.address, tokenId)
-        break
-      default:
-        assertNever(contract, 'withdrawLockboxToken exhaustive check failed')
-    }
-
-    return await tx.wait()
-  }
-
-  const addToken = async (contractAddress: string, type: TokenType) => {
-    if (!arbProvider || !walletAddress) throw Error('addToken missing req')
-
-    // TODO is this the best test? is it needed - can we rely on connect err?
-    const isContract =
-      (await arbProvider.provider.getCode(contractAddress)).length > 2
-    if (!isContract) throw Error('address is not a contract')
-    else if (tokenContracts[contractAddress]) throw Error('contract is present')
-
-    const inboxManager = await arbProvider.globalInboxConn()
-
-    // TODO error handle
-    // TODO trigger balance updates
-    let newContract: BridgeToken
-    switch (type) {
-      case TokenType.ERC20:
-        const arbERC20 = ArbERC20Factory.connect(
-          contractAddress,
-          arbProvider.getSigner(walletIndex)
-        )
-        const ethERC20 = ERC20Factory.connect(
-          contractAddress,
-          arbProvider.provider.getSigner(walletIndex)
-        )
-
-        // TODO should be checking against another number for `allowed` presumably
-        const allowance = await ethERC20.allowance(
-          walletAddress,
-          inboxManager.address
-        )
-
-        newContract = {
-          arb: arbERC20,
-          eth: ethERC20,
-          type,
-          allowed: allowance.gt(utils.bigNumberify(0)),
-          units: await ethERC20.decimals(),
-          symbol: await ethERC20.symbol()
+        const updated = {
+          ...target,
+          allowed: true
         }
 
-        if (ERC20Cache && !ERC20Cache.includes(contractAddress)) {
-          setERC20Cache([...ERC20Cache, contractAddress])
+        return {
+          ...contracts,
+          [contractAddress]: updated
         }
-        break
-      case TokenType.ERC721:
-        const arbERC721 = ArbERC721Factory.connect(
-          contractAddress,
-          arbProvider.getSigner(walletIndex)
-        )
-        const ethERC721 = ERC721Factory.connect(
-          contractAddress,
-          arbProvider.provider.getSigner(walletIndex)
-        )
+      })
 
-        newContract = {
-          arb: arbERC721,
-          eth: ethERC721,
-          type,
-          symbol: await ethERC721.symbol(),
-          allowed: await ethERC721.isApprovedForAll(
+      return receipt
+    },
+    [arbProvider, tokenContracts]
+  )
+
+  const depositToken = useCallback(
+    async (
+      contractAddress: string,
+      amountOrTokenId: string
+    ): Promise<ContractReceipt> => {
+      if (!arbWallet || !walletAddress) throw new Error('deposit missing req')
+
+      const contract = tokenContracts[contractAddress]
+      if (!contract) throw new Error('contract not present')
+
+      // TODO trigger balance updates
+      let tx: ContractTransaction
+      switch (contract.type) {
+        case TokenType.ERC20:
+          const amount = utils.parseUnits(amountOrTokenId, contract.units)
+          tx = await arbWallet.depositERC20(
+            walletAddress,
+            contract.eth.address,
+            amount
+          )
+          break
+        case TokenType.ERC721:
+          tx = await arbWallet.depositERC721(
+            walletAddress,
+            contract.eth.address,
+            amountOrTokenId
+          )
+          break
+        default:
+          assertNever(contract, 'depositToken exhaustive check failed')
+      }
+
+      return await tx.wait()
+    },
+    [arbWallet, walletAddress, tokenContracts]
+  )
+
+  const withdrawToken = useCallback(
+    async (
+      contractAddress: string,
+      amountOrTokenId: string
+    ): Promise<ContractReceipt> => {
+      if (!walletAddress) throw new Error('withdraw token no walletAddress')
+
+      const contract = tokenContracts[contractAddress]
+      if (!contract) throw new Error('contract not present')
+
+      // TODO trigger balance updates
+      let tx: ContractTransaction
+      switch (contract.type) {
+        case TokenType.ERC20:
+          tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
+          break
+        case TokenType.ERC721:
+          tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
+          break
+        default:
+          assertNever(contract, 'withdrawToken exhaustive check failed')
+      }
+
+      return await tx.wait()
+    },
+    [walletAddress, tokenContracts]
+  )
+
+  const withdrawLockboxToken = useCallback(
+    async (
+      contractAddress: string,
+      tokenId?: string
+    ): Promise<ContractReceipt> => {
+      if (!arbProvider) throw new Error('withdrawLockboxToken missing req')
+
+      const contract = tokenContracts[contractAddress]
+      if (!contract) throw new Error('contract not present')
+
+      const inboxManager = await arbProvider.globalInboxConn()
+
+      // TODO error handle
+      // TODO trigger balance updates
+      let tx: ContractTransaction
+      switch (contract.type) {
+        case TokenType.ERC20:
+          tx = await inboxManager.withdrawERC20(contract.eth.address)
+          break
+        case TokenType.ERC721:
+          if (!tokenId) {
+            throw Error(
+              'withdrawLockbox tokenId not present ' + contractAddress
+            )
+          }
+          tx = await inboxManager.withdrawERC721(contract.eth.address, tokenId)
+          break
+        default:
+          assertNever(contract, 'withdrawLockboxToken exhaustive check failed')
+      }
+
+      return await tx.wait()
+    },
+    [arbProvider, tokenContracts]
+  )
+
+  const addToken = useCallback(
+    async (contractAddress: string, type: TokenType) => {
+      if (!arbProvider || !walletAddress) throw Error('addToken missing req')
+
+      // TODO is this the best test? is it needed - can we rely on connect err?
+      const isContract =
+        (await arbProvider.provider.getCode(contractAddress)).length > 2
+      if (!isContract) throw Error('address is not a contract')
+      else if (tokenContracts[contractAddress])
+        throw Error('contract is present')
+
+      const inboxManager = await arbProvider.globalInboxConn()
+
+      // TODO error handle
+      // TODO trigger balance updates
+      let newContract: BridgeToken
+      switch (type) {
+        case TokenType.ERC20:
+          const arbERC20 = ArbERC20Factory.connect(
+            contractAddress,
+            arbProvider.getSigner(walletIndex)
+          )
+          const ethERC20 = ERC20Factory.connect(
+            contractAddress,
+            arbProvider.provider.getSigner(walletIndex)
+          )
+
+          // TODO should be checking against another number for `allowed` presumably
+          const allowance = await ethERC20.allowance(
             walletAddress,
             inboxManager.address
           )
-        }
-        if (ERC721Cache && !ERC721Cache.includes(contractAddress)) {
-          setERC721Cache([...ERC721Cache, contractAddress])
-        }
-        break
-      default:
-        assertNever(type, 'addToken exhaustive check failed')
-    }
 
-    setTokenContracts(contracts => {
-      return {
-        ...contracts,
-        [contractAddress]: newContract
+          newContract = {
+            arb: arbERC20,
+            eth: ethERC20,
+            type,
+            allowed: allowance.gt(utils.bigNumberify(0)),
+            units: await ethERC20.decimals(),
+            symbol: await ethERC20.symbol()
+          }
+
+          if (ERC20Cache && !ERC20Cache.includes(contractAddress)) {
+            setERC20Cache([...ERC20Cache, contractAddress])
+          }
+          break
+        case TokenType.ERC721:
+          const arbERC721 = ArbERC721Factory.connect(
+            contractAddress,
+            arbProvider.getSigner(walletIndex)
+          )
+          const ethERC721 = ERC721Factory.connect(
+            contractAddress,
+            arbProvider.provider.getSigner(walletIndex)
+          )
+
+          newContract = {
+            arb: arbERC721,
+            eth: ethERC721,
+            type,
+            symbol: await ethERC721.symbol(),
+            allowed: await ethERC721.isApprovedForAll(
+              walletAddress,
+              inboxManager.address
+            )
+          }
+          if (ERC721Cache && !ERC721Cache.includes(contractAddress)) {
+            setERC721Cache([...ERC721Cache, contractAddress])
+          }
+          break
+        default:
+          assertNever(type, 'addToken exhaustive check failed')
       }
-    })
 
-    await updateTokenBalances(type)
-  }
+      setTokenContracts(contracts => {
+        return {
+          ...contracts,
+          [contractAddress]: newContract
+        }
+      })
+
+      await updateTokenBalances(type)
+    },
+    [arbProvider, walletAddress, tokenContracts, updateTokenBalances]
+  )
 
   const updateAllBalances = useCallback(
     () => Promise.all([updateEthBalances(), updateTokenBalances()]),
