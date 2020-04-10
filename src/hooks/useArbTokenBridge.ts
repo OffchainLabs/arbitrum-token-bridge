@@ -90,7 +90,7 @@ export const useArbTokenBridge = (
     | Promise<ethers.providers.JsonRpcProvider>,
   walletIndex = 0
 ) => {
-  const [tokenContracts, setTokenContracts] = useState<
+  const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<BridgeToken>
   >({})
 
@@ -216,7 +216,7 @@ export const useArbTokenBridge = (
 
       const inboxManager = await arbProvider.globalInboxConn()
 
-      const filtered = Object.values(tokenContracts).filter(c => {
+      const filtered = Object.values(bridgeTokens).filter(c => {
         return !!c && (!type || c.type === type)
       }) as BridgeToken[]
 
@@ -282,7 +282,7 @@ export const useArbTokenBridge = (
       arbProvider,
       erc20Balances,
       erc721Balances,
-      tokenContracts,
+      bridgeTokens,
       vmId,
       walletAddress
     ]
@@ -291,7 +291,7 @@ export const useArbTokenBridge = (
     async (contractAddress: string): Promise<ContractReceipt> => {
       if (!arbProvider) throw new Error('approve missing provider')
 
-      const contract = tokenContracts[contractAddress]
+      const contract = bridgeTokens[contractAddress]
       if (!contract) {
         throw new Error(`Contract ${contractAddress} not present`)
       }
@@ -312,7 +312,7 @@ export const useArbTokenBridge = (
 
       const receipt = await tx.wait()
 
-      setTokenContracts(contracts => {
+      setBridgeTokens(contracts => {
         const target = contracts[contractAddress]
         if (!target) throw Error('approved contract missing ' + contractAddress)
 
@@ -329,7 +329,7 @@ export const useArbTokenBridge = (
 
       return receipt
     },
-    [arbProvider, tokenContracts]
+    [arbProvider, bridgeTokens]
   )
 
   const depositToken = useCallback(
@@ -339,7 +339,7 @@ export const useArbTokenBridge = (
     ): Promise<ContractReceipt> => {
       if (!arbWallet || !walletAddress) throw new Error('deposit missing req')
 
-      const contract = tokenContracts[contractAddress]
+      const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
       // TODO trigger balance updates
@@ -366,7 +366,7 @@ export const useArbTokenBridge = (
 
       return await tx.wait()
     },
-    [arbWallet, walletAddress, tokenContracts]
+    [arbWallet, walletAddress, bridgeTokens]
   )
 
   const withdrawToken = useCallback(
@@ -376,7 +376,7 @@ export const useArbTokenBridge = (
     ): Promise<ContractReceipt> => {
       if (!walletAddress) throw new Error('withdraw token no walletAddress')
 
-      const contract = tokenContracts[contractAddress]
+      const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
       // TODO trigger balance updates
@@ -394,7 +394,7 @@ export const useArbTokenBridge = (
 
       return await tx.wait()
     },
-    [walletAddress, tokenContracts]
+    [walletAddress, bridgeTokens]
   )
 
   const withdrawLockboxToken = useCallback(
@@ -404,7 +404,7 @@ export const useArbTokenBridge = (
     ): Promise<ContractReceipt> => {
       if (!arbProvider) throw new Error('withdrawLockboxToken missing req')
 
-      const contract = tokenContracts[contractAddress]
+      const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
       const inboxManager = await arbProvider.globalInboxConn()
@@ -430,7 +430,7 @@ export const useArbTokenBridge = (
 
       return await tx.wait()
     },
-    [arbProvider, tokenContracts]
+    [arbProvider, bridgeTokens]
   )
 
   const addToken = useCallback(
@@ -441,7 +441,7 @@ export const useArbTokenBridge = (
       const isContract =
         (await arbProvider.provider.getCode(contractAddress)).length > 2
       if (!isContract) throw Error('address is not a contract')
-      else if (tokenContracts[contractAddress])
+      else if (bridgeTokens[contractAddress])
         throw Error('contract is present')
 
       const inboxManager = await arbProvider.globalInboxConn()
@@ -508,7 +508,7 @@ export const useArbTokenBridge = (
           assertNever(type, 'addToken exhaustive check failed')
       }
 
-      setTokenContracts(contracts => {
+      setBridgeTokens(contracts => {
         return {
           ...contracts,
           [contractAddress]: newContract
@@ -517,7 +517,7 @@ export const useArbTokenBridge = (
 
       await updateTokenBalances(type)
     },
-    [arbProvider, walletAddress, tokenContracts, updateTokenBalances]
+    [arbProvider, walletAddress, bridgeTokens, updateTokenBalances]
   )
 
   const updateAllBalances = useCallback(
@@ -547,21 +547,21 @@ export const useArbTokenBridge = (
       }
 
       // is it worth registering the listener in state so the below isn't called?
-      arbProvider.arbRollupConn().then(rollup => {
-        const {
-          name: confirmedEvent
-        } = rollup.interface.events.ConfirmedAssertion
-        if (rollup.listeners(confirmedEvent).indexOf(updateAllBalances) < 0) {
-          rollup.on(confirmedEvent, updateAllBalances)
-        }
-      })
+      // arbProvider.arbRollupConn().then(rollup => {
+      //   const {
+      //     name: confirmedEvent
+      //   } = rollup.interface.events.ConfirmedAssertion
+      //   if (rollup.listeners(confirmedEvent).indexOf(updateAllBalances) < 0) {
+      //     rollup.on(confirmedEvent, updateAllBalances)
+      //   }
+      // })
     }
   }, [arbProvider, updateAllBalances, vmId, walletAddress, walletIndex])
 
   return {
     walletAddress,
     vmId,
-    tokenContracts,
+    bridgeTokens,
     balances: {
       eth: ethBalances,
       erc20: erc20Balances,
