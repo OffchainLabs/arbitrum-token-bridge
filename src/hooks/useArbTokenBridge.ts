@@ -29,10 +29,11 @@ enum TokenType {
 
 interface BridgedToken {
   type: TokenType
-  arb: ArbERC20 | ArbERC721
-  eth: ERC20 | ERC721
+  name: string
   symbol: string
   allowed: boolean
+  arb: ArbERC20 | ArbERC721
+  eth: ERC20 | ERC721
 }
 
 interface ERC20BridgeToken extends BridgedToken {
@@ -469,6 +470,7 @@ export const useArbTokenBridge = (
             eth: ethERC20,
             type,
             allowed: allowance.gte(MIN_APPROVAL),
+            name: await ethERC20.name(),
             units: await ethERC20.decimals(),
             symbol: await ethERC20.symbol()
           }
@@ -491,6 +493,7 @@ export const useArbTokenBridge = (
             arb: arbERC721,
             eth: ethERC721,
             type,
+            name: await ethERC721.name(),
             symbol: await ethERC721.symbol(),
             allowed: await ethERC721.isApprovedForAll(
               walletAddress,
@@ -558,6 +561,7 @@ export const useArbTokenBridge = (
   return {
     walletAddress,
     vmId,
+    tokenContracts,
     balances: {
       eth: ethBalances,
       erc20: erc20Balances,
