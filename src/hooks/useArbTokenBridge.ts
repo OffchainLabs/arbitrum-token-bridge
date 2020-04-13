@@ -457,7 +457,7 @@ export const useArbTokenBridge = (
       // TODO trigger balance updates
       let newContract: BridgeToken
       switch (type) {
-        case TokenType.ERC20:
+        case TokenType.ERC20: {
           const arbERC20 = ArbERC20Factory.connect(
             contractAddress,
             arbProvider.getSigner(walletIndex)
@@ -488,7 +488,8 @@ export const useArbTokenBridge = (
             setERC20Cache([...ERC20Cache, contractAddress])
           }
           break
-        case TokenType.ERC721:
+        }
+        case TokenType.ERC721: {
           const arbERC721 = ArbERC721Factory.connect(
             contractAddress,
             arbProvider.getSigner(walletIndex)
@@ -498,21 +499,25 @@ export const useArbTokenBridge = (
             arbProvider.provider.getSigner(walletIndex)
           )
 
+          const [allowed, name, symbol] = await Promise.all([
+            ethERC721.isApprovedForAll(walletAddress, inboxManager.address),
+            ethERC721.name(),
+            ethERC721.symbol()
+          ])
+
           newContract = {
             arb: arbERC721,
             eth: ethERC721,
             type,
-            name: await ethERC721.name(),
-            symbol: await ethERC721.symbol(),
-            allowed: await ethERC721.isApprovedForAll(
-              walletAddress,
-              inboxManager.address
-            )
+            name,
+            symbol,
+            allowed
           }
           if (ERC721Cache && !ERC721Cache.includes(contractAddress)) {
             setERC721Cache([...ERC721Cache, contractAddress])
           }
           break
+        }
         default:
           assertNever(type, 'addToken exhaustive check failed')
       }
