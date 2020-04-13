@@ -21,7 +21,7 @@ const deepEquals = require('lodash.isequal')
 const MIN_APPROVAL = constants.MaxUint256
 
 /* eslint-disable no-shadow */
-enum TokenType {
+export enum TokenType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721'
 }
@@ -88,7 +88,8 @@ export const useArbTokenBridge = (
   ethProvider:
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
-  walletIndex = 0
+  walletIndex = 0,
+  autoLoadCache = true
 ) => {
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<BridgeToken>
@@ -107,16 +108,22 @@ export const useArbTokenBridge = (
     ContractStorage<ERC721Balance>
   >({})
 
-  // TODO load all contracts - in useEffect or on select?
   // use local storage for list of token addresses
-  const [ERC20Cache, setERC20Cache] = useLocalStorage<string[]>(
-    'ERC20Cache',
-    []
-  )
-  const [ERC721Cache, setERC721Cache] = useLocalStorage<string[]>(
-    'ERC721Cache',
-    []
-  )
+  // TODO remove type assertion when hook dependency fix update is released
+  const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
+    string[]
+  >('ERC20Cache', []) as [
+    string[],
+    React.Dispatch<string[]>,
+    React.Dispatch<void>
+  ]
+  const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
+    string[]
+  >('ERC721Cache', []) as [
+    string[],
+    React.Dispatch<string[]>,
+    React.Dispatch<void>
+  ]
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
@@ -441,12 +448,12 @@ export const useArbTokenBridge = (
       const isContract =
         (await arbProvider.provider.getCode(contractAddress)).length > 2
       if (!isContract) throw Error('address is not a contract')
-      else if (bridgeTokens[contractAddress])
-        throw Error('contract is present')
+      else if (bridgeTokens[contractAddress]) throw Error('contract is present')
 
       const inboxManager = await arbProvider.globalInboxConn()
 
       // TODO error handle
+      // - verify that contracts are deployed
       // TODO trigger balance updates
       let newContract: BridgeToken
       switch (type) {
@@ -460,22 +467,24 @@ export const useArbTokenBridge = (
             arbProvider.provider.getSigner(walletIndex)
           )
 
-          const allowance = await ethERC20.allowance(
-            walletAddress,
-            inboxManager.address
-          )
+          const [allowance, name, units, symbol] = await Promise.all([
+            ethERC20.allowance(walletAddress, inboxManager.address),
+            ethERC20.name(),
+            ethERC20.decimals(),
+            ethERC20.symbol()
+          ])
 
           newContract = {
             arb: arbERC20,
             eth: ethERC20,
             type,
             allowed: allowance.gte(MIN_APPROVAL),
-            name: await ethERC20.name(),
-            units: await ethERC20.decimals(),
-            symbol: await ethERC20.symbol()
+            name,
+            units,
+            symbol
           }
 
-          if (ERC20Cache && !ERC20Cache.includes(contractAddress)) {
+          if (!ERC20Cache?.includes(contractAddress)) {
             setERC20Cache([...ERC20Cache, contractAddress])
           }
           break
@@ -526,10 +535,28 @@ export const useArbTokenBridge = (
   )
 
   const expireCache = (): void => {
-    setERC20Cache([])
-    setERC721Cache([])
+    clearERC20Cache()
+    clearERC721Cache()
   }
 
+  // load only effect
+  useEffect(() => {
+    if (autoLoadCache) {
+      if (ERC20Cache?.length) {
+        for (const address of ERC20Cache) {
+          addToken(address, TokenType.ERC20)
+        }
+      }
+
+      if (ERC721Cache?.length) {
+        for (const address of ERC721Cache) {
+          addToken(address, TokenType.ERC721)
+        }
+      }
+    }
+  }, [])
+
+  // TODO separate useeffects
   useEffect(() => {
     if (arbProvider) {
       if (!walletAddress || !vmId) {
