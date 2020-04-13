@@ -539,51 +539,63 @@ export const useArbTokenBridge = (
     clearERC721Cache()
   }
 
-  // load only effect
-  useEffect(() => {
-    if (autoLoadCache) {
-      if (ERC20Cache?.length) {
-        for (const address of ERC20Cache) {
-          addToken(address, TokenType.ERC20)
-        }
-      }
-
-      if (ERC721Cache?.length) {
-        for (const address of ERC721Cache) {
-          addToken(address, TokenType.ERC721)
-        }
-      }
-    }
-  }, [])
-
-  // TODO separate useeffects
   useEffect(() => {
     if (arbProvider) {
-      if (!walletAddress || !vmId) {
-        // set both of these at the same time for cleaner external usage
-        Promise.all([
-          arbProvider.getSigner(walletIndex).getAddress(),
-          arbProvider.getVmID()
-        ]).then(([addr, vm]) => setConfig({ walletAddress: addr, vmId: vm }))
-      } else {
-        // may be better to leave this to the user
-        /* update balances on render */
-        updateAllBalances().catch(e =>
-          console.error('updateAllBalances failed', e)
-        )
-      }
+      arbProvider.arbRollupConn().then(rollup => {
+        const {
+          name: confirmedEvent
+        } = rollup.interface.events.ConfirmedAssertion
+        rollup.on(confirmedEvent, updateAllBalances)
+      })
 
-      // is it worth registering the listener in state so the below isn't called?
-      // arbProvider.arbRollupConn().then(rollup => {
-      //   const {
-      //     name: confirmedEvent
-      //   } = rollup.interface.events.ConfirmedAssertion
-      //   if (rollup.listeners(confirmedEvent).indexOf(updateAllBalances) < 0) {
-      //     rollup.on(confirmedEvent, updateAllBalances)
-      //   }
-      // })
+      return () => {
+        arbProvider.arbRollupConn().then(rollup => {
+          const {
+            name: confirmedEvent
+          } = rollup.interface.events.ConfirmedAssertion
+          rollup.removeListener(confirmedEvent, updateAllBalances)
+        })
+      }
     }
-  }, [arbProvider, updateAllBalances, vmId, walletAddress, walletIndex])
+  }, [arbProvider])
+
+  useEffect(() => {
+    if (arbProvider && walletAddress) {
+      if (autoLoadCache) {
+        if (ERC20Cache?.length) {
+          for (const address of ERC20Cache) {
+            addToken(address, TokenType.ERC20)
+          }
+        }
+
+        if (ERC721Cache?.length) {
+          for (const address of ERC721Cache) {
+            addToken(address, TokenType.ERC721)
+          }
+        }
+      }
+    }
+  }, [arbProvider, walletAddress])
+
+  useEffect(() => {
+    if (arbProvider && (!walletAddress || !vmId)) {
+      // set both of these at the same time for cleaner external usage
+      Promise.all([
+        arbProvider.getSigner(walletIndex).getAddress(),
+        arbProvider.getVmID()
+      ]).then(([addr, vm]) => setConfig({ walletAddress: addr, vmId: vm }))
+    }
+  }, [arbProvider, vmId, walletAddress, walletIndex])
+
+  /* update balances on render */
+  // may be better to leave this to the user
+  useEffect(() => {
+    if (arbProvider && vmId) {
+      updateAllBalances().catch(e =>
+        console.error('updateAllBalances failed', e)
+      )
+    }
+  })
 
   return {
     walletAddress,
