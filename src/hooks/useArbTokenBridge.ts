@@ -40,7 +40,7 @@ interface ERC20BridgeToken extends BridgedToken {
   type: TokenType.ERC20
   arb: ArbERC20
   eth: ERC20
-  units: number
+  decimals: number
 }
 
 interface ERC721BridgeToken extends BridgedToken {
@@ -113,17 +113,17 @@ export const useArbTokenBridge = (
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+      string[],
+      React.Dispatch<string[]>,
+      React.Dispatch<void>
+    ]
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+      string[],
+      React.Dispatch<string[]>,
+      React.Dispatch<void>
+    ]
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
@@ -151,8 +151,8 @@ export const useArbTokenBridge = (
     ] = await Promise.all([
       ethWallet.getBalance(),
       arbProvider.getBalance(walletAddress),
-      inboxManager.getEthBalance(vmId),
-      inboxManager.getEthBalance(walletAddress)
+      inboxManager.getEthBalance(walletAddress),
+      inboxManager.getEthBalance(vmId)
     ])
 
     const update: typeof ethBalances = {
@@ -209,20 +209,19 @@ export const useArbTokenBridge = (
     [arbWallet, updateEthBalances]
   )
 
-  const withdrawLockboxETH = useCallback(async () => {
-    if (!arbProvider || !arbWallet)
-      throw new Error('withdrawLockboxETH no arb wallet')
+  const withdrawLockBoxETH = useCallback(async () => {
+    if (!arbProvider) throw new Error('withdrawLockBoxETH no arbprovider')
 
     try {
       const inboxManager = (await arbProvider.globalInboxConn()).connect(
-        arbWallet
+        arbProvider.provider.getSigner(walletIndex)
       )
       const tx = await inboxManager.withdrawEth()
       const receipt = await tx.wait()
       updateEthBalances()
       return receipt
     } catch (e) {
-      console.error('withdrawLockboxETH err', e)
+      console.error('withdrawLockBoxETH err', e)
     }
   }, [arbProvider, updateEthBalances])
 
@@ -274,13 +273,13 @@ export const useArbTokenBridge = (
             const [
               tokens,
               arbChainTokens,
-              totalArbTokens,
-              lockBoxTokens
+              lockBoxTokens,
+              totalArbTokens
             ] = await Promise.all([
               contract.eth.tokensOfOwner(walletAddress),
               contract.arb.tokensOfOwner(walletAddress),
-              inboxManager.getERC721Tokens(contract.eth.address, vmId),
-              inboxManager.getERC721Tokens(contract.eth.address, walletAddress)
+              inboxManager.getERC721Tokens(contract.eth.address, walletAddress),
+              inboxManager.getERC721Tokens(contract.eth.address, vmId)
             ])
             const updated = {
               tokens,
@@ -371,7 +370,7 @@ export const useArbTokenBridge = (
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
-          const amount = utils.parseUnits(amountOrTokenId, contract.units)
+          const amount = utils.parseUnits(amountOrTokenId, contract.decimals)
           tx = await arbWallet.depositERC20(
             walletAddress,
             contract.eth.address,
@@ -425,19 +424,18 @@ export const useArbTokenBridge = (
     [walletAddress, bridgeTokens]
   )
 
-  const withdrawLockboxToken = useCallback(
+  const withdrawLockBoxToken = useCallback(
     async (
       contractAddress: string,
       tokenId?: string
     ): Promise<ContractReceipt> => {
-      if (!arbProvider || !arbWallet)
-        throw new Error('withdrawLockboxToken missing req')
+      if (!arbProvider) throw new Error('withdrawLockBoxToken missing req')
 
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
       const inboxManager = (await arbProvider.globalInboxConn()).connect(
-        arbWallet
+        arbProvider.provider.getSigner(walletIndex)
       )
 
       // TODO error handle
@@ -449,13 +447,13 @@ export const useArbTokenBridge = (
         case TokenType.ERC721:
           if (!tokenId) {
             throw Error(
-              'withdrawLockbox tokenId not present ' + contractAddress
+              'withdrawLockBox tokenId not present ' + contractAddress
             )
           }
           tx = await inboxManager.withdrawERC721(contract.eth.address, tokenId)
           break
         default:
-          assertNever(contract, 'withdrawLockboxToken exhaustive check failed')
+          assertNever(contract, 'withdrawLockBoxToken exhaustive check failed')
       }
 
       const receipt = await tx.wait()
@@ -491,7 +489,7 @@ export const useArbTokenBridge = (
             arbProvider.provider.getSigner(walletIndex)
           )
 
-          const [allowance, name, units, symbol] = await Promise.all([
+          const [allowance, name, decimals, symbol] = await Promise.all([
             ethERC20.allowance(walletAddress, inboxManager.address),
             ethERC20.name(),
             ethERC20.decimals(),
@@ -504,7 +502,7 @@ export const useArbTokenBridge = (
             type,
             allowed: allowance.gte(MIN_APPROVAL),
             name,
-            units,
+            decimals,
             symbol
           }
 
@@ -645,7 +643,7 @@ export const useArbTokenBridge = (
     eth: {
       deposit: depositEth,
       withdraw: withdrawEth,
-      withdrawLockbox: withdrawLockboxETH,
+      withdrawLockBox: withdrawLockBoxETH,
       updateBalances: updateEthBalances
     },
     token: {
@@ -653,7 +651,7 @@ export const useArbTokenBridge = (
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,
-      withdrawLockbox: withdrawLockboxToken,
+      withdrawLockBox: withdrawLockBoxToken,
       updateBalances: updateTokenBalances
     }
   }
