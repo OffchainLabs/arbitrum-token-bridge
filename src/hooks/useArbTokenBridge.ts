@@ -113,17 +113,17 @@ export const useArbTokenBridge = (
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
-      string[],
-      React.Dispatch<string[]>,
-      React.Dispatch<void>
-    ]
+    string[],
+    React.Dispatch<string[]>,
+    React.Dispatch<void>
+  ]
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
-      string[],
-      React.Dispatch<string[]>,
-      React.Dispatch<void>
-    ]
+    string[],
+    React.Dispatch<string[]>,
+    React.Dispatch<void>
+  ]
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
@@ -175,11 +175,11 @@ export const useArbTokenBridge = (
   }, [arbProvider, ethBalances, vmId, walletAddress, walletIndex])
 
   const depositEth = useCallback(
-    async (ethValue: string) => {
+    async (etherVal: string) => {
       if (!arbWallet || !walletAddress)
         throw new Error('depositEth no arb wallet')
 
-      const weiValue: utils.BigNumber = utils.parseEther(ethValue)
+      const weiValue: utils.BigNumber = utils.parseEther(etherVal)
       try {
         const tx = await arbWallet.depositETH(walletAddress, weiValue)
         const receipt = await tx.wait()
@@ -193,10 +193,10 @@ export const useArbTokenBridge = (
   )
 
   const withdrawEth = useCallback(
-    async (ethValue: string) => {
+    async (etherVal: string) => {
       if (!arbWallet) throw new Error('withdrawETH no arb wallet')
 
-      const weiValue: utils.BigNumber = utils.parseEther(ethValue)
+      const weiValue: utils.BigNumber = utils.parseEther(etherVal)
       try {
         const tx = await arbWallet.withdrawEthFromChain(weiValue)
         const receipt = await tx.wait()
@@ -408,7 +408,8 @@ export const useArbTokenBridge = (
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
-          tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
+          const amount = utils.parseUnits(amountOrTokenId, contract.decimals)
+          tx = await contract.arb.withdraw(walletAddress, amount)
           break
         case TokenType.ERC721:
           tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
