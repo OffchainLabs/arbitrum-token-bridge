@@ -81,8 +81,8 @@ interface BridgeConfig {
 // should there be a 'ready' property? this would make checks simpler int + ext
 // store inbox mgr in state?
 // TODO error handling promises with try catch
-// TODO update balance after certain queries
 // TODO more control & details about approvals
+// TODO extract shared contract interaction logic?
 export const useArbTokenBridge = (
   validatorUrl: string,
   ethProvider:
@@ -143,16 +143,23 @@ export const useArbTokenBridge = (
     const inboxManager = await arbProvider.globalInboxConn()
     const ethWallet = arbProvider.provider.getSigner(walletIndex)
 
-    const ethBalanceWei = await ethWallet.getBalance()
-    const arbEthBalanceWei = await arbProvider.getBalance(walletAddress)
-    const arbChainEthBalanceWei = await inboxManager.getEthBalance(vmId)
-    const lockBoxBalanceWei = await inboxManager.getEthBalance(walletAddress)
+    const [
+      balance,
+      arbChainBalance,
+      lockBoxBalance,
+      totalArbBalance
+    ] = await Promise.all([
+      ethWallet.getBalance(),
+      arbProvider.getBalance(walletAddress),
+      inboxManager.getEthBalance(vmId),
+      inboxManager.getEthBalance(walletAddress)
+    ])
 
     const update: typeof ethBalances = {
-      balance: ethBalanceWei,
-      arbChainBalance: arbEthBalanceWei,
-      lockBoxBalance: lockBoxBalanceWei,
-      totalArbBalance: arbChainEthBalanceWei
+      balance,
+      arbChainBalance,
+      lockBoxBalance,
+      totalArbBalance
     }
 
     let different = true
@@ -175,8 +182,9 @@ export const useArbTokenBridge = (
       const weiValue: utils.BigNumber = utils.parseEther(ethValue)
       try {
         const tx = await arbWallet.depositETH(walletAddress, weiValue)
-        await tx.wait()
-        await updateEthBalances()
+        const receipt = await tx.wait()
+        updateEthBalances()
+        return receipt
       } catch (e) {
         console.error('depositEth err: ' + e)
       }
@@ -191,8 +199,9 @@ export const useArbTokenBridge = (
       const weiValue: utils.BigNumber = utils.parseEther(ethValue)
       try {
         const tx = await arbWallet.withdrawEthFromChain(weiValue)
-        await tx.wait()
-        await updateEthBalances()
+        const receipt = await tx.wait()
+        updateEthBalances()
+        return receipt
       } catch (e) {
         console.error('withdrawEth err', e)
       }
@@ -206,8 +215,9 @@ export const useArbTokenBridge = (
     try {
       const inboxManager = await arbProvider.globalInboxConn()
       const tx = await inboxManager.withdrawEth()
-      await tx.wait()
-      await updateEthBalances()
+      const receipt = await tx.wait()
+      updateEthBalances()
+      return receipt
     } catch (e) {
       console.error('withdrawLockboxETH err', e)
     }
@@ -229,25 +239,27 @@ export const useArbTokenBridge = (
 
       const erc20Updates: typeof erc20Balances = {}
       const erc721Updates: typeof erc721Balances = {}
-      let update20 = false,
-        update721 = false
 
       for (const contract of filtered) {
         switch (contract.type) {
           case TokenType.ERC20: {
-            update20 = true
+            const [
+              balance,
+              arbChainBalance,
+              lockBoxBalance,
+              totalArbBalance
+            ] = await Promise.all([
+              contract.eth.balanceOf(walletAddress),
+              contract.arb.balanceOf(walletAddress),
+              inboxManager.getERC20Balance(contract.eth.address, walletAddress),
+              inboxManager.getERC20Balance(contract.eth.address, vmId)
+            ])
 
             const updated = {
-              balance: await contract.eth.balanceOf(walletAddress),
-              arbChainBalance: await contract.arb.balanceOf(walletAddress),
-              lockBoxBalance: await inboxManager.getERC20Balance(
-                contract.eth.address,
-                walletAddress
-              ),
-              totalArbBalance: await inboxManager.getERC20Balance(
-                contract.eth.address,
-                vmId
-              ),
+              balance,
+              arbChainBalance,
+              lockBoxBalance,
+              totalArbBalance,
               asset: contract.symbol
             }
 
@@ -256,18 +268,22 @@ export const useArbTokenBridge = (
             break
           }
           case TokenType.ERC721: {
-            update721 = true
+            const [
+              tokens,
+              arbChainTokens,
+              totalArbTokens,
+              lockBoxTokens
+            ] = await Promise.all([
+              contract.eth.tokensOfOwner(walletAddress),
+              contract.arb.tokensOfOwner(walletAddress),
+              inboxManager.getERC721Tokens(contract.eth.address, vmId),
+              inboxManager.getERC721Tokens(contract.eth.address, walletAddress)
+            ])
             const updated = {
-              tokens: await contract.eth.tokensOfOwner(walletAddress),
-              arbChainTokens: await contract.arb.tokensOfOwner(walletAddress),
-              totalArbTokens: await inboxManager.getERC721Tokens(
-                contract.eth.address,
-                vmId
-              ),
-              lockBoxTokens: await inboxManager.getERC721Tokens(
-                contract.eth.address,
-                walletAddress
-              )
+              tokens,
+              arbChainTokens,
+              totalArbTokens,
+              lockBoxTokens
             }
 
             erc721Updates[contract.eth.address] = updated
@@ -349,7 +365,6 @@ export const useArbTokenBridge = (
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
-      // TODO trigger balance updates
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
@@ -371,7 +386,9 @@ export const useArbTokenBridge = (
           assertNever(contract, 'depositToken exhaustive check failed')
       }
 
-      return await tx.wait()
+      const receipt = await tx.wait()
+      updateTokenBalances(contract.type)
+      return receipt
     },
     [arbWallet, walletAddress, bridgeTokens]
   )
@@ -386,7 +403,6 @@ export const useArbTokenBridge = (
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
-      // TODO trigger balance updates
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
@@ -399,7 +415,9 @@ export const useArbTokenBridge = (
           assertNever(contract, 'withdrawToken exhaustive check failed')
       }
 
-      return await tx.wait()
+      const receipt = await tx.wait()
+      updateTokenBalances(contract.type)
+      return receipt
     },
     [walletAddress, bridgeTokens]
   )
@@ -417,7 +435,6 @@ export const useArbTokenBridge = (
       const inboxManager = await arbProvider.globalInboxConn()
 
       // TODO error handle
-      // TODO trigger balance updates
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
@@ -435,7 +452,9 @@ export const useArbTokenBridge = (
           assertNever(contract, 'withdrawLockboxToken exhaustive check failed')
       }
 
-      return await tx.wait()
+      const receipt = await tx.wait()
+      updateTokenBalances(contract.type)
+      return receipt
     },
     [arbProvider, bridgeTokens]
   )
@@ -529,6 +548,7 @@ export const useArbTokenBridge = (
         }
       })
 
+      // we await here to ensure initial balance entry is set
       await updateTokenBalances(type)
     },
     [arbProvider, walletAddress, bridgeTokens, updateTokenBalances]
@@ -562,7 +582,7 @@ export const useArbTokenBridge = (
         })
       }
     }
-  }, [arbProvider])
+  }, [arbProvider, updateAllBalances])
 
   useEffect(() => {
     if (arbProvider && walletAddress) {
