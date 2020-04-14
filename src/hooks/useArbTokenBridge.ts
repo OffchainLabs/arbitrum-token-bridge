@@ -210,10 +210,13 @@ export const useArbTokenBridge = (
   )
 
   const withdrawLockboxETH = useCallback(async () => {
-    if (!arbProvider) throw new Error('withdrawLockboxETH no arb wallet')
+    if (!arbProvider || !arbWallet)
+      throw new Error('withdrawLockboxETH no arb wallet')
 
     try {
-      const inboxManager = await arbProvider.globalInboxConn()
+      const inboxManager = (await arbProvider.globalInboxConn()).connect(
+        arbWallet
+      )
       const tx = await inboxManager.withdrawEth()
       const receipt = await tx.wait()
       updateEthBalances()
@@ -427,12 +430,15 @@ export const useArbTokenBridge = (
       contractAddress: string,
       tokenId?: string
     ): Promise<ContractReceipt> => {
-      if (!arbProvider) throw new Error('withdrawLockboxToken missing req')
+      if (!arbProvider || !arbWallet)
+        throw new Error('withdrawLockboxToken missing req')
 
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
-      const inboxManager = await arbProvider.globalInboxConn()
+      const inboxManager = (await arbProvider.globalInboxConn()).connect(
+        arbWallet
+      )
 
       // TODO error handle
       let tx: ContractTransaction
@@ -463,7 +469,6 @@ export const useArbTokenBridge = (
     async (contractAddress: string, type: TokenType) => {
       if (!arbProvider || !walletAddress) throw Error('addToken missing req')
 
-      // TODO is this the best test? is it needed - can we rely on connect err?
       const isContract =
         (await arbProvider.provider.getCode(contractAddress)).length > 2
       if (!isContract) throw Error('address is not a contract')
