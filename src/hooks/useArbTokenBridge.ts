@@ -113,17 +113,17 @@ export const useArbTokenBridge = (
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+      string[],
+      React.Dispatch<string[]>,
+      React.Dispatch<void>
+    ]
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+      string[],
+      React.Dispatch<string[]>,
+      React.Dispatch<void>
+    ]
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
@@ -367,6 +367,8 @@ export const useArbTokenBridge = (
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
+      // TODO fail fast if not approved
+
       let tx: ContractTransaction
       switch (contract.type) {
         case TokenType.ERC20:
@@ -466,11 +468,12 @@ export const useArbTokenBridge = (
 
   const addToken = useCallback(
     async (contractAddress: string, type: TokenType) => {
-      if (!arbProvider || !walletAddress) throw Error('addToken missing req')
+      if (!arbProvider || !walletAddress || !arbWallet)
+        throw Error('addToken missing req')
 
-      const isContract =
+      const isEthContract =
         (await arbProvider.provider.getCode(contractAddress)).length > 2
-      if (!isContract) throw Error('address is not a contract')
+      if (!isEthContract) throw Error('address is not a contract')
       else if (bridgeTokens[contractAddress]) throw Error('contract is present')
 
       const inboxManager = await arbProvider.globalInboxConn()
@@ -481,6 +484,13 @@ export const useArbTokenBridge = (
       let newContract: BridgeToken
       switch (type) {
         case TokenType.ERC20: {
+          const arbContractCode = await arbProvider.getCode(contractAddress)
+          if (arbContractCode === '0x') {
+            console.warn('contract does not exist')
+            // TODO replace with different handling
+            await arbWallet.depositERC20(walletAddress, contractAddress, 0)
+          }
+
           const arbERC20 = ArbERC20Factory.connect(
             contractAddress,
             arbProvider.getSigner(walletIndex)
