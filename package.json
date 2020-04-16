@@ -4,49 +4,27 @@
   "private": true,
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
+    "arb-provider-ethers": "^0.4.5",
+    "ethers": "^4.0.46",
+    "lodash.isequal": "^4.5.0",
+    "typescript": "^3.8.3"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc --outDir ./dist/ ./src/hooks/useArbTokenBridge.ts",
+    "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\"",
+    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
+    "prepare": "yarn build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "devDependencies": {
     "@types/jest": "^24.0.0",
     "@types/lodash.isequal": "^4.5.5",
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
-    "arb-provider-ethers": "^0.4.5",
-    "bootstrap": "^4.4.1",
-    "ethers": "^4.0.46",
-    "lodash.isequal": "^4.5.0",
-    "node-sass": "^4.13.1",
-    "react": "^16.13.1",
-    "react-bootstrap": "^1.0.0",
-    "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1",
-    "typescript": "^3.8.3"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:hooks": "rm -rf ./dist && tsc --outDir ./dist/ ./src/hooks/useArbTokenBridge.ts",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\"",
-    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
-    "prepare": "yarn build:hooks"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "eslint": "^6.8.0",
@@ -58,5 +36,9 @@
   },
   "files": [
     "./dist"
-  ]
+  ],
+  "peerDependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  }
 }
