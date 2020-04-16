@@ -12,7 +12,6 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
     return <div></div>
   }
   const { balance, arbChainBalance, totalArbBalance, lockBoxBalance } = balances
-  
   return (
     <div>
       <div className="row">
