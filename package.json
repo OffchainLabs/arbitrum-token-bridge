@@ -1,6 +1,7 @@
 {
   "name": "arb-token-bridge",
   "version": "0.1.0",
+  "main": "dist/index.js",
   "private": true,
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
@@ -10,7 +11,7 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "build": "rm -rf ./dist && tsc --outDir ./dist/ ./src/hooks/useArbTokenBridge.ts",
+    "build": "rm -rf ./dist && tsc",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\"",
     "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
