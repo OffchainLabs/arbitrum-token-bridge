@@ -113,17 +113,17 @@ export const useArbTokenBridge = (
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
-      string[],
-      React.Dispatch<string[]>,
-      React.Dispatch<void>
-    ]
+    string[],
+    React.Dispatch<string[]>,
+    React.Dispatch<void>
+  ]
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
-      string[],
-      React.Dispatch<string[]>,
-      React.Dispatch<void>
-    ]
+    string[],
+    React.Dispatch<string[]>,
+    React.Dispatch<void>
+  ]
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
@@ -473,21 +473,19 @@ export const useArbTokenBridge = (
 
       const isEthContract =
         (await arbProvider.provider.getCode(contractAddress)).length > 2
-      if (!isEthContract) throw Error('address is not a contract')
-      else if (bridgeTokens[contractAddress]) throw Error('contract is present')
+      if (!isEthContract) throw Error('contract is not deployed on eth')
+      else if (bridgeTokens[contractAddress]) throw Error('token already added')
 
       const inboxManager = await arbProvider.globalInboxConn()
 
       // TODO error handle
-      // - verify that contracts are deployed
-      // TODO trigger balance updates
       let newContract: BridgeToken
       switch (type) {
         case TokenType.ERC20: {
           const arbContractCode = await arbProvider.getCode(contractAddress)
           if (arbContractCode === '0x') {
             console.warn('contract does not exist')
-            // TODO replace with different handling
+            // TODO replace with non signature required handling
             await arbWallet.depositERC20(walletAddress, contractAddress, 0)
           }
 
@@ -598,18 +596,27 @@ export const useArbTokenBridge = (
     }
   }, [arbProvider, updateAllBalances])
 
+  // TODO replace IIFEs with Promise.allSettled once available
   useEffect(() => {
     if (arbProvider && walletAddress) {
       if (autoLoadCache) {
         if (ERC20Cache?.length) {
-          for (const address of ERC20Cache) {
-            addToken(address, TokenType.ERC20)
+          const cacheCopy = [...ERC20Cache]
+          clearERC20Cache()
+          for (const address of cacheCopy) {
+            addToken(address, TokenType.ERC20).catch(() =>
+              console.warn(`invalid cache entry erc20 ${address}`)
+            )
           }
         }
 
         if (ERC721Cache?.length) {
-          for (const address of ERC721Cache) {
-            addToken(address, TokenType.ERC721)
+          const cacheCopy = [...ERC721Cache]
+          clearERC721Cache()
+          for (const address of cacheCopy) {
+            addToken(address, TokenType.ERC721).catch(() =>
+              console.warn(`invalid cache entry erc721 ${address}`)
+            )
           }
         }
       }
