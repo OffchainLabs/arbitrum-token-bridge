@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { BridgeBalance } from '../../hooks/useArbTokenBridge'
+import { BridgeBalance } from 'arb-token-bridge'
 import { formatEther } from 'ethers/utils'
 
 type BalanceProps = {
@@ -26,7 +26,9 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
       <div className="row">
         Total {assetName} held by ArbChain: {formatEther(totalArbBalance)}
       </div>
-      <div className="row">User Lockbox Balance: {formatEther(lockBoxBalance)}</div>
+      <div className="row">
+        User Lockbox Balance: {formatEther(lockBoxBalance)}
+      </div>
     </div>
   )
 }
