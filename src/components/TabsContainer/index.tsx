@@ -2,12 +2,28 @@ import React, { useState } from 'react'
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Balance from 'components/Balance'
-import { BridgeBalance } from 'arb-token-bridge'
+import {
+  BridgeBalance,
+  ContractStorage,
+  TokenType
+} from 'hooks/useArbTokenBridge'
+import AssetDropDown from 'components/AssetDropDown'
 
 type TabProps = {
   ethBalances: BridgeBalance
+  erc20BridgeBalance: BridgeBalance | undefined
+  erc20sCached: string[] | null
+  addToken: (a: string, type: TokenType) => Promise<void>
 }
-const TabsContainer: React.FC<TabProps> = ({ ethBalances }) => {
+
+type TabName = 'eth' | 'erc20' | 'erc721'
+
+const TabsContainer = ({
+  ethBalances,
+  erc20BridgeBalance,
+  erc20sCached,
+  addToken
+}: TabProps) => {
   const [key, setKey] = useState('eth')
 
   return (
@@ -20,7 +36,8 @@ const TabsContainer: React.FC<TabProps> = ({ ethBalances }) => {
         <Balance assetName={'ETH'} balances={ethBalances} />
       </Tab>
       <Tab eventKey="erc20" title="ERC-20">
-        <div>erc20</div>
+        <Balance assetName={'ERC20'} balances={erc20BridgeBalance} />
+        <AssetDropDown erc20sCached={erc20sCached ?? []} addToken={addToken} />
       </Tab>
       <Tab eventKey="erc721" title="ERC-721">
         <div>erc721</div>
