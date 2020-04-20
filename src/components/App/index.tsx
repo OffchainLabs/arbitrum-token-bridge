@@ -22,7 +22,8 @@ const App = () => {
     vmId,
     cache,
     token,
-    bridgeTokens
+    bridgeTokens,
+    eth
   } = useArbTokenBridge(validatorUrl, getInjectedWeb3())
   useEffect(() => {
     vmId && walletAddress && balances.update()
@@ -55,6 +56,7 @@ const App = () => {
             ethBalances={balances.eth}
             erc20BridgeBalance={ercBalance}
             addToken={token.add}
+            eth={eth}
           />
         </div>
       </div>
