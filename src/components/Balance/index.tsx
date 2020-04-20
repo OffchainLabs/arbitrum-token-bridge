@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BridgeBalance, ContractStorage } from 'hooks/useArbTokenBridge'
+import { BridgeBalance } from 'arb-token-bridge'
 import AssetDropDown from 'components/AssetDropDown'
 import { formatEther } from 'ethers/utils'
 
