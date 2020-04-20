@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { BridgeBalance } from 'arb-token-bridge'
+import React, { useState, useEffect } from 'react'
+import { BridgeBalance, ContractStorage } from 'hooks/useArbTokenBridge'
+import AssetDropDown from 'components/AssetDropDown'
 import { formatEther } from 'ethers/utils'
 
 type BalanceProps = {
   assetName: string
-  balances: BridgeBalance
+  balances: BridgeBalance | undefined
 }
 
 const Balance = ({ balances, assetName }: BalanceProps) => {
   if (!balances) {
-    return <div></div>
+    return <div>no token</div>
   }
   const { balance, arbChainBalance, totalArbBalance, lockBoxBalance } = balances
   return (
