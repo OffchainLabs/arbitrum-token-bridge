@@ -2,18 +2,14 @@ import React, { useState } from 'react'
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Balance from 'components/Balance'
-import {
-  BridgeBalance,
-  ContractStorage,
-  TokenType
-} from 'hooks/useArbTokenBridge'
+import { BridgeBalance, TokenType } from 'arb-token-bridge'
 import AssetDropDown from 'components/AssetDropDown'
 
 type TabProps = {
   ethBalances: BridgeBalance
   erc20BridgeBalance: BridgeBalance | undefined
   erc20sCached: string[] | null
-  addToken: (a: string, type: TokenType) => Promise<void>
+  addToken: (a: string, type: TokenType) => Promise<string>
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'

@@ -5,16 +5,10 @@ import { getInjectedWeb3 } from 'util/web3'
 import * as ethers from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
-<<<<<<< HEAD
-import { useArbTokenBridge } from 'arb-token-bridge'
-import Header from 'components/Header'
-import TabsContainer from 'components/TabsContainer'
-=======
-import { useArbTokenBridge, TokenType } from 'hooks/useArbTokenBridge'
+import { useArbTokenBridge, TokenType } from 'arb-token-bridge'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'
->>>>>>> 19db7c8... front-end updates, squashed
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -50,7 +44,7 @@ const App = () => {
   })()
 
   return (
-    <div className="container" onClick={balances.update}>
+    <div className="container">
       <div className="row">
         <Header ethAddress={walletAddress ?? ''} vmId={vmId ?? ''} />
       </div>

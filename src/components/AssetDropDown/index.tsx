@@ -3,14 +3,14 @@ import DropdownButton from 'react-bootstrap/DropdownButton'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Form from 'react-bootstrap/Form'
-import { TokenType } from 'hooks/useArbTokenBridge'
+import { TokenType } from 'arb-token-bridge'
 
 import { useState } from 'react'
 
 import React from 'react'
 type DropDownProps = {
   erc20sCached: string[]
-  addToken: (a: string, type: TokenType) => Promise<void>
+  addToken: (a: string, type: TokenType) => Promise<string>
 }
 const AssetDropDown = ({ erc20sCached, addToken }: DropDownProps) => {
   const [currentERC20, setCurrentERC20] = useState('')
