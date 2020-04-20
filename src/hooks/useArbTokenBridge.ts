@@ -467,7 +467,7 @@ export const useArbTokenBridge = (
   )
 
   const addToken = useCallback(
-    async (contractAddress: string, type: TokenType) => {
+    async (contractAddress: string, type: TokenType): Promise<string> => {
       if (!arbProvider || !walletAddress || !arbWallet)
         throw Error('addToken missing req')
 
@@ -562,6 +562,7 @@ export const useArbTokenBridge = (
 
       // we await here to ensure initial balance entry is set
       await updateTokenBalances(type)
+      return contractAddress
     },
     [arbProvider, walletAddress, bridgeTokens, updateTokenBalances]
   )
@@ -602,22 +603,30 @@ export const useArbTokenBridge = (
       if (autoLoadCache) {
         if (ERC20Cache?.length) {
           const cacheCopy = [...ERC20Cache]
-          clearERC20Cache()
-          for (const address of cacheCopy) {
-            addToken(address, TokenType.ERC20).catch(() =>
-              console.warn(`invalid cache entry erc20 ${address}`)
-            )
-          }
+          Promise.all(
+            cacheCopy.map(address => {
+              return addToken(address, TokenType.ERC20).catch(err => {
+                console.warn(`invalid cache entry erc20 ${address}`)
+                return ''
+              })
+            })
+          ).then(values => {
+            setERC20Cache(values.filter(val => val))
+          })
         }
 
         if (ERC721Cache?.length) {
           const cacheCopy = [...ERC721Cache]
-          clearERC721Cache()
-          for (const address of cacheCopy) {
-            addToken(address, TokenType.ERC721).catch(() =>
-              console.warn(`invalid cache entry erc721 ${address}`)
-            )
-          }
+          Promise.all(
+            cacheCopy.map(address => {
+              return addToken(address, TokenType.ERC20).catch(err => {
+                console.warn(`invalid cache entry erc721 ${address}`)
+                return ''
+              })
+            })
+          ).then(values => {
+            setERC721Cache(values.filter(val => val))
+          })
         }
       }
     }
