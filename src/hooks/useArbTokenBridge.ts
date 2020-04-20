@@ -619,7 +619,7 @@ export const useArbTokenBridge = (
           const cacheCopy = [...ERC721Cache]
           Promise.all(
             cacheCopy.map(address => {
-              return addToken(address, TokenType.ERC20).catch(err => {
+              return addToken(address, TokenType.ERC721).catch(err => {
                 console.warn(`invalid cache entry erc721 ${address}`)
                 return ''
               })
