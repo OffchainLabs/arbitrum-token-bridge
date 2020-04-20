@@ -602,9 +602,8 @@ export const useArbTokenBridge = (
     if (arbProvider && walletAddress) {
       if (autoLoadCache) {
         if (ERC20Cache?.length) {
-          const cacheCopy = [...ERC20Cache]
           Promise.all(
-            cacheCopy.map(address => {
+            ERC20Cache.map(address => {
               return addToken(address, TokenType.ERC20).catch(err => {
                 console.warn(`invalid cache entry erc20 ${address}`)
                 return ''
@@ -616,9 +615,8 @@ export const useArbTokenBridge = (
         }
 
         if (ERC721Cache?.length) {
-          const cacheCopy = [...ERC721Cache]
           Promise.all(
-            cacheCopy.map(address => {
+            ERC721Cache.map(address => {
               return addToken(address, TokenType.ERC721).catch(err => {
                 console.warn(`invalid cache entry erc721 ${address}`)
                 return ''
