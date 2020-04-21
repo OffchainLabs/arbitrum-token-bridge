@@ -606,11 +606,10 @@ export const useArbTokenBridge = (
             ERC20Cache.map(address => {
               return addToken(address, TokenType.ERC20).catch(err => {
                 console.warn(`invalid cache entry erc20 ${address}`)
-                return ''
               })
             })
           ).then(values => {
-            setERC20Cache(values.filter(val => val))
+            setERC20Cache(values.filter((val): val is string => !!val))
           })
         }
 
@@ -619,11 +618,10 @@ export const useArbTokenBridge = (
             ERC721Cache.map(address => {
               return addToken(address, TokenType.ERC721).catch(err => {
                 console.warn(`invalid cache entry erc721 ${address}`)
-                return ''
               })
             })
           ).then(values => {
-            setERC721Cache(values.filter(val => val))
+            setERC721Cache(values.filter((val): val is string => !!val))
           })
         }
       }
