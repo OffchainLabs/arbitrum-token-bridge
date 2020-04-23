@@ -8,9 +8,10 @@ type NumberInputFormProps = {
   max: number
   text: string
   onSubmit: (s: string) => void
+  disabled?: boolean
 }
 
-const NumberInputForm = ({ max, text, onSubmit }: NumberInputFormProps) => {
+const NumberInputForm = ({ max, text, onSubmit, disabled = false }: NumberInputFormProps) => {
   const [value, setValue] = useCappedNumberInput(0)
 
   return (
@@ -36,6 +37,7 @@ const NumberInputForm = ({ max, text, onSubmit }: NumberInputFormProps) => {
           value={value}
           type="number"
           step="0.01"
+          disabled={disabled}
         />
       </Form>
     </InputGroup>
