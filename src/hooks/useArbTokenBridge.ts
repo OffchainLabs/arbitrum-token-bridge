@@ -137,12 +137,9 @@ export const useArbTokenBridge = (
   ETH METHODS:
   */
   const updateEthBalances = useCallback(async () => {
-    if (!arbProvider)
-      throw new Error('updateEthBalances no arb provider')
-    if (!vmId)
-      throw new Error('updateEthBalances no vmId')
-    if (!walletAddress)
-      throw new Error('updateEthBalances walletAddress')
+    if (!arbProvider) throw new Error('updateEthBalances no arb provider')
+    if (!vmId) throw new Error('updateEthBalances no vmId')
+    if (!walletAddress) throw new Error('updateEthBalances walletAddress')
 
     const inboxManager = await arbProvider.globalInboxConn()
     const ethWallet = arbProvider.provider.getSigner(walletIndex)
@@ -599,7 +596,7 @@ export const useArbTokenBridge = (
         })
       }
     }
-  }, [arbProvider, updateAllBalances])
+  }, [arbProvider, updateAllBalances, vmId])
 
   // TODO replace IIFEs with Promise.allSettled once available
   useEffect(() => {
