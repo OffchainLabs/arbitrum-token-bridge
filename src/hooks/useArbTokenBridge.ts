@@ -49,9 +49,9 @@ interface ERC721BridgeToken extends BridgedToken {
   eth: ERC721
 }
 
-type BridgeToken = ERC20BridgeToken | ERC721BridgeToken
+export type BridgeToken = ERC20BridgeToken | ERC721BridgeToken
 
-interface ContractStorage<T> {
+export interface ContractStorage<T> {
   [contractAddress: string]: T | undefined
 }
 
