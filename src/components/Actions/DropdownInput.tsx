@@ -13,7 +13,7 @@ type DropdownInputFormProps = {
   items: BigNumber[]
   text: string
   onSubmit: (s: string) => void
-  disabled?: boolean,
+  disabled?: boolean
   action: string
 }
 
@@ -37,16 +37,23 @@ const DropdownInputForm = ({
       >
         {items.map((item, i) => (
           <Dropdown.Item
-          key={i}
-          onClick={()=>{
-            setValue(item.toNumber())
-          }}
-          >{item.toNumber()}</Dropdown.Item>
+            key={i}
+            onClick={() => {
+              setValue(item.toNumber())
+            }}
+          >
+            {item.toNumber()}
+          </Dropdown.Item>
         ))}
       </DropdownButton>
-        <Button variant="outline-secondary" onClick={()=>{
+      <Button
+        variant="outline-secondary"
+        onClick={() => {
           onSubmit(value.toString())
-        }}>{action}</Button>
+        }}
+      >
+        {action}
+      </Button>
     </InputGroup>
   )
 }

@@ -20,7 +20,7 @@ const Actions = ({
   currentERC721Address
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC721Address]
-  if (!balances){
+  if (!balances) {
     return <div>asdf</div>
   }
   const { tokens, arbChainTokens, totalArbTokens, lockBoxTokens } = balances
@@ -36,29 +36,28 @@ const Actions = ({
       </Button>
       <DropdownInput
         items={tokens}
-        text={"Deposit NFT"}
-        action={"deposit"}
-        onSubmit={(value)=>{
+        text={'Deposit NFT'}
+        action={'deposit'}
+        onSubmit={value => {
           eth.deposit(currentERC721Address, value)
         }}
       />
-            <DropdownInput
+      <DropdownInput
         items={arbChainTokens}
-        text={"Withdraw NFT"}
-        action={"Withdraw"}
-        onSubmit={(value)=>{
+        text={'Withdraw NFT'}
+        action={'Withdraw'}
+        onSubmit={value => {
           eth.withdraw(currentERC721Address, value)
         }}
-        />
-        <DropdownInput
+      />
+      <DropdownInput
         items={lockBoxTokens}
-        text={"Withdraw LockBox"}
-        action={"Withdraw"}
-        onSubmit={(value)=>{
+        text={'Withdraw LockBox'}
+        action={'Withdraw'}
+        onSubmit={value => {
           eth.withdrawLockBox(currentERC721Address, value)
         }}
       />
-
     </div>
   )
 }
