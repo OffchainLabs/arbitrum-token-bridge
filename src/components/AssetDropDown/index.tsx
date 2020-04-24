@@ -2,41 +2,46 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
+import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
-import { TokenType } from 'arb-token-bridge'
-
-import { useState } from 'react'
+import { TokenType, BridgeToken } from 'arb-token-bridge'
+import { useState, useLayoutEffect } from 'react'
 
 import React from 'react'
 type DropDownProps = {
-  erc20sCached: string[]
+  bridgeTokensArray: (BridgeToken)[]
   tokenType: TokenType
   addToken: (a: string, type: TokenType) => Promise<string>
+  currentToken: BridgeToken | undefined
+  setCurrentAddress:  React.Dispatch<string>
 }
-const AssetDropDown = ({
-  erc20sCached,
-  addToken,
-  tokenType
-}: DropDownProps) => {
-  const [currentERC20, setCurrentERC20] = useState('')
-  const [erc20Form, seterc20Form] = useState('')
 
+// TODO: ethers v5 has an isAddress util
+const looksLikeAddress = (address:string) => address.startsWith('0x') && address.length === 42
+
+const AssetDropDown = ({
+  bridgeTokensArray,
+  addToken,
+  tokenType,
+  currentToken,
+  setCurrentAddress
+}: DropDownProps) => {
+  const [erc20Form, seterc20Form] = useState('')
   return (
     <DropdownButton
       as={InputGroup.Prepend}
       variant="outline-secondary"
-      title={currentERC20 || 'select token'}
+      title={currentToken ? currentToken.symbol : 'select token'}
       id="input-group-dropdown-1"
     >
-      {erc20sCached.map((address, i) => (
+      {bridgeTokensArray.map((bridgeToken, i) => (
         <Dropdown.Item
           key={i}
           onClick={() => {
-            setCurrentERC20(address)
-            addToken(address, tokenType)
+            setCurrentAddress(bridgeToken!.eth.address)
           }}
         >
-          {address}
+          {bridgeToken.symbol}
         </Dropdown.Item>
       ))}
       <Dropdown.Divider />
@@ -45,11 +50,16 @@ const AssetDropDown = ({
           e.preventDefault()
           addToken(erc20Form, tokenType)
         }}
-      >
+        >
         <FormControl
+          isInvalid={ !!erc20Form && !looksLikeAddress(erc20Form) }
+          isValid={ !!erc20Form && looksLikeAddress(erc20Form)}
           placeholder="paste token address"
           onChange={(e: any) => seterc20Form(e.target.value)}
         />
+          <Feedback type="valid">press enter to add token</Feedback>
+          <Feedback type="invalid">invalid address</Feedback>
+
       </Form>
     </DropdownButton>
   )

@@ -79,8 +79,6 @@ const App = () => {
       <div className="row">
         <div id="bridgebody">
           <TabsContainer
-            erc20sCached={cache.erc20 || []}
-            erc721sCached={cache.erc721 || []}
             ethBalances={balances.eth}
             erc20BridgeBalance={ercBalance}
             addToken={token.add}
@@ -90,6 +88,8 @@ const App = () => {
             bridgeTokens={bridgeTokens}
             currentERC20Address={currentERC20Address || ''}
             currentERC721Address={currentERC721Address || ''}
+            setCurrentERC20Address={setCurrentERC20Address}
+            setCurrentERC721Address={setCurrentERC721Address}
           />
         </div>
       </div>
