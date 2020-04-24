@@ -60,7 +60,7 @@ const App = () => {
     }
   }, [bridgeTokens])
 
-  const ercBalance = (() => {
+  const erc20Balance = (() => {
     if (currentERC20Address && balances.erc20[currentERC20Address]) {
       return balances.erc20[currentERC20Address]
     }
@@ -74,20 +74,20 @@ const App = () => {
   return (
     <div className="container">
       <div className="row">
-        <Header ethAddress={walletAddress ?? ''} vmId={vmId ?? ''} />
+        <Header ethAddress={walletAddress} vmId={vmId} ethBalance={balances.eth}  erc20Balance={erc20Balance} erc721Balance={erc721Balance} />
       </div>
       <div className="row">
         <div id="bridgebody">
           <TabsContainer
             ethBalances={balances.eth}
-            erc20BridgeBalance={ercBalance}
+            erc20BridgeBalance={erc20Balance}
             addToken={token.add}
             eth={eth}
             token={token}
             erc721balance={erc721Balance}
             bridgeTokens={bridgeTokens}
-            currentERC20Address={currentERC20Address || ''}
-            currentERC721Address={currentERC721Address || ''}
+            currentERC20Address={currentERC20Address ?? ''}
+            currentERC721Address={currentERC721Address ?? ''}
             setCurrentERC20Address={setCurrentERC20Address}
             setCurrentERC721Address={setCurrentERC721Address}
           />
