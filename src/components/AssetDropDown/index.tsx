@@ -49,6 +49,7 @@ const AssetDropDown = ({
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault()
           addToken(erc20Form, tokenType)
+          seterc20Form('')
         }}
         >
         <FormControl

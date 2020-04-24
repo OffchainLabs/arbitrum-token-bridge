@@ -24,6 +24,7 @@ const DropdownInputForm = ({
   action,
   disabled = false
 }: DropdownInputFormProps) => {
+  // TODO: 0 edge case?
   const [value, setValue] = useState(0)
 
   return (
