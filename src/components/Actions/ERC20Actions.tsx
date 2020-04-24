@@ -26,13 +26,14 @@ const Actions = ({
 
   return (
     <div>
-      <Button
+      {currentContract && !currentContract.allowed && <Button
         variant="outline-secondary"
         disabled={false}
         onClick={() => eth.approve(currentERC20Address)}
       >
         Approve
       </Button>
+        }
       <NumberInputForm
         max={ethChainBalance}
         text={'Deposit Token'}

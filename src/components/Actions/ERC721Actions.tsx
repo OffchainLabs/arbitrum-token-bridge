@@ -5,7 +5,6 @@ import { ERC721Balance } from 'arb-token-bridge'
 import { formatEther } from 'ethers/utils'
 import DropdownInput from './DropdownInput'
 import Button from 'react-bootstrap/Button'
-// TODO: refactor with EthActions into one component?
 type ActionsProps = {
   balances: ERC721Balance | undefined
   eth: any
@@ -19,6 +18,7 @@ const Actions = ({
   bridgeTokens,
   currentERC721Address
 }: ActionsProps) => {
+  // TODO: pass in from TabsContainer
   const currentContract = bridgeTokens[currentERC721Address]
   if (!balances) {
     return <div>asdf</div>
@@ -27,13 +27,14 @@ const Actions = ({
 
   return (
     <div>
-      <Button
+      {currentContract && !currentContract.allowed && <Button
         variant="outline-secondary"
-        disabled={false}
+        disabled={!currentContract.allowed}
         onClick={() => eth.approve(currentERC721Address)}
       >
         Approve
       </Button>
+      }
       <DropdownInput
         items={tokens}
         text={'Deposit NFT'}
