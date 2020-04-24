@@ -33,21 +33,16 @@ const App = () => {
   const [currentERC721Address, setCurrentERC721Address] = useLocalStorage('currentERC721',"")
 
   useEffect(() => {
-    if (!bridgeTokens){
-      return
-    }
     const allAddresses = Object.keys(bridgeTokens).sort()
     if (!currentERC20Address || !bridgeTokens[currentERC20Address]) {
-      const firstERC20Addresss = allAddresses.find((addr)=> bridgeTokens && bridgeTokens[addr].type ===TokenType.ERC20 )
-      firstERC20Addresss && setCurrentERC20Address(firstERC20Addresss)
+      const firstERC20 = Object.values(bridgeTokens).find((token)=> token && token.type === TokenType.ERC20)
+      firstERC20 && setCurrentERC20Address(firstERC20.eth.address)
     }
 
-
-
-  if (!currentERC721Address || !bridgeTokens[currentERC721Address]) {
-    const firstERC721Addresss = allAddresses.find((addr)=> bridgeTokens && bridgeTokens[addr].type ===TokenType.ERC721 )
-    firstERC721Addresss && setCurrentERC721Address(firstERC721Addresss)
-  }
+    if (!currentERC721Address || !bridgeTokens[currentERC721Address]) {
+      const firstERC721 = Object.values(bridgeTokens).find((token)=> token && token.type === TokenType.ERC721)
+      firstERC721 && setCurrentERC721Address(firstERC721.eth.address)
+    }
 
 
   }, [bridgeTokens])
@@ -81,8 +76,8 @@ const App = () => {
             token={token}
             erc721balance={erc721Balance}
             bridgeTokens={bridgeTokens}
-            currentERC20Address={currentERC20Address}
-            currentERC721Address={currentERC721Address}
+            currentERC20Address={currentERC20Address || ""}
+            currentERC721Address={currentERC721Address || ""}
           />
         </div>
       </div>
