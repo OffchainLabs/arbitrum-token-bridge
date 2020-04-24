@@ -53,17 +53,32 @@ const TabsContainer = ({
       </Tab>
       <Tab eventKey="erc20" title="ERC-20">
         <Balance assetName={'ERC20'} balances={erc20BridgeBalance} />
-        <AssetDropDown erc20sCached={erc20sCached} addToken={addToken} tokenType={TokenType.ERC20} />
-        <ERC20Actions balances={erc20BridgeBalance} eth={token} bridgeTokens={bridgeTokens} currentERC20Address={currentERC20Address}/>
-
+        <AssetDropDown
+          erc20sCached={erc20sCached}
+          addToken={addToken}
+          tokenType={TokenType.ERC20}
+        />
+        <ERC20Actions
+          balances={erc20BridgeBalance}
+          eth={token}
+          bridgeTokens={bridgeTokens}
+          currentERC20Address={currentERC20Address}
+        />
       </Tab>
       <Tab eventKey="erc721" title="ERC-721">
-      <ERC721BalanceUi balances={erc721balance}/>
-      <AssetDropDown erc20sCached={erc721sCached} addToken={addToken} tokenType={TokenType.ERC721}/>
+        <ERC721BalanceUi balances={erc721balance} />
+        <AssetDropDown
+          erc20sCached={erc721sCached}
+          addToken={addToken}
+          tokenType={TokenType.ERC721}
+        />
 
-
-      <ERC721Actions balances={erc721balance} eth={token} bridgeTokens={bridgeTokens} currentERC721Address={currentERC721Address}/>
-
+        <ERC721Actions
+          balances={erc721balance}
+          eth={token}
+          bridgeTokens={bridgeTokens}
+          currentERC721Address={currentERC721Address}
+        />
       </Tab>
     </Tabs>
   )

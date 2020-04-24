@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ERC721Balance } from 'arb-token-bridge'
 import AssetDropDown from 'components/AssetDropDown'
-import { BigNumber  } from 'ethers/utils'
+import { BigNumber } from 'ethers/utils'
 
 type BalanceProps = {
   balances: ERC721Balance | undefined
@@ -13,17 +13,15 @@ const ERC721BalanceUi = ({ balances }: BalanceProps) => {
   }
   const { tokens, arbChainTokens, totalArbTokens, lockBoxTokens } = balances
 
-  const formatTokenList = (arr:BigNumber[]) => {
-    return arr.map((token:BigNumber)=> token.toNumber()).join(",")
+  const formatTokenList = (arr: BigNumber[]) => {
+    return arr.map((token: BigNumber) => token.toNumber()).join(',')
   }
   return (
     <div>
       <div className="row">
         <h3>ERC721 Info</h3>
       </div>
-      <div className="row">
-        Tokens on Ethereum: {formatTokenList(tokens)}
-      </div>
+      <div className="row">Tokens on Ethereum: {formatTokenList(tokens)}</div>
       <div className="row">
         Tokens on Arb: {formatTokenList(arbChainTokens)}
       </div>

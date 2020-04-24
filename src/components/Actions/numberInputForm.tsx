@@ -11,7 +11,12 @@ type NumberInputFormProps = {
   disabled?: boolean
 }
 
-const NumberInputForm = ({ max, text, onSubmit, disabled = false }: NumberInputFormProps) => {
+const NumberInputForm = ({
+  max,
+  text,
+  onSubmit,
+  disabled = false
+}: NumberInputFormProps) => {
   const [value, setValue] = useCappedNumberInput(0)
 
   return (

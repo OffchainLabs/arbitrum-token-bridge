@@ -9,11 +9,15 @@ import { useState } from 'react'
 
 import React from 'react'
 type DropDownProps = {
-  erc20sCached: string[],
-  tokenType: TokenType,
+  erc20sCached: string[]
+  tokenType: TokenType
   addToken: (a: string, type: TokenType) => Promise<string>
 }
-const AssetDropDown = ({ erc20sCached, addToken, tokenType }: DropDownProps) => {
+const AssetDropDown = ({
+  erc20sCached,
+  addToken,
+  tokenType
+}: DropDownProps) => {
   const [currentERC20, setCurrentERC20] = useState('')
   const [erc20Form, seterc20Form] = useState('')
 
