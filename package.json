@@ -5,8 +5,8 @@
   "private": true,
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
-    "arb-provider-ethers": "^0.4.5",
-    "ethers": "^4.0.46",
+    "arb-provider-ethers": "^0.4.7",
+    "ethers": "^4.0.44",
     "lodash.isequal": "^4.5.0",
     "typescript": "^3.8.3"
   },
