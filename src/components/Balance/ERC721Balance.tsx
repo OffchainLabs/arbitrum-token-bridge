@@ -13,7 +13,7 @@ const ERC721BalanceUi = ({ balances }: BalanceProps) => {
   }
   const { tokens, arbChainTokens, totalArbTokens, lockBoxTokens } = balances
 
-  const formatTokenList = (arr) => {
+  const formatTokenList = (arr:BigNumber[]) => {
     return arr.map((token:BigNumber)=> token.toNumber()).join(",")
   }
   return (
