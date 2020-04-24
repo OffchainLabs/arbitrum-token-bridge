@@ -39,7 +39,7 @@ const NumberInputForm = ({
         <FormControl
           aria-label="Small"
           aria-describedby="inputGroup-sizing-sm"
-          value={value}
+          value={value || ""}
           type="number"
           step="0.01"
           disabled={disabled}
