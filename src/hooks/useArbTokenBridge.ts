@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ContractTransaction, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { ArbERC20 } from 'arb-provider-ethers/dist/lib/abi/ArbERC20'
-import { ArbERC721 } from 'arb-provider-ethers/dist/lib/abi/ArbERC721'
-import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
-import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
 import { ContractReceipt } from 'ethers/contract'
 import {
   ERC20,
@@ -14,6 +10,9 @@ import {
   assertNever
 } from '../util'
 import { useArbProvider } from './useArbProvider'
+import type { abi } from 'arb-provider-ethers'
+import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
+import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const deepEquals = require('lodash.isequal')
@@ -32,20 +31,20 @@ interface BridgedToken {
   name: string
   symbol: string
   allowed: boolean
-  arb: ArbERC20 | ArbERC721
+  arb: abi.ArbERC20 | abi.ArbERC721
   eth: ERC20 | ERC721
 }
 
 interface ERC20BridgeToken extends BridgedToken {
   type: TokenType.ERC20
-  arb: ArbERC20
+  arb: abi.ArbERC20
   eth: ERC20
   decimals: number
 }
 
 interface ERC721BridgeToken extends BridgedToken {
   type: TokenType.ERC721
-  arb: ArbERC721
+  arb: abi.ArbERC721
   eth: ERC721
 }
 
@@ -113,17 +112,17 @@ export const useArbTokenBridge = (
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+      string[],
+      React.Dispatch<string[]>,
+      React.Dispatch<void>
+    ]
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+      string[],
+      React.Dispatch<string[]>,
+      React.Dispatch<void>
+    ]
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
@@ -142,7 +141,7 @@ export const useArbTokenBridge = (
     if (!walletAddress) throw new Error('updateEthBalances walletAddress')
 
     const inboxManager = await arbProvider.globalInboxConn()
-    const ethWallet = arbProvider.provider.getSigner(walletIndex)
+    const ethWallet = arbProvider.ethProvider.getSigner(walletIndex)
 
     const [
       balance,
@@ -215,7 +214,7 @@ export const useArbTokenBridge = (
 
     try {
       const inboxManager = (await arbProvider.globalInboxConn()).connect(
-        arbProvider.provider.getSigner(walletIndex)
+        arbProvider.ethProvider.getSigner(walletIndex)
       )
       const tx = await inboxManager.withdrawEth()
       const receipt = await tx.wait()
@@ -439,7 +438,7 @@ export const useArbTokenBridge = (
       if (!contract) throw new Error('contract not present')
 
       const inboxManager = (await arbProvider.globalInboxConn()).connect(
-        arbProvider.provider.getSigner(walletIndex)
+        arbProvider.ethProvider.getSigner(walletIndex)
       )
 
       // TODO error handle
@@ -473,7 +472,7 @@ export const useArbTokenBridge = (
         throw Error('addToken missing req')
 
       const isEthContract =
-        (await arbProvider.provider.getCode(contractAddress)).length > 2
+        (await arbProvider.ethProvider.getCode(contractAddress)).length > 2
       if (!isEthContract) throw Error('contract is not deployed on eth')
       else if (bridgeTokens[contractAddress]) throw Error('token already added')
 
@@ -496,7 +495,7 @@ export const useArbTokenBridge = (
           )
           const ethERC20 = ERC20Factory.connect(
             contractAddress,
-            arbProvider.provider.getSigner(walletIndex)
+            arbProvider.ethProvider.getSigner(walletIndex)
           )
 
           const [allowance, name, decimals, symbol] = await Promise.all([
@@ -528,7 +527,7 @@ export const useArbTokenBridge = (
           )
           const ethERC721 = ERC721Factory.connect(
             contractAddress,
-            arbProvider.provider.getSigner(walletIndex)
+            arbProvider.ethProvider.getSigner(walletIndex)
           )
 
           const [allowed, name, symbol] = await Promise.all([
