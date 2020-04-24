@@ -11,8 +11,6 @@ interface Web3Data {
   erc721Balance: ERC721Balance | undefined
 }
 const Header = ({ ethAddress, vmId, ethBalance, erc20Balance, erc721Balance }: Web3Data) => {
-  console.warn(erc20Balance);
-
   return (
     <div className="col-lg-12">
       <h1 className="text-center">Arbitrum Token Bridge</h1>
