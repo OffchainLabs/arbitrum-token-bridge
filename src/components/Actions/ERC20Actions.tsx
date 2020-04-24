@@ -13,7 +13,12 @@ type ActionsProps = {
   currentERC20Address: string
 }
 
-const Actions = ({ balances, eth, bridgeTokens, currentERC20Address}: ActionsProps) => {
+const Actions = ({
+  balances,
+  eth,
+  bridgeTokens,
+  currentERC20Address
+}: ActionsProps) => {
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
   const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
   const lockBoxBalance = balances ? +formatEther(balances.lockBoxBalance) : 0
@@ -21,25 +26,31 @@ const Actions = ({ balances, eth, bridgeTokens, currentERC20Address}: ActionsPro
 
   return (
     <div>
-    <Button variant="outline-secondary" disabled={false} onClick={()=> eth.approve(currentERC20Address)}>Approve</Button>
+      <Button
+        variant="outline-secondary"
+        disabled={false}
+        onClick={() => eth.approve(currentERC20Address)}
+      >
+        Approve
+      </Button>
       <NumberInputForm
         max={ethChainBalance}
         text={'Deposit Token'}
-        onSubmit={(value)=>{
+        onSubmit={value => {
           eth.deposit(currentERC20Address, value)
         }}
       />
       <NumberInputForm
         max={arbChainBalance}
         text={'Withdraw Token'}
-        onSubmit={(value)=>{
+        onSubmit={value => {
           eth.withdraw(currentERC20Address, value)
         }}
       />
       <NumberInputForm
         max={lockBoxBalance}
         text={'Withdraw LockBox'}
-        onSubmit={(value)=>{
+        onSubmit={value => {
           eth.withdrawLockBox(currentERC20Address, value)
         }}
       />

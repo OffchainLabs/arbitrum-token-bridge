@@ -5,7 +5,12 @@ import { getInjectedWeb3 } from 'util/web3'
 import * as ethers from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
-import { useArbTokenBridge, TokenType, ContractStorage, BridgeToken } from 'arb-token-bridge'
+import {
+  useArbTokenBridge,
+  TokenType,
+  ContractStorage,
+  BridgeToken
+} from 'arb-token-bridge'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -23,30 +28,37 @@ const App = () => {
     cache,
     token,
     bridgeTokens,
-    eth,
+    eth
   } = useArbTokenBridge(validatorUrl, getInjectedWeb3())
   useEffect(() => {
     vmId && walletAddress && balances.update()
   }, [vmId, walletAddress])
 
-  const [currentERC20Address, setCurrentERC20Address] = useLocalStorage('currentERC20', "")
-  const [currentERC721Address, setCurrentERC721Address] = useLocalStorage('currentERC721',"")
+  const [currentERC20Address, setCurrentERC20Address] = useLocalStorage(
+    'currentERC20',
+    ''
+  )
+  const [currentERC721Address, setCurrentERC721Address] = useLocalStorage(
+    'currentERC721',
+    ''
+  )
 
   useEffect(() => {
     const allAddresses = Object.keys(bridgeTokens).sort()
     if (!currentERC20Address || !bridgeTokens[currentERC20Address]) {
-      const firstERC20 = Object.values(bridgeTokens).find((token)=> token && token.type === TokenType.ERC20)
+      const firstERC20 = Object.values(bridgeTokens).find(
+        token => token && token.type === TokenType.ERC20
+      )
       firstERC20 && setCurrentERC20Address(firstERC20.eth.address)
     }
 
     if (!currentERC721Address || !bridgeTokens[currentERC721Address]) {
-      const firstERC721 = Object.values(bridgeTokens).find((token)=> token && token.type === TokenType.ERC721)
+      const firstERC721 = Object.values(bridgeTokens).find(
+        token => token && token.type === TokenType.ERC721
+      )
       firstERC721 && setCurrentERC721Address(firstERC721.eth.address)
     }
-
-
   }, [bridgeTokens])
-
 
   const ercBalance = (() => {
     if (currentERC20Address && balances.erc20[currentERC20Address]) {
@@ -76,8 +88,8 @@ const App = () => {
             token={token}
             erc721balance={erc721Balance}
             bridgeTokens={bridgeTokens}
-            currentERC20Address={currentERC20Address || ""}
-            currentERC721Address={currentERC721Address || ""}
+            currentERC20Address={currentERC20Address || ''}
+            currentERC721Address={currentERC721Address || ''}
           />
         </div>
       </div>
