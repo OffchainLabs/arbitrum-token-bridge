@@ -35,6 +35,7 @@ const DropdownInputForm = ({
       <DropdownButton
         id="dropdown-basic-button"
         title={value || 'select token'}
+        value={value}
       >
         {items.map((item, i) => (
           <Dropdown.Item
@@ -51,6 +52,7 @@ const DropdownInputForm = ({
         variant="outline-secondary"
         onClick={() => {
           onSubmit(value.toString())
+          setValue(0)
         }}
       >
         {action}

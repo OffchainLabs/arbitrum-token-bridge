@@ -57,6 +57,7 @@ const AssetDropDown = ({
           isValid={ !!erc20Form && looksLikeAddress(erc20Form)}
           placeholder="paste token address"
           onChange={(e: any) => seterc20Form(e.target.value)}
+          value={erc20Form}
         />
           <Feedback type="valid">press enter to add token</Feedback>
           <Feedback type="invalid">invalid address</Feedback>
