@@ -74,7 +74,16 @@ const App = () => {
   return (
     <div className="container">
       <div className="row">
-        <Header ethAddress={walletAddress} vmId={vmId} ethBalance={balances.eth}  erc20Balance={erc20Balance} erc721Balance={erc721Balance} />
+        <Header
+        ethAddress={walletAddress}
+        vmId={vmId}
+        ethBalance={balances.eth}
+        erc20Balance={erc20Balance}
+        erc721Balance={erc721Balance}
+        bridgeTokens={bridgeTokens}
+        currentERC20Address={currentERC20Address ?? ''}
+        currentERC721Address={currentERC721Address ?? ''}
+        />
       </div>
       <div className="row">
         <div id="bridgebody">
