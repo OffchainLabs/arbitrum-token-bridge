@@ -34,6 +34,7 @@ const NumberInputForm = ({
         onSubmit={(e: any) => {
           e.preventDefault()
           onSubmit(value.toString())
+          setValue(0, max)
         }}
       >
         <FormControl
