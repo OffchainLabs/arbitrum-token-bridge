@@ -70,6 +70,7 @@ const App = () => {
       return balances.erc721[currentERC721Address]
     }
   })()
+  // console.warn(pendingWithdrawals);
 
   return (
     <div className="container">
