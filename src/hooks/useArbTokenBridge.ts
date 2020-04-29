@@ -464,7 +464,9 @@ export const useArbTokenBridge = (
       const receipt = await tx.wait()
 
       const { hash } = tx
-      if (!hash) return receipt
+
+      if (!hash) throw new Error('withdrawToken: missing hash in txn')
+
       arbProvider.getMessageResult(hash).then(data => {
         if (!data) return
         const pendingWithdrawal: PendingWithdrawal = {
