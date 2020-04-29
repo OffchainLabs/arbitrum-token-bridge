@@ -61,19 +61,21 @@ const App = () => {
   }, [bridgeTokens])
 
   const erc20Balance = (() => {
-    if (currentERC20Address && balances.erc20[currentERC20Address]) {
-      return balances.erc20[currentERC20Address]
+    const { erc20 } = balances
+    if (currentERC20Address && erc20 && erc20[currentERC20Address]) {
+      return erc20[currentERC20Address]
     }
   })()
   const erc721Balance = (() => {
-    if (currentERC721Address && balances.erc721[currentERC721Address]) {
-      return balances.erc721[currentERC721Address]
+    const { erc721 } = balances
+    if (currentERC721Address && erc721 && erc721 && [currentERC721Address]) {
+      return erc721[currentERC721Address]
     }
   })()
-  // console.warn(pendingWithdrawals);
+  console.warn('BALS',balances.erc20);
 
   return (
-    <div className="container">
+    <div className="container" onClick={()=>token.updateBalances()}>
       <div className="row">
         <Header
         ethAddress={walletAddress}
