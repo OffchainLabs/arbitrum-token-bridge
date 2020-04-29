@@ -82,8 +82,6 @@ export interface ERC721Balance {
   pendingWithdrawals: PendingWithdrawals
 }
 
-type TokenBalance = BridgeBalance | ERC721Balance
-
 interface BridgeConfig {
   vmId: string
   walletAddress: string
@@ -474,6 +472,9 @@ export const useArbTokenBridge = (
           blockHeight: receipt.blockNumber,
           from: walletAddress
         }
+        /* add to pending withdrawals and update without mutating
+          ERC20 && ERC721 could probably by DRYed up, but had typing issues, so keeping separate
+        */
         if (contract.type === TokenType.ERC20) {
           const balance = erc20Balances?.[contractAddress]
           if (!balance) return
@@ -681,13 +682,16 @@ export const useArbTokenBridge = (
      (rollup: any, assertionHash: string) => {
     if (!arbProvider)
       throw new Error('updatePendingWithdrawals no arb provider')
+
     Promise.all([rollup.vmParams(), arbProvider.getBlockNumber()]).then(
       ([vmParams, currentBlockHeight]) => {
+
         const gracePeriodBlocks = vmParams.gracePeriodTicks.toNumber() / 1000
         const isPastGracePeriod = (withdrawal: PendingWithdrawal) =>
           withdrawal.blockHeight &&
-          withdrawal.blockHeight + gracePeriodBlocks < currentBlockHeight
+          withdrawal.blockHeight + 2 * gracePeriodBlocks < currentBlockHeight
 
+        // remove completed eth withdrawals
         const ethWithDrawalsCopy = { ...ethBalances.pendingWithdrawals }
         let ethUpdate = false
         for (const key in ethBalances.pendingWithdrawals) {
@@ -697,7 +701,7 @@ export const useArbTokenBridge = (
             ethUpdate = true
           }
         }
-
+          // remove completed ERC20 withdrawals
         const erc20BalancesClone:ContractStorage<BridgeBalance>  = cloneDeep(erc20Balances)
         let erc20Update = false
         for (const address in erc20BalancesClone) {
@@ -712,6 +716,7 @@ export const useArbTokenBridge = (
           }
         }
 
+        // remove completed ERC721 withdrawals
         const erc721BalancesClone:ContractStorage<ERC721Balance> = cloneDeep(erc721Balances)
         let erc721Update = false
         for (const address in erc721BalancesClone) {
@@ -726,6 +731,7 @@ export const useArbTokenBridge = (
           }
         }
 
+        // update if necessary
         if (ethUpdate) {
           setEthBalances({
             ...ethBalances,
@@ -744,10 +750,9 @@ export const useArbTokenBridge = (
       }
     )
   }, [erc20Balances, erc721Balances, arbProvider])
+
   const handleConfirmedAssertion = async (assertionHash: string) => {
     if (!arbProvider) return
-    console.log('assertionhash', assertionHash)
-
     const rollup = await arbProvider.arbRollupConn()
     updatePendingWithdrawals(rollup, assertionHash)
   }
@@ -775,10 +780,7 @@ export const useArbTokenBridge = (
           const {
             name: confirmedValidAssertion
           } = rollup.interface.events.ConfirmedValidAssertion
-          rollup.removeListener(
-            confirmedValidAssertion,
-            handleConfirmedAssertion
-          )
+          rollup.removeListener(confirmedValidAssertion, handleConfirmedAssertion)
         })
       }
     }
