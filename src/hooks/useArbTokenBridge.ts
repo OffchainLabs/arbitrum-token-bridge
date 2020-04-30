@@ -1005,6 +1005,7 @@ export const useArbTokenBridge = (
     ) {
       console.info('Eth Balances initial load')
       addCachedPWsToBalances()
+      window.setInterval(updateAllBalances,7500)
     }
     if (
       prevERC20Balances &&
