@@ -27,14 +27,34 @@ export enum TokenType {
 }
 /* eslint-enable no-shadow */
 
-interface PendingWithdrawal {
-  blockHeight: number | undefined
-  value: utils.BigNumber
-  from: string
+export enum AssetType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721',
+  ETH = 'ETH'
 }
 
 interface PendingWithdrawals {
   [assertionHash: string]: PendingWithdrawal
+}
+
+interface PendingWithdrawalSuper {
+  blockHeight: number | undefined
+  value: utils.BigNumber | number
+  from?: string
+}
+
+interface PendingWithdrawal extends PendingWithdrawalSuper {
+  value: utils.BigNumber
+}
+
+interface PendingWithdrawalCache extends PendingWithdrawalSuper {
+  value: number
+  type: AssetType
+  address?: string
+}
+
+interface PendingWithdrawalsCache {
+  [assertionHash: string]: PendingWithdrawalCache
 }
 
 interface BridgedToken {
@@ -87,6 +107,16 @@ interface BridgeConfig {
   walletAddress: string
 }
 
+const pWToPWCache = (pW:PendingWithdrawal, type:AssetType, address?:string): PendingWithdrawalCache => {
+  return {...pW, value: pW.value.toNumber(), type, address}
+}
+const pWCacheToPW = (pWCache:PendingWithdrawalCache): PendingWithdrawal=> {
+  return {
+    value: utils.bigNumberify(pWCache.value),
+    blockHeight: pWCache.value,
+  }
+}
+
 // interface ArbTokenBridge { }
 
 // may be worthwhile to separate state from token bridge fn
@@ -129,7 +159,7 @@ export const useArbTokenBridge = (
     string[],
     React.Dispatch<string[]>,
     React.Dispatch<void>
-  ]
+  ]g
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
@@ -138,6 +168,10 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
+  const [pWsCache, setPWsCache, clearPWsCache] = useLocalStorage<
+    PendingWithdrawalsCache
+  >('PendingWithdrawalsCache', {})
+
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
     vmId: ''
@@ -145,6 +179,80 @@ export const useArbTokenBridge = (
 
   const arbProvider = useArbProvider(validatorUrl, ethProvider)
   const arbWallet = arbProvider?.getSigner(walletIndex)
+
+  /* pending withdrawals cache*/
+
+  const addToPWCache = (
+    pW: PendingWithdrawal,
+    nodeHash: string,
+    type: AssetType
+  ) => {
+    // converts bignum to number for local storage
+    setPWsCache({
+      ...pWsCache,
+      nodeHash: pWToPWCache(pW, type)
+    })
+  }
+
+  const removeFromPWCache = (nodeHash: string) => {
+    const newPWsCache:PendingWithdrawalsCache = {...pWsCache}
+    if (newPWsCache){
+      delete newPWsCache[nodeHash]
+      setPWsCache(newPWsCache)
+    }
+  }
+
+
+  const addCachedPWsToBalances = ({_ethBalance , _erc20Balances, _erc721Balances}:  {
+    _ethBalance: BridgeBalance | null,
+    _erc20Balances: ContractStorage<BridgeBalance> | null,
+    _erc721Balances: ContractStorage<ERC721Balance> | null
+  })=>{
+    const ethBalance: BridgeBalance = cloneDeep(_ethBalance)
+    const erc20Balances: ContractStorage<BridgeBalance> = cloneDeep(_erc20Balances)
+    const erc721Balances = cloneDeep(_erc721Balances)
+    if (!pWsCache)return
+    for( const nodeHash in pWsCache ){
+      const pWCache = pWsCache[nodeHash]
+      const pW = pWCacheToPW(pWCache)
+      switch (pWCache.type) {
+        case AssetType.ETH:{
+          ethBalance.pendingWithdrawals[nodeHash] = pW
+          break;
+        }
+        case AssetType.ERC20:{
+          const address = pWCache.address
+          if (!address) continue
+          const balance = erc20Balances[address]
+          if (balance){
+            balance.pendingWithdrawals = {
+              [nodeHash]: pW
+            }
+          }
+          break;
+        }
+        case AssetType.ERC721:{
+          const address = pWCache.address
+          if (!address) continue
+          const balance = erc721Balances[address]
+          if (balance){
+            balance.pendingWithdrawals = {
+              [nodeHash]: pW
+            }
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+    return {
+      ethBalance,
+      erc20Balances,
+      erc721Balances
+
+    }
+  }
 
   /*
   ETH METHODS:
@@ -234,6 +342,7 @@ export const useArbTokenBridge = (
             data!.validNodeHash
           ] = pendingWithdrawal
           setEthBalances(newEthBalances)
+          addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ETH)
         })
         return receipt
       } catch (e) {
@@ -493,6 +602,7 @@ export const useArbTokenBridge = (
             [contractAddress]: newBalance
           }
           setErc20Balances(newBalances)
+          addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ERC20)
         } else if (contract.type === TokenType.ERC721) {
           const balance = erc721Balances?.[contractAddress]
           if (!balance) return
@@ -509,6 +619,7 @@ export const useArbTokenBridge = (
             [contractAddress]: newBalance
           }
           setErc721Balances(newBalances)
+          addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ERC721)
         }
       })
 
@@ -688,6 +799,7 @@ export const useArbTokenBridge = (
             if (key === assertionHash || isPastGracePeriod(withdrawal)) {
               delete ethWithDrawalsCopy[key]
               ethUpdate = true
+              removeFromPWCache(assertionHash)
             }
           }
           // remove completed ERC20 withdrawals
@@ -703,6 +815,7 @@ export const useArbTokenBridge = (
               if (key === assertionHash || isPastGracePeriod(withdrawal)) {
                 delete erc20Balance.pendingWithdrawals[key]
                 erc20Update = true
+                removeFromPWCache(assertionHash)
               }
             }
           }
@@ -720,6 +833,7 @@ export const useArbTokenBridge = (
               if (key === assertionHash || isPastGracePeriod(withdrawal)) {
                 delete erc721Balance.pendingWithdrawals[key]
                 erc721Update = true
+                removeFromPWCache(assertionHash)
               }
             }
           }
