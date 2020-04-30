@@ -107,13 +107,17 @@ interface BridgeConfig {
   walletAddress: string
 }
 
-const pWToPWCache = (pW:PendingWithdrawal, type:AssetType, address?:string): PendingWithdrawalCache => {
-  return {...pW, value: pW.value.toNumber(), type, address}
+const pWToPWCache = (
+  pW: PendingWithdrawal,
+  type: AssetType,
+  address?: string
+): PendingWithdrawalCache => {
+  return { ...pW, value: pW.value.toNumber(), type, address }
 }
-const pWCacheToPW = (pWCache:PendingWithdrawalCache): PendingWithdrawal=> {
+const pWCacheToPW = (pWCache: PendingWithdrawalCache): PendingWithdrawal => {
   return {
     value: utils.bigNumberify(pWCache.value),
-    blockHeight: pWCache.value,
+    blockHeight: pWCache.value
   }
 }
 
@@ -159,7 +163,7 @@ export const useArbTokenBridge = (
     string[],
     React.Dispatch<string[]>,
     React.Dispatch<void>
-  ]g
+  ]
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
@@ -195,62 +199,66 @@ export const useArbTokenBridge = (
   }
 
   const removeFromPWCache = (nodeHash: string) => {
-    const newPWsCache:PendingWithdrawalsCache = {...pWsCache}
-    if (newPWsCache){
+    const newPWsCache: PendingWithdrawalsCache = { ...pWsCache }
+    if (newPWsCache) {
       delete newPWsCache[nodeHash]
       setPWsCache(newPWsCache)
     }
   }
 
-
-  const addCachedPWsToBalances = ({_ethBalance , _erc20Balances, _erc721Balances}:  {
-    _ethBalance: BridgeBalance | null,
-    _erc20Balances: ContractStorage<BridgeBalance> | null,
+  const addCachedPWsToBalances = ({
+    _ethBalance,
+    _erc20Balances,
+    _erc721Balances
+  }: {
+    _ethBalance: BridgeBalance | null
+    _erc20Balances: ContractStorage<BridgeBalance> | null
     _erc721Balances: ContractStorage<ERC721Balance> | null
-  })=>{
+  }) => {
     const ethBalance: BridgeBalance = cloneDeep(_ethBalance)
-    const erc20Balances: ContractStorage<BridgeBalance> = cloneDeep(_erc20Balances)
+    const erc20Balances: ContractStorage<BridgeBalance> = cloneDeep(
+      _erc20Balances
+    )
     const erc721Balances = cloneDeep(_erc721Balances)
-    if (!pWsCache)return
-    for( const nodeHash in pWsCache ){
+    if (!pWsCache) return
+    for (const nodeHash in pWsCache) {
       const pWCache = pWsCache[nodeHash]
       const pW = pWCacheToPW(pWCache)
       switch (pWCache.type) {
-        case AssetType.ETH:{
+        case AssetType.ETH: {
           ethBalance.pendingWithdrawals[nodeHash] = pW
-          break;
+          break
         }
-        case AssetType.ERC20:{
+        case AssetType.ERC20: {
           const address = pWCache.address
           if (!address) continue
           const balance = erc20Balances[address]
-          if (balance){
+          if (balance) {
             balance.pendingWithdrawals = {
               [nodeHash]: pW
             }
           }
-          break;
+          break
         }
-        case AssetType.ERC721:{
+        case AssetType.ERC721: {
           const address = pWCache.address
           if (!address) continue
           const balance = erc721Balances[address]
-          if (balance){
+          if (balance) {
             balance.pendingWithdrawals = {
               [nodeHash]: pW
             }
           }
-          break;
+          break
         }
         default:
-          break;
+          break
       }
     }
     return {
       ethBalance,
       erc20Balances,
       erc721Balances
-
     }
   }
 
