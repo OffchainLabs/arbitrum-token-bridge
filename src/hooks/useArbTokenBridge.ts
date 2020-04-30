@@ -234,7 +234,6 @@ export const useArbTokenBridge = (
     React.Dispatch<PendingWithdrawalsCache>,
     React.Dispatch<void>
   ]
-  console.warn('pws cahce', pWsCache)
 
   const [{ walletAddress, vmId }, setConfig] = useState<BridgeConfig>({
     walletAddress: '',
