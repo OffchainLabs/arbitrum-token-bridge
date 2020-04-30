@@ -5,9 +5,11 @@
   "private": true,
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
+    "@types/lodash.isempty": "^4.4.6",
     "arb-provider-ethers": "^0.4.7",
     "ethers": "^4.0.44",
     "lodash.clonedeep": "^4.5.0",
+    "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
     "typescript": "^3.8.3"
   },
