@@ -860,6 +860,9 @@ export const useArbTokenBridge = (
     (rollup: any, assertionHash: string) => {
       if (!arbProvider)
         throw new Error('updatePendingWithdrawals no arb provider')
+      if (pWsCache[assertionHash]) {
+        removeFromPWCache(assertionHash)
+      }
 
       Promise.all([rollup.vmParams(), arbProvider.getBlockNumber()]).then(
         ([vmParams, currentBlockHeight]) => {
@@ -876,7 +879,6 @@ export const useArbTokenBridge = (
             if (key === assertionHash || isPastGracePeriod(withdrawal)) {
               delete ethWithDrawalsCopy[key]
               ethUpdate = true
-              removeFromPWCache(assertionHash)
             }
           }
           // remove completed ERC20 withdrawals
@@ -892,7 +894,6 @@ export const useArbTokenBridge = (
               if (key === assertionHash || isPastGracePeriod(withdrawal)) {
                 delete erc20Balance.pendingWithdrawals[key]
                 erc20Update = true
-                removeFromPWCache(assertionHash)
               }
             }
           }
@@ -910,7 +911,6 @@ export const useArbTokenBridge = (
               if (key === assertionHash || isPastGracePeriod(withdrawal)) {
                 delete erc721Balance.pendingWithdrawals[key]
                 erc721Update = true
-                removeFromPWCache(assertionHash)
               }
             }
           }
@@ -993,6 +993,32 @@ export const useArbTokenBridge = (
             setERC721Cache(values.filter((val): val is string => !!val))
           })
         }
+
+        arbProvider.arbRollupConn().then(async rollup => {
+          const { ethProvider } = arbProvider
+          const currentBlock = await ethProvider.getBlockNumber()
+          const topics = [
+            [rollup.interface.events.ConfirmedValidAssertion.topic]
+          ]
+          ethProvider
+            .getLogs({
+              address: vmId,
+              topics,
+              fromBlock: 0,
+              toBlock: currentBlock
+            })
+            .then(events => {
+              const nodeHashes = events.forEach(log => {
+                const { nodeHash } = rollup.interface.parseLog(log).values
+                if (pWsCache[nodeHash]) {
+                  updatePendingWithdrawals(rollup, nodeHash)
+                }
+              })
+            })
+            .catch(e => {
+              console.warn('filter error:', e)
+            })
+        })
       }
     }
   }, [arbProvider, walletAddress])
@@ -1005,7 +1031,7 @@ export const useArbTokenBridge = (
     ) {
       console.info('Eth Balances initial load')
       addCachedPWsToBalances()
-      window.setInterval(updateAllBalances,7500)
+      window.setInterval(updateAllBalances, 7500)
     }
     if (
       prevERC20Balances &&
