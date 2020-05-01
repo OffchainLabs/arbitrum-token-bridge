@@ -409,11 +409,13 @@ export const useArbTokenBridge = (
             blockHeight: receipt.blockNumber,
             from: walletAddress
           }
-          const newEthBalances = { ...ethBalances }
-          ethBalances.pendingWithdrawals[
-            data!.validNodeHash
-          ] = pendingWithdrawal
-          setEthBalances(newEthBalances)
+          setEthBalances((balance)=> {
+            const newEthBalances = { ...balance }
+            newEthBalances.pendingWithdrawals[
+              data.validNodeHash
+            ] = pendingWithdrawal
+            return newEthBalances
+          })
           addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ETH)
         })
         return receipt
@@ -663,38 +665,44 @@ export const useArbTokenBridge = (
           ERC20 && ERC721 could probably by DRYed up, but had typing issues, so keeping separate
         */
         if (contract.type === TokenType.ERC20) {
-          const balance = erc20Balances?.[contractAddress]
-          if (!balance) return
-          const newPendingWithdrawals: PendingWithdrawals = {
-            ...balance.pendingWithdrawals,
-            [data.validNodeHash]: pendingWithdrawal
-          }
-          const newBalance: BridgeBalance = {
-            ...balance,
-            pendingWithdrawals: newPendingWithdrawals
-          }
-          const newBalances: ContractStorage<BridgeBalance> = {
-            ...erc20Balances,
-            [contractAddress]: newBalance
-          }
-          setErc20Balances(newBalances)
+
+          setErc20Balances((oldErc20Balances)=> {
+            const balance = oldErc20Balances?.[contractAddress]
+            if (!balance) return oldErc20Balances
+            const newPendingWithdrawals: PendingWithdrawals = {
+              ...balance.pendingWithdrawals,
+              [data.validNodeHash]: pendingWithdrawal
+            }
+            const newBalance: BridgeBalance = {
+              ...balance,
+              pendingWithdrawals: newPendingWithdrawals
+            }
+            const newBalances: ContractStorage<BridgeBalance> = {
+              ...oldErc20Balances,
+              [contractAddress]: newBalance
+            }
+            return newBalances
+          })
           addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ERC20)
         } else if (contract.type === TokenType.ERC721) {
-          const balance = erc721Balances?.[contractAddress]
-          if (!balance) return
-          const newPendingWithdrawals: PendingWithdrawals = {
-            ...balance.pendingWithdrawals,
-            [data.validNodeHash]: pendingWithdrawal
-          }
-          const newBalance: ERC721Balance = {
-            ...balance,
-            pendingWithdrawals: newPendingWithdrawals
-          }
-          const newBalances: ContractStorage<ERC721Balance> = {
-            ...erc721Balances,
-            [contractAddress]: newBalance
-          }
-          setErc721Balances(newBalances)
+
+          setErc721Balances((oldERC721Balances)=>{
+            const balance = oldERC721Balances?.[contractAddress]
+            if (!balance) return oldERC721Balances
+            const newPendingWithdrawals: PendingWithdrawals = {
+              ...balance.pendingWithdrawals,
+              [data.validNodeHash]: pendingWithdrawal
+            }
+            const newBalance: ERC721Balance = {
+              ...balance,
+              pendingWithdrawals: newPendingWithdrawals
+            }
+            const newBalances: ContractStorage<ERC721Balance> = {
+              ...oldERC721Balances,
+              [contractAddress]: newBalance
+            }
+            return newBalances
+          })
           addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ERC721)
         }
       })
