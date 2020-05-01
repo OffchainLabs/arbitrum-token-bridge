@@ -992,19 +992,26 @@ export const useArbTokenBridge = (
             setERC721Cache(values.filter((val): val is string => !!val))
           })
         }
-
+        if (isEmpty(pWsCache)) return
         arbProvider.arbRollupConn().then(async rollup => {
           const { ethProvider } = arbProvider
-          const currentBlock = await ethProvider.getBlockNumber()
+          const currentBlockHeight = await ethProvider.getBlockNumber()
+          const targetAsstionHashes = Object.keys(pWsCache)
+          const minBlockHeight = Object.values(pWsCache).reduce(
+            (acc, pW) => Math.min(pW.blockHeight || 0, acc),
+            Infinity
+          )
+
           const topics = [
-            [rollup.interface.events.ConfirmedValidAssertion.topic]
+            [rollup.interface.events.ConfirmedValidAssertion.topic],
+            targetAsstionHashes
           ]
           ethProvider
             .getLogs({
               address: vmId,
               topics,
-              fromBlock: 0,
-              toBlock: currentBlock
+              fromBlock: minBlockHeight,
+              toBlock: currentBlockHeight
             })
             .then(events => {
               const nodeHashes = events.forEach(log => {
