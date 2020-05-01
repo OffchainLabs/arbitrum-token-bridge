@@ -1041,9 +1041,9 @@ export const useArbTokenBridge = (
       addCachedPWsToBalances()
     }
     if (
-      prevERC20Balances &&
-      isEmpty(prevERC20Balances) &&
-      !isEmpty(erc20Balances)
+      prevERC721Balances &&
+      isEmpty(prevERC721Balances) &&
+      !isEmpty(erc721Balances)
     ) {
       console.info('ERC721 Balances initial load')
       addCachedPWsToBalances()
