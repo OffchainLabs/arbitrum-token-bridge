@@ -409,7 +409,7 @@ export const useArbTokenBridge = (
             blockHeight: receipt.blockNumber,
             from: walletAddress
           }
-          setEthBalances((balance)=> {
+          setEthBalances(balance => {
             const newEthBalances = { ...balance }
             newEthBalances.pendingWithdrawals[
               data.validNodeHash
@@ -665,8 +665,7 @@ export const useArbTokenBridge = (
           ERC20 && ERC721 could probably by DRYed up, but had typing issues, so keeping separate
         */
         if (contract.type === TokenType.ERC20) {
-
-          setErc20Balances((oldErc20Balances)=> {
+          setErc20Balances(oldErc20Balances => {
             const balance = oldErc20Balances?.[contractAddress]
             if (!balance) return oldErc20Balances
             const newPendingWithdrawals: PendingWithdrawals = {
@@ -677,16 +676,14 @@ export const useArbTokenBridge = (
               ...balance,
               pendingWithdrawals: newPendingWithdrawals
             }
-            const newBalances: ContractStorage<BridgeBalance> = {
+            return {
               ...oldErc20Balances,
               [contractAddress]: newBalance
             }
-            return newBalances
           })
           addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ERC20)
         } else if (contract.type === TokenType.ERC721) {
-
-          setErc721Balances((oldERC721Balances)=>{
+          setErc721Balances(oldERC721Balances => {
             const balance = oldERC721Balances?.[contractAddress]
             if (!balance) return oldERC721Balances
             const newPendingWithdrawals: PendingWithdrawals = {
@@ -697,11 +694,10 @@ export const useArbTokenBridge = (
               ...balance,
               pendingWithdrawals: newPendingWithdrawals
             }
-            const newBalances: ContractStorage<ERC721Balance> = {
+            return {
               ...oldERC721Balances,
               [contractAddress]: newBalance
             }
-            return newBalances
           })
           addToPWCache(pendingWithdrawal, data.validNodeHash, AssetType.ERC721)
         }
