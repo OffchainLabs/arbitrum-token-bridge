@@ -996,7 +996,7 @@ export const useArbTokenBridge = (
         arbProvider.arbRollupConn().then(async rollup => {
           const { ethProvider } = arbProvider
           const currentBlockHeight = await ethProvider.getBlockNumber()
-          const targetAsstionHashes = Object.keys(pWsCache)
+          const targetAssertionHashes = Object.keys(pWsCache)
           const minBlockHeight = Object.values(pWsCache).reduce(
             (acc, pW) => Math.min(pW.blockHeight || 0, acc),
             Infinity
@@ -1004,7 +1004,7 @@ export const useArbTokenBridge = (
 
           const topics = [
             [rollup.interface.events.ConfirmedValidAssertion.topic],
-            targetAsstionHashes
+            targetAssertionHashes
           ]
           ethProvider
             .getLogs({
