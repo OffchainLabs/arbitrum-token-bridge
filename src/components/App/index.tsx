@@ -75,7 +75,7 @@ const App = () => {
   console.warn('BALS',balances.erc20);
 
   return (
-    <div className="container" onClick={()=>token.updateBalances()}>
+    <div className="container">
       <div className="row">
         <Header
         ethAddress={walletAddress}
