@@ -10,7 +10,7 @@
     "arb-provider-ethers": "^0.4.7",
     "arb-token-bridge": "OffchainLabs/token-bridge-sdk",
     "bootstrap": "^4.4.1",
-    "ethers": "^4.0.44",
+    "ethers": "^4.0.47",
     "node-sass": "^4.13.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.0",
