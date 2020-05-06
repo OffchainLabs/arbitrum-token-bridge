@@ -352,7 +352,7 @@ export const useArbTokenBridge = (
       arbChainBalance,
       lockBoxBalance,
       totalArbBalance,
-      pendingWithdrawals: <PendingWithdrawals>{}
+      pendingWithdrawals: ethBalances.pendingWithdrawals
     }
 
     let different = true
@@ -1041,6 +1041,7 @@ export const useArbTokenBridge = (
     ) {
       console.info('Eth Balances initial load')
       addCachedPWsToBalances()
+      // arguably unnecessary, but I like it, for insurance
       window.setInterval(updateAllBalances, 7500)
     }
     if (
@@ -1074,6 +1075,15 @@ export const useArbTokenBridge = (
     }
   }, [arbProvider, vmId, walletAddress, walletIndex])
 
+    /* update balances on render */
+  // may be better to leave this to the user
+  useEffect(() => {
+    if (arbProvider && vmId) {
+      updateAllBalances().catch(e =>
+        console.error('updateAllBalances failed', e)
+      )
+    }
+  })
   return {
     walletAddress,
     vmId,
