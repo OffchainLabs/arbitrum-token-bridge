@@ -540,7 +540,7 @@ export const useArbTokenBridge = (
     ]
   )
   const approveToken = useCallback(
-    async (contractAddress: string): Promise<ContractReceipt> => {
+    async (contractAddress: string) => {
       if (!arbProvider) throw new Error('approve missing provider')
 
       const contract = bridgeTokens[contractAddress]
@@ -579,7 +579,7 @@ export const useArbTokenBridge = (
         }
       })
 
-      return receipt
+      return {tx, receipt}
     },
     [arbProvider, bridgeTokens]
   )
