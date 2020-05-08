@@ -796,7 +796,7 @@ export const useArbTokenBridge = (
             arb: arbERC20,
             eth: ethERC20,
             type,
-            allowed: allowance.gte(MIN_APPROVAL),
+            allowed: allowance.gte(MIN_APPROVAL.div(2)),
             name,
             decimals,
             symbol
