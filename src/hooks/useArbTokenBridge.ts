@@ -160,6 +160,16 @@ function mergeAndPreservePWs<T extends TokenBalance>(
 
   return freshBalances
 }
+interface ERC20L1Memo {
+  [contractAddress: string]: ERC20L1
+}
+
+interface ERC20L1 {
+  name: string
+  decimals: number
+  symbol: string
+  address: string
+}
 
 // interface ArbTokenBridge { }
 
@@ -169,6 +179,9 @@ function mergeAndPreservePWs<T extends TokenBalance>(
 // TODO error handling promises with try catch
 // TODO more control & details about approvals
 // TODO extract shared contract interaction logic?
+
+const erc20L1Memo = <ERC20L1Memo>{}
+
 export const useArbTokenBridge = (
   validatorUrl: string,
   ethProvider:
@@ -447,7 +460,7 @@ export const useArbTokenBridge = (
 
   // TODO targeted token updates to prevent unneeded iteration
   const updateTokenBalances = useCallback(
-    async (type?: TokenType)=> {
+    async (type?: TokenType) => {
       if (!arbProvider || !walletAddress)
         throw new Error('updateTokenBalances missing req')
 
@@ -584,7 +597,7 @@ export const useArbTokenBridge = (
         }
       })
 
-      return {tx, receipt}
+      return { tx, receipt }
     },
     [arbProvider, bridgeTokens]
   )
@@ -751,6 +764,33 @@ export const useArbTokenBridge = (
       return receipt
     },
     [arbProvider, bridgeTokens]
+  )
+
+  const getERC20Info = useCallback(
+    async (contractAddress: string): Promise<ERC20L1 | undefined> => {
+      if (!arbProvider || !walletAddress) return
+
+      if (erc20L1Memo[contractAddress]) {
+        return erc20L1Memo[contractAddress]
+      }
+
+      const isContract =
+        (await arbProvider.ethProvider.getCode(contractAddress)).length > 2
+      if (!isContract) return
+      const ethERC20 = ERC20Factory.connect(
+        contractAddress,
+        arbProvider.ethProvider.getSigner(walletIndex)
+      )
+      const [name, decimals, symbol] = await Promise.all([
+        ethERC20.name(),
+        ethERC20.decimals(),
+        ethERC20.symbol()
+      ])
+      const infoObject = { name, decimals, symbol, address: contractAddress }
+      erc20L1Memo[contractAddress] = infoObject
+      return infoObject
+    },
+    [arbProvider, walletAddress]
   )
 
   const addToken = useCallback(
@@ -1080,7 +1120,7 @@ export const useArbTokenBridge = (
     }
   }, [arbProvider, vmId, walletAddress, walletIndex])
 
-    /* update balances on render */
+  /* update balances on render */
   // may be better to leave this to the user
   useEffect(() => {
     if (arbProvider && vmId) {
@@ -1116,7 +1156,8 @@ export const useArbTokenBridge = (
       deposit: depositToken,
       withdraw: withdrawToken,
       withdrawLockBox: withdrawLockBoxToken,
-      updateBalances: updateTokenBalances
+      updateBalances: updateTokenBalances,
+      getERC20Info
     }
   }
 }
