@@ -165,9 +165,9 @@ interface ERC20L1Memo {
 }
 
 interface ERC20L1 {
-  name: string
-  decimals: number
-  symbol: string
+  name: string | undefined
+  decimals: number | undefined
+  symbol: string | undefined
   address: string
 }
 
@@ -781,11 +781,17 @@ export const useArbTokenBridge = (
         contractAddress,
         arbProvider.ethProvider.getSigner(walletIndex)
       )
-      const [name, decimals, symbol] = await Promise.all([
-        ethERC20.name(),
-        ethERC20.decimals(),
-        ethERC20.symbol()
-      ])
+      let name, decimals, symbol
+      try {
+        ;[name, decimals, symbol] = await Promise.all([
+          ethERC20.name(),
+          ethERC20.decimals(),
+          ethERC20.symbol()
+        ])
+      } catch (err) {
+        console.warn('Error: could not get ERC20 info:', err)
+      }
+
       const infoObject = { name, decimals, symbol, address: contractAddress }
       erc20L1Memo[contractAddress] = infoObject
       return infoObject
