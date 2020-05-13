@@ -187,6 +187,7 @@ export const useArbTokenBridge = (
   ethProvider:
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
+  aggregatorUrl?: string,
   walletIndex = 0,
   autoLoadCache = true
 ) => {
@@ -253,7 +254,7 @@ export const useArbTokenBridge = (
     vmId: ''
   })
 
-  const arbProvider = useArbProvider(validatorUrl, ethProvider)
+  const arbProvider = useArbProvider(validatorUrl, ethProvider, aggregatorUrl)
   const arbWallet = arbProvider?.getSigner(walletIndex)
 
   /* pending withdrawals cache*/

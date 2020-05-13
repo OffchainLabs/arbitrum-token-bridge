@@ -6,7 +6,8 @@ export const useArbProvider = (
   validatorUrl: string,
   ethProvider:
     | ethers.providers.JsonRpcProvider
-    | Promise<ethers.providers.JsonRpcProvider>
+    | Promise<ethers.providers.JsonRpcProvider>,
+  aggregatorUrl?: string
 ): ArbProvider | undefined => {
   const [arbProvider, setProvider] = useState(
     ethProvider instanceof Promise
@@ -17,7 +18,7 @@ export const useArbProvider = (
   useEffect(() => {
     if (!arbProvider) {
       Promise.resolve(ethProvider)
-        .then(ep => setProvider(new ArbProvider(validatorUrl, ep)))
+        .then(ep => setProvider(new ArbProvider(validatorUrl, ep, aggregatorUrl)))
         .catch(e => {
           console.log(e)
           throw new Error('unable to resolve provider')
