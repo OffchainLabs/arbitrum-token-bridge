@@ -12,7 +12,7 @@ export const useArbProvider = (
   const [arbProvider, setProvider] = useState(
     ethProvider instanceof Promise
       ? undefined
-      : new ArbProvider(validatorUrl, ethProvider)
+      : new ArbProvider(validatorUrl, ethProvider, aggregatorUrl)
   )
 
   useEffect(() => {
