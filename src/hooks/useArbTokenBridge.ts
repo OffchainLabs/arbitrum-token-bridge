@@ -807,7 +807,10 @@ export const useArbTokenBridge = (
 
       const isEthContract =
         (await arbProvider.ethProvider.getCode(contractAddress)).length > 2
-      if (!isEthContract) throw Error('contract is not deployed on eth')
+      if (!isEthContract) {
+        console.warn('contract not deployed');
+        return ''
+      }
       else if (bridgeTokens[contractAddress]) throw Error('token already added')
 
       const inboxManager = await arbProvider.globalInboxConn()
