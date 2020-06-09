@@ -256,7 +256,12 @@ export const useArbTokenBridge = (
     vmId: ''
   })
 
-  const arbProvider = useArbProvider(validatorUrl, ethProvider, aggregatorUrl, deterministicAssertions)
+  const arbProvider = useArbProvider(
+    validatorUrl,
+    ethProvider,
+    aggregatorUrl,
+    deterministicAssertions
+  )
   const arbWallet = arbProvider?.getSigner(walletIndex)
 
   /* pending withdrawals cache*/
