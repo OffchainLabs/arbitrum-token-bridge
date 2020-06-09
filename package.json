@@ -21,12 +21,12 @@
     "lint": "tsc --noEmit && eslint src/**/*.ts --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint --fix",
     "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
-    "prepare": "install-peers && yarn build"
+    "prepare": "install-peers"
   },
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-provider-ethers": "^0.6.0",
+    "arb-provider-ethers": "^0.6.4",
     "ethers": "^4.0.47",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",

@@ -7,19 +7,20 @@ export const useArbProvider = (
   ethProvider:
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
-  aggregatorUrl?: string
+  aggregatorUrl?: string,
+  deterministicAssertions?: boolean,
 ): ArbProvider | undefined => {
   const [arbProvider, setProvider] = useState(
     ethProvider instanceof Promise
       ? undefined
-      : new ArbProvider(validatorUrl, ethProvider, aggregatorUrl)
+      : new ArbProvider(validatorUrl, ethProvider, aggregatorUrl, deterministicAssertions)
   )
 
   useEffect(() => {
     if (!arbProvider) {
       Promise.resolve(ethProvider)
         .then(ep =>
-          setProvider(new ArbProvider(validatorUrl, ep, aggregatorUrl))
+          setProvider(new ArbProvider(validatorUrl, ep, aggregatorUrl, deterministicAssertions))
         )
         .catch(e => {
           console.log(e)
