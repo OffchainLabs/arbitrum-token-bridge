@@ -6,7 +6,7 @@
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-provider-ethers": "^0.5.0",
+    "arb-provider-ethers": "^0.6.0",
     "ethers": "^4.0.47",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",

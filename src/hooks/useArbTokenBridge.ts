@@ -431,6 +431,8 @@ export const useArbTokenBridge = (
 
         arbProvider.getMessageResult(hash).then(data => {
           if (!data) return
+          if (!data.nodeInfo) return
+          const nodeHash = data.nodeInfo.nodeHash
           const pendingWithdrawal: PendingWithdrawal = {
             value: weiValue,
             blockHeight: receipt.blockNumber,
@@ -438,14 +440,12 @@ export const useArbTokenBridge = (
           }
           setEthBalances(balance => {
             const newEthBalances = { ...balance }
-            newEthBalances.pendingWithdrawals[
-              data.validNodeHash
-            ] = pendingWithdrawal
+            newEthBalances.pendingWithdrawals[nodeHash] = pendingWithdrawal
             return newEthBalances
           })
           addToPWCache(
             pendingWithdrawal,
-            data.validNodeHash,
+            nodeHash,
             AssetType.ETH,
             walletAddress
           )
@@ -692,6 +692,8 @@ export const useArbTokenBridge = (
 
       arbProvider.getMessageResult(hash).then(data => {
         if (!data) return
+        if (!data.nodeInfo) return
+        const nodeHash = data.nodeInfo.nodeHash
         const pendingWithdrawal: PendingWithdrawal = {
           value: utils.parseEther(amountOrTokenId),
           blockHeight: receipt.blockNumber,
@@ -706,7 +708,7 @@ export const useArbTokenBridge = (
             if (!balance) return oldErc20Balances
             const newPendingWithdrawals: PendingWithdrawals = {
               ...balance.pendingWithdrawals,
-              [data.validNodeHash]: pendingWithdrawal
+              [nodeHash]: pendingWithdrawal
             }
             const newBalance: BridgeBalance = {
               ...balance,
@@ -719,7 +721,7 @@ export const useArbTokenBridge = (
           })
           addToPWCache(
             pendingWithdrawal,
-            data.validNodeHash,
+            nodeHash,
             AssetType.ERC20,
             walletAddress,
             contractAddress
@@ -730,7 +732,7 @@ export const useArbTokenBridge = (
             if (!balance) return oldERC721Balances
             const newPendingWithdrawals: PendingWithdrawals = {
               ...balance.pendingWithdrawals,
-              [data.validNodeHash]: pendingWithdrawal
+              [nodeHash]: pendingWithdrawal
             }
             const newBalance: ERC721Balance = {
               ...balance,
@@ -743,7 +745,7 @@ export const useArbTokenBridge = (
           })
           addToPWCache(
             pendingWithdrawal,
-            data.validNodeHash,
+            nodeHash,
             AssetType.ERC721,
             walletAddress,
             contractAddress

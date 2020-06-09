@@ -301,12 +301,11 @@ ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-arb-provider-ethers@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/arb-provider-ethers/-/arb-provider-ethers-0.5.0.tgz#7f71b595a956589adabaa7ea495cd5dfbf8b1c79"
-  integrity sha512-b3wR15OGB6IQEEtlRk9r6u4Qn7rf8CRlhBG/qK3UozMdOH0lar66HKqTAXGzIdSYe2f1c78PbrNGHS3BeROwmQ==
+arb-provider-ethers@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/arb-provider-ethers/-/arb-provider-ethers-0.6.0.tgz#39a53e24ef340f995cf921a3b132cdf37f696178"
+  integrity sha512-J3uEhh8FonkzIvbWVsyMJJ3Pqvq0tjNhGvdZxESbDHD96LdFDdZA2EhA8ZUw6e/4ZdInuuWy04GqCk5AumGm4A==
   dependencies:
-    ethers "^4.0.47"
     jayson "^3.2.0"
     promise-poller "^1.9.1"
 
