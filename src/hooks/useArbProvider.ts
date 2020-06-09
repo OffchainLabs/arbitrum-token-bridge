@@ -18,7 +18,9 @@ export const useArbProvider = (
   useEffect(() => {
     if (!arbProvider) {
       Promise.resolve(ethProvider)
-        .then(ep => setProvider(new ArbProvider(validatorUrl, ep, aggregatorUrl)))
+        .then(ep =>
+          setProvider(new ArbProvider(validatorUrl, ep, aggregatorUrl))
+        )
         .catch(e => {
           console.log(e)
           throw new Error('unable to resolve provider')

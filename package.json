@@ -2,6 +2,27 @@
   "name": "arb-token-bridge",
   "version": "0.1.2",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "description": "SDK for transfering assets to and from Arbitrum",
+  "author": "Offchain Labs, Inc.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OffchainLabs/token-bridge-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OffchainLabs/token-bridge-sdk/issues"
+  },
+  "homepage": "https://offchainlabs.com",
+  "scripts": {
+    "prepublishOnly": "yarn build && yarn format",
+    "preversion": "yarn lint",
+    "build": "rm -rf ./dist && tsc",
+    "lint": "tsc --noEmit && eslint src/**/*.ts --quiet --fix",
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint --fix",
+    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
+    "prepare": "install-peers && yarn build"
+  },
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
@@ -12,18 +33,12 @@
     "lodash.isequal": "^4.5.0",
     "typescript": "^3.8.3"
   },
-  "scripts": {
-    "build": "rm -rf ./dist && tsc",
-    "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\"",
-    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
-    "prepare": "yarn build"
-  },
   "eslintConfig": {
     "extends": "react-app"
   },
   "devDependencies": {
     "@types/jest": "^24.0.0",
+    "@types/lodash.clonedeep": "^4.5.6",
     "@types/lodash.isequal": "^4.5.5",
     "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
@@ -34,12 +49,13 @@
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.19.0",
+    "install-peers-cli": "^2.2.0",
     "prettier": "^2.0.2",
     "typechain": "^1.0.5",
     "typechain-target-ethers": "^1.0.4"
   },
   "files": [
-    "./dist"
+    "dist/**/*"
   ],
   "peerDependencies": {
     "react": "^16.8.6",

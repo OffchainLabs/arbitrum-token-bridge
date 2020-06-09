@@ -14,10 +14,9 @@ import type { abi } from 'arb-provider-ethers'
 import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
 import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const deepEquals = require('lodash.isequal')
-const cloneDeep = require('lodash.clonedeep')
-const isEmpty = require('lodash.isempty')
+import deepEquals from 'lodash.isequal'
+import cloneDeep from 'lodash.clonedeep'
+import isEmpty from 'lodash.isempty'
 
 const MIN_APPROVAL = constants.MaxUint256
 
@@ -182,7 +181,7 @@ interface ERC20L1 {
 // TODO more control & details about approvals
 // TODO extract shared contract interaction logic?
 
-const erc20L1Memo = <ERC20L1Memo>{}
+const erc20L1Memo = {} as ERC20L1Memo
 
 export const useArbTokenBridge = (
   validatorUrl: string,
@@ -202,7 +201,7 @@ export const useArbTokenBridge = (
     arbChainBalance: constants.Zero,
     totalArbBalance: constants.Zero,
     lockBoxBalance: constants.Zero,
-    pendingWithdrawals: <PendingWithdrawals>{}
+    pendingWithdrawals: {} as PendingWithdrawals
   }
   const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
 
@@ -513,7 +512,7 @@ export const useArbTokenBridge = (
               totalArbBalance,
               pendingWithdrawals: erc20Balance
                 ? erc20Balance.pendingWithdrawals
-                : <PendingWithdrawals>{}
+                : ({} as PendingWithdrawals)
             }
 
             erc20Updates[contract.eth.address] = updated
@@ -541,7 +540,7 @@ export const useArbTokenBridge = (
               lockBoxTokens,
               pendingWithdrawals: erc721Balance
                 ? erc721Balance.pendingWithdrawals
-                : <PendingWithdrawals>{}
+                : ({} as PendingWithdrawals)
             }
             erc721Updates[contract.eth.address] = updated
             break
@@ -634,7 +633,7 @@ export const useArbTokenBridge = (
 
       let tx: ContractTransaction
       switch (contract.type) {
-        case TokenType.ERC20:
+        case TokenType.ERC20: {
           const amount = utils.parseUnits(amountOrTokenId, contract.decimals)
           tx = await arbWallet.depositERC20(
             walletAddress,
@@ -642,6 +641,7 @@ export const useArbTokenBridge = (
             amount
           )
           break
+        }
         case TokenType.ERC721:
           tx = await arbWallet.depositERC721(
             walletAddress,
@@ -673,10 +673,11 @@ export const useArbTokenBridge = (
 
       let tx: ContractTransaction
       switch (contract.type) {
-        case TokenType.ERC20:
+        case TokenType.ERC20: {
           const amount = utils.parseUnits(amountOrTokenId, contract.decimals)
           tx = await contract.arb.withdraw(walletAddress, amount)
           break
+        }
         case TokenType.ERC721:
           tx = await contract.arb.withdraw(walletAddress, amountOrTokenId)
           break
@@ -813,9 +814,9 @@ export const useArbTokenBridge = (
         contractAddress,
         arbProvider.ethProvider.getSigner(walletIndex)
       )
-      let name, decimals, symbol
+      let tokenName, decimals, symbol
       try {
-        ;[name, decimals, symbol] = await Promise.all([
+        ;[tokenName, decimals, symbol] = await Promise.all([
           ethERC20.name(),
           ethERC20.decimals(),
           ethERC20.symbol()
@@ -824,7 +825,12 @@ export const useArbTokenBridge = (
         console.warn('Error: could not get ERC20 info:', err)
       }
 
-      const infoObject = { name, decimals, symbol, address: contractAddress }
+      const infoObject = {
+        name: tokenName,
+        decimals,
+        symbol,
+        address: contractAddress
+      }
       erc20L1Memo[contractAddress] = infoObject
       return infoObject
     },
@@ -839,10 +845,10 @@ export const useArbTokenBridge = (
       const isEthContract =
         (await arbProvider.ethProvider.getCode(contractAddress)).length > 2
       if (!isEthContract) {
-        console.warn('contract not deployed');
+        console.warn('contract not deployed')
         return ''
-      }
-      else if (bridgeTokens[contractAddress]) throw Error('token already added')
+      } else if (bridgeTokens[contractAddress])
+        throw Error('token already added')
 
       const inboxManager = await arbProvider.globalInboxConn()
 
@@ -866,7 +872,7 @@ export const useArbTokenBridge = (
             arbProvider.ethProvider.getSigner(walletIndex)
           )
 
-          const [allowance, name, decimals, symbol] = await Promise.all([
+          const [allowance, tokenName, decimals, symbol] = await Promise.all([
             ethERC20.allowance(walletAddress, inboxManager.address),
             ethERC20.name(),
             ethERC20.decimals(),
@@ -878,7 +884,7 @@ export const useArbTokenBridge = (
             eth: ethERC20,
             type,
             allowed: allowance.gte(MIN_APPROVAL.div(2)),
-            name,
+            name: tokenName,
             decimals,
             symbol
           }
@@ -898,7 +904,7 @@ export const useArbTokenBridge = (
             arbProvider.ethProvider.getSigner(walletIndex)
           )
 
-          const [allowed, name, symbol] = await Promise.all([
+          const [allowed, tokenName, symbol] = await Promise.all([
             ethERC721.isApprovedForAll(walletAddress, inboxManager.address),
             ethERC721.name(),
             ethERC721.symbol()
@@ -908,7 +914,7 @@ export const useArbTokenBridge = (
             arb: arbERC721,
             eth: ethERC721,
             type,
-            name,
+            name: tokenName,
             symbol,
             allowed
           }
