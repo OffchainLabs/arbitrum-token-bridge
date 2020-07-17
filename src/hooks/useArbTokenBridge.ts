@@ -11,9 +11,8 @@ import {
 } from '../util'
 import { useArbProvider } from './useArbProvider'
 import type { abi } from 'arb-provider-ethers'
-import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
-import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
-import { ArbRollup } from 'arb-provider-ethers/dist/lib/abi/ArbRollup'
+import { ArbErc20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc20Factory'
+import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Factory'
 
 import deepEquals from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
@@ -64,20 +63,20 @@ interface BridgedToken {
   name: string
   symbol: string
   allowed: boolean
-  arb: abi.ArbERC20 | abi.ArbERC721
+  arb: abi.ArbErc20 | abi.ArbErc721
   eth: ERC20 | ERC721
 }
 
 interface ERC20BridgeToken extends BridgedToken {
   type: TokenType.ERC20
-  arb: abi.ArbERC20
+  arb: abi.ArbErc20
   eth: ERC20
   decimals: number
 }
 
 interface ERC721BridgeToken extends BridgedToken {
   type: TokenType.ERC721
-  arb: abi.ArbERC721
+  arb: abi.ArbErc721
   eth: ERC721
 }
 
@@ -190,7 +189,6 @@ export const useArbTokenBridge = (
     | ethers.providers.JsonRpcProvider
     | Promise<ethers.providers.JsonRpcProvider>,
   aggregatorUrl?: string,
-  deterministicAssertions?: boolean,
   walletIndex = 0,
   autoLoadCache = true
 ) => {
@@ -258,12 +256,7 @@ export const useArbTokenBridge = (
     vmId: ''
   })
 
-  const arbProvider = useArbProvider(
-    validatorUrl,
-    ethProvider,
-    aggregatorUrl,
-    deterministicAssertions
-  )
+  const arbProvider = useArbProvider(validatorUrl, ethProvider, aggregatorUrl)
   const arbWallet = arbProvider?.getSigner(walletIndex)
 
   /* pending withdrawals cache*/
@@ -864,7 +857,7 @@ export const useArbTokenBridge = (
             await arbWallet.depositERC20(walletAddress, contractAddress, 0)
           }
 
-          const arbERC20 = ArbERC20Factory.connect(
+          const arbERC20 = ArbErc20Factory.connect(
             contractAddress,
             arbProvider.getSigner(walletIndex)
           )
@@ -896,7 +889,7 @@ export const useArbTokenBridge = (
           break
         }
         case TokenType.ERC721: {
-          const arbERC721 = ArbERC721Factory.connect(
+          const arbERC721 = ArbErc721Factory.connect(
             contractAddress,
             arbProvider.getSigner(walletIndex)
           )
@@ -953,7 +946,7 @@ export const useArbTokenBridge = (
   }
 
   const updatePendingWithdrawals = useCallback(
-    (rollup: ArbRollup, assertionHash: string) => {
+    (rollup: abi.ArbRollup, assertionHash: string) => {
       if (!arbProvider)
         throw new Error('updatePendingWithdrawals no arb provider')
       if (pWsCache[assertionHash]) {
