@@ -13,6 +13,7 @@ import { useArbProvider } from './useArbProvider'
 import type { abi } from 'arb-provider-ethers'
 import { ArbERC20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC20Factory'
 import { ArbERC721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbERC721Factory'
+import { ArbRollup } from 'arb-provider-ethers/dist/lib/abi/ArbRollup'
 
 import deepEquals from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
@@ -124,7 +125,7 @@ const pWCacheToPW = (pWCache: PendingWithdrawalCache): PendingWithdrawal => {
   }
 }
 
-const usePrevious = (value: any) => {
+const usePrevious = (value: any): undefined => {
   const ref = useRef()
   useEffect(() => {
     ref.current = value
@@ -138,7 +139,7 @@ type StorageBalance = ContractStorage<TokenBalance>
 function mergeAndPreservePWs<T extends TokenBalance>(
   prevBalances: ContractStorage<T>,
   latestBalances: ContractStorage<T>
-) {
+): ContractStorage<T> {
   // return latest balance but override all pending withdrawals from prevBalance
   const freshBalances: ContractStorage<T> = {}
 
@@ -243,9 +244,10 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
-  const [pWsCache, setPWsCache, clearPWsCache] = useLocalStorage<
-    PendingWithdrawalsCache
-  >('PendingWithdrawalsCache', {}) as [
+  const [pWsCache, setPWsCache] = useLocalStorage<PendingWithdrawalsCache>(
+    'PendingWithdrawalsCache',
+    {}
+  ) as [
     PendingWithdrawalsCache,
     React.Dispatch<PendingWithdrawalsCache>,
     React.Dispatch<void>
@@ -386,14 +388,7 @@ export const useArbTokenBridge = (
       pendingWithdrawals: ethBalances.pendingWithdrawals
     }
 
-    let different = true
-    for (const key in ethBalances) {
-      const k = key as keyof typeof ethBalances
-      different = ethBalances[k] !== update[k]
-    }
-
     if (!deepEquals(ethBalances, update)) {
-      // if (different) {
       setEthBalances(oldBalances => {
         return { ...update, pendingWithdrawals: oldBalances.pendingWithdrawals }
       })
@@ -958,7 +953,7 @@ export const useArbTokenBridge = (
   }
 
   const updatePendingWithdrawals = useCallback(
-    (rollup: any, assertionHash: string) => {
+    (rollup: ArbRollup, assertionHash: string) => {
       if (!arbProvider)
         throw new Error('updatePendingWithdrawals no arb provider')
       if (pWsCache[assertionHash]) {
@@ -1076,6 +1071,7 @@ export const useArbTokenBridge = (
             ERC20Cache.map(address => {
               return addToken(address, TokenType.ERC20).catch(err => {
                 console.warn(`invalid cache entry erc20 ${address}`)
+                console.warn(err)
               })
             })
           ).then(values => {
@@ -1088,6 +1084,7 @@ export const useArbTokenBridge = (
             ERC721Cache.map(address => {
               return addToken(address, TokenType.ERC721).catch(err => {
                 console.warn(`invalid cache entry erc721 ${address}`)
+                console.warn(err)
               })
             })
           ).then(values => {
@@ -1116,7 +1113,7 @@ export const useArbTokenBridge = (
               toBlock: currentBlockHeight
             })
             .then(events => {
-              const nodeHashes = events.forEach(log => {
+              events.forEach(log => {
                 const { nodeHash } = rollup.interface.parseLog(log).values
                 if (pWsCache[nodeHash]) {
                   updatePendingWithdrawals(rollup, nodeHash)
