@@ -14,22 +14,38 @@ import {
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'
+import Injector from './Injecter'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-const validatorUrl = process.env.REACT_APP_ARB_VALIDATOR_URL || ''
+const validatorUrl = process.env.REACT_APP_ARB_VALIDATOR_URL
 // const validatorUrl = 'http://64.225.27.132:1235'
 
-const App = () => {
+
+interface AppProps {
+  ethProvider: ethers.ethers.providers.JsonRpcProvider
+}
+const App = ({ethProvider}: AppProps) => {
+  const arbProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8547")
+  const ethSigner = ethProvider.getSigner(0)
+  // @ts-ignore
+  const arbSigner = arbProvider.getSigner(window.ethereum.selectedAddress)
+
   const {
     walletAddress,
     balances,
-    vmId,
     cache,
     token,
     bridgeTokens,
     eth
-  } = useArbTokenBridge(validatorUrl, getInjectedWeb3())
+  }  = useArbTokenBridge(
+    ethProvider,
+    arbProvider,
+    process.env.REACT_APP_ROLLUP_ADDRESS || '',
+    ethSigner,
+    arbSigner
+  )
+    const vmId = process.env.REACT_APP_ROLLUP_ADDRESS || ''
   useEffect(() => {
     vmId && walletAddress && balances.update()
   }, [vmId, walletAddress])
@@ -72,7 +88,6 @@ const App = () => {
       return erc721[currentERC721Address]
     }
   })()
-  console.warn('BALS',balances.erc20);
 
   return (
     <div className="container">

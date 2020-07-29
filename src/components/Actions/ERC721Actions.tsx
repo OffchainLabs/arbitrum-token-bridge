@@ -21,7 +21,7 @@ const Actions = ({
   // TODO: pass in from TabsContainer
   const currentContract = bridgeTokens[currentERC721Address]
   if (!balances) {
-    return <div>asdf</div>
+    return <div></div>
   }
   const { tokens, arbChainTokens, totalArbTokens, lockBoxTokens } = balances
 

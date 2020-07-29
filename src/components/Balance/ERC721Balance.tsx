@@ -9,7 +9,7 @@ type BalanceProps = {
 
 const ERC721BalanceUi = ({ balances }: BalanceProps) => {
   if (!balances) {
-    return <div>no token</div>
+    return <div>no tokens added</div>
   }
   const { tokens, arbChainTokens, totalArbTokens, lockBoxTokens } = balances
 
