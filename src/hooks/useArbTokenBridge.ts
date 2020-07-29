@@ -361,6 +361,8 @@ export const useArbTokenBridge = (
     if (!walletAddress) throw new Error('updateEthBalances walletAddress')
     if (!_ethSigner) throw new Error('updateEthBalances _ethSigner')
     if (!ethWallet) throw new Error('updateEthBalances ethWallet')
+    console.warn('updating eth balances');
+
 
     const [
       balance,
@@ -418,6 +420,8 @@ export const useArbTokenBridge = (
   const withdrawEth = useCallback(
     async (etherVal: string) => {
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
+      console.warn('val',etherVal );
+
 
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
       try {
@@ -1160,10 +1164,23 @@ export const useArbTokenBridge = (
 
   useEffect(() => {
     if (arbProvider && !walletAddress) {
-      const signer = _arbSigner || _ethSigner
-      Promise.resolve(signer && signer.getAddress()).then(addr =>
-        setWalletAddress(addr || '')
-      )
+      const address = _arbSigner || _ethSigner
+      _arbSigner?.getAddress().then((add)=>{
+        console.warn('arb sign add', add);
+
+        setWalletAddress(add)
+
+
+      })
+      _ethSigner?.getAddress().then((add)=>{
+        console.warn('ethsign add', add);
+
+      })
+
+      // Promise.resolve(signer && signer.getAddress()).then(addr =>{
+
+      // }
+      // )
     }
     if (arbProvider && walletAddress) {
       updateAllBalances()
