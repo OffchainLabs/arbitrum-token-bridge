@@ -14,23 +14,16 @@ import {
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'
-import Injector from './Injecter'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { BridgeConfig } from 'util/index'
 
-const validatorUrl = process.env.REACT_APP_ARB_VALIDATOR_URL
-// const validatorUrl = 'http://64.225.27.132:1235'
-
-
-interface AppProps {
-  ethProvider: ethers.ethers.providers.JsonRpcProvider
-}
-const App = ({ethProvider}: AppProps) => {
-  const arbProvider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8547")
-  const ethSigner = ethProvider.getSigner(0)
-  // @ts-ignore
-  const arbSigner = arbProvider.getSigner(window.ethereum.selectedAddress)
-
+const App = ({
+  arbProvider,
+  ethProvider,
+  arbSigner,
+  ethSigner
+}: BridgeConfig) => {
   const {
     walletAddress,
     balances,
@@ -38,14 +31,14 @@ const App = ({ethProvider}: AppProps) => {
     token,
     bridgeTokens,
     eth
-  }  = useArbTokenBridge(
+  } = useArbTokenBridge(
     ethProvider,
     arbProvider,
     process.env.REACT_APP_ROLLUP_ADDRESS || '',
     ethSigner,
     arbSigner
   )
-    const vmId = process.env.REACT_APP_ROLLUP_ADDRESS || ''
+  const vmId = process.env.REACT_APP_ROLLUP_ADDRESS || ''
   useEffect(() => {
     vmId && walletAddress && balances.update()
   }, [vmId, walletAddress])
@@ -93,14 +86,14 @@ const App = ({ethProvider}: AppProps) => {
     <div className="container">
       <div className="row">
         <Header
-        ethAddress={walletAddress}
-        vmId={vmId}
-        ethBalance={balances.eth}
-        erc20Balance={erc20Balance}
-        erc721Balance={erc721Balance}
-        bridgeTokens={bridgeTokens}
-        currentERC20Address={currentERC20Address ?? ''}
-        currentERC721Address={currentERC721Address ?? ''}
+          ethAddress={walletAddress}
+          vmId={vmId}
+          ethBalance={balances.eth}
+          erc20Balance={erc20Balance}
+          erc721Balance={erc721Balance}
+          bridgeTokens={bridgeTokens}
+          currentERC20Address={currentERC20Address ?? ''}
+          currentERC721Address={currentERC721Address ?? ''}
         />
       </div>
       <div className="row">
