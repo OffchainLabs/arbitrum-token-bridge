@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import {
-  BridgeBalance, ERC721Balance, ContractStorage, BridgeToken
+  BridgeBalance,
+  ERC721Balance,
+  ContractStorage,
+  BridgeToken
 } from 'arb-token-bridge'
 import { formatEther } from 'ethers/utils'
 interface Web3Data {
@@ -13,12 +16,21 @@ interface Web3Data {
   currentERC20Address: string
   currentERC721Address: string
 }
-const Header = ({ ethAddress, vmId, ethBalance, erc20Balance, erc721Balance, bridgeTokens, currentERC20Address, currentERC721Address }: Web3Data) => {
+const Header = ({
+  ethAddress,
+  vmId,
+  ethBalance,
+  erc20Balance,
+  erc721Balance,
+  bridgeTokens,
+  currentERC20Address,
+  currentERC721Address
+}: Web3Data) => {
   const currentERC20 = bridgeTokens[currentERC20Address]
-  const erc20Symbol = currentERC20 ? currentERC20.symbol : ""
+  const erc20Symbol = currentERC20 ? currentERC20.symbol : ''
 
   const currentERC721 = bridgeTokens[currentERC721Address]
-  const erc721Symbol = currentERC721 ? currentERC721.symbol : ""
+  const erc721Symbol = currentERC721 ? currentERC721.symbol : ''
 
   return (
     <div className="col-lg-12">
@@ -29,18 +41,24 @@ const Header = ({ ethAddress, vmId, ethBalance, erc20Balance, erc721Balance, bri
       <p>
         ArbChain address: <span id="rollupAddress">{vmId}</span>
       </p>
-      {ethBalance && <p>
-        Total ETH On Arb Chain: <span>{formatEther(ethBalance.totalArbBalance)}</span>
-      </p>
-      }
-       {erc20Balance && <p>
-        Total {erc20Symbol} On Arb Chain: <span>{formatEther(erc20Balance.totalArbBalance)}</span>
-      </p>
-      }
-      { erc721Balance && <p>
-        Total # of {erc721Symbol} NFTs On Arb Chain: <span>{erc721Balance.totalArbTokens.length}</span>
-      </p>
-      }
+      {ethBalance && (
+        <p>
+          Total ETH On Arb Chain:{' '}
+          <span>{formatEther(ethBalance.totalArbBalance)}</span>
+        </p>
+      )}
+      {erc20Balance && (
+        <p>
+          Total {erc20Symbol} On Arb Chain:{' '}
+          <span>{formatEther(erc20Balance.totalArbBalance)}</span>
+        </p>
+      )}
+      {erc721Balance && (
+        <p>
+          Total # of {erc721Symbol} NFTs On Arb Chain:{' '}
+          <span>{erc721Balance.totalArbTokens.length}</span>
+        </p>
+      )}
       <hr />
     </div>
   )

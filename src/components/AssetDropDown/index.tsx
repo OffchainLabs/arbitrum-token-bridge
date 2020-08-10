@@ -9,15 +9,16 @@ import { useState, useLayoutEffect } from 'react'
 
 import React from 'react'
 type DropDownProps = {
-  bridgeTokensArray: (BridgeToken)[]
+  bridgeTokensArray: BridgeToken[]
   tokenType: TokenType
   addToken: (a: string, type: TokenType) => Promise<string>
   currentToken: BridgeToken | undefined
-  setCurrentAddress:  React.Dispatch<string>
+  setCurrentAddress: React.Dispatch<string>
 }
 
 // TODO: ethers v5 has an isAddress util
-const looksLikeAddress = (address:string) => address.startsWith('0x') && address.length === 42
+const looksLikeAddress = (address: string) =>
+  address.startsWith('0x') && address.length === 42
 
 const AssetDropDown = ({
   bridgeTokensArray,
@@ -51,17 +52,16 @@ const AssetDropDown = ({
           addToken(erc20Form, tokenType)
           seterc20Form('')
         }}
-        >
+      >
         <FormControl
-          isInvalid={ !!erc20Form && !looksLikeAddress(erc20Form) }
-          isValid={ !!erc20Form && looksLikeAddress(erc20Form)}
+          isInvalid={!!erc20Form && !looksLikeAddress(erc20Form)}
+          isValid={!!erc20Form && looksLikeAddress(erc20Form)}
           placeholder="paste token address"
           onChange={(e: any) => seterc20Form(e.target.value)}
           value={erc20Form}
         />
-          <Feedback type="valid">press enter to add token</Feedback>
-          <Feedback type="invalid">invalid address</Feedback>
-
+        <Feedback type="valid">press enter to add token</Feedback>
+        <Feedback type="invalid">invalid address</Feedback>
       </Form>
     </DropdownButton>
   )
