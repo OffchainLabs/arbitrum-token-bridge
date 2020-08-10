@@ -27,7 +27,8 @@ const Injector = () => {
                 arbProvider,
                 ethSigner: ethProvider.getSigner(0),
                 // @ts-ignore // TODO
-                arbSigner: arbProvider.getSigner(window.ethereum.selectedAddress
+                arbSigner: arbProvider.getSigner(
+                  window.ethereum.selectedAddress
                 )
               })
               setConnectionState(ConnectionState.DEPOSIT_MODE)
@@ -43,7 +44,9 @@ const Injector = () => {
                 ethProvider,
                 arbProvider,
                 // @ts-ignore TODO
-                ethSigner: ethProvider.getSigner(window.ethereum.selectedAddress),
+                ethSigner: ethProvider.getSigner(
+                  window.ethereum.selectedAddress
+                ),
 
                 arbSigner: arbProvider.getSigner(0)
               })

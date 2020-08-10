@@ -27,14 +27,15 @@ const Actions = ({
 
   return (
     <div>
-      {currentContract && !currentContract.allowed && <Button
-        variant="outline-secondary"
-        disabled={!currentContract.allowed}
-        onClick={() => eth.approve(currentERC721Address)}
-      >
-        Approve
-      </Button>
-      }
+      {currentContract && !currentContract.allowed && (
+        <Button
+          variant="outline-secondary"
+          disabled={currentContract.allowed}
+          onClick={() => eth.approve(currentERC721Address)}
+        >
+          Approve
+        </Button>
+      )}
       <DropdownInput
         items={tokens}
         text={'Deposit NFT'}
