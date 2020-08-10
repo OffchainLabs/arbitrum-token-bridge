@@ -361,6 +361,7 @@ export const useArbTokenBridge = (
     if (!walletAddress) throw new Error('updateEthBalances walletAddress')
     if (!_ethSigner) throw new Error('updateEthBalances _ethSigner')
     if (!ethWallet) throw new Error('updateEthBalances ethWallet')
+    if (!arbSigner) throw new Error('updateEthBalances ethWallet')
 
     const [
       balance,
@@ -488,8 +489,16 @@ export const useArbTokenBridge = (
       const erc721Updates: typeof erc721Balances = {}
 
       for (const contract of filtered) {
+        const code = await arbProvider.getCode(contract.eth.address)
         switch (contract.type) {
           case TokenType.ERC20: {
+            let arbBalancePromise: Promise<utils.BigNumber>
+            if (code.length > 2){
+              arbBalancePromise = contract.arb.balanceOf(walletAddress)
+              console.warn("update bal: contract not yet deployed on arb", contract.eth.address);
+            } else {
+              arbBalancePromise = new Promise((exec)=> exec(constants.Zero));
+            }
             const [
               balance,
               arbChainBalance,
@@ -497,7 +506,7 @@ export const useArbTokenBridge = (
               totalArbBalance
             ] = await Promise.all([
               contract.eth.balanceOf(walletAddress),
-              contract.arb.balanceOf(walletAddress),
+              arbBalancePromise,
               ethWallet.getERC20LockBoxBalance(
                 contract.eth.address,
                 walletAddress
@@ -523,6 +532,14 @@ export const useArbTokenBridge = (
             break
           }
           case TokenType.ERC721: {
+            let arbTokensPromise: Promise<utils.BigNumber[]>
+            if (code.length > 2){
+              arbTokensPromise = contract.arb.tokensOfOwner(walletAddress)
+              console.warn("update bal: contract not yet deployed on arb", contract.eth.address);
+            } else {
+              arbTokensPromise = new Promise((exec)=>exec([]));
+            }
+            // TODO: remove total arb tokens; overkill
             const [
               tokens,
               arbChainTokens,
@@ -530,7 +547,7 @@ export const useArbTokenBridge = (
               totalArbTokens
             ] = await Promise.all([
               contract.eth.tokensOfOwner(walletAddress),
-              contract.arb.tokensOfOwner(walletAddress),
+              arbTokensPromise,
               ethWallet.getERC721LockBoxTokens(
                 contract.eth.address,
                 walletAddress
@@ -850,20 +867,21 @@ export const useArbTokenBridge = (
       if (!isEthContract) {
         console.warn('contract not deployed')
         return ''
-      } else if (bridgeTokens[contractAddress])
-        throw Error('token already added')
+      } else if (bridgeTokens[contractAddress]){
+        console.warn('token already added');
+        return ''
+      }
 
       // TODO error handle
       let newContract: BridgeToken
       const inboxAddress = (await ethWallet.globalInboxConn()).address
 
+      let arbContractCode = await arbProvider.getCode(contractAddress)
       switch (type) {
         case TokenType.ERC20: {
-          let arbContractCode
 
-          arbContractCode = await arbProvider.getCode(contractAddress)
-          if (!arbContractCode) {
-            console.warn('contract does not yet exist on arbchain:')
+          if (arbContractCode.length <= 2) {
+            console.warn('ERC20 contract does not yet exist on arbchain:')
 
             const tx = await ethWallet.depositERC20(
               walletAddress,
