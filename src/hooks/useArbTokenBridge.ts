@@ -361,8 +361,6 @@ export const useArbTokenBridge = (
     if (!walletAddress) throw new Error('updateEthBalances walletAddress')
     if (!_ethSigner) throw new Error('updateEthBalances _ethSigner')
     if (!ethWallet) throw new Error('updateEthBalances ethWallet')
-    console.warn('updating eth balances');
-
 
     const [
       balance,
@@ -420,8 +418,6 @@ export const useArbTokenBridge = (
   const withdrawEth = useCallback(
     async (etherVal: string) => {
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
-      console.warn('val',etherVal );
-
 
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
       try {
@@ -593,14 +589,16 @@ export const useArbTokenBridge = (
       if (!contract) {
         throw new Error(`Contract ${contractAddress} not present`)
       }
-
+      if (!ethWallet) return
       let tx: ContractTransaction
+      const inboxAddress = (await ethWallet.globalInboxConn()).address
+
       switch (contract.type) {
         case TokenType.ERC20:
-          tx = await contract.eth.approve(arbchainAddress, MIN_APPROVAL)
+          tx = await contract.eth.approve(inboxAddress, MIN_APPROVAL)
           break
         case TokenType.ERC721:
-          tx = await contract.eth.setApprovalForAll(arbchainAddress, true)
+          tx = await contract.eth.setApprovalForAll(inboxAddress, true)
           break
         default:
           assertNever(contract, 'approveToken exhaustive check failed')
@@ -625,7 +623,7 @@ export const useArbTokenBridge = (
 
       return { tx, receipt }
     },
-    [bridgeTokens]
+    [bridgeTokens, ethWallet]
   )
 
   const depositToken = useCallback(
@@ -857,13 +855,23 @@ export const useArbTokenBridge = (
 
       // TODO error handle
       let newContract: BridgeToken
+      const inboxAddress = (await ethWallet.globalInboxConn()).address
+
       switch (type) {
         case TokenType.ERC20: {
-          const arbContractCode = await arbProvider.getCode(contractAddress)
-          if (arbContractCode === '0x') {
-            console.warn('contract does not exist')
-            // TODO replace with non signature required handling
-            await ethWallet.depositERC20(walletAddress, contractAddress, 0)
+          let arbContractCode
+
+          arbContractCode = await arbProvider.getCode(contractAddress)
+          if (!arbContractCode) {
+            console.warn('contract does not yet exist on arbchain:')
+
+            const tx = await ethWallet.depositERC20(
+              walletAddress,
+              contractAddress,
+              0
+            )
+            const res = await tx.wait()
+            console.info('Token contract added to arb chain:', res)
           }
           const arbERC20 = ArbErc20Factory.connect(
             contractAddress,
@@ -873,9 +881,8 @@ export const useArbTokenBridge = (
             contractAddress,
             _ethSigner || ethProvider
           )
-
           const [allowance, tokenName, decimals, symbol] = await Promise.all([
-            ethERC20.allowance(walletAddress, arbchainAddress), //TODO arbchainAddress right address?
+            ethERC20.allowance(walletAddress, inboxAddress),
             ethERC20.name(),
             ethERC20.decimals(),
             ethERC20.symbol()
@@ -904,7 +911,7 @@ export const useArbTokenBridge = (
           const ethERC721 = ERC721Factory.connect(contractAddress, _ethSigner)
 
           const [allowed, tokenName, symbol] = await Promise.all([
-            ethERC721.isApprovedForAll(walletAddress, arbchainAddress), //TODO arbchainAddress right address?
+            ethERC721.isApprovedForAll(walletAddress, inboxAddress),
             ethERC721.name(),
             ethERC721.symbol()
           ])
@@ -1165,16 +1172,9 @@ export const useArbTokenBridge = (
   useEffect(() => {
     if (arbProvider && !walletAddress) {
       const address = _arbSigner || _ethSigner
-      _arbSigner?.getAddress().then((add)=>{
-        console.warn('arb sign add', add);
+      _arbSigner?.getAddress().then(add => {
 
         setWalletAddress(add)
-
-
-      })
-      _ethSigner?.getAddress().then((add)=>{
-        console.warn('ethsign add', add);
-
       })
 
       // Promise.resolve(signer && signer.getAddress()).then(addr =>{
