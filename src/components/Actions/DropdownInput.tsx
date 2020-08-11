@@ -40,6 +40,7 @@ const DropdownInputForm = ({
         {items.map((item, i) => (
           <Dropdown.Item
             key={i}
+            disabled={disabled}
             onClick={() => {
               setValue(item.toNumber())
             }}
