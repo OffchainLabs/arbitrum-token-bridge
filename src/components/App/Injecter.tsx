@@ -1,52 +1,59 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { getInjectedWeb3 } from 'util/web3'
+import { getInjectedWeb3, setChangeListeners } from 'util/web3'
 import { BridgeConfig, ConnectionState } from 'util/index'
 import * as ethers from 'ethers'
 import App from './index'
 import ModeContext from './ModeContext'
+import Alert from 'react-bootstrap/Alert'
+import Container from 'react-bootstrap/Container'
+
 
 const Injector = () => {
   const [bridgeConfig, setBridgeConfig] = useState<BridgeConfig>()
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
+  // const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
+  // const arb = process.env.REACT_APP_ARB_NETWORK_ID
+  const {
+    REACT_APP_ETH_NETWORK_ID: ethNetworkId ,
+    REACT_APP_ARB_NETWORK_ID: arbNetworkId,
+    REACT_APP_ETH_NODE_URL: ethNodeUrl,
+    REACT_APP_ARB_VALIDATOR_URL: arbValidatorUrl
+  } = process.env
 
   useEffect(() => {
     if (connectionState === ConnectionState.LOADING) {
       try {
         getInjectedWeb3().then(([provider, networkVersion]) => {
           switch (networkVersion) {
-            case process.env.REACT_APP_ETH_NETWORK_ID: {
+            case ethNetworkId: {
               console.info('deposit mode detected')
               const ethProvider = provider
               const arbProvider = new ethers.providers.JsonRpcProvider(
-                process.env.REACT_APP_ARB_VALIDATOR_URL
+                arbValidatorUrl
               )
               setBridgeConfig({
                 ethProvider,
                 arbProvider,
                 ethSigner: ethProvider.getSigner(0),
                 // @ts-ignore // TODO
-                arbSigner: arbProvider.getSigner(
-                  window.ethereum.selectedAddress
-                )
+                arbSigner: arbProvider.getSigner(window.ethereum.selectedAddress)
               })
               setConnectionState(ConnectionState.DEPOSIT_MODE)
               break
             }
-            case process.env.REACT_APP_ARB_NETWORK_ID: {
+            case arbNetworkId: {
               console.info('withdrawal mode detected')
               const ethProvider = new ethers.providers.JsonRpcProvider(
-                process.env.REACT_APP_ETH_NODE_URL
+                ethNodeUrl
               )
               const arbProvider = provider
               setBridgeConfig({
                 ethProvider,
                 arbProvider,
                 // @ts-ignore TODO
-                ethSigner: ethProvider.getSigner(
-                  window.ethereum.selectedAddress
-                ),
+                ethSigner: ethProvider.getSigner( window.ethereum.selectedAddress),
 
                 arbSigner: arbProvider.getSigner(0)
               })
@@ -58,6 +65,7 @@ const Injector = () => {
               setConnectionState(ConnectionState.WRONG_NETWORK)
             }
           }
+          setChangeListeners()
         })
       } catch (e) {
         setConnectionState(ConnectionState.NO_METAMASK)
@@ -71,11 +79,11 @@ const Injector = () => {
   ) => {
     switch (connectionState) {
       case ConnectionState.LOADING:
-        return <div> loading</div>
+        return <div>{renderAlert('loading...', 'primary')}</div>
       case ConnectionState.NO_METAMASK:
-        return <div>no metamask</div>
+    return <div>{renderAlert('Ethereum provider not detected; make sure you have metamask installed.')}</div>
       case ConnectionState.WRONG_NETWORK:
-        return <div>wrong netowrk</div>
+    return <div>{(renderAlert(`Unsupported network; connect to network id ${ethNetworkId} for L1 actions or network id ${arbNetworkId} for L2 actions`))}</div>
       default:
         if (!bridgeConfig) {
           throw new Error('initialization error')
@@ -90,4 +98,12 @@ const Injector = () => {
 
   return <div>{renderContent(connectionState, bridgeConfig)}</div>
 }
+
+export const renderAlert = (message:string, variant:'danger'|'primary'='danger') =>(
+  <Container>
+      <Alert variant={variant}>
+      { message }
+      </Alert>
+    </Container>
+)
 export default Injector
