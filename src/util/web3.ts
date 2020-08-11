@@ -10,7 +10,6 @@ interface InjectedEthereumProvider
 declare global {
   interface Window {
     ethereum?: InjectedEthereumProvider
-    reloadListenerSet: boolean
   }
 }
 
@@ -30,12 +29,8 @@ export async function getInjectedWeb3(): Promise<
     } catch (e) {
       throw new Error('Failed to enable window.ethereum: ' + e.message)
     }
-    // TODO: hacky, move this
-    !window.reloadListenerSet &&
-      window.ethereum.on('networkChanged', (chainId: number) => {
-        window.reloadListenerSet = true
-        window.location.reload()
-      })
+
+
 
     return [
       new ethers.providers.Web3Provider(window.ethereum),
@@ -44,4 +39,26 @@ export async function getInjectedWeb3(): Promise<
   }
 
   throw new Error('No web3 injection detected')
+}
+
+export const setChangeListeners = ()=>{
+  // this prevents multiple refreshes browser glitch
+  let reloading = false
+  if (web3Injected(window.ethereum)){
+    console.warn('setting listeners');
+
+    !reloading && (
+      window.ethereum.on('networkChanged', (chainId: number) => {
+        reloading = true
+        window.location.reload()
+      })
+    )
+    !reloading && (
+      window.ethereum.on('accountsChanged', (chainId: number) => {
+        reloading = true
+        window.location.reload()
+      })
+    )
+  }
+
 }
