@@ -33,7 +33,7 @@ const PanelWrapper: FunctionComponent<props> = ({
           placement="bottom"
           delay={{ show: 250, hide: 50 }}
           overlay={renderPopover(isDepositPanel)}
-          trigger="hover"
+          trigger={["hover", "focus"]}
         >
           <div
             style={{ opacity: 0.4 }}
