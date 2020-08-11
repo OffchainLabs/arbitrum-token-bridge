@@ -4,7 +4,7 @@ import Tab from 'react-bootstrap/Tab'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
-
+import PanelWrapper from './PanelWrapper'
 import Balance from 'components/Balance'
 import ERC721BalanceUi from 'components/Balance/ERC721Balance'
 
@@ -22,7 +22,8 @@ import EthL2Actions from 'components/Actions/EthL2Actions'
 import ERC20L1Actions from 'components/Actions/ERC20L1Actions'
 import ERC20L2Actions from 'components/Actions/ERC20L2Actions'
 
-import ERC721Actions from 'components/Actions/ERC721Actions'
+import ERC721L1Actions from 'components/Actions/ERC721L1Actions'
+import ERC721L2Actions from 'components/Actions/ERC721L2Actions'
 
 type TabProps = {
   ethBalances: BridgeBalance
@@ -80,10 +81,14 @@ const TabsContainer = ({
         <Container>
           <Row>
             <Col>
-              <EthL1Actions balances={ethBalances} eth={eth} />
+              <PanelWrapper isDepositPanel={true}>
+                <EthL1Actions balances={ethBalances} eth={eth} />
+              </PanelWrapper>
             </Col>
             <Col>
-              <EthL2Actions balances={ethBalances} eth={eth} />
+              <PanelWrapper isDepositPanel={false}>
+                <EthL2Actions balances={ethBalances} eth={eth} />
+              </PanelWrapper>
             </Col>
           </Row>
         </Container>
@@ -91,50 +96,79 @@ const TabsContainer = ({
       <Tab eventKey="erc20" title="ERC-20">
         <Container>
           <Row>
-            <AssetDropDown
-              bridgeTokensArray={erc20BridgeTokens}
-              addToken={addToken}
-              tokenType={TokenType.ERC20}
-              currentToken={currentERC20Token}
-              setCurrentAddress={setCurrentERC20Address}
-            />
+            <Col>
+              <AssetDropDown
+                bridgeTokensArray={erc20BridgeTokens}
+                addToken={addToken}
+                tokenType={TokenType.ERC20}
+                currentToken={currentERC20Token}
+                setCurrentAddress={setCurrentERC20Address}
+              />
+            </Col>
           </Row>
           <Row>
             <Col>
-              <ERC20L1Actions
-                balances={erc20BridgeBalance}
-                eth={token}
-                bridgeTokens={bridgeTokens}
-                currentERC20Address={currentERC20Address}
-              />
+              <PanelWrapper isDepositPanel={true}>
+                <ERC20L1Actions
+                  balances={erc20BridgeBalance}
+                  eth={token}
+                  bridgeTokens={bridgeTokens}
+                  currentERC20Address={currentERC20Address}
+                />
+              </PanelWrapper>
             </Col>
             <Col>
-              <ERC20L2Actions
-                balances={erc20BridgeBalance}
-                eth={token}
-                bridgeTokens={bridgeTokens}
-                currentERC20Address={currentERC20Address}
-              />
+              <PanelWrapper isDepositPanel={false}>
+                <ERC20L2Actions
+                  balances={erc20BridgeBalance}
+                  eth={token}
+                  bridgeTokens={bridgeTokens}
+                  currentERC20Address={currentERC20Address}
+                />
+              </PanelWrapper>
             </Col>
           </Row>
         </Container>
       </Tab>
       <Tab eventKey="erc721" title="ERC-721">
-        <ERC721BalanceUi balances={erc721balance} />
-        <AssetDropDown
-          bridgeTokensArray={erc721BridgeTokens}
-          addToken={addToken}
-          tokenType={TokenType.ERC721}
-          currentToken={currentERC721Token}
-          setCurrentAddress={setCurrentERC721Address}
-        />
-
-        <ERC721Actions
-          balances={erc721balance}
-          eth={token}
-          bridgeTokens={bridgeTokens}
-          currentERC721Address={currentERC721Address}
-        />
+        <Container>
+          <Row>
+            <ERC721BalanceUi balances={erc721balance} />
+          </Row>
+          <Row>
+            <PanelWrapper isDepositPanel={true}>
+              <AssetDropDown
+                bridgeTokensArray={erc721BridgeTokens}
+                addToken={addToken}
+                tokenType={TokenType.ERC721}
+                currentToken={currentERC721Token}
+                setCurrentAddress={setCurrentERC721Address}
+              />
+            </PanelWrapper>
+          </Row>
+          <Row>
+            <Col>
+              <PanelWrapper isDepositPanel={true}>
+                <ERC721L1Actions
+                  balances={erc721balance}
+                  eth={token}
+                  bridgeTokens={bridgeTokens}
+                  currentERC721Address={currentERC721Address}
+                />
+              </PanelWrapper>
+            </Col>
+            <Col>
+              <PanelWrapper isDepositPanel={false}>
+                <ERC721L2Actions
+                  balances={erc721balance}
+                  eth={token}
+                  bridgeTokens={bridgeTokens}
+                  currentERC721Address={currentERC721Address}
+                />
+              </PanelWrapper>
+            </Col>
+          </Row>
+        </Container>
       </Tab>
     </Tabs>
   )
