@@ -554,7 +554,7 @@ export const useArbTokenBridge = (
               ),
               ethWallet.getERC721LockBoxTokens(
                 contract.eth.address,
-                walletAddress
+                arbchainAddress
               )
             ])
             const erc721Balance = erc721Balances[contract.eth.address]
