@@ -9,6 +9,10 @@ import { useIsDepositMode } from 'components/App/ModeContext'
 interface props {
   isDepositPanel: boolean
 }
+const {
+    REACT_APP_ETH_NETWORK_ID: ethNetworkId,
+    REACT_APP_ARB_NETWORK_ID: arbNetworkId
+  } = process.env
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
@@ -54,8 +58,8 @@ const renderPopover = (isDepositPanel: boolean) => (
     <Popover.Title as="h3">Actions disabled</Popover.Title>
     <Popover.Content>
       {isDepositPanel
-        ? 'To enable these actions, connect to L1'
-        : 'To enable these actions, connect to L2'}
+        ? `To enable these actions, connect to L1 (chain ID ${ethNetworkId})`
+        : `To enable these actions, connect to L2 (chain ID ${arbNetworkId})`}
     </Popover.Content>
   </Popover>
 )

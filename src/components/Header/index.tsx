@@ -6,6 +6,7 @@ import {
   BridgeToken
 } from 'arb-token-bridge'
 import { formatEther } from 'ethers/utils'
+import { useIsDepositMode } from 'components/App/ModeContext'
 interface Web3Data {
   ethAddress: string
   vmId: string
@@ -16,6 +17,8 @@ interface Web3Data {
   currentERC20Address: string
   currentERC721Address: string
 }
+
+
 const Header = ({
   ethAddress,
   vmId,
@@ -31,10 +34,12 @@ const Header = ({
 
   const currentERC721 = bridgeTokens[currentERC721Address]
   const erc721Symbol = currentERC721 ? currentERC721.symbol : ''
-
+  const isDepositMode = useIsDepositMode()
   return (
     <div className="col-lg-12">
       <h1 className="text-center">Arbitrum Token Bridge</h1>
+  <h5 className="text-center">Connected To {isDepositMode ? 'L1' : 'L2'}</h5>
+
       <p>
         Your address: <span id="accountAddress">{ethAddress}</span>
       </p>
