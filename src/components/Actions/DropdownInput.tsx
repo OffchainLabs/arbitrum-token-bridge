@@ -36,6 +36,8 @@ const DropdownInputForm = ({
         id="dropdown-basic-button"
         title={value || 'select token'}
         value={value}
+        disabled={disabled}
+
       >
         {items.map((item, i) => (
           <Dropdown.Item
