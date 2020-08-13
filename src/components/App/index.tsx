@@ -5,6 +5,7 @@ import { getInjectedWeb3 } from 'util/web3'
 import * as ethers from 'ethers'
 import * as ArbProviderEthers from 'arb-provider-ethers'
 import { ArbProvider } from 'arb-provider-ethers'
+import Transactions from '../Transactions'
 import {
   useArbTokenBridge,
   TokenType,
@@ -16,6 +17,7 @@ import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
+import './App.css'
 import { BridgeConfig } from 'util/index'
 
 const App = ({
@@ -30,7 +32,8 @@ const App = ({
     cache,
     token,
     bridgeTokens,
-    eth
+    eth,
+    transactions
   } = useArbTokenBridge(
     ethProvider,
     arbProvider,
@@ -38,6 +41,7 @@ const App = ({
     ethSigner,
     arbSigner
   )
+
   const vmId = process.env.REACT_APP_ROLLUP_ADDRESS || ''
   useEffect(() => {
     vmId && walletAddress && balances.update()
@@ -112,6 +116,9 @@ const App = ({
             setCurrentERC721Address={setCurrentERC721Address}
           />
         </div>
+      </div>
+      <div className='row'>
+        <Transactions transactions={transactions.transactions} clearPendingTransactions={transactions.clearPendingTransactions} walletAddress={walletAddress}/>
       </div>
     </div>
   )

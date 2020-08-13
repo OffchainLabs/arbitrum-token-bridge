@@ -1,0 +1,4 @@
+#txn-table td{
+    max-width: 150px;
+    overflow: hidden;
+}
