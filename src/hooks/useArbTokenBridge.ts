@@ -263,7 +263,7 @@ export const useArbTokenBridge = (
 
   const [walletAddress, setWalletAddress] = useState('')
 
-  const [transactions, {addTransaction, setTransactionSuccess, setTransactionFailure  } ] = useTransactions()
+  const [transactions, {addTransaction, setTransactionSuccess, setTransactionFailure, clearPendingTransactions  } ] = useTransactions()
 
   /* pending withdrawals cache*/
 
@@ -1338,6 +1338,9 @@ export const useArbTokenBridge = (
       getERC20Info
     },
     arbSigner,
-    transactions
+    transactions: {
+      transactions,
+      clearPendingTransactions
+    }
   }
 }
