@@ -18,6 +18,7 @@ import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Fact
 import deepEquals from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
 import isEmpty from 'lodash.isempty'
+import useTransactions from './useTransactions'
 
 const MIN_APPROVAL = constants.MaxUint256
 
@@ -262,6 +263,8 @@ export const useArbTokenBridge = (
 
   const [walletAddress, setWalletAddress] = useState('')
 
+  const [transactions, {addTransaction, setTransactionSuccess, setTransactionFailure  } ] = useTransactions()
+
   /* pending withdrawals cache*/
 
   // const addToPWCache = (
@@ -404,13 +407,24 @@ export const useArbTokenBridge = (
         throw new Error('depositEth no arb wallet')
 
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
+      const tx = await ethWallet.depositETH(walletAddress, weiValue)
       try {
-        const tx = await ethWallet.depositETH(walletAddress, weiValue)
+
+        addTransaction({
+          type: 'deposit',
+          status: 'pending',
+          value: etherVal,
+          txID: tx.hash,
+          asset: 'ETH',
+          sender: walletAddress
+        })
         const receipt = await tx.wait()
+        setTransactionSuccess(tx.hash)
         updateEthBalances()
         return receipt
       } catch (e) {
         console.error('depositEth err: ' + e)
+        setTransactionFailure(tx.hash)
       }
     },
     [ethWallet, walletAddress, updateEthBalances]
@@ -421,10 +435,19 @@ export const useArbTokenBridge = (
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
 
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
+      const tx = await _withdrawEth(arbSigner, weiValue)
       try {
-        const tx = await _withdrawEth(arbSigner, weiValue)
-
+        addTransaction({
+          type: 'withdraw',
+          status: 'pending',
+          value: etherVal,
+          txID: tx.hash,
+          asset: 'ETH',
+          sender: walletAddress
+        })
         const receipt = await tx.wait()
+        setTransactionSuccess(tx.hash)
+
         updateEthBalances()
         const { hash } = tx
         if (!hash)
@@ -455,6 +478,8 @@ export const useArbTokenBridge = (
         return receipt
       } catch (e) {
         console.error('withdrawEth err', e)
+        setTransactionFailure(tx.hash)
+
       }
     },
     [arbSigner, updateEthBalances]
@@ -463,12 +488,22 @@ export const useArbTokenBridge = (
   const withdrawLockBoxETH = useCallback(async () => {
     if (!ethWallet) throw new Error('withdrawLockBoxETH no ethWallet')
 
+    const tx = await ethWallet.withdrawEthFromLockbox()
     try {
-      const tx = await ethWallet.withdrawEthFromLockbox()
+      addTransaction({
+        type: 'lockbox',
+        status: 'pending',
+        value: null,
+        txID: tx.hash,
+        asset: 'ETH',
+        sender: walletAddress
+      })
       const receipt = await tx.wait()
       updateEthBalances()
+      setTransactionSuccess(tx.hash)
       return receipt
     } catch (e) {
+      setTransactionFailure(tx.hash)
       console.error('withdrawLockBoxETH err', e)
     }
   }, [ethWallet, updateEthBalances])
@@ -620,8 +655,19 @@ export const useArbTokenBridge = (
         default:
           assertNever(contract, 'approveToken exhaustive check failed')
       }
+      addTransaction({
+        type: 'approve',
+        status: 'pending',
+        value: null,
+        txID: tx.hash,
+        asset: contract.name,
+        sender: walletAddress
+      })
+      try{
+        const receipt = await tx.wait()
+        setTransactionSuccess(tx.hash)
 
-      const receipt = await tx.wait()
+
 
       setBridgeTokens(contracts => {
         const target = contracts[contractAddress]
@@ -639,6 +685,10 @@ export const useArbTokenBridge = (
       })
 
       return { tx, receipt }
+    }
+    catch (err){
+        setTransactionFailure(tx.hash)
+      }
     },
     [bridgeTokens, ethWallet]
   )
@@ -647,7 +697,7 @@ export const useArbTokenBridge = (
     async (
       contractAddress: string,
       amountOrTokenId: string
-    ): Promise<ContractReceipt> => {
+    ): Promise<ContractReceipt | undefined> => {
       if (!ethWallet) throw new Error('deposit missing req')
 
       const contract = bridgeTokens[contractAddress]
@@ -677,9 +727,24 @@ export const useArbTokenBridge = (
           assertNever(contract, 'depositToken exhaustive check failed')
       }
 
-      const receipt = await tx.wait()
-      updateTokenBalances(contract.type)
-      return receipt
+      addTransaction({
+        type: 'deposit',
+        status: 'pending',
+        value: amountOrTokenId,
+        txID: tx.hash,
+        asset: contract.name,
+        sender: walletAddress
+      })
+      try {
+        const receipt = await tx.wait()
+        setTransactionSuccess(tx.hash)
+        updateTokenBalances(contract.type)
+        return receipt
+      } catch(err){
+        setTransactionFailure(tx.hash)
+
+      }
+
     },
     [ethWallet, bridgeTokens]
   )
@@ -688,7 +753,7 @@ export const useArbTokenBridge = (
     async (
       contractAddress: string,
       amountOrTokenId: string
-    ): Promise<ContractReceipt> => {
+    ): Promise<ContractReceipt | undefined> => {
       // TODO check for arbsigner?
       if (!walletAddress) throw new Error('withdraw token no walletAddress')
       if (!arbSigner) throw new Error('withdraw token no arbSigner')
@@ -708,13 +773,22 @@ export const useArbTokenBridge = (
         default:
           assertNever(contract, 'withdrawToken exhaustive check failed')
       }
+      addTransaction({
+        type: 'withdraw',
+        status: 'pending',
+        value: amountOrTokenId,
+        txID: tx.hash,
+        asset: contract.name,
+        sender: walletAddress
+      })
 
+      try {
       const receipt = await tx.wait()
+      setTransactionSuccess(tx.hash)
 
       const { hash } = tx
 
       if (!hash) throw new Error('withdrawToken: missing hash in txn')
-
       // arbProvider.getMessageResult(hash).then(data => {
       // return
       // if (!data) return
@@ -781,6 +855,12 @@ export const useArbTokenBridge = (
 
       updateTokenBalances(contract.type)
       return receipt
+      } catch (err){
+        console.warn('err', err);
+
+        setTransactionFailure(tx.hash)
+
+      }
     },
     [walletAddress, bridgeTokens]
   )
@@ -789,7 +869,7 @@ export const useArbTokenBridge = (
     async (
       contractAddress: string,
       tokenId?: string
-    ): Promise<ContractReceipt> => {
+    ): Promise<ContractReceipt | undefined> => {
       if (!ethWallet) throw new Error('ethWallet missing req')
 
       const contract = bridgeTokens[contractAddress]
@@ -815,10 +895,24 @@ export const useArbTokenBridge = (
         default:
           assertNever(contract, 'withdrawLockBoxToken exhaustive check failed')
       }
+      addTransaction({
+        type: 'lockbox',
+        status: 'pending',
+        value: null,
+        txID: tx.hash,
+        asset: contract.name,
+        sender: walletAddress
+      })
+      try {
+        const receipt = await tx.wait()
+        setTransactionSuccess(tx.hash)
+        updateTokenBalances(contract.type)
+        return receipt
+      } catch(err){
+        console.warn(err);
+        setTransactionFailure(tx.hash)
 
-      const receipt = await tx.wait()
-      updateTokenBalances(contract.type)
-      return receipt
+      }
     },
     [ethWallet, bridgeTokens]
   )
@@ -1243,6 +1337,7 @@ export const useArbTokenBridge = (
       updateBalances: updateTokenBalances,
       getERC20Info
     },
-    arbSigner
+    arbSigner,
+    transactions
   }
 }
