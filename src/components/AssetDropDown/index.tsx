@@ -5,7 +5,7 @@ import FormControl from 'react-bootstrap/FormControl'
 import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
 import { TokenType, BridgeToken } from 'arb-token-bridge'
-import { useState, useLayoutEffect } from 'react'
+import { useState, useMemo } from 'react'
 
 import React from 'react'
 type DropDownProps = {
@@ -28,11 +28,20 @@ const AssetDropDown = ({
   setCurrentAddress
 }: DropDownProps) => {
   const [erc20Form, seterc20Form] = useState('')
+  const title = useMemo(()=>{
+    if (currentToken){
+      return currentToken.symbol
+    } else if (bridgeTokensArray.length > 0){
+      return 'select/add token'
+    } else {
+      return 'add token'
+    }
+  }, [bridgeTokensArray, currentToken])
   return (
     <DropdownButton
       as={InputGroup.Prepend}
       variant="outline-secondary"
-      title={currentToken ? currentToken.symbol : 'select token'}
+      title={title}
       id="input-group-dropdown-1"
     >
       {bridgeTokensArray.map((bridgeToken, i) => (
