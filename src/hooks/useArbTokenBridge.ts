@@ -415,7 +415,8 @@ export const useArbTokenBridge = (
           status: 'pending',
           value: etherVal,
           txID: tx.hash,
-          asset: 'ETH',
+          assetName: 'ETH',
+          assetType: AssetType.ETH,
           sender: walletAddress
         })
         const receipt = await tx.wait()
@@ -442,7 +443,8 @@ export const useArbTokenBridge = (
           status: 'pending',
           value: etherVal,
           txID: tx.hash,
-          asset: 'ETH',
+          assetName: 'ETH',
+          assetType: AssetType.ETH,
           sender: walletAddress
         })
         const receipt = await tx.wait()
@@ -495,7 +497,8 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: null,
         txID: tx.hash,
-        asset: 'ETH',
+        assetName: 'ETH',
+        assetType: AssetType.ETH,
         sender: walletAddress
       })
       const receipt = await tx.wait()
@@ -660,7 +663,8 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: null,
         txID: tx.hash,
-        asset: contract.name,
+        assetName: contract.name,
+        assetType: contract.type,
         sender: walletAddress
       })
       try{
@@ -732,7 +736,8 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: amountOrTokenId,
         txID: tx.hash,
-        asset: contract.name,
+        assetName: contract.name,
+        assetType: contract.type,
         sender: walletAddress
       })
       try {
@@ -778,7 +783,8 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: amountOrTokenId,
         txID: tx.hash,
-        asset: contract.name,
+        assetName: contract.name,
+        assetType: contract.type,
         sender: walletAddress
       })
 
@@ -900,7 +906,8 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: null,
         txID: tx.hash,
-        asset: contract.name,
+        assetName: contract.name,
+        assetType: contract.type,
         sender: walletAddress
       })
       try {

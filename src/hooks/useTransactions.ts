@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react'
+import { AssetType } from './useArbTokenBridge'
 
 type Action =
  | { type: 'ADD_TRANSACTION', transaction:  Transaction}
@@ -13,7 +14,8 @@ export type Transaction   = {
     status: TxnStatus;
     value: string | null;
     txID: string;
-    asset: string;
+    assetName: string;
+    assetType: AssetType;
     sender: string;
 }
 
