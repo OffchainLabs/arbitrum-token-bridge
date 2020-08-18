@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { Transaction, TxnStatus } from 'arb-token-bridge'
+import { Transaction, TxnStatus, AssetType } from 'arb-token-bridge'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
@@ -28,6 +28,17 @@ const TransactionHistory = ({transactions, walletAddress, clearPendingTransactio
             default:
                 return {opacity: 0.5};
         }
+    }
+
+    const valueDisplay = (txn: Transaction)=>{
+        const { value, assetType } = txn
+        if (typeof txn.value !== 'string'){
+            return 'n/a'
+        } else if (assetType === AssetType.ERC721){
+            return `'${value}'`
+        } else {
+            return value
+        }
 
     }
     return <Table id='txn-table' striped bordered hover>
@@ -49,8 +60,8 @@ const TransactionHistory = ({transactions, walletAddress, clearPendingTransactio
                 <td> {txn.status === 'pending' ? <Spinner animation="border" role="status">
 <span className="sr-only">Loading...</span>
 </Spinner> : txn.status} </td>
-                <td>{txn.asset}</td>
-                <td>{ typeof txn.value === "string" ? txn.value : 'n/a'}</td>
+                <td>{txn.assetName}</td>
+                <td>{ valueDisplay(txn)}</td>
 
 
               </tr>

@@ -49,7 +49,7 @@ const Actions = ({
 
       <NumberInputForm
         max={lockBoxBalance}
-        text={'Withdraw LockBox'}
+        text={'LockBox'}
         onSubmit={value => {
           eth.withdrawLockBox(currentERC20Address, value)
         }}
