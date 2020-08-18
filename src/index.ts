@@ -1,2 +1,2 @@
-export * from './hooks/useArbProvider'
 export * from './hooks/useArbTokenBridge'
+export type { Transaction, TxnStatus } from './hooks/useTransactions'
