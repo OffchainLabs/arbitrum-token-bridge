@@ -49,7 +49,7 @@ const Actions = ({
       />
       <DropdownInput
         items={lockBoxTokens}
-        text={'Withdraw LockBox'}
+        text={'LockBox'}
         action={'Withdraw'}
         disabled={!isDepositeMode}
         onSubmit={value => {
