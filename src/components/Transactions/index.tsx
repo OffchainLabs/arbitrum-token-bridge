@@ -41,7 +41,7 @@ const TransactionHistory = ({transactions, walletAddress, clearPendingTransactio
       </tr>
     </thead>
     <tbody>
-        {
+        { usersTransactions.length > 0 ?
             usersTransactions.map((txn)=>(
                 <tr  style={getRowStyle(txn.status)} key={txn.txID}>
                 <td>{txn.txID}</td>
@@ -50,11 +50,11 @@ const TransactionHistory = ({transactions, walletAddress, clearPendingTransactio
 <span className="sr-only">Loading...</span>
 </Spinner> : txn.status} </td>
                 <td>{txn.asset}</td>
-                <td>{txn.value}</td>
+                <td>{ typeof txn.value === "string" ? txn.value : 'n/a'}</td>
 
 
               </tr>
-            ))
+            )) : <i>no transactions to display</i>
         }
     {somePending && <tr><Button onClick={clearPendingTransactions}>clear pending txns</Button></tr>}
     </tbody>
