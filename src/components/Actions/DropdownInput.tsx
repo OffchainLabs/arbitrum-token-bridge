@@ -1,4 +1,4 @@
-import React from 'react'
+import React  from 'react'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import DropdownButton from 'react-bootstrap/DropdownButton'
@@ -7,7 +7,7 @@ import Button from 'react-bootstrap/Button'
 
 import Form from 'react-bootstrap/Form'
 import { BigNumber } from 'ethers/utils'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 type DropdownInputFormProps = {
   items: BigNumber[]
@@ -26,6 +26,18 @@ const DropdownInputForm = ({
 }: DropdownInputFormProps) => {
   // TODO: 0 edge case?
   const [value, setValue] = useState(0)
+  const displayTitle = useMemo(()=>{
+    if (value){
+      return value
+    } else if ( items.length > 0){
+      return 'select token'
+    } else {
+      return '(no tokens)'
+    }
+  } , [items, value])
+
+  const disableActions = disabled || items.length === 0
+
 
   return (
     <InputGroup size="sm" className="mb-3">
@@ -34,9 +46,9 @@ const DropdownInputForm = ({
       </InputGroup.Prepend>
       <DropdownButton
         id="dropdown-basic-button"
-        title={value || 'select token'}
+        title={displayTitle}
         value={value}
-        disabled={disabled}
+        disabled={disableActions}
 
       >
         {items.map((item, i) => (
@@ -57,6 +69,7 @@ const DropdownInputForm = ({
           onSubmit(value.toString())
           setValue(0)
         }}
+        disabled={disableActions}
       >
         {action}
       </Button>
