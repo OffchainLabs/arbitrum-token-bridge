@@ -16,7 +16,6 @@ import { ArbErc20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc20Factor
 import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Factory'
 
 import deepEquals from 'lodash.isequal'
-import cloneDeep from 'lodash.clonedeep'
 import isEmpty from 'lodash.isempty'
 import useTransactions from './useTransactions'
 
@@ -33,31 +32,6 @@ export enum AssetType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',
   ETH = 'ETH'
-}
-
-interface PendingWithdrawals {
-  [assertionHash: string]: PendingWithdrawal
-}
-
-interface PendingWithdrawalSuper {
-  blockHeight: number | undefined
-  value: utils.BigNumber | string
-  from?: string
-}
-
-interface PendingWithdrawal extends PendingWithdrawalSuper {
-  value: utils.BigNumber
-}
-
-interface PendingWithdrawalCache extends PendingWithdrawalSuper {
-  value: string
-  type: AssetType
-  owner: string
-  address?: string
-}
-
-interface PendingWithdrawalsCache {
-  [assertionHash: string]: PendingWithdrawalCache
 }
 
 interface BridgedToken {
@@ -93,7 +67,6 @@ export interface BridgeBalance {
   arbChainBalance: utils.BigNumber
   totalArbBalance: utils.BigNumber
   lockBoxBalance: utils.BigNumber
-  pendingWithdrawals: PendingWithdrawals
 }
 
 // removing 'tokens' / 'balance' could result in one interface
@@ -102,29 +75,7 @@ export interface ERC721Balance {
   arbChainTokens: utils.BigNumber[]
   totalArbTokens: utils.BigNumber[]
   lockBoxTokens: utils.BigNumber[]
-  pendingWithdrawals: PendingWithdrawals
 }
-
-interface BridgeConfig {
-  vmId: string
-  walletAddress: string
-}
-
-// helpers:
-// const pWToPWCache = (
-//   pW: PendingWithdrawal,
-//   type: AssetType,
-//   owner: string,
-//   address?: string
-// ): PendingWithdrawalCache => {
-//   return { ...pW, value: pW.value.toString(), type, address, owner }
-// }
-// const pWCacheToPW = (pWCache: PendingWithdrawalCache): PendingWithdrawal => {
-//   return {
-//     value: utils.bigNumberify(pWCache.value),
-//     blockHeight: pWCache.blockHeight
-//   }
-// }
 
 const usePrevious = (value: any): undefined => {
   const ref = useRef()
@@ -135,7 +86,6 @@ const usePrevious = (value: any): undefined => {
 }
 
 type TokenBalance = BridgeBalance | ERC721Balance
-type StorageBalance = ContractStorage<TokenBalance>
 
 function mergeAndPreservePWs<T extends TokenBalance>(
   prevBalances: ContractStorage<T>,
@@ -155,8 +105,7 @@ function mergeAndPreservePWs<T extends TokenBalance>(
       freshBalances[hash] = latestBalance
     } else {
       freshBalances[hash] = {
-        ...latestBalance,
-        pendingWithdrawals: previousBalance.pendingWithdrawals
+        ...latestBalance
       }
     }
   }
@@ -210,8 +159,7 @@ export const useArbTokenBridge = (
     balance: constants.Zero,
     arbChainBalance: constants.Zero,
     totalArbBalance: constants.Zero,
-    lockBoxBalance: constants.Zero,
-    pendingWithdrawals: {} as PendingWithdrawals
+    lockBoxBalance: constants.Zero
   }
   const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
 
@@ -252,109 +200,17 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
-  // const [pWsCache, setPWsCache] = useLocalStorage<PendingWithdrawalsCache>(
-  //   'PendingWithdrawalsCache',
-  //   {}
-  // ) as [
-  //   PendingWithdrawalsCache,
-  //   React.Dispatch<PendingWithdrawalsCache>,
-  //   React.Dispatch<void>
-  // ]
-
   const [walletAddress, setWalletAddress] = useState('')
 
-  const [transactions, {addTransaction, setTransactionSuccess, setTransactionFailure, clearPendingTransactions  } ] = useTransactions()
-
-  /* pending withdrawals cache*/
-
-  // const addToPWCache = (
-  //   pW: PendingWithdrawal,
-  //   nodeHash: string,
-  //   type: AssetType,
-  //   owner: string,
-  //   address?: string
-  // ) => {
-  //   // converts bignum to number for local storage
-  //   setPWsCache({
-  //     ...pWsCache,
-  //     [nodeHash]: pWToPWCache(pW, type, owner, address)
-  //   })
-  // }
-
-  // const removeFromPWCache = (nodeHash: string) => {
-  //   const newPWsCache: PendingWithdrawalsCache = { ...pWsCache }
-  //   if (newPWsCache) {
-  //     delete newPWsCache[nodeHash]
-  //     setPWsCache(newPWsCache)
-  //   }
-  // }
-
-  // const addCachedPWsToBalances = useCallback(() => {
-  //   if (!walletAddress) {
-  //     console.warn('Warning: wallet address not yet loaded')
-  //     return
-  //   }
-  //   const ethBalanceCopy: BridgeBalance = cloneDeep(ethBalances)
-  //   const erc20BalancesCopy: ContractStorage<BridgeBalance> = cloneDeep(
-  //     erc20Balances
-  //   )
-  //   const erc721BalancesCopy: ContractStorage<ERC721Balance> = cloneDeep(
-  //     erc721Balances
-  //   )
-
-  //   let ethUpdate = false
-  //   let erc20Update = false
-  //   let erc721Update = false
-
-  //   for (const nodeHash in pWsCache) {
-  //     const pWCache = pWsCache[nodeHash]
-  //     // skip withdrawals that aren't the current user's
-  //     if (pWCache.owner !== walletAddress) {
-  //       continue
-  //     }
-  //     const pW = pWCacheToPW(pWCache)
-  //     switch (pWCache.type) {
-  //       case AssetType.ETH: {
-  //         ethBalanceCopy.pendingWithdrawals[nodeHash] = pW
-  //         ethUpdate = true
-  //         break
-  //       }
-  //       case AssetType.ERC20: {
-  //         const address = pWCache.address
-  //         if (!address) continue
-  //         const balance = erc20BalancesCopy[address]
-  //         if (!balance) continue
-  //         if (!balance.pendingWithdrawals[nodeHash]) {
-  //           balance.pendingWithdrawals[nodeHash] = pW
-  //           erc20Update = true
-  //         }
-  //         break
-  //       }
-  //       case AssetType.ERC721: {
-  //         const address = pWCache.address
-  //         if (!address) continue
-  //         const balance = erc721BalancesCopy[address]
-  //         if (!balance) continue
-  //         if (!balance.pendingWithdrawals[nodeHash]) {
-  //           balance.pendingWithdrawals[nodeHash] = pW
-  //           erc721Update = true
-  //         }
-  //         break
-  //       }
-  //       default:
-  //         break
-  //     }
-  //   }
-  //   if (ethUpdate) {
-  //     setEthBalances(ethBalanceCopy)
-  //   }
-  //   if (erc20Update) {
-  //     setErc20Balances(erc20BalancesCopy)
-  //   }
-  //   if (erc721Update) {
-  //     setErc721Balances(erc721BalancesCopy)
-  //   }
-  // }, [ethBalances, erc20Balances, erc721Balances, walletAddress])
+  const [
+    transactions,
+    {
+      addTransaction,
+      setTransactionSuccess,
+      setTransactionFailure,
+      clearPendingTransactions
+    }
+  ] = useTransactions()
 
   /*
   ETH METHODS:
@@ -382,13 +238,12 @@ export const useArbTokenBridge = (
       balance,
       arbChainBalance,
       lockBoxBalance,
-      totalArbBalance,
-      pendingWithdrawals: ethBalances.pendingWithdrawals
+      totalArbBalance
     }
 
     if (!deepEquals(ethBalances, update)) {
       setEthBalances(oldBalances => {
-        return { ...update, pendingWithdrawals: oldBalances.pendingWithdrawals }
+        return { ...update }
       })
     }
     return update
@@ -409,7 +264,6 @@ export const useArbTokenBridge = (
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
       const tx = await ethWallet.depositETH(walletAddress, weiValue)
       try {
-
         addTransaction({
           type: 'deposit',
           status: 'pending',
@@ -455,33 +309,10 @@ export const useArbTokenBridge = (
         if (!hash)
           throw new Error("Withdraw error: Transactions doesn't include hash")
 
-        // arbProvider.getMessageResult(hash).then(data => {
-        //   return
-        //   if (!data) return
-        //   if (!data.nodeInfo) return
-        //   const nodeHash = data.nodeInfo.nodeHash
-        //   const pendingWithdrawal: PendingWithdrawal = {
-        //     value: weiValue,
-        //     blockHeight: receipt.blockNumber,
-        //     from: walletAddress
-        //   }
-        //   setEthBalances(balance => {
-        //     const newEthBalances = { ...balance }
-        //     newEthBalances.pendingWithdrawals[nodeHash] = pendingWithdrawal
-        //     return newEthBalances
-        //   })
-        //   addToPWCache(
-        //     pendingWithdrawal,
-        //     nodeHash,
-        //     AssetType.ETH,
-        //     walletAddress
-        //   )
-        // })
         return receipt
       } catch (e) {
         console.error('withdrawEth err', e)
         setTransactionFailure(tx.hash)
-
       }
     },
     [arbSigner, updateEthBalances]
@@ -531,11 +362,14 @@ export const useArbTokenBridge = (
         switch (contract.type) {
           case TokenType.ERC20: {
             let arbBalancePromise: Promise<utils.BigNumber>
-            if (code.length > 2){
+            if (code.length > 2) {
               arbBalancePromise = contract.arb.balanceOf(walletAddress)
-              console.warn("update bal: contract not yet deployed on arb", contract.eth.address);
+              console.warn(
+                'update bal: contract not yet deployed on arb',
+                contract.eth.address
+              )
             } else {
-              arbBalancePromise = new Promise((exec)=> exec(constants.Zero));
+              arbBalancePromise = new Promise(exec => exec(constants.Zero))
             }
             const [
               balance,
@@ -559,10 +393,7 @@ export const useArbTokenBridge = (
               balance,
               arbChainBalance,
               lockBoxBalance,
-              totalArbBalance,
-              pendingWithdrawals: erc20Balance
-                ? erc20Balance.pendingWithdrawals
-                : ({} as PendingWithdrawals)
+              totalArbBalance
             }
 
             erc20Updates[contract.eth.address] = updated
@@ -571,11 +402,14 @@ export const useArbTokenBridge = (
           }
           case TokenType.ERC721: {
             let arbTokensPromise: Promise<utils.BigNumber[]>
-            if (code.length > 2){
+            if (code.length > 2) {
               arbTokensPromise = contract.arb.tokensOfOwner(walletAddress)
-              console.warn("update bal: contract not yet deployed on arb", contract.eth.address);
+              console.warn(
+                'update bal: contract not yet deployed on arb',
+                contract.eth.address
+              )
             } else {
-              arbTokensPromise = new Promise((exec)=>exec([]));
+              arbTokensPromise = new Promise(exec => exec([]))
             }
             // TODO: remove total arb tokens; overkill
             const [
@@ -601,10 +435,7 @@ export const useArbTokenBridge = (
               tokens,
               arbChainTokens,
               totalArbTokens,
-              lockBoxTokens,
-              pendingWithdrawals: erc721Balance
-                ? erc721Balance.pendingWithdrawals
-                : ({} as PendingWithdrawals)
+              lockBoxTokens
             }
             erc721Updates[contract.eth.address] = updated
             break
@@ -667,30 +498,28 @@ export const useArbTokenBridge = (
         assetType: contract.type,
         sender: walletAddress
       })
-      try{
+      try {
         const receipt = await tx.wait()
         setTransactionSuccess(tx.hash)
 
+        setBridgeTokens(contracts => {
+          const target = contracts[contractAddress]
+          if (!target)
+            throw Error('approved contract missing ' + contractAddress)
 
+          const updated = {
+            ...target,
+            allowed: true
+          }
 
-      setBridgeTokens(contracts => {
-        const target = contracts[contractAddress]
-        if (!target) throw Error('approved contract missing ' + contractAddress)
+          return {
+            ...contracts,
+            [contractAddress]: updated
+          }
+        })
 
-        const updated = {
-          ...target,
-          allowed: true
-        }
-
-        return {
-          ...contracts,
-          [contractAddress]: updated
-        }
-      })
-
-      return { tx, receipt }
-    }
-    catch (err){
+        return { tx, receipt }
+      } catch (err) {
         setTransactionFailure(tx.hash)
       }
     },
@@ -745,11 +574,9 @@ export const useArbTokenBridge = (
         setTransactionSuccess(tx.hash)
         updateTokenBalances(contract.type)
         return receipt
-      } catch(err){
+      } catch (err) {
         setTransactionFailure(tx.hash)
-
       }
-
     },
     [ethWallet, bridgeTokens]
   )
@@ -789,83 +616,19 @@ export const useArbTokenBridge = (
       })
 
       try {
-      const receipt = await tx.wait()
-      setTransactionSuccess(tx.hash)
+        const receipt = await tx.wait()
+        setTransactionSuccess(tx.hash)
 
-      const { hash } = tx
+        const { hash } = tx
 
-      if (!hash) throw new Error('withdrawToken: missing hash in txn')
-      // arbProvider.getMessageResult(hash).then(data => {
-      // return
-      // if (!data) return
-      // if (!data.nodeInfo) return
-      // const nodeHash = data.nodeInfo.nodeHash
-      // const pendingWithdrawal: PendingWithdrawal = {
-      //   value: utils.parseEther(amountOrTokenId),
-      //   blockHeight: receipt.blockNumber,
-      //   from: walletAddress
-      // }
-      // /* add to pending withdrawals and update without mutating
-      //   ERC20 && ERC721 could probably by DRYed up, but had typing issues, so keeping separate
-      // */
-      // if (contract.type === TokenType.ERC20) {
-      //   setErc20Balances(oldErc20Balances => {
-      //     const balance = oldErc20Balances?.[contractAddress]
-      //     if (!balance) return oldErc20Balances
-      //     const newPendingWithdrawals: PendingWithdrawals = {
-      //       ...balance.pendingWithdrawals,
-      //       [nodeHash]: pendingWithdrawal
-      //     }
-      //     const newBalance: BridgeBalance = {
-      //       ...balance,
-      //       pendingWithdrawals: newPendingWithdrawals
-      //     }
-      //     return {
-      //       ...oldErc20Balances,
-      //       [contractAddress]: newBalance
-      //     }
-      //   })
-      //   addToPWCache(
-      //     pendingWithdrawal,
-      //     nodeHash,
-      //     AssetType.ERC20,
-      //     walletAddress,
-      //     contractAddress
-      //   )
-      // } else if (contract.type === TokenType.ERC721) {
-      //   setErc721Balances(oldERC721Balances => {
-      //     const balance = oldERC721Balances?.[contractAddress]
-      //     if (!balance) return oldERC721Balances
-      //     const newPendingWithdrawals: PendingWithdrawals = {
-      //       ...balance.pendingWithdrawals,
-      //       [nodeHash]: pendingWithdrawal
-      //     }
-      //     const newBalance: ERC721Balance = {
-      //       ...balance,
-      //       pendingWithdrawals: newPendingWithdrawals
-      //     }
-      //     return {
-      //       ...oldERC721Balances,
-      //       [contractAddress]: newBalance
-      //     }
-      //   })
-      //   addToPWCache(
-      //     pendingWithdrawal,
-      //     nodeHash,
-      //     AssetType.ERC721,
-      //     walletAddress,
-      //     contractAddress
-      //   )
-      // }
-      // })
+        if (!hash) throw new Error('withdrawToken: missing hash in txn')
 
-      updateTokenBalances(contract.type)
-      return receipt
-      } catch (err){
-        console.warn('err', err);
+        updateTokenBalances(contract.type)
+        return receipt
+      } catch (err) {
+        console.warn('err', err)
 
         setTransactionFailure(tx.hash)
-
       }
     },
     [walletAddress, bridgeTokens]
@@ -915,10 +678,9 @@ export const useArbTokenBridge = (
         setTransactionSuccess(tx.hash)
         updateTokenBalances(contract.type)
         return receipt
-      } catch(err){
-        console.warn(err);
+      } catch (err) {
+        console.warn(err)
         setTransactionFailure(tx.hash)
-
       }
     },
     [ethWallet, bridgeTokens]
@@ -968,8 +730,8 @@ export const useArbTokenBridge = (
       if (!isEthContract) {
         console.warn('contract not deployed')
         return ''
-      } else if (bridgeTokens[contractAddress]){
-        console.warn('token already added');
+      } else if (bridgeTokens[contractAddress]) {
+        console.warn('token already added')
         return ''
       }
 
@@ -977,10 +739,9 @@ export const useArbTokenBridge = (
       let newContract: BridgeToken
       const inboxAddress = (await ethWallet.globalInboxConn()).address
 
-      let arbContractCode = await arbProvider.getCode(contractAddress)
+      const arbContractCode = await arbProvider.getCode(contractAddress)
       switch (type) {
         case TokenType.ERC20: {
-
           if (arbContractCode.length <= 2) {
             console.warn('ERC20 contract does not yet exist on arbchain:')
 
@@ -1083,116 +844,6 @@ export const useArbTokenBridge = (
     clearERC721Cache()
   }
 
-  // const updatePendingWithdrawals = useCallback(
-  //   (rollup: abi.ArbRollup, assertionHash: string) => {
-  //     if (!arbProvider)
-  //       throw new Error('updatePendingWithdrawals no arb provider')
-  //     if (pWsCache[assertionHash]) {
-  //       removeFromPWCache(assertionHash)
-  //     }
-
-  //     Promise.all([rollup.vmParams(), arbProvider.getBlockNumber()]).then(
-  //       ([vmParams, currentBlockHeight]) => {
-  //         const gracePeriodBlocks = vmParams.gracePeriodTicks.toNumber() / 1000
-  //         const isPastGracePeriod = (withdrawal: PendingWithdrawal) =>
-  //           withdrawal.blockHeight &&
-  //           withdrawal.blockHeight + 2 * gracePeriodBlocks < currentBlockHeight
-
-  //         // remove completed eth withdrawals
-  //         const ethWithDrawalsCopy = { ...ethBalances.pendingWithdrawals }
-  //         let ethUpdate = false
-  //         for (const key in ethBalances.pendingWithdrawals) {
-  //           const withdrawal = ethBalances.pendingWithdrawals[key]
-  //           if (key === assertionHash || isPastGracePeriod(withdrawal)) {
-  //             delete ethWithDrawalsCopy[key]
-  //             ethUpdate = true
-  //           }
-  //         }
-  //         // remove completed ERC20 withdrawals
-  //         const erc20BalancesClone: ContractStorage<BridgeBalance> = cloneDeep(
-  //           erc20Balances
-  //         )
-  //         let erc20Update = false
-  //         for (const address in erc20BalancesClone) {
-  //           const erc20Balance = erc20BalancesClone[address]
-  //           if (!erc20Balance) continue
-  //           for (const key in erc20Balance.pendingWithdrawals) {
-  //             const withdrawal = erc20Balance.pendingWithdrawals[key]
-  //             if (key === assertionHash || isPastGracePeriod(withdrawal)) {
-  //               delete erc20Balance.pendingWithdrawals[key]
-  //               erc20Update = true
-  //             }
-  //           }
-  //         }
-
-  //         // remove completed ERC721 withdrawals
-  //         const erc721BalancesClone: ContractStorage<ERC721Balance> = cloneDeep(
-  //           erc721Balances
-  //         )
-  //         let erc721Update = false
-  //         for (const address in erc721BalancesClone) {
-  //           const erc721Balance = erc721BalancesClone[address]
-  //           if (!erc721Balance) continue
-  //           for (const key in erc721Balance.pendingWithdrawals) {
-  //             const withdrawal = erc721Balance.pendingWithdrawals[key]
-  //             if (key === assertionHash || isPastGracePeriod(withdrawal)) {
-  //               delete erc721Balance.pendingWithdrawals[key]
-  //               erc721Update = true
-  //             }
-  //           }
-  //         }
-
-  //         // update if necessary
-  //         if (ethUpdate) {
-  //           setEthBalances(oldBalances => ({
-  //             ...oldBalances,
-  //             pendingWithdrawals: ethWithDrawalsCopy
-  //           }))
-  //         }
-
-  //         if (erc20Update) {
-  //           setErc20Balances(erc20BalancesClone)
-  //         }
-  //         if (erc721Update) {
-  //           setErc721Balances(erc721BalancesClone)
-  //         }
-  //       }
-  //     )
-  //   },
-  //   [erc20Balances, erc721Balances, arbProvider]
-  // )
-
-  // const handleConfirmedAssertion = async (assertionHash: string) => {
-  //   console.info('Incoming confirmed assertion:', assertionHash)
-  //   if (!arbProvider) return
-  //   const rollup = await arbProvider.arbRollupConn()
-  //   updatePendingWithdrawals(rollup, assertionHash)
-  // }
-
-  // useEffect(() => {
-  //   if (arbProvider && vmId) {
-  //     arbProvider.arbRollupConn().then(rollup => {
-  //       const {
-  //         ConfirmedAssertion: { name: confirmed },
-  //         ConfirmedValidAssertion: { name: confirmedValid }
-  //       } = rollup.interface.events
-  //       rollup.on(confirmed, updateAllBalances)
-  //       rollup.on(confirmedValid, handleConfirmedAssertion)
-  //     })
-
-  //     return () => {
-  //       arbProvider.arbRollupConn().then(rollup => {
-  //         const {
-  //           ConfirmedAssertion: { name: confirmed },
-  //           ConfirmedValidAssertion: { name: confirmedValid }
-  //         } = rollup.interface.events
-  //         rollup.removeListener(confirmed, updateAllBalances)
-  //         rollup.removeListener(confirmedValid, handleConfirmedAssertion)
-  //       })
-  //     }
-  //   }
-  // }, [arbProvider, updateAllBalances, vmId])
-
   // TODO replace IIFEs with Promise.allSettled once available
   useEffect(() => {
     if (arbProvider && walletAddress) {
@@ -1222,39 +873,6 @@ export const useArbTokenBridge = (
             setERC721Cache(values.filter((val): val is string => !!val))
           })
         }
-        // if (isEmpty(pWsCache)) return
-        // arbProvider.arbRollupConn().then(async rollup => {
-        //   const { ethProvider } = arbProvider
-        //   const currentBlockHeight = await ethProvider.getBlockNumber()
-        //   const targetAssertionHashes = Object.keys(pWsCache)
-        //   const minBlockHeight = Object.values(pWsCache).reduce(
-        //     (acc, pW) => Math.min(pW.blockHeight || 0, acc),
-        //     Infinity
-        //   )
-
-        //   const topics = [
-        //     [rollup.interface.events.ConfirmedValidAssertion.topic],
-        //     targetAssertionHashes
-        //   ]
-        //   ethProvider
-        //     .getLogs({
-        //       address: vmId,
-        //       topics,
-        //       fromBlock: minBlockHeight,
-        //       toBlock: currentBlockHeight
-        //     })
-        //     .then(events => {
-        //       events.forEach(log => {
-        //         const { nodeHash } = rollup.interface.parseLog(log).values
-        //         if (pWsCache[nodeHash]) {
-        //           updatePendingWithdrawals(rollup, nodeHash)
-        //         }
-        //       })
-        //     })
-        //     .catch(e => {
-        //       console.warn('filter error:', e)
-        //     })
-        // })
       }
     }
   }, [arbProvider, walletAddress])
@@ -1266,7 +884,6 @@ export const useArbTokenBridge = (
       !balanceIsEmpty(ethBalances)
     ) {
       console.info('Eth Balances initial load')
-      // addCachedPWsToBalances()
       // arguably unnecessary, but I like it, for insurance
       window.setInterval(updateAllBalances, 7500)
     }
@@ -1276,7 +893,6 @@ export const useArbTokenBridge = (
       !isEmpty(erc20Balances)
     ) {
       console.info('ERC20 Balances initial load')
-      // addCachedPWsToBalances()
     }
     if (
       prevERC721Balances &&
@@ -1284,7 +900,6 @@ export const useArbTokenBridge = (
       !isEmpty(erc721Balances)
     ) {
       console.info('ERC721 Balances initial load')
-      // addCachedPWsToBalances()
     }
   }, [prevEthBalances, ethBalances, erc20Balances, erc721Balances])
 
@@ -1292,14 +907,8 @@ export const useArbTokenBridge = (
     if (arbProvider && !walletAddress) {
       const address = _arbSigner || _ethSigner
       _arbSigner?.getAddress().then(add => {
-
         setWalletAddress(add)
       })
-
-      // Promise.resolve(signer && signer.getAddress()).then(addr =>{
-
-      // }
-      // )
     }
     if (arbProvider && walletAddress) {
       updateAllBalances()
