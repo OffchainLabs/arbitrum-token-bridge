@@ -28,6 +28,9 @@ const localStoreTransactions = (transactions: Transaction[]) => {
 function reducer(state: Transaction[], action: Action) {
 
     switch (action.type) {
+      case 'SET_INITIAL_TRANSACTIONS':{
+        return [...action.transactions]
+      }
       case 'ADD_TRANSACTION':{
         return localStoreTransactions(state.concat(action.transaction))
       }
