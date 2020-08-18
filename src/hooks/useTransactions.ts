@@ -20,11 +20,6 @@ export type Transaction   = {
 interface  NewTransaction extends Transaction {
     status: 'pending'
 }
-const localStoreTransactions = (transactions: Transaction[]) => {
-  window.localStorage.setItem('arbTransactions', JSON.stringify(transactions))
-  return transactions
-}
-
 function reducer(state: Transaction[], action: Action) {
 
     switch (action.type) {
@@ -32,7 +27,7 @@ function reducer(state: Transaction[], action: Action) {
         return [...action.transactions]
       }
       case 'ADD_TRANSACTION':{
-        return localStoreTransactions(state.concat(action.transaction))
+        return state.concat(action.transaction)
       }
       case 'SET_SUCCESS': {
         const newState = [...state]
@@ -45,7 +40,7 @@ function reducer(state: Transaction[], action: Action) {
             ...newState[index],
             status: 'success'
         }
-        return localStoreTransactions(newState)
+        return newState
     }
     case 'SET_FAILURE': {
         const newState = [...state]
@@ -58,21 +53,24 @@ function reducer(state: Transaction[], action: Action) {
             ...newState[index],
             status:  'failure'
         }
-    return localStoreTransactions(newState)
+    return newState
 
     }
     case 'CLEAR_PENDING': {
-      return localStoreTransactions(
-        state.filter((txn)=> txn.status !== 'pending')
-      )
-
-  }
+      return state.filter((txn)=> txn.status !== 'pending')
+    }
       default:
         return state
     }
   }
+
+const localStorageReducer = (state: Transaction[], action: Action) => {
+  const newState = reducer(state, action)
+  window.localStorage.setItem('arbTransactions', JSON.stringify(newState))
+  return newState
+}
 const  useTransactions = (): [ Transaction[], any ] => {
-      const [state, dispatch] = useReducer(reducer, [])
+      const [state, dispatch] = useReducer(localStorageReducer, [])
       useEffect(()=>{
         const cachedTransactions = window.localStorage.getItem('arbTransactions')
         dispatch({
