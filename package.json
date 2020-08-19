@@ -1,5 +1,5 @@
 {
-  "name": "arb-token-bridge",
+  "name": "token-bridge-sdk",
   "version": "0.1.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
