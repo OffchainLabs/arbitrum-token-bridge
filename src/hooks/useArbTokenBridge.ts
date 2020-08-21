@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ContractTransaction, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { ContractReceipt } from 'ethers/contract'
@@ -16,7 +16,6 @@ import { ArbErc20Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc20Factor
 import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Factory'
 
 import deepEquals from 'lodash.isequal'
-import isEmpty from 'lodash.isempty'
 import useTransactions from './useTransactions'
 
 const MIN_APPROVAL = constants.MaxUint256
@@ -77,13 +76,6 @@ export interface ERC721Balance {
   lockBoxTokens: utils.BigNumber[]
 }
 
-const usePrevious = (value: any): undefined => {
-  const ref = useRef()
-  useEffect(() => {
-    ref.current = value
-  })
-  return ref.current
-}
 
 type TokenBalance = BridgeBalance | ERC721Balance
 
@@ -176,13 +168,7 @@ export const useArbTokenBridge = (
     ContractStorage<ERC721Balance>
   >({})
 
-  const prevEthBalances: BridgeBalance | undefined = usePrevious(ethBalances)
-  const prevERC20Balances:
-    | ContractStorage<BridgeBalance>
-    | undefined = usePrevious(erc20Balances)
-  const prevERC721Balances:
-    | ContractStorage<ERC721Balance>
-    | undefined = usePrevious(erc721Balances)
+
   // use local storage for list of token addresses
   // TODO remove type assertion when hook dependency fix update is released
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
@@ -357,7 +343,7 @@ export const useArbTokenBridge = (
       const erc721Updates: typeof erc721Balances = {}
 
       for (const contract of filtered) {
-        const arbTokenContract =  await arbTokenCache(contract.eth.address)
+        const arbTokenContract =  await arbTokenCache(contract.eth.address, contract.type)
         switch (contract.type) {
           case TokenType.ERC20: {
 
@@ -566,14 +552,13 @@ export const useArbTokenBridge = (
       contractAddress: string,
       amountOrTokenId: string
     ): Promise<ContractReceipt | undefined> => {
-      // TODO check for arbsigner?
       if (!walletAddress) throw new Error('withdraw token no walletAddress')
       if (!arbSigner) throw new Error('withdraw token no arbSigner')
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
-      const tokenContract = await arbTokenCache(contractAddress)
-      if (!tokenContract){
+      const arbTokenContract = await arbTokenCache(contractAddress, contract.type)
+      if (!arbTokenContract){
         throw new Error ("Can't withdraw; arb token not present")
       }
 
@@ -581,11 +566,11 @@ export const useArbTokenBridge = (
       switch (contract.type) {
         case TokenType.ERC20: {
           const amount = utils.parseUnits(amountOrTokenId, contract.decimals)
-          tx = await tokenContract.withdraw(walletAddress, amount)
+          tx = await arbTokenContract.withdraw(walletAddress, amount)
           break
         }
         case TokenType.ERC721:
-          tx = await tokenContract.withdraw(walletAddress, amountOrTokenId)
+          tx = await arbTokenContract.withdraw(walletAddress, amountOrTokenId)
           break
         default:
           assertNever(contract, 'withdrawToken exhaustive check failed')
@@ -706,7 +691,7 @@ export const useArbTokenBridge = (
   )
 
   const arbTokenCache = useCallback(
-    async (contractAddress: string) => {
+    async (contractAddress: string, tokenType: TokenType) => {
     const token = bridgeTokens[contractAddress]
     if (!token){
       return null
@@ -729,7 +714,8 @@ export const useArbTokenBridge = (
     }
 
     // todo:
-    const arbTokenContract: any = ArbErc20Factory.connect(
+
+    const arbTokenContract: any = (TokenType.ERC20 ?  ArbErc20Factory : ArbErc721Factory).connect(
       contractAddress,
       _arbSigner || arbProvider
     )
@@ -774,7 +760,9 @@ export const useArbTokenBridge = (
       let newContract: BridgeToken
       const inboxAddress = (await ethWallet.globalInboxConn()).address
 
+      const arbContract = await arbTokenCache(contractAddress, type)
       switch (type) {
+
         case TokenType.ERC20: {
 
           const ethERC20 = ERC20Factory.connect(
@@ -788,9 +776,8 @@ export const useArbTokenBridge = (
               ethERC20.symbol()
             ])
 
-          const arbERC20 = await arbTokenCache(contractAddress)
           newContract = {
-            arb: arbERC20,
+            arb: arbContract,
             eth: ethERC20,
             type,
             allowed: allowance.gte(MIN_APPROVAL.div(2)),
@@ -805,7 +792,6 @@ export const useArbTokenBridge = (
           break
         }
         case TokenType.ERC721: {
-          const arbERC721 = await arbTokenCache(contractAddress)
           const ethERC721 = ERC721Factory.connect(contractAddress, _ethSigner)
 
           const [allowed, tokenName, symbol] = await Promise.all([
@@ -815,7 +801,7 @@ export const useArbTokenBridge = (
           ])
 
           newContract = {
-            arb: arbERC721,
+            arb: arbContract,
             eth: ethERC721,
             type,
             name: tokenName,
