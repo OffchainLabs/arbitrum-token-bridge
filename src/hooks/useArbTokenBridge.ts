@@ -715,7 +715,7 @@ export const useArbTokenBridge = (
 
     // todo:
 
-    const arbTokenContract: any = (tokenType === TokenType.ERC20 ?  ArbErc20Factory : ArbErc721Factory).connect(
+    const arbTokenContract: abi.ArbErc20  | abi.ArbErc721  = (tokenType === TokenType.ERC20 ?  ArbErc20Factory : ArbErc721Factory).connect(
       contractAddress,
       _arbSigner || arbProvider
     )
@@ -727,7 +727,7 @@ export const useArbTokenBridge = (
       const updated = {
         ...target,
         arb: arbTokenContract
-      }
+      } as BridgeToken
 
       return {
         ...contracts,
@@ -777,7 +777,7 @@ export const useArbTokenBridge = (
             ])
 
           newContract = {
-            arb: arbContract,
+            arb: arbContract as abi.ArbErc20 | null,
             eth: ethERC20,
             type,
             allowed: allowance.gte(MIN_APPROVAL.div(2)),
@@ -801,7 +801,7 @@ export const useArbTokenBridge = (
           ])
 
           newContract = {
-            arb: arbContract,
+            arb: arbContract as abi.ArbErc721 | null,
             eth: ethERC721,
             type,
             name: tokenName,
