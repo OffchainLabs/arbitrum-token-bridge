@@ -1462,6 +1462,18 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.4.tgz#38fd73ddfd9b55abb1e1b2ed578cb55bd7b7d339"
   integrity sha512-8+KAKzEvSUdeo+kmqnKrqgeE+LcA0tjYWFY7RPProVYwnqDjukzO+3b6dLD56rYX5TdWejnEOLJYOIeh4CXKuA==
 
+"@types/lodash.isempty@^4.4.6":
+  version "4.4.6"
+  resolved "https://registry.yarnpkg.com/@types/lodash.isempty/-/lodash.isempty-4.4.6.tgz#48a5576985727d9b85d59a60199d6b11ac756a3e"
+  integrity sha512-AauKrFlA4z3Usog5HLGDupKzkCP7h5KXGlfAcRGUfvTmL7guVuEzDSNI6lYJ7syO7J2RE2F47179pSLr26UHIw==
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*":
+  version "4.14.159"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.159.tgz#61089719dc6fdd9c5cb46efc827f2571d1517065"
+  integrity sha512-gF7A72f7WQN33DpqOWw9geApQPh4M3PxluMtaHxWHXEGSN12/WbcEk/eNSqWNQcQhF66VSZ06vCF94CrHwXJDg==
+
 "@types/lodash@^4.14.139":
   version "4.14.150"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.150.tgz#649fe44684c3f1fcb6164d943c5a61977e8cf0bd"
@@ -1949,22 +1961,25 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-provider-ethers@^0.4.7:
-  version "0.4.7"
-  resolved "https://registry.yarnpkg.com/arb-provider-ethers/-/arb-provider-ethers-0.4.7.tgz#afde7d242b04391838fa7d98eaeccde99d317192"
-  integrity sha512-p+rofZcwC9REMLCxHjMTi0JjmbkjVKlWUDwFGmwcxmMtVRpRVWvD27rCjxEwiO8JtPnhiawJC5li7kzIk0el4A==
+arb-provider-ethers@^0.6.5:
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/arb-provider-ethers/-/arb-provider-ethers-0.6.5.tgz#91721a807785f0d969373e31b3c0504cbe6299f3"
+  integrity sha512-1GmofkkOgkDSbEassbKpN3NOJBkNno7xKwxF+WOLG69U6zeRTUjGWYa3csEWGvIuX9BCxX2GHxLHVnYSZeajbQ==
   dependencies:
-    ethers "^4.0.44"
     jayson "^3.2.0"
     promise-poller "^1.9.1"
 
-arb-token-bridge@OffchainLabs/token-bridge-sdk:
-  version "0.1.0"
-  resolved "https://codeload.github.com/OffchainLabs/token-bridge-sdk/tar.gz/8c4a488bde7b4ad5b4f5bb4e093fd760aa10ae71"
+arb-token-bridge@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/arb-token-bridge/-/arb-token-bridge-0.1.4.tgz#9da0a49345c3a8a18c74264414575bfb922e7af7"
+  integrity sha512-LJMxT9uUJwfNlcDbiA+EvEoDrAskw8sIe2oNK1upzUTivIfBRrBVRiCLcikoZZIr9Sg36L9y4IsE/mspZ9K+oQ==
   dependencies:
     "@rehooks/local-storage" "^2.3.0"
-    arb-provider-ethers "^0.4.7"
-    ethers "^4.0.44"
+    "@types/lodash.isempty" "^4.4.6"
+    arb-provider-ethers "^0.6.5"
+    ethers "^4.0.47"
+    lodash.clonedeep "^4.5.0"
+    lodash.isempty "^4.4.0"
     lodash.isequal "^4.5.0"
     typescript "^3.8.3"
 
@@ -4305,7 +4320,7 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=
 
-ethers@^4.0.44, ethers@^4.0.47:
+ethers@^4.0.47:
   version "4.0.47"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.47.tgz#91b9cd80473b1136dd547095ff9171bd1fc68c85"
   integrity sha512-hssRYhngV4hiDNeZmVU/k5/E8xmLG8UpcNUzg6mb7lqhgpFPH/t7nuv20RjRrEf0gblzvi2XwR5Te+V3ZFc9pQ==
@@ -6746,6 +6761,16 @@ lodash._reinterpolate@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/lodash._reinterpolate/-/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
   integrity sha1-DM8tiRZq8Ds2Y8eWU4t1rG4RTZ0=
+
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
+
+lodash.isempty@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/lodash.isempty/-/lodash.isempty-4.4.0.tgz#6f86cbedd8be4ec987be9aaf33c9684db1b31e7e"
+  integrity sha1-b4bL7di+TsmHvpqvM8loTbGzHn4=
 
 lodash.isequal@^4.5.0:
   version "4.5.0"

@@ -3,8 +3,6 @@ import styles from './styles.module.scss'
 import { statement } from '@babel/template'
 import { getInjectedWeb3 } from 'util/web3'
 import * as ethers from 'ethers'
-import * as ArbProviderEthers from 'arb-provider-ethers'
-import { ArbProvider } from 'arb-provider-ethers'
 import Transactions from '../Transactions'
 import {
   useArbTokenBridge,
