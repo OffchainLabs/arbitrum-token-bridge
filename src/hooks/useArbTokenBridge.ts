@@ -715,7 +715,7 @@ export const useArbTokenBridge = (
 
     // todo:
 
-    const arbTokenContract: any = (TokenType.ERC20 ?  ArbErc20Factory : ArbErc721Factory).connect(
+    const arbTokenContract: any = (tokenType === TokenType.ERC20 ?  ArbErc20Factory : ArbErc721Factory).connect(
       contractAddress,
       _arbSigner || arbProvider
     )
