@@ -344,8 +344,10 @@ export const useArbTokenBridge = (
   // TODO targeted token updates to prevent unneeded iteration
   const updateTokenBalances = useCallback(
     async (type?: TokenType) => {
-      if (!arbProvider || !walletAddress || !ethWallet)
-        throw new Error('updateTokenBalances missing req')
+      if (!arbProvider || !walletAddress || !ethWallet){
+        console.info('updateTokenBalances missing req')
+        return
+      }
 
       const filtered = Object.values(bridgeTokens).filter(c => {
         return !!c && (!type || c.type === type)
@@ -713,9 +715,16 @@ export const useArbTokenBridge = (
     if(token.arb){
       return token.arb
     }
-
-    if( (await arbProvider.getCode(contractAddress)).length <= 2){
-      console.warn('contract does not yet exist on arbchain:')
+    try {
+      const code = await arbProvider.getCode(contractAddress)
+      console.info('contract code')
+      if( code.length <= 2){
+        console.info('contract does not yet exist on arbchain:')
+        return null
+      }
+    } catch(err){
+      console.info('contract (apparantly?) does not yet exist on arbchain:')
+      console.warn(err);
       return null
     }
 
@@ -845,7 +854,7 @@ export const useArbTokenBridge = (
 
   const updateAllBalances = useCallback(
     () => Promise.all([updateEthBalances(), updateTokenBalances()]),
-    [updateEthBalances, updateTokenBalances]
+    [updateEthBalances, updateTokenBalances, bridgeTokens]
   )
 
   const expireCache = (): void => {
@@ -887,30 +896,11 @@ export const useArbTokenBridge = (
   }, [arbProvider, walletAddress])
 
   useEffect(() => {
-    if (
-      prevEthBalances &&
-      balanceIsEmpty(prevEthBalances) &&
-      !balanceIsEmpty(ethBalances)
-    ) {
-      console.info('Eth Balances initial load')
-      // arguably unnecessary, but I like it, for insurance
-      window.setInterval(updateAllBalances, 7500)
-    }
-    if (
-      prevERC20Balances &&
-      isEmpty(prevERC20Balances) &&
-      !isEmpty(erc20Balances)
-    ) {
-      console.info('ERC20 Balances initial load')
-    }
-    if (
-      prevERC721Balances &&
-      isEmpty(prevERC721Balances) &&
-      !isEmpty(erc721Balances)
-    ) {
-      console.info('ERC721 Balances initial load')
-    }
-  }, [prevEthBalances, ethBalances, erc20Balances, erc721Balances])
+    const intervalID = bridgeTokens && window.setInterval(function(){
+      updateTokenBalances()
+    }, 7500)
+    return  () => {window.clearInterval(intervalID)}
+  }, [bridgeTokens])
 
   useEffect(() => {
     if (arbProvider && !walletAddress) {
