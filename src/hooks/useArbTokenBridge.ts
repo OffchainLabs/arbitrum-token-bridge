@@ -443,7 +443,7 @@ export const useArbTokenBridge = (
       }
       if (!ethWallet) return
       let tx: ContractTransaction
-      const inboxAddress = (await ethWallet.globalInboxConn()).address
+      const inboxAddress = (await ethWallet.globalInbox()).address
 
       switch (contract.type) {
         case TokenType.ERC20:
@@ -758,7 +758,7 @@ export const useArbTokenBridge = (
 
       // TODO error handle
       let newContract: BridgeToken
-      const inboxAddress = (await ethWallet.globalInboxConn()).address
+      const inboxAddress = (await ethWallet.globalInbox()).address
 
       const arbContract = await arbTokenCache(contractAddress, type)
       switch (type) {
