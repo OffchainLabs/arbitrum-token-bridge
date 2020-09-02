@@ -36,8 +36,8 @@ const Injector = () => {
                 ethProvider,
                 arbProvider,
                 ethSigner: ethProvider.getSigner(0),
-                // @ts-ignore // TODO
                 arbSigner: arbProvider.getSigner(
+                  // @ts-ignore // TODO
                   window.ethereum.selectedAddress
                 )
               })
@@ -53,8 +53,8 @@ const Injector = () => {
               setBridgeConfig({
                 ethProvider,
                 arbProvider,
-                // @ts-ignore TODO
                 ethSigner: ethProvider.getSigner(
+                  // @ts-ignore TODO
                   window.ethereum.selectedAddress
                 ),
 
