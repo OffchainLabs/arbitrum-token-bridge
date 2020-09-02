@@ -7,7 +7,8 @@ type Action =
   | { type: 'SET_FAILURE'; txID: string }
   | { type: 'SET_INITIAL_TRANSACTIONS'; transactions: Transaction[] }
   | { type: 'CLEAR_PENDING' }
-export type TxnStatus = 'pending' | 'success' | 'failure'
+  | { type: 'CONFIRM_TRANSACTION', txID: string }
+export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
 export type Transaction = {
   type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'
@@ -22,6 +23,20 @@ export type Transaction = {
 interface NewTransaction extends Transaction {
   status: 'pending'
 }
+
+function updateStatus(state:Transaction[], status: TxnStatus, txID: string){
+  const newState = [...state]
+  const index = newState.findIndex(txn => txn.txID === txID)
+  if (index === -1) {
+    console.warn('transaction not found', txID)
+    return state
+  }
+  newState[index] = {
+    ...newState[index],
+    status
+  }
+  return newState
+}
 function reducer(state: Transaction[], action: Action) {
   switch (action.type) {
     case 'SET_INITIAL_TRANSACTIONS': {
@@ -31,33 +46,16 @@ function reducer(state: Transaction[], action: Action) {
       return state.concat(action.transaction)
     }
     case 'SET_SUCCESS': {
-      const newState = [...state]
-      const index = newState.findIndex(txn => txn.txID === action.txID)
-      if (index === -1) {
-        console.warn('transaction not found', action.txID)
-        return state
-      }
-      newState[index] = {
-        ...newState[index],
-        status: 'success'
-      }
-      return newState
+      return updateStatus(state, 'success', action.txID);
     }
     case 'SET_FAILURE': {
-      const newState = [...state]
-      const index = newState.findIndex(txn => txn.txID === action.txID)
-      if (index === -1) {
-        console.warn('transaction not found', action.txID)
-        return state
-      }
-      newState[index] = {
-        ...newState[index],
-        status: 'failure'
-      }
-      return newState
+      return updateStatus(state, 'failure', action.txID);
     }
     case 'CLEAR_PENDING': {
       return state.filter(txn => txn.status !== 'pending')
+    }
+    case 'CONFIRM_TRANSACTION':{
+      return updateStatus(state, 'confirmed', action.txID);
     }
     default:
       return state
