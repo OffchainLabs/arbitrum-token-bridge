@@ -7,7 +7,7 @@ type Action =
   | { type: 'SET_FAILURE'; txID: string }
   | { type: 'SET_INITIAL_TRANSACTIONS'; transactions: Transaction[] }
   | { type: 'CLEAR_PENDING' }
-  | { type: 'CONFIRM_TRANSACTION', txID: string }
+  | { type: 'CONFIRM_TRANSACTION'; txID: string }
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
 export type Transaction = {
@@ -24,7 +24,7 @@ interface NewTransaction extends Transaction {
   status: 'pending'
 }
 
-function updateStatus(state:Transaction[], status: TxnStatus, txID: string){
+function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
   if (index === -1) {
@@ -46,16 +46,16 @@ function reducer(state: Transaction[], action: Action) {
       return state.concat(action.transaction)
     }
     case 'SET_SUCCESS': {
-      return updateStatus(state, 'success', action.txID);
+      return updateStatus(state, 'success', action.txID)
     }
     case 'SET_FAILURE': {
-      return updateStatus(state, 'failure', action.txID);
+      return updateStatus(state, 'failure', action.txID)
     }
     case 'CLEAR_PENDING': {
       return state.filter(txn => txn.status !== 'pending')
     }
-    case 'CONFIRM_TRANSACTION':{
-      return updateStatus(state, 'confirmed', action.txID);
+    case 'CONFIRM_TRANSACTION': {
+      return updateStatus(state, 'confirmed', action.txID)
     }
     default:
       return state
