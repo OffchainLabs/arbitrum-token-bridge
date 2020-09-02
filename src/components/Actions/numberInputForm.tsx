@@ -23,11 +23,14 @@ const NumberInputForm = ({
 }: NumberInputFormProps) => {
   const [value, setValue] = useCappedNumberInput(0)
 
-  const submit = useCallback( (e: any)=>{
-    e.preventDefault()
-    onSubmit(value.toString())
-    setValue(0, max)
-  }, [value, onSubmit])
+  const submit = useCallback(
+    (e: any) => {
+      e.preventDefault()
+      onSubmit(value.toString())
+      setValue(0, max)
+    },
+    [value, onSubmit]
+  )
 
   return (
     <InputGroup
@@ -37,9 +40,7 @@ const NumberInputForm = ({
         setValue(e.target.value, max)
       }}
     >
-      <Form
-        onSubmit={submit}
-      >
+      <Form onSubmit={submit}>
         <FormControl
           aria-label="Small"
           aria-describedby="inputGroup-sizing-sm"
@@ -48,10 +49,11 @@ const NumberInputForm = ({
           step="0.01"
           disabled={disabled}
           placeholder={text}
-
-          />
+        />
       </Form>
-          <Button disabled={disabled} type="submit" onClick={submit}>{buttonText || "submit"}</Button>
+      <Button disabled={disabled} type="submit" onClick={submit}>
+        {buttonText || 'submit'}
+      </Button>
     </InputGroup>
   )
 }

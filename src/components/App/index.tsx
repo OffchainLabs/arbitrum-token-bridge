@@ -115,8 +115,12 @@ const App = ({
           />
         </div>
       </div>
-      <div className='row'>
-        <Transactions transactions={transactions.transactions} clearPendingTransactions={transactions.clearPendingTransactions} walletAddress={walletAddress}/>
+      <div className="row">
+        <Transactions
+          transactions={transactions.transactions}
+          clearPendingTransactions={transactions.clearPendingTransactions}
+          walletAddress={walletAddress}
+        />
       </div>
     </div>
   )

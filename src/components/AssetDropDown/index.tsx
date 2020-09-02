@@ -28,10 +28,10 @@ const AssetDropDown = ({
   setCurrentAddress
 }: DropDownProps) => {
   const [erc20Form, seterc20Form] = useState('')
-  const title = useMemo(()=>{
-    if (currentToken){
+  const title = useMemo(() => {
+    if (currentToken) {
       return currentToken.symbol
-    } else if (bridgeTokensArray.length > 0){
+    } else if (bridgeTokensArray.length > 0) {
       return 'select/add token'
     } else {
       return 'add token'

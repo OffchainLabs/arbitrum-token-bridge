@@ -1,4 +1,4 @@
-import React  from 'react'
+import React from 'react'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import DropdownButton from 'react-bootstrap/DropdownButton'
@@ -26,18 +26,17 @@ const DropdownInputForm = ({
 }: DropdownInputFormProps) => {
   // TODO: 0 edge case?
   const [value, setValue] = useState(0)
-  const displayTitle = useMemo(()=>{
-    if (value){
+  const displayTitle = useMemo(() => {
+    if (value) {
       return value
-    } else if ( items.length > 0){
+    } else if (items.length > 0) {
       return 'select token'
     } else {
       return '(no tokens)'
     }
-  } , [items, value])
+  }, [items, value])
 
   const disableActions = disabled || items.length === 0
-
 
   return (
     <InputGroup size="sm" className="mb-3">
@@ -49,7 +48,6 @@ const DropdownInputForm = ({
         title={displayTitle}
         value={value}
         disabled={disableActions}
-
       >
         {items.map((item, i) => (
           <Dropdown.Item

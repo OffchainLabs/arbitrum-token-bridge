@@ -7,7 +7,6 @@ import ModeContext from './ModeContext'
 import Alert from 'react-bootstrap/Alert'
 import Container from 'react-bootstrap/Container'
 
-
 const Injector = () => {
   const [bridgeConfig, setBridgeConfig] = useState<BridgeConfig>()
   const [connectionState, setConnectionState] = useState<ConnectionState>(
@@ -16,7 +15,7 @@ const Injector = () => {
   // const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
   // const arb = process.env.REACT_APP_ARB_NETWORK_ID
   const {
-    REACT_APP_ETH_NETWORK_ID: ethNetworkId ,
+    REACT_APP_ETH_NETWORK_ID: ethNetworkId,
     REACT_APP_ARB_NETWORK_ID: arbNetworkId,
     REACT_APP_ETH_NODE_URL: ethNodeUrl,
     REACT_APP_ARB_VALIDATOR_URL: arbValidatorUrl
@@ -38,7 +37,9 @@ const Injector = () => {
                 arbProvider,
                 ethSigner: ethProvider.getSigner(0),
                 // @ts-ignore // TODO
-                arbSigner: arbProvider.getSigner(window.ethereum.selectedAddress)
+                arbSigner: arbProvider.getSigner(
+                  window.ethereum.selectedAddress
+                )
               })
               setConnectionState(ConnectionState.DEPOSIT_MODE)
               break
@@ -53,7 +54,9 @@ const Injector = () => {
                 ethProvider,
                 arbProvider,
                 // @ts-ignore TODO
-                ethSigner: ethProvider.getSigner( window.ethereum.selectedAddress),
+                ethSigner: ethProvider.getSigner(
+                  window.ethereum.selectedAddress
+                ),
 
                 arbSigner: arbProvider.getSigner(0)
               })
@@ -81,9 +84,21 @@ const Injector = () => {
       case ConnectionState.LOADING:
         return <div>{renderAlert('loading...', 'primary')}</div>
       case ConnectionState.NO_METAMASK:
-    return <div>{renderAlert('Ethereum provider not detected; make sure you have metamask installed.')}</div>
+        return (
+          <div>
+            {renderAlert(
+              'Ethereum provider not detected; make sure you have metamask installed.'
+            )}
+          </div>
+        )
       case ConnectionState.WRONG_NETWORK:
-    return <div>{(renderAlert(`Unsupported network; connect to network id ${ethNetworkId} for L1 actions or network id ${arbNetworkId} for L2 actions`))}</div>
+        return (
+          <div>
+            {renderAlert(
+              `Unsupported network; connect to network id ${ethNetworkId} for L1 actions or network id ${arbNetworkId} for L2 actions`
+            )}
+          </div>
+        )
       default:
         if (!bridgeConfig) {
           throw new Error('initialization error')
@@ -99,11 +114,12 @@ const Injector = () => {
   return <div>{renderContent(connectionState, bridgeConfig)}</div>
 }
 
-export const renderAlert = (message:string, variant:'danger'|'primary'='danger') =>(
+export const renderAlert = (
+  message: string,
+  variant: 'danger' | 'primary' = 'danger'
+) => (
   <Container>
-      <Alert variant={variant}>
-      { message }
-      </Alert>
-    </Container>
+    <Alert variant={variant}>{message}</Alert>
+  </Container>
 )
 export default Injector

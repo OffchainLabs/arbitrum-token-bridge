@@ -10,9 +10,9 @@ interface props {
   isDepositPanel: boolean
 }
 const {
-    REACT_APP_ETH_NETWORK_ID: ethNetworkId,
-    REACT_APP_ARB_NETWORK_ID: arbNetworkId
-  } = process.env
+  REACT_APP_ETH_NETWORK_ID: ethNetworkId,
+  REACT_APP_ARB_NETWORK_ID: arbNetworkId
+} = process.env
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
@@ -37,7 +37,7 @@ const PanelWrapper: FunctionComponent<props> = ({
           placement="bottom"
           delay={{ show: 100, hide: 50 }}
           overlay={renderPopover(isDepositPanel)}
-          trigger={["hover", "focus"]}
+          trigger={['hover', 'focus']}
         >
           <div
             style={{ opacity: 0.4 }}

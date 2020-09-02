@@ -30,8 +30,6 @@ export async function getInjectedWeb3(): Promise<
       throw new Error('Failed to enable window.ethereum: ' + e.message)
     }
 
-
-
     return [
       new ethers.providers.Web3Provider(window.ethereum),
       window.ethereum.networkVersion
@@ -41,24 +39,21 @@ export async function getInjectedWeb3(): Promise<
   throw new Error('No web3 injection detected')
 }
 
-export const setChangeListeners = ()=>{
+export const setChangeListeners = () => {
   // this prevents multiple refreshes browser glitch
   let reloading = false
-  if (web3Injected(window.ethereum)){
-    console.warn('setting listeners');
+  if (web3Injected(window.ethereum)) {
+    console.warn('setting listeners')
 
-    !reloading && (
+    !reloading &&
       window.ethereum.on('networkChanged', (chainId: number) => {
         reloading = true
         window.location.reload()
       })
-    )
-    !reloading && (
+    !reloading &&
       window.ethereum.on('accountsChanged', (chainId: number) => {
         reloading = true
         window.location.reload()
       })
-    )
   }
-
 }

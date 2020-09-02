@@ -133,21 +133,21 @@ const TabsContainer = ({
       <Tab eventKey="erc721" title="ERC-721">
         <Container>
           <Row>
-          <Col>
-            <ERC721BalanceUi balances={erc721balance} />
+            <Col>
+              <ERC721BalanceUi balances={erc721balance} />
             </Col>
           </Row>
           <Row>
-          <Col>
-            <PanelWrapper isDepositPanel={true}>
-              <AssetDropDown
-                bridgeTokensArray={erc721BridgeTokens}
-                addToken={addToken}
-                tokenType={TokenType.ERC721}
-                currentToken={currentERC721Token}
-                setCurrentAddress={setCurrentERC721Address}
-              />
-            </PanelWrapper>
+            <Col>
+              <PanelWrapper isDepositPanel={true}>
+                <AssetDropDown
+                  bridgeTokensArray={erc721BridgeTokens}
+                  addToken={addToken}
+                  tokenType={TokenType.ERC721}
+                  currentToken={currentERC721Token}
+                  setCurrentAddress={setCurrentERC721Address}
+                />
+              </PanelWrapper>
             </Col>
           </Row>
           <Row>
