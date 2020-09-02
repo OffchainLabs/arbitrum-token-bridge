@@ -67,7 +67,7 @@ const TransactionHistory = ({transactions, walletAddress, clearPendingTransactio
               </tr>
             )) : <i>no transactions to display</i>
         }
-    {somePending && <tr><Button onClick={clearPendingTransactions}>clear pending txns</Button></tr>}
+    {somePending && <tr><td><Button onClick={clearPendingTransactions}>clear pending txns</Button></td></tr>}
     </tbody>
   </Table>
 }
