@@ -2,3 +2,7 @@
     max-width: 150px;
     overflow: hidden;
 }
+
+.input-group{
+    flex-wrap: nowrap;
+}

@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import useCappedNumberInput from 'hooks/useCappedNumberInput'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
+import Button from 'react-bootstrap/Button'
+
 import Form from 'react-bootstrap/Form'
 
 type NumberInputFormProps = {
@@ -9,33 +11,34 @@ type NumberInputFormProps = {
   text: string
   onSubmit: (s: string) => void
   disabled?: boolean
+  buttonText?: string
 }
 
 const NumberInputForm = ({
   max,
   text,
   onSubmit,
-  disabled = false
+  disabled = false,
+  buttonText
 }: NumberInputFormProps) => {
   const [value, setValue] = useCappedNumberInput(0)
+
+  const submit = useCallback( (e: any)=>{
+    e.preventDefault()
+    onSubmit(value.toString())
+    setValue(0, max)
+  }, [value, onSubmit])
 
   return (
     <InputGroup
       size="sm"
-      className="mb-3"
+      className="mb-1"
       onChange={(e: any) => {
         setValue(e.target.value, max)
       }}
     >
-      <InputGroup.Prepend>
-        <InputGroup.Text id="inputGroup-sizing-sm">{text}</InputGroup.Text>
-      </InputGroup.Prepend>
       <Form
-        onSubmit={(e: any) => {
-          e.preventDefault()
-          onSubmit(value.toString())
-          setValue(0, max)
-        }}
+        onSubmit={submit}
       >
         <FormControl
           aria-label="Small"
@@ -44,8 +47,11 @@ const NumberInputForm = ({
           type="number"
           step="0.01"
           disabled={disabled}
-        />
+          placeholder={text}
+
+          />
       </Form>
+          <Button disabled={disabled} type="submit" onClick={submit}>{buttonText || "submit"}</Button>
     </InputGroup>
   )
 }

@@ -44,16 +44,19 @@ const Actions = ({
           eth.deposit(currentERC20Address, value)
         }}
         disabled={!isDepositMode || ethChainBalance === 0}
+        buttonText="deposit"
       />
       <label htmlFor="basic-url">Token in Lockbox: {lockBoxBalance}</label>
 
       <NumberInputForm
         max={lockBoxBalance}
-        text={'LockBox'}
+        text={'Transfer from lockBox'}
         onSubmit={value => {
           eth.withdrawLockBox(currentERC20Address, value)
         }}
         disabled={!isDepositMode || lockBoxBalance === 0}
+        buttonText="transfer"
+
       />
     </div>
   )

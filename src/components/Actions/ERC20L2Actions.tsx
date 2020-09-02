@@ -36,6 +36,7 @@ const Actions = ({
           eth.withdraw(currentERC20Address, value)
         }}
         disabled={isDepositMode || arbChainBalance === 0}
+        buttonText="withdraw"
       />
     </div>
   )

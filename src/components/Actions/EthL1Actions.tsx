@@ -23,6 +23,7 @@ const Actions = ({ balances, eth }: ActionsProps) => {
         text={'Deposit Eth'}
         onSubmit={eth.deposit}
         disabled={ethChainBalance === 0 || !isDepositMode}
+        buttonText="deposit"
       />
       <label htmlFor="basic-url">
         ETH in L1 LockBox: {balances && formatEther(balances.lockBoxBalance)}
@@ -30,9 +31,10 @@ const Actions = ({ balances, eth }: ActionsProps) => {
 
       <NumberInputForm
         max={lockBoxBalance}
-        text={'LockBox'}
+        text={'Transfer from lockBox'}
         onSubmit={eth.withdrawLockBox}
         disabled={lockBoxBalance === 0 || !isDepositMode}
+        buttonText="transfer"
       />
     </div>
   )

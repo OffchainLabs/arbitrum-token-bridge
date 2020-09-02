@@ -24,6 +24,7 @@ const Actions = ({ balances, eth }: ActionsProps) => {
         text={'Withdraw Eth'}
         onSubmit={eth.withdraw}
         disabled={arbChainBalance === 0 || isDepositMode}
+        buttonText={"withdraw"}
       />
     </div>
   )
