@@ -4,7 +4,7 @@ import {
   ERC721Balance,
   ContractStorage,
   BridgeToken
-} from 'arb-token-bridge'
+} from 'token-bridge-sdk'
 import { formatEther } from 'ethers/utils'
 import { useIsDepositMode } from 'components/App/ModeContext'
 interface Web3Data {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ERC721Balance } from 'arb-token-bridge'
+import { ERC721Balance } from 'token-bridge-sdk'
 import AssetDropDown from 'components/AssetDropDown'
 import { BigNumber } from 'ethers/utils'
 

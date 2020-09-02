@@ -1499,6 +1499,11 @@
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
   integrity sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==
 
+"@types/promise-poller@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@types/promise-poller/-/promise-poller-1.7.0.tgz#479f14c87ffd340736666e338369ca3331bb635c"
+  integrity sha512-pxEVcCo5rc0S5Fm+6dzPoE0jsfwXaczEU8fStTVluclw/qk+607AGyvwTmeYXWtbBXUkKlOsf/Lq7Hbwg4pxbw==
+
 "@types/prop-types@*":
   version "15.7.3"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
@@ -1961,27 +1966,14 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-provider-ethers@^0.6.5:
-  version "0.6.5"
-  resolved "https://registry.yarnpkg.com/arb-provider-ethers/-/arb-provider-ethers-0.6.5.tgz#91721a807785f0d969373e31b3c0504cbe6299f3"
-  integrity sha512-1GmofkkOgkDSbEassbKpN3NOJBkNno7xKwxF+WOLG69U6zeRTUjGWYa3csEWGvIuX9BCxX2GHxLHVnYSZeajbQ==
+arb-provider-ethers@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/arb-provider-ethers/-/arb-provider-ethers-0.7.0.tgz#40ad6341a118dfa42abd3d8cef9dd1ec34100a93"
+  integrity sha512-/yrkGJl7f8X9cnC36yohXfr0NWYIHoeHDRCcNdpc6IdaMPcXkougitsvWGy2Ann9wEaSx135/00qiQRQ06e+4w==
   dependencies:
+    "@types/promise-poller" "^1.7.0"
     jayson "^3.2.0"
     promise-poller "^1.9.1"
-
-arb-token-bridge@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/arb-token-bridge/-/arb-token-bridge-0.1.4.tgz#9da0a49345c3a8a18c74264414575bfb922e7af7"
-  integrity sha512-LJMxT9uUJwfNlcDbiA+EvEoDrAskw8sIe2oNK1upzUTivIfBRrBVRiCLcikoZZIr9Sg36L9y4IsE/mspZ9K+oQ==
-  dependencies:
-    "@rehooks/local-storage" "^2.3.0"
-    "@types/lodash.isempty" "^4.4.6"
-    arb-provider-ethers "^0.6.5"
-    ethers "^4.0.47"
-    lodash.clonedeep "^4.5.0"
-    lodash.isempty "^4.4.0"
-    lodash.isequal "^4.5.0"
-    typescript "^3.8.3"
 
 are-we-there-yet@~1.1.2:
   version "1.1.5"
@@ -10635,6 +10627,20 @@ toidentifier@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
+
+token-bridge-sdk@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.1.5.tgz#989f282e257f8460d08a35ec417000b09546a3b6"
+  integrity sha512-5EKKOvNlb5bEsBxnNnxdmC3XVzliSe5G9U60WVbbEppQ90riFknjXjPvyb2GQeCK0EBURfcur0+r0OPqVMUnfw==
+  dependencies:
+    "@rehooks/local-storage" "^2.3.0"
+    "@types/lodash.isempty" "^4.4.6"
+    arb-provider-ethers "^0.7.0"
+    ethers "^4.0.47"
+    lodash.clonedeep "^4.5.0"
+    lodash.isempty "^4.4.0"
+    lodash.isequal "^4.5.0"
+    typescript "^3.8.3"
 
 tough-cookie@^2.3.3, tough-cookie@^2.3.4, tough-cookie@^2.5.0, tough-cookie@~2.5.0:
   version "2.5.0"

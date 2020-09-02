@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { Transaction, TxnStatus, AssetType } from 'arb-token-bridge'
+import { Transaction, TxnStatus, AssetType } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
