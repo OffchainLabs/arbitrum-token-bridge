@@ -317,6 +317,55 @@ export const useArbTokenBridge = (
     }
   }, [ethWallet, updateEthBalances])
 
+  const arbTokenCache = useCallback(
+    async (contractAddress: string, tokenType: TokenType) => {
+      const token = bridgeTokens[contractAddress]
+      if (!token) {
+        return null
+      }
+
+      if (token.arb) {
+        return token.arb
+      }
+      try {
+        const code = await arbProvider.getCode(contractAddress)
+        console.info('contract code')
+        if (code.length <= 2) {
+          console.info('contract does not yet exist on arbchain:')
+          return null
+        }
+      } catch (err) {
+        console.info('contract (apparantly?) does not yet exist on arbchain:')
+        console.warn(err)
+        return null
+      }
+
+      // todo:
+
+      const arbTokenContract: abi.ArbErc20 | abi.ArbErc721 = (tokenType ===
+      TokenType.ERC20
+        ? ArbErc20Factory
+        : ArbErc721Factory
+      ).connect(contractAddress, _arbSigner || arbProvider)
+      setBridgeTokens(contracts => {
+        const target = contracts[contractAddress]
+        if (!target) throw Error('approved contract missing ' + contractAddress)
+
+        const updated = {
+          ...target,
+          arb: arbTokenContract
+        } as BridgeToken
+
+        return {
+          ...contracts,
+          [contractAddress]: updated
+        }
+      })
+
+      return arbTokenContract
+    },
+    [bridgeTokens, _arbSigner, arbProvider]
+  )
   /* TOKEN METHODS */
 
   // TODO targeted token updates to prevent unneeded iteration
@@ -693,55 +742,6 @@ export const useArbTokenBridge = (
     [ethProvider]
   )
 
-  const arbTokenCache = useCallback(
-    async (contractAddress: string, tokenType: TokenType) => {
-      const token = bridgeTokens[contractAddress]
-      if (!token) {
-        return null
-      }
-
-      if (token.arb) {
-        return token.arb
-      }
-      try {
-        const code = await arbProvider.getCode(contractAddress)
-        console.info('contract code')
-        if (code.length <= 2) {
-          console.info('contract does not yet exist on arbchain:')
-          return null
-        }
-      } catch (err) {
-        console.info('contract (apparantly?) does not yet exist on arbchain:')
-        console.warn(err)
-        return null
-      }
-
-      // todo:
-
-      const arbTokenContract: abi.ArbErc20 | abi.ArbErc721 = (tokenType ===
-      TokenType.ERC20
-        ? ArbErc20Factory
-        : ArbErc721Factory
-      ).connect(contractAddress, _arbSigner || arbProvider)
-      setBridgeTokens(contracts => {
-        const target = contracts[contractAddress]
-        if (!target) throw Error('approved contract missing ' + contractAddress)
-
-        const updated = {
-          ...target,
-          arb: arbTokenContract
-        } as BridgeToken
-
-        return {
-          ...contracts,
-          [contractAddress]: updated
-        }
-      })
-
-      return arbTokenContract
-    },
-    [bridgeTokens, _arbSigner, arbProvider]
-  )
   const addToken = useCallback(
     async (contractAddress: string, type: TokenType): Promise<string> => {
       if (!arbProvider || !ethWallet || !_ethSigner || !_arbSigner)
