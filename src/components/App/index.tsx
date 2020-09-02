@@ -9,7 +9,7 @@ import {
   TokenType,
   ContractStorage,
   BridgeToken
-} from 'arb-token-bridge'
+} from 'token-bridge-sdk'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'

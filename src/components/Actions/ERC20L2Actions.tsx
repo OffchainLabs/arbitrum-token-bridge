@@ -1,7 +1,7 @@
 import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React from 'react'
-import { BridgeBalance } from 'arb-token-bridge'
+import { BridgeBalance } from 'token-bridge-sdk'
 import { formatEther } from 'ethers/utils'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'

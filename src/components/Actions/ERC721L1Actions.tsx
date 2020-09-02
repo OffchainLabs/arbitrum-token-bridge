@@ -1,7 +1,7 @@
 import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React from 'react'
-import { ERC721Balance } from 'arb-token-bridge'
+import { ERC721Balance } from 'token-bridge-sdk'
 import { formatEther } from 'ethers/utils'
 import DropdownInput from './DropdownInput'
 import Button from 'react-bootstrap/Button'

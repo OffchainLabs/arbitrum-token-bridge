@@ -14,7 +14,7 @@ import {
   ERC721Balance,
   ContractStorage,
   BridgeToken
-} from 'arb-token-bridge'
+} from 'token-bridge-sdk'
 import AssetDropDown from 'components/AssetDropDown'
 import EthL1Actions from 'components/Actions/EthL1Actions'
 import EthL2Actions from 'components/Actions/EthL2Actions'
