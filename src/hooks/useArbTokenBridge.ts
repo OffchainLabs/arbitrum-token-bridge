@@ -201,9 +201,11 @@ export const useArbTokenBridge = (
   */
   const updateEthBalances = useCallback(async () => {
     if (!arbProvider) throw new Error('updateEthBalances no arb provider')
-    if (!walletAddress) throw new Error('updateEthBalances walletAddress')
     if (!ethWallet) throw new Error('updateEthBalances ethWallet')
-
+    if (!walletAddress){
+      console.info('updateEthBalances: walletAddress not yet loaded')
+      return
+    }
     const [
       balance,
       arbChainBalance,
