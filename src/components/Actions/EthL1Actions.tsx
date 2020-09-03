@@ -5,6 +5,8 @@ import { BridgeBalance } from 'token-bridge-sdk'
 import { formatEther } from 'ethers/utils'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import NumberInputForm from './numberInputForm'
+import Button from 'react-bootstrap/Button'
+
 type ActionsProps = {
   balances: BridgeBalance | undefined
   eth: any
@@ -31,10 +33,11 @@ const Actions = ({ balances, eth }: ActionsProps) => {
 
       <NumberInputForm
         max={lockBoxBalance}
-        text={'Transfer from lockBox'}
+        text={'Transfer Lockbox'}
         onSubmit={eth.withdrawLockBox}
         disabled={lockBoxBalance === 0 || !isDepositMode}
         buttonText="transfer"
+        readOnlyValue={lockBoxBalance}
       />
     </div>
   )

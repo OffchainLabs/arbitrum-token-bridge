@@ -56,6 +56,7 @@ const Actions = ({
         }}
         disabled={!isDepositMode || lockBoxBalance === 0}
         buttonText="transfer"
+        readOnlyValue={lockBoxBalance}
       />
     </div>
   )
