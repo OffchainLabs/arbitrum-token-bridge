@@ -202,7 +202,7 @@ export const useArbTokenBridge = (
   const updateEthBalances = useCallback(async () => {
     if (!arbProvider) throw new Error('updateEthBalances no arb provider')
     if (!ethWallet) throw new Error('updateEthBalances ethWallet')
-    if (!walletAddress){
+    if (!walletAddress) {
       console.info('updateEthBalances: walletAddress not yet loaded')
       return
     }
@@ -887,7 +887,7 @@ export const useArbTokenBridge = (
     const intervalID =
       bridgeTokens &&
       window.setInterval(function () {
-        updateTokenBalances()
+        updateAllBalances()
       }, 7500)
     return () => {
       window.clearInterval(intervalID)
