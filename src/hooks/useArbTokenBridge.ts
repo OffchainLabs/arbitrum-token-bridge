@@ -303,7 +303,7 @@ export const useArbTokenBridge = (
       addTransaction({
         type: 'lockbox',
         status: 'pending',
-        value: null,
+        value: ethBalances.lockBoxBalance,
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
@@ -667,6 +667,7 @@ export const useArbTokenBridge = (
 
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
+      const balance = erc20Balances[contractAddress]
 
       // TODO error handle
       let tx: ContractTransaction
@@ -691,7 +692,7 @@ export const useArbTokenBridge = (
       addTransaction({
         type: 'lockbox',
         status: 'pending',
-        value: null,
+        value: tokenId || (balance && balance.lockBoxBalance),
         txID: tx.hash,
         assetName: contract.name,
         assetType: contract.type,
