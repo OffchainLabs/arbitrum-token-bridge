@@ -5,6 +5,7 @@ interface InjectedEthereumProvider
   enable?: () => Promise<string[]>
   on: any
   networkVersion: string
+  selectedAddress?: string
 }
 
 declare global {

@@ -23,7 +23,9 @@ const NumberInputForm = ({
   buttonText,
   readOnlyValue
 }: NumberInputFormProps) => {
-  const [value, setValue] = useCappedNumberInput(readOnlyValue ? readOnlyValue : 0)
+  const [value, setValue] = useCappedNumberInput(
+    readOnlyValue ? readOnlyValue : 0
+  )
 
   const submit = useCallback(
     (e: any) => {
@@ -51,7 +53,7 @@ const NumberInputForm = ({
           step="0.01"
           disabled={disabled}
           placeholder={text}
-          readOnly={typeof readOnlyValue === "number"}
+          readOnly={typeof readOnlyValue === 'number'}
         />
       </Form>
       <Button disabled={disabled} type="submit" onClick={submit}>
