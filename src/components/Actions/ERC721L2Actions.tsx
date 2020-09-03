@@ -21,12 +21,8 @@ const Actions = ({
   currentERC721Address
 }: ActionsProps) => {
   // TODO: pass in from TabsContainer
-  const currentContract = bridgeTokens[currentERC721Address]
   const isDepositMode = useIsDepositMode()
-  if (!balances) {
-    return <div></div>
-  }
-  const { tokens, arbChainTokens, totalArbTokens, lockBoxTokens } = balances
+  const arbChainTokens = balances ? balances.arbChainTokens : []
 
   return (
     <div>
