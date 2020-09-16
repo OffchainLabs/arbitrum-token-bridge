@@ -201,7 +201,6 @@ export const useArbTokenBridge = (
   */
   const updateEthBalances = useCallback(async () => {
     if (!arbProvider) throw new Error('updateEthBalances no arb provider')
-    if (!ethWallet) throw new Error('updateEthBalances ethWallet')
     if (!walletAddress) {
       console.info('updateEthBalances: walletAddress not yet loaded')
       return
@@ -211,11 +210,11 @@ export const useArbTokenBridge = (
       arbChainBalance,
       lockBoxBalance,
       totalArbBalance
-    ] = await Promise.all([
+    ] : [ethers.utils.BigNumber,ethers.utils.BigNumber,ethers.utils.BigNumber,ethers.utils.BigNumber] = await Promise.all([
       ethProvider.getBalance(walletAddress),
       arbProvider.getBalance(walletAddress),
-      ethWallet.getEthLockBoxBalance(walletAddress),
-      ethWallet.getEthLockBoxBalance(arbchainAddress)
+      ethWallet ? ethWallet.getEthLockBoxBalance(walletAddress) : constants.Zero,
+      ethWallet ? ethWallet.getEthLockBoxBalance(arbchainAddress):  constants.Zero
     ])
 
     const update: typeof ethBalances = {
@@ -373,7 +372,8 @@ export const useArbTokenBridge = (
   // TODO targeted token updates to prevent unneeded iteration
   const updateTokenBalances = useCallback(
     async (type?: TokenType) => {
-      if (!arbProvider || !walletAddress || !ethWallet) {
+
+      if (!arbProvider || !walletAddress) {
         console.info('updateTokenBalances missing req')
         return
       }
@@ -392,6 +392,8 @@ export const useArbTokenBridge = (
         )
         switch (contract.type) {
           case TokenType.ERC20: {
+            console.warn(arbTokenContract);
+
             const arbBalancePromise: Promise<utils.BigNumber> = arbTokenContract
               ? arbTokenContract.balanceOf(walletAddress)
               : new Promise(exec => exec(constants.Zero))
@@ -403,14 +405,14 @@ export const useArbTokenBridge = (
             ] = await Promise.all([
               contract.eth.balanceOf(walletAddress),
               arbBalancePromise,
-              ethWallet.getERC20LockBoxBalance(
+              ethWallet ? ethWallet.getERC20LockBoxBalance(
                 contract.eth.address,
                 walletAddress
-              ),
-              ethWallet.getERC20LockBoxBalance(
+              ): constants.Zero,
+              ethWallet ? ethWallet.getERC20LockBoxBalance(
                 contract.eth.address,
                 arbchainAddress
-              )
+              ) : constants.Zero
             ])
             const updated = {
               balance,
@@ -439,14 +441,14 @@ export const useArbTokenBridge = (
             ] = await Promise.all([
               contract.eth.tokensOfOwner(walletAddress),
               arbTokensPromise,
-              ethWallet.getERC721LockBoxTokens(
+              ethWallet ? ethWallet.getERC721LockBoxTokens(
                 contract.eth.address,
                 walletAddress
-              ),
-              ethWallet.getERC721LockBoxTokens(
+              ): [],
+              ethWallet ? ethWallet.getERC721LockBoxTokens(
                 contract.eth.address,
                 arbchainAddress
-              )
+              ) : []
             ])
             const updated = {
               tokens,
