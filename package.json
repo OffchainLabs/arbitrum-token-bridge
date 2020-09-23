@@ -22,7 +22,8 @@
     "lint": "tsc --noEmit && eslint src/**/*.ts --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint --fix",
     "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
-    "prepare": "install-peers"
+    "prepare": "install-peers",
+    "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs"
   },
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
@@ -46,6 +47,7 @@
     "@types/react-dom": "^16.9.0",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
+    "better-docs": "^2.3.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",

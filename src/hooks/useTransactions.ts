@@ -8,8 +8,14 @@ type Action =
   | { type: 'SET_INITIAL_TRANSACTIONS'; transactions: Transaction[] }
   | { type: 'CLEAR_PENDING' }
   | { type: 'CONFIRM_TRANSACTION'; txID: string }
+
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
+/** @interface
+ * Transaction
+ * @alias Transaction
+ * @description Bridge transaction data with up to date status.
+ */
 export type Transaction = {
   type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'
   status: TxnStatus

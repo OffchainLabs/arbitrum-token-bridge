@@ -1,3 +1,30 @@
+/** @namespace bridge
+ * @description Hook entry point; object returned by useArbTokenBridge hook containing all other namespaces.
+ *
+ */
+
+/**
+ * @namespace bridge.eth
+ * @description Ether related interactions.
+ */
+
+/**
+ * @namespace bridge.cache
+ * @description Cache's tokens current user has added; reloads on page load.
+ */
+
+/** @namespace bridge.token
+ * @description ERC20/ERC721 related interactions.
+ */
+
+/** @namespace bridge.balances
+ * @description Balance data on both L1 and L2 for Ether, tokens, and NFTs.
+ */
+
+/**
+ *  @namespace bridge.transactions
+ */
+
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ContractTransaction, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -17,12 +44,18 @@ import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Fact
 
 import deepEquals from 'lodash.isequal'
 import useTransactions from './useTransactions'
-
 const MIN_APPROVAL = constants.MaxUint256
 
 /* eslint-disable no-shadow */
+
+/** @interface
+ * @description Enum for specifying type of token.
+ * @alias TokenType
+ */
 export enum TokenType {
+  /** */
   ERC20 = 'ERC20',
+  /** */
   ERC721 = 'ERC721'
 }
 /* eslint-enable no-shadow */
@@ -60,19 +93,51 @@ export type BridgeToken = ERC20BridgeToken | ERC721BridgeToken
 export interface ContractStorage<T> {
   [contractAddress: string]: T | undefined
 }
-
+/**
+ * Holds balance values for Ether or ERC20 Token.
+ * @alias BridgeBalance
+ */
 export interface BridgeBalance {
+  /**
+   * User's balances on L1.
+   */
   balance: utils.BigNumber
+  /**
+   * User's balance on Arbitrum.
+   */
   arbChainBalance: utils.BigNumber
+  /**
+   * Total supply on Arbitrum.
+   */
   totalArbBalance: utils.BigNumber
+  /**
+   * Balance available in lockbox (withdrawn from Arbitrum, ready to transfer out.)
+   */
   lockBoxBalance: utils.BigNumber
 }
 
 // removing 'tokens' / 'balance' could result in one interface
+/**
+ * Holds balance values for ERC721 Token.
+ * @name ERC721Balance
+ * @alias ERC721Balance
+ */
 export interface ERC721Balance {
+  /**
+   * User's NFTs on L1
+   */
   tokens: utils.BigNumber[]
+  /**
+   *  User's NFTs on Arbitrum
+   */
   arbChainTokens: utils.BigNumber[]
+  /**
+   * All NFTs on Arbitrum
+   */
   totalArbTokens: utils.BigNumber[]
+  /**
+   * All of user's NFTs available in lockbox (ready to transfer out.)
+   */
   lockBoxTokens: utils.BigNumber[]
 }
 
@@ -125,6 +190,18 @@ interface ERC20L1 {
 
 const erc20L1Memo = {} as ERC20L1Memo
 
+/** @function
+ * @description Main hook; returns bridge object.
+ * @see bridge
+ * @param {JsonRpcProvider} ethProvider
+ * @param {JsonRpcProvider} arbProvider
+ * @param {string} arbchainAddress
+ * @param {JsonRpcSigner=} _ethSigner
+ * @param {JsonRpcSigner=} _arbSigner
+ * @param {number} [walletIndex=0]
+ * @param {boolean} [autoLoadCache=true]
+ * @return {bridge}
+ */
 export const useArbTokenBridge = (
   ethProvider: ethers.providers.JsonRpcProvider,
   arbProvider: ethers.providers.JsonRpcProvider,
@@ -152,6 +229,13 @@ export const useArbTokenBridge = (
     totalArbBalance: constants.Zero,
     lockBoxBalance: constants.Zero
   }
+  /**
+   * @memberof bridge.balances
+   * @type {BridgeBalance}
+   * @name ethBalance
+   * @see BridgeBalance
+   * @name eth
+   */
   const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
 
   const balanceIsEmpty = (balance: BridgeBalance) =>
@@ -160,15 +244,39 @@ export const useArbTokenBridge = (
     balance['totalArbBalance'] === defaultBalance['totalArbBalance'] &&
     balance['lockBoxBalance'] === defaultBalance['lockBoxBalance']
 
+  // TODO
+  /**
+   * @memberof bridge.balances
+   * @type {{string: BridgeBalance}}
+   * @name erc20
+   * @description Maps ERC20 token addresses to BridgeBalances
+   * @see BridgeBalance
+   */
   const [erc20Balances, setErc20Balances] = useState<
     ContractStorage<BridgeBalance>
   >({})
+
+  /**
+   * @memberof bridge.balances
+   * @type {{string: BridgeBalance}}
+   * @name erc721
+   * @description Maps ERC721 addresses to ERC721Balance
+   * @see ERC721Balance
+
+   */
   const [erc721Balances, setErc721Balances] = useState<
     ContractStorage<ERC721Balance>
   >({})
 
   // use local storage for list of token addresses
   // TODO remove type assertion when hook dependency fix update is released
+
+  /**
+   * @memberof bridge.cache
+   * @type {string[]}
+   * @description Cached ERC20 addresses
+   * @name erc20
+   */
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
@@ -176,6 +284,12 @@ export const useArbTokenBridge = (
     React.Dispatch<string[]>,
     React.Dispatch<void>
   ]
+  /**
+   * @memberof bridge.cache
+   * @type {string[]}
+   * @description Cached ERC721 addresses
+   * @name erc721
+   */
   const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
     string[]
   >('ERC721Cache', []) as [
@@ -183,9 +297,26 @@ export const useArbTokenBridge = (
     React.Dispatch<string[]>,
     React.Dispatch<void>
   ]
-
+  /**
+   * @memberof bridge
+   * @type {string}
+   * @description Address of current signer (both same for the eth-signer and arb-signer).
+   * @name walletAddress
+   */
   const [walletAddress, setWalletAddress] = useState('')
 
+  /**
+   * @memberof bridge.transactions
+   * @type {Transaction[]}
+   * @name transactions
+   * @description Array of bridge-related transactions from current wallet, with live status. Automatically caches.
+   * @see Transaction
+   */
+  /** @function
+   * @memberof bridge.transactions
+   * @description Removes all transactions with pending status from cache
+   * @name clearPendingTransactions
+   */
   const [
     transactions,
     {
@@ -199,22 +330,33 @@ export const useArbTokenBridge = (
   /*
   ETH METHODS:
   */
+
+  /** @function
+   * @name updateBalances
+   * @memberof bridge.eth
+   * @description Updates balances.eth values
+   * @return {BridgeBalance}
+   */
   const updateEthBalances = useCallback(async () => {
     if (!arbProvider) throw new Error('updateEthBalances no arb provider')
     if (!walletAddress) {
       console.info('updateEthBalances: walletAddress not yet loaded')
       return
     }
-    const [
-      balance,
-      arbChainBalance,
-      lockBoxBalance,
-      totalArbBalance
-    ] : [ethers.utils.BigNumber,ethers.utils.BigNumber,ethers.utils.BigNumber,ethers.utils.BigNumber] = await Promise.all([
+    const [balance, arbChainBalance, lockBoxBalance, totalArbBalance]: [
+      ethers.utils.BigNumber,
+      ethers.utils.BigNumber,
+      ethers.utils.BigNumber,
+      ethers.utils.BigNumber
+    ] = await Promise.all([
       ethProvider.getBalance(walletAddress),
       arbProvider.getBalance(walletAddress),
-      ethWallet ? ethWallet.getEthLockBoxBalance(walletAddress) : constants.Zero,
-      ethWallet ? ethWallet.getEthLockBoxBalance(arbchainAddress):  constants.Zero
+      ethWallet
+        ? ethWallet.getEthLockBoxBalance(walletAddress)
+        : constants.Zero,
+      ethWallet
+        ? ethWallet.getEthLockBoxBalance(arbchainAddress)
+        : constants.Zero
     ])
 
     const update: typeof ethBalances = {
@@ -232,6 +374,14 @@ export const useArbTokenBridge = (
     return update
   }, [arbProvider, ethBalances, walletAddress, walletIndex, ethWallet])
 
+  /** @function
+  * @name deposit
+  * @memberof bridge.eth
+  * @description Deposits Eth from L1 into the arbitrum chain
+  * @param {string} etherVal ether value (in ether units)
+  * @return {TransactionReceipt}
+
+   */
   const depositEth = useCallback(
     async (etherVal: string) => {
       if (!ethWallet || !walletAddress)
@@ -260,7 +410,13 @@ export const useArbTokenBridge = (
     },
     [ethWallet, walletAddress, updateEthBalances]
   )
-
+  /** @function
+   * @name withdraw
+   * @memberof bridge.eth
+   * @description Initiates withdrawal of Ether from Arbitrum chain onto the L1
+   * @param {string} etherVal ether value (in ether units)
+   * @return {TransactionReceipt}
+   */
   const withdrawEth = useCallback(
     async (etherVal: string) => {
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
@@ -293,7 +449,12 @@ export const useArbTokenBridge = (
     },
     [arbSigner, updateEthBalances]
   )
-
+  /** @function
+   * @memberof bridge.eth
+   * @name withdrawLockBox
+   * @description Transfers Ether from lockbox to L1 address
+   * @return {TransactionReceipt}
+   */
   const withdrawLockBoxETH = useCallback(async () => {
     if (!ethWallet) throw new Error('withdrawLockBoxETH no ethWallet')
 
@@ -370,9 +531,15 @@ export const useArbTokenBridge = (
   /* TOKEN METHODS */
 
   // TODO targeted token updates to prevent unneeded iteration
+  /** @function
+   * @name updateBalances
+   * @memberof bridge.token
+   * @description updates balances.erc20 and balances.erc721 objects
+   * @param {TokenType=} type updates only specified type if included
+   * @return {ContractStorage<BridgeBalance>}
+   */
   const updateTokenBalances = useCallback(
     async (type?: TokenType) => {
-
       if (!arbProvider || !walletAddress) {
         console.info('updateTokenBalances missing req')
         return
@@ -392,8 +559,6 @@ export const useArbTokenBridge = (
         )
         switch (contract.type) {
           case TokenType.ERC20: {
-            console.warn(arbTokenContract);
-
             const arbBalancePromise: Promise<utils.BigNumber> = arbTokenContract
               ? arbTokenContract.balanceOf(walletAddress)
               : new Promise(exec => exec(constants.Zero))
@@ -405,14 +570,18 @@ export const useArbTokenBridge = (
             ] = await Promise.all([
               contract.eth.balanceOf(walletAddress),
               arbBalancePromise,
-              ethWallet ? ethWallet.getERC20LockBoxBalance(
-                contract.eth.address,
-                walletAddress
-              ): constants.Zero,
-              ethWallet ? ethWallet.getERC20LockBoxBalance(
-                contract.eth.address,
-                arbchainAddress
-              ) : constants.Zero
+              ethWallet
+                ? ethWallet.getERC20LockBoxBalance(
+                    contract.eth.address,
+                    walletAddress
+                  )
+                : constants.Zero,
+              ethWallet
+                ? ethWallet.getERC20LockBoxBalance(
+                    contract.eth.address,
+                    arbchainAddress
+                  )
+                : constants.Zero
             ])
             const updated = {
               balance,
@@ -441,14 +610,18 @@ export const useArbTokenBridge = (
             ] = await Promise.all([
               contract.eth.tokensOfOwner(walletAddress),
               arbTokensPromise,
-              ethWallet ? ethWallet.getERC721LockBoxTokens(
-                contract.eth.address,
-                walletAddress
-              ): [],
-              ethWallet ? ethWallet.getERC721LockBoxTokens(
-                contract.eth.address,
-                arbchainAddress
-              ) : []
+              ethWallet
+                ? ethWallet.getERC721LockBoxTokens(
+                    contract.eth.address,
+                    walletAddress
+                  )
+                : [],
+              ethWallet
+                ? ethWallet.getERC721LockBoxTokens(
+                    contract.eth.address,
+                    arbchainAddress
+                  )
+                : []
             ])
             const updated = {
               tokens,
@@ -488,6 +661,13 @@ export const useArbTokenBridge = (
       ethWallet
     ]
   )
+  /** @function
+   * @name approve
+   * @memberof bridge.token
+   * @description Approve spending token for current contract
+   * @param {string} contractAddress ERC20 or ERC721 contract address
+   * @return {Promise} Promise: includes ContractReceipt and ContractTransaction
+   */
   const approveToken = useCallback(
     async (contractAddress: string) => {
       const contract = bridgeTokens[contractAddress]
@@ -544,7 +724,14 @@ export const useArbTokenBridge = (
     },
     [bridgeTokens, ethWallet]
   )
-
+  /** @function
+   * @name deposit
+   * @memberof bridge.token
+   * @description Deposit ERC20 or ERC721 from L1 onto Arbitrum chain
+   * @param {string} contractAddress ERC20 or ERC721 contract address
+   * @param {string} amountOrTokenId Ammount to deposit for ERC20 or token to deposit for ERC721
+   * @return {Promise} Promise: ContractReceipt
+   */
   const depositToken = useCallback(
     async (
       contractAddress: string,
@@ -599,7 +786,14 @@ export const useArbTokenBridge = (
     },
     [ethWallet, bridgeTokens]
   )
-
+  /** @function
+   * @name withdraw
+   * @memberof bridge.token
+   * @description Initiate withdrawal ERC20 or ERC721 token from Arbitrum chain to L1
+   * @param {string} contractAddress ERC20 or ERC721 contract address
+   * @param {string} amountOrTokenId Ammount to withdraw for ERC20 or token to withdraw for ERC721
+   * @return {Promise} Promise: ContractReceipt
+   */
   const withdrawToken = useCallback(
     async (
       contractAddress: string,
@@ -659,7 +853,14 @@ export const useArbTokenBridge = (
     },
     [walletAddress, bridgeTokens]
   )
-
+  /** @function
+   * @memberof bridge.token
+   * @name withdrawLockBox
+   * @description Transfers token from lockbox to L1 address.
+   * @param {string} contractAddress ERC20 or ERC721 contract address
+   * @param {string=} tokenId NFT ID to transfer (for ERC20, transfers full balance)
+   * @return {Promise} Promise: ContractReceipt
+   */
   const withdrawLockBoxToken = useCallback(
     async (
       contractAddress: string,
@@ -746,6 +947,14 @@ export const useArbTokenBridge = (
     },
     [ethProvider]
   )
+  /** @function
+   * @name add
+   * @memberof bridge.token
+   * @description Add token to state (to track balances, deposit, withdraw, etc.)
+   * @param {string} contractAddress ERC20 or ERC721 contract address
+   * @param {TokenType} type
+   * @return {Promise} Promise: contract address
+   */
 
   const addToken = useCallback(
     async (contractAddress: string, type: TokenType): Promise<string> => {
@@ -841,12 +1050,23 @@ export const useArbTokenBridge = (
       updateTokenBalances
     ]
   )
-
+  /** @function
+   * updateAllBalances
+   * @memberof bridge.balances
+   * @name update
+   * @description Updates balances.eth, balances.erc20, and balances.erc721 objects with latest values.
+   * */
   const updateAllBalances = useCallback(
     () => Promise.all([updateEthBalances(), updateTokenBalances()]),
     [updateEthBalances, updateTokenBalances, bridgeTokens]
   )
 
+  /** @function
+   * @name expire
+   * @memberof bridge.cache
+   * @description Clears ERC20 and ERC721 cache from local storage.
+   * @return {undefined}
+   */
   const expireCache = (): void => {
     clearERC20Cache()
     clearERC721Cache()
