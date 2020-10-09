@@ -4,7 +4,7 @@ export * from './web3'
 export interface BridgeConfig {
   ethProvider: ethers.providers.JsonRpcProvider
   arbProvider: ethers.providers.JsonRpcProvider
-  ethSigner: ethers.ethers.providers.JsonRpcSigner
+  ethSigner?: ethers.ethers.providers.JsonRpcSigner
   arbSigner: ethers.ethers.providers.JsonRpcSigner
 }
 

@@ -6,14 +6,14 @@ import App from './index'
 import ModeContext from './ModeContext'
 import Alert from 'react-bootstrap/Alert'
 import Container from 'react-bootstrap/Container'
+import ConnectWarning from './ConnectWarning'
 
 const Injector = () => {
   const [bridgeConfig, setBridgeConfig] = useState<BridgeConfig>()
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
-  // const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
-  // const arb = process.env.REACT_APP_ARB_NETWORK_ID
+
   const {
     REACT_APP_ETH_NETWORK_ID: ethNetworkId,
     REACT_APP_ARB_NETWORK_ID: arbNetworkId,
@@ -92,9 +92,7 @@ const Injector = () => {
       case ConnectionState.WRONG_NETWORK:
         return (
           <div>
-            {renderAlert(
-              `Unsupported network; connect to network id ${ethNetworkId} for L1 actions or network id ${arbNetworkId} for L2 actions`
-            )}
+            <ConnectWarning/>
           </div>
         )
       default:
