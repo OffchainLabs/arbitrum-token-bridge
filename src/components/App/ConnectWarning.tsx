@@ -30,7 +30,7 @@ export default () => {
           <img style={gifStyle} src={network.gif} />
         </Col>
         <Col style={{ border: '0px solid black' }} className="text-center">
-          <h5> {l2NetworkName} (Withdraw from Arbitrum)</h5>
+          <h5> {l2NetworkName} (withdraw from Arbitrum)</h5>
           <div style={{ minHeight: '50px', fontSize: '12px' }}>
             {' '}
             Connect to
