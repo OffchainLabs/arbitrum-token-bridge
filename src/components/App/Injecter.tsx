@@ -92,7 +92,7 @@ const Injector = () => {
       case ConnectionState.WRONG_NETWORK:
         return (
           <div>
-            <ConnectWarning/>
+            <ConnectWarning />
           </div>
         )
       default:
