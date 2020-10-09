@@ -34,7 +34,7 @@ export default () => {
           <div style={{ minHeight: '50px', fontSize: '12px' }}>
             {' '}
             Connect to
-            <a href="https://developer.offchainlabs.com/docs/Developer_Quickstart/">
+            <a href="https://developer.offchainlabs.com/docs/Developer_Quickstart/" target="_blank">
               {' '}
               your own aggregator
             </a>{' '}

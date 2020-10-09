@@ -14,7 +14,7 @@ interface Networks {
 const networks: Networks = {
   44010: {
     chainID: 44010,
-    name: 'Eth-TestNet',
+    name: 'Private-Geth-Testnet',
     gif: kovan
   },
   111615170699283: {
