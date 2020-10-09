@@ -1,18 +1,18 @@
 import React, { useState, FunctionComponent, useMemo } from 'react'
 import Tooltip from 'react-bootstrap/Tooltip'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
-import Button from 'react-bootstrap/Button'
 import Popover from 'react-bootstrap/Popover'
 
 import { useIsDepositMode } from 'components/App/ModeContext'
+import networks  from 'components/App/networks'
 
 interface props {
   isDepositPanel: boolean
 }
-const {
-  REACT_APP_ETH_NETWORK_ID: ethNetworkId,
-  REACT_APP_ARB_NETWORK_ID: arbNetworkId
-} = process.env
+
+const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
+const arbNetworkUrl = process.env.REACT_APP_ARB_VALIDATOR_URL as string
+
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
@@ -58,8 +58,8 @@ const renderPopover = (isDepositPanel: boolean) => (
     <Popover.Title as="h3">Actions disabled</Popover.Title>
     <Popover.Content>
       {isDepositPanel
-        ? `To enable these actions, connect to L1 (chain ID ${ethNetworkId})`
-        : `To enable these actions, connect to L2 (chain ID ${arbNetworkId})`}
+        ? `To enable these actions, connect to L1 (${networks[+ethNetworkId].name})`
+        : `To enable these actions, connect to Arbitrum: ${arbNetworkUrl} `}
     </Popover.Content>
   </Popover>
 )
