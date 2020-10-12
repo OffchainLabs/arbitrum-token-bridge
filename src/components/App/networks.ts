@@ -17,8 +17,8 @@ const networks: Networks = {
     name: 'Private-Geth-Testnet',
     gif: kovan
   },
-  111615170699283: {
-    chainID: 111615170699283,
+  215728282823301: {
+    chainID: 215728282823301,
     name: 'Arbitrum-testnet',
     gif: arb
   },
