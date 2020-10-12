@@ -1,7 +1,7 @@
 ## Token Bridge SDK
 
 
-Token Bridge SDK is a react hook library for actions that "bridge" between an Arbitrum chain and an L1 chain. The
+Token Bridge SDK is a react hook library for actions that "bridge" between an Arbitrum chain and an L1 chain.
 
 ### Quickstart
 
@@ -20,4 +20,4 @@ import { useArbTokenBridge } from 'token-bridge-sdk'
     )
 ```
 
-[Documentation](qqq)
+[Documentation](https://bridgedocs.offchainlabs.com/)
