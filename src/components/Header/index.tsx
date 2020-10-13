@@ -7,6 +7,8 @@ import {
 } from 'token-bridge-sdk'
 import { formatEther } from 'ethers/utils'
 import { useIsDepositMode } from 'components/App/ModeContext'
+import ExplorerLink from 'components/App/ExplorerLink'
+
 interface Web3Data {
   ethAddress: string
   vmId: string
@@ -42,10 +44,10 @@ const Header = ({
       </h5>
 
       <p>
-        Your address: <span id="accountAddress">{ethAddress}</span>
+        Your address: <span id="accountAddress"><ExplorerLink hash={ethAddress} type={ "address" } /></span>
       </p>
       <p>
-        ArbChain address: <span id="rollupAddress">{vmId}</span>
+        ArbChain address: <span id="rollupAddress"><ExplorerLink hash={vmId} type={ "address" } /></span>
       </p>
       {/* {ethBalance && (
         <p>

@@ -3,6 +3,7 @@ import { Transaction, TxnStatus, AssetType } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
+import ExplorerLink from 'components/App/ExplorerLink'
 
 interface props {
   transactions: Transaction[]
@@ -59,7 +60,7 @@ const TransactionHistory = ({
         {usersTransactions.length > 0 ? (
           usersTransactions.map(txn => (
             <tr style={getRowStyle(txn.status)} key={txn.txID}>
-              <td>{txn.txID}</td>
+              <td><ExplorerLink hash={txn.txID} type="tx"/></td>
               <td>{txn.type}</td>
               <td>
                 {' '}
