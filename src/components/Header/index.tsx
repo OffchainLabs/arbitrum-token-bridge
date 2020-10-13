@@ -47,7 +47,7 @@ const Header = ({
       <p>
         ArbChain address: <span id="rollupAddress">{vmId}</span>
       </p>
-      {ethBalance && (
+      {/* {ethBalance && (
         <p>
           Total ETH On Arb Chain:{' '}
           <span>{formatEther(ethBalance.totalArbBalance)}</span>
@@ -64,7 +64,7 @@ const Header = ({
           Total # of {erc721Symbol} NFTs On Arb Chain:{' '}
           <span>{erc721Balance.totalArbTokens.length}</span>
         </p>
-      )}
+      )} */}
       <hr />
     </div>
   )
