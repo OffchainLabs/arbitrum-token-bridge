@@ -1128,7 +1128,7 @@ export const useArbTokenBridge = (
     return () => {
       window.clearInterval(intervalID)
     }
-  }, [bridgeTokens])
+  }, [bridgeTokens, walletAddress])
 
   useEffect(() => {
     if (arbProvider && !walletAddress) {
