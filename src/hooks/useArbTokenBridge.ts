@@ -463,7 +463,7 @@ export const useArbTokenBridge = (
       addTransaction({
         type: 'lockbox',
         status: 'pending',
-        value: ethBalances.lockBoxBalance,
+        value: utils.formatEther(ethBalances.lockBoxBalance),
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
@@ -895,7 +895,7 @@ export const useArbTokenBridge = (
       addTransaction({
         type: 'lockbox',
         status: 'pending',
-        value: tokenId || (balance && balance.lockBoxBalance),
+        value: tokenId || (balance && utils.formatEther(balance.lockBoxBalance)),
         txID: tx.hash,
         assetName: contract.name,
         assetType: contract.type,
