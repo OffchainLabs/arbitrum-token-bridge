@@ -323,7 +323,8 @@ export const useArbTokenBridge = (
       addTransaction,
       setTransactionSuccess,
       setTransactionFailure,
-      clearPendingTransactions
+      clearPendingTransactions,
+      setTransactionConfirmed
     }
   ] = useTransactions()
 
@@ -423,6 +424,9 @@ export const useArbTokenBridge = (
 
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
       const tx = await _withdrawEth(arbSigner, weiValue)
+      if (!tx.blockNumber) {
+        tx.blockNumber = await ethProvider.getBlockNumber()
+      }
       try {
         addTransaction({
           type: 'withdraw',
@@ -431,7 +435,8 @@ export const useArbTokenBridge = (
           txID: tx.hash,
           assetName: 'ETH',
           assetType: AssetType.ETH,
-          sender: walletAddress
+          sender: walletAddress,
+          blockNumber: tx.blockNumber || 0
         })
         const receipt = await tx.wait()
         setTransactionSuccess(tx.hash)
@@ -817,10 +822,16 @@ export const useArbTokenBridge = (
         case TokenType.ERC20: {
           const amount = utils.parseUnits(amountOrTokenId, contract.decimals)
           tx = await arbTokenContract.withdraw(walletAddress, amount)
+          if (!tx.blockNumber) {
+            tx.blockNumber = await ethProvider.getBlockNumber()
+          }
           break
         }
         case TokenType.ERC721:
           tx = await arbTokenContract.withdraw(walletAddress, amountOrTokenId)
+          if (!tx.blockNumber) {
+            tx.blockNumber = await ethProvider.getBlockNumber()
+          }
           break
         default:
           assertNever(contract, 'withdrawToken exhaustive check failed')
@@ -830,9 +841,10 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: amountOrTokenId,
         txID: tx.hash,
-        assetName: contract.name,
+        assetName: contract.symbol,
         assetType: contract.type,
-        sender: walletAddress
+        sender: walletAddress,
+        blockNumber: tx.blockNumber || 0
       })
 
       try {
@@ -895,7 +907,8 @@ export const useArbTokenBridge = (
       addTransaction({
         type: 'lockbox',
         status: 'pending',
-        value: tokenId || (balance && utils.formatEther(balance.lockBoxBalance)),
+        value:
+          tokenId || (balance && utils.formatEther(balance.lockBoxBalance)),
         txID: tx.hash,
         assetName: contract.name,
         assetType: contract.type,
@@ -1106,6 +1119,7 @@ export const useArbTokenBridge = (
   }, [arbProvider, walletAddress])
 
   useEffect(() => {
+    // TODO wallet address hsould be a dep
     const intervalID =
       bridgeTokens &&
       window.setInterval(function () {
@@ -1169,7 +1183,8 @@ export const useArbTokenBridge = (
     arbSigner,
     transactions: {
       transactions,
-      clearPendingTransactions
+      clearPendingTransactions,
+      setTransactionConfirmed
     }
   }
 }

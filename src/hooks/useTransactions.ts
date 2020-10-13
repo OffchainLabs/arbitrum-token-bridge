@@ -24,6 +24,7 @@ export type Transaction = {
   assetName: string
   assetType: AssetType
   sender: string
+  blockNumber: number
 }
 
 interface NewTransaction extends Transaction {
@@ -106,13 +107,21 @@ const useTransactions = (): [Transaction[], any] => {
       type: 'CLEAR_PENDING'
     })
   }
+
+  const setTransactionConfirmed = (txID: string) => {
+    return dispatch({
+      type: 'CONFIRM_TRANSACTION',
+      txID: txID
+    })
+  }
   return [
     state,
     {
       addTransaction,
       setTransactionSuccess,
       setTransactionFailure,
-      clearPendingTransactions
+      clearPendingTransactions,
+      setTransactionConfirmed
     }
   ]
 }
