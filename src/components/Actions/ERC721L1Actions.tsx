@@ -49,7 +49,7 @@ const Actions = ({
       <DropdownInput
         items={lockBoxTokens}
         text={'LockBox'}
-        action={'Withdraw'}
+        action={'transfer lockbox'}
         disabled={!isDepositeMode}
         onSubmit={value => {
           eth.withdrawLockBox(currentERC721Address, value)

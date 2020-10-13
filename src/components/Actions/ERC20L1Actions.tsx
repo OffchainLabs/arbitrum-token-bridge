@@ -6,6 +6,7 @@ import { formatEther } from 'ethers/utils'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
+import SubmitNoInput from './SubmitNoInput'
 
 type ActionsProps = {
   balances: BridgeBalance | undefined
@@ -46,16 +47,16 @@ const Actions = ({
         disabled={!isDepositMode || ethChainBalance === 0}
         buttonText="deposit"
       />
-      <label htmlFor="basic-url">Token in Lockbox: {lockBoxBalance}</label>
+      <label htmlFor="basic-url"></label>
 
-      <NumberInputForm
+      <SubmitNoInput
         max={lockBoxBalance}
-        text={'Transfer from lockBox'}
+        text={`Tokens in Lockbox: ${lockBoxBalance}`}
         onSubmit={value => {
           eth.withdrawLockBox(currentERC20Address, value)
         }}
         disabled={!isDepositMode || lockBoxBalance === 0}
-        buttonText="transfer"
+        buttonText="transfer lockbox"
         readOnlyValue={lockBoxBalance}
       />
     </div>

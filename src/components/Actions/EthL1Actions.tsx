@@ -6,7 +6,7 @@ import { formatEther } from 'ethers/utils'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
-
+import SubmitNoInput from './SubmitNoInput'
 type ActionsProps = {
   balances: BridgeBalance | undefined
   eth: any
@@ -28,15 +28,14 @@ const Actions = ({ balances, eth }: ActionsProps) => {
         buttonText="deposit"
       />
       <label htmlFor="basic-url">
-        ETH in L1 LockBox: {balances && formatEther(balances.lockBoxBalance)}
       </label>
 
-      <NumberInputForm
+      <SubmitNoInput
         max={lockBoxBalance}
-        text={'Transfer Lockbox'}
+        text={`ETH in LockBox: ${balances && formatEther(balances.lockBoxBalance)}`}
         onSubmit={eth.withdrawLockBox}
         disabled={lockBoxBalance === 0 || !isDepositMode}
-        buttonText="transfer"
+        buttonText={`transfer lockbox`}
         readOnlyValue={lockBoxBalance}
       />
     </div>
