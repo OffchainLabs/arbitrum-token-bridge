@@ -26,6 +26,10 @@ const Injector = () => {
 
   useEffect(() => {
     if (connectionState === ConnectionState.LOADING) {
+
+      if (window.location.pathname === "/info"){
+        return setConnectionState(ConnectionState.WRONG_NETWORK)
+      }
       try {
         getInjectedWeb3().then(([provider, networkVersion]) => {
           if (!provider) {

@@ -5,6 +5,8 @@ import Popover from 'react-bootstrap/Popover'
 
 import { useIsDepositMode } from 'components/App/ModeContext'
 import networks from 'components/App/networks'
+import copy from 'media/images/copy.jpg'
+import arb from 'media/gifs/l2.gif'
 
 interface props {
   isDepositPanel: boolean
@@ -33,8 +35,8 @@ const PanelWrapper: FunctionComponent<props> = ({
     <div>
       {
         <OverlayTrigger
-          placement="bottom"
-          delay={{ show: 100, hide: 50 }}
+          placement="auto"
+          delay={{ show: 100, hide: 2500 }}
           overlay={renderPopover(isDepositPanel)}
           trigger={['hover', 'focus']}
         >
@@ -52,17 +54,29 @@ const PanelWrapper: FunctionComponent<props> = ({
   )
 }
 
-const renderPopover = (isDepositPanel: boolean) => (
-  <Popover id="popover-basic">
+const renderPopover = (isDepositPanel: boolean) => {
+  const onClick = (e:any)=>{
+    e.preventDefault()
+    window.open( window.location.origin +'/info')
+
+// copyTextToClipboard(arbNetworkUrl)
+  }
+  return <Popover id="popover-basic">
     <Popover.Title as="h3">Actions disabled</Popover.Title>
-    <Popover.Content>
+    <Popover.Content >
+
       {isDepositPanel
-        ? `To enable these actions, connect to L1 (${
+        ? <div>To enable these actions, connect to L1 ({
             networks[+ethNetworkId].name
-          })`
-        : `To enable these actions, connect to Arbitrum: ${arbNetworkUrl} `}
+          })<a  onClick={onClick} href=""> Learn how.</a> </div>
+        : <div style={{fontSize: 12}}>
+        <div>To enable these actions, connect to an Arbitrum node via custom RPC. <a  onClick={onClick} href=""> Learn how.</a></div>
+          </div>
+        }
+
     </Popover.Content>
   </Popover>
-)
+}
+
 
 export default PanelWrapper
