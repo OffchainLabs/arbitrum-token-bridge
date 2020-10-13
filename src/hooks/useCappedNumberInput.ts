@@ -5,7 +5,7 @@ const useCappedNumberInput = (
 ): [number, (x: number, y: number) => void] => {
   const [value, setValue] = useState(defaultValue)
   const setValueCapped = (value: number, max: number) => {
-    setValue(Math.max(Math.min(value, max), 0))
+    setValue ( value > max ? max : value)
   }
   return [value, setValueCapped]
 }
