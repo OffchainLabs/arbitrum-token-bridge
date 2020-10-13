@@ -7,6 +7,9 @@ import ModeContext from './ModeContext'
 import Alert from 'react-bootstrap/Alert'
 import Container from 'react-bootstrap/Container'
 import ConnectWarning from './ConnectWarning'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import fox from 'media/images/metamask-fox.svg'
 
 const Injector = () => {
   const [bridgeConfig, setBridgeConfig] = useState<BridgeConfig>()
@@ -25,6 +28,10 @@ const Injector = () => {
     if (connectionState === ConnectionState.LOADING) {
       try {
         getInjectedWeb3().then(([provider, networkVersion]) => {
+          if (!provider) {
+            return setConnectionState(ConnectionState.NO_METAMASK)
+          }
+
           switch (networkVersion) {
             case ethNetworkId: {
               console.info('deposit mode detected')
@@ -84,9 +91,29 @@ const Injector = () => {
       case ConnectionState.NO_METAMASK:
         return (
           <div>
-            {renderAlert(
-              'Ethereum provider not detected; make sure you have metamask installed.'
-            )}
+            <Container>
+              <Alert className="text-center" variant={'danger'}>
+                Ethereum provider not detected; make sure you have MetaMask
+                installed in your browser.
+              </Alert>
+              <Row className="text-center">
+                <Col>
+                  <a href="https://metamask.io/download.html" target="_blank">
+                    <img width="150" src={fox} />{' '}
+                  </a>
+                </Col>
+              </Row>
+              <Row className="text-center">
+                <Col>
+                  <h4>
+                    {' '}
+                    <a href="https://metamask.io/download.html" target="_blank">
+                      Install MetaMask{' '}
+                    </a>
+                  </h4>
+                </Col>
+              </Row>
+            </Container>
           </div>
         )
       case ConnectionState.WRONG_NETWORK:
