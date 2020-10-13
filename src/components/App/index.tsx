@@ -112,6 +112,7 @@ const App = ({
             currentERC721Address={currentERC721Address ?? ''}
             setCurrentERC20Address={setCurrentERC20Address}
             setCurrentERC721Address={setCurrentERC721Address}
+            transactions={transactions.transactions}
           />
         </div>
       </div>
@@ -120,6 +121,9 @@ const App = ({
           transactions={transactions.transactions}
           clearPendingTransactions={transactions.clearPendingTransactions}
           walletAddress={walletAddress}
+          ethProvider={ethProvider}
+          setTransactionConfirmed={transactions.setTransactionConfirmed}
+
         />
       </div>
     </div>

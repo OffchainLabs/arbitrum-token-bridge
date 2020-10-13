@@ -24,6 +24,7 @@ import ERC20L2Actions from 'components/Actions/ERC20L2Actions'
 
 import ERC721L1Actions from 'components/Actions/ERC721L1Actions'
 import ERC721L2Actions from 'components/Actions/ERC721L2Actions'
+import { Transaction } from 'token-bridge-sdk'
 
 type TabProps = {
   ethBalances: BridgeBalance
@@ -37,6 +38,7 @@ type TabProps = {
   setCurrentERC721Address: React.Dispatch<string>
   bridgeTokens: ContractStorage<BridgeToken>
   addToken: (a: string, type: TokenType) => Promise<string>
+  transactions: Transaction[]
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -52,7 +54,8 @@ const TabsContainer = ({
   bridgeTokens,
   currentERC721Address,
   setCurrentERC20Address,
-  setCurrentERC721Address
+  setCurrentERC721Address,
+  transactions
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   // TODO: clean up / memoize
@@ -82,7 +85,7 @@ const TabsContainer = ({
           <Row>
             <Col>
               <PanelWrapper isDepositPanel={true}>
-                <EthL1Actions balances={ethBalances} eth={eth} />
+                <EthL1Actions balances={ethBalances} eth={eth}  transactions={transactions}/>
               </PanelWrapper>
             </Col>
             <Col>
@@ -114,6 +117,7 @@ const TabsContainer = ({
                   eth={token}
                   bridgeTokens={bridgeTokens}
                   currentERC20Address={currentERC20Address}
+                  transactions={transactions}
                 />
               </PanelWrapper>
             </Col>

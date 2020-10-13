@@ -4,16 +4,22 @@ import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import ExplorerLink from 'components/App/ExplorerLink'
+import ethers from 'ethers'
 
 interface props {
   transactions: Transaction[]
   walletAddress: string
-  clearPendingTransactions: () => any
+  clearPendingTransactions: () => any,
+  ethProvider: ethers.ethers.providers.JsonRpcProvider,
+  setTransactionConfirmed: (txID: string) => void
+
 }
 const TransactionHistory = ({
   transactions,
   walletAddress,
-  clearPendingTransactions
+  clearPendingTransactions,
+  ethProvider,
+  setTransactionConfirmed
 }: props) => {
   const usersTransactions = useMemo(
     () => transactions.filter(txn => txn.sender === walletAddress).reverse(),
@@ -24,11 +30,35 @@ const TransactionHistory = ({
     [usersTransactions]
   )
 
+  const someUnconfirmedWithdrawals = useMemo(
+    () => usersTransactions.some(txn => txn.status === 'success' && txn.type === 'withdraw'),
+    [usersTransactions]
+  )
+
+  useEffect(()=>{
+    const intervalId = window.setInterval(async function(){
+      if (!someUnconfirmedWithdrawals) return
+      const currentBlockHeight = await ethProvider.getBlockNumber()
+      usersTransactions.filter((txn:Transaction)=>(txn.type === 'withdraw')).forEach((txn:Transaction)=>{
+        if(txn.blockNumber + 720 < currentBlockHeight ) {
+          setTransactionConfirmed(txn.txID)
+        }
+      })
+
+    }, 10000)
+    return function() {
+      clearInterval(intervalId);
+    }
+
+  }, [someUnconfirmedWithdrawals, usersTransactions])
+
   const getRowStyle = (status: TxnStatus) => {
     switch (status) {
       case 'failure':
         return { backgroundColor: 'pink' }
       case 'success':
+      case 'confirmed':
+
         return { backgroundColor: 'lightgreen' }
       default:
         return { opacity: 0.5 }
