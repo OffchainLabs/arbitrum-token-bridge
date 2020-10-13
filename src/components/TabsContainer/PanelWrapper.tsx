@@ -4,7 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Popover from 'react-bootstrap/Popover'
 
 import { useIsDepositMode } from 'components/App/ModeContext'
-import networks  from 'components/App/networks'
+import networks from 'components/App/networks'
 
 interface props {
   isDepositPanel: boolean
@@ -12,7 +12,6 @@ interface props {
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 const arbNetworkUrl = process.env.REACT_APP_ARB_VALIDATOR_URL as string
-
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
@@ -58,7 +57,9 @@ const renderPopover = (isDepositPanel: boolean) => (
     <Popover.Title as="h3">Actions disabled</Popover.Title>
     <Popover.Content>
       {isDepositPanel
-        ? `To enable these actions, connect to L1 (${networks[+ethNetworkId].name})`
+        ? `To enable these actions, connect to L1 (${
+            networks[+ethNetworkId].name
+          })`
         : `To enable these actions, connect to Arbitrum: ${arbNetworkUrl} `}
     </Popover.Content>
   </Popover>
