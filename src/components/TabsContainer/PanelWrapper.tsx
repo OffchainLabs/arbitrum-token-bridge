@@ -57,7 +57,7 @@ const PanelWrapper: FunctionComponent<props> = ({
 const renderPopover = (isDepositPanel: boolean) => {
   const onClick = (e:any)=>{
     e.preventDefault()
-    window.open( window.location.origin +'/info')
+    window.open( window.location.origin +'#info')
 
 // copyTextToClipboard(arbNetworkUrl)
   }

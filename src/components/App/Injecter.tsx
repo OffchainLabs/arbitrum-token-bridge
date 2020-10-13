@@ -27,7 +27,7 @@ const Injector = () => {
   useEffect(() => {
     if (connectionState === ConnectionState.LOADING) {
 
-      if (window.location.pathname === "/info"){
+      if (window.location.hash === "#info"){
         return setConnectionState(ConnectionState.WRONG_NETWORK)
       }
       try {
