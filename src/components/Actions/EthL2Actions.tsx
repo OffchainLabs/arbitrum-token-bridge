@@ -4,7 +4,7 @@ import React from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
 import { formatEther } from 'ethers/utils'
 import { useIsDepositMode } from 'components/App/ModeContext'
-
+import WithdrawInfo from './WithdrawInfo'
 import NumberInputForm from './numberInputForm'
 type ActionsProps = {
   balances: BridgeBalance | undefined
@@ -26,6 +26,7 @@ const Actions = ({ balances, eth }: ActionsProps) => {
         disabled={arbChainBalance === 0 || isDepositMode}
         buttonText={'withdraw'}
       />
+      <WithdrawInfo />
     </div>
   )
 }

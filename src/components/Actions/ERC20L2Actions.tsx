@@ -7,7 +7,7 @@ import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
 // TODO: refactor with EthActions into one component?
 import { useIsDepositMode } from 'components/App/ModeContext'
-
+import WithdrawInfo from './WithdrawInfo'
 type ActionsProps = {
   balances: BridgeBalance | undefined
   eth: any
@@ -38,6 +38,7 @@ const Actions = ({
         disabled={isDepositMode || arbChainBalance === 0}
         buttonText="withdraw"
       />
+      <WithdrawInfo />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { formatEther } from 'ethers/utils'
 import DropdownInput from './DropdownInput'
 import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
+import WithdrawInfo from './WithdrawInfo'
 
 type ActionsProps = {
   balances: ERC721Balance | undefined
@@ -35,6 +36,7 @@ const Actions = ({
           eth.withdraw(currentERC721Address, value)
         }}
       />
+      <WithdrawInfo />
     </div>
   )
 }
