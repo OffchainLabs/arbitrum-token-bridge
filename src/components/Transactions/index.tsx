@@ -40,7 +40,7 @@ const TransactionHistory = ({
       if (!someUnconfirmedWithdrawals) return
       const currentBlockHeight = await ethProvider.getBlockNumber()
       usersTransactions.filter((txn:Transaction)=>(txn.type === 'withdraw')).forEach((txn:Transaction)=>{
-        if(txn.blockNumber + 720 < currentBlockHeight ) {
+        if( !txn.blockNumber ||  (txn.blockNumber + 720 < currentBlockHeight) ) {
           setTransactionConfirmed(txn.txID)
         }
       })
