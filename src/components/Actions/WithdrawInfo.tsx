@@ -11,7 +11,7 @@ export default () => (
   >
     {' '}
     Note: when withdrawing, the withdrawal will be in a "pending" state during a
-    "challenge period" of roughly 3 hours. After that, the funds will be
+    "challenge period" of 720 blocks (roughly 25 minutes on Kovan). After that, the funds will be
     available on layer 1 in your lockbox.{' '}
     <a
       href="https://medium.com/offchainlabs/optimizing-challenge-periods-in-rollup-b61378c87277"
