@@ -47,7 +47,7 @@ const Header = ({
         Your address: <span id="accountAddress"><ExplorerLink hash={ethAddress} type={ "address" } /></span>
       </p>
       <p>
-        ArbChain address: <span id="rollupAddress"><ExplorerLink hash={vmId} type={ "address" } /></span>
+        ArbChain address: <span id="rollupAddress"><ExplorerLink hash={vmId} type={ "chain" } /></span>
       </p>
       {/* {ethBalance && (
         <p>

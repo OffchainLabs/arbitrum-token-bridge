@@ -2,7 +2,7 @@ import React from 'react'
 
 interface props {
     hash: string,
-    type: 'address' | 'tx' | 'l1-tx'
+    type: 'address' | 'tx' | 'l1-tx' | 'chain'
 }
 
 const ExplorerLink = ({hash, type}: props) =>{
