@@ -39,7 +39,7 @@ const TransactionHistory = ({
     const intervalId = window.setInterval(async function(){
       if (!someUnconfirmedWithdrawals) return
       const currentBlockHeight = await ethProvider.getBlockNumber()
-      usersTransactions.filter((txn:Transaction)=>(txn.type === 'withdraw')).forEach((txn:Transaction)=>{
+      usersTransactions.filter((txn:Transaction)=>(txn.type === 'withdraw' && txn.status === 'success')).forEach((txn:Transaction)=>{
         if( !txn.blockNumber ||  (txn.blockNumber + 720 < currentBlockHeight) ) {
           setTransactionConfirmed(txn.txID)
         }
