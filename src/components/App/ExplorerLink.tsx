@@ -2,11 +2,13 @@ import React from 'react'
 
 interface props {
     hash: string,
-    type: 'address' | 'tx'
+    type: 'address' | 'tx' | 'l1-tx'
 }
 
 const ExplorerLink = ({hash, type}: props) =>{
-    return <a href={`https://explorer.offchainlabs.com/#/${type}/${hash}`} target="_blank" >{hash}</a>
+
+    const url = type === 'l1-tx' ? `https://kovan.etherscan.io/tx/${hash}`  : `https://explorer.offchainlabs.com/#/${type}/${hash}`
+    return <a href={url} target="_blank" >{hash}</a>
 }
 
 export default ExplorerLink

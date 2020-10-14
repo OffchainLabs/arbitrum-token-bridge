@@ -90,7 +90,7 @@ const TransactionHistory = ({
         {usersTransactions.length > 0 ? (
           usersTransactions.map(txn => (
             <tr style={getRowStyle(txn.status)} key={txn.txID}>
-              <td><ExplorerLink hash={txn.txID} type="tx"/></td>
+              <td><ExplorerLink hash={txn.txID} type={txn.type === 'deposit' ? "l1-tx" : "tx"}/></td>
               <td>{txn.type}</td>
               <td>
                 {' '}
