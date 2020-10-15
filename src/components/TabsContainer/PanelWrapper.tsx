@@ -26,6 +26,10 @@ const PanelWrapper: FunctionComponent<props> = ({
   }
 
   const prevent = (e: any) => {
+    console.warn(e.target.id);
+    if (e.target.id === 'challenge-blog-link'){
+      return
+    }
     e.preventDefault()
     e.stopPropagation()
     return

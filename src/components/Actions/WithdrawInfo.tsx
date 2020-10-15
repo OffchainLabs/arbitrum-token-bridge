@@ -16,6 +16,7 @@ export default () => (
     <a
       href="https://medium.com/offchainlabs/optimizing-challenge-periods-in-rollup-b61378c87277"
       target="_blank"
+      id='challenge-blog-link'
     >
       Learn more
     </a>
