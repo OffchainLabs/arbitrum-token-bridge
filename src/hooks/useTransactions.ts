@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect } from 'react'
 import { AssetType } from './useArbTokenBridge'
+import { TransactionReceipt } from 'ethers/providers'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -16,18 +17,23 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
  * @alias Transaction
  * @description Bridge transaction data with up to date status.
  */
-export type Transaction = {
+
+type TransactionBase = {
   type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'
   status: TxnStatus
   value: string | null
-  txID: string
+  txID?: string
   assetName: string
   assetType: AssetType
   sender: string
-  blockNumber: number
+  blockNumber?: number
 }
 
-interface NewTransaction extends Transaction {
+export interface Transaction extends TransactionBase {
+  txID: string
+}
+
+interface NewTransaction extends TransactionBase {
   status: 'pending'
 }
 
@@ -74,7 +80,18 @@ const localStorageReducer = (state: Transaction[], action: Action) => {
   window.localStorage.setItem('arbTransactions', JSON.stringify(newState))
   return newState
 }
-const useTransactions = (): [Transaction[], any] => {
+
+const useTransactions = (): [
+  Transaction[],
+  {
+    addTransaction: (transaction: NewTransaction) => void
+    setTransactionSuccess: (txID: string) => void
+    setTransactionFailure: (txID?: string) => void
+    clearPendingTransactions: () => void
+    setTransactionConfirmed: (txID: string) => void
+    updateTransactionStatus: (txReceipt: TransactionReceipt) => void
+  }
+] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
   useEffect(() => {
     const cachedTransactions = window.localStorage.getItem('arbTransactions')
@@ -85,9 +102,14 @@ const useTransactions = (): [Transaction[], any] => {
   }, [])
 
   const addTransaction = (transaction: NewTransaction) => {
+    if (!transaction.txID) {
+      console.warn(' Cannot add transaction: TxID not included (???)')
+      return
+    }
+    const tx = transaction as Transaction
     return dispatch({
       type: 'ADD_TRANSACTION',
-      transaction
+      transaction: tx
     })
   }
   const setTransactionSuccess = (txID: string) => {
@@ -96,7 +118,11 @@ const useTransactions = (): [Transaction[], any] => {
       txID: txID
     })
   }
-  const setTransactionFailure = (txID: string) => {
+  const setTransactionFailure = (txID?: string) => {
+    if (!txID) {
+      console.warn(' Cannot set transaction failure: TxID not included (???)')
+      return
+    }
     return dispatch({
       type: 'SET_FAILURE',
       txID: txID
@@ -114,6 +140,25 @@ const useTransactions = (): [Transaction[], any] => {
       txID: txID
     })
   }
+
+  const updateTransactionStatus = (txReceipt: TransactionReceipt) => {
+    if (!txReceipt.transactionHash) {
+      return console.warn(
+        '*** TransactionHash not included in transaction receipt (???) *** '
+      )
+    }
+    switch (txReceipt.status) {
+      case 0: {
+        return setTransactionFailure(txReceipt.transactionHash)
+      }
+      case 1: {
+        return setTransactionSuccess(txReceipt.transactionHash)
+      }
+      default:
+        console.warn('*** Status not included in transaction receipt *** ')
+        break
+    }
+  }
   return [
     state,
     {
@@ -121,7 +166,8 @@ const useTransactions = (): [Transaction[], any] => {
       setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,
-      setTransactionConfirmed
+      setTransactionConfirmed,
+      updateTransactionStatus
     }
   ]
 }

@@ -66,6 +66,10 @@ export enum AssetType {
   ETH = 'ETH'
 }
 
+// whatever:
+const tokenToAssetType = (tokenType: TokenType) =>
+  tokenType === TokenType.ERC20 ? AssetType.ERC20 : AssetType.ERC721
+
 interface BridgedToken {
   type: TokenType
   name: string
@@ -321,10 +325,10 @@ export const useArbTokenBridge = (
     transactions,
     {
       addTransaction,
-      setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,
-      setTransactionConfirmed
+      setTransactionConfirmed,
+      updateTransactionStatus
     }
   ] = useTransactions()
 
@@ -401,7 +405,7 @@ export const useArbTokenBridge = (
           sender: walletAddress
         })
         const receipt = await tx.wait()
-        setTransactionSuccess(tx.hash)
+        updateTransactionStatus(receipt)
         updateEthBalances()
         return receipt
       } catch (e) {
@@ -439,7 +443,7 @@ export const useArbTokenBridge = (
           blockNumber: tx.blockNumber || 0
         })
         const receipt = await tx.wait()
-        setTransactionSuccess(tx.hash)
+        updateTransactionStatus(receipt)
 
         updateEthBalances()
         const { hash } = tx
@@ -476,7 +480,7 @@ export const useArbTokenBridge = (
       })
       const receipt = await tx.wait()
       updateEthBalances()
-      setTransactionSuccess(tx.hash)
+      updateTransactionStatus(receipt)
       return receipt
     } catch (e) {
       setTransactionFailure(tx.hash)
@@ -698,13 +702,13 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: null,
         txID: tx.hash,
-        assetName: contract.name,
-        assetType: contract.type,
+        assetName: contract.symbol,
+        assetType: tokenToAssetType(contract.type),
         sender: walletAddress
       })
       try {
         const receipt = await tx.wait()
-        setTransactionSuccess(tx.hash)
+        updateTransactionStatus(receipt)
 
         setBridgeTokens(contracts => {
           const target = contracts[contractAddress]
@@ -776,13 +780,13 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: amountOrTokenId,
         txID: tx.hash,
-        assetName: contract.name,
-        assetType: contract.type,
+        assetName: contract.symbol,
+        assetType: tokenToAssetType(contract.type),
         sender: walletAddress
       })
       try {
         const receipt = await tx.wait()
-        setTransactionSuccess(tx.hash)
+        updateTransactionStatus(receipt)
         updateTokenBalances(contract.type)
         return receipt
       } catch (err) {
@@ -842,14 +846,14 @@ export const useArbTokenBridge = (
         value: amountOrTokenId,
         txID: tx.hash,
         assetName: contract.symbol,
-        assetType: contract.type,
+        assetType: tokenToAssetType(contract.type),
         sender: walletAddress,
         blockNumber: tx.blockNumber || 0
       })
 
       try {
         const receipt = await tx.wait()
-        setTransactionSuccess(tx.hash)
+        updateTransactionStatus(receipt)
 
         const { hash } = tx
 
@@ -908,15 +912,17 @@ export const useArbTokenBridge = (
         type: 'lockbox',
         status: 'pending',
         value:
-          tokenId || (balance && utils.formatEther(balance.lockBoxBalance)),
+          tokenId ||
+          (balance && utils.formatEther(balance.lockBoxBalance)) ||
+          '0',
         txID: tx.hash,
-        assetName: contract.name,
-        assetType: contract.type,
+        assetName: contract.symbol,
+        assetType: tokenToAssetType(contract.type),
         sender: walletAddress
       })
       try {
         const receipt = await tx.wait()
-        setTransactionSuccess(tx.hash)
+        updateTransactionStatus(receipt)
         updateTokenBalances(contract.type)
         return receipt
       } catch (err) {
@@ -1184,7 +1190,8 @@ export const useArbTokenBridge = (
     transactions: {
       transactions,
       clearPendingTransactions,
-      setTransactionConfirmed
+      setTransactionConfirmed,
+      updateTransactionStatus
     }
   }
 }
