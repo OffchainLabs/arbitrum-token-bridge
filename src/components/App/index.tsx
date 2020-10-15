@@ -121,8 +121,9 @@ const App = ({
           transactions={transactions.transactions}
           clearPendingTransactions={transactions.clearPendingTransactions}
           walletAddress={walletAddress}
-          ethProvider={ethProvider}
           setTransactionConfirmed={transactions.setTransactionConfirmed}
+          arbProvider={arbProvider}
+          updateTransactionStatus={transactions.updateTransactionStatus}
 
         />
       </div>

@@ -4,42 +4,44 @@ import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import ExplorerLink from 'components/App/ExplorerLink'
-import ethers from 'ethers'
+import { JsonRpcProvider, TransactionReceipt } from 'ethers/providers'
 
 interface props {
   transactions: Transaction[]
   walletAddress: string
   clearPendingTransactions: () => any,
-  ethProvider: ethers.ethers.providers.JsonRpcProvider,
-  setTransactionConfirmed: (txID: string) => void
+  arbProvider: JsonRpcProvider,
+  setTransactionConfirmed: (txID: string) => void,
+  updateTransactionStatus: (txReceipts: TransactionReceipt)=> void
 
 }
+
+const initialCachedTxns = JSON.parse(window.localStorage.getItem('arbTransactions') || '')?.length > 0
+
+
 const TransactionHistory = ({
   transactions,
   walletAddress,
   clearPendingTransactions,
-  ethProvider,
-  setTransactionConfirmed
+  arbProvider,
+  setTransactionConfirmed,
+  updateTransactionStatus
 }: props) => {
   const usersTransactions = useMemo(
     () => transactions.filter(txn => txn.sender === walletAddress).reverse(),
     [transactions, walletAddress]
   )
-  const somePending = useMemo(
-    () => usersTransactions.some(txn => txn.status === 'pending'),
-    [usersTransactions]
-  )
 
-  const someUnconfirmedWithdrawals = useMemo(
-    () => usersTransactions.some(txn => txn.status === 'success' && txn.type === 'withdraw'),
+  const unconfirmedWithdrawals = useMemo(
+    () => usersTransactions.filter(txn => txn.status === 'success' && txn.type === 'withdraw'),
     [usersTransactions]
   )
 
   useEffect(()=>{
     const intervalId = window.setInterval(async function(){
-      if (!someUnconfirmedWithdrawals) return
-      const currentBlockHeight = await ethProvider.getBlockNumber()
-      usersTransactions.filter((txn:Transaction)=>(txn.type === 'withdraw' && txn.status === 'success')).forEach((txn:Transaction)=>{
+      if (!unconfirmedWithdrawals) return
+      const currentBlockHeight = await arbProvider.getBlockNumber()
+      unconfirmedWithdrawals.forEach((txn:Transaction)=>{
         if( !txn.blockNumber ||  (txn.blockNumber + 720 < currentBlockHeight) ) {
           setTransactionConfirmed(txn.txID)
         }
@@ -50,7 +52,50 @@ const TransactionHistory = ({
       clearInterval(intervalId);
     }
 
-  }, [someUnconfirmedWithdrawals, usersTransactions])
+  }, [unconfirmedWithdrawals])
+
+
+  const pendingTransactions = useMemo(
+    () => usersTransactions.filter(txn => txn.status === 'pending'),
+    [usersTransactions]
+  )
+
+  const [checkedForInitialPendingTxns, setCheckedForInitialPendingTxns] = useState(false)
+  useEffect(()=>{
+    if (checkedForInitialPendingTxns){
+      return
+    }
+
+    if( !initialCachedTxns ) {
+      return setCheckedForInitialPendingTxns(true)
+    }
+    // transactions have loaded from cache and none of them are pending
+    if (usersTransactions.length && !pendingTransactions.length){
+      return setCheckedForInitialPendingTxns(true)
+    }
+
+    if (pendingTransactions.length){
+      console.info("Checking and updating cached pending transactions' statuses")
+
+     Promise.all(
+      pendingTransactions.map((tx:Transaction)=> arbProvider.getTransactionReceipt(tx.txID))
+    ).then((txReceipts: TransactionReceipt[])=>{
+      txReceipts.forEach((txReceipt:TransactionReceipt, i)=> {
+        if (!txReceipt){
+          console.warn('Transaction receipt not found:',pendingTransactions[i].txID );
+        } else {
+          updateTransactionStatus(txReceipt)
+        }
+      })
+    }).finally(()=>{
+      setCheckedForInitialPendingTxns(true)
+    })
+  }
+
+
+
+
+  }, [checkedForInitialPendingTxns, pendingTransactions, usersTransactions])
 
   const getRowStyle = (status: TxnStatus) => {
     switch (status) {
@@ -113,7 +158,7 @@ const TransactionHistory = ({
             </td>
           </tr>
         )}
-        {somePending && (
+        {pendingTransactions.length ?  (
           <tr>
             <td>
               <Button onClick={clearPendingTransactions}>
@@ -121,7 +166,7 @@ const TransactionHistory = ({
               </Button>
             </td>
           </tr>
-        )}
+        ): null}
       </tbody>
     </Table>
   )
