@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { Transaction, TxnStatus, AssetType } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
@@ -11,6 +11,7 @@ interface props {
   walletAddress: string
   clearPendingTransactions: () => any,
   arbProvider: JsonRpcProvider,
+  ethProvider: JsonRpcProvider,
   setTransactionConfirmed: (txID: string) => void,
   updateTransactionStatus: (txReceipts: TransactionReceipt)=> void
 
@@ -24,9 +25,18 @@ const TransactionHistory = ({
   walletAddress,
   clearPendingTransactions,
   arbProvider,
+  ethProvider,
   setTransactionConfirmed,
   updateTransactionStatus
 }: props) => {
+
+  // TODO: maybe move this to the sdk?
+  const getTransactionReceipt = useCallback( (tx: Transaction)=>{
+    const provider = tx.type === 'withdraw' ? arbProvider : ethProvider;
+    return provider.getTransactionReceipt(tx.txID)
+
+  }, [arbProvider, ethProvider])
+
   const usersTransactions = useMemo(
     () => transactions.filter(txn => txn.sender === walletAddress).reverse(),
     [transactions, walletAddress]
@@ -55,6 +65,7 @@ const TransactionHistory = ({
   }, [unconfirmedWithdrawals])
 
 
+
   const pendingTransactions = useMemo(
     () => usersTransactions.filter(txn => txn.status === 'pending'),
     [usersTransactions]
@@ -65,7 +76,6 @@ const TransactionHistory = ({
     if (checkedForInitialPendingTxns){
       return
     }
-
     if( !initialCachedTxns ) {
       return setCheckedForInitialPendingTxns(true)
     }
@@ -74,11 +84,18 @@ const TransactionHistory = ({
       return setCheckedForInitialPendingTxns(true)
     }
 
+    checkAndUpdatePendingTransactions()?.finally(()=>{
+      setCheckedForInitialPendingTxns(true)
+    })
+
+  }, [checkedForInitialPendingTxns, pendingTransactions, usersTransactions])
+
+  const checkAndUpdatePendingTransactions = useCallback(function(){
     if (pendingTransactions.length){
       console.info("Checking and updating cached pending transactions' statuses")
 
-     Promise.all(
-      pendingTransactions.map((tx:Transaction)=> arbProvider.getTransactionReceipt(tx.txID))
+     return Promise.all(
+      pendingTransactions.map((tx:Transaction)=> getTransactionReceipt(tx))
     ).then((txReceipts: TransactionReceipt[])=>{
       txReceipts.forEach((txReceipt:TransactionReceipt, i)=> {
         if (!txReceipt){
@@ -87,15 +104,13 @@ const TransactionHistory = ({
           updateTransactionStatus(txReceipt)
         }
       })
-    }).finally(()=>{
-      setCheckedForInitialPendingTxns(true)
     })
   }
+  }, [pendingTransactions, getTransactionReceipt])
 
-
-
-
-  }, [checkedForInitialPendingTxns, pendingTransactions, usersTransactions])
+  useEffect(()=>{
+    window.setInterval(checkAndUpdatePendingTransactions, 7500)
+  }, [checkAndUpdatePendingTransactions])
 
   const getRowStyle = (status: TxnStatus) => {
     switch (status) {

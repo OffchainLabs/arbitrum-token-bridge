@@ -123,6 +123,7 @@ const App = ({
           walletAddress={walletAddress}
           setTransactionConfirmed={transactions.setTransactionConfirmed}
           arbProvider={arbProvider}
+          ethProvider={ethProvider}
           updateTransactionStatus={transactions.updateTransactionStatus}
 
         />
