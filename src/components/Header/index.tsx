@@ -36,18 +36,32 @@ const Header = ({
   const currentERC721 = bridgeTokens[currentERC721Address]
   const erc721Symbol = currentERC721 ? currentERC721.symbol : ''
   const isDepositMode = useIsDepositMode()
+
+  const onClick = (e: any) => {
+    e.preventDefault()
+    window.open(window.location.origin + '#info')
+  }
   return (
     <div className="col-lg-12">
       <h1 className="text-center">Arbitrum Token Bridge</h1>
       <h5 className="text-center">
-        Connected To {isDepositMode ? 'L1' : 'L2'}
+        Connected To {isDepositMode ? 'L1' : 'L2'}{' '}
+        <a onClick={onClick} href="" style={{ fontSize: 12 }}>
+          (switch to {isDepositMode ? 'L2' : 'L1'})
+        </a>
       </h5>
 
       <p>
-        Your address: <span id="accountAddress"><ExplorerLink hash={ethAddress} type={ "address" } /></span>
+        Your address:{' '}
+        <span id="accountAddress">
+          <ExplorerLink hash={ethAddress} type={'address'} />
+        </span>
       </p>
       <p>
-        ArbChain address: <span id="rollupAddress"><ExplorerLink hash={vmId} type={ "chain" } /></span>
+        ArbChain address:{' '}
+        <span id="rollupAddress">
+          <ExplorerLink hash={vmId} type={'chain'} />
+        </span>
       </p>
       {/* {ethBalance && (
         <p>

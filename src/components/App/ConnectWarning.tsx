@@ -5,90 +5,132 @@ import Col from 'react-bootstrap/Col'
 
 import Alert from 'react-bootstrap/Alert'
 import networks from './networks'
-import copy from 'media/images/copy.jpg'
+import explorer from 'media/gifs/explorer.gif'
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 const arbNetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
-const gifStyle = { maxWidth: 200, border: '1px solid black' }
+
+const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
+
+  const onClick = (e: any) => {
+    e.preventDefault()
+    copyTextToClipboard(url)
+    alert(msg)
+  }
+  return (
+    <a href="" onClick={onClick}>
+      {url}
+    </a>
+  )
+}
+
 export default () => {
   const network = networks[+ethNetworkId]
   const arbnetwork = networks[+arbNetworkId]
 
   const l1NetworkName = networks[+ethNetworkId].name
   const l2NetworkName = networks[+arbNetworkId].name
-  const onClick = (e:any) =>{
-    e.preventDefault()
-    copyTextToClipboard('https://node.offchainlabs.com:8547')
-    alert('Aggregator url copied to clipboard')
-  }
   return (
     <Container>
       <Alert variant={'primary'}>
         {' '}
         {`Connect to ${l1NetworkName} for L1 actions or ${l2NetworkName} for L2 actions`}
       </Alert>
-      <Row>
-        <Col style={{ border: '0px solid black' }} className="text-center">
+      <Row className="text-center">
+        <Col>
           {' '}
-          <h5> {l1NetworkName} (deposit into Arbitrum)</h5>
-          <div style={{ minHeight: '50px' }}> </div>
-          <img style={gifStyle} src={network.gif} />
-        </Col>
-        <Col style={{ border: '0px solid black' }} className="text-center">
-          <h5> {l2NetworkName} (withdraw from Arbitrum)</h5>
-          <div style={{ minHeight: '50px', fontSize: '12px' }}>
-            {' '}
-            Connect to
-            <a
-              href="https://developer.offchainlabs.com/docs/Developer_Quickstart/"
-              target="_blank"
-            >
+          <div style={styles.upperSecton}>
+            <div style={styles.headerStyle}>
               {' '}
-              your own aggregator
-            </a>{' '}
-            or to our publically hosted node at{' '} <br/>
-            <a href="" onClick={onClick}> <img width={10} src={copy }/> https://node.offchainlabs.com:8547</a> via Custom RPC:
+              Connect to {l1NetworkName} (deposit into Arbitrum)
+            </div>
+            <div style={styles.textStyle}>
+              {' '}
+              Connect to Kovan test work to deposit ETH/tokens into Arbitrum
+            </div>
           </div>
-          <img style={gifStyle} src={arbnetwork.gif} />
+          <div>
+            <img style={styles.gifStyle} src={network.gif} />
+          </div>
+        </Col>
+        <Col>
+          <div style={styles.upperSecton}>
+            <div style={styles.headerStyle}>
+              {' '}
+              Connect to {l2NetworkName} (withdraw from Arbitrum)
+            </div>
+            {/* <Col> */}
+            <div style={styles.textStyle}>
+              {' '}
+              Connect to
+              <a
+                href="https://developer.offchainlabs.com/docs/Developer_Quickstart/"
+                target="_blank"
+              >
+                {' '}
+                your own aggregator
+              </a>{' '}
+              or to our publically hosted node at{' '}
+              <CopyLink
+                url="https://node.offchainlabs.com:8547"
+                msg="Aggregator url copied to clipboard"
+              />{' '}
+              via Custom RPC:
+            </div>
+          </div>
+          <img
+            className="text-center"
+            style={styles.gifStyle}
+            src={arbnetwork.gif}
+          />
+        </Col>
+        <Col>
+          <div style={styles.upperSecton}>
+            <div style={styles.headerStyle}>
+              {' '}
+              <b>Optional</b>: add Arbitrum block explorer URL
+            </div>
+
+            <div style={styles.textStyle}>
+              Add our custom block explorer url to Arbitrum network:{' '}
+              <CopyLink
+                url="https://explorer.offchainlabs.com/#"
+                msg="Block explorer url copied to clipboard"
+              />{' '}
+              ('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL
+              (optional)')
+            </div>
+          </div>
+          <img className="text-center" style={styles.gifStyle} src={explorer} />
+          {/*  */}
+          {/* </Row> */}
         </Col>
       </Row>
     </Container>
   )
 }
 
-
-
-function fallbackCopyTextToClipboard(text:string) {
-  var textArea = document.createElement("textarea");
-  textArea.value = text;
-
-  // Avoid scrolling to bottom
-  textArea.style.top = "0";
-  textArea.style.left = "0";
-  textArea.style.position = "fixed";
-
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-
-  try {
-    var successful = document.execCommand('copy');
-    var msg = successful ? 'successful' : 'unsuccessful';
-    console.log('Fallback: Copying text command was ' + msg);
-  } catch (err) {
-    console.error('Fallback: Oops, unable to copy', err);
-  }
-
-  document.body.removeChild(textArea);
+const styles = {
+  gifStyle: { maxWidth: 160, border: '1px solid black' },
+  textStyle: { fontSize: '10px' },
+  headerStyle: {
+    fontSize: '12px',
+    fontWeight: 500,
+    minHeight: 30,
+    marginBottom: 10,
+    marginTop: 10
+  },
+  upperSecton: { minHeight: 120, justifyContent: 'center' }
 }
-function copyTextToClipboard(text:string) {
-  if (!navigator.clipboard) {
-    fallbackCopyTextToClipboard(text);
-    return;
-  }
-  navigator.clipboard.writeText(text).then(function() {
-    console.log('Async: Copying to clipboard was successful!');
-  }, function(err) {
-    console.error('Async: Could not copy text: ', err);
-  });
+
+const copyTextToClipboard = (str: string) => {
+  const el = document.createElement('textarea')
+  el.value = str
+  el.setAttribute('readonly', '')
+  el.style.position = 'absolute'
+  el.style.left = '-9999px'
+  document.body.appendChild(el)
+  el.select()
+  document.execCommand('copy')
+  document.body.removeChild(el)
 }

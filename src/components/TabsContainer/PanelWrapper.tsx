@@ -26,7 +26,7 @@ const PanelWrapper: FunctionComponent<props> = ({
   }
 
   const prevent = (e: any) => {
-    if (e.target.id === 'challenge-blog-link'){
+    if (e.target.id === 'challenge-blog-link') {
       return
     }
     e.preventDefault()
@@ -58,28 +58,38 @@ const PanelWrapper: FunctionComponent<props> = ({
 }
 
 const renderPopover = (isDepositPanel: boolean) => {
-  const onClick = (e:any)=>{
+  const onClick = (e: any) => {
     e.preventDefault()
-    window.open( window.location.origin +'#info')
-
-// copyTextToClipboard(arbNetworkUrl)
+    window.open(window.location.origin + '#info')
   }
-  return <Popover id="popover-basic">
-    <Popover.Title as="h3">Actions disabled</Popover.Title>
-    <Popover.Content >
-
-      {isDepositPanel
-        ? <div>To enable these actions, connect to L1 ({
-            networks[+ethNetworkId].name
-          })<a  onClick={onClick} href=""> Learn how.</a> </div>
-        : <div style={{fontSize: 12}}>
-        <div>To enable these actions, connect to an Arbitrum node via custom RPC. <a  onClick={onClick} href=""> Learn how.</a></div>
+  return (
+    <Popover id="popover-basic">
+      <Popover.Title as="h3">Actions disabled</Popover.Title>
+      <Popover.Content>
+        {isDepositPanel ? (
+          <div>
+            To enable these actions, connect to L1 (
+            {networks[+ethNetworkId].name})
+            <a onClick={onClick} href="">
+              {' '}
+              Learn how.
+            </a>{' '}
           </div>
-        }
-
-    </Popover.Content>
-  </Popover>
+        ) : (
+          <div style={{ fontSize: 12 }}>
+            <div>
+              To enable these actions, connect to an Arbitrum node via custom
+              RPC.{' '}
+              <a onClick={onClick} href="">
+                {' '}
+                Learn how.
+              </a>
+            </div>
+          </div>
+        )}
+      </Popover.Content>
+    </Popover>
+  )
 }
-
 
 export default PanelWrapper
