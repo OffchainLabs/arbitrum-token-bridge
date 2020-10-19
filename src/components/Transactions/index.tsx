@@ -17,7 +17,7 @@ interface props {
 
 }
 
-const initialCachedTxns = JSON.parse(window.localStorage.getItem('arbTransactions') || '')?.length > 0
+const initialCachedTxns = JSON.parse(window.localStorage.getItem('arbTransactions') || '""') ?.length > 0
 
 
 const TransactionHistory = ({
