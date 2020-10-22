@@ -416,11 +416,6 @@ export const useArbTokenBridge = (
     [ethWallet, walletAddress, updateEthBalances]
   )
 
-    const withdrawEthRes = useCallback( async (etherVal: string)=>{
-      if (!arbSigner) throw new Error('withdrawETH no arb wallet')
-      const weiValue: utils.BigNumber = utils.parseEther(etherVal)
-      return await _withdrawEth(arbSigner, weiValue)
-    },[arbSigner])
 
   /** @function
    * @name withdraw
@@ -430,10 +425,14 @@ export const useArbTokenBridge = (
    * @return {TransactionReceipt}
    */
   const withdrawEth = useCallback(
-    async (etherVal: string) => {
+    async (etherVal: string, reutrnResponse = false) => {
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
 
-      const tx = await withdrawEthRes(etherVal)
+      const weiValue: utils.BigNumber = utils.parseEther(etherVal)
+      const  tx = await _withdrawEth(arbSigner, weiValue)
+      if(reutrnResponse){
+        return tx
+      }
       if (!tx.blockNumber) {
         tx.blockNumber = await ethProvider.getBlockNumber()
       }
@@ -812,8 +811,9 @@ export const useArbTokenBridge = (
   const withdrawToken = useCallback(
     async (
       contractAddress: string,
-      amountOrTokenId: string
-    ): Promise<ContractReceipt | undefined> => {
+      amountOrTokenId: string,
+      returnResponse = false
+    ): Promise<ContractReceipt  | ContractTransaction |  undefined> => {
       if (!walletAddress) throw new Error('withdraw token no walletAddress')
       if (!arbSigner) throw new Error('withdraw token no arbSigner')
       const contract = bridgeTokens[contractAddress]
@@ -856,7 +856,9 @@ export const useArbTokenBridge = (
         sender: walletAddress,
         blockNumber: tx.blockNumber || 0
       })
-
+      if (returnResponse){
+        return tx
+      }
       try {
         const receipt = await tx.wait()
         updateTransactionStatus(receipt)
@@ -1182,7 +1184,6 @@ export const useArbTokenBridge = (
       withdraw: withdrawEth,
       withdrawLockBox: withdrawLockBoxETH,
       updateBalances: updateEthBalances,
-      withdrawRes: withdrawEthRes
     },
     token: {
       add: addToken,
