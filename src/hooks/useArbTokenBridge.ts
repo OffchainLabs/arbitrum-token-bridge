@@ -415,6 +415,13 @@ export const useArbTokenBridge = (
     },
     [ethWallet, walletAddress, updateEthBalances]
   )
+
+    const withdrawEthRes = useCallback( async (etherVal: string)=>{
+      if (!arbSigner) throw new Error('withdrawETH no arb wallet')
+      const weiValue: utils.BigNumber = utils.parseEther(etherVal)
+      return await _withdrawEth(arbSigner, weiValue)
+    },[arbSigner])
+
   /** @function
    * @name withdraw
    * @memberof bridge.eth
@@ -426,8 +433,7 @@ export const useArbTokenBridge = (
     async (etherVal: string) => {
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
 
-      const weiValue: utils.BigNumber = utils.parseEther(etherVal)
-      const tx = await _withdrawEth(arbSigner, weiValue)
+      const tx = await withdrawEthRes(etherVal)
       if (!tx.blockNumber) {
         tx.blockNumber = await ethProvider.getBlockNumber()
       }
@@ -1175,7 +1181,8 @@ export const useArbTokenBridge = (
       deposit: depositEth,
       withdraw: withdrawEth,
       withdrawLockBox: withdrawLockBoxETH,
-      updateBalances: updateEthBalances
+      updateBalances: updateEthBalances,
+      withdrawRes: withdrawEthRes
     },
     token: {
       add: addToken,
