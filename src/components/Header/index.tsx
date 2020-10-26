@@ -58,7 +58,7 @@ const Header = ({
         </span>
       </p>
       <p>
-        ArbChain address:{' '}
+        Address of ArbChain:{' '}
         <span id="rollupAddress">
           <ExplorerLink hash={vmId} type={'chain'} />
         </span>
