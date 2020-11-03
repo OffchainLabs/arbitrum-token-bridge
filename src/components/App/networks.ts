@@ -22,6 +22,11 @@ const networks: Networks = {
     name: 'Arbitrum-testnet',
     gif: arb
   },
+  152709604825713: {
+    chainID: 152709604825713,
+    name: 'Arbitrum-testnet',
+    gif: arb
+  },
   42: {
     chainID: 42,
     name: 'Kovan',

@@ -9,6 +9,7 @@ import explorer from 'media/gifs/explorer.gif'
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 const arbNetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
+const arbUrl = process.env.REACT_APP_ARB_VALIDATOR_URL as string
 
 const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 
@@ -72,7 +73,7 @@ export default () => {
               </a>{' '}
               or to our publically hosted node at{' '}
               <CopyLink
-                url="https://node.offchainlabs.com:8547"
+                url={arbUrl}
                 msg="Aggregator url copied to clipboard"
               />{' '}
               via Custom RPC:
