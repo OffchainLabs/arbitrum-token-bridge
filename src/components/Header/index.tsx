@@ -56,7 +56,7 @@ const Header = ({
     <div className="col-lg-12">
       <h1 className="text-center">Arbitrum Token Bridge</h1>
       <h5 className="text-center">
-        Connected To {isDepositMode ? `L1. Depositing into Arb ${l2Network} chain` : `Arbitrum ${l2Network}`}{' '}
+        Connected To {isDepositMode ? `L1. Depositing into Arb ${l2Network} chain` : `Arbitrum ${networkId === 152709604825713 ? "v2" : "v1"}`}{' '}
       </h5>
       <h5 className="text-center">
         <a onClick={onClick} href="" style={{ fontSize: 12 }}>
