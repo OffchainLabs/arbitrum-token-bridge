@@ -22,7 +22,6 @@ const Injector = () => {
   const l2Network = _l2Network || "v2"
   const {
     REACT_APP_ETH_NETWORK_ID: ethNetworkId,
-    REACT_APP_ARB_NETWORK_ID: arbNetworkId,
     REACT_APP_ETH_NODE_URL: ethNodeUrl
   } = process.env
 

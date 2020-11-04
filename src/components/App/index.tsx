@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import styles from './styles.module.scss'
 import { statement } from '@babel/template'
 import { getInjectedWeb3 } from 'util/web3'
@@ -17,6 +17,7 @@ import { useLocalStorage } from '@rehooks/local-storage'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { BridgeConfig } from 'util/index'
+import { useIsDepositMode } from 'components/App/ModeContext'
 
 const App = ({
   arbProvider,
@@ -26,6 +27,17 @@ const App = ({
   l2Network,
   setL2Network
 }: BridgeConfig) => {
+  const isDepositMode = useIsDepositMode()
+  const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 1
+  const rollupAddress = useMemo(()=>{
+    if (!networkId) return ""
+    if (isDepositMode){
+      return l2Network === "v2" ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x175c0b09453cbb44fb7f56ba5638c43427aa6a85"
+    } else {
+      return networkId  === 152709604825713 ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x175c0b09453cbb44fb7f56ba5638c43427aa6a85"
+    }
+  }, [l2Network, isDepositMode, networkId])
+
   const {
     walletAddress,
     balances,
@@ -37,13 +49,13 @@ const App = ({
   } = useArbTokenBridge(
     ethProvider,
     arbProvider,
-    process.env.REACT_APP_ROLLUP_ADDRESS || '',
+    rollupAddress,
     ethSigner,
     arbSigner
   )
 
 
-  const vmId = process.env.REACT_APP_ROLLUP_ADDRESS || ''
+  const vmId = rollupAddress
   useEffect(() => {
     vmId && walletAddress && balances.update()
   }, [vmId, walletAddress])
@@ -101,7 +113,7 @@ const App = ({
           currentERC721Address={currentERC721Address ?? ''}
           l2Network={l2Network}
           setL2Network={setL2Network}
-          networkId={arbProvider && arbProvider.network && arbProvider.network.chainId || 1}
+          networkId={networkId}
         />
       </div>
       <div className="row">
