@@ -57,7 +57,7 @@ export default () => {
           <div style={styles.upperSecton}>
             <div style={styles.headerStyle}>
               {' '}
-              Connect to {l2NetworkName} (withdraw from Arbitrum)
+              Connect to {l2NetworkName}, v2 or v1 (withdraw from Arbitrum)
             </div>
             {/* <Col> */}
             <div style={styles.textStyle}>
