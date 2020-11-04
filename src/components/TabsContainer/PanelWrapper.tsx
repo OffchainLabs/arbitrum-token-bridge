@@ -13,7 +13,6 @@ interface props {
 }
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
-const arbNetworkUrl = process.env.REACT_APP_ARB_VALIDATOR_URL as string
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,

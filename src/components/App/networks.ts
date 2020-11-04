@@ -4,6 +4,7 @@ import arb from 'media/gifs/l2.gif'
 interface Network {
   chainID: number
   name: string
+  isArbitrum?: boolean
   url?: string
   gif?: string
 }
@@ -20,12 +21,16 @@ const networks: Networks = {
   215728282823301: {
     chainID: 215728282823301,
     name: 'Arbitrum-testnet',
-    gif: arb
+    gif: arb,
+    isArbitrum: true,
+    url: "https://node.offchainlabs.com:8547"
   },
   152709604825713: {
     chainID: 152709604825713,
     name: 'Arbitrum-testnet',
-    gif: arb
+    gif: arb,
+    isArbitrum: true,
+    url: "https://kovan2.arbitrum.io/rpc"
   },
   42: {
     chainID: 42,
@@ -34,5 +39,7 @@ const networks: Networks = {
     gif: kovan
   }
 }
+
+export const arbNetworkIds = ["215728282823301", "152709604825713"]
 
 export default networks

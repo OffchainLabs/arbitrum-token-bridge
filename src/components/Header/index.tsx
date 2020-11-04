@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import {
   BridgeBalance,
   ERC721Balance,
@@ -8,7 +8,7 @@ import {
 import { formatEther } from 'ethers/utils'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import ExplorerLink from 'components/App/ExplorerLink'
-
+import { l2Network } from 'util/index'
 interface Web3Data {
   ethAddress: string
   vmId: string
@@ -18,6 +18,9 @@ interface Web3Data {
   bridgeTokens: ContractStorage<BridgeToken>
   currentERC20Address: string
   currentERC721Address: string
+  l2Network: l2Network
+  setL2Network: any
+  networkId: number
 }
 
 const Header = ({
@@ -28,7 +31,11 @@ const Header = ({
   erc721Balance,
   bridgeTokens,
   currentERC20Address,
-  currentERC721Address
+  currentERC721Address,
+  l2Network,
+  setL2Network,
+  networkId
+
 }: Web3Data) => {
   const currentERC20 = bridgeTokens[currentERC20Address]
   const erc20Symbol = currentERC20 ? currentERC20.symbol : ''
@@ -41,15 +48,29 @@ const Header = ({
     e.preventDefault()
     window.open(window.location.origin + '#info')
   }
+
+  const onSetL2Network = useCallback(()=>{
+    setL2Network(l2Network === "v2" ? "v1" : "v2")
+  }, [l2Network])
   return (
     <div className="col-lg-12">
       <h1 className="text-center">Arbitrum Token Bridge</h1>
       <h5 className="text-center">
-        Connected To {isDepositMode ? 'L1' : 'L2'}{' '}
-        <a onClick={onClick} href="" style={{ fontSize: 12 }}>
-          (switch to {isDepositMode ? 'L2' : 'L1'})
-        </a>
+        Connected To {isDepositMode ? `L1. Depositing into Arb ${l2Network} chain` : `Arbitrum ${l2Network}`}{' '}
       </h5>
+      <h5 className="text-center">
+        <a onClick={onClick} href="" style={{ fontSize: 12 }}>
+          (connect to {isDepositMode ? 'L2' : 'Layer 1'})
+        </a> {" "}
+      { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12 }}>
+          {`(switch to ${l2Network === "v2" ? 'Arbv1 chain' : 'Arbv2 chain'})`}
+        </a>
+          }
+             { !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12 }}>
+            {networkId === 152709604825713 ? "(connect to Arbv1)": "(connect to Arbv2)"}
+        </a>
+          }
+          </h5>
 
       <p>
         Your address:{' '}

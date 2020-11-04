@@ -22,7 +22,9 @@ const App = ({
   arbProvider,
   ethProvider,
   arbSigner,
-  ethSigner
+  ethSigner,
+  l2Network,
+  setL2Network
 }: BridgeConfig) => {
   const {
     walletAddress,
@@ -39,6 +41,7 @@ const App = ({
     ethSigner,
     arbSigner
   )
+
 
   const vmId = process.env.REACT_APP_ROLLUP_ADDRESS || ''
   useEffect(() => {
@@ -96,6 +99,9 @@ const App = ({
           bridgeTokens={bridgeTokens}
           currentERC20Address={currentERC20Address ?? ''}
           currentERC721Address={currentERC721Address ?? ''}
+          l2Network={l2Network}
+          setL2Network={setL2Network}
+          networkId={arbProvider && arbProvider.network && arbProvider.network.chainId || 1}
         />
       </div>
       <div className="row">

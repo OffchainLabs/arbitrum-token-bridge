@@ -9,7 +9,6 @@ import explorer from 'media/gifs/explorer.gif'
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 const arbNetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
-const arbUrl = process.env.REACT_APP_ARB_VALIDATOR_URL as string
 
 const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 
@@ -71,12 +70,16 @@ export default () => {
                 {' '}
                 your own aggregator
               </a>{' '}
-              or to our publically hosted node at{' '}
+              or to our publically hosted nodes via custom RPC:{' '}
               <CopyLink
-                url={arbUrl}
-                msg="Aggregator url copied to clipboard"
-              />{' '}
-              via Custom RPC:
+                url={"https://kovan2.arbitrum.io/rpc"}
+                msg="Arbv2 Aggregator url copied to clipboard"
+              />{' '} for Arbv2 (you probably want this one!) or {" "}
+                <CopyLink
+                url={"https://node.offchainlabs.com:8547"}
+                msg="Arbv1 Aggregator url copied to clipboard"
+              /> for Arbv1.
+
             </div>
           </div>
           <img

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { getInjectedWeb3, setChangeListeners } from 'util/web3'
-import { BridgeConfig, ConnectionState } from 'util/index'
+import { BridgeConfig, ConnectionState, l2Network } from 'util/index'
 import * as ethers from 'ethers'
 import App from './index'
 import ModeContext from './ModeContext'
@@ -10,18 +10,20 @@ import ConnectWarning from './ConnectWarning'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import fox from 'media/images/metamask-fox.svg'
+import networks, { arbNetworkIds }  from "./networks"
+import { useLocalStorage } from '@rehooks/local-storage'
 
 const Injector = () => {
   const [bridgeConfig, setBridgeConfig] = useState<BridgeConfig>()
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
-
+  let [_l2Network, setL2Network] = useLocalStorage<l2Network>('l2Network', 'v2')
+  const l2Network = _l2Network || "v2"
   const {
     REACT_APP_ETH_NETWORK_ID: ethNetworkId,
     REACT_APP_ARB_NETWORK_ID: arbNetworkId,
-    REACT_APP_ETH_NODE_URL: ethNodeUrl,
-    REACT_APP_ARB_VALIDATOR_URL: arbValidatorUrl
+    REACT_APP_ETH_NODE_URL: ethNodeUrl
   } = process.env
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const Injector = () => {
               console.info('deposit mode detected')
               const ethProvider = provider
               const arbProvider = new ethers.providers.JsonRpcProvider(
-                arbValidatorUrl
+                l2Network === "v2" ? "https://kovan2.arbitrum.io/rpc" : "https://node.offchainlabs.com:8547"
               )
               setBridgeConfig({
                 ethProvider,
@@ -49,12 +51,15 @@ const Injector = () => {
                 ethSigner: ethProvider.getSigner(0),
                 arbSigner: arbProvider.getSigner(
                   window.ethereum?.selectedAddress
-                )
+                ),
+                l2Network,
+                setL2Network
               })
               setConnectionState(ConnectionState.DEPOSIT_MODE)
               break
             }
-            case arbNetworkId: {
+            case arbNetworkIds[0]:
+            case  arbNetworkIds[1]:{
               console.info('withdrawal mode detected')
               const ethProvider = new ethers.providers.JsonRpcProvider(
                 ethNodeUrl
@@ -67,7 +72,9 @@ const Injector = () => {
                   window.ethereum?.selectedAddress
                 ),
 
-                arbSigner: arbProvider.getSigner(0)
+                arbSigner: arbProvider.getSigner(0),
+                l2Network,
+                setL2Network
               })
               setConnectionState(ConnectionState.WITHDRAW_MODE)
               break
