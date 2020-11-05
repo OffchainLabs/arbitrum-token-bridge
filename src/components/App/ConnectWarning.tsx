@@ -70,15 +70,21 @@ export default () => {
                 {' '}
                 your own aggregator
               </a>{' '}
-              or to our publically hosted nodes via custom RPC:{' '}
+              or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
                 url={"https://kovan2.arbitrum.io/rpc"}
                 msg="Arbv2 Aggregator url copied to clipboard"
-              />{' '} for Arbv2 (you probably want this one!) or {" "}
+              />{' '} with chain ID    <CopyLink
+              url={"152709604825713"}
+              msg="Arbv2 Aggregator url copied to clipboard"
+            /> for Arbv2 (you probably want this one!) or {" "}
                 <CopyLink
                 url={"https://node.offchainlabs.com:8547"}
                 msg="Arbv1 Aggregator url copied to clipboard"
-              /> for Arbv1.
+              /> with chain ID <CopyLink
+              url={"215728282823301"}
+              msg="Arbv2 Aggregator url copied to clipboard"
+            />  for Arbv1.
 
             </div>
           </div>
