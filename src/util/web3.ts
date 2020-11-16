@@ -2,7 +2,7 @@ import * as ethers from 'ethers'
 
 interface InjectedEthereumProvider
   extends ethers.ethers.providers.AsyncSendable {
-  enable?: () => Promise<string[]>
+  request?: (arg:any) => Promise<string[]>
   on: any
   networkVersion: string
   selectedAddress?: string
@@ -25,7 +25,7 @@ export async function getInjectedWeb3(): Promise<
 > {
   if (web3Injected(window.ethereum)) {
     try {
-      ;(await window.ethereum.enable?.()) ??
+      ;(await window.ethereum.request?.({ method: 'eth_requestAccounts' })) ??
         console.warn('No window.ethereum.enable function')
     } catch (e) {
       console.warn('Failed to enable window.ethereum: ' + e.message)
