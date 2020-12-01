@@ -128,7 +128,7 @@ export interface BridgeBalance {
  * @alias ERC721Balance
  */
 export interface ERC721Balance {
-    /**
+  /**
    * User's NFT balance on L1
    */
   ethBalance: utils.BigNumber
@@ -423,7 +423,6 @@ export const useArbTokenBridge = (
     [ethWallet, walletAddress, updateEthBalances]
   )
 
-
   /** @function
    * @name withdraw
    * @memberof bridge.eth
@@ -436,8 +435,8 @@ export const useArbTokenBridge = (
       if (!arbSigner) throw new Error('withdrawETH no arb wallet')
 
       const weiValue: utils.BigNumber = utils.parseEther(etherVal)
-      const  tx = await _withdrawEth(arbSigner, weiValue)
-      if(reutrnResponse){
+      const tx = await _withdrawEth(arbSigner, weiValue)
+      if (reutrnResponse) {
         return tx
       }
       if (!tx.blockNumber) {
@@ -616,39 +615,40 @@ export const useArbTokenBridge = (
             break
           }
           case TokenType.ERC721: {
-
             // TODO: remove total arb tokens; overkill
             const ethBalance = await contract.eth.balanceOf(walletAddress)
             const ethTokens: utils.BigNumber[] = []
             try {
               for (let i = 0; i < ethBalance.toNumber(); i++) {
-                const token = await contract.eth.tokenOfOwnerByIndex(walletAddress,i)
+                const token = await contract.eth.tokenOfOwnerByIndex(
+                  walletAddress,
+                  i
+                )
                 ethTokens.push(token)
-
               }
-            } catch(err){
-              console.warn("Error getting user 721 L1 tokens", err);
+            } catch (err) {
+              console.warn('Error getting user 721 L1 tokens', err)
             }
 
-
-            const arbBalance:utils.BigNumber =  await  (arbTokenContract ? arbTokenContract.balanceOf(walletAddress) : new Promise(exec => exec(Zero)))
-            const arbChainTokens: utils.BigNumber[]  = []
-            try{
-              if(arbTokenContract !== null){
+            const arbBalance: utils.BigNumber = await (arbTokenContract
+              ? arbTokenContract.balanceOf(walletAddress)
+              : new Promise(exec => exec(Zero)))
+            const arbChainTokens: utils.BigNumber[] = []
+            try {
+              if (arbTokenContract !== null) {
                 for (let i = 0; i < arbBalance.toNumber(); i++) {
-                  const token = await arbTokenContract.tokenOfOwnerByIndex(walletAddress,i)
+                  const token = await arbTokenContract.tokenOfOwnerByIndex(
+                    walletAddress,
+                    i
+                  )
                   arbChainTokens.push(token)
                 }
               }
-            } catch(err){
-              console.warn("Error getting user 721 L2 tokens", err);
+            } catch (err) {
+              console.warn('Error getting user 721 L2 tokens', err)
             }
 
-
-            const [
-              lockBoxTokens,
-              totalArbTokens
-            ] = await Promise.all([
+            const [lockBoxTokens, totalArbTokens] = await Promise.all([
               ethWallet
                 ? ethWallet.getERC721LockBoxTokens(
                     contract.eth.address,
@@ -840,7 +840,7 @@ export const useArbTokenBridge = (
       contractAddress: string,
       amountOrTokenId: string,
       returnResponse = false
-    ): Promise<ContractReceipt  | ContractTransaction |  undefined> => {
+    ): Promise<ContractReceipt | ContractTransaction | undefined> => {
       if (!walletAddress) throw new Error('withdraw token no walletAddress')
       if (!arbSigner) throw new Error('withdraw token no arbSigner')
       const contract = bridgeTokens[contractAddress]
@@ -883,7 +883,7 @@ export const useArbTokenBridge = (
         sender: walletAddress,
         blockNumber: tx.blockNumber || 0
       })
-      if (returnResponse){
+      if (returnResponse) {
         return tx
       }
       try {
