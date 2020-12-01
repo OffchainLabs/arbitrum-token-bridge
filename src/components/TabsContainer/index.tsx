@@ -138,7 +138,12 @@ const TabsContainer = ({
         <Container>
           <Row>
             <Col>
-              <ERC721BalanceUi balances={erc721balance} />
+              <ERC721BalanceUi
+              balances={erc721balance}
+              transactions={transactions}
+              bridgeTokens={bridgeTokens}
+              currentERC721Address={currentERC721Address}
+            />
             </Col>
           </Row>
           <Row>
