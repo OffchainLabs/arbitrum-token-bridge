@@ -44,6 +44,7 @@ import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Fact
 
 import deepEquals from 'lodash.isequal'
 import useTransactions from './useTransactions'
+import { Zero } from 'ethers/constants'
 const MIN_APPROVAL = constants.MaxUint256
 
 /* eslint-disable no-shadow */
@@ -127,6 +128,12 @@ export interface BridgeBalance {
  * @alias ERC721Balance
  */
 export interface ERC721Balance {
+    /**
+   * User's NFT balance on L1
+   */
+  ethBalance: utils.BigNumber
+  arbBalance: utils.BigNumber
+  /**
   /**
    * User's NFTs on L1
    */
@@ -609,21 +616,39 @@ export const useArbTokenBridge = (
             break
           }
           case TokenType.ERC721: {
-            const arbTokensPromise: Promise<
-              utils.BigNumber[]
-            > = arbTokenContract
-              ? arbTokenContract.tokensOfOwner(walletAddress)
-              : new Promise(exec => exec([]))
 
             // TODO: remove total arb tokens; overkill
+            const ethBalance = await contract.eth.balanceOf(walletAddress)
+            const ethTokens: utils.BigNumber[] = []
+            try {
+              for (let i = 0; i < ethBalance.toNumber(); i++) {
+                const token = await contract.eth.tokenOfOwnerByIndex(walletAddress,i)
+                ethTokens.push(token)
+
+              }
+            } catch(err){
+              console.warn("Error getting user 721 L1 tokens", err);
+            }
+
+
+            const arbBalance:utils.BigNumber =  await  (arbTokenContract ? arbTokenContract.balanceOf(walletAddress) : new Promise(exec => exec(Zero)))
+            const arbChainTokens: utils.BigNumber[]  = []
+            try{
+              if(arbTokenContract !== null){
+                for (let i = 0; i < arbBalance.toNumber(); i++) {
+                  const token = await arbTokenContract.tokenOfOwnerByIndex(walletAddress,i)
+                  arbChainTokens.push(token)
+                }
+              }
+            } catch(err){
+              console.warn("Error getting user 721 L2 tokens", err);
+            }
+
+
             const [
-              tokens,
-              arbChainTokens,
               lockBoxTokens,
               totalArbTokens
             ] = await Promise.all([
-              contract.eth.tokensOfOwner(walletAddress),
-              arbTokensPromise,
               ethWallet
                 ? ethWallet.getERC721LockBoxTokens(
                     contract.eth.address,
@@ -638,7 +663,9 @@ export const useArbTokenBridge = (
                 : []
             ])
             const updated = {
-              tokens,
+              ethBalance,
+              arbBalance,
+              tokens: ethTokens,
               arbChainTokens,
               totalArbTokens,
               lockBoxTokens
@@ -1183,7 +1210,7 @@ export const useArbTokenBridge = (
       deposit: depositEth,
       withdraw: withdrawEth,
       withdrawLockBox: withdrawLockBoxETH,
-      updateBalances: updateEthBalances,
+      updateBalances: updateEthBalances
     },
     token: {
       add: addToken,
