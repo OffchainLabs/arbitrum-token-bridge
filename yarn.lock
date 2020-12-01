@@ -10628,10 +10628,10 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.2.4.tgz#a53e785f614bfb4748997a8419bff60bdba95d64"
-  integrity sha512-2YRUKK63kbi1NWyfesOv2Z09lwj4KD0XK8dnpzNUl9vmObiqWnGOanbDm96HJ7ln0iq1kmw179w+oh2RJyt5SQ==
+token-bridge-sdk@^0.2.7:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.2.7.tgz#f52d2fef18e9f50e337e6df7db954c27913b73c7"
+  integrity sha512-k/oD6imMyQBTtBtCXCei+E5tJRtkTPsB9M2+W4xFuOHLd+FitZjh3+NGj482+Z8nY6QYKOY3qSpWnmLdB1m2zw==
   dependencies:
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
