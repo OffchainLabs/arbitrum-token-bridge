@@ -25,9 +25,9 @@ const DropdownInputForm = ({
   disabled = false
 }: DropdownInputFormProps) => {
   // TODO: 0 edge case?
-  const [value, setValue] = useState(0)
+  const [value, setValue] = useState<number | null>(null)
   const displayTitle = useMemo(() => {
-    if (value) {
+    if (value !== null) {
       return value
     } else if (items.length > 0) {
       return 'select token'
@@ -64,8 +64,10 @@ const DropdownInputForm = ({
       <Button
         variant="outline-secondary"
         onClick={() => {
-          onSubmit(value.toString())
-          setValue(0)
+          if (value !== null){
+            onSubmit(value.toString())
+            setValue(null)
+          }
         }}
         disabled={disableActions}
       >
