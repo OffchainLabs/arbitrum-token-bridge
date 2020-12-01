@@ -143,15 +143,13 @@ const TabsContainer = ({
           </Row>
           <Row>
             <Col>
-              <PanelWrapper isDepositPanel={true}>
-                <AssetDropDown
+              <AssetDropDown
                   bridgeTokensArray={erc721BridgeTokens}
                   addToken={addToken}
                   tokenType={TokenType.ERC721}
                   currentToken={currentERC721Token}
                   setCurrentAddress={setCurrentERC721Address}
-                />
-              </PanelWrapper>
+              />
             </Col>
           </Row>
           <Row>
