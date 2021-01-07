@@ -5,7 +5,7 @@ interface Network {
   chainID: number
   name: string
   isArbitrum?: boolean
-  url?: string
+  url: string
   gif?: string
 }
 interface Networks {
@@ -16,7 +16,8 @@ const networks: Networks = {
   44010: {
     chainID: 44010,
     name: 'Private-Geth-Testnet',
-    gif: kovan
+    gif: kovan,
+    url: ""
   },
   215728282823301: {
     chainID: 215728282823301,
@@ -32,6 +33,13 @@ const networks: Networks = {
     isArbitrum: true,
     url: "https://kovan2.arbitrum.io/rpc"
   },
+  46116242285844: {
+    chainID: 46116242285844,
+    name: "Arbitrum-testnet3",
+    gif: arb,
+    isArbitrum: true,
+    url: "https://kovan3.arbitrum.io/rpc"
+  },
   42: {
     chainID: 42,
     name: 'Kovan',
@@ -40,6 +48,6 @@ const networks: Networks = {
   }
 }
 
-export const arbNetworkIds = ["215728282823301", "152709604825713"]
+export const arbNetworkIds = ["215728282823301", "152709604825713", "46116242285844"]
 
 export default networks

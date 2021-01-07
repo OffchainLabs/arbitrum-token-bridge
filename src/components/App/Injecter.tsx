@@ -18,8 +18,8 @@ const Injector = () => {
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
-  let [_l2Network, setL2Network] = useLocalStorage<l2Network>('l2Network', 'v2')
-  const l2Network = _l2Network || "v2"
+  let [_l2Network, setL2Network] = useLocalStorage<l2Network>('l2Network', 'v3')
+  const l2Network = _l2Network || "v3"
   const {
     REACT_APP_ETH_NETWORK_ID: ethNetworkId,
     REACT_APP_ETH_NODE_URL: ethNodeUrl
@@ -42,8 +42,8 @@ const Injector = () => {
               console.info('deposit mode detected')
               const ethProvider = provider
               const arbProvider = new ethers.providers.JsonRpcProvider(
-                l2Network === "v2" ? "https://kovan2.arbitrum.io/rpc" : "https://node.offchainlabs.com:8547"
-              )
+                l2Network === "v2" ? "https://kovan2.arbitrum.io/rpc" : "https://kovan3.arbitrum.io/rpc"
+              )              
               setBridgeConfig({
                 ethProvider,
                 arbProvider,
@@ -57,8 +57,9 @@ const Injector = () => {
               setConnectionState(ConnectionState.DEPOSIT_MODE)
               break
             }
-            case arbNetworkIds[0]:
-            case  arbNetworkIds[1]:{
+            case arbNetworkIds[1]:
+            case arbNetworkIds[2]:
+            {
               console.info('withdrawal mode detected')
               const ethProvider = new ethers.providers.JsonRpcProvider(
                 ethNodeUrl
@@ -138,6 +139,7 @@ const Injector = () => {
         }
         return (
           <ModeContext.Provider value={connectionState}>
+            
             <App {...bridgeConfig} />
           </ModeContext.Provider>
         )

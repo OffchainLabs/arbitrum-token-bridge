@@ -4,7 +4,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 
 import Alert from 'react-bootstrap/Alert'
-import networks from './networks'
+import networks, { arbNetworkIds } from './networks'
 import explorer from 'media/gifs/explorer.gif'
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
@@ -30,6 +30,11 @@ export default () => {
 
   const l1NetworkName = networks[+ethNetworkId].name
   const l2NetworkName = networks[+arbNetworkId].name
+
+
+  const arbV2Testnet = networks[+arbNetworkIds[1]]
+  const arbV3Testnet = networks[+arbNetworkIds[2]]
+
   return (
     <Container>
       <Alert variant={'primary'}>
@@ -57,7 +62,7 @@ export default () => {
           <div style={styles.upperSecton}>
             <div style={styles.headerStyle}>
               {' '}
-              Connect to {l2NetworkName}, v2 or v1 (withdraw from Arbitrum)
+              Connect to {l2NetworkName}, v2 or v3 (withdraw from Arbitrum)
             </div>
             {/* <Col> */}
             <div style={styles.textStyle}>
@@ -72,19 +77,19 @@ export default () => {
               </a>{' '}
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
-                url={"https://kovan2.arbitrum.io/rpc"}
-                msg="Arbv2 Aggregator url copied to clipboard"
+                url={arbV3Testnet.url}
+                msg="Arbv3 Aggregator url copied to clipboard"
               />{' '} with chain ID    <CopyLink
-              url={"152709604825713"}
-              msg="Arbv2 Aggregator url copied to clipboard"
-            /> for Arbv2 (you probably want this one!) or {" "}
+              url={arbV3Testnet.chainID.toString()}
+              msg="Arbv3 chain ID copied to clipboard"
+            /> for Arbv3 (you probably want this one!) or {" "}
                 <CopyLink
-                url={"https://node.offchainlabs.com:8547"}
-                msg="Arbv1 Aggregator url copied to clipboard"
+                url={arbV2Testnet.url}
+                msg="Arbv2 Aggregator url copied to clipboard"
               /> with chain ID <CopyLink
-              url={"215728282823301"}
-              msg="Arbv2 Aggregator url copied to clipboard"
-            />  for Arbv1.
+              url={arbV2Testnet.chainID.toString()}
+              msg="Arbv2 chainID copied to clipboard"
+            />  for Arbv2 (old testnet).
 
             </div>
           </div>

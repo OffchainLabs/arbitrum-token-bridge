@@ -1,6 +1,6 @@
 import * as ethers from 'ethers'
 export * from './web3'
-export type l2Network = 'v2' | 'v1'
+export type l2Network = 'v2' | 'v3'
 
 export interface BridgeConfig {
   ethProvider: ethers.providers.JsonRpcProvider

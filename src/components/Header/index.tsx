@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import {
   BridgeBalance,
   ERC721Balance,
@@ -50,24 +50,36 @@ const Header = ({
   }
 
   const onSetL2Network = useCallback(()=>{
-    setL2Network(l2Network === "v2" ? "v1" : "v2")
+    setL2Network(l2Network === "v2" ? "v3" : "v2")
   }, [l2Network])
+  const headerDisplay = useMemo(()=>{
+    if (networkId === 666){
+      return "connecting..."
+    }
+    if (isDepositMode){
+      return `Connected to L1. Depositing into Arb ${l2Network} chain`
+    }
+
+    return `Connected to Arbitrum ${networkId === 152709604825713 ? "v2" : "v3"}`
+  }, [isDepositMode, l2Network, networkId])
+
   return (
     <div className="col-lg-12">
       <h1 className="text-center">Arbitrum Token Bridge</h1>
       <h5 className="text-center">
-        Connected To {isDepositMode ? `L1. Depositing into Arb ${l2Network} chain` : `Arbitrum ${networkId === 152709604825713 ? "v2" : "v1"}`}{' '}
+        
+      { headerDisplay}
       </h5>
       <h5 className="text-center">
         <a onClick={onClick} href="" style={{ fontSize: 12 }}>
           (connect to {isDepositMode ? 'L2' : 'Layer 1'})
         </a> {" "}
       { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12 }}>
-          {`(switch to ${l2Network === "v2" ? 'Arbv1 chain' : 'Arbv2 chain'})`}
+          {`(switch to ${l2Network === "v2" ? 'Arbv3 chain' : 'Arbv2 chain'})`}
         </a>
           }
              { !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12 }}>
-            {networkId === 152709604825713 ? "(connect to Arbv1)": "(connect to Arbv2)"}
+            {networkId === 152709604825713 ? "(connect to Arbv3)": "(connect to Arbv2)"}
         </a>
           }
           </h5>

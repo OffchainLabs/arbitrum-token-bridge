@@ -28,12 +28,12 @@ const App = ({
   setL2Network
 }: BridgeConfig) => {
   const isDepositMode = useIsDepositMode()
-  const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 1
+  const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 666
   const rollupAddress = useMemo(()=>{
     if (isDepositMode){
-      return l2Network === "v2" ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x175c0b09453cbb44fb7f56ba5638c43427aa6a85"
+      return l2Network === "v2" ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x3B493fD1731528531471Cd18ea2f29f1463D6514"
     } else {
-      return networkId  !== 152709604825713 ?  "0x175c0b09453cbb44fb7f56ba5638c43427aa6a85" :"0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71"
+      return networkId  !== 152709604825713 ?  "0x3B493fD1731528531471Cd18ea2f29f1463D6514" :"0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71"
     }
   }, [l2Network, isDepositMode, networkId])
 
