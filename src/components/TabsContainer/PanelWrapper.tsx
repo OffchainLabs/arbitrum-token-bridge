@@ -10,16 +10,18 @@ import arb from 'media/gifs/l2.gif'
 
 interface props {
   isDepositPanel: boolean
+  disabledWithdrawals?: boolean
 }
 
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
+  disabledWithdrawals=false,
   children
 }) => {
   const isDepositMode = useIsDepositMode()
-  const isActive = isDepositMode === isDepositPanel
+  const isActive = !disabledWithdrawals && (isDepositMode === isDepositPanel)
   if (isActive) {
     return <div> {children}</div>
   }
@@ -39,7 +41,7 @@ const PanelWrapper: FunctionComponent<props> = ({
         <OverlayTrigger
           placement="bottom-start"
           delay={{ show: 100, hide: 2000 }}
-          overlay={renderPopover(isDepositPanel)}
+          overlay={renderPopover(isDepositPanel,disabledWithdrawals)}
           trigger={['hover', 'focus']}
         >
           <div
@@ -56,7 +58,7 @@ const PanelWrapper: FunctionComponent<props> = ({
   )
 }
 
-const renderPopover = (isDepositPanel: boolean) => {
+const renderPopover = (isDepositPanel: boolean, disabledWithdrawals: boolean) => {
   const onClick = (e: any) => {
     e.preventDefault()
     window.open(window.location.origin + '#info')
@@ -65,7 +67,9 @@ const renderPopover = (isDepositPanel: boolean) => {
     <Popover id="popover-basic">
       <Popover.Title as="h3">Actions disabled</Popover.Title>
       <Popover.Content>
-        {isDepositPanel ? (
+        {
+        disabledWithdrawals ? "Withdrawals not supported on old testnet; connect to new Arbitrum testnet." : 
+        isDepositPanel ? (
           <div>
             To enable these actions, connect to L1 (
             {networks[+ethNetworkId].name})

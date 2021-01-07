@@ -39,6 +39,7 @@ type TabProps = {
   bridgeTokens: ContractStorage<BridgeToken>
   addToken: (a: string, type: TokenType) => Promise<string>
   transactions: Transaction[]
+  networkId: number
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -55,7 +56,8 @@ const TabsContainer = ({
   currentERC721Address,
   setCurrentERC20Address,
   setCurrentERC721Address,
-  transactions
+  transactions,
+  networkId
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   // TODO: clean up / memoize
@@ -73,6 +75,7 @@ const TabsContainer = ({
 
   const currentERC20Token = bridgeTokens[currentERC20Address]
   const currentERC721Token = bridgeTokens[currentERC721Address]
+  const disabledWithdrawals = networkId === 152709604825713
 
   return (
     <Tabs
@@ -89,8 +92,8 @@ const TabsContainer = ({
               </PanelWrapper>
             </Col>
             <Col>
-              <PanelWrapper isDepositPanel={false}>
-                <EthL2Actions balances={ethBalances} eth={eth} />
+              <PanelWrapper isDepositPanel={false} disabledWithdrawals={disabledWithdrawals}>
+                <EthL2Actions balances={ethBalances} eth={eth}  />
               </PanelWrapper>
             </Col>
           </Row>
@@ -122,7 +125,7 @@ const TabsContainer = ({
               </PanelWrapper>
             </Col>
             <Col>
-              <PanelWrapper isDepositPanel={false}>
+              <PanelWrapper isDepositPanel={false} disabledWithdrawals={disabledWithdrawals}>
                 <ERC20L2Actions
                   balances={erc20BridgeBalance}
                   eth={token}
@@ -169,7 +172,7 @@ const TabsContainer = ({
               </PanelWrapper>
             </Col>
             <Col>
-              <PanelWrapper isDepositPanel={false}>
+              <PanelWrapper isDepositPanel={false} disabledWithdrawals={disabledWithdrawals}>
                 <ERC721L2Actions
                   balances={erc721balance}
                   eth={token}

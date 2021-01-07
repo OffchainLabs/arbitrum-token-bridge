@@ -18,6 +18,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { BridgeConfig } from 'util/index'
 import { useIsDepositMode } from 'components/App/ModeContext'
+import AlertDialog from './Dialogue'
 
 const App = ({
   arbProvider,
@@ -114,6 +115,7 @@ const App = ({
           setL2Network={setL2Network}
           networkId={networkId}
         />
+        <AlertDialog networkId={networkId} l2Network={l2Network}/>
       </div>
       <div className="row">
         <div id="bridgebody">
@@ -130,6 +132,7 @@ const App = ({
             setCurrentERC20Address={setCurrentERC20Address}
             setCurrentERC721Address={setCurrentERC721Address}
             transactions={transactions.transactions}
+            networkId={networkId}
           />
         </div>
       </div>
