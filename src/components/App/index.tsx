@@ -32,9 +32,9 @@ const App = ({
   const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 666
   const rollupAddress = useMemo(()=>{
     if (isDepositMode){
-      return l2Network === "v2" ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x3B493fD1731528531471Cd18ea2f29f1463D6514"
+      return l2Network === "v2" ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x2e8aF9f74046D3E55202Fcfb893348316B142230"
     } else {
-      return networkId  !== 152709604825713 ?  "0x3B493fD1731528531471Cd18ea2f29f1463D6514" :"0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71"
+      return networkId  !== 152709604825713 ?  "0x2e8aF9f74046D3E55202Fcfb893348316B142230" :"0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71"
     }
   }, [l2Network, isDepositMode, networkId])
 
