@@ -119,7 +119,7 @@ const TransactionHistory = ({
       case 'success':
       case 'confirmed':
 
-        return { backgroundColor: 'lightgreen' }
+        return { backgroundColor: 'lightgoldenrodyellow' }
       default:
         return { opacity: 0.5 }
     }

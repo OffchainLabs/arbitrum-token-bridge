@@ -1,8 +1,239 @@
-#txn-table td{
-    max-width: 150px;
-    overflow: hidden;
+@font-face {
+  font-family: 'Ropa Sans';
+  src: url('../fonts/RopaSans-Regular.eot');
+  src: url('../fonts/RopaSans-Regular.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/RopaSans-Regular.woff2') format('woff2'),
+    url('../fonts/RopaSans-Regular.woff') format('woff'),
+    url('../fonts/RopaSans-Regular.ttf') format('truetype'),
+    url('../fonts/RopaSans-Regular.svg#RopaSans-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-.input-group{
-    flex-wrap: nowrap;
+@font-face {
+  font-family: 'Minion Pro';
+  src: url('../fonts/MinionPro-Regular.eot');
+  src: url('../fonts/MinionPro-Regular.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/MinionPro-Regular.woff2') format('woff2'),
+    url('../fonts/MinionPro-Regular.woff') format('woff'),
+    url('../fonts/MinionPro-Regular.ttf') format('truetype'),
+    url('../fonts/MinionPro-Regular.svg#MinionPro-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat Regular';
+  src: url('../fonts/Montserrat-Regular.eot');
+  src: url('../fonts/Montserrat-Regular.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/Montserrat-Regular.woff2') format('woff2'),
+    url('../fonts/Montserrat-Regular.woff') format('woff'),
+    url('../fonts/Montserrat-Regular.ttf') format('truetype'),
+    url('../fonts/Montserrat-Regular.svg#Montserrat-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat Light';
+  src: url('../fonts/Montserrat-Light.eot');
+  src: url('../fonts/Montserrat-Light.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/Montserrat-Light.woff2') format('woff2'),
+    url('../fonts/Montserrat-Light.woff') format('woff'),
+    url('../fonts/Montserrat-Light.ttf') format('truetype'),
+    url('../fonts/Montserrat-Light.svg#Montserrat-Light') format('svg');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat Black';
+  src: url('../fonts/Montserrat-Black.eot');
+  src: url('../fonts/Montserrat-Black.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/Montserrat-Black.woff2') format('woff2'),
+    url('../fonts/Montserrat-Black.woff') format('woff'),
+    url('../fonts/Montserrat-Black.ttf') format('truetype'),
+    url('../fonts/Montserrat-Black.svg#Montserrat-Black') format('svg');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat Bold';
+  src: url('../fonts/Montserrat-Bold.eot');
+  src: url('../fonts/Montserrat-Bold.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/Montserrat-Bold.woff2') format('woff2'),
+    url('../fonts/Montserrat-Bold.woff') format('woff'),
+    url('../fonts/Montserrat-Bold.ttf') format('truetype'),
+    url('../fonts/Montserrat-Bold.svg#Montserrat-Bold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  background-color: #8C89BC;
+}
+#txn-table td {
+  max-width: 150px;
+  overflow: hidden;
+}
+
+.input-group {
+  flex-wrap: nowrap;
+}
+
+h1 {
+  font-size: 2.8em;
+  width: 100%;
+  padding-top: 14px;
+  font-family: 'Montserrat Black';
+}
+
+h5 {
+  font-size: 1em;
+  margin-bottom: -5px;
+  font-family: 'Montserrat Bold';
+}
+
+.container {
+  background-color: #ebebec;
+  box-shadow: 5px 0px 10px 2px rgba(80, 70, 173, 0.7),
+    -5px 0px 10px 2px rgba(80, 70, 173, 0.7);
+}
+.address-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding-top: 2em;
+}
+.address {
+  font-size: 12px;
+  font-family: 'Montserrat Regular';
+}
+
+.arbchain {
+  font-size: 12px;
+  font-family: 'Montserrat Regular';
+}
+
+.nav-tabs .nav-item.show .nav-link,
+.nav-tabs .nav-link.active {
+  background-color: #8C89BC;
+  color: white;
+}
+
+.nav-tabs .nav-item.show .nav-link,
+.nav-tabs .nav-link {
+  font-family: 'Ropa Sans';
+}
+
+a {
+  color: #5d52a2;
+}
+
+a:hover {
+  color: #8374e7;
+}
+
+#bridgebody {
+  padding: 0 1em;
+  height: 320px;
+  
+}
+
+.tab-content .container {
+  box-shadow: none;
+}
+
+.col {
+  margin: 10px 0;
+  
+}
+
+label {
+  font-size: 1.3em;
+  color: black;
+  font-family: 'Ropa Sans';
+  padding: 8px 6px;
+}
+
+span {
+  font-size: 1.3em;
+  color: black;
+  font-family: 'Ropa Sans';
+}
+
+form {
+  font-family: 'Ropa Sans';
+}
+
+.dropdown-menu.show {
+    background-color: #8C89BC;
+    border: none;
+}
+
+.dropdown-item {
+    font-family: 'Ropa Sans';
+    font-size: 1em;
+    padding: 0 15px;
+    color: white;
+}
+
+.form-control {
+    width: 150px;
+    margin-left: 5px;
+    border: 2px solid #bdbdbd;
+}
+
+.btn-primary.disabled,
+.btn-primary:disabled {
+  background-color: #5d52a296;
+  color: white;
+  border: none;
+  cursor: unset;
+  transition: unset;
+}
+
+.btn-primary:disabled:hover {
+  background-color: #5d52a296;
+}
+
+.btn-primary {
+  background-color: #5d52a2;
+  color: white;
+  border: none;
+  font-family: 'Ropa Sans';
+  margin: 0 1em;
+}
+
+.btn-primary:hover {
+  transition: all 0.3s;
+  background-color: #7567d1;
+}
+
+.table {
+  background-color: white;
+}
+
+th {
+  background-color: rgba(101, 94, 165, 0.7);
+  font-size: 1em;
+  font-family: 'Montserrat Bold';
+  letter-spacing: 0.25px;
+}
+
+td {
+  font-size: 14px;
+  font-family: 'Montserrat Regular';
+}
+
+td a {
+  font-size: 12px;
+  font-family: 'Montserrat Regular';
 }
