@@ -71,26 +71,26 @@ const Header = ({
       { headerDisplay}
       </h5>
       <h5 className="text-center">
-        <a onClick={onClick} href="" style={{ fontSize: 12 }}>
+        <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light'}}>
           (connect to {isDepositMode ? 'L2' : 'Layer 1'})
         </a> {" "}
-      { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12 }}>
+      { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
           {`(switch to ${l2Network === "v2" ? 'Arbv3 chain' : 'Arbv2 chain'})`}
         </a>
           }
-             { !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12 }}>
+             { !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
             {networkId === 152709604825713 ? "(connect to Arbv3)": "(connect to Arbv2)"}
         </a>
           }
           </h5>
-
-      <p>
+<div className="address-container">
+      <p className="address">
         Your address:{' '}
         <span id="accountAddress">
           <ExplorerLink hash={ethAddress} type={'address'} />
         </span>
       </p>
-      <p>
+      <p className="arbchain">
         Address of ArbChain:{' '}
         <span id="rollupAddress">
           <ExplorerLink hash={vmId} type={'chain'} />
@@ -114,8 +114,10 @@ const Header = ({
           <span>{erc721Balance.totalArbTokens.length}</span>
         </p>
       )} */}
-      <hr />
+      
+      </div><hr/>
     </div>
+
   )
 }
 

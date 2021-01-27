@@ -4,6 +4,7 @@ export default () => (
   <div
     style={{
       fontStyle: 'italic',
+      fontFamily: 'Montserrat Light',
       fontSize: 12,
       marginTop: 10,
       marginBottom: 10
