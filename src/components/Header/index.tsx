@@ -65,6 +65,8 @@ const Header = ({
 
   return (
     <div className="col-lg-12">
+      <div className="top-thing">  <a href="http://portal.arbitrum.io/" target="_blank">DAPPS</a> . <a href="http://faucet.arbitrum.io/" target="_blank">FAUCET</a></div>
+
       <h1 className="text-center">Arbitrum Token Bridge</h1>
       <h5 className="text-center">
         
