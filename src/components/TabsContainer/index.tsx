@@ -4,6 +4,7 @@ import Tab from 'react-bootstrap/Tab'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
+import Button from 'react-bootstrap/Button'
 import PanelWrapper from './PanelWrapper'
 import Balance from 'components/Balance'
 import ERC721BalanceUi from 'components/Balance/ERC721Balance'
@@ -15,6 +16,8 @@ import {
   ContractStorage,
   BridgeToken
 } from 'token-bridge-sdk'
+import { ConnextModal } from '@connext/vector-modal'
+
 import AssetDropDown from 'components/AssetDropDown'
 import EthL1Actions from 'components/Actions/EthL1Actions'
 import EthL2Actions from 'components/Actions/EthL2Actions'
@@ -42,7 +45,7 @@ type TabProps = {
   networkId: number
 }
 
-type TabName = 'eth' | 'erc20' | 'erc721'
+type TabName = 'eth' | 'erc20' | 'erc721' | 'connext'
 
 const TabsContainer = ({
   ethBalances,
@@ -60,6 +63,7 @@ const TabsContainer = ({
   networkId
 }: TabProps) => {
   const [key, setKey] = useState('eth')
+  const [showModal, setShowModal] = React.useState(false)
   // TODO: clean up / memoize
   const brideTokensArray: BridgeToken[] = Object.values(bridgeTokens)
     .filter((token): token is BridgeToken => !!token)
@@ -180,6 +184,32 @@ const TabsContainer = ({
                   currentERC721Address={currentERC721Address}
                 />
               </PanelWrapper>
+            </Col>
+          </Row>
+        </Container>
+      </Tab>
+      <Tab eventKey="connext" title="Connext">
+        <Container>
+          <Row>
+            <Col>
+              <Button
+                variant="outline-primary"
+                onClick={() => setShowModal(true)}
+              >
+                Deposit
+              </Button>
+              <ConnextModal
+                showModal={showModal}
+                onClose={() => setShowModal(false)}
+                depositChainId={42}
+                withdrawChainId={152709604825713}
+                routerPublicIdentifier="vector7tbbTxQp8ppEQUgPsbGiTrVdapLdU5dH7zTbVuXRf1M4CEBU9Q"
+                depositAssetId={'0xbd69fC70FA1c3AED524Bb4E82Adc5fcCFFcD79Fa'}
+                withdrawAssetId={'0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1'}
+                depositChainProvider="https://api.infura.io/v1/jsonrpc/kovan"
+                withdrawChainProvider="https://kovan2.arbitrum.io/rpc"
+                withdrawalAddress={'0x75e4DD0587663Fce5B2D9aF7fbED3AC54342d3dB'}
+              />
             </Col>
           </Row>
         </Container>
