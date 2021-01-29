@@ -288,6 +288,10 @@ export const useArbTokenBridge = (
    * @description Cached ERC20 addresses
    * @name erc20
    */
+  const defaultTokenList = [
+    "0xf36d7a74996e7def7a6bd52b4c2fe64019dada25", // ARBI
+    "0xE41d965f6e7541139f8D9F331176867FB6972Baf" // ARB
+  ]
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
@@ -1130,9 +1134,8 @@ export const useArbTokenBridge = (
   useEffect(() => {
     if (arbProvider && walletAddress) {
       if (autoLoadCache) {
-        if (ERC20Cache?.length) {
           Promise.all(
-            ERC20Cache.map(address => {
+            defaultTokenList.concat(ERC20Cache).map(address => {
               return addToken(address, TokenType.ERC20).catch(err => {
                 console.warn(`invalid cache entry erc20 ${address}`)
                 console.warn(err)
@@ -1141,7 +1144,6 @@ export const useArbTokenBridge = (
           ).then(values => {
             setERC20Cache(values.filter((val): val is string => !!val))
           })
-        }
 
         if (ERC721Cache?.length) {
           Promise.all(
