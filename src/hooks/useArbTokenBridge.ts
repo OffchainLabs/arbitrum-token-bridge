@@ -1133,9 +1133,10 @@ export const useArbTokenBridge = (
   // TODO replace IIFEs with Promise.allSettled once available
   useEffect(() => {
     if (arbProvider && walletAddress) {
+      const tokensToAdd = [...new Set ([...ERC20Cache, ...defaultTokenList])]
       if (autoLoadCache) {
           Promise.all(
-            defaultTokenList.concat(ERC20Cache).map(address => {
+            tokensToAdd.concat(ERC20Cache).map(address => {
               return addToken(address, TokenType.ERC20).catch(err => {
                 console.warn(`invalid cache entry erc20 ${address}`)
                 console.warn(err)
