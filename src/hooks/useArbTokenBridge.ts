@@ -289,8 +289,8 @@ export const useArbTokenBridge = (
    * @name erc20
    */
   const defaultTokenList = [
-    "0xf36d7a74996e7def7a6bd52b4c2fe64019dada25", // ARBI
-    "0xE41d965f6e7541139f8D9F331176867FB6972Baf" // ARB
+    '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25', // ARBI
+    '0xE41d965f6e7541139f8D9F331176867FB6972Baf' // ARB
   ]
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
@@ -1133,18 +1133,18 @@ export const useArbTokenBridge = (
   // TODO replace IIFEs with Promise.allSettled once available
   useEffect(() => {
     if (arbProvider && walletAddress) {
-      const tokensToAdd = [...new Set ([...ERC20Cache, ...defaultTokenList])]
+      const tokensToAdd = [...new Set([...ERC20Cache, ...defaultTokenList])]
       if (autoLoadCache) {
-          Promise.all(
-            tokensToAdd.concat(ERC20Cache).map(address => {
-              return addToken(address, TokenType.ERC20).catch(err => {
-                console.warn(`invalid cache entry erc20 ${address}`)
-                console.warn(err)
-              })
+        Promise.all(
+          tokensToAdd.concat(ERC20Cache).map(address => {
+            return addToken(address, TokenType.ERC20).catch(err => {
+              console.warn(`invalid cache entry erc20 ${address}`)
+              console.warn(err)
             })
-          ).then(values => {
-            setERC20Cache(values.filter((val): val is string => !!val))
           })
+        ).then(values => {
+          setERC20Cache(values.filter((val): val is string => !!val))
+        })
 
         if (ERC721Cache?.length) {
           Promise.all(
