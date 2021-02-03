@@ -47,7 +47,7 @@ type TabProps = {
   ethAddress: string
 }
 
-type TabName = 'eth' | 'erc20' | 'erc721' | 'connext'
+type TabName = 'eth' | 'erc20' | 'erc721' 
 
 const TabsContainer = ({
   ethBalances,
@@ -209,32 +209,6 @@ const TabsContainer = ({
                   currentERC721Address={currentERC721Address}
                 />
               </PanelWrapper>
-            </Col>
-          </Row>
-        </Container>
-      </Tab>
-      <Tab eventKey="connext" title="Connext">
-        <Container>
-          <Row>
-            <Col>
-              <Button
-                variant="outline-primary"
-                onClick={() => setShowModal(true)}
-              >
-                Deposit
-              </Button>
-              <ConnextModal
-                showModal={showModal}
-                onClose={() => setShowModal(false)}
-                depositChainId={79377087078960}
-                withdrawChainId={42}
-                routerPublicIdentifier="vector7tbbTxQp8ppEQUgPsbGiTrVdapLdU5dH7zTbVuXRf1M4CEBU9Q"
-                depositAssetId={'0x0000000000000000000000000000000000000000'}
-                withdrawAssetId={'0x0000000000000000000000000000000000000000'}
-                withdrawChainProvider="https://kovan.infura.io/v3/69be236133a447618748325072aeb7e3"
-                depositChainProvider="https://kovan3.arbitrum.io/rpc"
-                withdrawalAddress={'0x706F1aD43Cd5C9Df1535bCF5E385A7C683Dc9E21'}
-              />
             </Col>
           </Row>
         </Container>
