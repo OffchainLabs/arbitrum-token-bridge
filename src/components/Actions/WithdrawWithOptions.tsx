@@ -11,7 +11,7 @@ import Tooltip from 'react-bootstrap/Tooltip'
 
 import { ConnextModal } from '@connext/vector-modal'
 import networks from '../App/networks'
-
+import { JsonRpcProvider, Web3Provider } from 'ethers/providers'
 
 const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
@@ -79,7 +79,8 @@ const WithdrawWithOptions = ({
                 withdrawChainProvider={l1RpcUrl}
                 depositChainProvider={networks[+l2NetworkId].url}
                 withdrawalAddress={ethAddress}
-    />
+                injectedProvider={window.ethereum}
+                />
       <Form>
         <FormControl
           aria-label="Small"
