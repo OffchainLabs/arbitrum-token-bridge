@@ -43,6 +43,7 @@ type TabProps = {
   addToken: (a: string, type: TokenType) => Promise<string>
   transactions: Transaction[]
   networkId: number
+  ethAddress: string
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721' | 'connext'
@@ -60,7 +61,8 @@ const TabsContainer = ({
   setCurrentERC20Address,
   setCurrentERC721Address,
   transactions,
-  networkId
+  networkId,
+  ethAddress,
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -104,7 +106,7 @@ const TabsContainer = ({
                 isDepositPanel={false}
                 disabledWithdrawals={disabledWithdrawals}
               >
-                <EthL2Actions balances={ethBalances} eth={eth} />
+                <EthL2Actions balances={ethBalances} eth={eth} ethAddress={ethAddress} />
               </PanelWrapper>
             </Col>
           </Row>
@@ -214,14 +216,14 @@ const TabsContainer = ({
               <ConnextModal
                 showModal={showModal}
                 onClose={() => setShowModal(false)}
-                depositChainId={42}
-                withdrawChainId={79377087078960}
+                depositChainId={79377087078960}
+                withdrawChainId={42}
                 routerPublicIdentifier="vector7tbbTxQp8ppEQUgPsbGiTrVdapLdU5dH7zTbVuXRf1M4CEBU9Q"
                 depositAssetId={'0x0000000000000000000000000000000000000000'}
                 withdrawAssetId={'0x0000000000000000000000000000000000000000'}
-                depositChainProvider="https://kovan.infura.io/v3/69be236133a447618748325072aeb7e3"
-                withdrawChainProvider="https://kovan3.arbitrum.io/rpc"
-                withdrawalAddress={'0x75e4DD0587663Fce5B2D9aF7fbED3AC54342d3dB'}
+                withdrawChainProvider="https://kovan.infura.io/v3/69be236133a447618748325072aeb7e3"
+                depositChainProvider="https://kovan3.arbitrum.io/rpc"
+                withdrawalAddress={'0x706F1aD43Cd5C9Df1535bCF5E385A7C683Dc9E21'}
               />
             </Col>
           </Row>

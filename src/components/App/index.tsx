@@ -133,6 +133,8 @@ const App = ({
             setCurrentERC721Address={setCurrentERC721Address}
             transactions={transactions.transactions}
             networkId={networkId}
+            ethAddress={walletAddress}
+
           />
         </div>
       </div>
