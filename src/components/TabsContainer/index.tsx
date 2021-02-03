@@ -46,7 +46,7 @@ type TabProps = {
   ethAddress: string
 }
 
-type TabName = 'eth' | 'erc20' | 'erc721' 
+type TabName = 'eth' | 'erc20' | 'erc721'
 
 const TabsContainer = ({
   ethBalances,
@@ -62,7 +62,7 @@ const TabsContainer = ({
   setCurrentERC721Address,
   transactions,
   networkId,
-  ethAddress,
+  ethAddress
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -106,7 +106,11 @@ const TabsContainer = ({
                 isDepositPanel={false}
                 disabledWithdrawals={disabledWithdrawals}
               >
-                <EthL2Actions balances={ethBalances} eth={eth} ethAddress={ethAddress} />
+                <EthL2Actions
+                  balances={ethBalances}
+                  eth={eth}
+                  ethAddress={ethAddress}
+                />
               </PanelWrapper>
             </Col>
           </Row>

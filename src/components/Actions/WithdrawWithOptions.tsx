@@ -15,7 +15,7 @@ import { JsonRpcProvider, Web3Provider } from 'ethers/providers'
 
 const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
-// TODO: disable on old testnet chain? 
+// TODO: disable on old testnet chain?
 const l2NetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
 
 type WithdrawWithOptionsProps = {
@@ -25,9 +25,8 @@ type WithdrawWithOptionsProps = {
   disabled?: boolean
   buttonText?: string
   readOnlyValue?: number
-  assetId?: string,
+  assetId?: string
   ethAddress: string
-
 }
 
 const WithdrawWithOptions = ({
@@ -37,7 +36,7 @@ const WithdrawWithOptions = ({
   disabled = false,
   buttonText,
   readOnlyValue,
-  assetId = "0x0000000000000000000000000000000000000000",
+  assetId = '0x0000000000000000000000000000000000000000',
   ethAddress
 }: WithdrawWithOptionsProps) => {
   const [value, setValue] = useCappedNumberInput(
@@ -53,10 +52,9 @@ const WithdrawWithOptions = ({
     },
     [value, onSubmit]
   )
-  const connextSelect = (e:any)=>{
-    e && e.preventDefault();
+  const connextSelect = (e: any) => {
+    e && e.preventDefault()
     setShowModal(true)
-
   }
 
   const connextIsDisabled = disabled || !value
@@ -68,19 +66,19 @@ const WithdrawWithOptions = ({
         setValue(e.target.value, max)
       }}
     >
-    <ConnextModal
-                showModal={showModal}
-                onClose={() => setShowModal(false)}
-                depositChainId={+l2NetworkId}
-                withdrawChainId={+l1NetworkId}
-                routerPublicIdentifier="vector7tbbTxQp8ppEQUgPsbGiTrVdapLdU5dH7zTbVuXRf1M4CEBU9Q"
-                depositAssetId={assetId}
-                withdrawAssetId={assetId}
-                withdrawChainProvider={l1RpcUrl}
-                depositChainProvider={networks[+l2NetworkId].url}
-                withdrawalAddress={ethAddress}
-                injectedProvider={window.ethereum}
-                />
+      <ConnextModal
+        showModal={showModal}
+        onClose={() => setShowModal(false)}
+        depositChainId={+l2NetworkId}
+        withdrawChainId={+l1NetworkId}
+        routerPublicIdentifier="vector7tbbTxQp8ppEQUgPsbGiTrVdapLdU5dH7zTbVuXRf1M4CEBU9Q"
+        depositAssetId={assetId}
+        withdrawAssetId={assetId}
+        withdrawChainProvider={l1RpcUrl}
+        depositChainProvider={networks[+l2NetworkId].url}
+        withdrawalAddress={ethAddress}
+        injectedProvider={window.ethereum}
+      />
       <Form>
         <FormControl
           aria-label="Small"
@@ -97,17 +95,27 @@ const WithdrawWithOptions = ({
         {buttonText || 'submit'}
       </Button> */}
 
-        <Dropdown>
+      <Dropdown>
         <Dropdown.Toggle id="dropdown-basic" className="withdraw-menu">
-            Withdraw
+          Withdraw
         </Dropdown.Toggle>
 
-        <Dropdown.Menu  >
-            <Dropdown.Item onSelect={submitRegular} disabled={disabled || value === 0}>Withdraw (Regular)</Dropdown.Item>
-            <Dropdown.Item onSelect={connextSelect} disabled={connextIsDisabled}> Connext Fast Withdraw</Dropdown.Item>
-            <Dropdown.Item href="https://hop.exchange/" target="_blank">Hop Fast Withdraw</Dropdown.Item>
+        <Dropdown.Menu>
+          <Dropdown.Item
+            onSelect={submitRegular}
+            disabled={disabled || value === 0}
+          >
+            Withdraw (Regular)
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={connextSelect} disabled={connextIsDisabled}>
+            {' '}
+            Connext Fast Withdraw
+          </Dropdown.Item>
+          <Dropdown.Item href="https://hop.exchange/" target="_blank">
+            Hop Fast Withdraw
+          </Dropdown.Item>
         </Dropdown.Menu>
-        </Dropdown>
+      </Dropdown>
     </InputGroup>
   )
 }
