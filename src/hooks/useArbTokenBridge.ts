@@ -1136,13 +1136,15 @@ export const useArbTokenBridge = (
       const tokensToAdd = [...new Set([...ERC20Cache, ...defaultTokenList])]
       if (autoLoadCache) {
         Promise.all(
-          tokensToAdd.concat(ERC20Cache).map(address => {
+          tokensToAdd.map(address => {
             return addToken(address, TokenType.ERC20).catch(err => {
               console.warn(`invalid cache entry erc20 ${address}`)
               console.warn(err)
             })
           })
-        ).then(values => {
+        ).then(_values => {
+          // hot fix remove duplicates in cache for insurance against old bug:
+          const values:(string | void)[] = [...new Set(_values)]
           setERC20Cache(values.filter((val): val is string => !!val))
         })
 
@@ -1168,7 +1170,7 @@ export const useArbTokenBridge = (
       bridgeTokens &&
       window.setInterval(function () {
         updateAllBalances()
-      }, 7500)
+      }, 4000)
     return () => {
       window.clearInterval(intervalID)
     }
@@ -1188,13 +1190,6 @@ export const useArbTokenBridge = (
 
   /* update balances on render */
   // may be better to leave this to the user
-  useEffect(() => {
-    if (arbProvider) {
-      updateAllBalances().catch(e =>
-        console.error('updateAllBalances failed', e)
-      )
-    }
-  })
   return {
     walletAddress,
     bridgeTokens,
