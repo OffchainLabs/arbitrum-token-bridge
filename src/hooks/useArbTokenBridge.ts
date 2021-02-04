@@ -1144,7 +1144,7 @@ export const useArbTokenBridge = (
           })
         ).then(_values => {
           // hot fix remove duplicates in cache for insurance against old bug:
-          const values:(string | void)[] = [...new Set(_values)]
+          const values: (string | void)[] = [...new Set(_values)]
           setERC20Cache(values.filter((val): val is string => !!val))
         })
 
