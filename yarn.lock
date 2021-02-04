@@ -1284,7 +1284,7 @@
     pino "6.7.0"
     pino-pretty "4.3.0"
 
-"@connext/vector-modal@^0.1.46":
+"@connext/vector-modal@^0.1.46-beta.1":
   version "0.1.46-beta.1"
   resolved "https://registry.yarnpkg.com/@connext/vector-modal/-/vector-modal-0.1.46-beta.1.tgz#83525a9e479931cae1c01074002638dccc1c9c16"
   integrity sha512-XzVDSby2e6qQ070qwqaoos5vhBkBiZ8gvqf5tkyP8JVta2tp5+pxm2QEolpUviSE6MD6pthmalHNUq7zg9yzZw==
