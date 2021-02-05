@@ -290,7 +290,7 @@ export const useArbTokenBridge = (
    */
   const defaultTokenList = [
     '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25', // ARBI
-    '0xE41d965f6e7541139f8D9F331176867FB6972Baf' // ARB
+    '0xe41d965f6e7541139f8d9f331176867fb6972baf' // ARB
   ]
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
@@ -504,7 +504,8 @@ export const useArbTokenBridge = (
   }, [ethWallet, updateEthBalances])
 
   const arbTokenCache = useCallback(
-    async (contractAddress: string, tokenType: TokenType) => {
+    async (_contractAddressUpcased: string, tokenType: TokenType) => {
+      const contractAddress =_contractAddressUpcased.toLocaleLowerCase()
       const token = bridgeTokens[contractAddress]
       if (!token) {
         return null
@@ -714,7 +715,9 @@ export const useArbTokenBridge = (
    * @return {Promise} Promise: includes ContractReceipt and ContractTransaction
    */
   const approveToken = useCallback(
-    async (contractAddress: string) => {
+    async (_contractAddressUpcased: string) => {
+      const contractAddress =_contractAddressUpcased.toLocaleLowerCase()
+
       const contract = bridgeTokens[contractAddress]
       if (!contract) {
         throw new Error(`Contract ${contractAddress} not present`)
@@ -779,9 +782,10 @@ export const useArbTokenBridge = (
    */
   const depositToken = useCallback(
     async (
-      contractAddress: string,
+      _contractAddressUpcased: string,
       amountOrTokenId: string
     ): Promise<ContractReceipt | undefined> => {
+      const contractAddress =_contractAddressUpcased.toLocaleLowerCase()
       if (!ethWallet) throw new Error('deposit missing req')
 
       const contract = bridgeTokens[contractAddress]
@@ -841,10 +845,11 @@ export const useArbTokenBridge = (
    */
   const withdrawToken = useCallback(
     async (
-      contractAddress: string,
+      _contractAddressUpcased: string,
       amountOrTokenId: string,
       returnResponse = false
     ): Promise<ContractReceipt | ContractTransaction | undefined> => {
+      const contractAddress =_contractAddressUpcased.toLocaleLowerCase()
       if (!walletAddress) throw new Error('withdraw token no walletAddress')
       if (!arbSigner) throw new Error('withdraw token no arbSigner')
       const contract = bridgeTokens[contractAddress]
@@ -918,10 +923,11 @@ export const useArbTokenBridge = (
    */
   const withdrawLockBoxToken = useCallback(
     async (
-      contractAddress: string,
+      _contractAddressUpcased: string,
       tokenId?: string
     ): Promise<ContractReceipt | undefined> => {
       if (!ethWallet) throw new Error('ethWallet missing req')
+      const contractAddress =_contractAddressUpcased.toLocaleLowerCase()
 
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
@@ -973,7 +979,8 @@ export const useArbTokenBridge = (
   )
 
   const getERC20Info = useCallback(
-    async (contractAddress: string): Promise<ERC20L1 | undefined> => {
+    async (_contractAddressUpcased: string): Promise<ERC20L1 | undefined> => {
+      const contractAddress =_contractAddressUpcased.toLocaleLowerCase()
       if (!ethProvider) return
 
       if (erc20L1Memo[contractAddress]) {
@@ -1015,10 +1022,10 @@ export const useArbTokenBridge = (
    */
 
   const addToken = useCallback(
-    async (contractAddress: string, type: TokenType): Promise<string> => {
+    async (_contractAddressUpcased: string, type: TokenType): Promise<string> => {
       if (!arbProvider || !ethWallet || !_ethSigner || !_arbSigner)
         throw Error('addToken missing req')
-
+      const contractAddress = _contractAddressUpcased.toLocaleLowerCase()
       const isEthContract =
         (await ethProvider.getCode(contractAddress)).length > 2
       if (!isEthContract) {
@@ -1133,7 +1140,7 @@ export const useArbTokenBridge = (
   // TODO replace IIFEs with Promise.allSettled once available
   useEffect(() => {
     if (arbProvider && walletAddress) {
-      const tokensToAdd = [...new Set([...ERC20Cache, ...defaultTokenList])]
+      const tokensToAdd = [...new Set([...ERC20Cache, ...defaultTokenList].map((t)=> t.toLocaleLowerCase()) )]
       if (autoLoadCache) {
         Promise.all(
           tokensToAdd.map(address => {
@@ -1143,8 +1150,8 @@ export const useArbTokenBridge = (
             })
           })
         ).then(_values => {
-          // hot fix remove duplicates in cache for insurance against old bug:
-          const values: (string | void)[] = [...new Set(_values)]
+          // hot fix remove duplicates and insure lowercase in cache for insurance against old bug:
+          const values: (string | void)[] = [...new Set(_values.map((t)=>t && t.toLocaleLowerCase()))]
           setERC20Cache(values.filter((val): val is string => !!val))
         })
 
