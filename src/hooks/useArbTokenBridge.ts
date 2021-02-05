@@ -1206,15 +1206,6 @@ export const useArbTokenBridge = (
       if (!arbProvider || !ethWallet || !_ethSigner || !_arbSigner)
         throw Error('addToken missing req')
       const contractAddress = _contractAddressUpcased.toLocaleLowerCase()
-      const isEthContract =
-        (await ethProvider.getCode(contractAddress)).length > 2
-      if (!isEthContract) {
-        console.warn('contract not deployed')
-        return ''
-      } else if (bridgeTokens[contractAddress]) {
-        console.warn('token already added')
-        return ''
-      }
 
       // TODO error handle
       let newContract: BridgeToken | null
