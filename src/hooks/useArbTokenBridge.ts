@@ -291,7 +291,9 @@ export const useArbTokenBridge = (
    */
   const defaultTokenList = [
     '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25', // ARBI
-    '0xe41d965f6e7541139f8d9f331176867fb6972baf' // ARB
+    '0xe41d965f6e7541139f8d9f331176867fb6972baf', // ARB
+    "0x57Ca11067892510E022D65b0483b31Cd49155389", // ATKN
+    "0xEe83ea3c089C36622EFc6Bf438114b62d5B4C162" // USDC
   ]
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
