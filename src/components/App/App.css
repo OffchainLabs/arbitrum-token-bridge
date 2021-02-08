@@ -147,6 +147,10 @@ a:hover {
   
 }
 
+#bridgeRow{
+  margin-bottom:15px;
+}
+
 .tab-content .container {
   box-shadow: none;
 }

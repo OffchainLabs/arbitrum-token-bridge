@@ -7,6 +7,7 @@ import Col from 'react-bootstrap/Col'
 import PanelWrapper from './PanelWrapper'
 import Balance from 'components/Balance'
 import ERC721BalanceUi from 'components/Balance/ERC721Balance'
+import ExplorerLink from 'components/App/ExplorerLink'
 
 import {
   BridgeBalance,
@@ -99,7 +100,7 @@ const TabsContainer = ({
       </Tab>
       <Tab eventKey="erc20" title="ERC-20">
         <Container>
-          <Row>
+          <Row md={6}>
             <Col>
               <AssetDropDown
                 bridgeTokensArray={erc20BridgeTokens}
@@ -109,6 +110,9 @@ const TabsContainer = ({
                 setCurrentAddress={setCurrentERC20Address}
               />
             </Col>
+          </Row>
+          <Row style={{fontSize: 14}}>
+          {currentERC20Address   ? <Col>Token Address: <ExplorerLink hash={currentERC20Address} type={'address'}/></Col> : null }
           </Row>
           <Row>
             <Col>

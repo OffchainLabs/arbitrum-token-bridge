@@ -120,7 +120,7 @@ const App = ({
         />
         <AlertDialog networkId={networkId} l2Network={l2Network}/>
       </div>
-      <div className="row">
+      <div className="row" id="bridgeRow">
         <div id="bridgebody">
           <TabsContainer
             ethBalances={balances.eth}
