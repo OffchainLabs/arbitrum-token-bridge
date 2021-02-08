@@ -2,7 +2,7 @@ import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
-import { formatEther } from 'ethers/utils'
+import { formatUnits } from 'ethers/utils'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
 // TODO: refactor with EthActions into one component?
@@ -21,8 +21,9 @@ const Actions = ({
   bridgeTokens,
   currentERC20Address
 }: ActionsProps) => {
-  const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
   const currentContract = bridgeTokens[currentERC20Address]
+  const decimals = currentContract && currentContract.decimals || 18
+  const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
   const isDepositMode = useIsDepositMode()
   const l2Only = currentContract && !currentContract.eth
   const symbol = currentContract && currentContract.symbol

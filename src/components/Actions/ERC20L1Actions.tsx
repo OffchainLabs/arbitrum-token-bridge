@@ -2,7 +2,7 @@ import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React, { useMemo } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
-import { formatEther } from 'ethers/utils'
+import { formatUnits } from 'ethers/utils'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
@@ -25,10 +25,12 @@ const Actions = ({
   transactions
 
 }: ActionsProps) => {
-  const ethChainBalance = balances ? +formatEther(balances.balance) : 0
-  const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
-  const lockBoxBalance = balances ? +formatEther(balances.lockBoxBalance) : 0
   const currentContract = bridgeTokens[currentERC20Address]
+  const decimals = currentContract && currentContract.decimals || 18
+
+  const ethChainBalance = balances ? +formatUnits(balances.balance, decimals) : 0
+  const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
+  const lockBoxBalance = balances ? +formatUnits(balances.lockBoxBalance, decimals) : 0
   const isDepositMode = useIsDepositMode()
 
   const pendingTokenBalance = useMemo(()=>{
