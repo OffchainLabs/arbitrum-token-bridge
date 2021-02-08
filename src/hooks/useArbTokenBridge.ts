@@ -563,7 +563,7 @@ export const useArbTokenBridge = (
       if (!contractData) {
         return false
       }
-      if (contractData.eth && contractData.arb) {
+      if (contractData.eth) {
         return true
       }
       return false
@@ -1111,7 +1111,7 @@ export const useArbTokenBridge = (
 
       const balance = erc20Balances[contractAddress]
 
-      if (hasL1Contract(contractAddress)) {
+      if (!hasL1Contract(contractAddress)) {
         throw new Error('Not a withdrawable token')
       }
       // TODO error handle
