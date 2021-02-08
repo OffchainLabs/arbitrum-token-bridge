@@ -143,13 +143,10 @@ a:hover {
 
 #bridgebody {
   padding: 0 1em;
-  height: 320px;
+  min-height: 320px;
   
 }
 
-#bridgeRow{
-  margin-bottom:15px;
-}
 
 .tab-content .container {
   box-shadow: none;
