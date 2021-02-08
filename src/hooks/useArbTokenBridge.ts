@@ -28,7 +28,7 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { ContractTransaction, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { ContractReceipt } from 'ethers/contract'
+import { Contract, ContractReceipt } from 'ethers/contract'
 import {
   ERC20,
   ERC721,
@@ -45,6 +45,7 @@ import { ArbErc721Factory } from 'arb-provider-ethers/dist/lib/abi/ArbErc721Fact
 import deepEquals from 'lodash.isequal'
 import useTransactions from './useTransactions'
 import { Zero } from 'ethers/constants'
+import ERC20ABI from '../ABIs/ERC20.json'
 const MIN_APPROVAL = constants.MaxUint256
 
 /* eslint-disable no-shadow */
@@ -76,14 +77,14 @@ interface BridgedToken {
   name: string
   symbol: string
   allowed: boolean
-  arb: abi.ArbErc20 | abi.ArbErc721 | null
-  eth: ERC20 | ERC721
+  arb: abi.ArbErc20 | abi.ArbErc721 | Contract | null
+  eth: ERC20 | ERC721 | null
 }
 
 interface ERC20BridgeToken extends BridgedToken {
   type: TokenType.ERC20
-  arb: abi.ArbErc20 | null
-  eth: ERC20
+  arb: abi.ArbErc20 | Contract | null
+  eth: ERC20 | null
   decimals: number
 }
 
@@ -553,6 +554,169 @@ export const useArbTokenBridge = (
     },
     [bridgeTokens, _arbSigner, arbProvider]
   )
+
+  const hasL1Contract = useCallback(
+    (contractAddress: string): boolean => {
+      const contractData = bridgeTokens[contractAddress]
+      if (!contractData) {
+        return false
+      }
+      if (contractData.eth && contractData.arb) {
+        return true
+      }
+      return false
+    },
+    [bridgeTokens]
+  )
+
+  const getERC20TokenData = useCallback(
+    async (contractAddress: string): Promise<ERC20BridgeToken | null> => {
+      if (!ethWallet) throw Error('getTokenData: missing required ethWallet')
+
+      const cachedContractData = bridgeTokens[contractAddress]
+      if (
+        cachedContractData !== undefined &&
+        !(cachedContractData.eth && !cachedContractData.arb)
+      ) {
+        // todo: enforce this properly?
+        return cachedContractData as ERC20BridgeToken
+      }
+
+      const inboxAddress = (await ethWallet.globalInbox()).address
+
+      const l1ContractData = await (async () => {
+        const code = await ethProvider.getCode(contractAddress)
+        // check if any contract present
+        if (code.length <= 2) {
+          return null
+        }
+        const ethERC20 = ERC20Factory.connect(
+          contractAddress,
+          _ethSigner || ethProvider
+        )
+        try {
+          const [allowance, tokenName, decimals, symbol] = await Promise.all([
+            ethERC20.allowance(walletAddress, inboxAddress),
+            ethERC20.name(),
+            ethERC20.decimals(),
+            ethERC20.symbol()
+          ])
+          return {
+            tokenContract: ethERC20,
+            tokenData: {
+              allowance,
+              tokenName,
+              decimals,
+              symbol
+            }
+          }
+        } catch (err) {
+          console.warn(`Failed to get token data for ${contractAddress}:`, err)
+          return null
+        }
+      })()
+
+      const l2ContractData = await (async l1ContractData => {
+        const code = await arbProvider.getCode(contractAddress)
+        // check if any contract present
+        if (code.length <= 2) {
+          return null
+        }
+
+        const arbTokenContract:
+          | abi.ArbErc20
+          | abi.ArbErc721 = ArbErc20Factory.connect(
+          contractAddress,
+          _arbSigner || arbProvider
+        )
+        // check that it looks like an ERC20
+        try {
+          await arbTokenContract.balanceOf(walletAddress)
+        } catch (err) {
+          console.warn(
+            `Arb contract at ${contractAddress} doesn't look like an ERC20:`,
+            err
+          )
+          return null
+        }
+
+        if (l1ContractData) {
+          return {
+            tokenContract: arbTokenContract,
+            tokenData: null //token data is included on the L1 side, but token hasn't been bridged yet
+          }
+        }
+        //  if no L1 contract data, attempt to retrieve data from L2
+        try {
+          const arbTokenContract = new Contract(
+            contractAddress,
+            ERC20ABI,
+            arbSigner || arbProvider
+          )
+          const [tokenName, decimals, symbol] = await Promise.all([
+            arbTokenContract.name(),
+            arbTokenContract.decimals(),
+            arbTokenContract.symbol()
+          ])
+          return {
+            tokenContract: arbTokenContract,
+            tokenData: { tokenName: tokenName, decimals, symbol }
+          }
+        } catch (err) {
+          console.warn(
+            `Could not fetch ERC20 token data for Arb contract at ${contractAddress}:`,
+            err
+          )
+          return null
+        }
+      })(l1ContractData)
+
+      if (!l1ContractData && !l2ContractData) {
+        return null
+      }
+
+      if (l1ContractData) {
+        const {
+          allowance,
+          tokenName,
+          decimals,
+          symbol
+        } = l1ContractData.tokenData
+        return {
+          arb: l2ContractData ? l2ContractData.tokenContract : null,
+          eth: l1ContractData.tokenContract,
+          type: TokenType.ERC20,
+          allowed: allowance.gte(MIN_APPROVAL.div(2)),
+          name: tokenName,
+          decimals,
+          symbol
+        }
+      } else if (l2ContractData !== null && l2ContractData.tokenData !== null) {
+        const { tokenName, decimals, symbol } = l2ContractData.tokenData
+        return {
+          arb: l2ContractData.tokenContract,
+          eth: null,
+          type: TokenType.ERC20,
+          allowed: true, // this is ugly, but lets us avoid having to define a new type; there is no "allowance" consideration for an L2 only token
+          name: tokenName,
+          decimals,
+          symbol
+        }
+      }
+
+      return null
+    },
+    [
+      bridgeTokens,
+      ethProvider,
+      _ethSigner,
+      ethWallet,
+      arbProvider,
+      _arbSigner,
+      walletAddress
+    ]
+  )
+
   /* TOKEN METHODS */
 
   // TODO targeted token updates to prevent unneeded iteration
@@ -576,50 +740,55 @@ export const useArbTokenBridge = (
 
       const erc20Updates: typeof erc20Balances = {}
       const erc721Updates: typeof erc721Balances = {}
-
-      for (const contract of filtered) {
-        const arbTokenContract = await arbTokenCache(
-          contract.eth.address,
-          contract.type
-        )
+      for (let contract of filtered) {
         switch (contract.type) {
           case TokenType.ERC20: {
-            const arbBalancePromise: Promise<utils.BigNumber> = arbTokenContract
-              ? arbTokenContract.balanceOf(walletAddress)
-              : new Promise(exec => exec(constants.Zero))
-            const [
-              balance,
-              arbChainBalance,
-              lockBoxBalance,
-              totalArbBalance
-            ] = await Promise.all([
-              contract.eth.balanceOf(walletAddress),
-              arbBalancePromise,
-              ethWallet
-                ? ethWallet.getERC20LockBoxBalance(
+            if (contract.eth && !contract.arb) {
+              // check if arb copy of contract has been deployed
+              contract = (await getERC20TokenData(
+                contract.eth.address
+              )) as BridgeToken
+            }
+
+            const balance = contract.eth
+              ? await contract.eth.balanceOf(walletAddress)
+              : Zero
+            const arbChainBalance = contract.arb
+              ? await contract.arb.balanceOf(walletAddress)
+              : Zero
+            const lockBoxBalance =
+              contract.eth && ethWallet
+                ? await ethWallet.getERC20LockBoxBalance(
                     contract.eth.address,
                     walletAddress
                   )
-                : constants.Zero,
-              ethWallet
-                ? ethWallet.getERC20LockBoxBalance(
+                : Zero
+            // NOTE if it's an L2 only token, this currently will just show as 0
+            const totalArbBalance =
+              contract.eth && ethWallet
+                ? await ethWallet.getERC20LockBoxBalance(
                     contract.eth.address,
                     arbchainAddress
                   )
-                : constants.Zero
-            ])
+                : Zero
+
             const updated = {
               balance,
               arbChainBalance,
               lockBoxBalance,
               totalArbBalance
             }
-
-            erc20Updates[contract.eth.address] = updated
+            const address =
+              contract.eth?.address || (contract.arb?.address as string)
+            erc20Updates[address] = updated
 
             break
           }
           case TokenType.ERC721: {
+            const arbTokenContract = await arbTokenCache(
+              contract.eth.address,
+              contract.type
+            )
             // TODO: remove total arb tokens; overkill
             const ethBalance = await contract.eth.balanceOf(walletAddress)
             const ethTokens: utils.BigNumber[] = []
@@ -722,13 +891,16 @@ export const useArbTokenBridge = (
       if (!contract) {
         throw new Error(`Contract ${contractAddress} not present`)
       }
+      if (!hasL1Contract(contractAddress)) {
+        throw new Error(`Token has no l1 copy`)
+      }
       if (!ethWallet) return
       let tx: ContractTransaction
       const inboxAddress = (await ethWallet.globalInbox()).address
 
       switch (contract.type) {
         case TokenType.ERC20:
-          tx = await contract.eth.approve(inboxAddress, MIN_APPROVAL)
+          tx = await (contract.eth as ERC20).approve(inboxAddress, MIN_APPROVAL)
           break
         case TokenType.ERC721:
           tx = await contract.eth.setApprovalForAll(inboxAddress, true)
@@ -790,7 +962,9 @@ export const useArbTokenBridge = (
 
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
-
+      if (!contract.eth) {
+        throw new Error('Token is not depositable')
+      }
       // TODO fail fast if not approved
 
       let tx: ContractTransaction
@@ -855,10 +1029,11 @@ export const useArbTokenBridge = (
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
 
-      const arbTokenContract = await arbTokenCache(
-        contractAddress,
-        contract.type
-      )
+      if (!hasL1Contract(contractAddress)) {
+        throw new Error('Not a withdrawable Token')
+      }
+
+      const arbTokenContract = contract.arb
       if (!arbTokenContract) {
         throw new Error("Can't withdraw; arb token not present")
       }
@@ -931,14 +1106,21 @@ export const useArbTokenBridge = (
 
       const contract = bridgeTokens[contractAddress]
       if (!contract) throw new Error('contract not present')
+
       const balance = erc20Balances[contractAddress]
 
+      if (hasL1Contract(contractAddress)) {
+        throw new Error('Not a withdrawable token')
+      }
       // TODO error handle
       let tx: ContractTransaction
       switch (contract.type) {
-        case TokenType.ERC20:
-          tx = await ethWallet.withdrawERC20FromLockbox(contract.eth.address)
+        case TokenType.ERC20: {
+          tx = await ethWallet.withdrawERC20FromLockbox(
+            (contract.eth as ERC20).address
+          )
           break
+        }
         case TokenType.ERC721:
           if (!tokenId) {
             throw Error(
@@ -1012,6 +1194,7 @@ export const useArbTokenBridge = (
     },
     [ethProvider]
   )
+
   /** @function
    * @name add
    * @memberof bridge.token
@@ -1020,7 +1203,6 @@ export const useArbTokenBridge = (
    * @param {TokenType} type
    * @return {Promise} Promise: contract address
    */
-
   const addToken = useCallback(
     async (
       _contractAddressUpcased: string,
@@ -1029,50 +1211,32 @@ export const useArbTokenBridge = (
       if (!arbProvider || !ethWallet || !_ethSigner || !_arbSigner)
         throw Error('addToken missing req')
       const contractAddress = _contractAddressUpcased.toLocaleLowerCase()
-      const isEthContract =
-        (await ethProvider.getCode(contractAddress)).length > 2
-      if (!isEthContract) {
-        console.warn('contract not deployed')
-        return ''
-      } else if (bridgeTokens[contractAddress]) {
-        console.warn('token already added')
-        return ''
-      }
 
       // TODO error handle
-      let newContract: BridgeToken
-      const inboxAddress = (await ethWallet.globalInbox()).address
+      let newContract: BridgeToken | null
 
-      const arbContract = await arbTokenCache(contractAddress, type)
       switch (type) {
         case TokenType.ERC20: {
-          const ethERC20 = ERC20Factory.connect(
-            contractAddress,
-            _ethSigner || ethProvider
-          )
-          const [allowance, tokenName, decimals, symbol] = await Promise.all([
-            ethERC20.allowance(walletAddress, inboxAddress),
-            ethERC20.name(),
-            ethERC20.decimals(),
-            ethERC20.symbol()
-          ])
+          newContract = await getERC20TokenData(contractAddress)
 
-          newContract = {
-            arb: arbContract as abi.ArbErc20 | null,
-            eth: ethERC20,
-            type,
-            allowed: allowance.gte(MIN_APPROVAL.div(2)),
-            name: tokenName,
-            decimals,
-            symbol
-          }
-
-          if (!ERC20Cache?.includes(contractAddress)) {
+          if (newContract && !ERC20Cache?.includes(contractAddress)) {
             setERC20Cache([...ERC20Cache, contractAddress])
           }
           break
         }
         case TokenType.ERC721: {
+          if (bridgeTokens[contractAddress]) {
+            console.info('Token already added:', contractAddress)
+            return ''
+          }
+          const isEthContract =
+            (await ethProvider.getCode(contractAddress)).length > 2
+          if (!isEthContract) {
+            console.warn('contract not deployed')
+            return ''
+          }
+          const arbContract = await arbTokenCache(contractAddress, type)
+          const inboxAddress = (await ethWallet.globalInbox()).address
           const ethERC721 = ERC721Factory.connect(contractAddress, _ethSigner)
 
           const [allowed, tokenName, symbol] = await Promise.all([
@@ -1097,13 +1261,15 @@ export const useArbTokenBridge = (
         default:
           assertNever(type, 'addToken exhaustive check failed')
       }
-
-      setBridgeTokens(contracts => {
-        return {
-          ...contracts,
-          [contractAddress]: newContract
-        }
-      })
+      if (newContract !== null) {
+        const _newContract = newContract
+        setBridgeTokens(contracts => {
+          return {
+            ...contracts,
+            [contractAddress]: _newContract
+          }
+        })
+      }
 
       // we await here to ensure initial balance entry is set
       await updateTokenBalances(type)
