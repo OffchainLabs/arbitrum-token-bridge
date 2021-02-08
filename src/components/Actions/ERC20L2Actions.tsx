@@ -24,19 +24,21 @@ const Actions = ({
   const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
   const currentContract = bridgeTokens[currentERC20Address]
   const isDepositMode = useIsDepositMode()
+  const l2Only = currentContract && !currentContract.eth
+  const symbol = currentContract && currentContract.symbol
 
   return (
     <div>
       <label htmlFor="basic-url">Token on L2: {arbChainBalance}</label>
-
       <NumberInputForm
         max={arbChainBalance}
-        text={'Withdraw Token'}
+        text={l2Only ? "-----" :`Withdraw Token`}
         onSubmit={value => {
           eth.withdraw(currentERC20Address, value)
         }}
-        disabled={isDepositMode || arbChainBalance === 0}
+        disabled={isDepositMode || arbChainBalance === 0 || l2Only}
         buttonText="withdraw"
+        buttonHoverText={l2Only ? `${symbol || 'Token'} is an Arbitrum-only token with no L1 contract, and thus cannot be withdrawn` : ""}
       />
       <WithdrawInfo />
     </div>

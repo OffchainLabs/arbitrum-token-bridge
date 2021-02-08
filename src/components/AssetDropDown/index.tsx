@@ -34,7 +34,7 @@ const AssetDropDown = ({
     } else if (bridgeTokensArray.length > 0) {
       return 'select/add token'
     } else {
-      return 'add token'
+      return 'Add Token'
     }
   }, [bridgeTokensArray, currentToken])
   return (
@@ -48,7 +48,9 @@ const AssetDropDown = ({
         <Dropdown.Item
           key={i}
           onClick={() => {
-            setCurrentAddress(bridgeToken!.eth.address)
+            setCurrentAddress(
+              bridgeToken!.eth?.address || bridgeToken!.arb?.address
+            )
           }}
         >
           {bridgeToken.symbol}

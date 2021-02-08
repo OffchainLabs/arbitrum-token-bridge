@@ -3,6 +3,7 @@ import useCappedNumberInput from 'hooks/useCappedNumberInput'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
+import Tooltip from '@material-ui/core/Tooltip';
 
 import Form from 'react-bootstrap/Form'
 
@@ -13,6 +14,7 @@ type NumberInputFormProps = {
   disabled?: boolean
   buttonText?: string
   readOnlyValue?: number
+  buttonHoverText?: string
 }
 
 const NumberInputForm = ({
@@ -21,7 +23,8 @@ const NumberInputForm = ({
   onSubmit,
   disabled = false,
   buttonText,
-  readOnlyValue
+  readOnlyValue,
+  buttonHoverText=""
 }: NumberInputFormProps) => {
   const [value, setValue] = useCappedNumberInput(
     readOnlyValue ? readOnlyValue : 0
@@ -56,9 +59,14 @@ const NumberInputForm = ({
           readOnly={typeof readOnlyValue === 'number'}
         />
       </Form>
-      <Button disabled={disabled} type="submit" onClick={submit}>
-        {buttonText || 'submit'}
-      </Button>
+      <Tooltip   title={buttonHoverText}> 
+      <span>
+        <Button disabled={disabled} type="submit" onClick={submit}>
+          {buttonText || 'submit'}
+        </Button>
+        </span>
+
+      </Tooltip>
     </InputGroup>
   )
 }

@@ -75,7 +75,10 @@ const App = ({
       const firstERC20 = Object.values(bridgeTokens).find(
         token => token && token.type === TokenType.ERC20
       )
-      firstERC20 && setCurrentERC20Address(firstERC20.eth.address)
+      firstERC20 &&
+        setCurrentERC20Address(
+          firstERC20.eth?.address || firstERC20.arb?.address
+        )
     }
 
     if (!currentERC721Address || !bridgeTokens[currentERC721Address]) {
