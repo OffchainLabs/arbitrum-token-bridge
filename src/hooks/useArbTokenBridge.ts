@@ -740,7 +740,6 @@ export const useArbTokenBridge = (
 
       const erc20Updates: typeof erc20Balances = {}
       const erc721Updates: typeof erc721Balances = {}
-      // trigger update?
       for (let contract of filtered) {
         switch (contract.type) {
           case TokenType.ERC20: {
