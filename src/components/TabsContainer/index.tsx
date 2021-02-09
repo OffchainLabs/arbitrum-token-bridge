@@ -64,7 +64,15 @@ const TabsContainer = ({
   // TODO: clean up / memoize
   const brideTokensArray: BridgeToken[] = Object.values(bridgeTokens)
     .filter((token): token is BridgeToken => !!token)
-    .sort((a: BridgeToken, b: BridgeToken) => (a.symbol > b.symbol ? 1 : -1))
+    .sort((a: BridgeToken, b: BridgeToken) => {
+      if (a.symbol === b.symbol){
+        const Aaddress = a.eth?.addresss || a.arb?.aaddresss
+        const Baddress = b.eth?.addresss || b.arb?.aaddresss
+        return Aaddress > Baddress ? 1: -1
+      }
+
+      return a.symbol > b.symbol ? 1 : -1
+    })
     const erc20BridgeTokens = brideTokensArray.filter(
     token => token.type === TokenType.ERC20
   )
