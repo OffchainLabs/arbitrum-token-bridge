@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import useCappedNumberInput from 'hooks/useCappedNumberInput'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
@@ -17,6 +17,12 @@ const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 // TODO: disable on old testnet chain?
 const l2NetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
+
+const supportedConnextAssets = new Set([
+  "0x0000000000000000000000000000000000000000",
+  "0xe41d965f6e7541139f8d9f331176867fb6972baf",
+  "0xf36d7a74996e7def7a6bd52b4c2fe64019dada25"
+])
 
 type WithdrawWithOptionsProps = {
   max: number
@@ -57,7 +63,10 @@ const WithdrawWithOptions = ({
     setShowModal(true)
   }
 
-  const connextIsDisabled = disabled || !value
+  const connextIsDisabled = useMemo(()=>{
+    return disabled || !value || !supportedConnextAssets.has(assetId)
+  }, [disabled, value, assetId]) 
+
   return (
     <InputGroup
       size="sm"
@@ -91,10 +100,6 @@ const WithdrawWithOptions = ({
           readOnly={typeof readOnlyValue === 'number'}
         />
       </Form>
-      {/* <Button disabled={disabled} type="submit" onClick={submit}>
-        {buttonText || 'submit'}
-      </Button> */}
-
       <Dropdown>
         <Dropdown.Toggle id="dropdown-basic" className="withdraw-menu">
           Withdraw

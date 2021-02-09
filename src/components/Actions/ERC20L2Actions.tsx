@@ -5,7 +5,8 @@ import { BridgeBalance } from 'token-bridge-sdk'
 import { formatUnits } from 'ethers/utils'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
-// TODO: refactor with EthActions into one component?
+import WithdrawWithOptions from './WithdrawWithOptions'
+
 import { useIsDepositMode } from 'components/App/ModeContext'
 import WithdrawInfo from './WithdrawInfo'
 type ActionsProps = {
@@ -13,13 +14,15 @@ type ActionsProps = {
   eth: any
   bridgeTokens: any
   currentERC20Address: string
+  ethAddress: string
 }
 
 const Actions = ({
   balances,
   eth,
   bridgeTokens,
-  currentERC20Address
+  currentERC20Address,
+  ethAddress
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
   const decimals = currentContract && currentContract.decimals || 18
@@ -31,17 +34,19 @@ const Actions = ({
   return (
     <div>
       <label htmlFor="basic-url">Token on L2: {arbChainBalance}</label>
-      <NumberInputForm
+      <WithdrawWithOptions
         max={arbChainBalance}
-        text={l2Only ? "-----" :`Withdraw Token`}
+        text={'Withdraw Token'}
         onSubmit={value => {
           eth.withdraw(currentERC20Address, value)
         }}
-        disabled={isDepositMode || arbChainBalance === 0 || l2Only}
-        buttonText="withdraw"
-        buttonHoverText={l2Only ? `${symbol || 'Token'} is an Arbitrum-only token with no L1 contract, and thus cannot be withdrawn` : ""}
-      />
-      <WithdrawInfo />
+        disabled={arbChainBalance === 0 || isDepositMode || l2Only}
+        buttonText={'withdraw'}
+        ethAddress={ethAddress}
+        assetId={currentERC20Address || undefined}
+        />
+
+
     </div>
   )
 }

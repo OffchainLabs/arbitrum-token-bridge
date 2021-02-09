@@ -161,6 +161,7 @@ const TabsContainer = ({
                   eth={token}
                   bridgeTokens={bridgeTokens}
                   currentERC20Address={currentERC20Address}
+                  ethAddress={ethAddress}
                 />
               </PanelWrapper>
             </Col>
