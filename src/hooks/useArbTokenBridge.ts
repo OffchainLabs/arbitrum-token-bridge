@@ -292,8 +292,8 @@ export const useArbTokenBridge = (
   const defaultTokenList = [
     '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25', // ARBI
     '0xe41d965f6e7541139f8d9f331176867fb6972baf', // ARB
-    "0x57Ca11067892510E022D65b0483b31Cd49155389", // ATKN
-    "0xEe83ea3c089C36622EFc6Bf438114b62d5B4C162" // USDC
+    '0x57Ca11067892510E022D65b0483b31Cd49155389', // ATKN
+    '0xEe83ea3c089C36622EFc6Bf438114b62d5B4C162' // USDC
   ]
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
@@ -596,25 +596,48 @@ export const useArbTokenBridge = (
           contractAddress,
           _ethSigner || ethProvider
         )
+        let allowance: ethers.utils.BigNumber
+        let decimals: number
+        let symbol: string
+        let tokenName: string
+
         try {
-          const [allowance, tokenName, decimals, symbol] = await Promise.all([
-            ethERC20.allowance(walletAddress, inboxAddress),
-            ethERC20.name(),
-            ethERC20.decimals(),
-            ethERC20.symbol()
-          ])
-          return {
-            tokenContract: ethERC20,
-            tokenData: {
-              allowance,
-              tokenName,
-              decimals,
-              symbol
-            }
-          }
-        } catch (err) {
-          console.warn(`Failed to get token data for ${contractAddress}:`, err)
+          allowance = await ethERC20.allowance(walletAddress, inboxAddress)
+        } catch (error) {
+          console.warn(
+            'Could not get allowance for L1 address; definitely not an ERC20',
+            error
+          )
           return null
+        }
+        try {
+          tokenName = await ethERC20.name()
+        } catch (err) {
+          console.info('Token name not set, falling back to default')
+          tokenName = 'Nameless Coin'
+        }
+
+        try {
+          decimals = await ethERC20.decimals()
+        } catch (err) {
+          console.info('Decimals name not set, falling back to default', err)
+          decimals = 18
+        }
+
+        try {
+          symbol = await ethERC20.symbol()
+        } catch (err) {
+          symbol = 'NOSYM'
+        }
+
+        return {
+          tokenContract: ethERC20,
+          tokenData: {
+            allowance,
+            tokenName,
+            decimals,
+            symbol
+          }
         }
       })()
 
@@ -1372,11 +1395,33 @@ export const useArbTokenBridge = (
     }
   }, [arbProvider, walletAddress, walletIndex])
 
-  /* update balances on render */
-  // may be better to leave this to the user
+  const bridgeTokensDeduplicatd = useMemo(() => {
+    const symbolsSet = new Set()
+    const newBridgeTokens = { ...bridgeTokens }
+
+    const addresses = Object.keys(bridgeTokens).sort()
+    for (const address of addresses) {
+      const token = bridgeTokens[address]
+      if (!token) continue
+
+      let { symbol } = token
+      if (symbolsSet.has(symbol)) {
+        let index = 2
+        while (symbolsSet.has(`${symbol} (${index})`)) {
+          index++
+        }
+        symbol = `${symbol} (${index})`
+        token.symbol = symbol
+      }
+
+      symbolsSet.add(symbol)
+      newBridgeTokens[address] = token
+    }
+    return newBridgeTokens
+  }, [bridgeTokens])
   return {
     walletAddress,
-    bridgeTokens,
+    bridgeTokens: bridgeTokensDeduplicatd,
     balances: {
       eth: ethBalances,
       erc20: erc20Balances,
