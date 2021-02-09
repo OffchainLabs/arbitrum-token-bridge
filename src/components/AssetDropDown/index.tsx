@@ -32,7 +32,7 @@ const AssetDropDown = ({
     if (currentToken) {
       return currentToken.symbol
     } else if (bridgeTokensArray.length > 0) {
-      return 'select/add token'
+      return 'Add / Select Token'
     } else {
       return 'Add Token'
     }
