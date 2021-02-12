@@ -48,7 +48,6 @@ const WithdrawWithOptions = ({
   const [value, setValue] = useCappedNumberInput(
     readOnlyValue ? readOnlyValue : 0
   )
-
   const [showModal, setShowModal] = useState(false)
   const submitRegular = useCallback(
     (e: any) => {
@@ -87,6 +86,7 @@ const WithdrawWithOptions = ({
         depositChainProvider={networks[+l2NetworkId].url}
         withdrawalAddress={ethAddress}
         injectedProvider={window.ethereum}
+        transferAmount={value.toString()}
       />
       <Form>
         <FormControl
