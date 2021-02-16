@@ -76,14 +76,14 @@ const Header = ({
         <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light'}}>
           (connect to {isDepositMode ? 'L2' : 'Layer 1'})
         </a> {" "}
-      { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
+      {/* { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
           {`(switch to ${l2Network === "v2" ? 'Arbv3 chain' : 'Arbv2 chain'})`}
         </a>
-          }
-             { !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
+          } */}
+             {/* !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
             {networkId === 152709604825713 ? "(connect to Arbv3)": "(connect to Arbv2)"}
         </a>
-          }
+        */}
           </h5>
 <div className="address-container">
       <p className="address">

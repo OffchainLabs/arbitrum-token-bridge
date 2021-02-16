@@ -82,14 +82,16 @@ export default () => {
               />{' '} with chain ID    <CopyLink
               url={arbV3Testnet.chainID.toString()}
               msg="Arbv3 chain ID copied to clipboard"
-            /> for Arbv3 (you probably want this one!) or {" "}
+            /> for Arbv3 
+            
+            {/* (you probably want this one!) or {" "}
                 <CopyLink
                 url={arbV2Testnet.url}
                 msg="Arbv2 Aggregator url copied to clipboard"
               /> with chain ID <CopyLink
               url={arbV2Testnet.chainID.toString()}
               msg="Arbv2 chainID copied to clipboard"
-            />  for Arbv2 (old testnet).
+            />  for Arbv2 (old testnet). */}
 
             </div>
           </div>
