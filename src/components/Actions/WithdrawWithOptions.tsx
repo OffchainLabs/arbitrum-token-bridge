@@ -12,7 +12,7 @@ import Tooltip from 'react-bootstrap/Tooltip'
 import { ConnextModal } from '@connext/vector-modal'
 import networks from '../App/networks'
 import { JsonRpcProvider, Web3Provider } from 'ethers/providers'
-
+import { parseEther, formatEther } from 'ethers/utils'
 const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 // TODO: disable on old testnet chain?
@@ -65,7 +65,7 @@ const WithdrawWithOptions = ({
   const connextIsDisabled = useMemo(()=>{
     return disabled || !value || !supportedConnextAssets.has(assetId)
   }, [disabled, value, assetId]) 
-
+  const transferAmmount = parseEther(value.toString() || "0").toString()  
   return (
     <InputGroup
       size="sm"
@@ -86,7 +86,7 @@ const WithdrawWithOptions = ({
         depositChainProvider={networks[+l2NetworkId].url}
         withdrawalAddress={ethAddress}
         injectedProvider={window.ethereum}
-        transferAmount={value.toString()}
+        transferAmount={ transferAmmount }
       />
       <Form>
         <FormControl
