@@ -13,6 +13,9 @@ import { ConnextModal } from '@connext/vector-modal'
 import networks from '../App/networks'
 import { JsonRpcProvider, Web3Provider } from 'ethers/providers'
 import { parseEther, formatEther } from 'ethers/utils'
+import { connextTxn } from 'util/index'
+import { AssetType } from 'token-bridge-sdk'
+
 const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 // TODO: disable on old testnet chain?
@@ -33,6 +36,8 @@ type WithdrawWithOptionsProps = {
   readOnlyValue?: number
   assetId?: string
   ethAddress: string
+  handleConnextTxn: connextTxn
+  tokenSymbol?: string
 }
 
 const WithdrawWithOptions = ({
@@ -43,7 +48,9 @@ const WithdrawWithOptions = ({
   buttonText,
   readOnlyValue,
   assetId = '0x0000000000000000000000000000000000000000',
-  ethAddress
+  ethAddress,
+  handleConnextTxn,
+  tokenSymbol=""
 }: WithdrawWithOptionsProps) => {
   const [value, setValue] = useCappedNumberInput(
     readOnlyValue ? readOnlyValue : 0
@@ -66,6 +73,8 @@ const WithdrawWithOptions = ({
     return disabled || !value || !supportedConnextAssets.has(assetId)
   }, [disabled, value, assetId]) 
   const transferAmmount = parseEther(value.toString() || "0").toString()  
+
+  const isEth = assetId === "0x0000000000000000000000000000000000000000"
   return (
     <InputGroup
       size="sm"
@@ -87,6 +96,30 @@ const WithdrawWithOptions = ({
         withdrawalAddress={ethAddress}
         injectedProvider={window.ethereum}
         transferAmount={ transferAmmount }
+        onDepositTxCreated={(txHash:string)=>{
+          handleConnextTxn({
+            value: value.toString(),
+            txID: txHash,
+            assetName: isEth ? 'ETH' : tokenSymbol,
+            assetType:  isEth ? AssetType.ETH : AssetType.ERC20,
+            sender: ethAddress,
+            type: 'connext-deposit'
+          })
+          
+        }
+      }
+        onWithdrawalTxCreated={(txHash:string)=>{
+          handleConnextTxn({
+            value: value.toString(),
+            txID: txHash,
+            assetName:  isEth ? 'ETH' : tokenSymbol,
+            assetType:  isEth ? AssetType.ETH : AssetType.ERC20,
+            sender: ethAddress,
+            type: 'connext-withdraw'
+          })
+
+          }
+      }
       />
       <Form>
         <FormControl

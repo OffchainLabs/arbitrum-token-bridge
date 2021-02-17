@@ -32,7 +32,7 @@ const TransactionHistory = ({
 
   // TODO: maybe move this to the sdk?
   const getTransactionReceipt = useCallback( (tx: Transaction)=>{
-    const provider = tx.type === 'withdraw' ? arbProvider : ethProvider;
+    const provider = ['withdraw', 'connext-deposit'].includes(tx.type) ? arbProvider : ethProvider;
     return provider.getTransactionReceipt(tx.txID)
 
   }, [arbProvider, ethProvider])
@@ -150,7 +150,7 @@ const TransactionHistory = ({
         {usersTransactions.length > 0 ? (
           usersTransactions.map(txn => (
             <tr style={getRowStyle(txn.status)} key={txn.txID}>
-              <td><ExplorerLink hash={txn.txID} type={txn.type !== 'withdraw' ? "l1-tx" : "tx"}/></td>
+              <td><ExplorerLink hash={txn.txID} type={!['withdraw', 'connext-deposit'].includes(txn.type) ? "l1-tx" : "tx"}/></td>
               <td>{txn.type}</td>
               <td>
                 {' '}

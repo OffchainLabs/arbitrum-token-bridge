@@ -9,12 +9,15 @@ import WithdrawWithOptions from './WithdrawWithOptions'
 
 import { useIsDepositMode } from 'components/App/ModeContext'
 import WithdrawInfo from './WithdrawInfo'
+import { connextTxn } from 'util/index'
+
 type ActionsProps = {
   balances: BridgeBalance | undefined
   eth: any
   bridgeTokens: any
   currentERC20Address: string
   ethAddress: string
+  handleConnextTxn: connextTxn
 }
 
 const Actions = ({
@@ -22,14 +25,15 @@ const Actions = ({
   eth,
   bridgeTokens,
   currentERC20Address,
-  ethAddress
+  ethAddress,
+  handleConnextTxn
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
   const decimals = currentContract && currentContract.decimals || 18
   const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
   const isDepositMode = useIsDepositMode()
   const l2Only = currentContract && !currentContract.eth
-  const symbol = currentContract && currentContract.symbol
+  const tokenSymbol = currentContract && currentContract.symbol
 
   return (
     <div>
@@ -44,6 +48,8 @@ const Actions = ({
         buttonText={'withdraw'}
         ethAddress={ethAddress}
         assetId={currentERC20Address || undefined}
+        handleConnextTxn={handleConnextTxn}
+        tokenSymbol={tokenSymbol}
         />
 
 

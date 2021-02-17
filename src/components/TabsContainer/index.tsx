@@ -9,6 +9,7 @@ import PanelWrapper from './PanelWrapper'
 import Balance from 'components/Balance'
 import ERC721BalanceUi from 'components/Balance/ERC721Balance'
 import ExplorerLink from 'components/App/ExplorerLink'
+import { connextTxn } from 'util/index'
 
 import {
   BridgeBalance,
@@ -45,6 +46,7 @@ type TabProps = {
   transactions: Transaction[]
   networkId: number
   ethAddress: string
+  handleConnextTxn: connextTxn
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -63,7 +65,8 @@ const TabsContainer = ({
   setCurrentERC721Address,
   transactions,
   networkId,
-  ethAddress
+  ethAddress,
+  handleConnextTxn
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -117,6 +120,7 @@ const TabsContainer = ({
                   balances={ethBalances}
                   eth={eth}
                   ethAddress={ethAddress}
+                  handleConnextTxn={handleConnextTxn}
                 />
               </PanelWrapper>
             </Col>
@@ -162,6 +166,7 @@ const TabsContainer = ({
                   bridgeTokens={bridgeTokens}
                   currentERC20Address={currentERC20Address}
                   ethAddress={ethAddress}
+                  handleConnextTxn={handleConnextTxn}
                 />
               </PanelWrapper>
             </Col>

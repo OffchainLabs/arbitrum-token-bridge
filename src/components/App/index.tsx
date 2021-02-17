@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import styles from './styles.module.scss'
 import { statement } from '@babel/template'
 import { getInjectedWeb3 } from 'util/web3'
@@ -8,7 +8,9 @@ import {
   useArbTokenBridge,
   TokenType,
   ContractStorage,
-  BridgeToken
+  BridgeToken,
+  NewTransaction,
+  AssetType
 } from 'token-bridge-sdk'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
@@ -16,7 +18,7 @@ import { useLocalStorage } from '@rehooks/local-storage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
-import { BridgeConfig } from 'util/index'
+import { BridgeConfig, connextTxn } from 'util/index'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import AlertDialog from './Dialogue'
 
@@ -102,6 +104,32 @@ const App = ({
     }
   })()
 
+
+  const { addTransaction, updateTransactionStatus } = transactions
+  interface ConnextTxnParams{
+    value: string,
+    txID: string,
+    assetName: string,
+    assetType: AssetType,
+    sender: string,
+    type: 'connext-deposit' | 'connext-withdraw'
+
+  }
+
+  const handleConnextTxn: connextTxn = useCallback(
+    async (newTxnData: ConnextTxnParams, )=>{
+    addTransaction({
+      ...newTxnData,
+      status: 'pending',
+    })
+    const provider = newTxnData.type ==='connext-deposit' ?  arbProvider : ethProvider
+    
+    const receipt = await provider.waitForTransaction(newTxnData.txID)
+    updateTransactionStatus(receipt)
+
+
+  }, [arbProvider, addTransaction, updateTransactionStatus, ethProvider])
+
   return (
     <div className="container">
       <div className="row">
@@ -137,6 +165,7 @@ const App = ({
             transactions={transactions.transactions}
             networkId={networkId}
             ethAddress={walletAddress}
+            handleConnextTxn={handleConnextTxn}
 
           />
         </div>
