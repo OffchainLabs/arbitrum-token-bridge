@@ -242,3 +242,8 @@ td a {
 .top-thing{
   margin-top: 5px;
 }
+
+.withdraw-dropdown-icon{
+  width: 22px;
+  height: auto;
+}

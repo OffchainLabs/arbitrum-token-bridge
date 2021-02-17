@@ -15,6 +15,9 @@ import { JsonRpcProvider, Web3Provider } from 'ethers/providers'
 import { parseEther, formatEther } from 'ethers/utils'
 import { connextTxn } from 'util/index'
 import { AssetType } from 'token-bridge-sdk'
+import ConnextIcon from 'media/images/connext.png'
+import ArbIcon from 'media/images/arb.png'
+import HopIcon from 'media/images/hop.png'
 
 const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
@@ -59,19 +62,27 @@ const WithdrawWithOptions = ({
   const submitRegular = useCallback(
     (e: any) => {
       e && e.preventDefault()
+      if (!value){
+        alert('Input non-zero value to withdraw')
+        return
+      }
       onSubmit(value.toString())
       setValue(0, max)
     },
     [value, onSubmit]
   )
-  const connextSelect = (e: any) => {
+  const connextSelect = useCallback((e: any) =>  {
     e && e.preventDefault()
+    if (!value){
+      alert('Input non-zero value to withdraw')
+      return
+    }
     setShowModal(true)
-  }
+  }, [value])
 
   const connextIsDisabled = useMemo(()=>{
-    return disabled || !value || !supportedConnextAssets.has(assetId)
-  }, [disabled, value, assetId]) 
+    return disabled || !supportedConnextAssets.has(assetId)
+  }, [disabled, assetId]) 
   const transferAmmount = parseEther(value.toString() || "0").toString()  
 
   const isEth = assetId === "0x0000000000000000000000000000000000000000"
@@ -141,16 +152,16 @@ const WithdrawWithOptions = ({
         <Dropdown.Menu>
           <Dropdown.Item
             onSelect={submitRegular}
-            disabled={disabled || value === 0}
+            disabled={disabled}
           >
-            Withdraw (Regular)
+             <img className='withdraw-dropdown-icon' src={ArbIcon}/> Bridge (Slow)
           </Dropdown.Item>
           <Dropdown.Item onSelect={connextSelect} disabled={connextIsDisabled}>
             {' '}
-            Connext Fast Withdraw
+            <img className='withdraw-dropdown-icon' src={ConnextIcon}/> Connext (Fast)  
           </Dropdown.Item>
           <Dropdown.Item href="https://hop.exchange/" target="_blank">
-            Hop Fast Withdraw
+          <img className='withdraw-dropdown-icon' src={HopIcon}/> Hop (Fast, DAI Only)
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
