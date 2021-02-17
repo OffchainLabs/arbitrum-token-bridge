@@ -19,7 +19,7 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
  */
 
 type TransactionBase = {
-  type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'
+  type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'| 'connext-deposit' | 'connext-withdraw'
   status: TxnStatus
   value: string | null
   txID?: string
@@ -33,7 +33,7 @@ export interface Transaction extends TransactionBase {
   txID: string
 }
 
-interface NewTransaction extends TransactionBase {
+export interface NewTransaction extends TransactionBase {
   status: 'pending'
 }
 

@@ -1453,7 +1453,8 @@ export const useArbTokenBridge = (
       transactions,
       clearPendingTransactions,
       setTransactionConfirmed,
-      updateTransactionStatus
+      updateTransactionStatus,
+      addTransaction
     }
   }
 }
