@@ -10,7 +10,6 @@ import WithdrawWithOptions from './WithdrawWithOptions'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import WithdrawInfo from './WithdrawInfo'
 import { connextTxn } from 'util/index'
-
 type ActionsProps = {
   balances: BridgeBalance | undefined
   eth: any
@@ -38,7 +37,10 @@ const Actions = ({
   return (
     <div>
       <label htmlFor="basic-url">Token on L2: {arbChainBalance}</label>
-      <WithdrawWithOptions
+      { 
+      l2Only ? 
+      <div><i>{`${tokenSymbol || "Token"} is an Arbitrum-only token; it can't be withdrawn to L1.` }</i></div>
+      : <WithdrawWithOptions
         max={arbChainBalance}
         text={'Withdraw Token'}
         onSubmit={value => {
@@ -51,7 +53,7 @@ const Actions = ({
         handleConnextTxn={handleConnextTxn}
         tokenSymbol={tokenSymbol}
         />
-
+      }
 
     </div>
   )
