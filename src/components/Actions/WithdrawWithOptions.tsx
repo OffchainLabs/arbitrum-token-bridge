@@ -7,7 +7,9 @@ import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 
 import Dropdown from 'react-bootstrap/Dropdown'
-import Tooltip from 'react-bootstrap/Tooltip'
+import Tooltip from '@material-ui/core/Tooltip';
+
+import { withStyles, makeStyles } from '@material-ui/core/styles';
 
 import { ConnextModal } from '@connext/vector-modal'
 import networks from '../App/networks'
@@ -23,6 +25,13 @@ const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 // TODO: disable on old testnet chain?
 const l2NetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
+
+const useStylesBootstrap = makeStyles((theme) => ({
+  tooltip: {
+    fontSize: "14px"
+  },
+}));
+
 
 const supportedConnextAssets = new Set([
   "0x0000000000000000000000000000000000000000",
@@ -41,6 +50,7 @@ type WithdrawWithOptionsProps = {
   ethAddress: string
   handleConnextTxn: connextTxn
   tokenSymbol?: string
+  id: number
 }
 
 const WithdrawWithOptions = ({
@@ -53,7 +63,8 @@ const WithdrawWithOptions = ({
   assetId = '0x0000000000000000000000000000000000000000',
   ethAddress,
   handleConnextTxn,
-  tokenSymbol=""
+  tokenSymbol="",
+  id
 }: WithdrawWithOptionsProps) => {
   const [value, setValue] = useCappedNumberInput(
     readOnlyValue ? readOnlyValue : 0
@@ -84,7 +95,7 @@ const WithdrawWithOptions = ({
     return disabled || !supportedConnextAssets.has(assetId)
   }, [disabled, assetId]) 
   const transferAmmount = parseEther(value.toString() || "0").toString()  
-
+  const classes = useStylesBootstrap();
   const isEth = assetId === "0x0000000000000000000000000000000000000000"
   return (
     <InputGroup
@@ -145,24 +156,40 @@ const WithdrawWithOptions = ({
         />
       </Form>
       <Dropdown>
-        <Dropdown.Toggle id="dropdown-basic" className="withdraw-menu">
-          Withdraw
+        <Dropdown.Toggle id={"dropdown-basic_" + id} className="withdraw-menu">
+          Withdraw   <img className='withdraw-dropdown-icon' src={ConnextIcon}/>/<img className='withdraw-dropdown-icon' src={HopIcon}/>
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
+        <Tooltip 
+            classes={classes} 
+            title='Standard withdrawal via the Arbitrum L1/L2 bridge contract.' 
+            placement="right-end">
           <Dropdown.Item
             onSelect={submitRegular}
             disabled={disabled}
           >
-             <img className='withdraw-dropdown-icon' src={ArbIcon}/> Bridge (Slow)
+        
+            <img className='withdraw-dropdown-icon' src={ArbIcon}/>Bridge (Slow)
           </Dropdown.Item>
+          </Tooltip>
+          <Tooltip 
+            classes={classes} 
+            title='Connext-powered fast-widthdrawal via cross-chain atomic swaps!' 
+            placement="right-end">
           <Dropdown.Item onSelect={connextSelect} disabled={connextIsDisabled}>
             {' '}
             <img className='withdraw-dropdown-icon' src={ConnextIcon}/> Connext (Fast)  
           </Dropdown.Item>
+          </Tooltip>
+          <Tooltip 
+            classes={classes} 
+            title='Hop-powered fast-withdrawal via cross-chain AMM exhanges! (Currently DAI-only)' 
+            placement="right-end">
           <Dropdown.Item href="https://hop.exchange/" target="_blank">
           <img className='withdraw-dropdown-icon' src={HopIcon}/> Hop (Fast, DAI Only)
           </Dropdown.Item>
+          </Tooltip>
         </Dropdown.Menu>
       </Dropdown>
     </InputGroup>
