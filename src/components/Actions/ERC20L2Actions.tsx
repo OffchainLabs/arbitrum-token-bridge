@@ -40,7 +40,7 @@ const Actions = ({
       { 
       l2Only ? 
       <div><i>{`${tokenSymbol || "Token"} is an Arbitrum-only token; it can't be withdrawn to L1.` }</i></div>
-      : <WithdrawWithOptions
+      :<> <WithdrawWithOptions
         max={arbChainBalance}
         text={'Withdraw Token'}
         onSubmit={value => {
@@ -52,8 +52,12 @@ const Actions = ({
         assetId={currentERC20Address || undefined}
         handleConnextTxn={handleConnextTxn}
         tokenSymbol={tokenSymbol}
+        id={2}
         />
+        <WithdrawInfo/>
+        </>
       }
+
 
     </div>
   )

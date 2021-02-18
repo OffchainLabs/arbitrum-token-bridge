@@ -32,8 +32,9 @@ const Actions = ({ balances, eth, ethAddress, handleConnextTxn }: ActionsProps) 
         buttonText={'withdraw'}
         ethAddress={ethAddress}
         handleConnextTxn={handleConnextTxn}
+        id={1}
       />
-
+          <WithdrawInfo/>
     </div>
   )
 }
