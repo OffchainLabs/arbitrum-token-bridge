@@ -18,7 +18,6 @@ import {
   ContractStorage,
   BridgeToken
 } from 'token-bridge-sdk'
-import { ConnextModal } from '@connext/vector-modal'
 
 import AssetDropDown from 'components/AssetDropDown'
 import EthL1Actions from 'components/Actions/EthL1Actions'
@@ -97,7 +96,7 @@ const TabsContainer = ({
     <Tabs
       id="controlled-tab-example"
       activeKey={key}
-      onSelect={(k: string) => setKey(k)}
+      onSelect={(k: string | null) => setKey(k || key)}
     >
       <Tab eventKey="eth" title="ETH">
         <Container>
