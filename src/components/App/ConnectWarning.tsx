@@ -113,9 +113,8 @@ export default () => {
               <CopyLink
                 url="https://explorer.offchainlabs.com/#"
                 msg="Block explorer url copied to clipboard"
-              />{' '}
-              ('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL
-              (optional)')
+              />{`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
+            
             </div>
           </div>
           <img className="text-center" style={styles.gifStyle} src={explorer} />
