@@ -46,7 +46,6 @@ const DropdownInputForm = ({
       <DropdownButton
         id="dropdown-basic-button"
         title={displayTitle}
-        value={value}
         disabled={disableActions}
       >
         {items.map((item, i) => (
