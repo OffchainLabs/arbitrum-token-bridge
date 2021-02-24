@@ -1710,10 +1710,10 @@
     pino "6.7.0"
     pino-pretty "4.3.0"
 
-"@connext/vector-modal@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@connext/vector-modal/-/vector-modal-1.0.2.tgz#89464ac65ec916dd40e58affec12d31aaf3f0cc8"
-  integrity sha512-FnBMdQFyDxDakRI9mZayqKdGdXSH3JFCLu2DyNhkCd0i1CbGpRQv5WGGc9KYhZVnV6aA6Un6lkeBf/7ba5c6Rg==
+"@connext/vector-modal@1.0.3-beta.1":
+  version "1.0.3-beta.1"
+  resolved "https://registry.yarnpkg.com/@connext/vector-modal/-/vector-modal-1.0.3-beta.1.tgz#44ae1894c5ddcb0058e92ef8b9413fece1194518"
+  integrity sha512-TWFFyDGsS9n5hILlEVVlG4/bR72IdLcBiGGxMgxUr+KDT15+8j5XttFQUAZtf5S4tyzNwzbuoRvrRDizuvX4AA==
   dependencies:
     "@chakra-ui/icons" "^1.0.5"
     "@chakra-ui/react" "^1.3.3"
