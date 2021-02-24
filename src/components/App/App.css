@@ -77,7 +77,7 @@
 }
 
 body {
-  background-color: #8C89BC;
+  background-color: #8C89BC !important;
 }
 #txn-table td {
   max-width: 150px;
