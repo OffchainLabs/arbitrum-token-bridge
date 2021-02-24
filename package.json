@@ -13,7 +13,7 @@
     "ethers": "4.0.47",
     "node-sass": "^4.13.1",
     "react": "^16.13.1",
-    "react-bootstrap": "^1.0.0",
+    "react-bootstrap": "^1.5",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
     "token-bridge-sdk": "^0.2.16",
