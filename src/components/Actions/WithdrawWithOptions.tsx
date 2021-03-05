@@ -87,9 +87,9 @@ const WithdrawWithOptions = ({
     return disabled
   }, [disabled]) 
 
-  const connextSelect = useCallback((e: any) =>  {
+  const connextSelect = useCallback((e: any) =>  {    
     e && e.preventDefault()
-    if (connextIsDisabled)return
+    if (connextIsDisabled)return    
     if (!value){
       alert('Input non-zero value to withdraw')
       return
@@ -98,7 +98,7 @@ const WithdrawWithOptions = ({
       return
     }
     setShowModal(true)
-  }, [value, assetId])
+  }, [value, assetId, connextIsDisabled])
 
   const connextTranfserAmount = value.toString()
 
