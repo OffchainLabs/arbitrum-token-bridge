@@ -82,8 +82,14 @@ const WithdrawWithOptions = ({
     },
     [value, onSubmit]
   )
+
+  const connextIsDisabled = useMemo(()=>{
+    return disabled || !supportedConnextAssets.has(assetId)
+  }, [disabled, assetId]) 
+
   const connextSelect = useCallback((e: any) =>  {
     e && e.preventDefault()
+    if (connextIsDisabled)return
     if (!value){
       alert('Input non-zero value to withdraw')
       return
@@ -91,10 +97,8 @@ const WithdrawWithOptions = ({
     setShowModal(true)
   }, [value])
 
-  const connextIsDisabled = useMemo(()=>{
-    return disabled || !supportedConnextAssets.has(assetId)
-  }, [disabled, assetId]) 
-  const transferAmmount = parseEther(value.toString() || "0").toString()  
+  const connextTranfserAmount = value.toString()
+
   const classes = useStylesBootstrap();
   const isEth = assetId === "0x0000000000000000000000000000000000000000"
   return (
@@ -117,7 +121,7 @@ const WithdrawWithOptions = ({
         depositChainProvider={networks[+l2NetworkId].url}
         withdrawalAddress={ethAddress}
         injectedProvider={window.ethereum}
-        transferAmount={ transferAmmount }
+        transferAmount={ connextTranfserAmount }
         onDepositTxCreated={(txHash:string)=>{
           handleConnextTxn({
             value: value.toString(),
