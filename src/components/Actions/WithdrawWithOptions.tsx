@@ -35,8 +35,8 @@ const useStylesBootstrap = makeStyles((theme) => ({
 
 const supportedConnextAssets = new Set([
   "0x0000000000000000000000000000000000000000",
-  "0xe41d965f6e7541139f8d9f331176867fb6972baf",
-  "0xf36d7a74996e7def7a6bd52b4c2fe64019dada25"
+  // "0xe41d965f6e7541139f8d9f331176867fb6972baf",
+  // "0xf36d7a74996e7def7a6bd52b4c2fe64019dada25"
 ])
 
 type WithdrawWithOptionsProps = {
@@ -84,8 +84,8 @@ const WithdrawWithOptions = ({
   )
 
   const connextIsDisabled = useMemo(()=>{
-    return disabled || !supportedConnextAssets.has(assetId)
-  }, [disabled, assetId]) 
+    return disabled
+  }, [disabled]) 
 
   const connextSelect = useCallback((e: any) =>  {
     e && e.preventDefault()
@@ -93,9 +93,12 @@ const WithdrawWithOptions = ({
     if (!value){
       alert('Input non-zero value to withdraw')
       return
+    }  else if (!supportedConnextAssets.has(assetId)){
+      alert('Connext ERC20 support coming soon!')
+      return
     }
     setShowModal(true)
-  }, [value])
+  }, [value, assetId])
 
   const connextTranfserAmount = value.toString()
 
