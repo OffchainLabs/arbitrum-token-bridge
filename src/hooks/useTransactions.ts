@@ -19,7 +19,13 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
  */
 
 type TransactionBase = {
-  type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'| 'connext-deposit' | 'connext-withdraw'
+  type:
+    | 'deposit'
+    | 'withdraw'
+    | 'lockbox'
+    | 'approve'
+    | 'connext-deposit'
+    | 'connext-withdraw'
   status: TxnStatus
   value: string | null
   txID?: string
