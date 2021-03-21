@@ -2,10 +2,11 @@ import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React from 'react'
 import { ERC721Balance } from 'token-bridge-sdk'
-import { formatEther } from 'ethers/utils'
+import { utils } from 'ethers'
 import DropdownInput from './DropdownInput'
 import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
+const { formatEther } = utils
 
 type ActionsProps = {
   balances: ERC721Balance | undefined

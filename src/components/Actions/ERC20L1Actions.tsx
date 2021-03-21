@@ -2,12 +2,13 @@ import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React, { useMemo } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
-import { formatUnits } from 'ethers/utils'
+import { utils } from 'ethers'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import SubmitNoInput from './SubmitNoInput'
 import { Transaction } from 'token-bridge-sdk'
+const { formatUnits } = utils
 
 type ActionsProps = {
   balances: BridgeBalance | undefined

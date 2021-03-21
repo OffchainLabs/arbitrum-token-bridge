@@ -43,7 +43,6 @@ type TabProps = {
   bridgeTokens: ContractStorage<BridgeToken>
   addToken: (a: string, type: TokenType) => Promise<string>
   transactions: Transaction[]
-  networkId: number
   ethAddress: string
   handleConnextTxn: connextTxn
 }
@@ -63,7 +62,6 @@ const TabsContainer = ({
   setCurrentERC20Address,
   setCurrentERC721Address,
   transactions,
-  networkId,
   ethAddress,
   handleConnextTxn
 }: TabProps) => {
@@ -74,8 +72,8 @@ const TabsContainer = ({
     .filter((token): token is BridgeToken => !!token)
     .sort((a: BridgeToken, b: BridgeToken) => {
       if (a.symbol === b.symbol){
-        const Aaddress = a.eth?.addresss || a.arb?.aaddresss
-        const Baddress = b.eth?.addresss || b.arb?.aaddresss
+        const Aaddress = a.address
+        const Baddress = b.address
         return Aaddress > Baddress ? 1: -1
       }
 
@@ -90,7 +88,7 @@ const TabsContainer = ({
 
   const currentERC20Token = bridgeTokens[currentERC20Address]
   const currentERC721Token = bridgeTokens[currentERC721Address]
-  const disabledWithdrawals = networkId === 152709604825713
+  const disabledWithdrawals = false
 
   return (
     <Tabs
@@ -172,7 +170,7 @@ const TabsContainer = ({
           </Row>
         </Container>
       </Tab>
-      <Tab eventKey="erc721" title="ERC-721">
+      {/* <Tab eventKey="erc721" title="ERC-721">
         <Container>
           <Row>
             <Col>
@@ -221,7 +219,7 @@ const TabsContainer = ({
             </Col>
           </Row>
         </Container>
-      </Tab>
+      </Tab> */}
     </Tabs>
   )
 }

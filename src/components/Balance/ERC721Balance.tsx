@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { ERC721Balance } from 'token-bridge-sdk'
 import AssetDropDown from 'components/AssetDropDown'
-import { BigNumber } from 'ethers/utils'
+import { BigNumber } from 'ethers'
 import { Transaction } from 'token-bridge-sdk'
 
 type BalanceProps = {

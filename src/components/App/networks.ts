@@ -19,6 +19,13 @@ const networks: Networks = {
     gif: kovan,
     url: ""
   },
+  212984383488152:{
+    chainID: 212984383488152,
+    name: 'Arbitrum-testnet-4',
+    gif: arb,
+    isArbitrum: true,
+    url: "https://kovan4.arbitrum.io/rpc"
+  },
   215728282823301: {
     chainID: 215728282823301,
     name: 'Arbitrum-testnet',

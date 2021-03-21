@@ -9,8 +9,6 @@ export interface BridgeConfig {
   arbProvider: ethers.providers.JsonRpcProvider
   ethSigner?: ethers.ethers.providers.JsonRpcSigner
   arbSigner: ethers.ethers.providers.JsonRpcSigner
-  l2Network: l2Network,
-  setL2Network: any
 }
 
 export enum ConnectionState {

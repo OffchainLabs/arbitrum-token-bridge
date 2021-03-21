@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
 import AssetDropDown from 'components/AssetDropDown'
-import { formatEther } from 'ethers/utils'
-
+import { utils } from 'ethers'
+const { formatEther } = utils
 type BalanceProps = {
   assetName: string
   balances: BridgeBalance | undefined
@@ -12,7 +12,7 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
   if (!balances) {
     return <div>no token</div>
   }
-  const { balance, arbChainBalance, totalArbBalance, lockBoxBalance } = balances
+  const { balance, arbChainBalance, lockBoxBalance } = balances
   return (
     <div>
       <div className="row">

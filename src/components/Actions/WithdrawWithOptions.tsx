@@ -13,13 +13,14 @@ import { withStyles, makeStyles } from '@material-ui/core/styles';
 
 import { ConnextModal } from '@connext/vector-modal'
 import networks from '../App/networks'
-import { JsonRpcProvider, Web3Provider } from 'ethers/providers'
-import { parseEther, formatEther } from 'ethers/utils'
+import { utils, providers } from 'ethers'
 import { connextTxn } from 'util/index'
 import { AssetType } from 'token-bridge-sdk'
 import ConnextIcon from 'media/images/connext.png'
 import ArbIcon from 'media/images/arb.png'
 import HopIcon from 'media/images/hop.png'
+const { formatEther, parseEther } = utils
+const { JsonRpcProvider, Web3Provider } = providers
 
 const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
 const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string

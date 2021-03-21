@@ -49,7 +49,7 @@ const AssetDropDown = ({
           key={i}
           onClick={() => {
             setCurrentAddress(
-              bridgeToken!.eth?.address || bridgeToken!.arb?.address
+              bridgeToken.address
             )
           }}
         >
