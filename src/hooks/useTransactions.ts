@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect } from 'react'
 import { AssetType } from './useArbTokenBridge'
-import { TransactionReceipt } from 'ethers/providers'
+import { TransactionReceipt } from '@ethersproject/abstract-provider'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -22,7 +22,7 @@ type TransactionBase = {
   type:
     | 'deposit'
     | 'withdraw'
-    | 'lockbox'
+    | 'outbox'
     | 'approve'
     | 'connext-deposit'
     | 'connext-withdraw'

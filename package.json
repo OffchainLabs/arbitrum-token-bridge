@@ -28,8 +28,8 @@
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-provider-ethers": "^0.7.3",
-    "ethers": "4.0.47",
+    "arb-ts": "^0.0.1",
+    "ethers": "5.0.24",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
