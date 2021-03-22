@@ -104,7 +104,7 @@ const App = ( { bridge }:AppProps) => {
   }, [arbProvider, addTransaction, updateTransactionStatus, ethProvider])
     useEffect(()=>{
       window.setInterval(()=>{
-        eth.updateBalances()
+        balances.update()
       }, 3000)
     },[])
 
