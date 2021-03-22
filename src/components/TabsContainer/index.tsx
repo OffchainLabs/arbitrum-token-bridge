@@ -10,6 +10,7 @@ import Balance from 'components/Balance'
 import ERC721BalanceUi from 'components/Balance/ERC721Balance'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { connextTxn } from 'util/index'
+import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 
 import {
   BridgeBalance,
@@ -45,6 +46,7 @@ type TabProps = {
   transactions: Transaction[]
   ethAddress: string
   handleConnextTxn: connextTxn
+  pendingWithdrawalsMap: PendingWithdrawalsMap
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -63,7 +65,8 @@ const TabsContainer = ({
   setCurrentERC721Address,
   transactions,
   ethAddress,
-  handleConnextTxn
+  handleConnextTxn,
+  pendingWithdrawalsMap
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -105,6 +108,7 @@ const TabsContainer = ({
                   balances={ethBalances}
                   eth={eth}
                   transactions={transactions}
+                  pendingWithdrawalsMap={pendingWithdrawalsMap}
                 />
               </PanelWrapper>
             </Col>
@@ -145,10 +149,11 @@ const TabsContainer = ({
               <PanelWrapper isDepositPanel={true}>
                 <ERC20L1Actions
                   balances={erc20BridgeBalance}
-                  eth={token}
+                  token={token}
                   bridgeTokens={bridgeTokens}
                   currentERC20Address={currentERC20Address}
                   transactions={transactions}
+                  pendingWithdrawalsMap={pendingWithdrawalsMap}
                 />
               </PanelWrapper>
             </Col>

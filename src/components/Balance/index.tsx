@@ -12,7 +12,7 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
   if (!balances) {
     return <div>no token</div>
   }
-  const { balance, arbChainBalance, lockBoxBalance } = balances
+  const { balance, arbChainBalance } = balances
   return (
     <div>
       <div className="row">
@@ -24,11 +24,8 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
       <div className="row">
         User {assetName} balance on ArbChain: {formatEther(arbChainBalance)}
       </div>
-      {/* <div className="row">
-        Total {assetName} held by ArbChain: {formatEther(totalArbBalance)}
-      </div> */}
       <div className="row">
-        User Lockbox Balance: {formatEther(lockBoxBalance)}
+        User Lockbox Balance: 
       </div>
     </div>
   )

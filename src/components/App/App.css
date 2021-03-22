@@ -79,10 +79,7 @@
 body {
   background-color: #8C89BC !important;
 }
-#txn-table td {
-  max-width: 150px;
-  overflow: hidden;
-}
+
 
 .input-group {
   flex-wrap: nowrap;
@@ -218,27 +215,31 @@ form {
   background-color: #7567d1;
 }
 
-.table {
+#txn-table .table {
   background-color: white;
 }
 
-th {
+#txn-table th {
   background-color: rgba(101, 94, 165, 0.7);
   font-size: 1em;
   font-family: 'Montserrat Bold';
   letter-spacing: 0.25px;
 }
 
-td {
+#txn-table td {
   font-size: 14px;
   font-family: 'Montserrat Regular';
 }
 
-td a {
+#txn-table td a {
   font-size: 12px;
   font-family: 'Montserrat Regular';
 }
 
+#txn-table txn-table td {
+  max-width: 150px;
+  overflow: hidden;
+}
 .top-thing{
   margin-top: 5px;
 }
@@ -246,4 +247,8 @@ td a {
 .withdraw-dropdown-icon{
   width: 22px;
   height: auto;
+}
+
+.pw-table td{
+  font-size: 12px
 }
