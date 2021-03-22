@@ -32,7 +32,7 @@ const Actions = ({
   const decimals = currentContract && currentContract.decimals || 18
   const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
   const isDepositMode = useIsDepositMode()
-  const l2Only = currentContract && !currentContract.eth
+  const l2Only = false // TODO
   const tokenSymbol = currentContract && currentContract.symbol
 
   return (

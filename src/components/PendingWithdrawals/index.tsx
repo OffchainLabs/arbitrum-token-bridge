@@ -7,7 +7,7 @@ interface PendingWithdrawalsProps {
   pendingWithdrawalsMap: PendingWithdrawalsMap
   filter: (data: L2ToL1EventResultPlus) => boolean
   headerText: string
-  triggerClaim: (id: string) => void
+  triggerOutbox: (id: string) => {} | undefined
   // Header
 }
 const { formatEther } = utils
@@ -16,8 +16,15 @@ const PendingWithdrawals = ({
   pendingWithdrawalsMap,
   filter,
   headerText,
-  triggerClaim
+  triggerOutbox
 }: PendingWithdrawalsProps) => {
+
+  const handleTriggerOutbox = async  (id: string)=>{
+    const res = await triggerOutbox(id)
+    if (!res){
+      alert("Can't claim this withdrawal yet; try again later")
+    }
+  }
   const [currentTime, setCurrentTime] = useState(0)
   useEffect(()=>{
     window.setInterval(()=>{
@@ -40,19 +47,19 @@ const PendingWithdrawals = ({
           <tr>{headerText}</tr>
           <tr>
             <th>value</th>
-            <th>time remaining</th>
+            <th>created</th>
             <th></th>
 
           </tr>
         </thead>
         <tbody>
           {pendingWithdrawalsToShow.map(pw => {
+            const id = pw.uniqueId.toString()
             return (
-              <tr>
-                <td>{pw.value.toString()}</td>
-
-                <td>{pw.timestamp}</td>
-                <td><button onClick={()=>triggerClaim(pw.uniqueId.toString())}>claim</button></td>
+              <tr key={id}>
+                <td>{formatEther(pw.value.toString())}</td>
+                <td>{pw.timestamp.toString()}</td>
+                <td><button onClick={()=>handleTriggerOutbox(id)}>claim</button></td>
 
               </tr>
             )

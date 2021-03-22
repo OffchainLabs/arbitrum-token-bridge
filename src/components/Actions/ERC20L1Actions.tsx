@@ -80,7 +80,7 @@ const Actions = ({
       <PendingWithdrawals
         filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus)=> l2ToL1EventResultPlus.type === AssetType.ERC20 }
         headerText="Pending Token Withdrawals"
-        triggerClaim={token.triggerOutboxToken}
+        triggerOutbox={token.triggerOutbox}
         pendingWithdrawalsMap={{}}
 
         />

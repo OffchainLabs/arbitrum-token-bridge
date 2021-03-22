@@ -1,7 +1,6 @@
 import * as ethers from 'ethers'
 
-interface InjectedEthereumProvider
-  extends ethers.ethers.providers.AsyncSendable {
+interface InjectedEthereumProvider{
   request?: (arg:any) => Promise<string[]>
   on: any
   networkVersion: string
@@ -18,6 +17,30 @@ export function web3Injected(
   e: InjectedEthereumProvider | undefined
 ): e is InjectedEthereumProvider {
   return e !== undefined
+}
+
+
+export async function requestNetworkSwitch() {
+  if (web3Injected(window.ethereum)) {
+    try {
+      ;(await window.ethereum.request?.({ method: 'wallet_addEthereumChain', params: [{
+        chainId: "0x48316B142230", // A 0x-prefixed hexadecimal string
+        chainName: 'ArbitrumTestnet',
+        nativeCurrency: {
+          name: "Ether",
+          symbol: "ETH", // 2-6 characters long
+          decimals: 18
+        },
+        rpcUrls: ["https://kovan3.arbitrum.io/rpc"]
+      } ] }))
+    } catch (e) {
+      console.warn('requestNetworkSwitch error', e)
+      return []
+    }
+  }
+
+  console.warn('No web3 injection detected')
+  return []
 }
 
 export async function getInjectedWeb3(): Promise<

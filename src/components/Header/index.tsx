@@ -43,7 +43,7 @@ const Header = ({
   }
 
   const headerDisplay = useMemo(()=>{
-    return "connected"
+    return "Connected"
   }, [])
 
   return (
@@ -53,11 +53,11 @@ const Header = ({
       <h1 className="text-center">Arbitrum Token Bridge</h1>
       <h5 className="text-center">
         
-      { headerDisplay}
+      { headerDisplay }
       </h5>
       <h5 className="text-center">
         <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light'}}>
-          (connect to {isDepositMode ? 'L2' : 'Layer 1'})
+          (Connect to {isDepositMode ? 'L2' : 'L1'})
         </a> {" "}
       {/* { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
           {`(switch to ${l2Network === "v2" ? 'Arbv3 chain' : 'Arbv2 chain'})`}
@@ -76,7 +76,7 @@ const Header = ({
         </span>
       </p>
       <p className="arbchain">
-        Address of ArbChain:{' '}
+        {/* Address of ArbChain:{' '} */}
         {/* <span id="rollupAddress">
           <ExplorerLink hash={vmId} type={'chain'} />
         </span> */}

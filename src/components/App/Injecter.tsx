@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react'
+import React, { useEffect, useState, useContext, useCallback } from 'react'
 import { getInjectedWeb3, setChangeListeners } from 'util/web3'
-import { BridgeConfig, ConnectionState, l2Network } from 'util/index'
+import { ConnectionState, l2Network } from 'util/index'
 import * as ethers from 'ethers'
 import App from './index'
 import ModeContext from './ModeContext'
@@ -12,9 +12,10 @@ import Col from 'react-bootstrap/Col'
 import fox from 'media/images/metamask-fox.svg'
 import networks, { arbNetworkIds }  from "./networks"
 import { useLocalStorage } from '@rehooks/local-storage'
+import { Bridge, L1Bridge, L2Bridge } from 'arb-ts'
 
 const Injector = () => {
-  const [bridgeConfig, setBridgeConfig] = useState<BridgeConfig>()
+  const [bridge, setBridge] = useState<Bridge>()
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
@@ -22,79 +23,89 @@ const Injector = () => {
   const l2Network = _l2Network || "v3"
   const {
     REACT_APP_ETH_NETWORK_ID: ethNetworkId,
-    REACT_APP_ETH_NODE_URL: ethNodeUrl
+    REACT_APP_ETH_NODE_URL: ethNodeUrl,
+
   } = process.env
+  
+  const l1TokenBridgeAddress = process.env.REACT_APP_L1_TOKEN_BRIDGE_ADDRESS || ''
+  const l2TokenBridgeAddress = process.env.REACT_APP_L2_TOKEN_BRIDGE_ADDRESS || ''
+  
+  // useEffect(()=> {
+  //   // @ts-ignore
+  //   window.ethereum.on('networkChanged', (chainId: number) => {
+  //     updateConnectionState()
+  //       })
+  // }, [])
 
-  useEffect(() => {
-    if (connectionState === ConnectionState.LOADING) {
 
-      if (window.location.hash === "#info"){
-        return setConnectionState(ConnectionState.WRONG_NETWORK)
-      }
-      try {
-        getInjectedWeb3().then(([provider, networkVersion]) => {
-          if (!provider) {
-            return setConnectionState(ConnectionState.NO_METAMASK)
-          }
+const updateConnectionState = useCallback(() => {  
+  
+  if (connectionState === ConnectionState.LOADING) {
 
-          switch (networkVersion) {
-            case ethNetworkId: {
-              console.info('deposit mode detected')
-              const ethProvider = provider
-              const arbProvider = new ethers.providers.JsonRpcProvider(
-                l2Network === "v2" ? "https://kovan2.arbitrum.io/rpc" : "https://kovan3.arbitrum.io/rpc"
-              )              
-              setBridgeConfig({
-                ethProvider,
-                arbProvider,
-                ethSigner: ethProvider.getSigner(0),
-                arbSigner: arbProvider.getSigner(
-                  window.ethereum?.selectedAddress
-                ),
-                l2Network,
-                setL2Network
-              })
-              setConnectionState(ConnectionState.DEPOSIT_MODE)
-              break
-            }
-            case arbNetworkIds[1]:
-            case arbNetworkIds[2]:
-            {
-              console.info('withdrawal mode detected')
-              const ethProvider = new ethers.providers.JsonRpcProvider(
-                ethNodeUrl
-              )
-              const arbProvider = provider
-              setBridgeConfig({
-                ethProvider,
-                arbProvider,
-                ethSigner: ethProvider.getSigner(
-                  window.ethereum?.selectedAddress
-                ),
-
-                arbSigner: arbProvider.getSigner(0),
-                l2Network,
-                setL2Network
-              })
-              setConnectionState(ConnectionState.WITHDRAW_MODE)
-              break
-            }
-
-            default: {
-              setConnectionState(ConnectionState.WRONG_NETWORK)
-            }
-          }
-          setChangeListeners()
-        })
-      } catch (e) {
-        setConnectionState(ConnectionState.NO_METAMASK)
-      }
+    if (window.location.hash === "#info"){
+      return setConnectionState(ConnectionState.WRONG_NETWORK)
     }
-  }, [connectionState])
+    try {
+      getInjectedWeb3().then(([provider, networkVersion]) => {
+        if (!provider) {
+          return setConnectionState(ConnectionState.NO_METAMASK)
+        }
+
+        switch (networkVersion) {
+          case ethNetworkId: {
+            console.info('deposit mode detected')
+            const ethProvider = provider
+            const arbProvider = new ethers.providers.JsonRpcProvider(
+              "https://kovan4.arbitrum.io/rpc"
+            ) 
+
+            const l1Signer =  ethProvider.getSigner(0)
+            const l2Signer = arbProvider.getSigner(
+              window.ethereum?.selectedAddress
+            )
+            const bridge = new Bridge(l1TokenBridgeAddress, l2TokenBridgeAddress, l1Signer, l2Signer, )
+
+            setBridge(bridge)
+            setConnectionState(ConnectionState.DEPOSIT_MODE)
+            break
+          }
+          case '212984383488152':
+          {
+            console.info('withdrawal mode detected')
+            const ethProvider = new ethers.providers.JsonRpcProvider(
+              ethNodeUrl
+            )
+            const arbProvider = provider
+            const l1Signer = ethProvider.getSigner(
+              window.ethereum?.selectedAddress
+            )
+            const l2Signer = arbProvider.getSigner(0)
+            const bridge = new Bridge(l1TokenBridgeAddress, l2TokenBridgeAddress, l1Signer, l2Signer, )
+
+            setBridge(bridge)
+            setConnectionState(ConnectionState.WITHDRAW_MODE)
+            break
+          }
+
+          default: {
+            setConnectionState(ConnectionState.WRONG_NETWORK)
+          }
+        }
+        setChangeListeners()
+      })
+    } catch (e) {
+      setConnectionState(ConnectionState.NO_METAMASK)
+    }
+  }
+}, [connectionState, window.ethereum])
+  useEffect(() => {
+
+    updateConnectionState()
+  }, [])
 
   const renderContent = (
     connectionState: ConnectionState,
-    bridgeConfig: BridgeConfig | undefined
+    bridge: Bridge | undefined
   ) => {
     switch (connectionState) {
       case ConnectionState.LOADING:
@@ -134,19 +145,18 @@ const Injector = () => {
           </div>
         )
       default:
-        if (!bridgeConfig) {
+        if (!bridge) {
           throw new Error('initialization error')
         }
         return (
           <ModeContext.Provider value={connectionState}>
-            
-            <App {...bridgeConfig} />
+            <App bridge={bridge}/>
           </ModeContext.Provider>
         )
     }
   }
 
-  return <div>{renderContent(connectionState, bridgeConfig)}</div>
+  return <div>{renderContent(connectionState, bridge)}</div>
 }
 
 export const renderAlert = (

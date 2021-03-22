@@ -53,12 +53,11 @@ const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap }: Actions
       <PendingWithdrawals
         filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus)=> l2ToL1EventResultPlus.type === AssetType.ETH }
         headerText="Pending ETH Withdrawals"
-        triggerClaim={eth.triggerOutboxEth}
-        // mock:
-        pendingWithdrawalsMap={mockPendingWithdrawals}
+        triggerOutbox={eth.triggerOutbox}
+        pendingWithdrawalsMap={pendingWithdrawalsMap}
       />
 
-  {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null}
+  {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}
 
     </div>
   )

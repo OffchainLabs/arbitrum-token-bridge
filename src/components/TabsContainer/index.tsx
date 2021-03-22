@@ -93,6 +93,8 @@ const TabsContainer = ({
   const currentERC721Token = bridgeTokens[currentERC721Address]
   const disabledWithdrawals = false
 
+  const currentTokenL2Address = currentERC20Token && currentERC20Token.l2Address || null
+
   return (
     <Tabs
       id="controlled-tab-example"
@@ -142,8 +144,12 @@ const TabsContainer = ({
             </Col>
           </Row>
           <Row style={{fontSize: 14}}>
-          {currentERC20Address   ? <Col>Token Address: <ExplorerLink hash={currentERC20Address} type={'address'}/></Col> : null }
+          {currentERC20Address   ? <Col>Token L1 Address: <ExplorerLink hash={currentERC20Address} type={'address'}/></Col> : null }
           </Row>
+          <Row style={{fontSize: 14}}>
+          {currentTokenL2Address   ? <Col>Token L2 Address: <ExplorerLink hash={currentTokenL2Address} type={'address'}/></Col> : null }
+          </Row>
+
           <Row>
             <Col>
               <PanelWrapper isDepositPanel={true}>

@@ -147,6 +147,8 @@ const App = ( { bridge }:AppProps) => {
       </div>
       <div className="row">
         <Transactions
+          ethProvider={bridge.l1Bridge.l1Provider}
+          arbProvider={bridge.l2Provider}
           transactions={transactions.transactions}
           clearPendingTransactions={transactions.clearPendingTransactions}
           walletAddress={walletAddress}
