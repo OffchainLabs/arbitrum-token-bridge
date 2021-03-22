@@ -452,12 +452,12 @@ export const useArbTokenBridge = (
   }, [pendingWithdrawalsMap])
 
 
-  const updateBridgeTokens = useCallback(()=>{
+  const updateBridgeTokens = useCallback(async ()=>{
     let bridgeTokens:ContractStorage<BridgeToken> = {}
 
     const { l1Tokens, l2Tokens } = bridge
     for (let address of Object.keys(l1Tokens)) {
-      const l1TokenData = l1Tokens[address] as L1TokenData
+      const l1TokenData = await bridge.getAndUpdateL1TokenData(address)
       const l2TokenData = l2Tokens[address]
       const l2Address = l2TokenData && l2TokenData.ERC20 && l2TokenData.ERC20.contract.address
       if (l1TokenData.ERC20){
@@ -550,7 +550,7 @@ export const useArbTokenBridge = (
       deposit: depositToken,
       withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken,
-      updateBalances: updateTokenBalances,
+      updateBalances: updateTokenBalances
     },
     arbSigner: bridge.l2Signer,
     transactions: {
