@@ -85,7 +85,7 @@ const WithdrawWithOptions = ({
   )
 
   const connextIsDisabled = useMemo(()=>{
-    return disabled
+    return true
   }, [disabled]) 
 
   const connextSelect = useCallback((e: any) =>  {    
