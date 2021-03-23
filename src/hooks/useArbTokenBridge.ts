@@ -5,7 +5,6 @@ import { ContractTransaction, constants, ethers, utils, Contract, ContractReceip
 import { useLocalStorage } from '@rehooks/local-storage'
 import { Bridge, L1TokenData, L2ToL1EventResult } from 'arb-ts'
 import useTransactions from './useTransactions'
-import { ERC20 } from 'arb-ts/dist/lib/abi/ERC20'
 
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult{
@@ -486,8 +485,9 @@ export const useArbTokenBridge = (
     const withdrawalData = await bridge.getL2ToL1EventData(address)
     const pendingWithdrawals:PendingWithdrawalsMap = {};
     const tokenWithdrawalEventData = await bridge.getTokenWithdrawEventData(address)
+
     const tokenWithdrawalEventDataMap: any = tokenWithdrawalEventData.reduce((acc:any, data:any)=>{
-      return {...acc, [data.id.toString()]: 'x'}
+      return {...acc, [data.id.toString()]: data}
     }, {})
     for (let eventData of  withdrawalData ) {
         const { caller, destination, uniqueId, batchNumber, indexInBatch, arbBlockNum, ethBlockNum, timestamp, callvalue, data }  = eventData
@@ -500,17 +500,25 @@ export const useArbTokenBridge = (
           }
           pendingWithdrawals[uniqueId.toString()] = eventDataPlus;
 
-        }  else if (tokenWithdrawalEventDataMap[uniqueId.toString()]){
-          const withdrawData = tokenWithdrawalEventDataMap[uniqueId.toString()]
-          const eventDataPlus: L2ToL1EventResultPlus = {
-            caller, destination, uniqueId, batchNumber, indexInBatch, arbBlockNum, ethBlockNum, timestamp, callvalue, data,
-            type: AssetType.ERC20,
-            value: withdrawData.amount,
-            tokenAddress:  withdrawData.l1Address,
-          }
-          pendingWithdrawals[uniqueId.toString()] = eventDataPlus;
         }
+      }
 
+    for (let withdrawEventData of  tokenWithdrawalEventData ) {
+      const rec = await bridge.getL2Transaction(withdrawEventData.txHash)
+      const eventDataArr = await bridge.getWithdrawalsInL2Transaction(rec)
+      if (eventDataArr.length === 1){
+        const { caller, destination, uniqueId, batchNumber, indexInBatch, arbBlockNum, ethBlockNum, timestamp, callvalue, data }  = eventDataArr[0]
+        const eventDataPlus: L2ToL1EventResultPlus = {
+          caller, destination, uniqueId, batchNumber, indexInBatch, arbBlockNum, ethBlockNum, timestamp, callvalue, data,
+          type: AssetType.ERC20,
+          value: withdrawEventData.amount,
+          tokenAddress: withdrawEventData.l1Address
+        }
+        pendingWithdrawals[uniqueId.toString()] = eventDataPlus;
+      } else {
+        console.warn('L2toL1Data not found...');
+
+      }
     }
     setPendingWithdrawalMap(pendingWithdrawals)
 
