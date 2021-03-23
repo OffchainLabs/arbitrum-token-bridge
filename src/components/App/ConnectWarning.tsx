@@ -79,11 +79,11 @@ export default () => {
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
                 url={arbV4Testnet.url}
-                msg="Arbv3 Aggregator url copied to clipboard"
+                msg="Arbv4 Aggregator url copied to clipboard"
               />{' '} with chain ID    <CopyLink
               url={arbV4Testnet.chainID.toString()}
-              msg="Arbv3 chain ID copied to clipboard"
-            /> for Arbv3 
+              msg="Arbv4 chain ID copied to clipboard"
+            /> for Arbv4 
             
             {/* (you probably want this one!) or {" "}
                 <CopyLink

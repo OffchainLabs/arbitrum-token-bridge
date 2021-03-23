@@ -116,7 +116,7 @@ const updateConnectionState = useCallback(() => {
             <Container>
               <Alert className="text-center" variant={'danger'}>
                 Ethereum provider not detected; make sure you have MetaMask
-                installed in your browser.
+                connected.
               </Alert>
               <Row className="text-center">
                 <Col>
