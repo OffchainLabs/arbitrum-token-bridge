@@ -55,6 +55,6 @@ const networks: Networks = {
   }
 }
 
-export const arbNetworkIds = ["215728282823301", "152709604825713", "79377087078960"]
+export const arbNetworkIds = ["215728282823301", "152709604825713", "79377087078960", "212984383488152"]
 
 export default networks

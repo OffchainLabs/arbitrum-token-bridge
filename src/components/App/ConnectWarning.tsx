@@ -34,6 +34,7 @@ export default () => {
 
   const arbV2Testnet = networks[+arbNetworkIds[1]]
   const arbV3Testnet = networks[+arbNetworkIds[2]]
+  const arbV4Testnet = networks[+arbNetworkIds[3]]
 
   return (
     <Container>
@@ -62,7 +63,7 @@ export default () => {
           <div style={styles.upperSecton}>
             <div style={styles.headerStyle}>
               {' '}
-              Connect to {l2NetworkName}, v2 or v3 (withdraw from Arbitrum)
+              Connect to {l2NetworkName} (withdraw from Arbitrum)
             </div>
             {/* <Col> */}
             <div style={styles.textStyle}>
@@ -77,10 +78,10 @@ export default () => {
               </a>{' '}
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
-                url={arbV3Testnet.url}
+                url={arbV4Testnet.url}
                 msg="Arbv3 Aggregator url copied to clipboard"
               />{' '} with chain ID    <CopyLink
-              url={arbV3Testnet.chainID.toString()}
+              url={arbV4Testnet.chainID.toString()}
               msg="Arbv3 chain ID copied to clipboard"
             /> for Arbv3 
             
