@@ -28,7 +28,7 @@
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-ts": "^0.0.1",
+    "arb-ts": "^0.0.3",
     "ethers": "5.0.24",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
