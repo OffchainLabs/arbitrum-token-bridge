@@ -112,7 +112,7 @@ export default () => {
             <div style={styles.textStyle}>
               Add our custom block explorer url to Arbitrum network:{' '}
               <CopyLink
-                url="https://explorer.offchainlabs.com/#"
+                url="https://explorer.arbitrum.io/#"
                 msg="Block explorer url copied to clipboard"
               />{`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
             
