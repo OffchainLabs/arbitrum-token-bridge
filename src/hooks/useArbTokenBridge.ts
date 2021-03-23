@@ -398,8 +398,7 @@ export const useArbTokenBridge = (
       const balance = l1TokenData.ERC20 ? l1TokenData.ERC20.balance : Zero
       const arbChainBalance =
         l2TokenData && l2TokenData.ERC20 ? l2TokenData.ERC20.balance : Zero
-      // @ts-ignore
-      erc20TokenBalances[address] = { balance, arbChainBalance }
+        erc20TokenBalances[address] = { balance, arbChainBalance }
     }
     setErc20Balances(erc20TokenBalances)
   }
