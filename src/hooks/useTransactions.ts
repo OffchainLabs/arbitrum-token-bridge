@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect } from 'react'
 import { AssetType } from './useArbTokenBridge'
-import { TransactionReceipt } from 'ethers/providers'
+import { TransactionReceipt } from '@ethersproject/abstract-provider'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -19,7 +19,13 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
  */
 
 type TransactionBase = {
-  type: 'deposit' | 'withdraw' | 'lockbox' | 'approve'| 'connext-deposit' | 'connext-withdraw'
+  type:
+    | 'deposit'
+    | 'withdraw'
+    | 'outbox'
+    | 'approve'
+    | 'connext-deposit'
+    | 'connext-withdraw'
   status: TxnStatus
   value: string | null
   txID?: string
