@@ -40,7 +40,8 @@ const App = ( { bridge }:AppProps) => {
     bridgeTokens,
     eth,
     transactions,
-    pendingWithdrawalsMap
+    pendingWithdrawalsMap,
+    getLatestArbBlock
   } = useArbTokenBridge(
     bridge
   )
@@ -141,6 +142,7 @@ const App = ( { bridge }:AppProps) => {
             ethAddress={walletAddress}
             handleConnextTxn={handleConnextTxn}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
+            getLatestArbBlock={getLatestArbBlock}
 
           />
         </div>

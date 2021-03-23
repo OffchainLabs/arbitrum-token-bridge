@@ -47,6 +47,7 @@ type TabProps = {
   ethAddress: string
   handleConnextTxn: connextTxn
   pendingWithdrawalsMap: PendingWithdrawalsMap
+  getLatestArbBlock: any
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -66,7 +67,8 @@ const TabsContainer = ({
   transactions,
   ethAddress,
   handleConnextTxn,
-  pendingWithdrawalsMap
+  pendingWithdrawalsMap,
+  getLatestArbBlock
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -111,6 +113,7 @@ const TabsContainer = ({
                   eth={eth}
                   transactions={transactions}
                   pendingWithdrawalsMap={pendingWithdrawalsMap}
+                  getLatestArbBlock={getLatestArbBlock}
                 />
               </PanelWrapper>
             </Col>
@@ -160,6 +163,7 @@ const TabsContainer = ({
                   currentERC20Address={currentERC20Address}
                   transactions={transactions}
                   pendingWithdrawalsMap={pendingWithdrawalsMap}
+                  getLatestArbBlock={getLatestArbBlock}
                 />
               </PanelWrapper>
             </Col>

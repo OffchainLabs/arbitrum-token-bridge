@@ -20,9 +20,10 @@ type ActionsProps = {
   eth: any
   transactions: Transaction[]
   pendingWithdrawalsMap: PendingWithdrawalsMap
+  getLatestArbBlock: any
 }
 
-const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap }: ActionsProps) => {
+const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap, getLatestArbBlock }: ActionsProps) => {
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
   const isDepositMode = useIsDepositMode()
 
@@ -55,6 +56,7 @@ const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap }: Actions
         headerText="Pending ETH Withdrawals"
         triggerOutbox={eth.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
+        getLatestArbBlock={getLatestArbBlock}
       />
 
   {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}

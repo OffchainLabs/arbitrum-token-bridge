@@ -21,6 +21,7 @@ type ActionsProps = {
   currentERC20Address: string
   transactions: Transaction[]
   pendingWithdrawalsMap: PendingWithdrawalsMap
+  getLatestArbBlock: any
 }
 
 const Actions = ({
@@ -29,7 +30,8 @@ const Actions = ({
   bridgeTokens,
   currentERC20Address,
   transactions,
-  pendingWithdrawalsMap
+  pendingWithdrawalsMap,
+  getLatestArbBlock
 
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
@@ -81,7 +83,8 @@ const Actions = ({
         filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus)=> l2ToL1EventResultPlus.type === AssetType.ERC20 }
         headerText="Pending Token Withdrawals"
         triggerOutbox={token.triggerOutbox}
-        pendingWithdrawalsMap={{}}
+        pendingWithdrawalsMap={pendingWithdrawalsMap}
+        getLatestArbBlock={getLatestArbBlock}
 
         />
 

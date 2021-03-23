@@ -1,5 +1,5 @@
 import { utils } from 'ethers'
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { PendingWithdrawalsMap, L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 
@@ -8,6 +8,7 @@ interface PendingWithdrawalsProps {
   filter: (data: L2ToL1EventResultPlus) => boolean
   headerText: string
   triggerOutbox: (id: string) => {} | undefined
+  getLatestArbBlock: any
   // Header
 }
 const { formatEther } = utils
@@ -16,22 +17,41 @@ const PendingWithdrawals = ({
   pendingWithdrawalsMap,
   filter,
   headerText,
-  triggerOutbox
+  triggerOutbox,
+  getLatestArbBlock
 }: PendingWithdrawalsProps) => {
 
-  const handleTriggerOutbox = async  (id: string)=>{
+
+  const [currentTime, setCurrentTime] = useState(0)
+  useEffect(()=>{
+    window.setInterval(()=>{
+      getLatestArbBlock().then((block:any)=>{
+        console.warn(block);
+        setCurrentTime(block.timestamp)
+        
+      })
+    }, 5000)
+  },[])
+
+  const handleTriggerOutbox = useCallback (async  (id: string, timestamp: string | number)=>{
+    if (timestamp !== 0){
+      return alert("Can't claim this withdrawal yet; try again later")
+    }
     const res = await triggerOutbox(id)
     if (!res){
       alert("Can't claim this withdrawal yet; try again later")
     }
-  }
-  const [currentTime, setCurrentTime] = useState(0)
-  useEffect(()=>{
-    window.setInterval(()=>{
-      setCurrentTime(new Date().getTime())
-    }, 1000)
-  },[])
-  //  sort, include id in data, and filter out target PWs
+  }, [currentTime])
+
+  const calcTimeRemaining = useCallback ((timestamp:number)=>{
+    if (currentTime === 0){
+      return "..."
+    }
+    const ellapsedTime = Math.floor((currentTime - timestamp) / 60)
+    const totalTimeMinutes = 24*60;
+    return Math.max(0, totalTimeMinutes - ellapsedTime)
+  }, [currentTime])
+  //  sort, include id in data, and filter out target PWs // sort by ts
   const pendingWithdrawalsToShow = useMemo(() => {
     return Object.keys(pendingWithdrawalsMap)
       .sort()
@@ -47,7 +67,7 @@ const PendingWithdrawals = ({
           <tr>{headerText}</tr>
           <tr>
             <th>value</th>
-            <th>created</th>
+            <th>est. time remaining (minutes)</th>
             <th></th>
 
           </tr>
@@ -55,11 +75,12 @@ const PendingWithdrawals = ({
         <tbody>
           {pendingWithdrawalsToShow.map(pw => {
             const id = pw.uniqueId.toString()
+            const timeRemaining = calcTimeRemaining(+pw.timestamp)
             return (
               <tr key={id}>
                 <td>{formatEther(pw.value.toString())}</td>
-                <td>{pw.timestamp.toString()}</td>
-                <td><button onClick={()=>handleTriggerOutbox(id)}>claim</button></td>
+                <td>{ timeRemaining }</td>
+                <td><button onClick={()=>handleTriggerOutbox(id, timeRemaining)}>claim</button></td>
 
               </tr>
             )
