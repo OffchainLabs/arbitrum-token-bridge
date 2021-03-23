@@ -74,12 +74,12 @@ export default () => {
                 target="_blank"
               >
                 {' '}
-                your own aggregator
+                your own node
               </a>{' '}
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
                 url={arbV4Testnet.url}
-                msg="Arbv4 Aggregator url copied to clipboard"
+                msg="Arbv4 node rpc url copied to clipboard"
               />{' '} with chain ID    <CopyLink
               url={arbV4Testnet.chainID.toString()}
               msg="Arbv4 chain ID copied to clipboard"
@@ -88,7 +88,7 @@ export default () => {
             {/* (you probably want this one!) or {" "}
                 <CopyLink
                 url={arbV2Testnet.url}
-                msg="Arbv2 Aggregator url copied to clipboard"
+                msg="Arbv2 node url copied to clipboard"
               /> with chain ID <CopyLink
               url={arbV2Testnet.chainID.toString()}
               msg="Arbv2 chainID copied to clipboard"
