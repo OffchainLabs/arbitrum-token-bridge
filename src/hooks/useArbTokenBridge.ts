@@ -535,7 +535,7 @@ export const useArbTokenBridge = (
   return {
     walletAddress,
     bridgeTokens: bridgeTokens,
-    getLatestArbBlock: bridge.getLatestBlock,
+    getLatestArbBlock: bridge.getLatestBlock.bind(bridge),
     balances: {
       eth: ethBalances,
       erc20: erc20Balances,
