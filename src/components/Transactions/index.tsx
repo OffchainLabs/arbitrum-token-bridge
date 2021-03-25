@@ -4,14 +4,14 @@ import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import ExplorerLink from 'components/App/ExplorerLink'
-import { JsonRpcProvider, TransactionReceipt } from 'ethers/providers'
+import { TransactionReceipt, Provider } from '@ethersproject/providers'
 
 interface props {
   transactions: Transaction[]
   walletAddress: string
   clearPendingTransactions: () => any,
-  arbProvider: JsonRpcProvider,
-  ethProvider: JsonRpcProvider,
+  arbProvider: Provider,
+  ethProvider: Provider,
   setTransactionConfirmed: (txID: string) => void,
   updateTransactionStatus: (txReceipts: TransactionReceipt)=> void
 
@@ -42,27 +42,27 @@ const TransactionHistory = ({
     [transactions, walletAddress]
   )
 
-  const unconfirmedWithdrawals = useMemo(
-    () => usersTransactions.filter(txn => txn.status === 'success' && txn.type === 'withdraw'),
-    [usersTransactions]
-  )
+  // const unconfirmedWithdrawals = useMemo(
+  //   () => usersTransactions.filter(txn => txn.status === 'success' && txn.type === 'withdraw'),
+  //   [usersTransactions]
+  // )
 
-  useEffect(()=>{
-    const intervalId = window.setInterval(async function(){
-      if (!unconfirmedWithdrawals) return
-      const currentBlockHeight = await arbProvider.getBlockNumber()
-      unconfirmedWithdrawals.forEach((txn:Transaction)=>{
-        if( !txn.blockNumber ||  (txn.blockNumber + 720 < currentBlockHeight) ) {
-          setTransactionConfirmed(txn.txID)
-        }
-      })
+  // useEffect(()=>{
+  //   const intervalId = window.setInterval(async function(){
+  //     if (!unconfirmedWithdrawals) return
+  //     const currentBlockHeight = await arbProvider.getBlockNumber()
+  //     unconfirmedWithdrawals.forEach((txn:Transaction)=>{
+  //       if( !txn.blockNumber ||  (txn.blockNumber + 720 < currentBlockHeight) ) {
+  //         setTransactionConfirmed(txn.txID)
+  //       }
+  //     })
 
-    }, 10000)
-    return function() {
-      clearInterval(intervalId);
-    }
+  //   }, 10000)
+  //   return function() {
+  //     clearInterval(intervalId);
+  //   }
 
-  }, [unconfirmedWithdrawals])
+  // }, [unconfirmedWithdrawals])
 
 
 

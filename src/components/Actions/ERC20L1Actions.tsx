@@ -2,27 +2,36 @@ import useCappedNumberInput from 'hooks/useCappedNumberInput'
 
 import React, { useMemo } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
-import { formatUnits } from 'ethers/utils'
+import { utils } from 'ethers'
 import NumberInputForm from './numberInputForm'
 import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import SubmitNoInput from './SubmitNoInput'
 import { Transaction } from 'token-bridge-sdk'
+import { PendingWithdrawalsMap } from 'token-bridge-sdk'
+import  PendingWithdrawals  from '../PendingWithdrawals'
+import { L2ToL1EventResultPlus, AssetType } from 'token-bridge-sdk'
+
+const { formatUnits } = utils
 
 type ActionsProps = {
   balances: BridgeBalance | undefined
-  eth: any
+  token: any
   bridgeTokens: any
   currentERC20Address: string
   transactions: Transaction[]
+  pendingWithdrawalsMap: PendingWithdrawalsMap
+  getLatestArbBlock: any
 }
 
 const Actions = ({
   balances,
-  eth,
+  token,
   bridgeTokens,
   currentERC20Address,
-  transactions
+  transactions,
+  pendingWithdrawalsMap,
+  getLatestArbBlock
 
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
@@ -30,7 +39,6 @@ const Actions = ({
 
   const ethChainBalance = balances ? +formatUnits(balances.balance, decimals) : 0
   const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
-  const lockBoxBalance = balances ? +formatUnits(balances.lockBoxBalance, decimals) : 0
   const isDepositMode = useIsDepositMode()
 
   const pendingTokenBalance = useMemo(()=>{
@@ -53,7 +61,7 @@ const Actions = ({
         <Button
           variant="outline-secondary"
           disabled={false}
-          onClick={() => eth.approve(currentERC20Address)}
+          onClick={() => token.approve(currentERC20Address)}
         >
           Approve
         </Button>
@@ -63,25 +71,24 @@ const Actions = ({
         max={ethChainBalance}
         text={'Deposit Token'}
         onSubmit={value => {
-          eth.deposit(currentERC20Address, value)
+          token.deposit(currentERC20Address, value)
         }}
         disabled={!isDepositMode || ethChainBalance === 0}
         buttonText="deposit"
       />
       <label htmlFor="basic-url"></label>
 
-      <SubmitNoInput
-        max={lockBoxBalance}
-        text={`Tokens in Lockbox: ${lockBoxBalance}`}
-        onSubmit={value => {
-          eth.withdrawLockBox(currentERC20Address, value)
-        }}
-        disabled={!isDepositMode || lockBoxBalance === 0}
-        buttonText="transfer lockbox"
-        readOnlyValue={lockBoxBalance}
-      />
 
-    {pendingTokenBalance ? <label > <i>pending balance: {pendingTokenBalance}</i></label> : null}
+      <PendingWithdrawals
+        filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus)=> l2ToL1EventResultPlus.type === AssetType.ERC20 }
+        headerText="Pending Token Withdrawals"
+        triggerOutbox={token.triggerOutbox}
+        pendingWithdrawalsMap={pendingWithdrawalsMap}
+        getLatestArbBlock={getLatestArbBlock}
+
+        />
+
+    
     </div>
   )
 }

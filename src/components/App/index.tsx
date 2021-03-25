@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import styles from './styles.module.scss'
 import { statement } from '@babel/template'
-import { getInjectedWeb3 } from 'util/web3'
+import { getInjectedWeb3, requestNetworkSwitch } from 'util/web3'
 import * as ethers from 'ethers'
 import Transactions from '../Transactions'
 import {
   useArbTokenBridge,
   TokenType,
   ContractStorage,
-  BridgeToken,
   NewTransaction,
   AssetType
 } from 'token-bridge-sdk'
@@ -21,24 +20,17 @@ import './App.css'
 import { BridgeConfig, connextTxn } from 'util/index'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import AlertDialog from './Dialogue'
+import { Bridge } from 'arb-ts'
+interface AppProps {
+  bridge : Bridge
+}
+const App = ( { bridge }:AppProps) => {
+  // TODO:
+  const arbProvider = bridge.l2Signer.provider as ethers.ethers.providers.Provider 
+  const ethProvider = bridge.l1Bridge.l1Signer.provider as ethers.ethers.providers.Provider 
 
-const App = ({
-  arbProvider,
-  ethProvider,
-  arbSigner,
-  ethSigner,
-  l2Network,
-  setL2Network
-}: BridgeConfig) => {
   const isDepositMode = useIsDepositMode()
-  const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 666
-  const rollupAddress = useMemo(()=>{
-    if (isDepositMode){
-      return false ? "0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71" : "0x2e8aF9f74046D3E55202Fcfb893348316B142230"
-    } else {
-      return true ?  "0x2e8aF9f74046D3E55202Fcfb893348316B142230" :"0xC34Fd04E698dB75f8381BFA7298e8Ae379bFDA71"
-    }
-  }, [l2Network, isDepositMode, networkId])
+  // const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 666
 
   const {
     walletAddress,
@@ -47,20 +39,14 @@ const App = ({
     token,
     bridgeTokens,
     eth,
-    transactions
+    transactions,
+    pendingWithdrawalsMap,
+    getLatestArbBlock
   } = useArbTokenBridge(
-    ethProvider,
-    arbProvider,
-    rollupAddress,
-    ethSigner,
-    arbSigner
+    bridge
   )
 
 
-  const vmId = rollupAddress
-  useEffect(() => {
-    vmId && walletAddress && balances.update()
-  }, [vmId, walletAddress])
 
   const [currentERC20Address, setCurrentERC20Address] = useLocalStorage(
     'currentERC20',
@@ -73,22 +59,10 @@ const App = ({
 
   useEffect(() => {
     const allAddresses = Object.keys(bridgeTokens).sort()
-    if (!currentERC20Address || !bridgeTokens[currentERC20Address]) {
-      const firstERC20 = Object.values(bridgeTokens).find(
-        token => token && token.type === TokenType.ERC20
-      )
-      firstERC20 &&
-        setCurrentERC20Address(
-          firstERC20.eth?.address || firstERC20.arb?.address
-        )
+    if (!currentERC20Address) {
+      setCurrentERC20Address(allAddresses[0] || "")
     }
 
-    if (!currentERC721Address || !bridgeTokens[currentERC721Address]) {
-      const firstERC721 = Object.values(bridgeTokens).find(
-        token => token && token.type === TokenType.ERC721
-      )
-      firstERC721 && setCurrentERC721Address(firstERC721.eth.address)
-    }
   }, [bridgeTokens])
 
   const erc20Balance = (() => {
@@ -129,24 +103,26 @@ const App = ({
 
 
   }, [arbProvider, addTransaction, updateTransactionStatus, ethProvider])
+    useEffect(()=>{
+      window.setInterval(()=>{
+        balances.update()
+      }, 3000)
+    },[])
 
   return (
     <div className="container">
+      {/* <button onClick={requestNetworkSwitch}>XXXXXXX</button> */}
       <div className="row">
         <Header
           ethAddress={walletAddress}
-          vmId={vmId}
           ethBalance={balances.eth}
           erc20Balance={erc20Balance}
           erc721Balance={erc721Balance}
           bridgeTokens={bridgeTokens}
           currentERC20Address={currentERC20Address ?? ''}
           currentERC721Address={currentERC721Address ?? ''}
-          l2Network={l2Network}
-          setL2Network={setL2Network}
-          networkId={networkId}
         />
-        <AlertDialog networkId={networkId} l2Network={l2Network}/>
+        {/* <AlertDialog networkId={networkId} l2Network={l2Network}/> */}
       </div>
       <div className="row" id="bridgeRow">
         <div id="bridgebody">
@@ -163,21 +139,22 @@ const App = ({
             setCurrentERC20Address={setCurrentERC20Address}
             setCurrentERC721Address={setCurrentERC721Address}
             transactions={transactions.transactions}
-            networkId={networkId}
             ethAddress={walletAddress}
             handleConnextTxn={handleConnextTxn}
+            pendingWithdrawalsMap={pendingWithdrawalsMap}
+            getLatestArbBlock={getLatestArbBlock}
 
           />
         </div>
       </div>
       <div className="row">
         <Transactions
+          ethProvider={bridge.l1Bridge.l1Provider}
+          arbProvider={bridge.l2Provider}
           transactions={transactions.transactions}
           clearPendingTransactions={transactions.clearPendingTransactions}
           walletAddress={walletAddress}
           setTransactionConfirmed={transactions.setTransactionConfirmed}
-          arbProvider={arbProvider}
-          ethProvider={ethProvider}
           updateTransactionStatus={transactions.updateTransactionStatus}
 
         />

@@ -7,7 +7,7 @@ interface props {
 
 const ExplorerLink = ({hash, type}: props) =>{
 
-    const url = type === 'l1-tx' ? `https://kovan.etherscan.io/tx/${hash}`  : `https://explorer.offchainlabs.com/#/${type}/${hash}`
+    const url = type === 'l1-tx' ? `https://kovan.etherscan.io/tx/${hash}`  : `https://explorer.arbitrum.io/#/${type}/${hash}`
     return <a href={url} target="_blank" >{hash}</a>
 }
 

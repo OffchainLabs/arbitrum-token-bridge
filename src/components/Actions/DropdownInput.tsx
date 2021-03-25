@@ -6,7 +6,7 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import Button from 'react-bootstrap/Button'
 
 import Form from 'react-bootstrap/Form'
-import { BigNumber } from 'ethers/utils'
+import { BigNumber } from 'ethers'
 import { useState, useMemo } from 'react'
 
 type DropdownInputFormProps = {

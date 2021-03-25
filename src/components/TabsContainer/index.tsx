@@ -10,6 +10,7 @@ import Balance from 'components/Balance'
 import ERC721BalanceUi from 'components/Balance/ERC721Balance'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { connextTxn } from 'util/index'
+import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 
 import {
   BridgeBalance,
@@ -43,9 +44,10 @@ type TabProps = {
   bridgeTokens: ContractStorage<BridgeToken>
   addToken: (a: string, type: TokenType) => Promise<string>
   transactions: Transaction[]
-  networkId: number
   ethAddress: string
   handleConnextTxn: connextTxn
+  pendingWithdrawalsMap: PendingWithdrawalsMap
+  getLatestArbBlock: any
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -63,9 +65,10 @@ const TabsContainer = ({
   setCurrentERC20Address,
   setCurrentERC721Address,
   transactions,
-  networkId,
   ethAddress,
-  handleConnextTxn
+  handleConnextTxn,
+  pendingWithdrawalsMap,
+  getLatestArbBlock
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -74,8 +77,8 @@ const TabsContainer = ({
     .filter((token): token is BridgeToken => !!token)
     .sort((a: BridgeToken, b: BridgeToken) => {
       if (a.symbol === b.symbol){
-        const Aaddress = a.eth?.addresss || a.arb?.aaddresss
-        const Baddress = b.eth?.addresss || b.arb?.aaddresss
+        const Aaddress = a.address
+        const Baddress = b.address
         return Aaddress > Baddress ? 1: -1
       }
 
@@ -90,7 +93,9 @@ const TabsContainer = ({
 
   const currentERC20Token = bridgeTokens[currentERC20Address]
   const currentERC721Token = bridgeTokens[currentERC721Address]
-  const disabledWithdrawals = networkId === 152709604825713
+  const disabledWithdrawals = false
+
+  const currentTokenL2Address = currentERC20Token && currentERC20Token.l2Address || null
 
   return (
     <Tabs
@@ -107,6 +112,8 @@ const TabsContainer = ({
                   balances={ethBalances}
                   eth={eth}
                   transactions={transactions}
+                  pendingWithdrawalsMap={pendingWithdrawalsMap}
+                  getLatestArbBlock={getLatestArbBlock}
                 />
               </PanelWrapper>
             </Col>
@@ -140,17 +147,23 @@ const TabsContainer = ({
             </Col>
           </Row>
           <Row style={{fontSize: 14}}>
-          {currentERC20Address   ? <Col>Token Address: <ExplorerLink hash={currentERC20Address} type={'address'}/></Col> : null }
+          {currentERC20Address   ? <Col>Token L1 Address: <ExplorerLink hash={currentERC20Address} type={'address'}/></Col> : null }
           </Row>
+          <Row style={{fontSize: 14}}>
+          {currentTokenL2Address   ? <Col>Token L2 Address: <ExplorerLink hash={currentTokenL2Address} type={'address'}/></Col> : null }
+          </Row>
+
           <Row>
             <Col>
               <PanelWrapper isDepositPanel={true}>
                 <ERC20L1Actions
                   balances={erc20BridgeBalance}
-                  eth={token}
+                  token={token}
                   bridgeTokens={bridgeTokens}
                   currentERC20Address={currentERC20Address}
                   transactions={transactions}
+                  pendingWithdrawalsMap={pendingWithdrawalsMap}
+                  getLatestArbBlock={getLatestArbBlock}
                 />
               </PanelWrapper>
             </Col>
@@ -172,7 +185,7 @@ const TabsContainer = ({
           </Row>
         </Container>
       </Tab>
-      <Tab eventKey="erc721" title="ERC-721">
+      {/* <Tab eventKey="erc721" title="ERC-721">
         <Container>
           <Row>
             <Col>
@@ -221,7 +234,7 @@ const TabsContainer = ({
             </Col>
           </Row>
         </Container>
-      </Tab>
+      </Tab> */}
     </Tabs>
   )
 }

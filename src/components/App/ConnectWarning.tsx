@@ -34,6 +34,7 @@ export default () => {
 
   const arbV2Testnet = networks[+arbNetworkIds[1]]
   const arbV3Testnet = networks[+arbNetworkIds[2]]
+  const arbV4Testnet = networks[+arbNetworkIds[3]]
 
   return (
     <Container>
@@ -62,7 +63,7 @@ export default () => {
           <div style={styles.upperSecton}>
             <div style={styles.headerStyle}>
               {' '}
-              Connect to {l2NetworkName}, v2 or v3 (withdraw from Arbitrum)
+              Connect to {l2NetworkName} (withdraw from Arbitrum)
             </div>
             {/* <Col> */}
             <div style={styles.textStyle}>
@@ -73,21 +74,21 @@ export default () => {
                 target="_blank"
               >
                 {' '}
-                your own aggregator
+                your own node
               </a>{' '}
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
-                url={arbV3Testnet.url}
-                msg="Arbv3 Aggregator url copied to clipboard"
+                url={arbV4Testnet.url}
+                msg="Arbv4 node rpc url copied to clipboard"
               />{' '} with chain ID    <CopyLink
-              url={arbV3Testnet.chainID.toString()}
-              msg="Arbv3 chain ID copied to clipboard"
-            /> for Arbv3 
+              url={arbV4Testnet.chainID.toString()}
+              msg="Arbv4 chain ID copied to clipboard"
+            /> for Arbv4 
             
             {/* (you probably want this one!) or {" "}
                 <CopyLink
                 url={arbV2Testnet.url}
-                msg="Arbv2 Aggregator url copied to clipboard"
+                msg="Arbv2 node url copied to clipboard"
               /> with chain ID <CopyLink
               url={arbV2Testnet.chainID.toString()}
               msg="Arbv2 chainID copied to clipboard"
@@ -111,7 +112,7 @@ export default () => {
             <div style={styles.textStyle}>
               Add our custom block explorer url to Arbitrum network:{' '}
               <CopyLink
-                url="https://explorer.offchainlabs.com/#"
+                url="https://explorer.arbitrum.io/#"
                 msg="Block explorer url copied to clipboard"
               />{`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
             
