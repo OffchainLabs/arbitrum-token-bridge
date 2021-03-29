@@ -1156,10 +1156,10 @@ ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-arb-ts@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.4.tgz#ca9287e46f1b8c58667a810fade016a2443a33e2"
-  integrity sha512-EU8kWqltRNVUY0lOY6sDC7YmktqVXTOVWXCTkTPtBD8GRmTgy0miPgWdI8HruPoK1Da1sbGeBBDuaD2JRt+xuA==
+arb-ts@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.6.tgz#439adfdfb8292259acfe08b2d6c9e59e24891ca0"
+  integrity sha512-MT8VH7CXq2xrCJUBGqPLM7lUDXPA3QRY0/xVAN+qHGZ0Tx1eaUYxisNNmdOYg2bTXTuDD03yyiG82IoEFLZL8A==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.0.12"
