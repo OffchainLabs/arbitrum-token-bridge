@@ -48,7 +48,7 @@ const PendingWithdrawals = ({
       return "..."
     }
     const ellapsedTime = Math.floor((currentTime - timestamp) / 60)
-    const totalTimeMinutes = 24*60;
+    const totalTimeMinutes = 48*60;
     return Math.max(0, totalTimeMinutes - ellapsedTime)
   }, [currentTime])
   //  sort, include id in data, and filter out target PWs // sort by ts
