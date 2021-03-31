@@ -9,16 +9,18 @@ interface PendingWithdrawalsProps {
   headerText: string
   triggerOutbox: (id: string) => {} | undefined
   getLatestArbBlock: any
+  decimals?:number
   // Header
 }
-const { formatEther } = utils
+const { formatUnits } = utils
 
 const PendingWithdrawals = ({
   pendingWithdrawalsMap,
   filter,
   headerText,
   triggerOutbox,
-  getLatestArbBlock
+  getLatestArbBlock,
+  decimals = 18
 }: PendingWithdrawalsProps) => {
 
 
@@ -78,7 +80,7 @@ const PendingWithdrawals = ({
             const timeRemaining = calcTimeRemaining(+pw.timestamp)
             return (
               <tr key={id}>
-                <td>{formatEther(pw.value.toString())}</td>
+                <td>{formatUnits(pw.value.toString(), decimals)}</td>
                 <td>{ timeRemaining }</td>
                 <td><button onClick={()=>handleTriggerOutbox(id, timeRemaining)}>claim</button></td>
 

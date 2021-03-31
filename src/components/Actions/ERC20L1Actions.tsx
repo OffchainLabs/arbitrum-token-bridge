@@ -85,6 +85,7 @@ const Actions = ({
         triggerOutbox={token.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
         getLatestArbBlock={getLatestArbBlock}
+        decimals={decimals}
 
         />
 
