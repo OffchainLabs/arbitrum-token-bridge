@@ -4613,6 +4613,17 @@ arb-ts@^0.0.6:
     "@types/promise-poller" "^1.7.0"
     ethers "^5.0.24"
 
+arb-ts@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.7.tgz#50b42112da66986cdc4af72047cb43c09b97a9cb"
+  integrity sha512-aM0lOJ8kcmAtaIXrhvp5IiWsOo+xT1L/CUfPEFhzLNe+A7YA69kuRJ9NQn8oUll5D87/V97CysAt2mwcaakWVA==
+  dependencies:
+    "@ethersproject/address" "^5.0.8"
+    "@ethersproject/bignumber" "^5.0.12"
+    "@ethersproject/bytes" "^5.0.8"
+    "@types/promise-poller" "^1.7.0"
+    ethers "^5.0.24"
+
 are-we-there-yet@~1.1.2:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/are-we-there-yet/-/are-we-there-yet-1.1.5.tgz#4b35c2944f062a8bfcda66410760350fe9ddfc21"
