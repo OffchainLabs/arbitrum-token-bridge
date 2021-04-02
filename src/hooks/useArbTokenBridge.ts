@@ -323,7 +323,7 @@ export const useArbTokenBridge = (
     }
   }
 
-  const addToken = async (
+  const addToken = useCallback( async (
     erc20L1orL2Address: string,
     type: TokenType = TokenType.ERC20
   ) => {
@@ -349,8 +349,12 @@ export const useArbTokenBridge = (
     }
     updateAllBalances()
     updateBridgeTokens()
+    const lCaseToken = l1Address.toLocaleLowerCase()
+    if (!ERC20Cache.includes(lCaseToken)){
+      setERC20Cache([...ERC20Cache, lCaseToken])
+    }
     return l1Address
-  }
+  }, [ERC20Cache, setERC20Cache])
 
   const expireCache = (): void => {
     clearERC20Cache()
