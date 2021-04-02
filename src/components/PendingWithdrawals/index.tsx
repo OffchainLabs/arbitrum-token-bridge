@@ -28,7 +28,6 @@ const PendingWithdrawals = ({
   useEffect(()=>{
     window.setInterval(()=>{
       getLatestArbBlock().then((block:any)=>{
-        console.warn(block);
         setCurrentTime(block.timestamp)
         
       })
