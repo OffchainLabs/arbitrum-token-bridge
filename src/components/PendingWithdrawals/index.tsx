@@ -42,7 +42,7 @@ const PendingWithdrawals = ({
     if (!res){
       alert("Can't claim this withdrawal yet; try again later")
     }
-  }, [currentTime])
+  }, [currentTime, triggerOutbox])
 
   const calcTimeRemaining = useCallback ((timestamp:number)=>{
     if (currentTime === 0){
