@@ -249,11 +249,9 @@ export const useArbTokenBridge = (
     const tokenData = _tokenData.ERC20
     const amountParsed = await utils.parseUnits(amount, tokenData.decimals)
 
-    const tx = await bridge.depositAsERC20(
+    const tx = await bridge.deposit(
       erc20Address,
-      amountParsed,
-      BigNumber.from(100000000000),
-      BigNumber.from(0)
+      amountParsed
     )
 
     addTransaction({
