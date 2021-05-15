@@ -26,8 +26,8 @@ const networks: Networks = {
     isArbitrum: true,
     url: "https://kovan4.arbitrum.io/rpc"
   },
-  149591129601170:{
-    chainID: 149591129601170,
+  144545313136048:{
+    chainID: 144545313136048,
     name: 'Arbitrum-testnet-5',
     gif: arb,
     isArbitrum: true,
@@ -62,6 +62,6 @@ const networks: Networks = {
   }
 }
 
-export const arbNetworkIds = ["215728282823301", "152709604825713", "79377087078960", "212984383488152","149591129601170"]
+export const arbNetworkIds = ["215728282823301", "152709604825713", "79377087078960", "212984383488152","144545313136048"]
 
 export default networks
