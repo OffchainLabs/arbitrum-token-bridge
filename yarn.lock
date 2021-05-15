@@ -1177,10 +1177,10 @@ ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-arb-ts@^0.0.11:
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.11.tgz#2d798c9b48d65d3b16fb8da1f24fb5dfb58762b9"
-  integrity sha512-py3YN3wLvEZhI2t04zbV8qvdC+/BQZs4SDNoxUSbmZxwmRmL2spfJNNMFuIYIo6jNzoryuQyRvEtdiF6ihlTQw==
+arb-ts@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.12.tgz#9fadfe48844f11c4be16447943ce253d0b88dbdf"
+  integrity sha512-kZQr0jlsel0/4hdl1tsYzH4gTxItwRVQ9Gtd8f7keYhL6dmMlVmdv/KrdsDRKxtEvFddhrs352Y5Cv/4XuG1Sw==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
