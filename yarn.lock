@@ -330,13 +330,22 @@
     "@ethersproject/logger" "^5.0.5"
     bn.js "^4.4.0"
 
-"@ethersproject/bignumber@5.0.15", "@ethersproject/bignumber@^5.0.10", "@ethersproject/bignumber@^5.0.12", "@ethersproject/bignumber@^5.0.13", "@ethersproject/bignumber@^5.0.7", "@ethersproject/bignumber@^5.0.8":
+"@ethersproject/bignumber@5.0.15", "@ethersproject/bignumber@^5.0.10", "@ethersproject/bignumber@^5.0.13", "@ethersproject/bignumber@^5.0.7", "@ethersproject/bignumber@^5.0.8":
   version "5.0.15"
   resolved "https://registry.yarnpkg.com/@ethersproject/bignumber/-/bignumber-5.0.15.tgz#b089b3f1e0381338d764ac1c10512f0c93b184ed"
   integrity sha512-MTADqnyacvdRwtKh7o9ujwNDSM1SDJjYDMYAzjIgjoi9rh6TY4suMbhCa3i2vh3SUXiXSICyTI8ui+NPdrZ9Lw==
   dependencies:
     "@ethersproject/bytes" "^5.0.9"
     "@ethersproject/logger" "^5.0.8"
+    bn.js "^4.4.0"
+
+"@ethersproject/bignumber@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@ethersproject/bignumber/-/bignumber-5.1.1.tgz#84812695253ccbc639117f7ac49ee1529b68e637"
+  integrity sha512-AVz5iqz7+70RIqoQTznsdJ6DOVBYciNlvO+AlQmPTB6ofCvoihI9bQdr6wljsX+d5W7Yc4nyvQvP4JMzg0Agig==
+  dependencies:
+    "@ethersproject/bytes" "^5.1.0"
+    "@ethersproject/logger" "^5.1.0"
     bn.js "^4.4.0"
 
 "@ethersproject/bytes@5.0.11", "@ethersproject/bytes@^5.0.4", "@ethersproject/bytes@^5.0.8", "@ethersproject/bytes@^5.0.9":
@@ -352,6 +361,13 @@
   integrity sha512-O+sJNVGzzuy51g+EMK8BegomqNIg+C2RO6vOt0XP6ac4o4saiq69FnjlsrNslaiMFVO7qcEHBsWJ9hx1tj1lMw==
   dependencies:
     "@ethersproject/logger" "^5.0.5"
+
+"@ethersproject/bytes@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@ethersproject/bytes/-/bytes-5.1.0.tgz#55dfa9c4c21df1b1b538be3accb50fb76d5facfd"
+  integrity sha512-sGTxb+LVjFxJcJeUswAIK6ncgOrh3D8c192iEJd7mLr95V6du119rRfYT/b87WPkZ5I3gRBUYIYXtdgCWACe8g==
+  dependencies:
+    "@ethersproject/logger" "^5.1.0"
 
 "@ethersproject/constants@5.0.10", "@ethersproject/constants@^5.0.4", "@ethersproject/constants@^5.0.8":
   version "5.0.10"
@@ -524,6 +540,11 @@
   version "5.0.8"
   resolved "https://registry.yarnpkg.com/@ethersproject/logger/-/logger-5.0.8.tgz#135c1903d35c878265f3cbf2b287042c4c20d5d4"
   integrity sha512-SkJCTaVTnaZ3/ieLF5pVftxGEFX56pTH+f2Slrpv7cU0TNpUZNib84QQdukd++sWUp/S7j5t5NW+WegbXd4U/A==
+
+"@ethersproject/logger@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@ethersproject/logger/-/logger-5.1.0.tgz#4cdeeefac029373349d5818f39c31b82cc6d9bbf"
+  integrity sha512-wtUaD1lBX10HBXjjKV9VHCBnTdUaKQnQ2XSET1ezglqLdPdllNOIlLfhyCRqXm5xwcjExVI5ETokOYfjPtaAlw==
 
 "@ethersproject/networks@5.0.6":
   version "5.0.6"
@@ -1156,13 +1177,13 @@ ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-arb-ts@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.7.tgz#50b42112da66986cdc4af72047cb43c09b97a9cb"
-  integrity sha512-aM0lOJ8kcmAtaIXrhvp5IiWsOo+xT1L/CUfPEFhzLNe+A7YA69kuRJ9NQn8oUll5D87/V97CysAt2mwcaakWVA==
+arb-ts@^0.0.11:
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.11.tgz#2d798c9b48d65d3b16fb8da1f24fb5dfb58762b9"
+  integrity sha512-py3YN3wLvEZhI2t04zbV8qvdC+/BQZs4SDNoxUSbmZxwmRmL2spfJNNMFuIYIo6jNzoryuQyRvEtdiF6ihlTQw==
   dependencies:
     "@ethersproject/address" "^5.0.8"
-    "@ethersproject/bignumber" "^5.0.12"
+    "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
     "@types/promise-poller" "^1.7.0"
     ethers "^5.0.24"

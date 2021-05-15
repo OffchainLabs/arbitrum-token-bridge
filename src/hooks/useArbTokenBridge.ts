@@ -323,38 +323,38 @@ export const useArbTokenBridge = (
     }
   }
 
-  const addToken = useCallback( async (
-    erc20L1orL2Address: string,
-    type: TokenType = TokenType.ERC20
-  ) => {
-    let l1Address = erc20L1orL2Address
-    const l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
-    try {
-      await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
-    } catch (error) {
-      console.info(`no L2 token for ${l1Address} (which is fine)`)
-    }
-
-    if (!(l1Data && l1Data.ERC20)) {
+  const addToken = useCallback(
+    async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
+      let l1Address = erc20L1orL2Address
+      const l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
       try {
-        l1Address = (await bridge.getERC20L1Address(erc20L1orL2Address)) || ''
-        if (!l1Address) {
-          throw new Error('')
-        }
-        await bridge.getAndUpdateL1TokenData(l1Address)
-        await bridge.getAndUpdateL2TokenData(l1Address)
-      } catch (err) {
-        console.warn('Address is not a token address ')
+        await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
+      } catch (error) {
+        console.info(`no L2 token for ${l1Address} (which is fine)`)
       }
-    }
-    updateAllBalances()
-    updateBridgeTokens()
-    const lCaseToken = l1Address.toLocaleLowerCase()
-    if (!ERC20Cache.includes(lCaseToken)){
-      setERC20Cache([...ERC20Cache, lCaseToken])
-    }
-    return l1Address
-  }, [ERC20Cache, setERC20Cache])
+
+      if (!(l1Data && l1Data.ERC20)) {
+        try {
+          l1Address = (await bridge.getERC20L1Address(erc20L1orL2Address)) || ''
+          if (!l1Address) {
+            throw new Error('')
+          }
+          await bridge.getAndUpdateL1TokenData(l1Address)
+          await bridge.getAndUpdateL2TokenData(l1Address)
+        } catch (err) {
+          console.warn('Address is not a token address ')
+        }
+      }
+      updateAllBalances()
+      updateBridgeTokens()
+      const lCaseToken = l1Address.toLocaleLowerCase()
+      if (!ERC20Cache.includes(lCaseToken)) {
+        setERC20Cache([...ERC20Cache, lCaseToken])
+      }
+      return l1Address
+    },
+    [ERC20Cache, setERC20Cache]
+  )
 
   const expireCache = (): void => {
     clearERC20Cache()
@@ -402,7 +402,7 @@ export const useArbTokenBridge = (
       const balance = l1TokenData.ERC20 ? l1TokenData.ERC20.balance : Zero
       const arbChainBalance =
         l2TokenData && l2TokenData.ERC20 ? l2TokenData.ERC20.balance : Zero
-        erc20TokenBalances[address] = { balance, arbChainBalance }
+      erc20TokenBalances[address] = { balance, arbChainBalance }
     }
     setErc20Balances(erc20TokenBalances)
   }
@@ -411,9 +411,12 @@ export const useArbTokenBridge = (
     updateEthBalances()
     updateTokenBalances()
   }
+console.warn(123);
 
   const triggerOutboxToken = useCallback(
     async (id: string) => {
+      console.warn('pw map',pendingWithdrawalsMap, id );
+
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
       const {
@@ -461,6 +464,8 @@ export const useArbTokenBridge = (
 
   const triggerOutboxEth = useCallback(
     async (id: string) => {
+      console.warn('pw map',pendingWithdrawalsMap, id );
+
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
       const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
