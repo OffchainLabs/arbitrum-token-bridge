@@ -2268,7 +2268,7 @@
     "@ethersproject/logger" "^5.0.5"
     bn.js "^4.4.0"
 
-"@ethersproject/bignumber@5.0.14", "@ethersproject/bignumber@>=5.0.0-beta.130", "@ethersproject/bignumber@^5.0.10", "@ethersproject/bignumber@^5.0.12", "@ethersproject/bignumber@^5.0.13", "@ethersproject/bignumber@^5.0.5", "@ethersproject/bignumber@^5.0.7", "@ethersproject/bignumber@^5.0.8":
+"@ethersproject/bignumber@5.0.14", "@ethersproject/bignumber@>=5.0.0-beta.130", "@ethersproject/bignumber@^5.0.10", "@ethersproject/bignumber@^5.0.13", "@ethersproject/bignumber@^5.0.5", "@ethersproject/bignumber@^5.0.7", "@ethersproject/bignumber@^5.0.8":
   version "5.0.14"
   resolved "https://registry.yarnpkg.com/@ethersproject/bignumber/-/bignumber-5.0.14.tgz#605bc61dcbd4a8c6df8b5a7a77c0210273f3de8a"
   integrity sha512-Q4TjMq9Gg3Xzj0aeJWqJgI3tdEiPiET7Y5OtNtjTAODZ2kp4y9jMNg97zVcvPedFvGROdpGDyCI77JDFodUzOw==
@@ -2284,6 +2284,15 @@
   dependencies:
     "@ethersproject/bytes" "^5.0.9"
     "@ethersproject/logger" "^5.0.8"
+    bn.js "^4.4.0"
+
+"@ethersproject/bignumber@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@ethersproject/bignumber/-/bignumber-5.1.1.tgz#84812695253ccbc639117f7ac49ee1529b68e637"
+  integrity sha512-AVz5iqz7+70RIqoQTznsdJ6DOVBYciNlvO+AlQmPTB6ofCvoihI9bQdr6wljsX+d5W7Yc4nyvQvP4JMzg0Agig==
+  dependencies:
+    "@ethersproject/bytes" "^5.1.0"
+    "@ethersproject/logger" "^5.1.0"
     bn.js "^4.4.0"
 
 "@ethersproject/bytes@5.0.10", "@ethersproject/bytes@>=5.0.0-beta.129", "@ethersproject/bytes@^5.0.2", "@ethersproject/bytes@^5.0.4", "@ethersproject/bytes@^5.0.8", "@ethersproject/bytes@^5.0.9":
@@ -2313,6 +2322,13 @@
   integrity sha512-O+sJNVGzzuy51g+EMK8BegomqNIg+C2RO6vOt0XP6ac4o4saiq69FnjlsrNslaiMFVO7qcEHBsWJ9hx1tj1lMw==
   dependencies:
     "@ethersproject/logger" "^5.0.5"
+
+"@ethersproject/bytes@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@ethersproject/bytes/-/bytes-5.1.0.tgz#55dfa9c4c21df1b1b538be3accb50fb76d5facfd"
+  integrity sha512-sGTxb+LVjFxJcJeUswAIK6ncgOrh3D8c192iEJd7mLr95V6du119rRfYT/b87WPkZ5I3gRBUYIYXtdgCWACe8g==
+  dependencies:
+    "@ethersproject/logger" "^5.1.0"
 
 "@ethersproject/constants@5.0.10":
   version "5.0.10"
@@ -2657,6 +2673,11 @@
   version "5.0.9"
   resolved "https://registry.yarnpkg.com/@ethersproject/logger/-/logger-5.0.9.tgz#0e6a0b3ecc938713016954daf4ac7967467aa763"
   integrity sha512-kV3Uamv3XOH99Xf3kpIG3ZkS7mBNYcLDM00JSDtNgNB4BihuyxpQzIZPRIDmRi+95Z/R1Bb0X2kUNHa/kJoVrw==
+
+"@ethersproject/logger@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@ethersproject/logger/-/logger-5.1.0.tgz#4cdeeefac029373349d5818f39c31b82cc6d9bbf"
+  integrity sha512-wtUaD1lBX10HBXjjKV9VHCBnTdUaKQnQ2XSET1ezglqLdPdllNOIlLfhyCRqXm5xwcjExVI5ETokOYfjPtaAlw==
 
 "@ethersproject/networks@5.0.5":
   version "5.0.5"
@@ -4602,13 +4623,13 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-ts@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.7.tgz#50b42112da66986cdc4af72047cb43c09b97a9cb"
-  integrity sha512-aM0lOJ8kcmAtaIXrhvp5IiWsOo+xT1L/CUfPEFhzLNe+A7YA69kuRJ9NQn8oUll5D87/V97CysAt2mwcaakWVA==
+arb-ts@^0.0.11:
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.11.tgz#2d798c9b48d65d3b16fb8da1f24fb5dfb58762b9"
+  integrity sha512-py3YN3wLvEZhI2t04zbV8qvdC+/BQZs4SDNoxUSbmZxwmRmL2spfJNNMFuIYIo6jNzoryuQyRvEtdiF6ihlTQw==
   dependencies:
     "@ethersproject/address" "^5.0.8"
-    "@ethersproject/bignumber" "^5.0.12"
+    "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
     "@types/promise-poller" "^1.7.0"
     ethers "^5.0.24"
@@ -17104,14 +17125,14 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@^0.3.3:
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.3.3.tgz#0d661f0791f276abb13a208e24c97b80020676d3"
-  integrity sha512-Bp+wA2JoWYYLCmhc9rYm6zJjnryAWid7MaVdJA1kp1ePZEifqzCWqEc+h50/7vssLjNF1k8N3fDe9funTzEoeg==
+token-bridge-sdk@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.3.4.tgz#b7becc9e74ee7c6106892caa20016857360b3896"
+  integrity sha512-Qq5O2KRwQAi9VKtdwAWh0MNmMoNyNuXcTOdWN6j1/jIf8CbC24sxh+e1Og1qFcG1XiSH2O662psoVC2DxxoE8g==
   dependencies:
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
-    arb-ts "^0.0.7"
+    arb-ts "^0.0.11"
     ethers "5.0.24"
     lodash.clonedeep "^4.5.0"
     lodash.isempty "^4.4.0"
