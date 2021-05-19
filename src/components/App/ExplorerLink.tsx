@@ -17,11 +17,11 @@ const ExplorerLink = ({hash, type, layer}: props) =>{
             case 'deposit-l1':
             case 'approve':
             case 'connext-deposit':   
+            case 'outbox':
                 return `${l1Prefix}/tx/${hash}`
             case 'deposit-l2':
             case 'withdraw':
             case 'connext-withdraw':
-            case 'outbox':
                 return `${l2Prefix}/tx/${hash}`
 
             case 'chain':

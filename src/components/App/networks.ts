@@ -7,6 +7,7 @@ interface Network {
   isArbitrum?: boolean
   url: string
   gif?: string
+  confirmPeriodBlocks?: number
 }
 interface Networks {
   [id: number]: Network
@@ -31,7 +32,8 @@ const networks: Networks = {
     name: 'Arbitrum-testnet-5',
     gif: arb,
     isArbitrum: true,
-    url: "https://kovan5.arbitrum.io/rpc"
+    url: "https://kovan5.arbitrum.io/rpc",
+    confirmPeriodBlocks: 900
   },
   215728282823301: {
     chainID: 215728282823301,
