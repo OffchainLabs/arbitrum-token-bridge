@@ -17,15 +17,16 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
  * @alias Transaction
  * @description Bridge transaction data with up to date status.
  */
-
+export type TxnType =     | 'deposit'
+| 'deposit-l1'
+| 'deposit-l2'
+| 'withdraw'
+| 'outbox'
+| 'approve'
+| 'connext-deposit'
+| 'connext-withdraw'
 type TransactionBase = {
-  type:
-    | 'deposit'
-    | 'withdraw'
-    | 'outbox'
-    | 'approve'
-    | 'connext-deposit'
-    | 'connext-withdraw'
+  type:TxnType
   status: TxnStatus
   value: string | null
   txID?: string

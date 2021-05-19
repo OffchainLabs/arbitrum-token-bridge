@@ -9,13 +9,14 @@ import {
   BigNumber
 } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { Bridge, L1TokenData, L2ToL1EventResult } from 'arb-ts'
+import { Bridge, L1TokenData, L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
 import useTransactions from './useTransactions'
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
   value: BigNumber
   tokenAddress?: string
+  outgoingMessageState: OutgoingMessageState
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
@@ -121,6 +122,8 @@ export const useArbTokenBridge = (
     // '0x57Ca11067892510E022D65b0483b31Cd49155389', // ATKN
     // '0xEe83ea3c089C36622EFc6Bf438114b62d5B4C162' // USDC
   ]
+
+  const tokenBlackList: string[] = []
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
     string[]
   >('ERC20Cache', []) as [
@@ -156,7 +159,7 @@ export const useArbTokenBridge = (
     const tx = await bridge.depositETH(weiValue)
     try {
       addTransaction({
-        type: 'deposit',
+        type: 'deposit-l1',
         status: 'pending',
         value: etherVal,
         txID: tx.hash,
@@ -166,6 +169,25 @@ export const useArbTokenBridge = (
       })
       const receipt = await tx.wait()
       updateTransactionStatus(receipt)
+
+
+      const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
+      if(!seqNum)return
+      const l2TxHash = await bridge.calculateL2TransactionHash(seqNum)
+
+      addTransaction({
+        type: 'deposit-l2',
+        status: 'pending',
+        value: etherVal,
+        txID: l2TxHash,
+        assetName: 'ETH',
+        assetType: AssetType.ETH,
+        sender: await bridge.getWalletAddress()
+      })
+
+      const retryableRec = await bridge.l2Provider.waitForTransaction(l2TxHash, undefined,300*1000)
+      updateTransactionStatus(retryableRec)
+
       return receipt
     } catch (e) {
       console.error('depositEth err: ' + e)
@@ -202,12 +224,13 @@ export const useArbTokenBridge = (
 
           const id = l2ToL2EventDataResult.uniqueId.toString()
 
+          const outgoingMessageState  = await bridge.getOutGoingMessageState(l2ToL2EventDataResult.batchNumber, l2ToL2EventDataResult.indexInBatch)
           const l2ToL2EventDataResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ETH,
-            value: weiValue
+            value: weiValue,
+            outgoingMessageState
           }
-          // setPendingWithdrawalIdsCache([...pendingWithdrawalIdsCache, ...[id]])
           setPendingWithdrawalMap({
             ...pendingWithdrawalsMap,
             [id]: l2ToL2EventDataResultPlus
@@ -249,13 +272,10 @@ export const useArbTokenBridge = (
     const tokenData = _tokenData.ERC20
     const amountParsed = await utils.parseUnits(amount, tokenData.decimals)
 
-    const tx = await bridge.deposit(
-      erc20Address,
-      amountParsed
-    )
+    const tx = await bridge.deposit(erc20Address, amountParsed)
 
     addTransaction({
-      type: 'deposit',
+      type: 'deposit-l1',
       status: 'pending',
       value: amount,
       txID: tx.hash,
@@ -265,7 +285,43 @@ export const useArbTokenBridge = (
     })
     try {
       const receipt = await tx.wait()
+      console.warn('***** rec', receipt);
+
       updateTransactionStatus(receipt)
+      console.warn(0);
+
+      const tokenDepositData = (
+        await bridge.getDepositTokenEventData(receipt)
+      )[0]
+      console.warn(1);
+
+      const seqNum = tokenDepositData.seqNum
+      console.warn(2);
+
+      const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
+        seqNum
+        )
+      console.warn(3);
+
+        console.warn('***** retryhash', l2RetryableHash);
+
+
+
+      addTransaction({
+        type: 'deposit-l2',
+        status: 'pending',
+        value: amount,
+        txID: l2RetryableHash,
+        assetName: tokenData.symbol,
+        assetType: AssetType.ERC20,
+        sender: await bridge.getWalletAddress()
+      })
+      const retryableRec = await bridge.l2Provider.waitForTransaction(l2RetryableHash, undefined,300*1000)
+
+      updateTransactionStatus(retryableRec)
+
+
+
       return receipt
     } catch (err) {
       setTransactionFailure(tx.hash)
@@ -300,12 +356,13 @@ export const useArbTokenBridge = (
       if (l2ToL2EventData.length === 1) {
         const l2ToL2EventDataResult = l2ToL2EventData[0]
         const id = l2ToL2EventDataResult.uniqueId.toString()
-
+        const outgoingMessageState = await bridge.getOutGoingMessageState(l2ToL2EventDataResult.batchNumber, l2ToL2EventDataResult.indexInBatch)
         const l2ToL2EventDataResultPlus = {
           ...l2ToL2EventDataResult,
           type: AssetType.ERC20,
           tokenAddress: erc20l1Address,
-          value: amountParsed
+          value: amountParsed,
+          outgoingMessageState
         }
         setPendingWithdrawalMap({
           ...pendingWithdrawalsMap,
@@ -324,6 +381,11 @@ export const useArbTokenBridge = (
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
       let l1Address = erc20L1orL2Address
+      const lCaseToken = l1Address.toLocaleLowerCase()
+      if(tokenBlackList.includes(lCaseToken)){
+        // todo: error report to UI
+        return ''
+      }
       const l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
       try {
         await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
@@ -345,7 +407,6 @@ export const useArbTokenBridge = (
       }
       updateAllBalances()
       updateBridgeTokens()
-      const lCaseToken = l1Address.toLocaleLowerCase()
       if (!ERC20Cache.includes(lCaseToken)) {
         setERC20Cache([...ERC20Cache, lCaseToken])
       }
@@ -364,7 +425,7 @@ export const useArbTokenBridge = (
       ...new Set(
         [...ERC20Cache, ...defaultTokenList].map(t => t.toLocaleLowerCase())
       )
-    ]
+    ].filter((tokenAddress)=> !tokenBlackList.includes(tokenAddress))
     if (autoLoadCache) {
       Promise.all(
         tokensToAdd.map(address => {
@@ -409,11 +470,9 @@ export const useArbTokenBridge = (
     updateEthBalances()
     updateTokenBalances()
   }
-console.warn(123);
 
   const triggerOutboxToken = useCallback(
     async (id: string) => {
-      console.warn('pw map',pendingWithdrawalsMap, id );
 
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
@@ -462,7 +521,7 @@ console.warn(123);
 
   const triggerOutboxEth = useCallback(
     async (id: string) => {
-      console.warn('pw map',pendingWithdrawalsMap, id );
+      console.warn('pw map', pendingWithdrawalsMap, id)
 
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
@@ -537,12 +596,6 @@ console.warn(123);
       address
     )
 
-    const tokenWithdrawalEventDataMap: any = tokenWithdrawalEventData.reduce(
-      (acc: any, data: any) => {
-        return { ...acc, [data.id.toString()]: data }
-      },
-      {}
-    )
     for (const eventData of withdrawalData) {
       const {
         caller,
@@ -558,6 +611,7 @@ console.warn(123);
       } = eventData
       // is an eth withdrawal
       if (!data || data === '0x') {
+        let outgoingMessageState = await bridge.getOutGoingMessageState(batchNumber, indexInBatch)
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
@@ -570,7 +624,8 @@ console.warn(123);
           callvalue,
           data,
           type: AssetType.ETH,
-          value: callvalue
+          value: callvalue,
+          outgoingMessageState
         }
         pendingWithdrawals[uniqueId.toString()] = eventDataPlus
       }
@@ -592,6 +647,7 @@ console.warn(123);
           callvalue,
           data
         } = eventDataArr[0]
+        let outgoingMessageState = await bridge.getOutGoingMessageState(batchNumber, indexInBatch)
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
@@ -605,7 +661,8 @@ console.warn(123);
           data,
           type: AssetType.ERC20,
           value: withdrawEventData.amount,
-          tokenAddress: withdrawEventData.l1Address
+          tokenAddress: withdrawEventData.l1Address,
+          outgoingMessageState
         }
         pendingWithdrawals[uniqueId.toString()] = eventDataPlus
       } else {
