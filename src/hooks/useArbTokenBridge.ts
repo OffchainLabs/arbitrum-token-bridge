@@ -182,23 +182,23 @@ export const useArbTokenBridge = (
       const receipt = await tx.wait()
       updateTransactionStatus(receipt)
 
+      // TODO: rerenable once node is updateed
+      // const seqNum = (await bridge.getInboxSeqNumFromContractTransaction(receipt))
+      // if(!seqNum)return
+      // const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
 
-      const seqNum = (await bridge.getInboxSeqNumFromContractTransaction(receipt))
-      if(!seqNum)return
-      const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
+      // addTransaction({
+      //   type: 'deposit-l2',
+      //   status: 'pending',
+      //   value: etherVal,
+      //   txID: l2TxHash,
+      //   assetName: 'ETH',
+      //   assetType: AssetType.ETH,
+      //   sender: await bridge.getWalletAddress()
+      // })
 
-      addTransaction({
-        type: 'deposit-l2',
-        status: 'pending',
-        value: etherVal,
-        txID: l2TxHash,
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: await bridge.getWalletAddress()
-      })
-
-      const retryableRec = await bridge.l2Provider.waitForTransaction(l2TxHash, undefined,300*1000)
-      updateTransactionStatus(retryableRec)
+      // const retryableRec = await bridge.l2Provider.waitForTransaction(l2TxHash, undefined,300*1000)
+      // updateTransactionStatus(retryableRec)
 
       return receipt
     } catch (e) {
