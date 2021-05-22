@@ -35,6 +35,7 @@ export default () => {
   const arbV2Testnet = networks[+arbNetworkIds[1]]
   const arbV3Testnet = networks[+arbNetworkIds[2]]
   const arbV4Testnet = networks[+arbNetworkIds[3]]
+  const arbV5Testnet = networks[+arbNetworkIds[4]]
 
   return (
     <Container>
@@ -78,12 +79,12 @@ export default () => {
               </a>{' '}
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
-                url={arbV4Testnet.url}
-                msg="Arbv4 node rpc url copied to clipboard"
+                url={arbV5Testnet.url}
+                msg="Arbv5 node rpc url copied to clipboard"
               />{' '} with chain ID    <CopyLink
-              url={arbV4Testnet.chainID.toString()}
-              msg="Arbv4 chain ID copied to clipboard"
-            /> for Arbv4 
+              url={arbV5Testnet.chainID.toString()}
+              msg="Arbv5 chain ID copied to clipboard"
+            /> for Arbv5 
             
             {/* (you probably want this one!) or {" "}
                 <CopyLink
@@ -112,7 +113,7 @@ export default () => {
             <div style={styles.textStyle}>
               Add our custom block explorer url to Arbitrum network:{' '}
               <CopyLink
-                url="https://explorer.arbitrum.io/#"
+                url="https://explorer5.arbitrum.io/#"
                 msg="Block explorer url copied to clipboard"
               />{`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
             

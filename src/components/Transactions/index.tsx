@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import { Transaction, TxnStatus, AssetType } from 'token-bridge-sdk'
+import { Transaction, TxnStatus, AssetType, txnTypeToLayer, TxnType } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
@@ -32,7 +32,7 @@ const TransactionHistory = ({
 
   // TODO: maybe move this to the sdk?
   const getTransactionReceipt = useCallback( (tx: Transaction)=>{
-    const provider = ['withdraw', 'connext-deposit'].includes(tx.type) ? arbProvider : ethProvider;
+    const provider = txnTypeToLayer(tx.type)  === 2 ? arbProvider : ethProvider;
     return provider.getTransactionReceipt(tx.txID)
 
   }, [arbProvider, ethProvider])
@@ -109,7 +109,7 @@ const TransactionHistory = ({
   }, [pendingTransactions, getTransactionReceipt])
 
   useEffect(()=>{
-    window.setInterval(checkAndUpdatePendingTransactions, 7500)
+    window.setInterval(checkAndUpdatePendingTransactions, 5000)
   }, [checkAndUpdatePendingTransactions])
 
   const getRowStyle = (status: TxnStatus) => {
@@ -150,7 +150,7 @@ const TransactionHistory = ({
         {usersTransactions.length > 0 ? (
           usersTransactions.map(txn => (
             <tr style={getRowStyle(txn.status)} key={txn.txID}>
-              <td><ExplorerLink hash={txn.txID} type={!['withdraw', 'connext-deposit'].includes(txn.type) ? "l1-tx" : "tx"}/></td>
+              <td><ExplorerLink hash={txn.txID} type={txn.type}/></td>
               <td>{txn.type}</td>
               <td>
                 {' '}

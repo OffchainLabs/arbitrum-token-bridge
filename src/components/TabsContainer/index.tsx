@@ -31,6 +31,8 @@ import ERC721L1Actions from 'components/Actions/ERC721L1Actions'
 import ERC721L2Actions from 'components/Actions/ERC721L2Actions'
 import { Transaction } from 'token-bridge-sdk'
 
+import { providers } from 'ethers'
+
 type TabProps = {
   ethBalances: BridgeBalance
   erc20BridgeBalance: BridgeBalance | undefined
@@ -47,7 +49,7 @@ type TabProps = {
   ethAddress: string
   handleConnextTxn: connextTxn
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  getLatestArbBlock: any
+  ethProvider: providers.Provider
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -68,7 +70,7 @@ const TabsContainer = ({
   ethAddress,
   handleConnextTxn,
   pendingWithdrawalsMap,
-  getLatestArbBlock
+  ethProvider
 }: TabProps) => {
   const [key, setKey] = useState('eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -113,7 +115,7 @@ const TabsContainer = ({
                   eth={eth}
                   transactions={transactions}
                   pendingWithdrawalsMap={pendingWithdrawalsMap}
-                  getLatestArbBlock={getLatestArbBlock}
+                  ethProvider={ethProvider}
                 />
               </PanelWrapper>
             </Col>
@@ -163,7 +165,7 @@ const TabsContainer = ({
                   currentERC20Address={currentERC20Address}
                   transactions={transactions}
                   pendingWithdrawalsMap={pendingWithdrawalsMap}
-                  getLatestArbBlock={getLatestArbBlock}
+                  ethProvider={ethProvider}
                 />
               </PanelWrapper>
             </Col>

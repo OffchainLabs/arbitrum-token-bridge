@@ -11,6 +11,7 @@ import { Transaction } from 'token-bridge-sdk'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 import  PendingWithdrawals  from '../PendingWithdrawals'
 import { L2ToL1EventResultPlus, AssetType } from 'token-bridge-sdk'
+import { providers } from 'ethers'
 
 const { formatUnits } = utils
 
@@ -21,7 +22,7 @@ type ActionsProps = {
   currentERC20Address: string
   transactions: Transaction[]
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  getLatestArbBlock: any
+  ethProvider: providers.Provider
 }
 
 const Actions = ({
@@ -31,7 +32,7 @@ const Actions = ({
   currentERC20Address,
   transactions,
   pendingWithdrawalsMap,
-  getLatestArbBlock
+  ethProvider
 
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
@@ -84,7 +85,7 @@ const Actions = ({
         headerText="Pending Token Withdrawals"
         triggerOutbox={token.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
-        getLatestArbBlock={getLatestArbBlock}
+        ethProvider={ethProvider}
         decimals={decimals}
 
         />

@@ -41,7 +41,6 @@ const App = ( { bridge }:AppProps) => {
     eth,
     transactions,
     pendingWithdrawalsMap,
-    getLatestArbBlock
   } = useArbTokenBridge(
     bridge
   )
@@ -106,7 +105,7 @@ const App = ( { bridge }:AppProps) => {
     useEffect(()=>{
       window.setInterval(()=>{
         balances.update()
-      }, 3000)
+      }, 5000)
     },[])
 
   return (
@@ -142,7 +141,7 @@ const App = ( { bridge }:AppProps) => {
             ethAddress={walletAddress}
             handleConnextTxn={handleConnextTxn}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
-            getLatestArbBlock={getLatestArbBlock}
+            ethProvider={ethProvider}
 
           />
         </div>

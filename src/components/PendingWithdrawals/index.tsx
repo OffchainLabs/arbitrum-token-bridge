@@ -2,47 +2,48 @@ import { utils } from 'ethers'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { PendingWithdrawalsMap, L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
-
+import { providers } from 'ethers'
+import { OutgoingMessageState } from 'arb-ts'
+import networks from "../App/networks"
 interface PendingWithdrawalsProps {
   pendingWithdrawalsMap: PendingWithdrawalsMap
   filter: (data: L2ToL1EventResultPlus) => boolean
   headerText: string
   triggerOutbox: (id: string) => {} | undefined
-  getLatestArbBlock: any
+  ethProvider: providers.Provider
   decimals?:number
   // Header
 }
 const { formatUnits } = utils
-
+const disputePeriodBlocks = 900
 const PendingWithdrawals = ({
   pendingWithdrawalsMap,
   filter,
   headerText,
   triggerOutbox,
-  getLatestArbBlock,
+  ethProvider,
   decimals = 18
 }: PendingWithdrawalsProps) => {
 
-
   const [currentTime, setCurrentTime] = useState(0)
+  const [currentL1BlockNumber, setCurrentL1BlockNumber] = useState(0)
   useEffect(()=>{
-    window.setInterval(()=>{
-      getLatestArbBlock().then((block:any)=>{
-        setCurrentTime(block.timestamp)
-        
-      })
-    }, 5000)
-  },[])
+    ethProvider.on('block', (blockNumber:number)=>{
+      console.info('l1 blockNumber:', blockNumber);
 
-  const handleTriggerOutbox = useCallback (async  (id: string, timestamp: string | number)=>{
-    if (timestamp !== 0){
-      return alert("Can't claim this withdrawal yet; try again later")
-    }
+      setCurrentL1BlockNumber(blockNumber)
+    })
+  }, [])
+
+  const handleTriggerOutbox = useCallback (async  (id: string)=>{
+    // if (timestamp !== 0){
+    //   return alert("Can't claim this withdrawal yet; try again later")
+    // }
     const res = await triggerOutbox(id)
     if (!res){
       alert("Can't claim this withdrawal yet; try again later")
     }
-  }, [currentTime, triggerOutbox])
+  }, [triggerOutbox])
 
   const calcTimeRemaining = useCallback ((timestamp:number)=>{
     if (currentTime === 0){
@@ -61,6 +62,26 @@ const PendingWithdrawals = ({
       })
       .filter(filter)
   }, [pendingWithdrawalsMap])
+
+
+  const statusDisplay = (pw:L2ToL1EventResultPlus)=>{
+    const { outgoingMessageState, ethBlockNum, indexInBatch, batchNumber } = pw
+
+    const blocksRemaining = Math.max(disputePeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()), 0)
+    switch (outgoingMessageState) {
+      case OutgoingMessageState.NOT_FOUND:
+      case OutgoingMessageState.UNCONFIRMED:
+
+        const blocksDisplay = blocksRemaining > 0 ? `~${blocksRemaining} blocks (~${blocksRemaining/4} minutes)`: `any minute!`
+          return <span>Unconfirmed: ETA: {blocksDisplay} </span>
+        
+        break;
+      case OutgoingMessageState.CONFIRMED:
+        return <span>Confirmed! <button onClick={()=>handleTriggerOutbox(pw.uniqueId.toString())}>claim</button></span>
+      case OutgoingMessageState.EXECUTED :
+        return  <span><i>Already claimed </i></span>
+    }
+  }
   return (
     <div>
       <Table className="pw-table" striped bordered>
@@ -68,20 +89,20 @@ const PendingWithdrawals = ({
           <tr>{headerText}</tr>
           <tr>
             <th>value</th>
-            <th>est. time remaining (minutes)</th>
+            <th>status</th>
             <th></th>
 
           </tr>
         </thead>
         <tbody>
-          {pendingWithdrawalsToShow.map(pw => {
+          {pendingWithdrawalsToShow.map((pw:L2ToL1EventResultPlus) => {
             const id = pw.uniqueId.toString()
-            const timeRemaining = calcTimeRemaining(+pw.timestamp)
+
             return (
               <tr key={id}>
                 <td>{formatUnits(pw.value.toString(), decimals)}</td>
-                <td>{ timeRemaining }</td>
-                <td><button onClick={()=>handleTriggerOutbox(id, timeRemaining)}>claim</button></td>
+                <td>{ statusDisplay(pw) }</td>
+                <td></td>
 
               </tr>
             )

@@ -13,6 +13,7 @@ import Table from 'react-bootstrap/Table'
 import { mockPendingWithdrawals } from 'test/mocks'
 import { utils, BigNumber } from 'ethers'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
+import { providers } from 'ethers'
 
 const { formatEther } = utils
 type ActionsProps = {
@@ -20,10 +21,10 @@ type ActionsProps = {
   eth: any
   transactions: Transaction[]
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  getLatestArbBlock: any
+  ethProvider: providers.Provider
 }
 
-const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap, getLatestArbBlock }: ActionsProps) => {
+const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap, ethProvider }: ActionsProps) => {
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
   const isDepositMode = useIsDepositMode()
 
@@ -56,7 +57,7 @@ const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap, getLatest
         headerText="Pending ETH Withdrawals"
         triggerOutbox={eth.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
-        getLatestArbBlock={getLatestArbBlock}
+        ethProvider={ethProvider}
       />
 
   {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}

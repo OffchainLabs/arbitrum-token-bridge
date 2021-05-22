@@ -12,7 +12,7 @@ export default () => (
   >
     {' '}
     Note: for standard, bridge withdrawals, the withdrawal will be in a "pending" state during a
-    "challenge period" roughly (24 hours on Kovan). After that, the funds will be
+    "challenge period" roughly (~ 1 hour on Kovan). After that, the funds will be
     available on layer 1 in your lockbox.{' '}
     <a
       href="https://medium.com/offchainlabs/optimizing-challenge-periods-in-rollup-b61378c87277"
