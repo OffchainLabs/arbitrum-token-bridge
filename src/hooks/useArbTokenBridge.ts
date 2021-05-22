@@ -296,27 +296,18 @@ export const useArbTokenBridge = (
     })
     try {
       const receipt = await tx.wait()
-      console.warn('***** rec', receipt);
 
       updateTransactionStatus(receipt)
-      console.warn(0);
 
       const tokenDepositData = (
         await bridge.getDepositTokenEventData(receipt)
       )[0]
-      console.warn(1);
 
       const seqNum = tokenDepositData.seqNum
-      console.warn(2);
 
       const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
         seqNum
         )
-      console.warn(3);
-
-        console.warn('***** retryhash', l2RetryableHash);
-
-
 
       addTransaction({
         type: 'deposit-l2',
@@ -533,8 +524,6 @@ export const useArbTokenBridge = (
 
   const triggerOutboxEth = useCallback(
     async (id: string) => {
-      console.warn('pw map', pendingWithdrawalsMap, id)
-
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
       const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
