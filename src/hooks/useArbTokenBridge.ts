@@ -9,7 +9,12 @@ import {
   BigNumber
 } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { Bridge, L1TokenData, L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
+import {
+  Bridge,
+  L1TokenData,
+  L2ToL1EventResult,
+  OutgoingMessageState
+} from 'arb-ts'
 import useTransactions from './useTransactions'
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
@@ -144,13 +149,15 @@ export const useArbTokenBridge = (
     [id: string]: boolean
   }
 
-  const [executedMessagesCache, setExecutedMessagesCache, clearExecutedMessagesCache] = useLocalStorage<
-  ExecutedMessagesCache
->('executedMessagesCache', {}) as [
-  ExecutedMessagesCache,
-  React.Dispatch<ExecutedMessagesCache>,
-  React.Dispatch<void>
-]
+  const [
+    executedMessagesCache,
+    setExecutedMessagesCache,
+    clearExecutedMessagesCache
+  ] = useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
+    ExecutedMessagesCache,
+    React.Dispatch<ExecutedMessagesCache>,
+    React.Dispatch<void>
+  ]
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] = useState<
     PendingWithdrawalsMap
@@ -182,8 +189,8 @@ export const useArbTokenBridge = (
       const receipt = await tx.wait()
       updateTransactionStatus(receipt)
 
-      const seqNum = (await bridge.getInboxSeqNumFromContractTransaction(receipt))
-      if(!seqNum)return
+      const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
+      if (!seqNum) return
       const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
 
       addTransaction({
@@ -196,7 +203,11 @@ export const useArbTokenBridge = (
         sender: await bridge.getWalletAddress()
       })
 
-      const retryableRec = await bridge.l2Provider.waitForTransaction(l2TxHash, undefined,300*1000)
+      const retryableRec = await bridge.l2Provider.waitForTransaction(
+        l2TxHash,
+        undefined,
+        300 * 1000
+      )
       updateTransactionStatus(retryableRec)
 
       return receipt
@@ -235,7 +246,10 @@ export const useArbTokenBridge = (
 
           const id = l2ToL2EventDataResult.uniqueId.toString()
 
-          const outgoingMessageState  = await getOutGoingMessageState(l2ToL2EventDataResult.batchNumber, l2ToL2EventDataResult.indexInBatch)
+          const outgoingMessageState = await getOutGoingMessageState(
+            l2ToL2EventDataResult.batchNumber,
+            l2ToL2EventDataResult.indexInBatch
+          )
           const l2ToL2EventDataResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ETH,
@@ -307,7 +321,7 @@ export const useArbTokenBridge = (
 
       const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
         seqNum
-        )
+      )
 
       addTransaction({
         type: 'deposit-l2',
@@ -318,11 +332,13 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         sender: await bridge.getWalletAddress()
       })
-      const retryableRec = await bridge.l2Provider.waitForTransaction(l2RetryableHash, undefined,300*1000)
+      const retryableRec = await bridge.l2Provider.waitForTransaction(
+        l2RetryableHash,
+        undefined,
+        300 * 1000
+      )
 
       updateTransactionStatus(retryableRec)
-
-
 
       return receipt
     } catch (err) {
@@ -358,7 +374,10 @@ export const useArbTokenBridge = (
       if (l2ToL2EventData.length === 1) {
         const l2ToL2EventDataResult = l2ToL2EventData[0]
         const id = l2ToL2EventDataResult.uniqueId.toString()
-        const outgoingMessageState = await getOutGoingMessageState(l2ToL2EventDataResult.batchNumber, l2ToL2EventDataResult.indexInBatch)
+        const outgoingMessageState = await getOutGoingMessageState(
+          l2ToL2EventDataResult.batchNumber,
+          l2ToL2EventDataResult.indexInBatch
+        )
         const l2ToL2EventDataResultPlus = {
           ...l2ToL2EventDataResult,
           type: AssetType.ERC20,
@@ -384,7 +403,7 @@ export const useArbTokenBridge = (
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
       let l1Address = erc20L1orL2Address
       const lCaseToken = l1Address.toLocaleLowerCase()
-      if(tokenBlackList.includes(lCaseToken)){
+      if (tokenBlackList.includes(lCaseToken)) {
         // todo: error report to UI
         return ''
       }
@@ -427,7 +446,7 @@ export const useArbTokenBridge = (
       ...new Set(
         [...ERC20Cache, ...defaultTokenList].map(t => t.toLocaleLowerCase())
       )
-    ].filter((tokenAddress)=> !tokenBlackList.includes(tokenAddress))
+    ].filter(tokenAddress => !tokenBlackList.includes(tokenAddress))
     if (autoLoadCache) {
       Promise.all(
         tokensToAdd.map(address => {
@@ -475,7 +494,6 @@ export const useArbTokenBridge = (
 
   const triggerOutboxToken = useCallback(
     async (id: string) => {
-
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
       const {
@@ -613,7 +631,10 @@ export const useArbTokenBridge = (
       } = eventData
       // is an eth withdrawal
       if (!data || data === '0x') {
-        let outgoingMessageState = await getOutGoingMessageState(batchNumber, indexInBatch)
+        const outgoingMessageState = await getOutGoingMessageState(
+          batchNumber,
+          indexInBatch
+        )
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
@@ -649,7 +670,10 @@ export const useArbTokenBridge = (
           callvalue,
           data
         } = eventDataArr[0]
-        let outgoingMessageState = await getOutGoingMessageState(batchNumber, indexInBatch)
+        const outgoingMessageState = await getOutGoingMessageState(
+          batchNumber,
+          indexInBatch
+        )
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
@@ -680,28 +704,36 @@ export const useArbTokenBridge = (
     setInitialPendingWithdrawals()
   }, [])
 
+  const getOutGoingMessageState = useCallback(
+    async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
+      if (
+        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)]
+      ) {
+        return OutgoingMessageState.EXECUTED
+      } else {
+        return bridge.getOutGoingMessageState(batchNumber, indexInBatch)
+      }
+    },
+    [executedMessagesCache]
+  )
 
-  const getOutGoingMessageState = useCallback ( async (batchNumber: BigNumber, indexInBatch: BigNumber)=>{
+  const addToExecutedMessagesCache = useCallback(
+    (batchNumber: BigNumber, indexInBatch: BigNumber) => {
+      const _executedMessagesCache = { ...executedMessagesCache }
+      _executedMessagesCache[
+        hashOutgoingMessage(batchNumber, indexInBatch)
+      ] = true
+      setExecutedMessagesCache(_executedMessagesCache)
+    },
+    [executedMessagesCache]
+  )
 
-    if(executedMessagesCache[hashOutgoingMessage(batchNumber,indexInBatch)]){
-      return OutgoingMessageState.EXECUTED
-    } else {
-      return bridge.getOutGoingMessageState(batchNumber,indexInBatch)
-    }
-  }, [executedMessagesCache])
-
-  const addToExecutedMessagesCache = useCallback((batchNumber: BigNumber, indexInBatch:BigNumber)=>{
-    const _executedMessagesCache = {...executedMessagesCache}
-    _executedMessagesCache[hashOutgoingMessage(batchNumber,indexInBatch)] = true
-    setExecutedMessagesCache(_executedMessagesCache)
-  }, [executedMessagesCache])
-
-  const hashOutgoingMessage = (batchNumber: BigNumber, indexInBatch: BigNumber)=>{
-    return batchNumber.toString() + "," + indexInBatch.toString()
+  const hashOutgoingMessage = (
+    batchNumber: BigNumber,
+    indexInBatch: BigNumber
+  ) => {
+    return batchNumber.toString() + ',' + indexInBatch.toString()
   }
-
-
-
 
   return {
     walletAddress,

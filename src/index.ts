@@ -3,8 +3,7 @@ export type {
   Transaction,
   TxnStatus,
   NewTransaction,
-  TxnType,
+  TxnType
 } from './hooks/useTransactions'
-
 
 export { txnTypeToLayer } from './hooks/useTransactions'

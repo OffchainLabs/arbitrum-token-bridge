@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useCallback  } from 'react'
+import React, { useReducer, useEffect, useCallback } from 'react'
 import { AssetType } from './useArbTokenBridge'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 
@@ -17,16 +17,17 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
  * @alias Transaction
  * @description Bridge transaction data with up to date status.
  */
-export type TxnType =     | 'deposit'
-| 'deposit-l1'
-| 'deposit-l2'
-| 'withdraw'
-| 'outbox'
-| 'approve'
-| 'connext-deposit'
-| 'connext-withdraw'
+export type TxnType =
+  | 'deposit'
+  | 'deposit-l1'
+  | 'deposit-l2'
+  | 'withdraw'
+  | 'outbox'
+  | 'approve'
+  | 'connext-deposit'
+  | 'connext-withdraw'
 
-export const txnTypeToLayer = (txnType:TxnType): 1 | 2 =>{
+export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
     case 'deposit':
     case 'deposit-l1':
@@ -41,7 +42,7 @@ export const txnTypeToLayer = (txnType:TxnType): 1 | 2 =>{
   }
 }
 type TransactionBase = {
-  type:TxnType
+  type: TxnType
   status: TxnStatus
   value: string | null
   txID?: string
@@ -183,7 +184,7 @@ const useTransactions = (): [
     }
   }
 
-  const checkAndUpdatePendingTransactions = useCallback(()=>{
+  const checkAndUpdatePendingTransactions = useCallback(() => {
     const pendingTransactions = 1
   }, [state])
 
