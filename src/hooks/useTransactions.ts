@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from 'react'
+import React, { useReducer, useEffect, useCallback  } from 'react'
 import { AssetType } from './useArbTokenBridge'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 
@@ -25,6 +25,21 @@ export type TxnType =     | 'deposit'
 | 'approve'
 | 'connext-deposit'
 | 'connext-withdraw'
+
+export const txnTypeToLayer = (txnType:TxnType): 1 | 2 =>{
+  switch (txnType) {
+    case 'deposit':
+    case 'deposit-l1':
+    case 'outbox':
+    case 'approve':
+    case 'connext-deposit':
+      return 1
+    case 'deposit-l2':
+    case 'withdraw':
+    case 'connext-withdraw':
+      return 2
+  }
+}
 type TransactionBase = {
   type:TxnType
   status: TxnStatus
@@ -100,6 +115,7 @@ const useTransactions = (): [
   }
 ] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
+
   useEffect(() => {
     const cachedTransactions = window.localStorage.getItem('arbTransactions')
     dispatch({
@@ -166,6 +182,11 @@ const useTransactions = (): [
         break
     }
   }
+
+  const checkAndUpdatePendingTransactions = useCallback(()=>{
+    const pendingTransactions = 1
+  }, [state])
+
   return [
     state,
     {
