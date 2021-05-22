@@ -65,7 +65,7 @@ const PendingWithdrawals = ({
 
 
   const statusDisplay = (pw:L2ToL1EventResultPlus)=>{
-    const { outgoingMessageState, ethBlockNum } = pw
+    const { outgoingMessageState, ethBlockNum, indexInBatch, batchNumber } = pw
 
     const blocksRemaining = Math.max(disputePeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()), 0)
     switch (outgoingMessageState) {
@@ -79,7 +79,7 @@ const PendingWithdrawals = ({
       case OutgoingMessageState.CONFIRMED:
         return <span>Confirmed! <button onClick={()=>handleTriggerOutbox(pw.uniqueId.toString())}>claim</button></span>
       case OutgoingMessageState.EXECUTED :
-        return  <span><i>Already claimed</i></span>
+        return  <span><i>Already claimed </i></span>
     }
   }
   return (
