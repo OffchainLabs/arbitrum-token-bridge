@@ -4,7 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
-import { TokenType, BridgeToken } from 'token-bridge-sdk'
+import { TokenType, BridgeToken, TokenStatus, getTokenStatus } from 'token-bridge-sdk'
 import { useState, useMemo } from 'react'
 
 import React from 'react'
@@ -60,8 +60,23 @@ const AssetDropDown = ({
       <Form
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault()
-          addToken(erc20Form, tokenType)
-          seterc20Form('')
+          const tokenStatus = getTokenStatus(erc20Form, 'kovan')
+          switch (tokenStatus) {
+            case TokenStatus.WHITELISTED:{
+              addToken(erc20Form, tokenType)
+              return seterc20Form('')
+            } case TokenStatus.BLACKLISTED: {
+              return alert("Token you're trying to add has features incompatible with the Arbitrum bridge")
+            } case TokenStatus.NEUTRAL:{
+                const res = global.confirm("We don't recognize this token; are you sure you want to add it?")
+                if (!res)return
+                addToken(erc20Form, tokenType)
+                return seterc20Form('')
+            }
+    
+          }
+
+
         }}
       >
         <FormControl
