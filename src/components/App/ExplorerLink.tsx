@@ -22,6 +22,8 @@ const ExplorerLink = ({hash, type, layer}: props) =>{
             case 'deposit-l2':
             case 'withdraw':
             case 'connext-withdraw':
+            case 'deposit-l2-auto-redeem':
+
                 return `${l2Prefix}/tx/${hash}`
 
             case 'chain':
