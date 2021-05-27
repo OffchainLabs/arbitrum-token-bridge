@@ -178,8 +178,9 @@ export const useArbTokenBridge = (
     const destinationAddress = (await bridge.l1Bridge.l1Signer.getAddress())
     const gasPriceBid = (await bridge.l2Provider.getGasPrice())
     const maxGas = await bridge.l2Provider.estimateGas({
-      from: bridge.ethERC20Bridge.address,
-      to: bridge.arbTokenBridge.address,
+      from: destinationAddress,
+      to: destinationAddress,
+      value: value,
       data: "0x",
     })
     const maxSubmissionPrice = (await bridge.getTxnSubmissionPrice(100))[0]
