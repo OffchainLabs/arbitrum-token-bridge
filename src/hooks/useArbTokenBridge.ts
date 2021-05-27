@@ -173,9 +173,33 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
+
+  const depositEthRetryable = async (value: BigNumber)=>{
+    const destinationAddress = (await bridge.l1Bridge.l1Signer.getAddress())
+    const gasPriceBid = (await bridge.l2Provider.getGasPrice())
+    const maxGas = await bridge.l2Provider.estimateGas({
+      from: bridge.ethERC20Bridge.address,
+      to: bridge.arbTokenBridge.address,
+      data: "0x",
+    })
+    const maxSubmissionPrice = (await bridge.getTxnSubmissionPrice(100))[0]
+
+    const inbox = await bridge.l1Bridge.getInbox()
+
+    const ethDeposit =  value.add(maxSubmissionPrice.add(gasPriceBid.mul(maxGas)))
+      return inbox.functions.depositEthRetryable(
+        destinationAddress,
+        maxSubmissionPrice,
+        maxGas,
+        gasPriceBid,
+        {
+          value:ethDeposit
+        }
+      )
+  }
   const depositEth = async (etherVal: string) => {
     const weiValue: BigNumber = utils.parseEther(etherVal)
-    const tx = await bridge.depositETH(weiValue)
+    const tx = await depositEthRetryable(weiValue)
     try {
       addTransaction({
         type: 'deposit-l1',
@@ -191,8 +215,10 @@ export const useArbTokenBridge = (
 
       const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
       if (!seqNum) return
-      const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
-
+      // const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
+      const l2TxHash = await bridge.calculateL2RetryableTransactionHash(
+        seqNum[0]
+      )
       addTransaction({
         type: 'deposit-l2',
         status: 'pending',

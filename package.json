@@ -1,6 +1,6 @@
 {
   "name": "token-bridge-sdk",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "SDK for transfering assets to and from Arbitrum",
@@ -26,6 +26,7 @@
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs"
   },
   "dependencies": {
+    "@ethersproject/bignumber": "^5.1.1",
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
     "arb-ts": "^0.0.13",
