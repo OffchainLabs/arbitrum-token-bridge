@@ -9,6 +9,7 @@ type Action =
   | { type: 'SET_INITIAL_TRANSACTIONS'; transactions: Transaction[] }
   | { type: 'CLEAR_PENDING' }
   | { type: 'CONFIRM_TRANSACTION'; txID: string }
+  | { type: 'REMOVE_TRANSACTION'; txID: string }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -26,6 +27,7 @@ export type TxnType =
   | 'approve'
   | 'connext-deposit'
   | 'connext-withdraw'
+  | 'deposit-l2-auto-redeem'
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
@@ -38,6 +40,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
     case 'deposit-l2':
     case 'withdraw':
     case 'connext-withdraw':
+    case 'deposit-l2-auto-redeem':
       return 2
   }
 }
@@ -60,6 +63,10 @@ export interface NewTransaction extends TransactionBase {
   status: 'pending'
 }
 
+export interface FailedTransaction extends TransactionBase {
+  status: 'failure'
+}
+
 function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -80,6 +87,9 @@ function reducer(state: Transaction[], action: Action) {
     }
     case 'ADD_TRANSACTION': {
       return state.concat(action.transaction)
+    }
+    case 'REMOVE_TRANSACTION': {
+      return state.filter(txn => txn.txID !== action.txID)
     }
     case 'SET_SUCCESS': {
       return updateStatus(state, 'success', action.txID)
@@ -108,11 +118,15 @@ const useTransactions = (): [
   Transaction[],
   {
     addTransaction: (transaction: NewTransaction) => void
+    addFailedTransaction: (transaction: FailedTransaction) => void
+
     setTransactionSuccess: (txID: string) => void
     setTransactionFailure: (txID?: string) => void
     clearPendingTransactions: () => void
     setTransactionConfirmed: (txID: string) => void
     updateTransactionStatus: (txReceipt: TransactionReceipt) => void
+    removeTransaction: (txID: string) => void
+
   }
 ] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
@@ -136,6 +150,25 @@ const useTransactions = (): [
       transaction: tx
     })
   }
+  const addFailedTransaction = (transaction: FailedTransaction) => {
+    if (!transaction.txID) {
+      console.warn(' Cannot add transaction: TxID not included (???)')
+      return
+    }
+    const tx = transaction as Transaction
+    return dispatch({
+      type: 'ADD_TRANSACTION',
+      transaction: tx
+    })
+  }
+
+  const removeTransaction = (txID:string) => {
+    return dispatch({
+      type: 'REMOVE_TRANSACTION',
+      txID: txID
+    })
+  }
+
   const setTransactionSuccess = (txID: string) => {
     return dispatch({
       type: 'SET_SUCCESS',
@@ -196,7 +229,9 @@ const useTransactions = (): [
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
-      updateTransactionStatus
+      updateTransactionStatus,
+      removeTransaction,
+      addFailedTransaction
     }
   ]
 }

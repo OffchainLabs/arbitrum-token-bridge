@@ -169,34 +169,38 @@ export const useArbTokenBridge = (
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
-      updateTransactionStatus
+      updateTransactionStatus,
+      removeTransaction,
+      addFailedTransaction
     }
   ] = useTransactions()
 
+  const depositEthRetryable = async (value: BigNumber) => {
+    const destinationAddress = await bridge.l1Bridge.l1Signer.getAddress()
+    const gasPriceBid = await bridge.l2Provider.getGasPrice()
+    const inbox = await bridge.l1Bridge.getInbox()
 
-  const depositEthRetryable = async (value: BigNumber)=>{
-    const destinationAddress = (await bridge.l1Bridge.l1Signer.getAddress())
-    const gasPriceBid = (await bridge.l2Provider.getGasPrice())
     const maxGas = await bridge.l2Provider.estimateGas({
-      from: destinationAddress,
+      from: destinationAddress, // todo?
       to: destinationAddress,
       value: value,
-      data: "0x",
+      data: '0x'
     })
     const maxSubmissionPrice = (await bridge.getTxnSubmissionPrice(100))[0]
 
-    const inbox = await bridge.l1Bridge.getInbox()
 
-    const ethDeposit =  value.add(maxSubmissionPrice.add(gasPriceBid.mul(maxGas)))
-      return inbox.functions.depositEthRetryable(
-        destinationAddress,
-        maxSubmissionPrice,
-        maxGas,
-        gasPriceBid,
-        {
-          value:ethDeposit
-        }
-      )
+    const ethDeposit = value.add(
+      maxSubmissionPrice.add(gasPriceBid.mul(maxGas))
+    )
+    return inbox.functions.depositEthRetryable(
+      destinationAddress,
+      maxSubmissionPrice,
+      maxGas,
+      gasPriceBid,
+      {
+        value: ethDeposit
+      }
+    )
   }
   const depositEth = async (etherVal: string) => {
     const weiValue: BigNumber = utils.parseEther(etherVal)
@@ -217,6 +221,10 @@ export const useArbTokenBridge = (
       const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
       if (!seqNum) return
       // const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
+
+      const autoRedeemHash = await bridge.calculateRetryableAutoReedemTxnHash(
+        seqNum[0]
+      )
       const l2TxHash = await bridge.calculateL2RetryableTransactionHash(
         seqNum[0]
       )
@@ -230,11 +238,53 @@ export const useArbTokenBridge = (
         sender: await bridge.getWalletAddress()
       })
 
+
+      let autoRedeemRec
+      try {
+        autoRedeemRec = await bridge.l2Provider.waitForTransaction(
+          autoRedeemHash,
+          undefined,
+          300 * 1000
+        )
+        // auto redeem failed
+        if(autoRedeemRec.status === 0){
+          removeTransaction(l2TxHash)
+          addFailedTransaction(
+            {
+              type: 'deposit-l2-auto-redeem',
+              status: 'failure',
+              value: etherVal,
+              txID: autoRedeemHash,
+              assetName: 'ETH',
+              assetType: AssetType.ETH,
+              sender: await bridge.getWalletAddress()
+            }
+          )
+          return
+        }
+      } catch (err){
+        // autoredeem timed out
+        removeTransaction(l2TxHash)
+        addFailedTransaction(
+          {
+            type: 'deposit-l2-auto-redeem',
+            status: 'failure',
+            value: etherVal,
+            txID: autoRedeemHash,
+            assetName: 'ETH',
+            assetType: AssetType.ETH,
+            sender: await bridge.getWalletAddress()
+          })
+          return
+      }
+
+
       const retryableRec = await bridge.l2Provider.waitForTransaction(
         l2TxHash,
         undefined,
         300 * 1000
       )
+      // if it times out... it just errors? that's fine?
       updateTransactionStatus(retryableRec)
 
       return receipt
@@ -349,6 +399,9 @@ export const useArbTokenBridge = (
       const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
         seqNum
       )
+      const autoRedeemHash = await bridge.calculateRetryableAutoReedemTxnHash(
+        seqNum
+      )
 
       addTransaction({
         type: 'deposit-l2',
@@ -359,6 +412,50 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         sender: await bridge.getWalletAddress()
       })
+
+
+      let autoRedeemHashRec
+      try {
+        autoRedeemHashRec = await bridge.l2Provider.waitForTransaction(
+          autoRedeemHash,
+          undefined,
+          30 * 1000
+        )
+        console.warn("auto redeem failed")
+        if(autoRedeemHashRec.status === 0){
+          removeTransaction(l2RetryableHash)
+          addFailedTransaction(
+            {
+              type: 'deposit-l2-auto-redeem',
+              status: 'failure',
+              value: amount,
+              txID: autoRedeemHash,
+              assetName: tokenData.symbol,
+              assetType: AssetType.ERC20,
+              sender: await bridge.getWalletAddress()
+            }
+          )
+          return
+        }
+      } catch (err){
+        console.warn("auto redeem timed out")
+
+        removeTransaction(l2RetryableHash)
+        addFailedTransaction(
+          {
+            type: 'deposit-l2-auto-redeem',
+            status: 'failure',
+            value: amount,
+            txID: autoRedeemHash,
+            assetName: tokenData.symbol,
+            assetType: AssetType.ERC20,
+            sender: await bridge.getWalletAddress()
+          })
+          return
+
+      }
+
+
       const retryableRec = await bridge.l2Provider.waitForTransaction(
         l2RetryableHash,
         undefined,
