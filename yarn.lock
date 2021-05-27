@@ -17125,10 +17125,10 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@^0.3.8:
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.3.8.tgz#4a0f0e3ca4b45eedcf95fa14ec3708ab914503a2"
-  integrity sha512-ViHWyOllWIM9Gq3iqJ1j3EfgCAwsxNa4fzgldhiV8p1fEkoru6TCp6Y3PVabq78lBUeuFyqxRc3tP8MROqJRnw==
+token-bridge-sdk@0.3.9:
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.3.9.tgz#ade0b105c20eb373871c02c8bace8e192489d419"
+  integrity sha512-Rew1Tuj7STMxUVtAWZfZ8XRkQ4h4RyH+YET1g3bLFy++ubQajnjKSvpXu7CaY/Sz5Onbnxcs8gQvWrfZthSR8g==
   dependencies:
     "@ethersproject/bignumber" "^5.1.1"
     "@rehooks/local-storage" "^2.3.0"
