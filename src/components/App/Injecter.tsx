@@ -56,7 +56,7 @@ const updateConnectionState = useCallback(() => {
             console.info('deposit mode detected')
             const ethProvider = provider
             const arbProvider = new ethers.providers.JsonRpcProvider(
-              "https://kovan5.arbitrum.io/rpc"
+              "https://arb1.arbitrum.io/rpc"
             ) 
 
             const l1Signer =  ethProvider.getSigner(0)
@@ -69,7 +69,7 @@ const updateConnectionState = useCallback(() => {
             setConnectionState(ConnectionState.DEPOSIT_MODE)
             break
           }
-          case '144545313136048':
+          case '42161':
           {
             console.info('withdrawal mode detected')
             const ethProvider = new ethers.providers.JsonRpcProvider(

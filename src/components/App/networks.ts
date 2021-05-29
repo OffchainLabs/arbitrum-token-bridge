@@ -61,9 +61,21 @@ const networks: Networks = {
     name: 'Kovan',
     url: 'https://api.infura.io/v1/jsonrpc/kovan',
     gif: kovan
+  },
+  1: {
+    chainID: 1,
+    name: 'Mainnet',
+    url: 'https://mainnet.infura.io/v3/8838d00c028a46449be87e666387c71a',
+    gif: kovan
+  },
+  42161: {
+    chainID: 42161,
+    name: 'Arb1',
+    url: 'https://arb1.arbitrum.io/rpc',
+    gif: kovan
   }
 }
 
-export const arbNetworkIds = ["215728282823301", "152709604825713", "79377087078960", "212984383488152","144545313136048"]
+export const arbNetworkIds = ["215728282823301", "152709604825713", "79377087078960", "212984383488152","144545313136048", "42161"]
 
 export default networks
