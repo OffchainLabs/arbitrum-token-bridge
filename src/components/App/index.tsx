@@ -20,6 +20,8 @@ import './App.css'
 import { BridgeConfig, connextTxn } from 'util/index'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import AlertDialog from './Dialogue'
+import Alert from 'react-bootstrap/Alert'
+import { useL1Network } from 'components/App/NetworkContext'
 import { Bridge } from 'arb-ts'
 interface AppProps {
   bridge : Bridge
@@ -29,7 +31,7 @@ const App = ( { bridge }:AppProps) => {
   const arbProvider = bridge.l2Signer.provider as ethers.ethers.providers.Provider 
   const ethProvider = bridge.l1Bridge.l1Signer.provider as ethers.ethers.providers.Provider 
 
-  const isDepositMode = useIsDepositMode()
+  const l1NetworkID = useL1Network().chainID
   // const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 666
 
   const {
@@ -110,6 +112,8 @@ const App = ( { bridge }:AppProps) => {
 
   return (
     <div className="container">
+            { l1NetworkID === "1" ? <Alert variant={'danger'}><b>NOTICE: You're connected to mainnet, still in beta phase. BE CAREFUL!</b></Alert> : null}
+
       {/* <button onClick={requestNetworkSwitch}>XXXXXXX</button> */}
       <div className="row">
         <Header
