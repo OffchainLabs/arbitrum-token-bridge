@@ -230,44 +230,49 @@ export const useArbTokenBridge = (
         assetType: AssetType.ETH,
         sender: await bridge.getWalletAddress()
       })
+      const l2TxnRec = await bridge.l2Provider.waitForTransaction(
+            l2TxHash,
+            undefined,
+            slowInboxQueueTimeout
+          )
+      updateTransactionStatus(l2TxnRec)
+
+      // let l2TxnRec
+      // try {
+      //   l2TxnRec = await bridge.l2Provider.waitForTransaction(
+      //     l2TxHash,
+      //     undefined,
+      //     slowInboxQueueTimeout
+      //   )
+      //   if(l2TxnRec.status === 0){
+      //     console.warn('l2TxnRec failed', l2TxnRec)
+      //     updateTransactionStatus(l2TxnRec)
+      //     return
+      //   }
+      // } catch (err){
+      //   console.warn('l2TxHash timed out', err)
+      //   removeTransaction(l2TxHash)
+      //   addFailedTransaction(
+      //     {
+      //       type: 'deposit-l2-auto-redeem',
+      //       status: 'failure',
+      //       value: etherVal,
+      //       txID: l2TxHash,
+      //       assetName: 'ETH',
+      //       assetType: AssetType.ETH,
+      //       sender: await bridge.getWalletAddress()
+      //     })
+      //     return
+      // }
 
 
-      let l2TxnRec
-      try {
-        l2TxnRec = await bridge.l2Provider.waitForTransaction(
-          l2TxHash,
-          undefined,
-          slowInboxQueueTimeout
-        )
-        if(l2TxnRec.status === 0){
-          console.warn('l2TxnRec failed', l2TxnRec)
-          updateTransactionStatus(l2TxnRec)
-          return
-        }
-      } catch (err){
-        console.warn('l2TxHash timed out', err)
-        removeTransaction(l2TxHash)
-        addFailedTransaction(
-          {
-            type: 'deposit-l2-auto-redeem',
-            status: 'failure',
-            value: etherVal,
-            txID: l2TxHash,
-            assetName: 'ETH',
-            assetType: AssetType.ETH,
-            sender: await bridge.getWalletAddress()
-          })
-          return
-      }
-
-
-      const retryableRec = await bridge.l2Provider.waitForTransaction(
-        l2TxHash,
-        undefined,
-        slowInboxQueueTimeout
-      )
-      // if it times out... it just errors? that's fine?
-      updateTransactionStatus(retryableRec)
+      // const retryableRec = await bridge.l2Provider.waitForTransaction(
+      //   l2TxHash,
+      //   undefined,
+      //   slowInboxQueueTimeout
+      // )
+      // // if it times out... it just errors? that's fine?
+      // updateTransactionStatus(retryableRec)
 
       return receipt
     } catch (e) {
