@@ -32,6 +32,7 @@ import ERC721L2Actions from 'components/Actions/ERC721L2Actions'
 import { Transaction } from 'token-bridge-sdk'
 
 import { providers } from 'ethers'
+import { useLocalStorage } from '@rehooks/local-storage'
 
 type TabProps = {
   ethBalances: BridgeBalance
@@ -72,7 +73,10 @@ const TabsContainer = ({
   pendingWithdrawalsMap,
   ethProvider
 }: TabProps) => {
-  const [key, setKey] = useState('eth')
+const [key, setKey] = useLocalStorage(
+    'currentTab',
+    'eth'
+  )
   const [showModal, setShowModal] = React.useState(false)
   // TODO: clean up / memoize
   const brideTokensArray: BridgeToken[] = Object.values(bridgeTokens)
@@ -133,6 +137,7 @@ const TabsContainer = ({
               </PanelWrapper>
             </Col>
           </Row>
+
         </Container>
       </Tab>
       <Tab eventKey="erc20" title="ERC-20">
