@@ -183,23 +183,18 @@ export const useArbTokenBridge = (
     const maxSubmissionPrice = (await bridge.getTxnSubmissionPrice(0))[0]
     const inboxAddress = await bridge.ethERC20Bridge.inbox()
 
-    const contractInterface = new utils.Interface([
-      `function depositEth(uint256 maxSubmissionCost)
-          external
-          payable
-          virtual
-          override
-          onlyWhitelisted
-          returns (uint256)
-          )`,
-    ])
-    const inbox = new Contract(inboxAddress,contractInterface, bridge.l1Bridge.l1Provider)
+    const inbox = await bridge.l1Bridge.getInbox();
+    const to = await bridge.l1Bridge.l1Signer.getAddress()
 
-    return inbox.depositEth(
+    return inbox.createRetryableTicket(
+      to,
+      0,
       maxSubmissionPrice,
-      {
-        value: value
-      }
+      to,
+      to,
+      0,
+      0,
+      "0x"
     )
   }
   const depositEth = async (etherVal: string) => {
