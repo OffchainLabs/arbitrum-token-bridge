@@ -126,7 +126,6 @@ const useTransactions = (): [
     setTransactionConfirmed: (txID: string) => void
     updateTransactionStatus: (txReceipt: TransactionReceipt) => void
     removeTransaction: (txID: string) => void
-
   }
 ] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
@@ -162,7 +161,7 @@ const useTransactions = (): [
     })
   }
 
-  const removeTransaction = (txID:string) => {
+  const removeTransaction = (txID: string) => {
     return dispatch({
       type: 'REMOVE_TRANSACTION',
       txID: txID

@@ -297,14 +297,6 @@ export const mainnetWhitelist = [
   }
 ]
 
-
-
-
-
-
-
-
-
 export const mainnetBlackList = [
   {
     chainId: 1,
