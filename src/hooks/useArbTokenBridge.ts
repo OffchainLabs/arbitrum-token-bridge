@@ -194,7 +194,10 @@ export const useArbTokenBridge = (
       to,
       0,
       0,
-      "0x"
+      "0x",
+      {
+        value: value
+      }
     )
   }
   const depositEth = async (etherVal: string) => {
