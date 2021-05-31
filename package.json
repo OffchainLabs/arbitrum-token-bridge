@@ -21,7 +21,6 @@
     "watch": "tsc --watch",
     "lint": "tsc --noEmit && eslint src/**/*.ts --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint --fix",
-    "update:abi": "typechain --target ethers --outDir src/util/contracts './ABIs/*.json'",
     "prepare": "install-peers",
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs"
   },
@@ -55,9 +54,7 @@
     "eslint-plugin-react": "^7.19.0",
     "install-peers-cli": "^2.2.0",
     "jsdoc-to-markdown": "^6.0.1",
-    "prettier": "^2.0.2",
-    "typechain": "^1.0.5",
-    "typechain-target-ethers": "^1.0.4"
+    "prettier": "^2.0.2"
   },
   "files": [
     "dist/**/*"
