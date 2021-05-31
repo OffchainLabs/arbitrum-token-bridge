@@ -5,6 +5,7 @@ import Popover from 'react-bootstrap/Popover'
 
 import { useIsDepositMode } from 'components/App/ModeContext'
 import networks from 'components/App/networks'
+import { useL1Network } from 'components/App/NetworkContext'
 import copy from 'media/images/copy.jpg'
 import arb from 'media/gifs/l2.gif'
 
@@ -13,7 +14,6 @@ interface props {
   disabledWithdrawals?: boolean
 }
 
-const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
 
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
@@ -21,6 +21,7 @@ const PanelWrapper: FunctionComponent<props> = ({
   children
 }) => {
   const isDepositMode = useIsDepositMode()
+  const l1NetworkName = useL1Network().name
   const isActive = !disabledWithdrawals && (isDepositMode === isDepositPanel)
   if (isActive) {
     return <div> {children}</div>
@@ -34,6 +35,7 @@ const PanelWrapper: FunctionComponent<props> = ({
     e.stopPropagation()
     return
   }
+  
 
   return (
     <div>
@@ -41,7 +43,7 @@ const PanelWrapper: FunctionComponent<props> = ({
         <OverlayTrigger
           placement="bottom-start"
           delay={{ show: 100, hide: 1000 }}
-          overlay={renderPopover(isDepositPanel,disabledWithdrawals)}
+          overlay={renderPopover(isDepositPanel,disabledWithdrawals, l1NetworkName)}
           trigger={['hover', 'focus']}
         >
           <div
@@ -58,7 +60,7 @@ const PanelWrapper: FunctionComponent<props> = ({
   )
 }
 
-const renderPopover = (isDepositPanel: boolean, disabledWithdrawals: boolean) => {
+const renderPopover = (isDepositPanel: boolean, disabledWithdrawals: boolean, l1NetworkName: string) => {
   const onClick = (e: any) => {
     e.preventDefault()
     window.open(window.location.origin + '#info')
@@ -72,7 +74,7 @@ const renderPopover = (isDepositPanel: boolean, disabledWithdrawals: boolean) =>
         isDepositPanel ? (
           <div>
             To enable these actions, connect to L1 (
-            {networks[+ethNetworkId].name})
+            {l1NetworkName})
             <a onClick={onClick} href="">
               {' '}
               Learn how.

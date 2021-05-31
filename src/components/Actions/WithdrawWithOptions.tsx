@@ -19,13 +19,8 @@ import { AssetType } from 'token-bridge-sdk'
 import ConnextIcon from 'media/images/connext.png'
 import ArbIcon from 'media/images/arb.png'
 import HopIcon from 'media/images/hop.png'
-const { formatEther, parseEther } = utils
+import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 const { JsonRpcProvider, Web3Provider } = providers
-
-const l1RpcUrl = process.env.REACT_APP_ETH_NODE_URL as string
-const l1NetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
-// TODO: disable on old testnet chain?
-const l2NetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
 
 const useStylesBootstrap = makeStyles((theme) => ({
   tooltip: {
@@ -84,6 +79,9 @@ const WithdrawWithOptions = ({
     [value, onSubmit]
   )
 
+  const l1Network = useL1Network()
+  const l2Network = useL2Network()
+
   const connextIsDisabled = useMemo(()=>{
     return true
   }, [disabled]) 
@@ -105,6 +103,7 @@ const WithdrawWithOptions = ({
 
   const classes = useStylesBootstrap();
   const isEth = assetId === "0x0000000000000000000000000000000000000000"
+  
   return (
     <InputGroup
       size="sm"
@@ -116,13 +115,13 @@ const WithdrawWithOptions = ({
       <ConnextModal
         showModal={showModal}
         onClose={() => setShowModal(false)}
-        depositChainId={+l2NetworkId}
-        withdrawChainId={+l1NetworkId}
+        depositChainId={+l2Network.chainID}
+        withdrawChainId={+l1Network.chainID}
         routerPublicIdentifier="vector7tbbTxQp8ppEQUgPsbGiTrVdapLdU5dH7zTbVuXRf1M4CEBU9Q"
         depositAssetId={assetId}
         withdrawAssetId={assetId}
-        withdrawChainProvider={l1RpcUrl}
-        depositChainProvider={networks[+l2NetworkId].url}
+        withdrawChainProvider={l1Network.url}
+        depositChainProvider={l2Network.url}
         withdrawalAddress={ethAddress}
         injectedProvider={window.ethereum}
         transferAmount={ connextTranfserAmount }

@@ -8,6 +8,7 @@ import {
 import { utils } from 'ethers'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import ExplorerLink from 'components/App/ExplorerLink'
+import { useNetwork } from 'components/App/NetworkContext' 
 import { l2Network } from 'util/index'
 const { formatEther } = utils
 interface Web3Data {
@@ -41,10 +42,10 @@ const Header = ({
     e.preventDefault()
     window.open(window.location.origin + '#info')
   }
-
+  const { name } = useNetwork()
   const headerDisplay = useMemo(()=>{
-    return "Connected"
-  }, [])
+    return `Connected to ${name}` 
+  }, [name])
 
   return (
     <div className="col-lg-12">

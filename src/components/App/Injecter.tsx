@@ -4,31 +4,25 @@ import { ConnectionState, l2Network } from 'util/index'
 import * as ethers from 'ethers'
 import App from './index'
 import ModeContext from './ModeContext'
+import NetworkIDContext from './NetworkContext'
+
 import Alert from 'react-bootstrap/Alert'
 import Container from 'react-bootstrap/Container'
 import ConnectWarning from './ConnectWarning'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import fox from 'media/images/metamask-fox.svg'
-import networks, { arbNetworkIds }  from "./networks"
+import networks  from "./networks"
 import { useLocalStorage } from '@rehooks/local-storage'
-import { Bridge, L1Bridge, L2Bridge } from 'arb-ts'
+import { Bridge } from 'arb-ts'
 
 const Injector = () => {
   const [bridge, setBridge] = useState<Bridge>()
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
-  let [_l2Network, setL2Network] = useLocalStorage<l2Network>('l2Network', 'v3')
-  const l2Network = _l2Network || "v3"
-  const {
-    REACT_APP_ETH_NETWORK_ID: ethNetworkId,
-    REACT_APP_ETH_NODE_URL: ethNodeUrl,
-
-  } = process.env
+  const [networkID, setNetworkID] = useState("")
   
-  const l1TokenBridgeAddress = process.env.REACT_APP_L1_TOKEN_BRIDGE_ADDRESS || ''
-  const l2TokenBridgeAddress = process.env.REACT_APP_L2_TOKEN_BRIDGE_ADDRESS || ''
   
   // useEffect(()=> {
   //   // @ts-ignore
@@ -42,55 +36,60 @@ const updateConnectionState = useCallback(() => {
   
   if (connectionState === ConnectionState.LOADING) {
 
-    if (window.location.hash === "#info"){
-      return setConnectionState(ConnectionState.WRONG_NETWORK)
-    }
+
     try {
       getInjectedWeb3().then(([provider, networkVersion]) => {
         if (!provider) {
           return setConnectionState(ConnectionState.NO_METAMASK)
         }
-
-        switch (networkVersion) {
-          case ethNetworkId: {
-            console.info('deposit mode detected')
-            const ethProvider = provider
-            const arbProvider = new ethers.providers.JsonRpcProvider(
-              "https://arb1.arbitrum.io/rpc"
-            ) 
-
-            const l1Signer =  ethProvider.getSigner(0)
-            const l2Signer = arbProvider.getSigner(
-              window.ethereum?.selectedAddress
-            )
-            const bridge = new Bridge(l1TokenBridgeAddress, l2TokenBridgeAddress, l1Signer, l2Signer, )
-
-            setBridge(bridge)
-            setConnectionState(ConnectionState.DEPOSIT_MODE)
-            break
-          }
-          case '42161':
-          {
-            console.info('withdrawal mode detected')
-            const ethProvider = new ethers.providers.JsonRpcProvider(
-              ethNodeUrl
-            )
-            const arbProvider = provider
-            const l1Signer = ethProvider.getSigner(
-              window.ethereum?.selectedAddress
-            )
-            const l2Signer = arbProvider.getSigner(0)
-            const bridge = new Bridge(l1TokenBridgeAddress, l2TokenBridgeAddress, l1Signer, l2Signer, )
-
-            setBridge(bridge)
-            setConnectionState(ConnectionState.WITHDRAW_MODE)
-            break
-          }
-
-          default: {
-            setConnectionState(ConnectionState.WRONG_NETWORK)
-          }
+        if(!networkVersion){
+          return setConnectionState(ConnectionState.NO_METAMASK)
         }
+
+        setNetworkID(networkVersion)
+        if (window.location.hash === "#info"){
+          return setConnectionState(ConnectionState.WRONG_NETWORK)
+        }
+
+        const network = networks[networkVersion]
+        const partnerNetwork = networks[network.partnerChainID]
+        if(!network){
+          console.warn('WARNING: unsupported network');
+          return setConnectionState(ConnectionState.WRONG_NETWORK)
+
+        }
+
+        if(!network.isArbitrum){
+          console.info('deposit mode detected')
+          const ethProvider = provider
+          const arbProvider = new ethers.providers.JsonRpcProvider(
+            partnerNetwork.url
+          ) 
+
+          const l1Signer =  ethProvider.getSigner(0)
+          const l2Signer = arbProvider.getSigner(
+            window.ethereum?.selectedAddress
+          )
+          const bridge = new Bridge(network.tokenBridge.l1Address, network.tokenBridge.l2Address, l1Signer, l2Signer)
+
+          setBridge(bridge)
+          setConnectionState(ConnectionState.DEPOSIT_MODE)
+        } else {
+          console.info('withdrawal mode detected')
+          const ethProvider = new ethers.providers.JsonRpcProvider(
+            partnerNetwork.url
+          )
+          const arbProvider = provider
+          const l1Signer = ethProvider.getSigner(
+            window.ethereum?.selectedAddress
+          )
+          const l2Signer = arbProvider.getSigner(0)
+          const bridge = new Bridge(network.tokenBridge.l1Address, network.tokenBridge.l2Address, l1Signer, l2Signer)
+
+          setBridge(bridge)
+          setConnectionState(ConnectionState.WITHDRAW_MODE)
+        }
+        
         setChangeListeners()
       })
     } catch (e) {
@@ -140,18 +139,24 @@ const updateConnectionState = useCallback(() => {
         )
       case ConnectionState.WRONG_NETWORK:
         return (
+          <NetworkIDContext.Provider value={networkID}>
+
           <div>
             <ConnectWarning />
           </div>
+          </NetworkIDContext.Provider>
+
         )
       default:
         if (!bridge) {
           throw new Error('initialization error')
         }
         return (
+          <NetworkIDContext.Provider value={networkID}>
           <ModeContext.Provider value={connectionState}>
             <App bridge={bridge}/>
           </ModeContext.Provider>
+          </NetworkIDContext.Provider>
         )
     }
   }

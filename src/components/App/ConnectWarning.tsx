@@ -4,11 +4,11 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 
 import Alert from 'react-bootstrap/Alert'
-import networks, { arbNetworkIds } from './networks'
+import networks from './networks'
 import explorer from 'media/gifs/explorer.gif'
+import { useNetwork } from 'components/App/NetworkContext'
 
-const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID as string
-const arbNetworkId = process.env.REACT_APP_ARB_NETWORK_ID as string
+
 
 const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 
@@ -25,17 +25,14 @@ const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 }
 
 export default () => {
-  const network = networks[+ethNetworkId]
-  const arbnetwork = networks[+arbNetworkId]
+  const netWork = useNetwork()
+  
+  const network = networks[1]
+  const arbnetwork = networks[42161]
 
-  const l1NetworkName = networks[+ethNetworkId].name
-  const l2NetworkName = networks[+arbNetworkId].name
-
-
-  const arbV2Testnet = networks[+arbNetworkIds[1]]
-  const arbV3Testnet = networks[+arbNetworkIds[2]]
-  const arbV4Testnet = networks[+arbNetworkIds[3]]
-  const arbV5Testnet = networks[+arbNetworkIds[4]]
+  const l1NetworkName = network.name
+  const l2NetworkName = arbnetwork.name
+  
 
   return (
     <Container>
@@ -79,10 +76,10 @@ export default () => {
               </a>{' '}
               or to our publically hosted nodes via custom RPC:<br/>{' '}
               <CopyLink
-                url={arbV5Testnet.url}
+                url={arbnetwork.url}
                 msg="Arbv5 node rpc url copied to clipboard"
               />{' '} with chain ID    <CopyLink
-              url={arbV5Testnet.chainID.toString()}
+              url={arbnetwork.chainID.toString()}
               msg="Arbv5 chain ID copied to clipboard"
             /> for Arbv5 
             

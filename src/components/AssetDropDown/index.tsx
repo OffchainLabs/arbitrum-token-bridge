@@ -6,6 +6,7 @@ import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
 import { TokenType, BridgeToken, TokenStatus, getTokenStatus } from 'token-bridge-sdk'
 import { useState, useMemo } from 'react'
+import { useL1Network } from 'components/App/NetworkContext'
 
 import React from 'react'
 type DropDownProps = {
@@ -28,6 +29,7 @@ const AssetDropDown = ({
   setCurrentAddress
 }: DropDownProps) => {
   const [erc20Form, seterc20Form] = useState('')
+  const l1NetworkId  = useL1Network().chainID
   const title = useMemo(() => {
     if (currentToken) {
       return currentToken.symbol
@@ -60,7 +62,7 @@ const AssetDropDown = ({
       <Form
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault()
-          const tokenStatus = getTokenStatus(erc20Form, 'kovan')
+          const tokenStatus = getTokenStatus(erc20Form, l1NetworkId)
           switch (tokenStatus) {
             case TokenStatus.WHITELISTED:{
               addToken(erc20Form, tokenType)

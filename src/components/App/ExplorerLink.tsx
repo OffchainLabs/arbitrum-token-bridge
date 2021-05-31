@@ -1,15 +1,18 @@
 import React, { useMemo } from 'react'
 import { TxnType } from 'token-bridge-sdk'
+import { useL1Network, useL2Network } from 'components/App/NetworkContext'
+
 interface props {
     hash: string,
     type: TxnType | 'address' | 'chain',
     layer?: 1 | 2
 }
 
-const l1Prefix = "https://kovan.etherscan.io"
-const l2Prefix = "https://explorer5.arbitrum.io/#"
 
 const ExplorerLink = ({hash, type, layer}: props) =>{
+    const l1Prefix = useL1Network().explorerUrl
+    const l2Prefix = useL2Network().explorerUrl
+
 
     const url = useMemo(()=>{
         switch (type) {

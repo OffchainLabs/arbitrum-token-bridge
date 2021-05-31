@@ -149,10 +149,10 @@ const TabsContainer = ({
             </Col>
           </Row>
           <Row style={{fontSize: 14}}>
-          {currentERC20Address   ? <Col>Token L1 Address: <ExplorerLink hash={currentERC20Address} type={'address'}/></Col> : null }
+          {currentERC20Address   ? <Col>Token L1 Address: <ExplorerLink hash={currentERC20Address} type={'address'} layer={1}/></Col> : null }
           </Row>
           <Row style={{fontSize: 14}}>
-          {currentTokenL2Address   ? <Col>Token L2 Address: <ExplorerLink hash={currentTokenL2Address} type={'address'}/></Col> : null }
+          {currentTokenL2Address   ? <Col>Token L2 Address: <ExplorerLink hash={currentTokenL2Address} type={'address'} layer={2}/></Col> : null }
           </Row>
 
           <Row>
