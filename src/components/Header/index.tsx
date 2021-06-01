@@ -51,13 +51,9 @@ const Header = ({
     <div className="col-lg-12">
       <div className="top-thing">
         {' '}
-        <a href="http://portal.arbitrum.io/" target="_blank">
-          DAPPS
+        <a href="https://arbitrum.io/" target="_blank">
+          ARBITRUM
         </a>{' '}
-        .{' '}
-        <a href="http://faucet.arbitrum.io/" target="_blank">
-          FAUCET
-        </a>
       </div>
 
       <h1 className="text-center">Arbitrum Token Bridge</h1>
