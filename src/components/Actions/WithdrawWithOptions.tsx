@@ -2,25 +2,21 @@ import React, { useCallback, useState, useMemo } from 'react'
 import useCappedNumberInput from 'hooks/useCappedNumberInput'
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
-import Button from 'react-bootstrap/Button'
-
 import Form from 'react-bootstrap/Form'
 
 import Dropdown from 'react-bootstrap/Dropdown'
 import Tooltip from '@material-ui/core/Tooltip';
 
-import { withStyles, makeStyles } from '@material-ui/core/styles';
+import {  makeStyles } from '@material-ui/core/styles';
 
 import { ConnextModal } from '@connext/vector-modal'
-import networks from '../App/networks'
-import { utils, providers } from 'ethers'
+import { providers } from 'ethers'
 import { connextTxn } from 'util/index'
 import { AssetType } from 'token-bridge-sdk'
 import ConnextIcon from 'media/images/connext.png'
 import ArbIcon from 'media/images/arb.png'
 import HopIcon from 'media/images/hop.png'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
-const { JsonRpcProvider, Web3Provider } = providers
 
 const useStylesBootstrap = makeStyles((theme) => ({
   tooltip: {

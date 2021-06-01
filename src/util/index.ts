@@ -3,7 +3,6 @@ import {
   AssetType
 } from 'token-bridge-sdk'
 export * from './web3'
-export type l2Network = 'v2' | 'v3'
 export interface BridgeConfig {
   ethProvider: ethers.providers.JsonRpcProvider
   arbProvider: ethers.providers.JsonRpcProvider

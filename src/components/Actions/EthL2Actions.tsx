@@ -1,11 +1,8 @@
-import useCappedNumberInput from 'hooks/useCappedNumberInput'
-
 import React from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
 import { utils } from 'ethers'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import WithdrawInfo from './WithdrawInfo'
-import NumberInputForm from './numberInputForm'
 import WithdrawWithOptions from './WithdrawWithOptions'
 import { connextTxn } from 'util/index'
 const { formatEther } = utils

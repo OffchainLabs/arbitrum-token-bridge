@@ -5,12 +5,9 @@ import {
   ContractStorage,
   BridgeToken
 } from 'token-bridge-sdk'
-import { utils } from 'ethers'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { useNetwork } from 'components/App/NetworkContext' 
-import { l2Network } from 'util/index'
-const { formatEther } = utils
 interface Web3Data {
   ethAddress: string
   ethBalance: BridgeBalance | undefined

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { getInjectedWeb3, setChangeListeners } from 'util/web3'
-import { ConnectionState, l2Network } from 'util/index'
+import { ConnectionState } from 'util/index'
 import * as ethers from 'ethers'
 import App from './index'
 import ModeContext from './ModeContext'
@@ -13,7 +13,6 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import fox from 'media/images/metamask-fox.svg'
 import networks  from "./networks"
-import { useLocalStorage } from '@rehooks/local-storage'
 import { Bridge } from 'arb-ts'
 
 const Injector = () => {

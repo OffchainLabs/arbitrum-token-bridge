@@ -1,17 +1,11 @@
-import useCappedNumberInput from 'hooks/useCappedNumberInput'
-
 import React, { useMemo } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import NumberInputForm from './numberInputForm'
-import Button from 'react-bootstrap/Button'
-import SubmitNoInput from './SubmitNoInput'
 import { Transaction } from 'token-bridge-sdk'
 import  PendingWithdrawals  from '../PendingWithdrawals'
 import { L2ToL1EventResultPlus, AssetType } from 'token-bridge-sdk'
-import Table from 'react-bootstrap/Table'
-import { mockPendingWithdrawals } from 'test/mocks'
-import { utils, BigNumber } from 'ethers'
+import { utils } from 'ethers'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 import { providers } from 'ethers'
 

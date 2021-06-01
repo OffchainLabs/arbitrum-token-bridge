@@ -1,10 +1,7 @@
 import React, { useCallback } from 'react'
 import useCappedNumberInput from 'hooks/useCappedNumberInput'
 import InputGroup from 'react-bootstrap/InputGroup'
-import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
-
-import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 

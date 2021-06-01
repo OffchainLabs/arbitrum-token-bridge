@@ -1,13 +1,9 @@
-import React, { useState, FunctionComponent, useMemo } from 'react'
-import Tooltip from 'react-bootstrap/Tooltip'
+import React, { FunctionComponent } from 'react'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Popover from 'react-bootstrap/Popover'
 
 import { useIsDepositMode } from 'components/App/ModeContext'
-import networks from 'components/App/networks'
 import { useL1Network } from 'components/App/NetworkContext'
-import copy from 'media/images/copy.jpg'
-import arb from 'media/gifs/l2.gif'
 
 interface props {
   isDepositPanel: boolean

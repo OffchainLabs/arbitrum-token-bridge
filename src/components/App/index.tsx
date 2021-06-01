@@ -1,14 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import styles from './styles.module.scss'
-import { statement } from '@babel/template'
-import { getInjectedWeb3, requestNetworkSwitch } from 'util/web3'
+import { requestNetworkSwitch } from 'util/web3'
 import * as ethers from 'ethers'
 import Transactions from '../Transactions'
 import {
   useArbTokenBridge,
-  TokenType,
-  ContractStorage,
-  NewTransaction,
   AssetType
 } from 'token-bridge-sdk'
 import Header from 'components/Header'
@@ -17,9 +13,7 @@ import { useLocalStorage } from '@rehooks/local-storage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
-import { BridgeConfig, connextTxn } from 'util/index'
-import { useIsDepositMode } from 'components/App/ModeContext'
-import AlertDialog from './Dialogue'
+import { connextTxn } from 'util/index'
 import Alert from 'react-bootstrap/Alert'
 import { useL1Network } from 'components/App/NetworkContext'
 import { Bridge } from 'arb-ts'
@@ -125,7 +119,6 @@ const App = ( { bridge }:AppProps) => {
           currentERC20Address={currentERC20Address ?? ''}
           currentERC721Address={currentERC721Address ?? ''}
         />
-        {/* <AlertDialog networkId={networkId} l2Network={l2Network}/> */}
       </div>
       <div className="row" id="bridgeRow">
         <div id="bridgebody">
