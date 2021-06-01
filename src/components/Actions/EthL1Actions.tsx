@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import NumberInputForm from './numberInputForm'
@@ -8,6 +8,7 @@ import { L2ToL1EventResultPlus, AssetType } from 'token-bridge-sdk'
 import { utils } from 'ethers'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 import { providers } from 'ethers'
+import { useL1Network } from "components/App/NetworkContext"
 
 const { formatEther } = utils
 type ActionsProps = {
@@ -26,7 +27,7 @@ const Actions = ({
   ethProvider
 }: ActionsProps) => {
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
-  const isDepositMode = useIsDepositMode()
+  const l1Network = useL1Network()
 
   const pendingEthBalance = useMemo(() => {
     return transactions.reduce((acc: number, txn: Transaction) => {
@@ -38,6 +39,12 @@ const Actions = ({
       }
     }, 0)
   }, [transactions])
+
+
+  const onSubmit = useCallback((value: string)=>{
+    // used patched method for kovan
+    eth.deposit(value, l1Network.chainID === "42")
+  }, [l1Network])
   return (
     <div>
       <label htmlFor="basic-url">ETH on L1: {ethChainBalance}</label>

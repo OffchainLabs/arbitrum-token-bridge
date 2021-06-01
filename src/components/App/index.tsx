@@ -13,10 +13,19 @@ import { connextTxn } from 'util/index'
 import Alert from 'react-bootstrap/Alert'
 import { useL1Network } from 'components/App/NetworkContext'
 import { Bridge } from 'arb-ts'
+import { MAINNET_WHITELIST_ADDRESS } from "./networks"
+import { renderAlert } from './Injecter'
+enum WhiteListState {
+  VERIFYING,
+  ALLOWED,
+  DISALLOWED
+}
+
 interface AppProps {
   bridge: Bridge
 }
 const App = ({ bridge }: AppProps) => {
+  const [whiteListState, setWhitelistStsate]  =  useState(WhiteListState.VERIFYING)
   // TODO:
   const arbProvider = bridge.l2Signer
     .provider as ethers.ethers.providers.Provider
@@ -24,6 +33,7 @@ const App = ({ bridge }: AppProps) => {
     .provider as ethers.ethers.providers.Provider
 
   const l1NetworkID = useL1Network().chainID
+
 
   const {
     walletAddress,
@@ -35,6 +45,20 @@ const App = ({ bridge }: AppProps) => {
     transactions,
     pendingWithdrawalsMap
   } = useArbTokenBridge(bridge)
+
+  useEffect(()=>{
+    if(!walletAddress)return
+    if(l1NetworkID !== "1"){
+      setWhitelistStsate(WhiteListState.ALLOWED)
+    } else {
+      bridge.isWhiteListed(walletAddress,MAINNET_WHITELIST_ADDRESS ).then((isAllowed)=>{
+
+        setWhitelistStsate(isAllowed ? WhiteListState.ALLOWED: WhiteListState.DISALLOWED)
+        
+      })
+    }
+
+  }, [l1NetworkID, walletAddress])
 
   const [currentERC20Address, setCurrentERC20Address] = useLocalStorage(
     'currentERC20',
@@ -95,6 +119,13 @@ const App = ({ bridge }: AppProps) => {
     }, 5000)
   }, [])
 
+  if(whiteListState === WhiteListState.VERIFYING){
+    return  renderAlert("verifying...", "primary")
+  }
+  if(whiteListState === WhiteListState.DISALLOWED){
+    return  renderAlert(`Stop! You are attempting to use Mainnet Beta with unapproved address ${walletAddress}!`, "danger")
+  }
+
   return (
     <div className="container">
       {l1NetworkID === '1' ? (
@@ -105,6 +136,9 @@ const App = ({ bridge }: AppProps) => {
           </b>
         </Alert>
       ) : null}
+
+
+  
 
       <div className="row">
         <Header
