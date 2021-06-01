@@ -4,7 +4,12 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
-import { TokenType, BridgeToken, TokenStatus, getTokenStatus } from 'token-bridge-sdk'
+import {
+  TokenType,
+  BridgeToken,
+  TokenStatus,
+  getTokenStatus
+} from 'token-bridge-sdk'
 import { useState, useMemo } from 'react'
 import { useL1Network } from 'components/App/NetworkContext'
 
@@ -29,7 +34,7 @@ const AssetDropDown = ({
   setCurrentAddress
 }: DropDownProps) => {
   const [erc20Form, seterc20Form] = useState('')
-  const l1NetworkId  = useL1Network().chainID
+  const l1NetworkId = useL1Network().chainID
   const title = useMemo(() => {
     if (currentToken) {
       return currentToken.symbol
@@ -50,9 +55,7 @@ const AssetDropDown = ({
         <Dropdown.Item
           key={i}
           onClick={() => {
-            setCurrentAddress(
-              bridgeToken.address
-            )
+            setCurrentAddress(bridgeToken.address)
           }}
         >
           {bridgeToken.symbol}
@@ -64,21 +67,24 @@ const AssetDropDown = ({
           e.preventDefault()
           const tokenStatus = getTokenStatus(erc20Form, l1NetworkId)
           switch (tokenStatus) {
-            case TokenStatus.WHITELISTED:{
+            case TokenStatus.WHITELISTED: {
               addToken(erc20Form, tokenType)
               return seterc20Form('')
-            } case TokenStatus.BLACKLISTED: {
-              return alert("Token you're trying to add has features incompatible with the Arbitrum bridge")
-            } case TokenStatus.NEUTRAL:{
-                const res = global.confirm("We don't recognize this token; are you sure you want to add it?")
-                if (!res)return
-                addToken(erc20Form, tokenType)
-                return seterc20Form('')
             }
-    
+            case TokenStatus.BLACKLISTED: {
+              return alert(
+                "Token you're trying to add has features incompatible with the Arbitrum bridge"
+              )
+            }
+            case TokenStatus.NEUTRAL: {
+              const res = global.confirm(
+                "We don't recognize this token; are you sure you want to add it?"
+              )
+              if (!res) return
+              addToken(erc20Form, tokenType)
+              return seterc20Form('')
+            }
           }
-
-
         }}
       >
         <FormControl

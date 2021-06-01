@@ -12,7 +12,7 @@ import ConnectWarning from './ConnectWarning'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import fox from 'media/images/metamask-fox.svg'
-import networks  from "./networks"
+import networks from './networks'
 import { Bridge } from 'arb-ts'
 
 const Injector = () => {
@@ -20,9 +20,8 @@ const Injector = () => {
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.LOADING
   )
-  const [networkID, setNetworkID] = useState("")
-  
-  
+  const [networkID, setNetworkID] = useState('')
+
   // useEffect(()=> {
   //   // @ts-ignore
   //   window.ethereum.on('networkChanged', (chainId: number) => {
@@ -30,74 +29,78 @@ const Injector = () => {
   //       })
   // }, [])
 
+  const updateConnectionState = useCallback(() => {
+    if (connectionState === ConnectionState.LOADING) {
+      try {
+        getInjectedWeb3().then(([provider, networkVersion]) => {
+          if (!provider) {
+            return setConnectionState(ConnectionState.NO_METAMASK)
+          }
+          if (!networkVersion) {
+            return setConnectionState(ConnectionState.NO_METAMASK)
+          }
 
-const updateConnectionState = useCallback(() => {  
-  
-  if (connectionState === ConnectionState.LOADING) {
+          setNetworkID(networkVersion)
+          if (window.location.hash === '#info') {
+            return setConnectionState(ConnectionState.WRONG_NETWORK)
+          }
 
+          const network = networks[networkVersion]
+          const partnerNetwork = networks[network.partnerChainID]
+          if (!network) {
+            console.warn('WARNING: unsupported network')
+            return setConnectionState(ConnectionState.WRONG_NETWORK)
+          }
 
-    try {
-      getInjectedWeb3().then(([provider, networkVersion]) => {
-        if (!provider) {
-          return setConnectionState(ConnectionState.NO_METAMASK)
-        }
-        if(!networkVersion){
-          return setConnectionState(ConnectionState.NO_METAMASK)
-        }
+          if (!network.isArbitrum) {
+            console.info('deposit mode detected')
+            const ethProvider = provider
+            const arbProvider = new ethers.providers.JsonRpcProvider(
+              partnerNetwork.url
+            )
 
-        setNetworkID(networkVersion)
-        if (window.location.hash === "#info"){
-          return setConnectionState(ConnectionState.WRONG_NETWORK)
-        }
+            const l1Signer = ethProvider.getSigner(0)
+            const l2Signer = arbProvider.getSigner(
+              window.ethereum?.selectedAddress
+            )
+            const bridge = new Bridge(
+              network.tokenBridge.l1Address,
+              network.tokenBridge.l2Address,
+              l1Signer,
+              l2Signer
+            )
 
-        const network = networks[networkVersion]
-        const partnerNetwork = networks[network.partnerChainID]
-        if(!network){
-          console.warn('WARNING: unsupported network');
-          return setConnectionState(ConnectionState.WRONG_NETWORK)
+            setBridge(bridge)
+            setConnectionState(ConnectionState.DEPOSIT_MODE)
+          } else {
+            console.info('withdrawal mode detected')
+            const ethProvider = new ethers.providers.JsonRpcProvider(
+              partnerNetwork.url
+            )
+            const arbProvider = provider
+            const l1Signer = ethProvider.getSigner(
+              window.ethereum?.selectedAddress
+            )
+            const l2Signer = arbProvider.getSigner(0)
+            const bridge = new Bridge(
+              network.tokenBridge.l1Address,
+              network.tokenBridge.l2Address,
+              l1Signer,
+              l2Signer
+            )
 
-        }
+            setBridge(bridge)
+            setConnectionState(ConnectionState.WITHDRAW_MODE)
+          }
 
-        if(!network.isArbitrum){
-          console.info('deposit mode detected')
-          const ethProvider = provider
-          const arbProvider = new ethers.providers.JsonRpcProvider(
-            partnerNetwork.url
-          ) 
-
-          const l1Signer =  ethProvider.getSigner(0)
-          const l2Signer = arbProvider.getSigner(
-            window.ethereum?.selectedAddress
-          )
-          const bridge = new Bridge(network.tokenBridge.l1Address, network.tokenBridge.l2Address, l1Signer, l2Signer)
-
-          setBridge(bridge)
-          setConnectionState(ConnectionState.DEPOSIT_MODE)
-        } else {
-          console.info('withdrawal mode detected')
-          const ethProvider = new ethers.providers.JsonRpcProvider(
-            partnerNetwork.url
-          )
-          const arbProvider = provider
-          const l1Signer = ethProvider.getSigner(
-            window.ethereum?.selectedAddress
-          )
-          const l2Signer = arbProvider.getSigner(0)
-          const bridge = new Bridge(network.tokenBridge.l1Address, network.tokenBridge.l2Address, l1Signer, l2Signer)
-
-          setBridge(bridge)
-          setConnectionState(ConnectionState.WITHDRAW_MODE)
-        }
-        
-        setChangeListeners()
-      })
-    } catch (e) {
-      setConnectionState(ConnectionState.NO_METAMASK)
+          setChangeListeners()
+        })
+      } catch (e) {
+        setConnectionState(ConnectionState.NO_METAMASK)
+      }
     }
-  }
-}, [connectionState, window.ethereum])
+  }, [connectionState, window.ethereum])
   useEffect(() => {
-
     updateConnectionState()
   }, [])
 
@@ -139,12 +142,10 @@ const updateConnectionState = useCallback(() => {
       case ConnectionState.WRONG_NETWORK:
         return (
           <NetworkIDContext.Provider value={networkID}>
-
-          <div>
-            <ConnectWarning />
-          </div>
+            <div>
+              <ConnectWarning />
+            </div>
           </NetworkIDContext.Provider>
-
         )
       default:
         if (!bridge) {
@@ -152,9 +153,9 @@ const updateConnectionState = useCallback(() => {
         }
         return (
           <NetworkIDContext.Provider value={networkID}>
-          <ModeContext.Provider value={connectionState}>
-            <App bridge={bridge}/>
-          </ModeContext.Provider>
+            <ModeContext.Provider value={connectionState}>
+              <App bridge={bridge} />
+            </ModeContext.Provider>
           </NetworkIDContext.Provider>
         )
     }

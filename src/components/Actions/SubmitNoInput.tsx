@@ -43,15 +43,15 @@ const NumberInputForm = ({
         setValue(e.target.value, max)
       }}
     >
-        <Row>
-        <Col> <span >{text}  </span>
-
-        <Button disabled={disabled} type="submit" onClick={submit}>
-        {buttonText || 'submit'}
-      </Button>
-      </Col>
-        </Row>
-
+      <Row>
+        <Col>
+          {' '}
+          <span>{text} </span>
+          <Button disabled={disabled} type="submit" onClick={submit}>
+            {buttonText || 'submit'}
+          </Button>
+        </Col>
+      </Row>
     </InputGroup>
   )
 }

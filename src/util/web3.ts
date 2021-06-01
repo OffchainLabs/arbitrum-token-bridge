@@ -1,7 +1,7 @@
 import * as ethers from 'ethers'
-import { Network } from 'components/App/networks' 
-interface InjectedEthereumProvider{
-  request?: (arg:any) => Promise<string[]>
+import { Network } from 'components/App/networks'
+interface InjectedEthereumProvider {
+  request?: (arg: any) => Promise<string[]>
   on: any
   networkVersion: string
   selectedAddress?: string
@@ -17,22 +17,27 @@ export function web3Injected(
   e: InjectedEthereumProvider | undefined
 ): e is InjectedEthereumProvider {
   return e !== undefined
-  }
+}
 
-export async function requestNetworkSwitch(network:Network) {
+export async function requestNetworkSwitch(network: Network) {
   const chainId = ethers.BigNumber.from(network.chainID).toHexString()
   if (web3Injected(window.ethereum)) {
     try {
-      ;(await window.ethereum.request?.({ method: 'wallet_addEthereumChain', params: [{
-        chainId: chainId, // A 0x-prefixed hexadecimal string
-        chainName: network.name,
-        nativeCurrency: {
-          name: "Ether",
-          symbol: "ETH", // 2-6 characters long
-          decimals: 18
-        },
-        rpcUrls: [network.url]
-      } ] }))
+      await window.ethereum.request?.({
+        method: 'wallet_addEthereumChain',
+        params: [
+          {
+            chainId: chainId, // A 0x-prefixed hexadecimal string
+            chainName: network.name,
+            nativeCurrency: {
+              name: 'Ether',
+              symbol: 'ETH', // 2-6 characters long
+              decimals: 18
+            },
+            rpcUrls: [network.url]
+          }
+        ]
+      })
     } catch (e) {
       console.warn('requestNetworkSwitch error', e)
       return []

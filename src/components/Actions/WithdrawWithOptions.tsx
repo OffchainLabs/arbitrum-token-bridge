@@ -5,9 +5,9 @@ import FormControl from 'react-bootstrap/FormControl'
 import Form from 'react-bootstrap/Form'
 
 import Dropdown from 'react-bootstrap/Dropdown'
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@material-ui/core/Tooltip'
 
-import {  makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles'
 
 import { ConnextModal } from '@connext/vector-modal'
 import { providers } from 'ethers'
@@ -18,15 +18,14 @@ import ArbIcon from 'media/images/arb.png'
 import HopIcon from 'media/images/hop.png'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 
-const useStylesBootstrap = makeStyles((theme) => ({
+const useStylesBootstrap = makeStyles(theme => ({
   tooltip: {
-    fontSize: "14px"
-  },
-}));
-
+    fontSize: '14px'
+  }
+}))
 
 const supportedConnextAssets = new Set([
-  "0x0000000000000000000000000000000000000000",
+  '0x0000000000000000000000000000000000000000'
   // "0xe41d965f6e7541139f8d9f331176867fb6972baf",
   // "0xf36d7a74996e7def7a6bd52b4c2fe64019dada25"
 ])
@@ -55,7 +54,7 @@ const WithdrawWithOptions = ({
   assetId = '0x0000000000000000000000000000000000000000',
   ethAddress,
   handleConnextTxn,
-  tokenSymbol="",
+  tokenSymbol = '',
   id
 }: WithdrawWithOptionsProps) => {
   const [value, setValue] = useCappedNumberInput(
@@ -65,7 +64,7 @@ const WithdrawWithOptions = ({
   const submitRegular = useCallback(
     (e: any) => {
       e && e.preventDefault()
-      if (!value){
+      if (!value) {
         alert('Input non-zero value to withdraw')
         return
       }
@@ -78,28 +77,31 @@ const WithdrawWithOptions = ({
   const l1Network = useL1Network()
   const l2Network = useL2Network()
 
-  const connextIsDisabled = useMemo(()=>{
+  const connextIsDisabled = useMemo(() => {
     return true
-  }, [disabled]) 
+  }, [disabled])
 
-  const connextSelect = useCallback((e: any) =>  {    
-    e && e.preventDefault()
-    if (connextIsDisabled)return    
-    if (!value){
-      alert('Input non-zero value to withdraw')
-      return
-    }  else if (!supportedConnextAssets.has(assetId)){
-      alert('Connext ERC20 support coming soon!')
-      return
-    }
-    setShowModal(true)
-  }, [value, assetId, connextIsDisabled])
+  const connextSelect = useCallback(
+    (e: any) => {
+      e && e.preventDefault()
+      if (connextIsDisabled) return
+      if (!value) {
+        alert('Input non-zero value to withdraw')
+        return
+      } else if (!supportedConnextAssets.has(assetId)) {
+        alert('Connext ERC20 support coming soon!')
+        return
+      }
+      setShowModal(true)
+    },
+    [value, assetId, connextIsDisabled]
+  )
 
   const connextTranfserAmount = value.toString()
 
-  const classes = useStylesBootstrap();
-  const isEth = assetId === "0x0000000000000000000000000000000000000000"
-  
+  const classes = useStylesBootstrap()
+  const isEth = assetId === '0x0000000000000000000000000000000000000000'
+
   return (
     <InputGroup
       size="sm"
@@ -120,31 +122,27 @@ const WithdrawWithOptions = ({
         depositChainProvider={l2Network.url}
         withdrawalAddress={ethAddress}
         injectedProvider={window.ethereum}
-        transferAmount={ connextTranfserAmount }
-        onDepositTxCreated={(txHash:string)=>{
+        transferAmount={connextTranfserAmount}
+        onDepositTxCreated={(txHash: string) => {
           handleConnextTxn({
             value: value.toString(),
             txID: txHash,
             assetName: isEth ? 'ETH' : tokenSymbol,
-            assetType:  isEth ? AssetType.ETH : AssetType.ERC20,
+            assetType: isEth ? AssetType.ETH : AssetType.ERC20,
             sender: ethAddress,
             type: 'connext-deposit'
           })
-          
-        }
-      }
-        onWithdrawalTxCreated={(txHash:string)=>{
+        }}
+        onWithdrawalTxCreated={(txHash: string) => {
           handleConnextTxn({
             value: value.toString(),
             txID: txHash,
-            assetName:  isEth ? 'ETH' : tokenSymbol,
-            assetType:  isEth ? AssetType.ETH : AssetType.ERC20,
+            assetName: isEth ? 'ETH' : tokenSymbol,
+            assetType: isEth ? AssetType.ETH : AssetType.ERC20,
             sender: ethAddress,
             type: 'connext-withdraw'
           })
-
-          }
-      }
+        }}
       />
       <Form>
         <FormControl
@@ -159,39 +157,45 @@ const WithdrawWithOptions = ({
         />
       </Form>
       <Dropdown>
-        <Dropdown.Toggle id={"dropdown-basic_" + id} className="withdraw-menu">
-          Withdraw   <img className='withdraw-dropdown-icon' src={ConnextIcon}/>/<img className='withdraw-dropdown-icon' src={HopIcon}/>
+        <Dropdown.Toggle id={'dropdown-basic_' + id} className="withdraw-menu">
+          Withdraw <img className="withdraw-dropdown-icon" src={ConnextIcon} />/
+          <img className="withdraw-dropdown-icon" src={HopIcon} />
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
-        <Tooltip 
-            classes={classes} 
-            title='Standard withdrawal via the Arbitrum L1/L2 bridge contract.' 
-            placement="right-end">
-          <Dropdown.Item
-            onSelect={submitRegular}
-            disabled={disabled}
+          <Tooltip
+            classes={classes}
+            title="Standard withdrawal via the Arbitrum L1/L2 bridge contract."
+            placement="right-end"
           >
-        
-            <img className='withdraw-dropdown-icon' src={ArbIcon}/>Bridge (Slow)
-          </Dropdown.Item>
+            <Dropdown.Item onSelect={submitRegular} disabled={disabled}>
+              <img className="withdraw-dropdown-icon" src={ArbIcon} />
+              Bridge (Slow)
+            </Dropdown.Item>
           </Tooltip>
-          <Tooltip 
-            classes={classes} 
-            title='Connext-powered fast-widthdrawal via cross-chain atomic swaps!' 
-            placement="right-end">
-          <Dropdown.Item onSelect={connextSelect} disabled={connextIsDisabled}>
-            {' '}
-            <img className='withdraw-dropdown-icon' src={ConnextIcon}/> Connext (Fast)  
-          </Dropdown.Item>
+          <Tooltip
+            classes={classes}
+            title="Connext-powered fast-widthdrawal via cross-chain atomic swaps!"
+            placement="right-end"
+          >
+            <Dropdown.Item
+              onSelect={connextSelect}
+              disabled={connextIsDisabled}
+            >
+              {' '}
+              <img className="withdraw-dropdown-icon" src={ConnextIcon} />{' '}
+              Connext (Fast)
+            </Dropdown.Item>
           </Tooltip>
-          <Tooltip 
-            classes={classes} 
-            title='Hop-powered fast-withdrawal via cross-chain AMM exhanges! (Currently DAI-only)' 
-            placement="right-end">
-          <Dropdown.Item href="https://hop.exchange/" target="_blank">
-          <img className='withdraw-dropdown-icon' src={HopIcon}/> Hop (Fast, DAI Only)
-          </Dropdown.Item>
+          <Tooltip
+            classes={classes}
+            title="Hop-powered fast-withdrawal via cross-chain AMM exhanges! (Currently DAI-only)"
+            placement="right-end"
+          >
+            <Dropdown.Item href="https://hop.exchange/" target="_blank">
+              <img className="withdraw-dropdown-icon" src={HopIcon} /> Hop
+              (Fast, DAI Only)
+            </Dropdown.Item>
           </Tooltip>
         </Dropdown.Menu>
       </Dropdown>

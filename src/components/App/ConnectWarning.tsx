@@ -8,10 +8,7 @@ import networks from './networks'
 import explorer from 'media/gifs/explorer.gif'
 import { useNetwork } from 'components/App/NetworkContext'
 
-
-
 const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
-
   const onClick = (e: any) => {
     e.preventDefault()
     copyTextToClipboard(url)
@@ -26,13 +23,12 @@ const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 
 export default () => {
   const netWork = useNetwork()
-  
+
   const network = networks[1]
   const arbnetwork = networks[42161]
 
   const l1NetworkName = network.name
   const l2NetworkName = arbnetwork.name
-  
 
   return (
     <Container>
@@ -74,16 +70,19 @@ export default () => {
                 {' '}
                 your own node
               </a>{' '}
-              or to our publically hosted nodes via custom RPC:<br/>{' '}
+              or to our publically hosted nodes via custom RPC:
+              <br />{' '}
               <CopyLink
                 url={arbnetwork.url}
                 msg="Arbv5 node rpc url copied to clipboard"
-              />{' '} with chain ID    <CopyLink
-              url={arbnetwork.chainID.toString()}
-              msg="Arbv5 chain ID copied to clipboard"
-            /> for Arbv5 
-            
-            {/* (you probably want this one!) or {" "}
+              />{' '}
+              with chain ID{' '}
+              <CopyLink
+                url={arbnetwork.chainID.toString()}
+                msg="Arbv5 chain ID copied to clipboard"
+              />{' '}
+              for Arbv5
+              {/* (you probably want this one!) or {" "}
                 <CopyLink
                 url={arbV2Testnet.url}
                 msg="Arbv2 node url copied to clipboard"
@@ -91,7 +90,6 @@ export default () => {
               url={arbV2Testnet.chainID.toString()}
               msg="Arbv2 chainID copied to clipboard"
             />  for Arbv2 (old testnet). */}
-
             </div>
           </div>
           <img
@@ -112,8 +110,8 @@ export default () => {
               <CopyLink
                 url="https://explorer5.arbitrum.io/#"
                 msg="Block explorer url copied to clipboard"
-              />{`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
-            
+              />
+              {`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
             </div>
           </div>
           <img className="text-center" style={styles.gifStyle} src={explorer} />

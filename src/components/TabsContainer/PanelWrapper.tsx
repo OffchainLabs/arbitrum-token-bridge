@@ -10,15 +10,14 @@ interface props {
   disabledWithdrawals?: boolean
 }
 
-
 const PanelWrapper: FunctionComponent<props> = ({
   isDepositPanel,
-  disabledWithdrawals=false,
+  disabledWithdrawals = false,
   children
 }) => {
   const isDepositMode = useIsDepositMode()
   const l1NetworkName = useL1Network().name
-  const isActive = !disabledWithdrawals && (isDepositMode === isDepositPanel)
+  const isActive = !disabledWithdrawals && isDepositMode === isDepositPanel
   if (isActive) {
     return <div> {children}</div>
   }
@@ -31,7 +30,6 @@ const PanelWrapper: FunctionComponent<props> = ({
     e.stopPropagation()
     return
   }
-  
 
   return (
     <div>
@@ -39,7 +37,11 @@ const PanelWrapper: FunctionComponent<props> = ({
         <OverlayTrigger
           placement="bottom-start"
           delay={{ show: 100, hide: 1000 }}
-          overlay={renderPopover(isDepositPanel,disabledWithdrawals, l1NetworkName)}
+          overlay={renderPopover(
+            isDepositPanel,
+            disabledWithdrawals,
+            l1NetworkName
+          )}
           trigger={['hover', 'focus']}
         >
           <div
@@ -56,7 +58,11 @@ const PanelWrapper: FunctionComponent<props> = ({
   )
 }
 
-const renderPopover = (isDepositPanel: boolean, disabledWithdrawals: boolean, l1NetworkName: string) => {
+const renderPopover = (
+  isDepositPanel: boolean,
+  disabledWithdrawals: boolean,
+  l1NetworkName: string
+) => {
   const onClick = (e: any) => {
     e.preventDefault()
     window.open(window.location.origin + '#info')
@@ -65,12 +71,11 @@ const renderPopover = (isDepositPanel: boolean, disabledWithdrawals: boolean, l1
     <Popover id="popover-basic">
       <Popover.Title as="h3">Actions disabled</Popover.Title>
       <Popover.Content>
-        {
-        disabledWithdrawals ? "Withdrawals not supported on old testnet; connect to new Arbitrum testnet." : 
-        isDepositPanel ? (
+        {disabledWithdrawals ? (
+          'Withdrawals not supported on old testnet; connect to new Arbitrum testnet.'
+        ) : isDepositPanel ? (
           <div>
-            To enable these actions, connect to L1 (
-            {l1NetworkName})
+            To enable these actions, connect to L1 ({l1NetworkName})
             <a onClick={onClick} href="">
               {' '}
               Learn how.

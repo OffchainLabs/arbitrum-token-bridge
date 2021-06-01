@@ -70,24 +70,21 @@ const TabsContainer = ({
   pendingWithdrawalsMap,
   ethProvider
 }: TabProps) => {
-const [key, setKey] = useLocalStorage(
-    'currentTab',
-    'eth'
-  )
+  const [key, setKey] = useLocalStorage('currentTab', 'eth')
   const [showModal, setShowModal] = React.useState(false)
   // TODO: clean up / memoize
   const brideTokensArray: BridgeToken[] = Object.values(bridgeTokens)
     .filter((token): token is BridgeToken => !!token)
     .sort((a: BridgeToken, b: BridgeToken) => {
-      if (a.symbol === b.symbol){
+      if (a.symbol === b.symbol) {
         const Aaddress = a.address
         const Baddress = b.address
-        return Aaddress > Baddress ? 1: -1
+        return Aaddress > Baddress ? 1 : -1
       }
 
       return a.symbol > b.symbol ? 1 : -1
     })
-    const erc20BridgeTokens = brideTokensArray.filter(
+  const erc20BridgeTokens = brideTokensArray.filter(
     token => token.type === TokenType.ERC20
   )
   const erc721BridgeTokens = brideTokensArray.filter(
@@ -98,7 +95,8 @@ const [key, setKey] = useLocalStorage(
   const currentERC721Token = bridgeTokens[currentERC721Address]
   const disabledWithdrawals = false
 
-  const currentTokenL2Address = currentERC20Token && currentERC20Token.l2Address || null
+  const currentTokenL2Address =
+    (currentERC20Token && currentERC20Token.l2Address) || null
 
   return (
     <Tabs
@@ -134,7 +132,6 @@ const [key, setKey] = useLocalStorage(
               </PanelWrapper>
             </Col>
           </Row>
-
         </Container>
       </Tab>
       <Tab eventKey="erc20" title="ERC-20">
@@ -150,11 +147,29 @@ const [key, setKey] = useLocalStorage(
               />
             </Col>
           </Row>
-          <Row style={{fontSize: 14}}>
-          {currentERC20Address   ? <Col>Token L1 Address: <ExplorerLink hash={currentERC20Address} type={'address'} layer={1}/></Col> : null }
+          <Row style={{ fontSize: 14 }}>
+            {currentERC20Address ? (
+              <Col>
+                Token L1 Address:{' '}
+                <ExplorerLink
+                  hash={currentERC20Address}
+                  type={'address'}
+                  layer={1}
+                />
+              </Col>
+            ) : null}
           </Row>
-          <Row style={{fontSize: 14}}>
-          {currentTokenL2Address   ? <Col>Token L2 Address: <ExplorerLink hash={currentTokenL2Address} type={'address'} layer={2}/></Col> : null }
+          <Row style={{ fontSize: 14 }}>
+            {currentTokenL2Address ? (
+              <Col>
+                Token L2 Address:{' '}
+                <ExplorerLink
+                  hash={currentTokenL2Address}
+                  type={'address'}
+                  layer={2}
+                />
+              </Col>
+            ) : null}
           </Row>
 
           <Row>

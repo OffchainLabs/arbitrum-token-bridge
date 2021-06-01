@@ -3,7 +3,7 @@ import { BridgeBalance } from 'token-bridge-sdk'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import NumberInputForm from './numberInputForm'
 import { Transaction } from 'token-bridge-sdk'
-import  PendingWithdrawals  from '../PendingWithdrawals'
+import PendingWithdrawals from '../PendingWithdrawals'
 import { L2ToL1EventResultPlus, AssetType } from 'token-bridge-sdk'
 import { utils } from 'ethers'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
@@ -18,19 +18,24 @@ type ActionsProps = {
   ethProvider: providers.Provider
 }
 
-const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap, ethProvider }: ActionsProps) => {
+const Actions = ({
+  balances,
+  eth,
+  transactions,
+  pendingWithdrawalsMap,
+  ethProvider
+}: ActionsProps) => {
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
   const isDepositMode = useIsDepositMode()
 
-  const pendingEthBalance = useMemo(()=>{
-    return transactions.reduce((acc: number, txn: Transaction)=>{
+  const pendingEthBalance = useMemo(() => {
+    return transactions.reduce((acc: number, txn: Transaction) => {
       const { type, assetName, status, value } = txn
-      if (type === 'withdraw' && status === 'success' && assetName === 'ETH'){
+      if (type === 'withdraw' && status === 'success' && assetName === 'ETH') {
         return acc + +(value || 0)
       } else {
         return acc
       }
-
     }, 0)
   }, [transactions])
   return (
@@ -41,21 +46,21 @@ const Actions = ({ balances, eth, transactions, pendingWithdrawalsMap, ethProvid
         max={ethChainBalance}
         text={'Deposit Eth'}
         onSubmit={eth.deposit}
-        disabled={ethChainBalance === 0 }
+        disabled={ethChainBalance === 0}
         buttonText="deposit"
       />
-      <label htmlFor="basic-url">
-      </label>
+      <label htmlFor="basic-url"></label>
       <PendingWithdrawals
-        filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus)=> l2ToL1EventResultPlus.type === AssetType.ETH }
+        filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus) =>
+          l2ToL1EventResultPlus.type === AssetType.ETH
+        }
         headerText="Pending ETH Withdrawals"
         triggerOutbox={eth.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
         ethProvider={ethProvider}
       />
 
-  {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}
-
+      {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}
     </div>
   )
 }

@@ -24,9 +24,7 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
       <div className="row">
         User {assetName} balance on ArbChain: {formatEther(arbChainBalance)}
       </div>
-      <div className="row">
-        User Lockbox Balance: 
-      </div>
+      <div className="row">User Lockbox Balance:</div>
     </div>
   )
 }

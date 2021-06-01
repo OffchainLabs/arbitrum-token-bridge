@@ -14,7 +14,12 @@ type ActionsProps = {
   handleConnextTxn: connextTxn
 }
 
-const Actions = ({ balances, eth, ethAddress, handleConnextTxn }: ActionsProps) => {
+const Actions = ({
+  balances,
+  eth,
+  ethAddress,
+  handleConnextTxn
+}: ActionsProps) => {
   const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
   const isDepositMode = useIsDepositMode()
 
@@ -32,7 +37,7 @@ const Actions = ({ balances, eth, ethAddress, handleConnextTxn }: ActionsProps) 
         handleConnextTxn={handleConnextTxn}
         id={1}
       />
-          <WithdrawInfo/>
+      <WithdrawInfo />
     </div>
   )
 }

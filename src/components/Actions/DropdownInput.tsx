@@ -63,7 +63,7 @@ const DropdownInputForm = ({
       <Button
         variant="outline-secondary"
         onClick={() => {
-          if (value !== null){
+          if (value !== null) {
             onSubmit(value.toString())
             setValue(null)
           }

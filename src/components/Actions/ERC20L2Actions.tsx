@@ -25,8 +25,10 @@ const Actions = ({
   handleConnextTxn
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
-  const decimals = currentContract && currentContract.decimals || 18
-  const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
+  const decimals = (currentContract && currentContract.decimals) || 18
+  const arbChainBalance = balances
+    ? +formatUnits(balances.arbChainBalance, decimals)
+    : 0
   const isDepositMode = useIsDepositMode()
   const l2Only = false // TODO
   const tokenSymbol = currentContract && currentContract.symbol
@@ -34,28 +36,32 @@ const Actions = ({
   return (
     <div>
       <label htmlFor="basic-url">Token on L2: {arbChainBalance}</label>
-      { 
-      l2Only ? 
-      <div><i>{`${tokenSymbol || "Token"} is an Arbitrum-only token; it can't be withdrawn to L1.` }</i></div>
-      :<> <WithdrawWithOptions
-        max={arbChainBalance}
-        text={'Withdraw Token'}
-        onSubmit={value => {
-          eth.withdraw(currentERC20Address, value)
-        }}
-        disabled={arbChainBalance === 0 || isDepositMode || l2Only}
-        buttonText={'withdraw'}
-        ethAddress={ethAddress}
-        assetId={currentERC20Address || undefined}
-        handleConnextTxn={handleConnextTxn}
-        tokenSymbol={tokenSymbol}
-        id={2}
-        />
-        <WithdrawInfo/>
+      {l2Only ? (
+        <div>
+          <i>{`${
+            tokenSymbol || 'Token'
+          } is an Arbitrum-only token; it can't be withdrawn to L1.`}</i>
+        </div>
+      ) : (
+        <>
+          {' '}
+          <WithdrawWithOptions
+            max={arbChainBalance}
+            text={'Withdraw Token'}
+            onSubmit={value => {
+              eth.withdraw(currentERC20Address, value)
+            }}
+            disabled={arbChainBalance === 0 || isDepositMode || l2Only}
+            buttonText={'withdraw'}
+            ethAddress={ethAddress}
+            assetId={currentERC20Address || undefined}
+            handleConnextTxn={handleConnextTxn}
+            tokenSymbol={tokenSymbol}
+            id={2}
+          />
+          <WithdrawInfo />
         </>
-      }
-
-
+      )}
     </div>
   )
 }

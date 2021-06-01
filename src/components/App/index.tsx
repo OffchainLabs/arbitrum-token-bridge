@@ -2,10 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import styles from './styles.module.scss'
 import * as ethers from 'ethers'
 import Transactions from '../Transactions'
-import {
-  useArbTokenBridge,
-  AssetType
-} from 'token-bridge-sdk'
+import { useArbTokenBridge, AssetType } from 'token-bridge-sdk'
 import Header from 'components/Header'
 import TabsContainer from 'components/TabsContainer'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -17,12 +14,14 @@ import Alert from 'react-bootstrap/Alert'
 import { useL1Network } from 'components/App/NetworkContext'
 import { Bridge } from 'arb-ts'
 interface AppProps {
-  bridge : Bridge
+  bridge: Bridge
 }
-const App = ( { bridge }:AppProps) => {
+const App = ({ bridge }: AppProps) => {
   // TODO:
-  const arbProvider = bridge.l2Signer.provider as ethers.ethers.providers.Provider 
-  const ethProvider = bridge.l1Bridge.l1Signer.provider as ethers.ethers.providers.Provider 
+  const arbProvider = bridge.l2Signer
+    .provider as ethers.ethers.providers.Provider
+  const ethProvider = bridge.l1Bridge.l1Signer
+    .provider as ethers.ethers.providers.Provider
 
   const l1NetworkID = useL1Network().chainID
 
@@ -34,12 +33,8 @@ const App = ( { bridge }:AppProps) => {
     bridgeTokens,
     eth,
     transactions,
-    pendingWithdrawalsMap,
-  } = useArbTokenBridge(
-    bridge
-  )
-
-
+    pendingWithdrawalsMap
+  } = useArbTokenBridge(bridge)
 
   const [currentERC20Address, setCurrentERC20Address] = useLocalStorage(
     'currentERC20',
@@ -53,9 +48,8 @@ const App = ( { bridge }:AppProps) => {
   useEffect(() => {
     const allAddresses = Object.keys(bridgeTokens).sort()
     if (!currentERC20Address) {
-      setCurrentERC20Address(allAddresses[0] || "")
+      setCurrentERC20Address(allAddresses[0] || '')
     }
-
   }, [bridgeTokens])
 
   const erc20Balance = (() => {
@@ -71,40 +65,46 @@ const App = ( { bridge }:AppProps) => {
     }
   })()
 
-
   const { addTransaction, updateTransactionStatus } = transactions
-  interface ConnextTxnParams{
-    value: string,
-    txID: string,
-    assetName: string,
-    assetType: AssetType,
-    sender: string,
+  interface ConnextTxnParams {
+    value: string
+    txID: string
+    assetName: string
+    assetType: AssetType
+    sender: string
     type: 'connext-deposit' | 'connext-withdraw'
-
   }
 
   const handleConnextTxn: connextTxn = useCallback(
-    async (newTxnData: ConnextTxnParams, )=>{
-    addTransaction({
-      ...newTxnData,
-      status: 'pending',
-    })
-    const provider = newTxnData.type ==='connext-deposit' ?  arbProvider : ethProvider
-    
-    const receipt = await provider.waitForTransaction(newTxnData.txID)
-    updateTransactionStatus(receipt)
+    async (newTxnData: ConnextTxnParams) => {
+      addTransaction({
+        ...newTxnData,
+        status: 'pending'
+      })
+      const provider =
+        newTxnData.type === 'connext-deposit' ? arbProvider : ethProvider
 
-
-  }, [arbProvider, addTransaction, updateTransactionStatus, ethProvider])
-    useEffect(()=>{
-      window.setInterval(()=>{
-        balances.update()
-      }, 5000)
-    },[])
+      const receipt = await provider.waitForTransaction(newTxnData.txID)
+      updateTransactionStatus(receipt)
+    },
+    [arbProvider, addTransaction, updateTransactionStatus, ethProvider]
+  )
+  useEffect(() => {
+    window.setInterval(() => {
+      balances.update()
+    }, 5000)
+  }, [])
 
   return (
     <div className="container">
-            { l1NetworkID === "1" ? <Alert variant={'danger'}><b>NOTICE: You're connected to mainnet, still in beta phase. BE CAREFUL!</b></Alert> : null}
+      {l1NetworkID === '1' ? (
+        <Alert variant={'danger'}>
+          <b>
+            NOTICE: You're connected to mainnet, still in beta phase. BE
+            CAREFUL!
+          </b>
+        </Alert>
+      ) : null}
 
       <div className="row">
         <Header
@@ -136,7 +136,6 @@ const App = ( { bridge }:AppProps) => {
             handleConnextTxn={handleConnextTxn}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
             ethProvider={ethProvider}
-
           />
         </div>
       </div>
@@ -149,7 +148,6 @@ const App = ( { bridge }:AppProps) => {
           walletAddress={walletAddress}
           setTransactionConfirmed={transactions.setTransactionConfirmed}
           updateTransactionStatus={transactions.updateTransactionStatus}
-
         />
       </div>
     </div>

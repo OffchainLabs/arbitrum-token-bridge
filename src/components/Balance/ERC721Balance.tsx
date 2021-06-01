@@ -11,21 +11,29 @@ type BalanceProps = {
   currentERC721Address: string
 }
 
-const ERC721BalanceUi = ({ balances, transactions, bridgeTokens, currentERC721Address }: BalanceProps) => {
-
+const ERC721BalanceUi = ({
+  balances,
+  transactions,
+  bridgeTokens,
+  currentERC721Address
+}: BalanceProps) => {
   const currentContract = bridgeTokens[currentERC721Address]
-  const pendingTokenBalance = useMemo(()=>{
-    if (!currentContract){
+  const pendingTokenBalance = useMemo(() => {
+    if (!currentContract) {
       return []
     }
-    return transactions.reduce((acc: string[], txn: Transaction)=>{
+    return transactions.reduce((acc: string[], txn: Transaction) => {
       const { type, assetName, status, value } = txn
-      if (type === 'withdraw' && status === 'success' && assetName === currentContract.symbol && typeof value === "string"){
+      if (
+        type === 'withdraw' &&
+        status === 'success' &&
+        assetName === currentContract.symbol &&
+        typeof value === 'string'
+      ) {
         return acc.concat([value])
       } else {
         return acc
       }
-
     }, [])
   }, [transactions, currentContract])
   if (!balances) {
@@ -51,9 +59,14 @@ const ERC721BalanceUi = ({ balances, transactions, bridgeTokens, currentERC721Ad
       <div className="row">
         LockBox Tokens on Arb: {formatTokenList(lockBoxTokens)}
       </div>
-      {pendingTokenBalance.length > 0 ? <div className="row">
-        <i>pending token withdrawals: {pendingTokenBalance.map((t)=>`'${t}'`).join(',')} </i>
-      </div> : null }
+      {pendingTokenBalance.length > 0 ? (
+        <div className="row">
+          <i>
+            pending token withdrawals:{' '}
+            {pendingTokenBalance.map(t => `'${t}'`).join(',')}{' '}
+          </i>
+        </div>
+      ) : null}
     </div>
   )
 }

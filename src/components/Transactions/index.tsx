@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import { Transaction, TxnStatus, AssetType, txnTypeToLayer, TxnType } from 'token-bridge-sdk'
+import {
+  Transaction,
+  TxnStatus,
+  AssetType,
+  txnTypeToLayer,
+  TxnType
+} from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
@@ -9,16 +15,15 @@ import { TransactionReceipt, Provider } from '@ethersproject/providers'
 interface props {
   transactions: Transaction[]
   walletAddress: string
-  clearPendingTransactions: () => any,
-  arbProvider: Provider,
-  ethProvider: Provider,
-  setTransactionConfirmed: (txID: string) => void,
-  updateTransactionStatus: (txReceipts: TransactionReceipt)=> void
-
+  clearPendingTransactions: () => any
+  arbProvider: Provider
+  ethProvider: Provider
+  setTransactionConfirmed: (txID: string) => void
+  updateTransactionStatus: (txReceipts: TransactionReceipt) => void
 }
 
-const initialCachedTxns = JSON.parse(window.localStorage.getItem('arbTransactions') || '""') ?.length > 0
-
+const initialCachedTxns =
+  JSON.parse(window.localStorage.getItem('arbTransactions') || '""')?.length > 0
 
 const TransactionHistory = ({
   transactions,
@@ -29,13 +34,14 @@ const TransactionHistory = ({
   setTransactionConfirmed,
   updateTransactionStatus
 }: props) => {
-
   // TODO: maybe move this to the sdk?
-  const getTransactionReceipt = useCallback( (tx: Transaction)=>{
-    const provider = txnTypeToLayer(tx.type)  === 2 ? arbProvider : ethProvider;
-    return provider.getTransactionReceipt(tx.txID)
-
-  }, [arbProvider, ethProvider])
+  const getTransactionReceipt = useCallback(
+    (tx: Transaction) => {
+      const provider = txnTypeToLayer(tx.type) === 2 ? arbProvider : ethProvider
+      return provider.getTransactionReceipt(tx.txID)
+    },
+    [arbProvider, ethProvider]
+  )
 
   const usersTransactions = useMemo(
     () => transactions.filter(txn => txn.sender === walletAddress).reverse(),
@@ -64,51 +70,61 @@ const TransactionHistory = ({
 
   // }, [unconfirmedWithdrawals])
 
-
-
   const pendingTransactions = useMemo(
     () => usersTransactions.filter(txn => txn.status === 'pending'),
     [usersTransactions]
   )
 
-  const [checkedForInitialPendingTxns, setCheckedForInitialPendingTxns] = useState(false)
-  useEffect(()=>{
-    if (checkedForInitialPendingTxns){
+  const [
+    checkedForInitialPendingTxns,
+    setCheckedForInitialPendingTxns
+  ] = useState(false)
+  useEffect(() => {
+    if (checkedForInitialPendingTxns) {
       return
     }
-    if( !initialCachedTxns ) {
+    if (!initialCachedTxns) {
       return setCheckedForInitialPendingTxns(true)
     }
     // transactions have loaded from cache and none of them are pending
-    if (usersTransactions.length && !pendingTransactions.length){
+    if (usersTransactions.length && !pendingTransactions.length) {
       return setCheckedForInitialPendingTxns(true)
     }
 
-    checkAndUpdatePendingTransactions()?.finally(()=>{
+    checkAndUpdatePendingTransactions()?.finally(() => {
       setCheckedForInitialPendingTxns(true)
     })
-
   }, [checkedForInitialPendingTxns, pendingTransactions, usersTransactions])
 
-  const checkAndUpdatePendingTransactions = useCallback(function(){
-    if (pendingTransactions.length){
-      console.info("Checking and updating cached pending transactions' statuses")
+  const checkAndUpdatePendingTransactions = useCallback(
+    function () {
+      if (pendingTransactions.length) {
+        console.info(
+          "Checking and updating cached pending transactions' statuses"
+        )
 
-     return Promise.all(
-      pendingTransactions.map((tx:Transaction)=> getTransactionReceipt(tx))
-    ).then((txReceipts: TransactionReceipt[])=>{
-      txReceipts.forEach((txReceipt:TransactionReceipt, i)=> {
-        if (!txReceipt){
-          console.warn('Transaction receipt not found:',pendingTransactions[i].txID );
-        } else {
-          updateTransactionStatus(txReceipt)
-        }
-      })
-    })
-  }
-  }, [pendingTransactions, getTransactionReceipt])
+        return Promise.all(
+          pendingTransactions.map((tx: Transaction) =>
+            getTransactionReceipt(tx)
+          )
+        ).then((txReceipts: TransactionReceipt[]) => {
+          txReceipts.forEach((txReceipt: TransactionReceipt, i) => {
+            if (!txReceipt) {
+              console.warn(
+                'Transaction receipt not found:',
+                pendingTransactions[i].txID
+              )
+            } else {
+              updateTransactionStatus(txReceipt)
+            }
+          })
+        })
+      }
+    },
+    [pendingTransactions, getTransactionReceipt]
+  )
 
-  useEffect(()=>{
+  useEffect(() => {
     window.setInterval(checkAndUpdatePendingTransactions, 5000)
   }, [checkAndUpdatePendingTransactions])
 
@@ -118,7 +134,6 @@ const TransactionHistory = ({
         return { backgroundColor: 'pink' }
       case 'success':
       case 'confirmed':
-
         return { backgroundColor: 'lightgoldenrodyellow' }
       default:
         return { opacity: 0.5 }
@@ -150,7 +165,9 @@ const TransactionHistory = ({
         {usersTransactions.length > 0 ? (
           usersTransactions.map(txn => (
             <tr style={getRowStyle(txn.status)} key={txn.txID}>
-              <td><ExplorerLink hash={txn.txID} type={txn.type}/></td>
+              <td>
+                <ExplorerLink hash={txn.txID} type={txn.type} />
+              </td>
               <td>{txn.type}</td>
               <td>
                 {' '}
@@ -173,7 +190,7 @@ const TransactionHistory = ({
             </td>
           </tr>
         )}
-        {pendingTransactions.length ?  (
+        {pendingTransactions.length ? (
           <tr>
             <td>
               <Button onClick={clearPendingTransactions}>
@@ -181,7 +198,7 @@ const TransactionHistory = ({
               </Button>
             </td>
           </tr>
-        ): null}
+        ) : null}
       </tbody>
     </Table>
   )

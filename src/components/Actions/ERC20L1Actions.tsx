@@ -6,7 +6,7 @@ import Button from 'react-bootstrap/Button'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import { Transaction } from 'token-bridge-sdk'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
-import  PendingWithdrawals  from '../PendingWithdrawals'
+import PendingWithdrawals from '../PendingWithdrawals'
 import { L2ToL1EventResultPlus, AssetType } from 'token-bridge-sdk'
 import { providers } from 'ethers'
 
@@ -30,27 +30,33 @@ const Actions = ({
   transactions,
   pendingWithdrawalsMap,
   ethProvider
-
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
-  const decimals = currentContract && currentContract.decimals || 18
+  const decimals = (currentContract && currentContract.decimals) || 18
 
-  const ethChainBalance = balances ? +formatUnits(balances.balance, decimals) : 0
-  const arbChainBalance = balances ? +formatUnits(balances.arbChainBalance, decimals) : 0
+  const ethChainBalance = balances
+    ? +formatUnits(balances.balance, decimals)
+    : 0
+  const arbChainBalance = balances
+    ? +formatUnits(balances.arbChainBalance, decimals)
+    : 0
   const isDepositMode = useIsDepositMode()
 
-  const pendingTokenBalance = useMemo(()=>{
-    if (!currentContract){
+  const pendingTokenBalance = useMemo(() => {
+    if (!currentContract) {
       return 0
     }
-    return transactions.reduce((acc: number, txn: Transaction)=>{
+    return transactions.reduce((acc: number, txn: Transaction) => {
       const { type, assetName, status, value } = txn
-      if (type === 'withdraw' && status === 'success' && assetName === currentContract.symbol){
+      if (
+        type === 'withdraw' &&
+        status === 'success' &&
+        assetName === currentContract.symbol
+      ) {
         return acc + +(value || 0)
       } else {
         return acc
       }
-
     }, 0)
   }, [transactions, currentContract])
   return (
@@ -76,18 +82,16 @@ const Actions = ({
       />
       <label htmlFor="basic-url"></label>
 
-
       <PendingWithdrawals
-        filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus)=> l2ToL1EventResultPlus.type === AssetType.ERC20 }
+        filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus) =>
+          l2ToL1EventResultPlus.type === AssetType.ERC20
+        }
         headerText="Pending Token Withdrawals"
         triggerOutbox={token.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
         ethProvider={ethProvider}
         decimals={decimals}
-
-        />
-
-    
+      />
     </div>
   )
 }
