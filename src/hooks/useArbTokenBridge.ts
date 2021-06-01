@@ -178,10 +178,32 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
-  const depositEth = async (etherVal: string) => {
+  const _depositEthPatch = async (value: BigNumber) => {
+    const maxSubmissionPrice = (await bridge.getTxnSubmissionPrice(0))[0]
+    const inboxAddress = await bridge.ethERC20Bridge.inbox()
+
+    const inbox = await bridge.l1Bridge.getInbox();
+    const to = await bridge.l1Bridge.l1Signer.getAddress()
+
+    return inbox.createRetryableTicket(
+      to,
+      0,
+      maxSubmissionPrice,
+      to,
+      to,
+      0,
+      0,
+      "0x",
+      {
+        value: value
+      }
+    )
+  }
+
+  const depositEth = async (etherVal: string, usePatch = false) => {
     const weiValue: BigNumber = utils.parseEther(etherVal)
-    // const tx = await _depositEth(weiValue)
-    const tx = await bridge.depositETH(weiValue)
+    // const tx = await _depositEthPatch(weiValue)
+    const tx = usePatch ?  (await _depositEthPatch(weiValue)) : (await bridge.depositETH(weiValue))
     try {
       addTransaction({
         type: 'deposit-l1',
