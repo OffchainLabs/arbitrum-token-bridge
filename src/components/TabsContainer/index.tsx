@@ -30,6 +30,7 @@ import { Transaction } from 'token-bridge-sdk'
 
 import { providers } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
+import { useL1Network } from "components/App/NetworkContext"
 
 type TabProps = {
   ethBalances: BridgeBalance
@@ -98,6 +99,8 @@ const TabsContainer = ({
   const currentTokenL2Address =
     (currentERC20Token && currentERC20Token.l2Address) || null
 
+  const l1ChainId = useL1Network().chainID
+
   return (
     <Tabs
       id="controlled-tab-example"
@@ -134,7 +137,7 @@ const TabsContainer = ({
           </Row>
         </Container>
       </Tab>
-      <Tab eventKey="erc20" title="ERC-20">
+      { l1ChainId !== '1' ? <Tab eventKey="erc20" title="ERC-20">
         <Container>
           <Row md={6}>
             <Col>
@@ -204,6 +207,7 @@ const TabsContainer = ({
           </Row>
         </Container>
       </Tab>
+      : null}
       {/* <Tab eventKey="erc721" title="ERC-721">
         <Container>
           <Row>
