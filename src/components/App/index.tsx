@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import styles from './styles.module.scss'
-import { requestNetworkSwitch } from 'util/web3'
 import * as ethers from 'ethers'
 import Transactions from '../Transactions'
 import {
@@ -26,7 +25,6 @@ const App = ( { bridge }:AppProps) => {
   const ethProvider = bridge.l1Bridge.l1Signer.provider as ethers.ethers.providers.Provider 
 
   const l1NetworkID = useL1Network().chainID
-  // const networkId =  arbProvider && arbProvider.network && arbProvider.network.chainId || 666
 
   const {
     walletAddress,
@@ -108,7 +106,6 @@ const App = ( { bridge }:AppProps) => {
     <div className="container">
             { l1NetworkID === "1" ? <Alert variant={'danger'}><b>NOTICE: You're connected to mainnet, still in beta phase. BE CAREFUL!</b></Alert> : null}
 
-      {/* <button onClick={requestNetworkSwitch}>XXXXXXX</button> */}
       <div className="row">
         <Header
           ethAddress={walletAddress}

@@ -7,7 +7,10 @@ import {
 } from 'token-bridge-sdk'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import ExplorerLink from 'components/App/ExplorerLink'
-import { useNetwork } from 'components/App/NetworkContext' 
+import { useNetwork, useL2Network } from 'components/App/NetworkContext' 
+import { requestNetworkSwitch } from 'util/web3'
+
+
 interface Web3Data {
   ethAddress: string
   ethBalance: BridgeBalance | undefined
@@ -39,7 +42,9 @@ const Header = ({
     e.preventDefault()
     window.open(window.location.origin + '#info')
   }
-  const { name } = useNetwork()
+  const { name, isArbitrum } = useNetwork()
+  const l2Network = useL2Network()
+
   const headerDisplay = useMemo(()=>{
     return `Connected to ${name}` 
   }, [name])
@@ -53,19 +58,18 @@ const Header = ({
         
       { headerDisplay }
       </h5>
+
+      {!isArbitrum ? 
+           <h5 onClick={()=> requestNetworkSwitch(l2Network)} className="text-center switch-notice">Add/Switch to Arbitrum Network</h5>:
+     
+      
+      
       <h5 className="text-center">
         <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light'}}>
           (Connect to {isDepositMode ? 'L2' : 'L1'})
         </a> {" "}
-      {/* { isDepositMode && <a onClick={onSetL2Network} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
-          {`(switch to ${l2Network === "v2" ? 'Arbv3 chain' : 'Arbv2 chain'})`}
-        </a>
-          } */}
-             {/* !isDepositMode && <a onClick={onClick} href="" style={{ fontSize: 12, fontFamily: 'Montserrat Light' }}>
-            {networkId === 152709604825713 ? "(connect to Arbv3)": "(connect to Arbv2)"}
-        </a>
-        */}
-          </h5>
+          </h5> }
+
 <div className="address-container">
       <p className="address">
         Your address:{' '}

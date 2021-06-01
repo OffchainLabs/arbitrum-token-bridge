@@ -252,3 +252,8 @@ form {
 .pw-table td{
   font-size: 12px
 }
+.switch-notice{
+  margin-top: 5px;
+  color:  rgba(80, 70, 173, 0.7);
+  cursor: pointer;
+}
