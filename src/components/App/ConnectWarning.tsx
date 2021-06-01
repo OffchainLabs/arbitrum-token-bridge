@@ -24,8 +24,8 @@ const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 export default () => {
   const netWork = useNetwork()
 
-  const network = networks[1]
-  const arbnetwork = networks[42161]
+  const network = networks[42]
+  const arbnetwork = networks[network.partnerChainID]
 
   const l1NetworkName = network.name
   const l2NetworkName = arbnetwork.name

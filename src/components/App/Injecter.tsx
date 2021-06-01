@@ -41,17 +41,19 @@ const Injector = () => {
           }
 
           setNetworkID(networkVersion)
+          setChangeListeners()
+
           if (window.location.hash === '#info') {
             return setConnectionState(ConnectionState.WRONG_NETWORK)
           }
 
           const network = networks[networkVersion]
-          const partnerNetwork = networks[network.partnerChainID]
           if (!network) {
             console.warn('WARNING: unsupported network')
             return setConnectionState(ConnectionState.WRONG_NETWORK)
           }
-
+          
+          const partnerNetwork = networks[network.partnerChainID]
           if (!network.isArbitrum) {
             console.info('deposit mode detected')
             const ethProvider = provider
@@ -93,7 +95,6 @@ const Injector = () => {
             setConnectionState(ConnectionState.WITHDRAW_MODE)
           }
 
-          setChangeListeners()
         })
       } catch (e) {
         setConnectionState(ConnectionState.NO_METAMASK)
