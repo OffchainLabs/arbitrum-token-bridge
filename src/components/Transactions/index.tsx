@@ -11,6 +11,7 @@ import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { TransactionReceipt, Provider } from '@ethersproject/providers'
+import { useL1Network } from "components/App/NetworkContext"
 
 interface props {
   transactions: Transaction[]
@@ -43,8 +44,11 @@ const TransactionHistory = ({
     [arbProvider, ethProvider]
   )
 
+  const l1NetworkID = useL1Network().chainID
   const usersTransactions = useMemo(
-    () => transactions.filter(txn => txn.sender === walletAddress).reverse(),
+    () => transactions.filter(txn => txn.sender === walletAddress)
+    .filter((txn)=> !txn.l1NetworkID || txn.l1NetworkID === l1NetworkID)
+    .reverse(),
     [transactions, walletAddress]
   )
 
