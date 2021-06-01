@@ -53,6 +53,7 @@ type TransactionBase = {
   assetType: AssetType
   sender: string
   blockNumber?: number
+  l1NetworkID: string
 }
 
 export interface Transaction extends TransactionBase {
