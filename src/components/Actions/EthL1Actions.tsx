@@ -52,7 +52,7 @@ const Actions = ({
       <NumberInputForm
         max={ethChainBalance}
         text={'Deposit Eth'}
-        onSubmit={eth.deposit}
+        onSubmit={onSubmit}
         disabled={ethChainBalance === 0}
         buttonText="deposit"
       />
