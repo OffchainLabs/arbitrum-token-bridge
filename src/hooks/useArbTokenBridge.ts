@@ -181,7 +181,7 @@ export const useArbTokenBridge = (
   const depositEth = async (etherVal: string) => {
     const weiValue: BigNumber = utils.parseEther(etherVal)
     // const tx = await _depositEth(weiValue)
-    const tx = await  bridge.depositETH(weiValue)
+    const tx = await bridge.depositETH(weiValue)
     try {
       addTransaction({
         type: 'deposit-l1',
