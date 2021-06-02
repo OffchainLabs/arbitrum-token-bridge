@@ -4,7 +4,8 @@ import { PendingWithdrawalsMap, L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import { providers } from 'ethers'
 import { OutgoingMessageState } from 'arb-ts'
-import networks from '../App/networks'
+import { useL2Network } from 'components/App/NetworkContext'
+
 interface PendingWithdrawalsProps {
   pendingWithdrawalsMap: PendingWithdrawalsMap
   filter: (data: L2ToL1EventResultPlus) => boolean
@@ -15,7 +16,7 @@ interface PendingWithdrawalsProps {
   // Header
 }
 const { formatUnits } = utils
-const disputePeriodBlocks = 900
+
 const PendingWithdrawals = ({
   pendingWithdrawalsMap,
   filter,
@@ -26,6 +27,9 @@ const PendingWithdrawals = ({
 }: PendingWithdrawalsProps) => {
   const [currentTime, setCurrentTime] = useState(0)
   const [currentL1BlockNumber, setCurrentL1BlockNumber] = useState(0)
+  const { confirmPeriodBlocks  = 45818} = useL2Network()
+
+  
   useEffect(() => {
     ethProvider.on('block', (blockNumber: number) => {
       console.info('l1 blockNumber:', blockNumber)
@@ -72,7 +76,7 @@ const PendingWithdrawals = ({
     const { outgoingMessageState, ethBlockNum, indexInBatch, batchNumber } = pw
 
     const blocksRemaining = Math.max(
-      disputePeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()),
+      confirmPeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()),
       0
     )
     switch (outgoingMessageState) {

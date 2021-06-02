@@ -81,7 +81,8 @@ const networks: Networks = {
     explorerUrl: 'https://mainnet-arb-explorer.netlify.app',
     partnerChainID: '1',
     isArbitrum: true,
-    tokenBridge: mainnetBridge
+    tokenBridge: mainnetBridge,
+    confirmPeriodBlocks: 45818
   }
 }
 
