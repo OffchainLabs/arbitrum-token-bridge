@@ -4,7 +4,7 @@ import { PendingWithdrawalsMap, L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import { providers } from 'ethers'
 import { OutgoingMessageState } from 'arb-ts'
-import { useL2Network } from 'components/App/NetworkContext'
+import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 
 interface PendingWithdrawalsProps {
   pendingWithdrawalsMap: PendingWithdrawalsMap
@@ -25,9 +25,9 @@ const PendingWithdrawals = ({
   ethProvider,
   decimals = 18
 }: PendingWithdrawalsProps) => {
-  const [currentTime, setCurrentTime] = useState(0)
   const [currentL1BlockNumber, setCurrentL1BlockNumber] = useState(0)
   const { confirmPeriodBlocks  = 45818} = useL2Network()
+  const { blockTime  = 15} = useL1Network()
 
   
   useEffect(() => {
@@ -50,18 +50,27 @@ const PendingWithdrawals = ({
     },
     [triggerOutbox]
   )
+  const calcEtaDisplay = (blocksRemaining: number) => {
+    
+    const minutesLeft = Math.round(blocksRemaining * blockTime / 60)
+    const hoursLeft = Math.round(minutesLeft / 60 )
+    const daysLeft = Math.round(hoursLeft / 24 )
 
-  const calcTimeRemaining = useCallback(
-    (timestamp: number) => {
-      if (currentTime === 0) {
-        return '...'
-      }
-      const ellapsedTime = Math.floor((currentTime - timestamp) / 60)
-      const totalTimeMinutes = 48 * 60
-      return Math.max(0, totalTimeMinutes - ellapsedTime)
-    },
-    [currentTime]
-  )
+    if (daysLeft > 0){
+      return `~${blocksRemaining} blocks (~${daysLeft} day${daysLeft === 1 ? "" : "s"})`
+    }
+
+    if (hoursLeft > 0){
+      return `~${blocksRemaining} blocks (~${hoursLeft} hour${hoursLeft === 1 ? "" : "s"})`
+    }
+
+    if(minutesLeft === 0){
+      return "any minute!"
+    }
+    
+    return `~${blocksRemaining} blocks (~${minutesLeft} minute${minutesLeft === 1 ? "" : "s"})`
+
+  }
   //  sort, include id in data, and filter out target PWs // sort by ts
   const pendingWithdrawalsToShow = useMemo(() => {
     return Object.keys(pendingWithdrawalsMap)
@@ -78,15 +87,12 @@ const PendingWithdrawals = ({
     const blocksRemaining = Math.max(
       confirmPeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()),
       0
-    )
+    )     
     switch (outgoingMessageState) {
       case OutgoingMessageState.NOT_FOUND:
       case OutgoingMessageState.UNCONFIRMED:
-        const blocksDisplay =
-          blocksRemaining > 0
-            ? `~${blocksRemaining} blocks (~${blocksRemaining / 4} minutes)`
-            : `any minute!`
-        return <span>Unconfirmed: ETA: {blocksDisplay} </span>
+        const etaDisplay = calcEtaDisplay(blocksRemaining)
+        return <span>Unconfirmed: ETA: {etaDisplay} </span>
 
         break
       case OutgoingMessageState.CONFIRMED:

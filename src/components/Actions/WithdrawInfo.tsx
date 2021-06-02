@@ -1,7 +1,10 @@
 import React from 'react'
+import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 
-export default () => (
-  <div
+export default () => {
+  const { name: l1NetworkName } = useL1Network()
+  const { confirmPeriodBlocks } = useL2Network()
+  return <div
     style={{
       fontStyle: 'italic',
       fontFamily: 'Montserrat Light',
@@ -12,7 +15,7 @@ export default () => (
   >
     {' '}
     Note: for standard, bridge withdrawals, the withdrawal will be in a
-    "pending" state during a "challenge period" roughly (~ 1 hour on Kovan).
+    "pending" state during a "challenge period" roughly (~{confirmPeriodBlocks} blocks on {l1NetworkName}).
     After that, the funds will be available on layer 1 in your lockbox.{' '}
     <a
       href="https://medium.com/offchainlabs/optimizing-challenge-periods-in-rollup-b61378c87277"
@@ -23,4 +26,4 @@ export default () => (
     </a>
     .
   </div>
-)
+}

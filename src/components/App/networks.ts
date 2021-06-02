@@ -12,11 +12,12 @@ export interface Network {
   name: string
   isArbitrum: boolean
   url: string
-  gif?: string
-  confirmPeriodBlocks?: number
   explorerUrl: string
   partnerChainID: string
   tokenBridge: TokenBridge
+  gif?: string
+  confirmPeriodBlocks?: number
+  blockTime?: number //seconds
 }
 
 interface TokenBridge {
@@ -50,7 +51,8 @@ const networks: Networks = {
     explorerUrl: 'https://kovan.etherscan.io',
     partnerChainID: '144545313136048',
     isArbitrum: false,
-    tokenBridge: kovan5Bridge
+    tokenBridge: kovan5Bridge,
+    blockTime: 5
   },
   '144545313136048': {
     chainID: '144545313136048',
@@ -71,7 +73,8 @@ const networks: Networks = {
     explorerUrl: 'https://etherscan.io',
     isArbitrum: false,
     partnerChainID: '42161',
-    tokenBridge: mainnetBridge
+    tokenBridge: mainnetBridge,
+    blockTime: 15,
   },
   '42161': {
     chainID: '42161',
