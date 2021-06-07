@@ -11,6 +11,7 @@ import {
 import { useLocalStorage } from '@rehooks/local-storage'
 import {
   Bridge,
+  BridgeHelper,
   L1TokenData,
   L2ToL1EventResult,
   OutgoingMessageState
@@ -180,18 +181,19 @@ export const useArbTokenBridge = (
 
   const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
 
-  const l1NetworkIDCached = useCallback(async ()=>{
-    if (l11NetworkID)return l11NetworkID
-      const network = await bridge.l1Bridge.l1Provider.getNetwork()
-      const networkID = await network.chainId.toString()
-      setL1NetWorkID(networkID)
-      return networkID
-
+  const l1NetworkIDCached = useCallback(async () => {
+    if (l11NetworkID) return l11NetworkID
+    const network = await bridge.l1Bridge.l1Provider.getNetwork()
+    const networkID = await network.chainId.toString()
+    setL1NetWorkID(networkID)
+    return networkID
   }, [l11NetworkID, bridge])
 
   const _depositEthPatch = async (value: BigNumber) => {
-    const maxSubmissionPrice = (await bridge.getTxnSubmissionPrice(0))[0]
-    const inboxAddress = await bridge.ethERC20Bridge.inbox()
+    const maxSubmissionPrice = (
+      await bridge.l2Bridge.getTxnSubmissionPrice(0)
+    )[0]
+    const inboxAddress = await bridge.l1Bridge.getInbox()
 
     const inbox = await bridge.l1Bridge.getInbox()
     const to = await bridge.l1Bridge.l1Signer.getAddress()
@@ -225,7 +227,7 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        sender: await bridge.getWalletAddress(),
+        sender: await bridge.l1Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
       const receipt = await tx.wait()
@@ -243,10 +245,10 @@ export const useArbTokenBridge = (
         txID: l2TxHash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        sender: await bridge.getWalletAddress(),
+        sender: await bridge.l1Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
-      const l2TxnRec = await bridge.l2Provider.waitForTransaction(
+      const l2TxnRec = await bridge.l2Bridge.l2Provider.waitForTransaction(
         l2TxHash,
         undefined,
         slowInboxQueueTimeout
@@ -308,7 +310,7 @@ export const useArbTokenBridge = (
           txID: tx.hash,
           assetName: 'ETH',
           assetType: AssetType.ETH,
-          sender: await bridge.getWalletAddress(),
+          sender: await bridge.l1Bridge.getWalletAddress(),
           blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
           l1NetworkID: await l1NetworkIDCached()
         })
@@ -361,7 +363,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: (tokenData && tokenData.symbol) || '???',
       assetType: AssetType.ERC20,
-      sender: await bridge.getWalletAddress(),
+      sender: await bridge.l1Bridge.getWalletAddress(),
       l1NetworkID: await l1NetworkIDCached()
     })
 
@@ -387,7 +389,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
-      sender: await bridge.getWalletAddress(),
+      sender: await bridge.l1Bridge.getWalletAddress(),
       l1NetworkID: await l1NetworkIDCached()
     })
     try {
@@ -399,12 +401,12 @@ export const useArbTokenBridge = (
         await bridge.getDepositTokenEventData(receipt)
       )[0]
 
-      const seqNum = tokenDepositData.seqNum
+      const seqNum = tokenDepositData._transferId
 
       const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
         seqNum
       )
-      const autoRedeemHash = await bridge.calculateRetryableAutoReedemTxnHash(
+      const autoRedeemHash = await bridge.calculateRetryableAutoRedeemTxnHash(
         seqNum
       )
 
@@ -415,13 +417,13 @@ export const useArbTokenBridge = (
         txID: l2RetryableHash,
         assetName: tokenData.symbol,
         assetType: AssetType.ERC20,
-        sender: await bridge.getWalletAddress(),
+        sender: await bridge.l2Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
 
       let autoRedeemHashRec
       try {
-        autoRedeemHashRec = await bridge.l2Provider.waitForTransaction(
+        autoRedeemHashRec = await bridge.l2Bridge.l2Provider.waitForTransaction(
           autoRedeemHash,
           undefined,
           slowInboxQueueTimeout
@@ -436,7 +438,7 @@ export const useArbTokenBridge = (
             txID: autoRedeemHash,
             assetName: tokenData.symbol,
             assetType: AssetType.ERC20,
-            sender: await bridge.getWalletAddress(),
+            sender: await bridge.l1Bridge.getWalletAddress(),
             l1NetworkID: await l1NetworkIDCached()
           })
           return
@@ -452,13 +454,13 @@ export const useArbTokenBridge = (
           txID: autoRedeemHash,
           assetName: tokenData.symbol,
           assetType: AssetType.ERC20,
-          sender: await bridge.getWalletAddress(),
+          sender: await bridge.l1Bridge.getWalletAddress(),
           l1NetworkID: await l1NetworkIDCached()
         })
         return
       }
 
-      const retryableRec = await bridge.l2Provider.waitForTransaction(
+      const retryableRec = await bridge.l2Bridge.l2Provider.waitForTransaction(
         l2RetryableHash,
         undefined,
         slowInboxQueueTimeout
@@ -487,7 +489,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
-      sender: await bridge.getWalletAddress(),
+      sender: await bridge.l2Bridge.getWalletAddress(),
       blockNumber: tx.blockNumber || 0,
       l1NetworkID: await l1NetworkIDCached()
     })
@@ -543,7 +545,8 @@ export const useArbTokenBridge = (
 
       if (!(l1Data && l1Data.ERC20)) {
         try {
-          l1Address = (await bridge.getERC20L1Address(erc20L1orL2Address)) || ''
+          l1Address =
+            (await bridge.l2Bridge.getERC20L1Address(erc20L1orL2Address)) || ''
           if (!l1Address) {
             throw new Error('')
           }
@@ -586,7 +589,7 @@ export const useArbTokenBridge = (
         setERC20Cache(values.filter((val): val is string => !!val))
       })
     }
-    bridge.getWalletAddress().then(_address => {
+    bridge.l1Bridge.getWalletAddress().then(_address => {
       setWalletAddress(_address)
     })
   }, [])
@@ -649,7 +652,7 @@ export const useArbTokenBridge = (
         value: ethers.utils.formatUnits(value, decimals),
         assetName: symbol,
         assetType: AssetType.ERC20,
-        sender: await bridge.getWalletAddress(),
+        sender: await bridge.l1Bridge.getWalletAddress(),
         txID: rec.transactionHash,
         l1NetworkID: await l1NetworkIDCached()
       })
@@ -689,7 +692,7 @@ export const useArbTokenBridge = (
         value: ethers.utils.formatEther(value),
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        sender: await bridge.getWalletAddress(),
+        sender: await bridge.l1Bridge.getWalletAddress(),
         txID: rec.transactionHash,
         l1NetworkID: await l1NetworkIDCached()
       })
@@ -711,7 +714,8 @@ export const useArbTokenBridge = (
   const updateBridgeTokens = useCallback(async () => {
     const bridgeTokens: ContractStorage<BridgeToken> = {}
 
-    const { l1Tokens, l2Tokens } = bridge
+    const { l1Tokens } = bridge
+    const { l2Tokens } = bridge.l2Bridge
     for (const address of Object.keys(l1Tokens)) {
       const l1TokenData = await bridge.getAndUpdateL1TokenData(address)
       const l2TokenData = l2Tokens[address]
@@ -737,12 +741,13 @@ export const useArbTokenBridge = (
 
   const setInitialPendingWithdrawals = async () => {
     // Get all l2tol1 withdrawal triggers, figure out which is eth vs erc20 vs erc721, filter out the ones that have been outboxed, and
-    // ...but tfw no outbox events :/
-    const address = await bridge.getWalletAddress()
+    const address = await bridge.l1Bridge.getWalletAddress()
     const withdrawalData = await bridge.getL2ToL1EventData(address)
     const pendingWithdrawals: PendingWithdrawalsMap = {}
-    const tokenWithdrawalEventData = await bridge.getTokenWithdrawEventData(
-      address
+    const tokenWithdrawalEventData = await BridgeHelper.getTokenWithdrawEventData(
+      address,
+      bridge.l2Bridge.l2GatewayRouter.address,
+      bridge.l2Bridge.l2Provider
     )
 
     for (const eventData of withdrawalData) {
@@ -815,8 +820,8 @@ export const useArbTokenBridge = (
           callvalue,
           data,
           type: AssetType.ERC20,
-          value: withdrawEventData.amount,
-          tokenAddress: withdrawEventData.l1Address,
+          value: withdrawEventData._amount,
+          tokenAddress: withdrawEventData.token,
           outgoingMessageState
         }
         pendingWithdrawals[uniqueId.toString()] = eventDataPlus
@@ -867,7 +872,6 @@ export const useArbTokenBridge = (
   return {
     walletAddress,
     bridgeTokens: bridgeTokens,
-    getLatestArbBlock: bridge.getLatestBlock.bind(bridge),
     balances: {
       eth: ethBalances,
       erc20: erc20Balances,
@@ -893,7 +897,7 @@ export const useArbTokenBridge = (
       triggerOutbox: triggerOutboxToken,
       updateBalances: updateTokenBalances
     },
-    arbSigner: bridge.l2Signer,
+    arbSigner: bridge.l2Bridge.l2Signer,
     transactions: {
       transactions,
       clearPendingTransactions,
