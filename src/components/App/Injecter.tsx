@@ -92,9 +92,8 @@ const Injector = () => {
               network.tokenBridge.l2Address
             ).then((bridge)=>{
               setBridge(bridge)
-              setConnectionState(ConnectionState.DEPOSIT_MODE)
+              setConnectionState(ConnectionState.WITHDRAW_MODE)
             })
-            setConnectionState(ConnectionState.WITHDRAW_MODE)
           }
 
         })
@@ -153,7 +152,7 @@ const Injector = () => {
        case ConnectionState.DEPOSIT_MODE:
        case ConnectionState.WITHDRAW_MODE:
         if (bridge === undefined) {
-          return 'x'
+          return <div>{renderAlert('loading...', 'primary')}</div>
         }
 
         return (
