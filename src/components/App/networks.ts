@@ -33,13 +33,18 @@ interface Networks {
 export const MAINNET_WHITELIST_ADDRESS= "0xD485e5c28AA4985b23f6DF13dA03caa766dcd459"
 
 const mainnetBridge: TokenBridge = {
-  l1Address: '0x819702D5069736510fB53c48803128a8DC23E1Af',
-  l2Address: '0xdE290B3BAB9d636C2a84d15C8EC13Ba0001a6641'
+  l1Address: '0x6074515Bc580C76c0C68AE2E13408B680d670F8C',
+  l2Address: '0x29f86A78551Fac44217A8763A45540027c3F7cA5'
 }
 
 const kovan5Bridge: TokenBridge = {
   l1Address: '0x1d750369c91b129524B68f308512b0FE2C903d71',
   l2Address: '0x2EEBB8EE9c377caBC476654ca4aba016ECA1B9fc'
+}
+
+const RinkebyBridge: TokenBridge = {
+  l1Address: '0x70C143928eCfFaf9F5b406f7f4fC28Dc43d68380',
+  l2Address: '0x9413AD42910c1eA60c737dB5f58d1C504498a3cD'
 }
 
 const networks: Networks = {
@@ -86,6 +91,28 @@ const networks: Networks = {
     isArbitrum: true,
     tokenBridge: mainnetBridge,
     confirmPeriodBlocks: 45818
+  },
+  '421611':{
+    chainID: '421611',
+    name: 'ArbRinkeby',
+    url: 'https://rinkeby.arbitrum.io/rpc',
+    gif: kovan,
+    explorerUrl: 'https://rinkeby-explorer.arbitrum.io/',
+    partnerChainID: '4',
+    isArbitrum: true,
+    tokenBridge: RinkebyBridge,
+    confirmPeriodBlocks: 6545 // TODO
+  },
+  '4':{
+    chainID: '4',
+    name: 'Rinkeby',
+    url: 'https://rinkeby.infura.io/v3/' + INFURA_KEY,
+    gif: kovan,
+    explorerUrl: 'https://rinkeby.etherscan.io',
+    partnerChainID: '421611',
+    isArbitrum: false,
+    tokenBridge: RinkebyBridge,
+    confirmPeriodBlocks: 6545  // TODO
   }
 }
 

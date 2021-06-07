@@ -4623,21 +4623,10 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-ts@^0.0.14:
-  version "0.0.14"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.14.tgz#c27f5c771caa556c77a1b030d730b638a6c91f4f"
-  integrity sha512-P8wAo5yalVtlxHdX/9wVCtHrsYH0XPsMcUFICxQJNYj2D7VSQwPoie/m+aJWBlz1Xp6dCd1d3ln0AECSxIjKKQ==
-  dependencies:
-    "@ethersproject/address" "^5.0.8"
-    "@ethersproject/bignumber" "^5.1.1"
-    "@ethersproject/bytes" "^5.0.8"
-    "@types/promise-poller" "^1.7.0"
-    ethers "^5.0.24"
-
-arb-ts@^0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.16.tgz#f06d72b084464043176937c1e7e5e2a28aea7a3f"
-  integrity sha512-nepAQ5MmucuNClHbmH6zTF1ARdZJ45z0JRw89+0AXCY6M00aqcevtfsErlVl6j8CDdZIzMJamqD2fwSIHKDuBg==
+arb-ts@0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.18.tgz#f38ebf55d7274f06fce5c57c2a9facaad7dd7b09"
+  integrity sha512-0VSvtFx9wcq73qLqHTCFv7evkekT9V2GYiUVOX5zdoiStTXi8Chd9o2AxD/Ro0tUcu0+oXbfhw+gErgZCoiqAQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -17136,15 +17125,15 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@0.4.3:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.4.3.tgz#5662ef797dc6f08a442d7d568c67636b8f73ea0a"
-  integrity sha512-ei/fy1wGqMBmkK3wndsMMn4j2ecu1F6vY7h7CYK5XXsh1Hq8b5aiQl5UbNYpQfDi0k1JwW8b/gHSGqazQzDtLw==
+token-bridge-sdk@0.4.5:
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.4.5.tgz#2b0f3ff064ecdbd62418a194f44509eda7be6537"
+  integrity sha512-0+O4K6zcLvmfPHH1gpLdmDACKh2ljWisFdseOHFFGC4boi7yal0BNzgCzgzo69wna+229Rvf1TM8JdWaw2+A3w==
   dependencies:
     "@ethersproject/bignumber" "^5.1.1"
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
-    arb-ts "^0.0.14"
+    arb-ts "0.0.18"
     ethers "5.0.24"
     lodash.clonedeep "^4.5.0"
     lodash.isempty "^4.4.0"

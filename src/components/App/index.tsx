@@ -27,7 +27,7 @@ interface AppProps {
 const App = ({ bridge }: AppProps) => {
   const [whiteListState, setWhitelistStsate]  =  useState(WhiteListState.VERIFYING)
   // TODO:
-  const arbProvider = bridge.l2Signer
+  const arbProvider = bridge.l2Bridge.l2Signer
     .provider as ethers.ethers.providers.Provider
   const ethProvider = bridge.l1Bridge.l1Signer
     .provider as ethers.ethers.providers.Provider
@@ -176,7 +176,7 @@ const App = ({ bridge }: AppProps) => {
       <div className="row">
         <Transactions
           ethProvider={bridge.l1Bridge.l1Provider}
-          arbProvider={bridge.l2Provider}
+          arbProvider={bridge.l2Bridge.l2Provider}
           transactions={transactions.transactions}
           clearPendingTransactions={transactions.clearPendingTransactions}
           walletAddress={walletAddress}

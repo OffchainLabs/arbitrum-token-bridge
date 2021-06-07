@@ -65,15 +65,16 @@ const Injector = () => {
             const l2Signer = arbProvider.getSigner(
               window.ethereum?.selectedAddress
             )
-            const bridge = new Bridge(
-              network.tokenBridge.l1Address,
-              network.tokenBridge.l2Address,
+            Bridge.init(
               l1Signer,
-              l2Signer
-            )
-
-            setBridge(bridge)
-            setConnectionState(ConnectionState.DEPOSIT_MODE)
+              l2Signer,
+              network.tokenBridge.l1Address,
+              network.tokenBridge.l2Address
+            ).then((bridge)=>{
+              setBridge(bridge)
+              setConnectionState(ConnectionState.DEPOSIT_MODE)
+            });
+   
           } else {
             console.info('withdrawal mode detected')
             const ethProvider = new ethers.providers.JsonRpcProvider(
@@ -84,14 +85,15 @@ const Injector = () => {
               window.ethereum?.selectedAddress
             )
             const l2Signer = arbProvider.getSigner(0)
-            const bridge = new Bridge(
-              network.tokenBridge.l1Address,
-              network.tokenBridge.l2Address,
+            Bridge.init(
               l1Signer,
-              l2Signer
-            )
-
-            setBridge(bridge)
+              l2Signer,
+              network.tokenBridge.l1Address,
+              network.tokenBridge.l2Address
+            ).then((bridge)=>{
+              setBridge(bridge)
+              setConnectionState(ConnectionState.DEPOSIT_MODE)
+            })
             setConnectionState(ConnectionState.WITHDRAW_MODE)
           }
 
@@ -148,10 +150,12 @@ const Injector = () => {
             </div>
           </NetworkIDContext.Provider>
         )
-      default:
-        if (!bridge) {
-          throw new Error('initialization error')
+       case ConnectionState.DEPOSIT_MODE:
+       case ConnectionState.WITHDRAW_MODE:
+        if (bridge === undefined) {
+          return 'x'
         }
+
         return (
           <NetworkIDContext.Provider value={networkID}>
             <ModeContext.Provider value={connectionState}>
@@ -159,6 +163,7 @@ const Injector = () => {
             </ModeContext.Provider>
           </NetworkIDContext.Provider>
         )
+
     }
   }
 
