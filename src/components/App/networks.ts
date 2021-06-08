@@ -97,7 +97,7 @@ const networks: Networks = {
     name: 'ArbRinkeby',
     url: 'https://rinkeby.arbitrum.io/rpc',
     gif: kovan,
-    explorerUrl: 'https://rinkeby-explorer.arbitrum.io/',
+    explorerUrl: 'https://rinkeby-explorer.arbitrum.io',
     partnerChainID: '4',
     isArbitrum: true,
     tokenBridge: RinkebyBridge,
