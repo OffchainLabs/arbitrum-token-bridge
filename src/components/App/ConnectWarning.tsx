@@ -22,12 +22,11 @@ const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
 }
 
 export default () => {
-  const netWork = useNetwork()
+  const netWork = networks[4]
 
-  const network = networks[42]
-  const arbnetwork = networks[network.partnerChainID]
+  const arbnetwork = networks[netWork.partnerChainID]
 
-  const l1NetworkName = network.name
+  const l1NetworkName = netWork.name
   const l2NetworkName = arbnetwork.name
 
   return (
@@ -46,11 +45,11 @@ export default () => {
             </div>
             <div style={styles.textStyle}>
               {' '}
-              Connect to Kovan test work to deposit ETH/tokens into Arbitrum
+              Connect to { l2NetworkName } test work to deposit ETH/tokens into Arbitrum
             </div>
           </div>
           <div>
-            <img style={styles.gifStyle} src={network.gif} />
+            <img style={styles.gifStyle} src={netWork.gif} />
           </div>
         </Col>
         <Col>
@@ -74,7 +73,7 @@ export default () => {
               <br />{' '}
               <CopyLink
                 url={arbnetwork.url}
-                msg="Arbv5 node rpc url copied to clipboard"
+                msg="node rpc url copied to clipboard"
               />{' '}
               with chain ID{' '}
               <CopyLink
@@ -108,7 +107,7 @@ export default () => {
             <div style={styles.textStyle}>
               Add our custom block explorer url to Arbitrum network:{' '}
               <CopyLink
-                url="https://explorer5.arbitrum.io/#"
+                url={arbnetwork.explorerUrl}
                 msg="Block explorer url copied to clipboard"
               />
               {`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
