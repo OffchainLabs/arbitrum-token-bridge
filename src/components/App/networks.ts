@@ -94,7 +94,7 @@ const networks: Networks = {
   },
   '421611':{
     chainID: '421611',
-    name: 'ArbRinkeby',
+    name: 'RinkArby',
     url: 'https://rinkeby.arbitrum.io/rpc',
     gif: kovan,
     explorerUrl: 'https://rinkeby-explorer.arbitrum.io',
