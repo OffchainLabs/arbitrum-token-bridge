@@ -4623,10 +4623,10 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-ts@0.0.18:
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.18.tgz#f38ebf55d7274f06fce5c57c2a9facaad7dd7b09"
-  integrity sha512-0VSvtFx9wcq73qLqHTCFv7evkekT9V2GYiUVOX5zdoiStTXi8Chd9o2AxD/Ro0tUcu0+oXbfhw+gErgZCoiqAQ==
+arb-ts@0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.19.tgz#84a2412eb109e5e9d5b619ac779139898df279ec"
+  integrity sha512-4xR/5u3U6K9omkFjec50AWjqcpmA8rOYDdL3TeTDY185F7onO9IBvpJjVULmNvPrNQol2Zsyg0knjO+1N79VqQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -17125,15 +17125,15 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@0.4.5:
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.4.5.tgz#2b0f3ff064ecdbd62418a194f44509eda7be6537"
-  integrity sha512-0+O4K6zcLvmfPHH1gpLdmDACKh2ljWisFdseOHFFGC4boi7yal0BNzgCzgzo69wna+229Rvf1TM8JdWaw2+A3w==
+token-bridge-sdk@0.4.6:
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.4.6.tgz#5705109463a8c1d69bd492fc7164e0a488341478"
+  integrity sha512-soA7lAyFMYr3XQ4XlkCHhNZIjtCUzcCZ3R3lU7B/H4xfDXbqjyozIRiYOuKQqIE9uvTUS+06cQsMYHIVEsm6nA==
   dependencies:
     "@ethersproject/bignumber" "^5.1.1"
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
-    arb-ts "0.0.18"
+    arb-ts "0.0.19"
     ethers "5.0.24"
     lodash.clonedeep "^4.5.0"
     lodash.isempty "^4.4.0"
