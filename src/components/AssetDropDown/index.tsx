@@ -65,6 +65,11 @@ const AssetDropDown = ({
       <Form
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault()
+          // only show whitelist / blacklist warnings on mainnet
+          if(l1NetworkId !== '1'){
+            addToken(erc20Form, tokenType)
+            return seterc20Form('')
+          }
           const tokenStatus = getTokenStatus(erc20Form, l1NetworkId)
           switch (tokenStatus) {
             case TokenStatus.WHITELISTED: {
