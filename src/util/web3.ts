@@ -20,7 +20,7 @@ export function web3Injected(
 }
 
 export async function requestNetworkSwitch(network: Network) {
-  const chainId = ethers.BigNumber.from(network.chainID).toHexString()
+  const chainId = ethers.utils.hexValue(ethers.BigNumber.from(network.chainID))
   if (web3Injected(window.ethereum)) {
     try {
       await window.ethereum.request?.({
