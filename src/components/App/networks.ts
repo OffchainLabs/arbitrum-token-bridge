@@ -33,8 +33,8 @@ interface Networks {
 export const MAINNET_WHITELIST_ADDRESS= "0xD485e5c28AA4985b23f6DF13dA03caa766dcd459"
 
 const mainnetBridge: TokenBridge = {
-  l1Address: '0x6074515Bc580C76c0C68AE2E13408B680d670F8C',
-  l2Address: '0x29f86A78551Fac44217A8763A45540027c3F7cA5'
+  l1Address: '0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef',
+  l2Address: '0x5288c571Fd7aD117beA99bF60FE0846C4E84F933'
 }
 
 const kovan5Bridge: TokenBridge = {
@@ -86,7 +86,7 @@ const networks: Networks = {
     name: 'Arb1',
     url: 'https://arb1.arbitrum.io/rpc',
     gif: kovan,
-    explorerUrl: 'https://mainnet-arb-explorer.netlify.app',
+    explorerUrl: 'https://explorer.arbitrum.io/',
     partnerChainID: '1',
     isArbitrum: true,
     tokenBridge: mainnetBridge,

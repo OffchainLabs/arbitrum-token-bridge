@@ -71,25 +71,33 @@ const AssetDropDown = ({
             return seterc20Form('')
           }
           const tokenStatus = getTokenStatus(erc20Form, l1NetworkId)
-          switch (tokenStatus) {
-            case TokenStatus.WHITELISTED: {
-              addToken(erc20Form, tokenType)
-              return seterc20Form('')
-            }
-            case TokenStatus.BLACKLISTED: {
-              return alert(
-                "Token you're trying to add has features incompatible with the Arbitrum bridge"
-              )
-            }
-            case TokenStatus.NEUTRAL: {
-              const res = global.confirm(
-                "We don't recognize this token; are you sure you want to add it?"
-              )
-              if (!res) return
-              addToken(erc20Form, tokenType)
-              return seterc20Form('')
-            }
+          if (tokenStatus === TokenStatus.WHITELISTED){
+            addToken(erc20Form, tokenType)
+            return seterc20Form('')
+          } else {
+            return alert(
+                    "Token is not registered to the mainnet bridge!"
+                  )
           }
+          // switch (tokenStatus) {
+          //   case TokenStatus.WHITELISTED: {
+          //     addToken(erc20Form, tokenType)
+          //     return seterc20Form('')
+          //   }
+          //   case TokenStatus.BLACKLISTED: {
+          //     return alert(
+          //       "Token you're trying to add has features incompatible with the Arbitrum bridge"
+          //     )
+          //   }
+          //   case TokenStatus.NEUTRAL: {
+          //     const res = global.confirm(
+          //       "We don't recognize this token; are you sure you want to add it?"
+          //     )
+          //     if (!res) return
+          //     addToken(erc20Form, tokenType)
+          //     return seterc20Form('')
+          //   }
+          // }
         }}
       >
         <FormControl

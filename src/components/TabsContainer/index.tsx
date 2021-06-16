@@ -137,7 +137,7 @@ const TabsContainer = ({
           </Row>
         </Container>
       </Tab>
-      { (l1ChainId !== '1')  ? <Tab eventKey="erc20" title="ERC-20">
+      { (true)  ? <Tab eventKey="erc20" title="ERC-20">
         <Container>
           <Row md={6}>
             <Col>
