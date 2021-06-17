@@ -52,7 +52,10 @@ const Header = ({
       <div className="top-thing">
         {' '}
         <a href="https://arbitrum.io/" target="_blank">
-          ARBITRUM
+          <u>ARBITRUM</u>
+        </a>{' '}
+        <a href="https://bridge.arbitrum.io/token-list-42161.json" target="_blank">
+          <u>TOKEN LIST</u>
         </a>{' '}
       </div>
 
