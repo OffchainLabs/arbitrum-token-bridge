@@ -92,7 +92,7 @@ export interface ERC721Balance {
   lockBoxTokens: BigNumber[]
 }
 
-const slowInboxQueueTimeout = 1000 * 60 * 10
+const slowInboxQueueTimeout = 1000 * 60 * 15
 
 export const useArbTokenBridge = (
   bridge: Bridge,
@@ -444,12 +444,11 @@ export const useArbTokenBridge = (
           return
         }
       } catch (err) {
-        console.warn('auto redeem timed out')
-
-        removeTransaction(l2RetryableHash)
-        addFailedTransaction({
+        console.warn('Auto redeem timed out')
+        // keep both the retryable and the auto-redeem as pending
+        addTransaction({
           type: 'deposit-l2-auto-redeem',
-          status: 'failure',
+          status: 'pending',
           value: amount,
           txID: autoRedeemHash,
           assetName: tokenData.symbol,
