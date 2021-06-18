@@ -101,10 +101,10 @@ const TransactionHistory = ({
   }, [checkedForInitialPendingTxns, pendingTransactions, usersTransactions])
 
   const checkAndUpdatePendingTransactions = useCallback(
-    function () {
+     ()=> {
       if (pendingTransactions.length) {
         console.info(
-          "Checking and updating cached pending transactions' statuses"
+          `Checking and updating ${pendingTransactions.length} pending transactions' statuses`
         )
 
         return Promise.all(
@@ -129,7 +129,8 @@ const TransactionHistory = ({
   )
 
   useEffect(() => {
-    window.setInterval(checkAndUpdatePendingTransactions, 5000)
+    const intId = window.setInterval(checkAndUpdatePendingTransactions, 5000)
+    return () => window.clearInterval(intId)
   }, [checkAndUpdatePendingTransactions])
 
   const getRowStyle = (status: TxnStatus) => {
