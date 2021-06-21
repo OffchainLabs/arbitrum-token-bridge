@@ -1,6 +1,6 @@
 {
   "name": "Arb1",
-  "timestamp": "2021-06-18T20:57:55.562Z",
+  "timestamp": "2021-06-21T14:38:36.958Z",
   "version": {
     "major": 0,
     "minor": 1,
@@ -15,6 +15,17 @@
     "logoURI": "https://zapper.fi/images/ALCH-icon.png",
     "extensions": {
       "l1Address": "0x0000A1c00009A619684135B824Ba02f7FbF3A572",
+      "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+    }
+  }, {
+    "chainId": 42161,
+    "address": "0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8",
+    "name": "Balancer",
+    "symbol": "BAL",
+    "decimals": 18,
+    "logoURI": "https://zapper.fi/images/BAL-icon.png",
+    "extensions": {
+      "l1Address": "0xba100000625a3754423978a60c9317c58a424e3D",
       "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
     }
   }, {
