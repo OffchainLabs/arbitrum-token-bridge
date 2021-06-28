@@ -14,7 +14,8 @@ import {
   BridgeHelper,
   L1TokenData,
   L2ToL1EventResult,
-  OutgoingMessageState
+  OutgoingMessageState,
+  OutboundTransferInitiatedResult
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 
@@ -594,8 +595,8 @@ export const useArbTokenBridge = (
   }, [])
 
   const updateEthBalances = async () => {
-    const l1Balance = await bridge.getAndUpdateL1EthBalance()
-    const l2Balance = await bridge.getAndUpdateL2EthBalance()
+    const l1Balance = await bridge.getL2EthBalance()
+    const l2Balance = await bridge.getL2EthBalance()
     setEthBalances({
       balance: l1Balance,
       arbChainBalance: l2Balance
@@ -738,17 +739,11 @@ export const useArbTokenBridge = (
     return bridgeTokens
   }, [bridge])
 
-  const setInitialPendingWithdrawals = async () => {
+  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
     // Get all l2tol1 withdrawal triggers, figure out which is eth vs erc20 vs erc721, filter out the ones that have been outboxed, and
     const address = await bridge.l1Bridge.getWalletAddress()
     const withdrawalData = await bridge.getL2ToL1EventData(address)
     const pendingWithdrawals: PendingWithdrawalsMap = {}
-    const tokenWithdrawalEventData = await BridgeHelper.getTokenWithdrawEventData(
-      address,
-      bridge.l2Bridge.l2GatewayRouter.address,
-      bridge.l2Bridge.l2Provider
-    )
-
     for (const eventData of withdrawalData) {
       const {
         caller,
@@ -786,8 +781,16 @@ export const useArbTokenBridge = (
         pendingWithdrawals[uniqueId.toString()] = eventDataPlus
       }
     }
+    let allTokenWithdrawals: OutboundTransferInitiatedResult[] = []
+    for (const gatewayAddress of gatewayAddresses) {
+      const tokenWithdrawalEventData = await bridge.getGatewayWithdrawEventData(
+        gatewayAddress,
+        address
+      )
+      allTokenWithdrawals = allTokenWithdrawals.concat(tokenWithdrawalEventData)
+    }
 
-    for (const withdrawEventData of tokenWithdrawalEventData) {
+    for (const withdrawEventData of allTokenWithdrawals) {
       const rec = await bridge.getL2Transaction(withdrawEventData.txHash)
       const eventDataArr = await bridge.getWithdrawalsInL2Transaction(rec)
       if (eventDataArr.length === 1) {
@@ -832,10 +835,6 @@ export const useArbTokenBridge = (
 
     return withdrawalData
   }
-
-  useEffect(() => {
-    setInitialPendingWithdrawals()
-  }, [])
 
   const getOutGoingMessageState = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
@@ -904,6 +903,7 @@ export const useArbTokenBridge = (
       updateTransactionStatus,
       addTransaction
     },
-    pendingWithdrawalsMap: pendingWithdrawalsMap
+    pendingWithdrawalsMap: pendingWithdrawalsMap,
+    setInitialPendingWithdrawals: setInitialPendingWithdrawals
   }
 }
