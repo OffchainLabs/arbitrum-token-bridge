@@ -54,6 +54,9 @@ const Injector = () => {
           }
           
           const partnerNetwork = networks[network.partnerChainID]
+          if(network.chainID === '1' || partnerNetwork.chainID === '1'){
+            return setConnectionState(ConnectionState.SEQUENCER_UPDATE)
+          }
           if (!network.isArbitrum) {
             console.info('deposit mode detected')
             const ethProvider = provider
@@ -149,6 +152,14 @@ const Injector = () => {
             </div>
           </NetworkIDContext.Provider>
         )
+        case ConnectionState.SEQUENCER_UPDATE:
+          return (
+            <NetworkIDContext.Provider value={networkID}>
+              <div>
+                {renderAlert(" Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for maintenance. Thanks for your patience!")}
+              </div>
+            </NetworkIDContext.Provider>
+          )
        case ConnectionState.DEPOSIT_MODE:
        case ConnectionState.WITHDRAW_MODE:
         if (bridge === undefined) {

@@ -22,7 +22,8 @@ export enum ConnectionState {
   NO_METAMASK,
   WRONG_NETWORK,
   DEPOSIT_MODE,
-  WITHDRAW_MODE
+  WITHDRAW_MODE,
+  SEQUENCER_UPDATE
 }
 
 interface ConnextTxnParams {
