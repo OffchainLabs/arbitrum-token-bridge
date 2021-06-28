@@ -54,9 +54,9 @@ const Injector = () => {
           }
           
           const partnerNetwork = networks[network.partnerChainID]
-          if(network.chainID === '1' || partnerNetwork.chainID === '1'){
-            return setConnectionState(ConnectionState.SEQUENCER_UPDATE)
-          }
+          // if(network.chainID === '1' || partnerNetwork.chainID === '1'){
+          //   return setConnectionState(ConnectionState.SEQUENCER_UPDATE)
+          // }
           if (!network.isArbitrum) {
             console.info('deposit mode detected')
             const ethProvider = provider
