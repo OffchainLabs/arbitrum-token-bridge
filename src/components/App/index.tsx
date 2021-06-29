@@ -9,10 +9,10 @@ import { useLocalStorage } from '@rehooks/local-storage'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
-import { connextTxn } from 'util/index'
+import { connextTxn, PendingWithdrawalsLoadedState } from 'util/index'
 import Alert from 'react-bootstrap/Alert'
 import { useL1Network } from 'components/App/NetworkContext'
-import { Bridge } from 'arb-ts'
+import { Bridge, networks } from 'arb-ts'
 import { MAINNET_WHITELIST_ADDRESS } from "./networks"
 import { renderAlert } from './Injecter'
 enum WhiteListState {
@@ -24,8 +24,10 @@ enum WhiteListState {
 interface AppProps {
   bridge: Bridge
 }
+
 const App = ({ bridge }: AppProps) => {
-  const [whiteListState, setWhitelistStsate]  =  useState(WhiteListState.VERIFYING)
+  const [whiteListState, setWhiteListState]  =  useState(WhiteListState.VERIFYING)
+  const [pwLoadedState, setPWLoadedState ] = useState(PendingWithdrawalsLoadedState.LOADING)
   // TODO:
   const arbProvider = bridge.l2Bridge.l2Signer
     .provider as ethers.ethers.providers.Provider
@@ -33,6 +35,7 @@ const App = ({ bridge }: AppProps) => {
     .provider as ethers.ethers.providers.Provider
 
   const l1NetworkID = useL1Network().chainID
+
 
 
   const {
@@ -43,17 +46,18 @@ const App = ({ bridge }: AppProps) => {
     bridgeTokens,
     eth,
     transactions,
-    pendingWithdrawalsMap
+    pendingWithdrawalsMap,
+    setInitialPendingWithdrawals
   } = useArbTokenBridge(bridge)
 
   useEffect(()=>{
     if(!walletAddress)return
     if(l1NetworkID !== "1"){
-      setWhitelistStsate(WhiteListState.ALLOWED)
+      setWhiteListState(WhiteListState.ALLOWED)
     } else {
       bridge.isWhiteListed(walletAddress,MAINNET_WHITELIST_ADDRESS ).then((isAllowed)=>{
 
-        setWhitelistStsate(isAllowed ? WhiteListState.ALLOWED: WhiteListState.DISALLOWED)
+        setWhiteListState(isAllowed ? WhiteListState.ALLOWED: WhiteListState.DISALLOWED)
         
       })
     }
@@ -118,6 +122,17 @@ const App = ({ bridge }: AppProps) => {
       balances.update()
     }, 5000)
   }, [])
+  useEffect(()=>{
+    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway }  = networks[l1NetworkID].tokenBridge
+    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway].filter((gw)=>gw)
+    console.log('**** setting initial pending withdrawals ****');
+    
+    setInitialPendingWithdrawals(gatewaysToUse).then((res:any)=>{
+      setPWLoadedState(PendingWithdrawalsLoadedState.READY)
+    }).catch(()=>{
+      setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
+    })
+  },[l1NetworkID])
 
   if(whiteListState === WhiteListState.VERIFYING){
     return  renderAlert("verifying...", "primary")
@@ -125,6 +140,7 @@ const App = ({ bridge }: AppProps) => {
   if(whiteListState === WhiteListState.DISALLOWED){
     return  renderAlert(`Stop! You are attempting to use Mainnet Beta with unapproved address ${walletAddress}!`, "danger")
   }
+
 
   return (
     <div className="container">
@@ -169,7 +185,7 @@ const App = ({ bridge }: AppProps) => {
             ethAddress={walletAddress}
             handleConnextTxn={handleConnextTxn}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
-            ethProvider={ethProvider}
+            ethProvider={ethProvider}            
           />
         </div>
       </div>

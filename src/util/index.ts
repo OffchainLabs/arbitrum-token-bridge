@@ -35,6 +35,12 @@ interface ConnextTxnParams {
   type: 'connext-deposit' | 'connext-withdraw'
 }
 
+export enum PendingWithdrawalsLoadedState {
+  LOADING,
+  READY,
+  ERROR
+}
+
 export const isMainnetWhiteListed = (address:string)=>{
   return allMainnetAddresses.has(address)
 }
