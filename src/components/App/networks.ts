@@ -29,8 +29,8 @@ interface Networks {
   [id: string]: Network
 }
 
-
-export const MAINNET_WHITELIST_ADDRESS= "0xD485e5c28AA4985b23f6DF13dA03caa766dcd459"
+export const MAINNET_WHITELIST_ADDRESS =
+  '0xD485e5c28AA4985b23f6DF13dA03caa766dcd459'
 
 const mainnetBridge: TokenBridge = {
   l1Address: '0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef',
@@ -79,7 +79,7 @@ const networks: Networks = {
     isArbitrum: false,
     partnerChainID: '42161',
     tokenBridge: mainnetBridge,
-    blockTime: 15,
+    blockTime: 15
   },
   '42161': {
     chainID: '42161',
@@ -92,7 +92,7 @@ const networks: Networks = {
     tokenBridge: mainnetBridge,
     confirmPeriodBlocks: 45818
   },
-  '421611':{
+  '421611': {
     chainID: '421611',
     name: 'RinkArby',
     url: 'https://rinkeby.arbitrum.io/rpc',
@@ -103,7 +103,7 @@ const networks: Networks = {
     tokenBridge: RinkebyBridge,
     confirmPeriodBlocks: 6545 // TODO
   },
-  '4':{
+  '4': {
     chainID: '4',
     name: 'Rinkeby',
     url: 'https://rinkeby.infura.io/v3/' + INFURA_KEY,
@@ -112,7 +112,7 @@ const networks: Networks = {
     partnerChainID: '421611',
     isArbitrum: false,
     tokenBridge: RinkebyBridge,
-    confirmPeriodBlocks: 6545  // TODO
+    confirmPeriodBlocks: 6545 // TODO
   }
 }
 

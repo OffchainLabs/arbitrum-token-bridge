@@ -54,7 +54,10 @@ const Header = ({
         <a href="https://arbitrum.io/" target="_blank">
           <u>ARBITRUM</u>
         </a>{' '}
-        <a href="https://bridge.arbitrum.io/token-list-42161.json" target="_blank">
+        <a
+          href="https://bridge.arbitrum.io/token-list-42161.json"
+          target="_blank"
+        >
           <u>TOKEN LIST</u>
         </a>{' '}
       </div>

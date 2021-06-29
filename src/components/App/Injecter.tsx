@@ -52,7 +52,7 @@ const Injector = () => {
             console.warn('WARNING: unsupported network')
             return setConnectionState(ConnectionState.WRONG_NETWORK)
           }
-          
+
           const partnerNetwork = networks[network.partnerChainID]
           // if(network.chainID === '1' || partnerNetwork.chainID === '1'){
           //   return setConnectionState(ConnectionState.SEQUENCER_UPDATE)
@@ -73,11 +73,10 @@ const Injector = () => {
               l2Signer,
               network.tokenBridge.l1Address,
               network.tokenBridge.l2Address
-            ).then((bridge)=>{
+            ).then(bridge => {
               setBridge(bridge)
               setConnectionState(ConnectionState.DEPOSIT_MODE)
-            });
-   
+            })
           } else {
             console.info('withdrawal mode detected')
             const ethProvider = new ethers.providers.JsonRpcProvider(
@@ -93,12 +92,11 @@ const Injector = () => {
               l2Signer,
               network.tokenBridge.l1Address,
               network.tokenBridge.l2Address
-            ).then((bridge)=>{
+            ).then(bridge => {
               setBridge(bridge)
               setConnectionState(ConnectionState.WITHDRAW_MODE)
             })
           }
-
         })
       } catch (e) {
         setConnectionState(ConnectionState.NO_METAMASK)
@@ -152,16 +150,18 @@ const Injector = () => {
             </div>
           </NetworkIDContext.Provider>
         )
-        case ConnectionState.SEQUENCER_UPDATE:
-          return (
-            <NetworkIDContext.Provider value={networkID}>
-              <div>
-                {renderAlert(" Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for maintenance. Thanks for your patience!")}
-              </div>
-            </NetworkIDContext.Provider>
-          )
-       case ConnectionState.DEPOSIT_MODE:
-       case ConnectionState.WITHDRAW_MODE:
+      case ConnectionState.SEQUENCER_UPDATE:
+        return (
+          <NetworkIDContext.Provider value={networkID}>
+            <div>
+              {renderAlert(
+                ' Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for maintenance. Thanks for your patience!'
+              )}
+            </div>
+          </NetworkIDContext.Provider>
+        )
+      case ConnectionState.DEPOSIT_MODE:
+      case ConnectionState.WITHDRAW_MODE:
         if (bridge === undefined) {
           return <div>{renderAlert('loading...', 'primary')}</div>
         }
@@ -173,7 +173,6 @@ const Injector = () => {
             </ModeContext.Provider>
           </NetworkIDContext.Provider>
         )
-
     }
   }
 

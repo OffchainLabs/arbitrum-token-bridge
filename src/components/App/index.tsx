@@ -13,7 +13,7 @@ import { connextTxn, PendingWithdrawalsLoadedState } from 'util/index'
 import Alert from 'react-bootstrap/Alert'
 import { useL1Network } from 'components/App/NetworkContext'
 import { Bridge, networks } from 'arb-ts'
-import { MAINNET_WHITELIST_ADDRESS } from "./networks"
+import { MAINNET_WHITELIST_ADDRESS } from './networks'
 import { renderAlert } from './Injecter'
 enum WhiteListState {
   VERIFYING,
@@ -26,8 +26,10 @@ interface AppProps {
 }
 
 const App = ({ bridge }: AppProps) => {
-  const [whiteListState, setWhiteListState]  =  useState(WhiteListState.VERIFYING)
-  const [pwLoadedState, setPWLoadedState ] = useState(PendingWithdrawalsLoadedState.LOADING)
+  const [whiteListState, setWhiteListState] = useState(WhiteListState.VERIFYING)
+  const [pwLoadedState, setPWLoadedState] = useState(
+    PendingWithdrawalsLoadedState.LOADING
+  )
   // TODO:
   const arbProvider = bridge.l2Bridge.l2Signer
     .provider as ethers.ethers.providers.Provider
@@ -35,8 +37,6 @@ const App = ({ bridge }: AppProps) => {
     .provider as ethers.ethers.providers.Provider
 
   const l1NetworkID = useL1Network().chainID
-
-
 
   const {
     walletAddress,
@@ -50,18 +50,19 @@ const App = ({ bridge }: AppProps) => {
     setInitialPendingWithdrawals
   } = useArbTokenBridge(bridge)
 
-  useEffect(()=>{
-    if(!walletAddress)return
-    if(l1NetworkID !== "1"){
+  useEffect(() => {
+    if (!walletAddress) return
+    if (l1NetworkID !== '1') {
       setWhiteListState(WhiteListState.ALLOWED)
     } else {
-      bridge.isWhiteListed(walletAddress,MAINNET_WHITELIST_ADDRESS ).then((isAllowed)=>{
-
-        setWhiteListState(isAllowed ? WhiteListState.ALLOWED: WhiteListState.DISALLOWED)
-        
-      })
+      bridge
+        .isWhiteListed(walletAddress, MAINNET_WHITELIST_ADDRESS)
+        .then(isAllowed => {
+          setWhiteListState(
+            isAllowed ? WhiteListState.ALLOWED : WhiteListState.DISALLOWED
+          )
+        })
     }
-
   }, [l1NetworkID, walletAddress])
 
   const [currentERC20Address, setCurrentERC20Address] = useLocalStorage(
@@ -122,25 +123,35 @@ const App = ({ bridge }: AppProps) => {
       balances.update()
     }, 5000)
   }, [])
-  useEffect(()=>{
-    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway }  = networks[l1NetworkID].tokenBridge
-    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway].filter((gw)=>gw)
-    console.log('**** setting initial pending withdrawals ****');
-    
-    setInitialPendingWithdrawals(gatewaysToUse).then((res:any)=>{
-      setPWLoadedState(PendingWithdrawalsLoadedState.READY)
-    }).catch(()=>{
-      setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
-    })
-  },[l1NetworkID])
+  useEffect(() => {
+    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } = networks[
+      l1NetworkID
+    ].tokenBridge
+    const gatewaysToUse = [
+      l2ERC20Gateway,
+      l2CustomGateway,
+      l2WethGateway
+    ].filter(gw => gw)
+    console.log('**** setting initial pending withdrawals ****')
 
-  if(whiteListState === WhiteListState.VERIFYING){
-    return  renderAlert("verifying...", "primary")
-  }
-  if(whiteListState === WhiteListState.DISALLOWED){
-    return  renderAlert(`Stop! You are attempting to use Mainnet Beta with unapproved address ${walletAddress}!`, "danger")
-  }
+    setInitialPendingWithdrawals(gatewaysToUse)
+      .then((res: any) => {
+        setPWLoadedState(PendingWithdrawalsLoadedState.READY)
+      })
+      .catch(() => {
+        setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
+      })
+  }, [l1NetworkID])
 
+  if (whiteListState === WhiteListState.VERIFYING) {
+    return renderAlert('verifying...', 'primary')
+  }
+  if (whiteListState === WhiteListState.DISALLOWED) {
+    return renderAlert(
+      `Stop! You are attempting to use Mainnet Beta with unapproved address ${walletAddress}!`,
+      'danger'
+    )
+  }
 
   return (
     <div className="container">
@@ -152,9 +163,6 @@ const App = ({ bridge }: AppProps) => {
           </b>
         </Alert>
       ) : null}
-
-
-  
 
       <div className="row">
         <Header
@@ -185,7 +193,7 @@ const App = ({ bridge }: AppProps) => {
             ethAddress={walletAddress}
             handleConnextTxn={handleConnextTxn}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
-            ethProvider={ethProvider}            
+            ethProvider={ethProvider}
           />
         </div>
       </div>

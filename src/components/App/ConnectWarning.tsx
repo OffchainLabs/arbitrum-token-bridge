@@ -45,7 +45,8 @@ export default () => {
             </div>
             <div style={styles.textStyle}>
               {' '}
-              Connect to { l2NetworkName } test work to deposit ETH/tokens into Arbitrum
+              Connect to {l2NetworkName} test work to deposit ETH/tokens into
+              Arbitrum
             </div>
           </div>
           <div>
