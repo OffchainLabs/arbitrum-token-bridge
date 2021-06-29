@@ -30,7 +30,7 @@ import { Transaction } from 'token-bridge-sdk'
 
 import { providers } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { useL1Network } from "components/App/NetworkContext"
+import { useL1Network } from 'components/App/NetworkContext'
 
 type TabProps = {
   ethBalances: BridgeBalance
@@ -137,77 +137,78 @@ const TabsContainer = ({
           </Row>
         </Container>
       </Tab>
-      { (true)  ? <Tab eventKey="erc20" title="ERC-20">
-        <Container>
-          <Row md={6}>
-            <Col>
-              <AssetDropDown
-                bridgeTokensArray={erc20BridgeTokens}
-                addToken={addToken}
-                tokenType={TokenType.ERC20}
-                currentToken={currentERC20Token}
-                setCurrentAddress={setCurrentERC20Address}
-              />
-            </Col>
-          </Row>
-          <Row style={{ fontSize: 14 }}>
-            {currentERC20Address ? (
+      {true ? (
+        <Tab eventKey="erc20" title="ERC-20">
+          <Container>
+            <Row md={6}>
               <Col>
-                Token L1 Address:{' '}
-                <ExplorerLink
-                  hash={currentERC20Address}
-                  type={'address'}
-                  layer={1}
+                <AssetDropDown
+                  bridgeTokensArray={erc20BridgeTokens}
+                  addToken={addToken}
+                  tokenType={TokenType.ERC20}
+                  currentToken={currentERC20Token}
+                  setCurrentAddress={setCurrentERC20Address}
                 />
               </Col>
-            ) : null}
-          </Row>
-          <Row style={{ fontSize: 14 }}>
-            {currentTokenL2Address ? (
-              <Col>
-                Token L2 Address:{' '}
-                <ExplorerLink
-                  hash={currentTokenL2Address}
-                  type={'address'}
-                  layer={2}
-                />
-              </Col>
-            ) : null}
-          </Row>
+            </Row>
+            <Row style={{ fontSize: 14 }}>
+              {currentERC20Address ? (
+                <Col>
+                  Token L1 Address:{' '}
+                  <ExplorerLink
+                    hash={currentERC20Address}
+                    type={'address'}
+                    layer={1}
+                  />
+                </Col>
+              ) : null}
+            </Row>
+            <Row style={{ fontSize: 14 }}>
+              {currentTokenL2Address ? (
+                <Col>
+                  Token L2 Address:{' '}
+                  <ExplorerLink
+                    hash={currentTokenL2Address}
+                    type={'address'}
+                    layer={2}
+                  />
+                </Col>
+              ) : null}
+            </Row>
 
-          <Row>
-            <Col>
-              <PanelWrapper isDepositPanel={true}>
-                <ERC20L1Actions
-                  balances={erc20BridgeBalance}
-                  token={token}
-                  bridgeTokens={bridgeTokens}
-                  currentERC20Address={currentERC20Address}
-                  transactions={transactions}
-                  pendingWithdrawalsMap={pendingWithdrawalsMap}
-                  ethProvider={ethProvider}
-                />
-              </PanelWrapper>
-            </Col>
-            <Col>
-              <PanelWrapper
-                isDepositPanel={false}
-                disabledWithdrawals={disabledWithdrawals}
-              >
-                <ERC20L2Actions
-                  balances={erc20BridgeBalance}
-                  eth={token}
-                  bridgeTokens={bridgeTokens}
-                  currentERC20Address={currentERC20Address}
-                  ethAddress={ethAddress}
-                  handleConnextTxn={handleConnextTxn}
-                />
-              </PanelWrapper>
-            </Col>
-          </Row>
-        </Container>
-      </Tab>
-      : null}
+            <Row>
+              <Col>
+                <PanelWrapper isDepositPanel={true}>
+                  <ERC20L1Actions
+                    balances={erc20BridgeBalance}
+                    token={token}
+                    bridgeTokens={bridgeTokens}
+                    currentERC20Address={currentERC20Address}
+                    transactions={transactions}
+                    pendingWithdrawalsMap={pendingWithdrawalsMap}
+                    ethProvider={ethProvider}
+                  />
+                </PanelWrapper>
+              </Col>
+              <Col>
+                <PanelWrapper
+                  isDepositPanel={false}
+                  disabledWithdrawals={disabledWithdrawals}
+                >
+                  <ERC20L2Actions
+                    balances={erc20BridgeBalance}
+                    eth={token}
+                    bridgeTokens={bridgeTokens}
+                    currentERC20Address={currentERC20Address}
+                    ethAddress={ethAddress}
+                    handleConnextTxn={handleConnextTxn}
+                  />
+                </PanelWrapper>
+              </Col>
+            </Row>
+          </Container>
+        </Tab>
+      ) : null}
       {/* <Tab eventKey="erc721" title="ERC-721">
         <Container>
           <Row>

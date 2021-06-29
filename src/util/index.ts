@@ -3,9 +3,8 @@ import { AssetType } from 'token-bridge-sdk'
 import mainnetTokenList from '../media/token-list-42161.json'
 export * from './web3'
 
-
 const allMainnetAddresses: Set<string> = new Set([])
-mainnetTokenList.tokens.forEach((tokenInfo)=>{
+mainnetTokenList.tokens.forEach(tokenInfo => {
   allMainnetAddresses.add(tokenInfo.address)
   allMainnetAddresses.add(tokenInfo.extensions.l1Address)
 })
@@ -41,7 +40,7 @@ export enum PendingWithdrawalsLoadedState {
   ERROR
 }
 
-export const isMainnetWhiteListed = (address:string)=>{
+export const isMainnetWhiteListed = (address: string) => {
   return allMainnetAddresses.has(address)
 }
 

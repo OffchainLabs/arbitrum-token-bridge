@@ -10,7 +10,6 @@ import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { ConnextModal } from '@connext/vector-modal'
-import { providers } from 'ethers'
 import { connextTxn } from 'util/index'
 import { AssetType } from 'token-bridge-sdk'
 import ConnextIcon from 'media/images/connext.png'
@@ -158,8 +157,14 @@ const WithdrawWithOptions = ({
       </Form>
       <Dropdown>
         <Dropdown.Toggle id={'dropdown-basic_' + id} className="withdraw-menu">
-          Withdraw <img className="withdraw-dropdown-icon" src={ConnextIcon} />/
-          <img className="withdraw-dropdown-icon" src={HopIcon} />
+          Withdraw{' '}
+          <img
+            className="withdraw-dropdown-icon"
+            src={ConnextIcon}
+            alt="cnxt"
+          />
+          /
+          <img className="withdraw-dropdown-icon" src={HopIcon} alt="hop" />
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
@@ -169,13 +174,13 @@ const WithdrawWithOptions = ({
             placement="right-end"
           >
             <Dropdown.Item onSelect={submitRegular} disabled={disabled}>
-              <img className="withdraw-dropdown-icon" src={ArbIcon} />
+              <img className="withdraw-dropdown-icon" src={ArbIcon} alt="arb" />
               Bridge (Slow)
             </Dropdown.Item>
           </Tooltip>
           <Tooltip
             classes={classes}
-            title="Connext-powered fast-widthdrawal via cross-chain atomic swaps!"
+            title="Connext-powered fast- withdrawal via cross-chain atomic swaps!"
             placement="right-end"
           >
             <Dropdown.Item
@@ -183,7 +188,11 @@ const WithdrawWithOptions = ({
               disabled={connextIsDisabled}
             >
               {' '}
-              <img className="withdraw-dropdown-icon" src={ConnextIcon} />{' '}
+              <img
+                className="withdraw-dropdown-icon"
+                src={ConnextIcon}
+                alt="cnxt"
+              />{' '}
               Connext (Fast)
             </Dropdown.Item>
           </Tooltip>
@@ -193,8 +202,8 @@ const WithdrawWithOptions = ({
             placement="right-end"
           >
             <Dropdown.Item href="https://hop.exchange/" target="_blank">
-              <img className="withdraw-dropdown-icon" src={HopIcon} /> Hop
-              (Fast, DAI Only)
+              <img className="withdraw-dropdown-icon" src={HopIcon} alt="hop" />{' '}
+              Hop (Fast, DAI Only)
             </Dropdown.Item>
           </Tooltip>
         </Dropdown.Menu>

@@ -26,10 +26,9 @@ const PendingWithdrawals = ({
   decimals = 18
 }: PendingWithdrawalsProps) => {
   const [currentL1BlockNumber, setCurrentL1BlockNumber] = useState(0)
-  const { confirmPeriodBlocks  = 45818} = useL2Network()
-  const { blockTime  = 15} = useL1Network()
+  const { confirmPeriodBlocks = 45818 } = useL2Network()
+  const { blockTime = 15 } = useL1Network()
 
-  
   useEffect(() => {
     ethProvider.on('block', (blockNumber: number) => {
       console.info('l1 blockNumber:', blockNumber)
@@ -51,25 +50,29 @@ const PendingWithdrawals = ({
     [triggerOutbox]
   )
   const calcEtaDisplay = (blocksRemaining: number) => {
-    
-    const minutesLeft = Math.round(blocksRemaining * blockTime / 60)
-    const hoursLeft = Math.round(minutesLeft / 60 )
-    const daysLeft = Math.round(hoursLeft / 24 )
+    const minutesLeft = Math.round((blocksRemaining * blockTime) / 60)
+    const hoursLeft = Math.round(minutesLeft / 60)
+    const daysLeft = Math.round(hoursLeft / 24)
 
-    if (daysLeft > 0){
-      return `~${blocksRemaining} blocks (~${daysLeft} day${daysLeft === 1 ? "" : "s"})`
+    if (daysLeft > 0) {
+      return `~${blocksRemaining} blocks (~${daysLeft} day${
+        daysLeft === 1 ? '' : 's'
+      })`
     }
 
-    if (hoursLeft > 0){
-      return `~${blocksRemaining} blocks (~${hoursLeft} hour${hoursLeft === 1 ? "" : "s"})`
+    if (hoursLeft > 0) {
+      return `~${blocksRemaining} blocks (~${hoursLeft} hour${
+        hoursLeft === 1 ? '' : 's'
+      })`
     }
 
-    if(minutesLeft === 0){
-      return "any minute!"
+    if (minutesLeft === 0) {
+      return 'any minute!'
     }
-    
-    return `~${blocksRemaining} blocks (~${minutesLeft} minute${minutesLeft === 1 ? "" : "s"})`
 
+    return `~${blocksRemaining} blocks (~${minutesLeft} minute${
+      minutesLeft === 1 ? '' : 's'
+    })`
   }
   //  sort, include id in data, and filter out target PWs // sort by ts
   const pendingWithdrawalsToShow = useMemo(() => {
@@ -82,12 +85,12 @@ const PendingWithdrawals = ({
   }, [pendingWithdrawalsMap])
 
   const statusDisplay = (pw: L2ToL1EventResultPlus) => {
-    const { outgoingMessageState, ethBlockNum, indexInBatch, batchNumber } = pw
+    const { outgoingMessageState, ethBlockNum } = pw
 
     const blocksRemaining = Math.max(
       confirmPeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()),
       0
-    )     
+    )
     switch (outgoingMessageState) {
       case OutgoingMessageState.NOT_FOUND:
       case OutgoingMessageState.UNCONFIRMED:

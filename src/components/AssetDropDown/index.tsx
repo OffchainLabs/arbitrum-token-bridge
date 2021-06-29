@@ -4,12 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
-import {
-  TokenType,
-  BridgeToken,
-  TokenStatus,
-  getTokenStatus
-} from 'token-bridge-sdk'
+import { TokenType, BridgeToken, getTokenStatus } from 'token-bridge-sdk'
 import { useState, useMemo } from 'react'
 import { useL1Network } from 'components/App/NetworkContext'
 import { isMainnetWhiteListed } from 'util/index'
@@ -67,18 +62,16 @@ const AssetDropDown = ({
         onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault()
           // only show whitelist / blacklist warnings on mainnet
-          if(l1NetworkId !== '1'){
+          if (l1NetworkId !== '1' || process.env.REACT_APP_OVERRIDE_WHITELIST) {
             addToken(erc20Form, tokenType)
             return seterc20Form('')
           }
           const tokenStatus = getTokenStatus(erc20Form, l1NetworkId)
-          if (isMainnetWhiteListed(erc20Form)){
+          if (isMainnetWhiteListed(erc20Form)) {
             addToken(erc20Form, tokenType)
             return seterc20Form('')
           } else {
-            return alert(
-                    "Token is not registered to the mainnet bridge!"
-                  )
+            return alert('Token is not registered to the mainnet bridge!')
           }
         }}
       >

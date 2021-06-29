@@ -3,15 +3,14 @@ import {
   Transaction,
   TxnStatus,
   AssetType,
-  txnTypeToLayer,
-  TxnType
+  txnTypeToLayer
 } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { TransactionReceipt, Provider } from '@ethersproject/providers'
-import { useL1Network } from "components/App/NetworkContext"
+import { useL1Network } from 'components/App/NetworkContext'
 
 interface props {
   transactions: Transaction[]
@@ -46,9 +45,11 @@ const TransactionHistory = ({
 
   const l1NetworkID = useL1Network().chainID
   const usersTransactions = useMemo(
-    () => transactions.filter(txn => txn.sender === walletAddress)
-    .filter((txn)=> !txn.l1NetworkID || txn.l1NetworkID === l1NetworkID)
-    .reverse(),
+    () =>
+      transactions
+        .filter(txn => txn.sender === walletAddress)
+        .filter(txn => !txn.l1NetworkID || txn.l1NetworkID === l1NetworkID)
+        .reverse(),
     [transactions, walletAddress]
   )
 
@@ -100,33 +101,28 @@ const TransactionHistory = ({
     })
   }, [checkedForInitialPendingTxns, pendingTransactions, usersTransactions])
 
-  const checkAndUpdatePendingTransactions = useCallback(
-     ()=> {
-      if (pendingTransactions.length) {
-        console.info(
-          `Checking and updating ${pendingTransactions.length} pending transactions' statuses`
-        )
+  const checkAndUpdatePendingTransactions = useCallback(() => {
+    if (pendingTransactions.length) {
+      console.info(
+        `Checking and updating ${pendingTransactions.length} pending transactions' statuses`
+      )
 
-        return Promise.all(
-          pendingTransactions.map((tx: Transaction) =>
-            getTransactionReceipt(tx)
-          )
-        ).then((txReceipts: TransactionReceipt[]) => {
-          txReceipts.forEach((txReceipt: TransactionReceipt, i) => {
-            if (!txReceipt) {
-              console.warn(
-                'Transaction receipt not found:',
-                pendingTransactions[i].txID
-              )
-            } else {
-              updateTransactionStatus(txReceipt)
-            }
-          })
+      return Promise.all(
+        pendingTransactions.map((tx: Transaction) => getTransactionReceipt(tx))
+      ).then((txReceipts: TransactionReceipt[]) => {
+        txReceipts.forEach((txReceipt: TransactionReceipt, i) => {
+          if (!txReceipt) {
+            console.warn(
+              'Transaction receipt not found:',
+              pendingTransactions[i].txID
+            )
+          } else {
+            updateTransactionStatus(txReceipt)
+          }
         })
-      }
-    },
-    [pendingTransactions, getTransactionReceipt]
-  )
+      })
+    }
+  }, [pendingTransactions, getTransactionReceipt])
 
   useEffect(() => {
     const intId = window.setInterval(checkAndUpdatePendingTransactions, 5000)

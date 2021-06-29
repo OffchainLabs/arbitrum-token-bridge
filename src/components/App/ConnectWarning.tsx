@@ -6,7 +6,6 @@ import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert'
 import networks from './networks'
 import explorer from 'media/gifs/explorer.gif'
-import { useNetwork } from 'components/App/NetworkContext'
 
 const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
   const onClick = (e: any) => {
@@ -45,7 +44,8 @@ export default () => {
             </div>
             <div style={styles.textStyle}>
               {' '}
-              Connect to { l2NetworkName } test work to deposit ETH/tokens into Arbitrum
+              Connect to {l2NetworkName} test work to deposit ETH/tokens into
+              Arbitrum
             </div>
           </div>
           <div>
@@ -65,6 +65,7 @@ export default () => {
               <a
                 href="https://developer.offchainlabs.com/docs/Developer_Quickstart/"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 {' '}
                 your own node
@@ -95,6 +96,7 @@ export default () => {
             className="text-center"
             style={styles.gifStyle}
             src={arbnetwork.gif}
+            alt="meta-gif"
           />
         </Col>
         <Col>
@@ -113,7 +115,12 @@ export default () => {
               {`('Settings' > 'Networks' > 'Arbitrum' > 'Block Explorer URL (optional)')`}
             </div>
           </div>
-          <img className="text-center" style={styles.gifStyle} src={explorer} />
+          <img
+            className="text-center"
+            style={styles.gifStyle}
+            src={explorer}
+            alt="explorer"
+          />
           {/*  */}
           {/* </Row> */}
         </Col>

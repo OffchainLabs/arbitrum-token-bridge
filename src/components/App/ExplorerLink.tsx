@@ -38,7 +38,7 @@ const ExplorerLink = ({ hash, type, layer }: props) => {
   }, [hash, type, layer])
 
   return (
-    <a href={url} target="_blank">
+    <a href={url} target="_blank" rel="noopener noreferrer">
       {hash}
     </a>
   )
