@@ -614,11 +614,12 @@ export const useArbTokenBridge = (
         tokenAddress,
         value
       } = pendingWithdrawalsMap[id]
-      const rec = await bridge.triggerL2ToL1Transaction(
+      const res = await bridge.triggerL2ToL1Transaction(
         batchNumber,
         indexInBatch,
         true
       )
+
       const tokenData = await bridge.getAndUpdateL1TokenData(
         tokenAddress as string
       )
@@ -626,10 +627,7 @@ export const useArbTokenBridge = (
         (tokenData && tokenData.ERC20 && tokenData.ERC20.symbol) || '??'
       const decimals =
         (tokenData && tokenData.ERC20 && tokenData.ERC20.decimals) || 18
-      if (!rec) {
-        return
-      }
-      // TODO: add tx response transaction earlier (while actually still pending). will require callbacks or something
+
       addTransaction({
         status: 'pending',
         type: 'outbox',
@@ -637,20 +635,25 @@ export const useArbTokenBridge = (
         assetName: symbol,
         assetType: AssetType.ERC20,
         sender: await bridge.l1Bridge.getWalletAddress(),
-        txID: rec.transactionHash,
+        txID: res.hash,
         l1NetworkID: await l1NetworkIDCached()
       })
-
-      if (rec.status === 1) {
-        setTransactionConfirmed(rec.transactionHash)
-        const newPendingWithdrawalsMap = { ...pendingWithdrawalsMap }
-        delete newPendingWithdrawalsMap[id]
-        setPendingWithdrawalMap(newPendingWithdrawalsMap)
-        addToExecutedMessagesCache(batchNumber, indexInBatch)
-      } else {
-        setTransactionFailure(rec.transactionHash)
+      try {
+        const rec = await res.wait()
+        if (rec.status === 1) {
+          setTransactionConfirmed(rec.transactionHash)
+          const newPendingWithdrawalsMap = { ...pendingWithdrawalsMap }
+          delete newPendingWithdrawalsMap[id]
+          setPendingWithdrawalMap(newPendingWithdrawalsMap)
+          addToExecutedMessagesCache(batchNumber, indexInBatch)
+        } else {
+          setTransactionFailure(rec.transactionHash)
+        }
+        return rec
+      } catch (err) {
+        console.warn('WARNING: token outbox execute failed:', err)
+        setTransactionFailure(res.hash)
       }
-      return rec
     },
     [pendingWithdrawalsMap]
   )
@@ -660,16 +663,12 @@ export const useArbTokenBridge = (
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
       const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
-      const rec = await bridge.triggerL2ToL1Transaction(
+      const res = await bridge.triggerL2ToL1Transaction(
         batchNumber,
         indexInBatch,
         true
       )
 
-      if (!rec) {
-        return
-      }
-      // TODO: add tx response transaction earlier (while actually still pending). will require callbacks or something
       addTransaction({
         status: 'pending',
         type: 'outbox',
@@ -677,20 +676,26 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: await bridge.l1Bridge.getWalletAddress(),
-        txID: rec.transactionHash,
+        txID: res.hash,
         l1NetworkID: await l1NetworkIDCached()
       })
 
-      if (rec.status === 1) {
-        setTransactionConfirmed(rec.transactionHash)
-        const newPendingWithdrawalsMap = { ...pendingWithdrawalsMap }
-        delete newPendingWithdrawalsMap[id]
-        setPendingWithdrawalMap(newPendingWithdrawalsMap)
-        addToExecutedMessagesCache(batchNumber, indexInBatch)
-      } else {
-        setTransactionFailure(rec.transactionHash)
+      try {
+        const rec = await res.wait()
+        if (rec.status === 1) {
+          setTransactionConfirmed(rec.transactionHash)
+          const newPendingWithdrawalsMap = { ...pendingWithdrawalsMap }
+          delete newPendingWithdrawalsMap[id]
+          setPendingWithdrawalMap(newPendingWithdrawalsMap)
+          addToExecutedMessagesCache(batchNumber, indexInBatch)
+        } else {
+          setTransactionFailure(rec.transactionHash)
+        }
+        return rec
+      } catch (err) {
+        console.warn('WARNING: token outbox execute failed:', err)
+        setTransactionFailure(res.hash)
       }
-      return rec
     },
     [pendingWithdrawalsMap]
   )
