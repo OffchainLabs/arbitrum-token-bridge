@@ -17,7 +17,7 @@
     "react-bootstrap": "^1.5",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
-    "token-bridge-sdk": "0.4.11",
+    "token-bridge-sdk": "0.4.12",
     "typescript": "^3.8.3"
   },
   "scripts": {
