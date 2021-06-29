@@ -4,12 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Feedback from 'react-bootstrap/Feedback'
 import Form from 'react-bootstrap/Form'
-import {
-  TokenType,
-  BridgeToken,
-  TokenStatus,
-  getTokenStatus
-} from 'token-bridge-sdk'
+import { TokenType, BridgeToken, getTokenStatus } from 'token-bridge-sdk'
 import { useState, useMemo } from 'react'
 import { useL1Network } from 'components/App/NetworkContext'
 import { isMainnetWhiteListed } from 'util/index'

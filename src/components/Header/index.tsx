@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import {
   BridgeBalance,
   ERC721Balance,
@@ -51,12 +51,17 @@ const Header = ({
     <div className="col-lg-12">
       <div className="top-thing">
         {' '}
-        <a href="https://arbitrum.io/" target="_blank">
+        <a
+          href="https://arbitrum.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <u>ARBITRUM</u>
         </a>{' '}
         <a
           href="https://bridge.arbitrum.io/token-list-42161.json"
           target="_blank"
+          rel="noopener noreferrer"
         >
           <u>TOKEN LIST</u>
         </a>{' '}

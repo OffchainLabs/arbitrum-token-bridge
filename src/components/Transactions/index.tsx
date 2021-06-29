@@ -3,8 +3,7 @@ import {
   Transaction,
   TxnStatus,
   AssetType,
-  txnTypeToLayer,
-  TxnType
+  txnTypeToLayer
 } from 'token-bridge-sdk'
 import Table from 'react-bootstrap/Table'
 import Spinner from 'react-bootstrap/Spinner'

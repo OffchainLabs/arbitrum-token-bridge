@@ -23,6 +23,7 @@ export default () => {
         href="https://medium.com/offchainlabs/optimizing-challenge-periods-in-rollup-b61378c87277"
         target="_blank"
         id="challenge-blog-link"
+        rel="noopener noreferrer"
       >
         Learn more
       </a>

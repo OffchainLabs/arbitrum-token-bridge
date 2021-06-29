@@ -124,8 +124,12 @@ const Injector = () => {
               </Alert>
               <Row className="text-center">
                 <Col>
-                  <a href="https://metamask.io/download.html" target="_blank">
-                    <img width="150" src={fox} />{' '}
+                  <a
+                    href="https://metamask.io/download.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img width="150" src={fox} alt="fox" />{' '}
                   </a>
                 </Col>
               </Row>
@@ -133,7 +137,11 @@ const Injector = () => {
                 <Col>
                   <h4>
                     {' '}
-                    <a href="https://metamask.io/download.html" target="_blank">
+                    <a
+                      href="https://metamask.io/download.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Install MetaMask{' '}
                     </a>
                   </h4>

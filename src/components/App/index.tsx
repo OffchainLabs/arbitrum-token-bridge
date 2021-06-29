@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import styles from './styles.module.scss'
 import * as ethers from 'ethers'
 import Transactions from '../Transactions'
@@ -41,7 +41,6 @@ const App = ({ bridge }: AppProps) => {
   const {
     walletAddress,
     balances,
-    cache,
     token,
     bridgeTokens,
     eth,

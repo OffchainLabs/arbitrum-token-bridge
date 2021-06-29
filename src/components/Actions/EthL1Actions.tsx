@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
 import { BridgeBalance } from 'token-bridge-sdk'
-import { useIsDepositMode } from 'components/App/ModeContext'
 import NumberInputForm from './numberInputForm'
 import { Transaction } from 'token-bridge-sdk'
 import PendingWithdrawals from '../PendingWithdrawals'

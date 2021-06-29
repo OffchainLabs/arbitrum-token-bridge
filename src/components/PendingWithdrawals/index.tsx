@@ -85,7 +85,7 @@ const PendingWithdrawals = ({
   }, [pendingWithdrawalsMap])
 
   const statusDisplay = (pw: L2ToL1EventResultPlus) => {
-    const { outgoingMessageState, ethBlockNum, indexInBatch, batchNumber } = pw
+    const { outgoingMessageState, ethBlockNum } = pw
 
     const blocksRemaining = Math.max(
       confirmPeriodBlocks - (currentL1BlockNumber - ethBlockNum.toNumber()),
