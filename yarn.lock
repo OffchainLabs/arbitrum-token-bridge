@@ -4640,6 +4640,18 @@ arb-ts@0.0.21:
     "@uniswap/token-lists" "^1.0.0-beta.24"
     ethers "^5.0.24"
 
+arb-ts@0.0.22:
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.22.tgz#c54731b91cbba0bf76e00ba64bfde149f3a7f615"
+  integrity sha512-F28qQRHJCUewyNMMIdQUy79x+13L9N/ITWY2kiDoV8jTcVJEOik0OhSjP8gqE42MD/GB1Fv9baJldTT7bzlH9g==
+  dependencies:
+    "@ethersproject/address" "^5.0.8"
+    "@ethersproject/bignumber" "^5.1.1"
+    "@ethersproject/bytes" "^5.0.8"
+    "@types/promise-poller" "^1.7.0"
+    "@uniswap/token-lists" "^1.0.0-beta.24"
+    ethers "^5.0.24"
+
 are-we-there-yet@~1.1.2:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/are-we-there-yet/-/are-we-there-yet-1.1.5.tgz#4b35c2944f062a8bfcda66410760350fe9ddfc21"
