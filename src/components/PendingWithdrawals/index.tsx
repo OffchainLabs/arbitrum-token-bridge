@@ -121,7 +121,9 @@ const PendingWithdrawals = ({
         <thead>
           <tr>{headerText}</tr>
           <tr>
+            <th>asset</th>
             <th>value</th>
+
             <th>status</th>
             <th></th>
           </tr>
@@ -132,6 +134,7 @@ const PendingWithdrawals = ({
 
             return (
               <tr key={id}>
+                <td>{pw.symbol}</td>
                 <td>{formatUnits(pw.value.toString(), decimals)}</td>
                 <td>{statusDisplay(pw)}</td>
                 <td></td>

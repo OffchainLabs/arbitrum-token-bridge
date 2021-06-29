@@ -41,8 +41,7 @@ const Actions = ({
 
   const onSubmit = useCallback(
     (value: string) => {
-      // used patched method for kovan
-      eth.deposit(value, l1Network.chainID === '42')
+      eth.deposit(value)
     },
     [l1Network]
   )
