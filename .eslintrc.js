@@ -24,7 +24,8 @@ module.exports = {
     "react/prop-types": [0],
     "@typescript-eslint/explicit-function-return-type": [1, { allowExpressions: true }],
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-use-before-define":"off"
+    "@typescript-eslint/no-use-before-define":"off",
+    "@typescript-eslint/camelcase": "warn"
     // "sort-imports": [1], // it would be nice to use this but doens't autofix
   },
   settings: {

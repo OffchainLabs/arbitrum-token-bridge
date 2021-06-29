@@ -1,6 +1,6 @@
 {
   "name": "token-bridge-sdk",
-  "version": "0.4.12",
+  "version": "0.4.13",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "SDK for transfering assets to and from Arbitrum",
@@ -28,7 +28,7 @@
     "@ethersproject/bignumber": "^5.1.1",
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-ts": "0.0.22",
+    "arb-ts": "0.0.23",
     "ethers": "5.0.24",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",

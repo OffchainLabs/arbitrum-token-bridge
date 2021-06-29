@@ -15,7 +15,8 @@ import {
   L1TokenData,
   L2ToL1EventResult,
   OutgoingMessageState,
-  OutboundTransferInitiatedResult
+  OutboundTransferInitiatedResult,
+  ERC20__factory
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 
@@ -24,6 +25,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   value: BigNumber
   tokenAddress?: string
   outgoingMessageState: OutgoingMessageState
+  symbol: string
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
@@ -94,6 +96,11 @@ export interface ERC721Balance {
 }
 
 const slowInboxQueueTimeout = 1000 * 60 * 15
+
+interface AddressToSymbol {
+  [tokenAddress: string]: string
+}
+const addressToSymbol: AddressToSymbol = {}
 
 export const useArbTokenBridge = (
   bridge: Bridge,
@@ -190,36 +197,9 @@ export const useArbTokenBridge = (
     return networkID
   }, [l11NetworkID, bridge])
 
-  const _depositEthPatch = async (value: BigNumber) => {
-    const maxSubmissionPrice = (
-      await bridge.l2Bridge.getTxnSubmissionPrice(0)
-    )[0]
-    const inboxAddress = await bridge.l1Bridge.getInbox()
-
-    const inbox = await bridge.l1Bridge.getInbox()
-    const to = await bridge.l1Bridge.l1Signer.getAddress()
-
-    return inbox.createRetryableTicket(
-      to,
-      0,
-      maxSubmissionPrice,
-      to,
-      to,
-      0,
-      0,
-      '0x',
-      {
-        value: value
-      }
-    )
-  }
-
-  const depositEth = async (etherVal: string, usePatch = false) => {
+  const depositEth = async (etherVal: string) => {
     const weiValue: BigNumber = utils.parseEther(etherVal)
-    // const tx = await _depositEthPatch(weiValue)
-    const tx = usePatch
-      ? await _depositEthPatch(weiValue)
-      : await bridge.depositETH(weiValue)
+    const tx = await bridge.depositETH(weiValue)
     try {
       addTransaction({
         type: 'deposit-l1',
@@ -337,7 +317,8 @@ export const useArbTokenBridge = (
             ...l2ToL2EventDataResult,
             type: AssetType.ETH,
             value: weiValue,
-            outgoingMessageState
+            outgoingMessageState,
+            symbol: 'ETH'
           }
           setPendingWithdrawalMap({
             ...pendingWithdrawalsMap,
@@ -512,7 +493,8 @@ export const useArbTokenBridge = (
           type: AssetType.ERC20,
           tokenAddress: erc20l1Address,
           value: amountParsed,
-          outgoingMessageState
+          outgoingMessageState,
+          symbol: tokenData.symbol
         }
         setPendingWithdrawalMap({
           ...pendingWithdrawalsMap,
@@ -637,7 +619,9 @@ export const useArbTokenBridge = (
         indexInBatch,
         true
       )
-      const tokenData = tokenAddress && bridge.l1Tokens[tokenAddress]
+      const tokenData = await bridge.getAndUpdateL1TokenData(
+        tokenAddress as string
+      )
       const symbol =
         (tokenData && tokenData.ERC20 && tokenData.ERC20.symbol) || '??'
       const decimals =
@@ -739,6 +723,22 @@ export const useArbTokenBridge = (
     return bridgeTokens
   }, [bridge])
 
+  const getTokenSymbol = async (_l1Address: string) => {
+    const l1Address = _l1Address.toLocaleLowerCase()
+    if (addressToSymbol[l1Address]) {
+      return addressToSymbol[l1Address]
+    }
+    try {
+      const token = ERC20__factory.connect(l1Address, bridge.l1Provider)
+      const symbol = await token.symbol()
+      addressToSymbol[l1Address] = symbol
+      return symbol
+    } catch (err) {
+      console.warn('could not get token symbol', err)
+      return '???'
+    }
+  }
+
   const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
     // Get all l2tol1 withdrawal triggers, figure out which is eth vs erc20 vs erc721, filter out the ones that have been outboxed, and
     const address = await bridge.l1Bridge.getWalletAddress()
@@ -776,7 +776,8 @@ export const useArbTokenBridge = (
           data,
           type: AssetType.ETH,
           value: callvalue,
-          outgoingMessageState
+          outgoingMessageState,
+          symbol: 'ETH'
         }
         pendingWithdrawals[uniqueId.toString()] = eventDataPlus
       }
@@ -810,6 +811,7 @@ export const useArbTokenBridge = (
           batchNumber,
           indexInBatch
         )
+        const symbol = await getTokenSymbol(withdrawEventData.token)
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
@@ -824,7 +826,8 @@ export const useArbTokenBridge = (
           type: AssetType.ERC20,
           value: withdrawEventData._amount,
           tokenAddress: withdrawEventData.token,
-          outgoingMessageState
+          outgoingMessageState,
+          symbol
         }
         pendingWithdrawals[uniqueId.toString()] = eventDataPlus
       } else {
