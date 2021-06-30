@@ -744,31 +744,26 @@ export const useArbTokenBridge = (
     }
   }
 
-  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
-    // Get all l2tol1 withdrawal triggers, figure out which is eth vs erc20 vs erc721, filter out the ones that have been outboxed, and
+  const getEthWithdrawals = async () => {
     const address = await bridge.l1Bridge.getWalletAddress()
+    const t = new Date().getTime()
     const withdrawalData = await bridge.getL2ToL1EventData(address)
-    const pendingWithdrawals: PendingWithdrawalsMap = {}
-    for (const eventData of withdrawalData) {
-      const {
-        caller,
-        destination,
-        uniqueId,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        timestamp,
-        callvalue,
-        data
-      } = eventData
-      // is an eth withdrawal
-      if (!data || data === '0x') {
-        const outgoingMessageState = await getOutGoingMessageState(
-          batchNumber,
-          indexInBatch
-        )
-        const eventDataPlus: L2ToL1EventResultPlus = {
+
+    console.log(
+      `*** got eth withdraw event in ${
+        (new Date().getTime() - t) / 1000
+      } seconds ***`
+    )
+
+    const outgoingMessageStates = await Promise.all(
+      withdrawalData.map((eventData: L2ToL1EventResult) =>
+        getOutGoingMessageState(eventData.batchNumber, eventData.indexInBatch)
+      )
+    )
+
+    return withdrawalData
+      .map((eventData, i) => {
+        const {
           caller,
           destination,
           uniqueId,
@@ -778,28 +773,73 @@ export const useArbTokenBridge = (
           ethBlockNum,
           timestamp,
           callvalue,
-          data,
-          type: AssetType.ETH,
-          value: callvalue,
-          outgoingMessageState,
-          symbol: 'ETH'
-        }
-        pendingWithdrawals[uniqueId.toString()] = eventDataPlus
-      }
-    }
-    let allTokenWithdrawals: OutboundTransferInitiatedResult[] = []
-    for (const gatewayAddress of gatewayAddresses) {
-      const tokenWithdrawalEventData = await bridge.getGatewayWithdrawEventData(
-        gatewayAddress,
-        address
-      )
-      allTokenWithdrawals = allTokenWithdrawals.concat(tokenWithdrawalEventData)
-    }
+          data
+        } = eventData
 
-    for (const withdrawEventData of allTokenWithdrawals) {
-      const rec = await bridge.getL2Transaction(withdrawEventData.txHash)
-      const eventDataArr = await bridge.getWithdrawalsInL2Transaction(rec)
-      if (eventDataArr.length === 1) {
+        if (!data || data === '0x') {
+          // is an eth withdrawal
+          const allWithdrawalData: L2ToL1EventResultPlus = {
+            caller,
+            destination,
+            uniqueId,
+            batchNumber,
+            indexInBatch,
+            arbBlockNum,
+            ethBlockNum,
+            timestamp,
+            callvalue,
+            data,
+            type: AssetType.ETH,
+            value: callvalue,
+            symbol: 'ETH',
+            outgoingMessageState: outgoingMessageStates[i]
+          }
+          return allWithdrawalData
+        }
+      })
+      .filter((x): x is L2ToL1EventResultPlus => !!x)
+  }
+
+  const getTokenWithdrawals = async (gatewayAddresses: string[]) => {
+    const address = await bridge.l1Bridge.getWalletAddress()
+    const t = new Date().getTime()
+
+    const gateWayWithdrawalsResultsNested = await Promise.all(
+      gatewayAddresses.map(gatewayAddress =>
+        bridge.getGatewayWithdrawEventData(gatewayAddress, address)
+      )
+    )
+    console.log(
+      `*** got token gateway event data in ${
+        (new Date().getTime() - t) / 1000
+      } seconds *** `
+    )
+
+    const gateWayWithdrawalsResults = gateWayWithdrawalsResultsNested.flat()
+    const symbols = await Promise.all(
+      gateWayWithdrawalsResults.map(withdrawEventData =>
+        getTokenSymbol(withdrawEventData.token)
+      )
+    )
+
+    const l2Txns = await Promise.all(
+      gateWayWithdrawalsResults.map(withdrawEventData =>
+        bridge.getL2Transaction(withdrawEventData.txHash)
+      )
+    )
+
+    const outgoingMessageStates = await Promise.all(
+      gateWayWithdrawalsResults.map((withdrawEventData, i) => {
+        const eventDataArr = bridge.getWithdrawalsInL2Transaction(l2Txns[i])
+        // TODO: length != 1
+        const { batchNumber, indexInBatch } = eventDataArr[0]
+        return getOutGoingMessageState(batchNumber, indexInBatch)
+      })
+    )
+    return gateWayWithdrawalsResults.map(
+      (withdrawEventData: OutboundTransferInitiatedResult, i) => {
+        // TODO: length != 1
+        const eventDataArr = bridge.getWithdrawalsInL2Transaction(l2Txns[i])
         const {
           caller,
           destination,
@@ -812,11 +852,7 @@ export const useArbTokenBridge = (
           callvalue,
           data
         } = eventDataArr[0]
-        const outgoingMessageState = await getOutGoingMessageState(
-          batchNumber,
-          indexInBatch
-        )
-        const symbol = await getTokenSymbol(withdrawEventData.token)
+
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
@@ -831,17 +867,37 @@ export const useArbTokenBridge = (
           type: AssetType.ERC20,
           value: withdrawEventData._amount,
           tokenAddress: withdrawEventData.token,
-          outgoingMessageState,
-          symbol
+          outgoingMessageState: outgoingMessageStates[i],
+          symbol: symbols[i]
         }
-        pendingWithdrawals[uniqueId.toString()] = eventDataPlus
-      } else {
-        console.warn('L2toL1Data not found...')
+        return eventDataPlus
       }
+    )
+  }
+
+  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
+    const pendingWithdrawals: PendingWithdrawalsMap = {}
+    const t = new Date().getTime()
+    console.log('*** Getting initial pending withdrawal data ***')
+
+    const l2ToL1Txns = (
+      await Promise.all([
+        getEthWithdrawals(),
+        getTokenWithdrawals(gatewayAddresses)
+      ])
+    ).flat()
+
+    console.log(
+      `*** done getting pending withdrawals, took ${
+        Math.round(new Date().getTime() - t) / 1000
+      } seconds`
+    )
+
+    for (const l2ToL1Thing of l2ToL1Txns) {
+      pendingWithdrawals[l2ToL1Thing.uniqueId.toString()] = l2ToL1Thing
     }
     setPendingWithdrawalMap(pendingWithdrawals)
-
-    return withdrawalData
+    return
   }
 
   const getOutGoingMessageState = useCallback(
