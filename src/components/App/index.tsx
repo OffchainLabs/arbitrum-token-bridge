@@ -133,13 +133,24 @@ const App = ({ bridge }: AppProps) => {
     ].filter(gw => gw)
     console.log('**** setting initial pending withdrawals ****')
 
-    setInitialPendingWithdrawals(gatewaysToUse)
-      .then((res: any) => {
+    bridge.l2Signer.getTransactionCount().then((nonce: number) => {
+      if (nonce === 0) {
+        console.log('Wallet has nonce of zero, no pending withdrawals to set')
         setPWLoadedState(PendingWithdrawalsLoadedState.READY)
-      })
-      .catch(() => {
-        setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
-      })
+      } else {
+        setInitialPendingWithdrawals(gatewaysToUse)
+          .then((res: any) => {
+            console.info('Setting withdawals to ready state')
+
+            setPWLoadedState(PendingWithdrawalsLoadedState.READY)
+          })
+          .catch(() => {
+            console.warn('error getting setInitialPendingWithdrawals')
+
+            setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
+          })
+      }
+    })
   }, [l1NetworkID])
 
   if (whiteListState === WhiteListState.VERIFYING) {

@@ -5,6 +5,7 @@ import Table from 'react-bootstrap/Table'
 import { providers } from 'ethers'
 import { OutgoingMessageState } from 'arb-ts'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
+import Spinner from 'react-bootstrap/Spinner'
 
 interface PendingWithdrawalsProps {
   pendingWithdrawalsMap: PendingWithdrawalsMap
