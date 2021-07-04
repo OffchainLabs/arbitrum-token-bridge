@@ -5,8 +5,8 @@ export * from './web3'
 
 const allMainnetAddresses: Set<string> = new Set([])
 mainnetTokenList.tokens.forEach(tokenInfo => {
-  allMainnetAddresses.add(tokenInfo.address)
-  allMainnetAddresses.add(tokenInfo.extensions.l1Address)
+  allMainnetAddresses.add(tokenInfo.address.toLocaleLowerCase())
+  allMainnetAddresses.add(tokenInfo.extensions.l1Address.toLocaleLowerCase())
 })
 
 export interface BridgeConfig {
@@ -41,7 +41,7 @@ export enum PendingWithdrawalsLoadedState {
 }
 
 export const isMainnetWhiteListed = (address: string) => {
-  return allMainnetAddresses.has(address)
+  return allMainnetAddresses.has(address.toLocaleLowerCase())
 }
 
 export type connextTxn = (txnData: ConnextTxnParams) => Promise<void>
