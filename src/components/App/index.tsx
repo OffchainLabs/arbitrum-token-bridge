@@ -158,7 +158,7 @@ const App = ({ bridge }: AppProps) => {
   }
   if (whiteListState === WhiteListState.DISALLOWED) {
     return renderAlert(
-      `Stop! You are attempting to use Mainnet Beta with unapproved address ${walletAddress}!`,
+      `Stop! You are attempting to use Mainnet Beta with unapproved address ${walletAddress}! \n\n  Switch to an approved address or connect to Rinkeby for our public testnet.`,
       'danger'
     )
   }
