@@ -1,6 +1,6 @@
 {
   "name": "Arb1",
-  "timestamp": "2021-06-29T00:59:19.889Z",
+  "timestamp": "2021-07-06T16:56:39.005Z",
   "version": { "major": 0, "minor": 1, "patch": 0 },
   "tokens": [
     {
@@ -24,18 +24,6 @@
       "logoURI": "https://zapper.fi/images/BAL-icon.png",
       "extensions": {
         "l1Address": "0xba100000625a3754423978a60c9317c58a424e3D",
-        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
-    },
-    {
-      "chainId": 42161,
-      "address": "0x35aa6789AA5d178c53fc0657b68AE684B37960Ff",
-      "name": "Capital.finance",
-      "symbol": "CAP",
-      "decimals": 18,
-      "logoURI": "",
-      "extensions": {
-        "l1Address": "0xEDA6eFE5556e134Ef52f2F858aa1e81c84CDA84b",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -181,6 +169,18 @@
       "extensions": {
         "l1Address": "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x3642c0680329ae3e103E2B5AB29DDfed4d43CBE5",
+      "name": "Plenny",
+      "symbol": "PL2",
+      "decimals": 18,
+      "logoURI": "",
+      "extensions": {
+        "l1Address": "0x3642c0680329ae3e103E2B5AB29DDfed4d43CBE5",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
       }
     },
     {
