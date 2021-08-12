@@ -70,7 +70,7 @@ export default () => {
                 {' '}
                 your own node
               </a>{' '}
-              or to our publically hosted nodes via custom RPC:
+              or to our publicly hosted nodes via custom RPC:
               <br />{' '}
               <CopyLink
                 url={arbnetwork.url}
