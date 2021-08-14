@@ -1,0 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply font-serif;
+        @apply bg-main-bg;
+    }
+}
+
+#root, body {
+    @apply min-h-screen;
+}
+
+
+@keyframes ticker-kf {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-70%, 0, 0);
+    }
+}
+
+.transactions-ticker {
+    animation: ticker-kf 100s linear infinite;
+}
+
+.transactions-ticker:hover{
+    animation-play-state: paused; /* Pause scroll on mouse hover */
+}
+
+.Toastify__toast-container {
+    padding:0 30px!important;
+}
+.Toastify__toast {
+    @apply bg-gray-200 text-gray-800 text-center
+}

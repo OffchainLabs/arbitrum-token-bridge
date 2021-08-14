@@ -21,10 +21,13 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "CI= react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "build:tailwind": "tailwindcss build src/styles/tailwind.css -o src/tailwind.output.css",
+    "prestart": "npm run build:tailwind",
+    "prebuild": "npm run build:tailwind",
+    "start": "craco start",
+    "build": "CI= craco build",
+    "test": "craco test",
+    "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"build/*token*.json\" && prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
   },
@@ -44,13 +47,17 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "5.9.0",
     "@types/bootstrap": "^4.5.0",
     "@types/react-bootstrap": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
+    "autoprefixer": "^9",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^2.0.2"
+    "postcss": "^7",
+    "prettier": "^2.0.2",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@2.1.2"
   }
 }
