@@ -14,6 +14,16 @@ import Col from 'react-bootstrap/Col'
 import fox from 'media/images/metamask-fox.svg'
 import networks from './networks'
 import { Bridge } from 'arb-ts'
+import { Layout } from '../common/Layout'
+import Loader from 'react-loader-spinner'
+
+const LoadingIndicator = (): JSX.Element => (
+  <Layout>
+    <div className="flex items-center justify-center mx-auto h-48">
+      <Loader type="Oval" color="rgb(45, 55, 75)" height={32} width={32} />
+    </div>
+  </Layout>
+)
 
 const Injector = () => {
   const [bridge, setBridge] = useState<Bridge>()
@@ -113,7 +123,7 @@ const Injector = () => {
   ) => {
     switch (connectionState) {
       case ConnectionState.LOADING:
-        return <div>{renderAlert('loading...', 'primary')}</div>
+        return <LoadingIndicator />
       case ConnectionState.NO_METAMASK:
         return (
           <div>
@@ -171,13 +181,15 @@ const Injector = () => {
       case ConnectionState.DEPOSIT_MODE:
       case ConnectionState.WITHDRAW_MODE:
         if (bridge === undefined) {
-          return <div>{renderAlert('loading...', 'primary')}</div>
+          return <LoadingIndicator />
         }
 
         return (
           <NetworkIDContext.Provider value={networkID}>
             <ModeContext.Provider value={connectionState}>
-              <App bridge={bridge} />
+              <Layout>
+                <App bridge={bridge} />
+              </Layout>
             </ModeContext.Provider>
           </NetworkIDContext.Provider>
         )

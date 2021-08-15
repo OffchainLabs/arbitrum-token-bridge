@@ -93,7 +93,7 @@ const Header = ({
         <p className="address">
           Your address:{' '}
           <span id="accountAddress">
-            <ExplorerLink hash={ethAddress} type={'address'} />
+            <ExplorerLink hash={ethAddress} type="address" />
           </span>
         </p>
         <p className="arbchain">

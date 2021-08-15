@@ -15,6 +15,12 @@ import { useL1Network } from 'components/App/NetworkContext'
 import { Bridge, networks } from 'arb-ts'
 import { MAINNET_WHITELIST_ADDRESS } from './networks'
 import { renderAlert } from './Injecter'
+import { L1NetworkBox } from '../common/L1NetworkBox'
+import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
+import { L2NetworkBox } from '../common/L2NetworkBox'
+import { Button } from '../common/Button'
+import { StatusBadge } from '../common/StatusBadge'
+import { TransactionsTable } from '../common/TransactionsTable'
 enum WhiteListState {
   VERIFYING,
   ALLOWED,
@@ -163,62 +169,103 @@ const App = ({ bridge }: AppProps) => {
     )
   }
 
-  return (
-    <div className="container">
-      {l1NetworkID === '1' ? (
-        <Alert variant={'danger'}>
-          <b>
-            NOTICE: You're connected to mainnet, still in beta phase. BE
-            CAREFUL!
-          </b>
-        </Alert>
-      ) : null}
+  console.log('TRANSACTIONS', transactions)
 
-      <div className="row">
-        <Header
-          ethAddress={walletAddress}
-          ethBalance={balances.eth}
-          erc20Balance={erc20Balance}
-          erc721Balance={erc721Balance}
-          bridgeTokens={bridgeTokens}
-          currentERC20Address={currentERC20Address ?? ''}
-          currentERC721Address={currentERC721Address ?? ''}
-        />
+  return (
+    <>
+      <div className="flex justify-between max-w-networkBox mx-auto mb-4">
+        <div></div>
+        <StatusBadge />
       </div>
-      <div className="row" id="bridgeRow">
-        <div id="bridgebody">
-          <TabsContainer
-            ethBalances={balances.eth}
-            erc20BridgeBalance={erc20Balance}
-            addToken={token.add}
-            eth={eth}
-            token={token}
-            erc721balance={erc721Balance}
+      <div className="flex flex-col w-full max-w-networkBox mx-auto mb-8">
+        <div className="flex flex-col">
+          <L1NetworkBox
+            balance={balances.eth}
+            address={walletAddress}
+            className="order-1"
+          />
+          <div className="h-2 relative flex justify-center order-2">
+            <div className="flex items-center justify-center">
+              <NetworkSwitchButton />
+            </div>
+          </div>
+          <L2NetworkBox
+            balance={balances.eth}
+            address={walletAddress}
+            className="order-3"
+          />
+        </div>
+
+        <div className="h-6" />
+        <Button>Deposit</Button>
+      </div>
+
+      <TransactionsTable />
+
+      <div className="h-6" />
+
+      <div className="max-w-networkBox mx-auto mb-4">
+        <Button variant="white" size="sm" className="w-full">
+          View all
+        </Button>
+      </div>
+
+      <div className="container">
+        {l1NetworkID === '1' ? (
+          <Alert variant={'danger'}>
+            <b>
+              NOTICE: You're connected to mainnet, still in beta phase. BE
+              CAREFUL!
+            </b>
+          </Alert>
+        ) : null}
+
+        <div className="row">
+          <Header
+            ethAddress={walletAddress}
+            ethBalance={balances.eth}
+            erc20Balance={erc20Balance}
+            erc721Balance={erc721Balance}
             bridgeTokens={bridgeTokens}
             currentERC20Address={currentERC20Address ?? ''}
             currentERC721Address={currentERC721Address ?? ''}
-            setCurrentERC20Address={setCurrentERC20Address}
-            setCurrentERC721Address={setCurrentERC721Address}
+          />
+        </div>
+        <div className="row" id="bridgeRow">
+          <div id="bridgebody">
+            <TabsContainer
+              ethBalances={balances.eth}
+              erc20BridgeBalance={erc20Balance}
+              addToken={token.add}
+              eth={eth}
+              token={token}
+              erc721balance={erc721Balance}
+              bridgeTokens={bridgeTokens}
+              currentERC20Address={currentERC20Address ?? ''}
+              currentERC721Address={currentERC721Address ?? ''}
+              setCurrentERC20Address={setCurrentERC20Address}
+              setCurrentERC721Address={setCurrentERC721Address}
+              transactions={transactions.transactions}
+              ethAddress={walletAddress}
+              handleConnextTxn={handleConnextTxn}
+              pendingWithdrawalsMap={pendingWithdrawalsMap}
+              ethProvider={ethProvider}
+            />
+          </div>
+        </div>
+        <div className="row">
+          <Transactions
+            ethProvider={bridge.l1Bridge.l1Provider}
+            arbProvider={bridge.l2Bridge.l2Provider}
             transactions={transactions.transactions}
-            ethAddress={walletAddress}
-            handleConnextTxn={handleConnextTxn}
-            pendingWithdrawalsMap={pendingWithdrawalsMap}
-            ethProvider={ethProvider}
+            clearPendingTransactions={transactions.clearPendingTransactions}
+            walletAddress={walletAddress}
+            setTransactionConfirmed={transactions.setTransactionConfirmed}
+            updateTransactionStatus={transactions.updateTransactionStatus}
           />
         </div>
       </div>
-      <div className="row">
-        <Transactions
-          ethProvider={bridge.l1Bridge.l1Provider}
-          arbProvider={bridge.l2Bridge.l2Provider}
-          transactions={transactions.transactions}
-          clearPendingTransactions={transactions.clearPendingTransactions}
-          walletAddress={walletAddress}
-          setTransactionConfirmed={transactions.setTransactionConfirmed}
-          updateTransactionStatus={transactions.updateTransactionStatus}
-        />
-      </div>
-    </div>
+    </>
   )
 }
 

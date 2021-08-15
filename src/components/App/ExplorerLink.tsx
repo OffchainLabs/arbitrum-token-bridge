@@ -2,13 +2,13 @@ import React, { useMemo } from 'react'
 import { TxnType } from 'token-bridge-sdk'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 
-interface props {
+interface Props {
   hash: string
   type: TxnType | 'address' | 'chain'
   layer?: 1 | 2
 }
 
-const ExplorerLink = ({ hash, type, layer }: props) => {
+const ExplorerLink = ({ hash, type, layer }: Props) => {
   const l1Prefix = useL1Network().explorerUrl
   const l2Prefix = useL2Network().explorerUrl
 
@@ -37,9 +37,15 @@ const ExplorerLink = ({ hash, type, layer }: props) => {
     }
   }, [hash, type, layer])
 
+  if (!hash) {
+    return null
+  }
+
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer">
-      {hash}
+    <a href={url} target="_blank" rel="noopener noreferrer" className="w-24">
+      <span className="truncate">
+        {hash.substr(0, 15)}...{hash.substr(hash.length - 4)}
+      </span>
     </a>
   )
 }

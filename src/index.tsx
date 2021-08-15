@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Injecter from './components/App/Injecter'
 import * as serviceWorker from './serviceWorker'
+import './styles/tailwind.css'
 
 ReactDOM.render(<Injecter />, document.getElementById('root'))
 
