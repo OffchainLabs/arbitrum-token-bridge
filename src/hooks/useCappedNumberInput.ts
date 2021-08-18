@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-const useCappedNumberInput = (
-  defaultValue: number
-): [number, (x: number, y: number) => void] => {
+export type CappedNumberInput = [number, (x: number, y: number) => void]
+
+const useCappedNumberInput = (defaultValue: number): CappedNumberInput => {
   const [value, setValue] = useState(defaultValue)
-  const setValueCapped = (value: number, max: number) => {
-    setValue(value > max ? max : value)
+  const setValueCapped = (newValue: number, max: number) => {
+    setValue(newValue > max ? max : newValue)
   }
+
   return [value, setValueCapped]
 }
 export default useCappedNumberInput

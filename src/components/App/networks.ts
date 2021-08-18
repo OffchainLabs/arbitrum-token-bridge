@@ -1,6 +1,3 @@
-import kovan from 'media/gifs/l1.gif'
-import arb from 'media/gifs/l2.gif'
-
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
 if (!INFURA_KEY) {
@@ -47,12 +44,13 @@ const RinkebyBridge: TokenBridge = {
   l2Address: '0x9413AD42910c1eA60c737dB5f58d1C504498a3cD'
 }
 
+const kovanGif = '/images/l1.gif'
 const networks: Networks = {
   '42': {
     chainID: '42',
     name: 'Kovan',
     url: 'https://kovan.infura.io/v3/' + INFURA_KEY,
-    gif: kovan,
+    gif: kovanGif,
     explorerUrl: 'https://kovan.etherscan.io',
     partnerChainID: '144545313136048',
     isArbitrum: false,
@@ -62,7 +60,7 @@ const networks: Networks = {
   '144545313136048': {
     chainID: '144545313136048',
     name: 'Arbitrum-testnet-5',
-    gif: arb,
+    gif: '/images/l2.gif',
     isArbitrum: true,
     url: 'https://kovan5.arbitrum.io/rpc',
     explorerUrl: 'https://explorer5.arbitrum.io/#',
@@ -74,7 +72,7 @@ const networks: Networks = {
     chainID: '1',
     name: 'Mainnet',
     url: 'https://mainnet.infura.io/v3/' + INFURA_KEY,
-    gif: kovan,
+    gif: kovanGif,
     explorerUrl: 'https://etherscan.io',
     isArbitrum: false,
     partnerChainID: '42161',
@@ -85,7 +83,7 @@ const networks: Networks = {
     chainID: '42161',
     name: 'Arb1',
     url: 'https://arb1.arbitrum.io/rpc',
-    gif: kovan,
+    gif: kovanGif,
     explorerUrl: 'https://explorer.arbitrum.io',
     partnerChainID: '1',
     isArbitrum: true,
@@ -96,7 +94,7 @@ const networks: Networks = {
     chainID: '421611',
     name: 'RinkArby',
     url: 'https://rinkeby.arbitrum.io/rpc',
-    gif: kovan,
+    gif: kovanGif,
     explorerUrl: 'https://rinkeby-explorer.arbitrum.io',
     partnerChainID: '4',
     isArbitrum: true,
@@ -107,7 +105,7 @@ const networks: Networks = {
     chainID: '4',
     name: 'Rinkeby',
     url: 'https://rinkeby.infura.io/v3/' + INFURA_KEY,
-    gif: kovan,
+    gif: kovanGif,
     explorerUrl: 'https://rinkeby.etherscan.io',
     partnerChainID: '421611',
     isArbitrum: false,

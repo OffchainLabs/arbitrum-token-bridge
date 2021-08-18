@@ -28,16 +28,16 @@ const Actions = ({
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
   const l1Network = useL1Network()
 
-  const pendingEthBalance = useMemo(() => {
-    return transactions.reduce((acc: number, txn: Transaction) => {
-      const { type, assetName, status, value } = txn
-      if (type === 'withdraw' && status === 'success' && assetName === 'ETH') {
-        return acc + +(value || 0)
-      } else {
-        return acc
-      }
-    }, 0)
-  }, [transactions])
+  // const pendingEthBalance = useMemo(() => {
+  //   return transactions.reduce((acc: number, txn: Transaction) => {
+  //     const { type, assetName, status, value } = txn
+  //     if (type === 'withdraw' && status === 'success' && assetName === 'ETH') {
+  //       return acc + +(value || 0)
+  //     } else {
+  //       return acc
+  //     }
+  //   }, 0)
+  // }, [transactions])
 
   const onSubmit = useCallback(
     (value: string) => {
@@ -57,15 +57,15 @@ const Actions = ({
         buttonText="deposit"
       />
       <label htmlFor="basic-url"></label>
-      <PendingWithdrawals
-        filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus) =>
-          l2ToL1EventResultPlus.type === AssetType.ETH
-        }
-        headerText="Pending ETH Withdrawals"
-        triggerOutbox={eth.triggerOutbox}
-        pendingWithdrawalsMap={pendingWithdrawalsMap}
-        ethProvider={ethProvider}
-      />
+      {/*<PendingWithdrawals*/}
+      {/*  filter={(l2ToL1EventResultPlus: L2ToL1EventResultPlus) =>*/}
+      {/*    l2ToL1EventResultPlus.type === AssetType.ETH*/}
+      {/*  }*/}
+      {/*  headerText="Pending ETH Withdrawals"*/}
+      {/*  triggerOutbox={eth.triggerOutbox}*/}
+      {/*  pendingWithdrawalsMap={pendingWithdrawalsMap}*/}
+      {/*  ethProvider={ethProvider}*/}
+      {/*/>*/}
 
       {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}
     </div>

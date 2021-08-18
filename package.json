@@ -17,6 +17,8 @@
     "classnames": "^2.3.1",
     "ethers": "5.0.24",
     "node-sass": "^4.13.1",
+    "overmind": "^28.0.1",
+    "overmind-react": "^29.0.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.5",
     "react-dom": "^16.13.1",

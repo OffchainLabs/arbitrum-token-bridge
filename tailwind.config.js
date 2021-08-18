@@ -25,7 +25,8 @@ module.exports = {
       },
       spacing: {
         networkBox: '540px',
-        table: '969px'
+        table: '969px',
+        metamaskGif: '160px'
       },
       minWidth: theme => theme('spacing'),
       maxWidth: theme => {

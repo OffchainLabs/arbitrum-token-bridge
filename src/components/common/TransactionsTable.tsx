@@ -1,15 +1,15 @@
 import React from 'react'
+import { ArbTokenBridgeTransactions } from '../../types/ArbTokenBridge'
+import ExplorerLink from '../App/ExplorerLink'
+import { StatusBadge } from './StatusBadge'
 
-const people = [
-  {
-    name: 'Jane Cooper',
-    title: 'Regional Paradigm Technician',
-    role: 'Admin',
-    email: 'jane.cooper@example.com'
-  }
-  // More people...
-]
-const TransactionsTable = (): JSX.Element => {
+interface TransactionsTableProps {
+  transactions: ArbTokenBridgeTransactions
+}
+
+const TransactionsTable = ({
+  transactions
+}: TransactionsTableProps): JSX.Element => {
   return (
     <div className="flex flex-col shadow-sm">
       <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -60,32 +60,44 @@ const TransactionsTable = (): JSX.Element => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {people.map(person => (
-                  <tr key={person.email}>
+                {transactions.transactions.map(tx => (
+                  <tr key={tx.txID}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {person.name}
+                      {tx.type}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.title}
+                      <StatusBadge
+                        variant={
+                          tx.status === 'success'
+                            ? 'green'
+                            : tx.status === 'failure'
+                            ? 'red'
+                            : tx.status === 'pending'
+                            ? 'blue'
+                            : 'yellow'
+                        }
+                      >
+                        {tx.status}
+                      </StatusBadge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.email}
+                      N/A
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.role}
+                      <ExplorerLink hash={tx.txID} type={tx.type} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.role}
+                      {tx.assetName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {person.role}
+                      {tx.value}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <a
                         href="#"
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        Action
                       </a>
                     </td>
                   </tr>

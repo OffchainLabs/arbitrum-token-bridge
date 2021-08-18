@@ -4,9 +4,7 @@ const Header: React.FC = () => {
   return (
     <header>
       <div className="border-b border-gray-700">
-        <div
-          className={`flex items-center w-full h-16 px-4 sm:px-0 justify-between`}
-        >
+        <div className="flex items-center w-full h-16 px-4 sm:px-0 justify-between">
           <div className="flex items-center">
             <a href="/" className="flex-shrink-0">
               <img
@@ -27,7 +25,7 @@ const Header: React.FC = () => {
                   href="https://developer.offchainlabs.com/"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   OffChain Labs
                 </a>
@@ -35,7 +33,7 @@ const Header: React.FC = () => {
                   href="https://developer.offchainlabs.com/"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   Explorer
                 </a>
@@ -43,7 +41,7 @@ const Header: React.FC = () => {
                   href="https://developer.offchainlabs.com/"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   Documentation
                 </a>
@@ -51,7 +49,7 @@ const Header: React.FC = () => {
                   href="https://bridge.arbitrum.io/token-list-42161.json"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   Token List
                 </a>
@@ -64,7 +62,7 @@ const Header: React.FC = () => {
               target="_blank"
               className="bg-bright-blue hover:bg-faded-blue text-navy rounded-md text-sm font-medium"
               style={{ padding: '10px 12px' }}
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               Join Community
             </a>

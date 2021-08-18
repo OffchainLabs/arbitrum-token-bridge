@@ -77,12 +77,12 @@ export const setChangeListeners = () => {
     console.warn('setting listeners')
 
     !reloading &&
-      window.ethereum.on('networkChanged', (chainId: number) => {
+      window.ethereum.on('networkChanged', () => {
         reloading = true
         window.location.reload()
       })
     !reloading &&
-      window.ethereum.on('accountsChanged', (chainId: number) => {
+      window.ethereum.on('accountsChanged', () => {
         reloading = true
         window.location.reload()
       })

@@ -1,11 +1,19 @@
 import React from 'react'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 
-import Alert from 'react-bootstrap/Alert'
 import networks from './networks'
-import explorer from 'media/gifs/explorer.gif'
+import { Alert } from '../common/Alert'
+
+const copyTextToClipboard = (str: string) => {
+  const el = document.createElement('textarea')
+  el.value = str
+  el.setAttribute('readonly', '')
+  el.style.position = 'absolute'
+  el.style.left = '-9999px'
+  document.body.appendChild(el)
+  el.select()
+  document.execCommand('copy')
+  document.body.removeChild(el)
+}
 
 const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
   const onClick = (e: any) => {
@@ -14,13 +22,13 @@ const CopyLink = ({ url, msg }: { url: string; msg: string }) => {
     alert(msg)
   }
   return (
-    <a href="" onClick={onClick}>
+    <a href="" className="text-bright-blue" onClick={onClick}>
       {url}
     </a>
   )
 }
 
-export default () => {
+const ConnectWarning = (): JSX.Element => {
   const netWork = networks[4]
 
   const arbnetwork = networks[netWork.partnerChainID]
@@ -29,45 +37,46 @@ export default () => {
   const l2NetworkName = arbnetwork.name
 
   return (
-    <Container>
-      <Alert variant={'primary'}>
-        {' '}
-        {`Connect to ${l1NetworkName} for L1 actions or ${l2NetworkName} for L2 actions`}
-      </Alert>
-      <Row className="text-center">
-        <Col>
-          {' '}
-          <div style={styles.upperSecton}>
-            <div style={styles.headerStyle}>
-              {' '}
+    <div className="container mx-auto px-4 text-center text-gray-600">
+      <div className="flex justify-center">
+        <Alert type="blue">
+          {`Connect to ${l1NetworkName} for L1 actions or ${l2NetworkName} for L2 actions`}
+        </Alert>
+      </div>
+
+      <div className="flex flex-wrap mt-8">
+        <div className="flex flex-col items-center w-full md:w-1/3 p-4">
+          <div className="flex flex-col flex-grow mb-4">
+            <h3 className="text-gray-900 font-semibold mb-2">
               Connect to {l1NetworkName} (deposit into Arbitrum)
-            </div>
-            <div style={styles.textStyle}>
-              {' '}
+            </h3>
+            <p>
               Connect to {l2NetworkName} test work to deposit ETH/tokens into
               Arbitrum
-            </div>
+            </p>
           </div>
           <div>
-            <img style={styles.gifStyle} src={netWork.gif} />
+            <img
+              src={netWork.gif}
+              className="max-w-metamaskGif border border-black shadow-lg"
+              alt="Metamask explanation"
+            />
           </div>
-        </Col>
-        <Col>
-          <div style={styles.upperSecton}>
-            <div style={styles.headerStyle}>
-              {' '}
+        </div>
+
+        <div className="flex flex-col items-center w-full md:w-1/3 p-4">
+          <div className="flex flex-col flex-grow mb-4">
+            <h3 className="text-gray-900 font-semibold mb-2">
               Connect to {l2NetworkName} (withdraw from Arbitrum)
-            </div>
-            {/* <Col> */}
-            <div style={styles.textStyle}>
-              {' '}
-              Connect to
+            </h3>
+            <div>
+              Connect to{' '}
               <a
+                className="text-bright-blue"
                 href="https://developer.offchainlabs.com/docs/Developer_Quickstart/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {' '}
                 your own node
               </a>{' '}
               or to our publically hosted nodes via custom RPC:
@@ -82,31 +91,22 @@ export default () => {
                 msg="Arbv5 chain ID copied to clipboard"
               />{' '}
               for Arbv5
-              {/* (you probably want this one!) or {" "}
-                <CopyLink
-                url={arbV2Testnet.url}
-                msg="Arbv2 node url copied to clipboard"
-              /> with chain ID <CopyLink
-              url={arbV2Testnet.chainID.toString()}
-              msg="Arbv2 chainID copied to clipboard"
-            />  for Arbv2 (old testnet). */}
             </div>
           </div>
           <img
-            className="text-center"
-            style={styles.gifStyle}
+            className="max-w-metamaskGif border border-black shadow-lg"
+            alt="Arbnetwork explanation"
             src={arbnetwork.gif}
-            alt="meta-gif"
           />
-        </Col>
-        <Col>
-          <div style={styles.upperSecton}>
-            <div style={styles.headerStyle}>
-              {' '}
-              <b>Optional</b>: add Arbitrum block explorer URL
-            </div>
+        </div>
 
-            <div style={styles.textStyle}>
+        <div className="flex flex-col items-center w-full md:w-1/3 p-4">
+          <div className="flex flex-col flex-grow mb-4">
+            <h3 className="text-gray-900 font-semibold mb-2">
+              <b>Optional</b>: add Arbitrum block explorer URL
+            </h3>
+
+            <div>
               Add our custom block explorer url to Arbitrum network:{' '}
               <CopyLink
                 url={arbnetwork.explorerUrl}
@@ -116,40 +116,14 @@ export default () => {
             </div>
           </div>
           <img
-            className="text-center"
-            style={styles.gifStyle}
-            src={explorer}
-            alt="explorer"
+            className="max-w-metamaskGif border border-black shadow-lg"
+            alt="Explorer explanation"
+            src="/images/explorer.gif"
           />
-          {/*  */}
-          {/* </Row> */}
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </div>
+    </div>
   )
 }
 
-const styles = {
-  gifStyle: { maxWidth: 160, border: '1px solid black' },
-  textStyle: { fontSize: '10px' },
-  headerStyle: {
-    fontSize: '12px',
-    fontWeight: 500,
-    minHeight: 30,
-    marginBottom: 10,
-    marginTop: 10
-  },
-  upperSecton: { minHeight: 120, justifyContent: 'center' }
-}
-
-const copyTextToClipboard = (str: string) => {
-  const el = document.createElement('textarea')
-  el.value = str
-  el.setAttribute('readonly', '')
-  el.style.position = 'absolute'
-  el.style.left = '-9999px'
-  document.body.appendChild(el)
-  el.select()
-  document.execCommand('copy')
-  document.body.removeChild(el)
-}
+export { ConnectWarning }

@@ -12,9 +12,6 @@ import { requestNetworkSwitch } from 'util/web3'
 
 interface Web3Data {
   ethAddress: string
-  ethBalance: BridgeBalance | undefined
-  erc20Balance: BridgeBalance | undefined
-  erc721Balance: ERC721Balance | undefined
   bridgeTokens: ContractStorage<BridgeToken>
   currentERC20Address: string
   currentERC721Address: string
@@ -22,9 +19,6 @@ interface Web3Data {
 
 const Header = ({
   ethAddress,
-  ethBalance,
-  erc20Balance,
-  erc721Balance,
   bridgeTokens,
   currentERC20Address,
   currentERC721Address
