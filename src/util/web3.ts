@@ -1,5 +1,6 @@
 import * as ethers from 'ethers'
-import { Network } from 'components/App/networks'
+import { Network } from 'src/components/App/networks'
+
 interface InjectedEthereumProvider {
   request?: (arg: any) => Promise<string[]>
   on: any
@@ -27,7 +28,7 @@ export async function requestNetworkSwitch(network: Network) {
         method: 'wallet_addEthereumChain',
         params: [
           {
-            chainId: chainId, // A 0x-prefixed hexadecimal string
+            chainId, // A 0x-prefixed hexadecimal string
             chainName: network.name,
             nativeCurrency: {
               name: 'Ether',
@@ -53,10 +54,11 @@ export async function getInjectedWeb3(): Promise<
 > {
   if (web3Injected(window.ethereum)) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       ;(await window.ethereum.request?.({ method: 'eth_requestAccounts' })) ??
         console.warn('No window.ethereum.enable function')
     } catch (e) {
-      console.warn('Failed to enable window.ethereum: ' + e.message)
+      console.warn(`Failed to enable window.ethereum: ${e.message}`)
       return []
     }
 
@@ -76,11 +78,13 @@ export const setChangeListeners = () => {
   if (web3Injected(window.ethereum)) {
     console.warn('setting listeners')
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     !reloading &&
       window.ethereum.on('networkChanged', () => {
         reloading = true
         window.location.reload()
       })
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     !reloading &&
       window.ethereum.on('accountsChanged', () => {
         reloading = true

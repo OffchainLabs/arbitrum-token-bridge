@@ -1,8 +1,9 @@
 import { Bridge } from 'arb-ts'
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import Networks, { Network } from '../../components/App/networks'
 import { derived } from 'overmind'
+
+import Networks, { Network } from '../../components/App/networks'
 import { ArbTokenBridge } from '../../types/ArbTokenBridge'
+import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 
 export enum WhiteListState {
   VERIFYING,
@@ -34,7 +35,7 @@ export const defaultState: AppState = {
 
   networkDetails: derived((s: AppState) => {
     if (!s.networkID) return null
-    else return Networks[s.networkID]
+    return Networks[s.networkID]
   }),
   l1NetworkDetails: derived((s: AppState) => {
     const network = s.networkDetails
@@ -43,9 +44,8 @@ export const defaultState: AppState = {
     }
     if (!network.isArbitrum) {
       return network
-    } else {
-      return Networks[network.partnerChainID]
     }
+    return Networks[network.partnerChainID]
   }),
   l2NetworkDetails: derived((s: AppState) => {
     const network = s.networkDetails
@@ -54,9 +54,8 @@ export const defaultState: AppState = {
     }
     if (network.isArbitrum) {
       return network
-    } else {
-      return Networks[network.partnerChainID]
     }
+    return Networks[network.partnerChainID]
   }),
 
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,

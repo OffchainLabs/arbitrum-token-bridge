@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from 'react'
+
+import { Bridge } from 'arb-ts'
+import * as ethers from 'ethers'
+import { createOvermind, Overmind } from 'overmind'
+import { Provider } from 'overmind-react'
+import Loader from 'react-loader-spinner'
 import {
   ConnectionState,
   getInjectedWeb3,
   setChangeListeners
-} from 'util/index'
-import MainContent from './index'
+} from 'src/util/index'
 
-import { Layout } from '../common/Layout'
-import Loader from 'react-loader-spinner'
-import { createOvermind, Overmind } from 'overmind'
 import { config, useActions, useAppState } from '../../state'
-import { Provider } from 'overmind-react'
-import { ConnectWarning } from './ConnectWarning'
 import { Alert } from '../common/Alert'
-import { WhiteListUpdater } from './WhiteListUpdater'
-import { BalanceUpdater } from './BalanceUpdater'
-import { PWLoadedUpdater } from './PWLoadedUpdater'
+import { Layout } from '../common/Layout'
 import { AppTokenBridgeStoreSync } from './AppTokenBridgeStoreSync'
+import { BalanceUpdater } from './BalanceUpdater'
+import { ConnectWarning } from './ConnectWarning'
+import MainContent from './index'
 import networks from './networks'
-import * as ethers from 'ethers'
-import { Bridge } from 'arb-ts'
+import { PWLoadedUpdater } from './PWLoadedUpdater'
+import { WhiteListUpdater } from './WhiteListUpdater'
 
 const LoadingIndicator = (): JSX.Element => (
   <div className="flex items-center justify-center mx-auto h-48">
@@ -41,7 +42,7 @@ const NoMetamaskIndicator = (): JSX.Element => (
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img width="150" src="/images/metamask-fox.svg" alt="Metamask Image" />
+        <img width="150" src="/images/metamask-fox.svg" alt="Metamask" />
       </a>
     </div>
     <h4 className="text-center text-lg">
@@ -113,6 +114,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   useEffect(() => {
     if (connectionState === ConnectionState.LOADING) {
       try {
+        // eslint-disable-next-line consistent-return
         getInjectedWeb3().then(([provider, networkVersion]) => {
           console.log('getInjectedWeb3', provider, networkVersion)
           if (!provider) {

@@ -1,9 +1,8 @@
-import React from 'react'
-import { useEffect } from 'react'
-import { MAINNET_WHITELIST_ADDRESS } from './networks'
-import { useActions, useAppState } from '../../state'
+import React, { useEffect } from 'react'
 
+import { useActions, useAppState } from '../../state'
 import { WhiteListState } from '../../state/app/state'
+import { MAINNET_WHITELIST_ADDRESS } from './networks'
 
 const WhiteListUpdater = (): JSX.Element => {
   const actions = useActions()
@@ -12,8 +11,6 @@ const WhiteListUpdater = (): JSX.Element => {
   } = useAppState()
 
   useEffect(() => {
-    console.log('arbTokenBridge()?.balances', arbTokenBridge?.walletAddress)
-
     // if (!arbTokenBridge?.walletAddress) return
     if (l1NetworkDetails?.chainID !== '1') {
       actions.app.setWhitelistState(WhiteListState.ALLOWED)

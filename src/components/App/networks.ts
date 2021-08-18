@@ -14,7 +14,7 @@ export interface Network {
   tokenBridge: TokenBridge
   gif?: string
   confirmPeriodBlocks?: number
-  blockTime?: number //seconds
+  blockTime?: number // seconds
 }
 
 interface TokenBridge {
@@ -49,7 +49,7 @@ const networks: Networks = {
   '42': {
     chainID: '42',
     name: 'Kovan',
-    url: 'https://kovan.infura.io/v3/' + INFURA_KEY,
+    url: `https://kovan.infura.io/v3/${INFURA_KEY}`,
     gif: kovanGif,
     explorerUrl: 'https://kovan.etherscan.io',
     partnerChainID: '144545313136048',
@@ -71,7 +71,7 @@ const networks: Networks = {
   '1': {
     chainID: '1',
     name: 'Mainnet',
-    url: 'https://mainnet.infura.io/v3/' + INFURA_KEY,
+    url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
     gif: kovanGif,
     explorerUrl: 'https://etherscan.io',
     isArbitrum: false,
@@ -104,7 +104,7 @@ const networks: Networks = {
   '4': {
     chainID: '4',
     name: 'Rinkeby',
-    url: 'https://rinkeby.infura.io/v3/' + INFURA_KEY,
+    url: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
     gif: kovanGif,
     explorerUrl: 'https://rinkeby.etherscan.io',
     partnerChainID: '421611',

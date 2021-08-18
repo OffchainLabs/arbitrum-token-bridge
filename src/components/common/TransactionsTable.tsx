@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ArbTokenBridgeTransactions } from '../../types/ArbTokenBridge'
 import ExplorerLink from '../App/ExplorerLink'
 import { StatusBadge } from './StatusBadge'

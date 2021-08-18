@@ -1,5 +1,5 @@
-import { AssetType } from 'token-bridge-sdk'
 import { BigNumber } from 'ethers'
+import { AssetType } from 'token-bridge-sdk'
 
 export const mockPendingWithdrawals = {
   '123': {

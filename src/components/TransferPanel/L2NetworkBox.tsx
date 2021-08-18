@@ -1,8 +1,9 @@
 import React, { Dispatch, SetStateAction } from 'react'
+
 import { formatEther } from 'ethers/lib/utils'
 import { BridgeBalance } from 'token-bridge-sdk'
+
 import ExplorerLink from '../App/ExplorerLink'
-import { BigNumber } from 'ethers'
 
 const L2NetworkBox = ({
   balance,
@@ -14,8 +15,8 @@ const L2NetworkBox = ({
   balance: BridgeBalance | undefined
   address: string
   className?: string
-  amount: number | null
-  setAmount: Dispatch<SetStateAction<number | null>>
+  amount: string
+  setAmount: Dispatch<SetStateAction<string>>
 }) => {
   const ethChainBalance = balance ? +formatEther(balance.arbChainBalance) : 0
 

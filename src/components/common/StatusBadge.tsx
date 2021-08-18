@@ -1,4 +1,5 @@
 import React from 'react'
+
 interface StatusBadgeProps {
   variant?: 'blue' | 'yellow' | 'green' | 'red'
   children: string

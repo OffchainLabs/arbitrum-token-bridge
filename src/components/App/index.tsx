@@ -1,29 +1,22 @@
-import { TransactionsTable } from 'components/common/TransactionsTable'
 import React, { useState } from 'react'
+
 import { useAppState } from '../../state'
 import { WhiteListState } from '../../state/app/state'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
-import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
+import { TransactionsTable } from '../common/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 
 const MainContent = () => {
   const {
-    app: { verifying, arbTokenBridge }
+    app: {
+      verifying,
+      arbTokenBridge: { transactions }
+    }
   } = useAppState()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
-
-  // const ethProvider = bridge.l1Bridge.l1Signer
-  //   .provider as ethers.ethers.providers.Provider
-
-  // useEffect(() => {
-  //   const allAddresses = Object.keys(bridgeTokens).sort()
-  //   if (!currentERC20Address) {
-  //     setCurrentERC20Address(allAddresses[0] || '')
-  //   }
-  // }, [bridgeTokens])
 
   if (verifying === WhiteListState.VERIFYING) {
     return <Alert type="blue">verifying...</Alert>
@@ -38,7 +31,7 @@ const MainContent = () => {
     <div className="container mx-auto px-4">
       <TransferPanel />
 
-      {/* <TransactionsTable transactions={transactions} /> */}
+      <TransactionsTable transactions={transactions} />
 
       <div className="h-6" />
 
@@ -59,7 +52,7 @@ const MainContent = () => {
         setIsOpen={setTransactionModalOpen}
         hideButton
       >
-        <TransactionsModal closeModal={() => setTransactionModalOpen(false)} />
+        {/* <TransactionsModal closeModal={() => setTransactionModalOpen(false)} /> */}
       </Modal>
     </div>
   )

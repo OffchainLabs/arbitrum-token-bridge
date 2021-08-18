@@ -13,7 +13,7 @@ const Header: React.FC = () => {
                 alt="Arbitrum logo"
               />
             </a>
-            <div className={'block'}>
+            <div className="block">
               <div className="ml-6 flex items-baseline space-x-4">
                 <a
                   href="#"
@@ -56,7 +56,7 @@ const Header: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className={`z-30`}>
+          <div className="z-30">
             <a
               href="https://discord.com/invite/5KE54JwyTs"
               target="_blank"

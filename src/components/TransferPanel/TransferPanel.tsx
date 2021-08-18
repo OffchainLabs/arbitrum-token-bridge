@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
+
+import Loader from 'react-loader-spinner'
+
+import { useAppState } from '../../state'
+import { Button } from '../common/Button'
+import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import { L1NetworkBox } from './L1NetworkBox'
-import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { L2NetworkBox } from './L2NetworkBox'
-import { Button } from '../common/Button'
-import Loader from 'react-loader-spinner'
-import { useAppState } from '../../state'
 
 const TransferPanel = (): JSX.Element => {
   const {
@@ -18,14 +20,13 @@ const TransferPanel = (): JSX.Element => {
   // const inputValueL1 = useCappedNumberInput(
   //   balances?.eth?.balance.toNumber() || 0
   // )
-  const [l1Amount, setl1Amount] = useState<string>()
-  const [l2Amount, setl2Amount] = useState<number | null>(null)
+  const [l1Amount, setl1Amount] = useState<string>('')
+  const [l2Amount, setl2Amount] = useState<string>('')
 
   const deposit = async () => {
     setDepositing(true)
-    alert(l1Amount + '')
     try {
-      await eth.deposit(l1Amount + '')
+      await eth.deposit(`${l1Amount}`)
     } catch (ex) {
       console.log(ex)
     } finally {
@@ -36,7 +37,10 @@ const TransferPanel = (): JSX.Element => {
   return (
     <>
       <div className="flex justify-between max-w-networkBox mx-auto mb-4">
-        <button className="bg-white border border-gray-300 rounded-md py-2 px-4">
+        <button
+          type="button"
+          className="bg-white border border-gray-300 rounded-md py-2 px-4"
+        >
           Token: ETH
         </button>
         <StatusBadge>2 Processing</StatusBadge>

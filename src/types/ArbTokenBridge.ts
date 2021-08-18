@@ -1,3 +1,5 @@
+import { TransactionReceipt } from '@ethersproject/providers'
+import { Signer } from 'ethers'
 import {
   BridgeBalance,
   BridgeToken,
@@ -7,8 +9,6 @@ import {
   TokenType,
   Transaction
 } from 'token-bridge-sdk'
-import { TransactionReceipt } from '@ethersproject/providers'
-import { Signer } from 'ethers'
 
 export interface ArbTokenBridgeBalances {
   eth: BridgeBalance

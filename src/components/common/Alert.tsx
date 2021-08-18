@@ -1,10 +1,11 @@
+import React from 'react'
+
 import {
   CheckCircleIcon,
   ExclamationIcon,
   InformationCircleIcon,
   XCircleIcon
 } from '@heroicons/react/solid'
-import React from 'react'
 
 const Alert = ({
   children,

@@ -1,5 +1,5 @@
-import React from 'react'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
+
 import { useAppState } from '../../state'
 
 const BalanceUpdater = (): JSX.Element => {

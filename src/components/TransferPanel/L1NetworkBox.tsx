@@ -1,6 +1,8 @@
-import React, { Dispatch, SetStateAction, useState } from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
+
 import { formatEther } from 'ethers/lib/utils'
 import { BridgeBalance } from 'token-bridge-sdk'
+
 import ExplorerLink from '../App/ExplorerLink'
 
 const L1NetworkBox = ({
@@ -14,10 +16,9 @@ const L1NetworkBox = ({
   address: string
   className?: string
   amount?: string
-  setAmount: Dispatch<SetStateAction<string | undefined>>
+  setAmount: Dispatch<SetStateAction<string>>
 }) => {
   const ethChainBalance = balance ? +formatEther(balance.balance) : 0
-  const [a, setA] = useState(false)
 
   return (
     <div

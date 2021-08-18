@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
+
+import { useAppState } from 'src/state'
 import { TxnType } from 'token-bridge-sdk'
-import { useAppState } from 'state'
 
 interface Props {
   hash: string
@@ -34,9 +35,10 @@ const ExplorerLink = ({ hash, type, layer }: Props) => {
       case 'address':
         if (layer === 1) {
           return `${l1Prefix}/address/${hash}`
-        } else {
-          return `${l2Prefix}/address/${hash}`
         }
+        return `${l2Prefix}/address/${hash}`
+      default:
+        return '#'
     }
   }, [hash, type, layer])
 
