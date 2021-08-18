@@ -9,12 +9,12 @@
     "classnames": "^2.3.1",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "react-icons": "^4.2.0",
     "react-loader-spinner": "^4.0.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.1",
+    "react-scripts": "4.0.3",
     "token-bridge-sdk": "0.4.15"
   },
   "resolutions": {
@@ -48,21 +48,21 @@
     ]
   },
   "devDependencies": {
-    "@craco/craco": "5.9.0",
-    "@types/jest": "^24.0.0",
-    "@types/node": "^12.0.0",
-    "@types/react": "^16.9.0",
-    "@types/react-dom": "^16.9.0",
+    "@craco/craco": "6.2.0",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.6.1",
+    "@types/react": "^17.0.18",
+    "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
-    "@typescript-eslint/eslint-plugin": "^2.25.0",
-    "@typescript-eslint/parser": "^2.25.0",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
     "autoprefixer": "^9",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
     "postcss": "^7",
-    "prettier": "^2.0.2",
+    "prettier": "^2.3.2",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@2.1.2",
-    "typescript": "^3.8.3"
+    "typescript": "^4.3.5"
   }
 }

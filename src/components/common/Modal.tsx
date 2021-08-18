@@ -15,6 +15,7 @@ interface ModalProps {
   hideButton?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 export const CloseModalContext = React.createContext(() => {})
 
 const Modal: React.FC<ModalProps> = ({
