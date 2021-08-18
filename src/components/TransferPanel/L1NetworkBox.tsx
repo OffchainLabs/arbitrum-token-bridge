@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 import { formatEther } from 'ethers/lib/utils'
 import { BridgeBalance } from 'token-bridge-sdk'
 import ExplorerLink from '../App/ExplorerLink'

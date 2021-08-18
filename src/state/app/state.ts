@@ -2,7 +2,6 @@ import { Bridge } from 'arb-ts'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import Networks, { Network } from '../../components/App/networks'
 import { derived } from 'overmind'
-import { useNetwork } from '../../components/App/NetworkContext'
 import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 
 export enum WhiteListState {
@@ -39,7 +38,7 @@ export const defaultState: AppState = {
   }),
   l1NetworkDetails: derived((s: AppState) => {
     const network = s.networkDetails
-    if (network === null) {
+    if (!network) {
       return null
     }
     if (!network.isArbitrum) {
@@ -50,7 +49,7 @@ export const defaultState: AppState = {
   }),
   l2NetworkDetails: derived((s: AppState) => {
     const network = s.networkDetails
-    if (network === null) {
+    if (!network) {
       return null
     }
     if (network.isArbitrum) {

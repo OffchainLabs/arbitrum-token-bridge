@@ -5,8 +5,6 @@ import {
   setChangeListeners
 } from 'util/index'
 import MainContent from './index'
-import ModeContext from './ModeContext'
-import NetworkIDContext from './NetworkContext'
 
 import { Layout } from '../common/Layout'
 import Loader from 'react-loader-spinner'
@@ -89,11 +87,8 @@ const AppContent = (): JSX.Element => {
               <WhiteListUpdater />
               <BalanceUpdater />
               <PWLoadedUpdater />
-              <NetworkIDContext.Provider value={networkID || ''}>
-                <ModeContext.Provider value={connectionState}>
-                  <MainContent />
-                </ModeContext.Provider>
-              </NetworkIDContext.Provider>
+
+              <MainContent />
             </>
           )}
         </>

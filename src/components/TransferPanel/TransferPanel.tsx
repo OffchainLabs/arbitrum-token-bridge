@@ -1,13 +1,11 @@
-import React, { useCallback, useState } from 'react'
+import React, { useState } from 'react'
 import { StatusBadge } from '../common/StatusBadge'
 import { L1NetworkBox } from './L1NetworkBox'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { L2NetworkBox } from './L2NetworkBox'
 import { Button } from '../common/Button'
-import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 import Loader from 'react-loader-spinner'
 import { useAppState } from '../../state'
-import { useArbTokenBridge } from 'token-bridge-sdk'
 
 const TransferPanel = (): JSX.Element => {
   const {
@@ -38,7 +36,9 @@ const TransferPanel = (): JSX.Element => {
   return (
     <>
       <div className="flex justify-between max-w-networkBox mx-auto mb-4">
-        <div></div>
+        <button className="bg-white border border-gray-300 rounded-md py-2 px-4">
+          Token: ETH
+        </button>
         <StatusBadge>2 Processing</StatusBadge>
       </div>
       <div className="flex flex-col w-full max-w-networkBox mx-auto mb-8">

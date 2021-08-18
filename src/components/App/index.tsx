@@ -1,27 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import * as ethers from 'ethers'
-import Transactions from '../Transactions'
-import { useArbTokenBridge, AssetType } from 'token-bridge-sdk'
-import Header from 'components/Header'
-import TabsContainer from 'components/TabsContainer'
-import { useLocalStorage } from '@rehooks/local-storage'
-
-import { connextTxn, PendingWithdrawalsLoadedState } from 'util/index'
-import { useL1Network } from 'components/App/NetworkContext'
-import { networks } from 'arb-ts'
-import { Button } from '../common/Button'
-import { TransactionsTable } from '../common/TransactionsTable'
-import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { ArbTokenBridge } from '../../types/ArbTokenBridge'
-import { Modal } from '../common/Modal'
-import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
-import { Alert } from '../common/Alert'
+import { TransactionsTable } from 'components/common/TransactionsTable'
+import React, { useState } from 'react'
 import { useAppState } from '../../state'
 import { WhiteListState } from '../../state/app/state'
+import { Alert } from '../common/Alert'
+import { Button } from '../common/Button'
+import { Modal } from '../common/Modal'
+import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
+import { TransferPanel } from '../TransferPanel/TransferPanel'
 
 const MainContent = () => {
   const {
-    app: { verifying }
+    app: { verifying, arbTokenBridge }
   } = useAppState()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
@@ -49,7 +38,7 @@ const MainContent = () => {
     <div className="container mx-auto px-4">
       <TransferPanel />
 
-      {/*<TransactionsTable transactions={transactions} />*/}
+      {/* <TransactionsTable transactions={transactions} /> */}
 
       <div className="h-6" />
 

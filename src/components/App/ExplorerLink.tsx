@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { TxnType } from 'token-bridge-sdk'
-import { useL1Network, useL2Network } from 'components/App/NetworkContext'
+import { useAppState } from 'state'
 
 interface Props {
   hash: string
@@ -9,8 +9,11 @@ interface Props {
 }
 
 const ExplorerLink = ({ hash, type, layer }: Props) => {
-  const l1Prefix = useL1Network().explorerUrl
-  const l2Prefix = useL2Network().explorerUrl
+  const {
+    app: { l1NetworkDetails, l2NetworkDetails }
+  } = useAppState()
+  const l1Prefix = l1NetworkDetails?.explorerUrl
+  const l2Prefix = l2NetworkDetails?.explorerUrl
 
   const url = useMemo(() => {
     switch (type) {
