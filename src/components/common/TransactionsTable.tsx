@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { ArbTokenBridgeTransactions } from '../../types/ArbTokenBridge'
-import ExplorerLink from '../App/ExplorerLink'
+import ExplorerLink from './ExplorerLink'
 import { StatusBadge } from './StatusBadge'
 
 interface TransactionsTableProps {

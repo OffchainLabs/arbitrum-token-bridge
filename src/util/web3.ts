@@ -1,5 +1,5 @@
 import * as ethers from 'ethers'
-import { Network } from 'src/components/App/networks'
+import { Network } from 'src/util/networks'
 
 interface InjectedEthereumProvider {
   request?: (arg: any) => Promise<string[]>

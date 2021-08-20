@@ -19,11 +19,17 @@ const MainContent = () => {
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
   if (verifying === WhiteListState.VERIFYING) {
-    return <Alert type="blue">verifying...</Alert>
+    return (
+      <div className="flex justify-center mb-4">
+        <Alert type="blue">Verifying...</Alert>
+      </div>
+    )
   }
   if (verifying === WhiteListState.DISALLOWED) {
     return (
-      <Alert type="red">{`Stop! You are attempting to use Mainnet Beta with unapproved address {walletAddress}! \n\n  Switch to an approved address or connect to Rinkeby for our public testnet.`}</Alert>
+      <div className="flex justify-center mb-4">
+        <Alert type="red">{`Stop! You are attempting to use Mainnet Beta with unapproved address {walletAddress}! \n\n  Switch to an approved address or connect to Rinkeby for our public testnet.`}</Alert>
+      </div>
     )
   }
 

@@ -1,9 +1,9 @@
 import { Bridge } from 'arb-ts'
 import { derived } from 'overmind'
 
-import Networks, { Network } from '../../components/App/networks'
 import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import Networks, { Network } from '../../util/networks'
 
 export enum WhiteListState {
   VERIFYING,

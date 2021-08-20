@@ -15,6 +15,7 @@ const AppTokenBridgeStoreSync = ({
   const arbTokenBridge: ArbTokenBridge = useArbTokenBridge(bridge)
 
   useEffect(() => {
+    console.log(arbTokenBridge)
     actions.app.setArbTokenBridge(arbTokenBridge)
   }, [bridge, arbTokenBridge])
 

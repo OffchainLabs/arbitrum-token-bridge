@@ -3,7 +3,7 @@ import React, { Dispatch, SetStateAction } from 'react'
 import { formatEther } from 'ethers/lib/utils'
 import { BridgeBalance } from 'token-bridge-sdk'
 
-import ExplorerLink from '../App/ExplorerLink'
+import ExplorerLink from '../common/ExplorerLink'
 
 const L1NetworkBox = ({
   balance,

@@ -12,15 +12,16 @@ import {
 } from 'src/util/index'
 
 import { config, useActions, useAppState } from '../../state'
+import networks from '../../util/networks'
 import { Alert } from '../common/Alert'
 import { Layout } from '../common/Layout'
-import { AppTokenBridgeStoreSync } from './AppTokenBridgeStoreSync'
-import { BalanceUpdater } from './BalanceUpdater'
-import { ConnectWarning } from './ConnectWarning'
-import MainContent from './index'
-import networks from './networks'
-import { PWLoadedUpdater } from './PWLoadedUpdater'
-import { WhiteListUpdater } from './WhiteListUpdater'
+import { ConnectWarning } from '../ConnectWarning/ConnectWarning'
+import MainContent from '../MainContent/MainContent'
+import { AppTokenBridgeStoreSync } from '../syncers/AppTokenBridgeStoreSync'
+import { BalanceUpdater } from '../syncers/BalanceUpdater'
+import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
+import { TokenListSyncer } from '../syncers/TokenListSyncer'
+import { WhiteListUpdater } from '../syncers/WhiteListUpdater'
 
 const LoadingIndicator = (): JSX.Element => (
   <div className="flex items-center justify-center mx-auto h-48">
@@ -59,7 +60,7 @@ const NoMetamaskIndicator = (): JSX.Element => (
 
 const AppContent = (): JSX.Element => {
   const {
-    app: { connectionState, networkID, arbTokenBridgeLoaded }
+    app: { connectionState, arbTokenBridgeLoaded }
   } = useAppState()
 
   switch (connectionState) {
@@ -88,6 +89,7 @@ const AppContent = (): JSX.Element => {
               <WhiteListUpdater />
               <BalanceUpdater />
               <PWLoadedUpdater />
+              <TokenListSyncer />
 
               <MainContent />
             </>

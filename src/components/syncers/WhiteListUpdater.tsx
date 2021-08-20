@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { WhiteListState } from '../../state/app/state'
-import { MAINNET_WHITELIST_ADDRESS } from './networks'
+import { MAINNET_WHITELIST_ADDRESS } from '../../util/networks'
 
 const WhiteListUpdater = (): JSX.Element => {
   const actions = useActions()

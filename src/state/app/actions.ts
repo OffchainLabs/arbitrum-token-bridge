@@ -1,15 +1,8 @@
 import { Bridge } from 'arb-ts'
-import * as ethers from 'ethers'
 
 import { Context } from '..'
-import networks from '../../components/App/networks'
 import { ArbTokenBridge } from '../../types/ArbTokenBridge'
-import {
-  ConnectionState,
-  getInjectedWeb3,
-  PendingWithdrawalsLoadedState,
-  setChangeListeners
-} from '../../util'
+import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState } from './state'
 
 export const setConnectionState = (

@@ -75,7 +75,7 @@ const Modal: React.FC<ModalProps> = ({
               >
                 <div className="flex justify-between items-center mb-4">
                   <div className="block w-6" />
-                  <div className="font-medium text-lg">{title || 'Code'}</div>
+                  <div className="font-medium text-lg">{title}</div>
                   <div className="block">
                     <button
                       type="button"

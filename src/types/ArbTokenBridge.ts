@@ -12,8 +12,8 @@ import {
 
 export interface ArbTokenBridgeBalances {
   eth: BridgeBalance
-  erc20: BridgeBalance
-  erc721: BridgeBalance
+  erc20: ContractStorage<BridgeBalance>
+  erc721: ContractStorage<BridgeBalance>
   update: () => void
 }
 
@@ -42,7 +42,7 @@ export interface ArbTokenBridgeToken {
     amount: string
   ) => Promise<void | TransactionReceipt>
   triggerOutbox: (id: string) => Promise<void | TransactionReceipt>
-  updateBalances: Promise<() => void>
+  updateBalances: () => Promise<void>
 }
 
 export interface ArbTokenBridgeTransactions {

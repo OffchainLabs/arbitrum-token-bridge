@@ -1,7 +1,7 @@
 import React from 'react'
 
+import networks from '../../util/networks'
 import { Alert } from '../common/Alert'
-import networks from './networks'
 
 const copyTextToClipboard = (str: string) => {
   const el = document.createElement('textarea')

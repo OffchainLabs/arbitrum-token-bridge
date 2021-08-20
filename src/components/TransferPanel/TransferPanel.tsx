@@ -6,6 +6,7 @@ import { useAppState } from '../../state'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
+import { TokenModal } from '../TokenModal/TokenModal'
 import { L1NetworkBox } from './L1NetworkBox'
 import { L2NetworkBox } from './L2NetworkBox'
 
@@ -36,6 +37,7 @@ const TransferPanel = (): JSX.Element => {
 
   return (
     <>
+      <TokenModal />
       <div className="flex justify-between max-w-networkBox mx-auto mb-4">
         <button
           type="button"
@@ -70,16 +72,16 @@ const TransferPanel = (): JSX.Element => {
 
         <div className="h-6" />
         <Button onClick={deposit} disabled={depositing}>
-          {depositing ? (
-            <Loader
-              type="Oval"
-              color="rgb(45, 55, 75)"
-              height={14}
-              width={14}
-            />
-          ) : (
-            'Deposit'
-          )}
+          {/* {depositing ? ( */}
+          {/*  <Loader */}
+          {/*    type="Oval" */}
+          {/*    color="rgb(45, 55, 75)" */}
+          {/*    height={14} */}
+          {/*    width={14} */}
+          {/*  /> */}
+          {/* ) : ( */}
+          Deposit
+          {/* )} */}
         </Button>
       </div>
     </>
