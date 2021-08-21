@@ -1,29 +1,39 @@
 import React, { useEffect } from 'react'
 
-import { useActions, useAppState } from '../../state'
+import { Bridge } from 'arb-ts'
+
+import { useActions } from '../../state'
 import { WhiteListState } from '../../state/app/state'
 import { MAINNET_WHITELIST_ADDRESS } from '../../util/networks'
 
-const WhiteListUpdater = (): JSX.Element => {
+const WhiteListUpdater = ({
+  bridge,
+  walletAddress,
+  chainID
+}: {
+  bridge: Bridge | null
+  walletAddress?: string | null
+  chainID?: number
+}): JSX.Element => {
   const actions = useActions()
-  const {
-    app: { bridge, l1NetworkDetails, arbTokenBridge }
-  } = useAppState()
 
   useEffect(() => {
-    // if (!arbTokenBridge?.walletAddress) return
-    if (l1NetworkDetails?.chainID !== '1') {
+    if (!walletAddress || !chainID || !bridge) {
+      return
+    }
+    if (chainID !== 1) {
       actions.app.setWhitelistState(WhiteListState.ALLOWED)
     } else {
       bridge
-        ?.isWhiteListed(arbTokenBridge.walletAddress, MAINNET_WHITELIST_ADDRESS)
+        ?.isWhiteListed(walletAddress, MAINNET_WHITELIST_ADDRESS)
         ?.then(isAllowed => {
           actions.app.setWhitelistState(
             isAllowed ? WhiteListState.ALLOWED : WhiteListState.DISALLOWED
           )
         })
     }
-  }, [l1NetworkDetails?.chainID, bridge])
+  }, [bridge, walletAddress, chainID])
+
   return <></>
 }
 

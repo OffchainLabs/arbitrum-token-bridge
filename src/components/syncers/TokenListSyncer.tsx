@@ -6,14 +6,24 @@ import { TokenType } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 
 // TODO which list should I use
-const tokens = [
+export interface TokenData {
+  address: string
+  type: TokenType
+  name: string
+  symbol: string
+}
+export const TOKENS: TokenData[] = [
   {
     address: '0xc7ad46e0b8a400bb3c915120d284aafba8fc4735',
-    type: TokenType.ERC20
+    type: TokenType.ERC20,
+    name: 'Dai',
+    symbol: 'Dai'
   },
   {
     address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-    type: TokenType.ERC20
+    type: TokenType.ERC20,
+    name: 'Uniswap',
+    symbol: 'Uni'
   }
 ]
 const TokenListSyncer = (): JSX.Element => {
@@ -23,7 +33,7 @@ const TokenListSyncer = (): JSX.Element => {
 
   useEffect(() => {
     if (arbTokenBridge?.walletAddress) {
-      tokens.forEach(token => {
+      TOKENS.forEach(token => {
         try {
           arbTokenBridge?.token?.add(token.address, TokenType.ERC20)
         } catch (ex) {

@@ -1,10 +1,18 @@
 import React from 'react'
 
+import { useActions, useAppState } from '../../state'
+
 const NetworkSwitchButton = () => {
+  const {
+    app: { isDepositMode }
+  } = useAppState()
+  const actions = useActions()
+
   return (
     <button
+      onClick={() => actions.app.setIsDepositMode(!isDepositMode)}
       type="button"
-      className="text-gray-600 bg-gray6 rounded-full w-9 h-9 min-h-9 min-w-9 shadow-networkButton flex items-center justify-center"
+      className="text-gray-600 bg-gray6 hover:bg-main-bg active:bg-main-bg active:mt-1 rounded-full w-9 h-9 min-h-9 min-w-9 shadow-networkButton flex items-center justify-center"
     >
       <svg
         width="9"

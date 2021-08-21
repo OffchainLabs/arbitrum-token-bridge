@@ -74,21 +74,21 @@ export async function getInjectedWeb3(): Promise<
 
 export const setChangeListeners = () => {
   // this prevents multiple refreshes browser glitch
-  let reloading = false
-  if (web3Injected(window.ethereum)) {
-    console.warn('setting listeners')
+  const reloading = false
+  // if (web3Injected(window.ethereum)) {
+  //   console.warn('setting listeners')
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    !reloading &&
-      window.ethereum.on('networkChanged', () => {
-        reloading = true
-        window.location.reload()
-      })
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    !reloading &&
-      window.ethereum.on('accountsChanged', () => {
-        reloading = true
-        window.location.reload()
-      })
-  }
+  // // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  // !reloading &&
+  //   window.ethereum.on('networkChanged', () => {
+  //     reloading = true
+  //     window.location.reload()
+  //   })
+  // // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  // !reloading &&
+  //   window.ethereum.on('accountsChanged', () => {
+  //     reloading = true
+  //     window.location.reload()
+  //   })
+  // }
 }

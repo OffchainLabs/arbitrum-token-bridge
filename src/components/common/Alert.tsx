@@ -11,7 +11,7 @@ const Alert = ({
   children,
   type
 }: {
-  children: string
+  children: React.ReactNode
   type: 'red' | 'blue' | 'green' | 'yellow'
 }) => {
   return (

@@ -1,22 +1,24 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 
 import { networks } from 'arb-ts'
 
 import { useActions, useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
+import { BridgeContext } from '../App/App'
 
 const PWLoadedUpdater = (): JSX.Element => {
+  const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
     app: {
+      arbTokenBridgeLoaded,
       arbTokenBridge: { setInitialPendingWithdrawals },
-      bridge,
       l1NetworkDetails
     }
   } = useAppState()
 
   useEffect(() => {
-    if (!setInitialPendingWithdrawals) {
+    if (!arbTokenBridgeLoaded) {
       return
     }
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
@@ -46,7 +48,7 @@ const PWLoadedUpdater = (): JSX.Element => {
           })
       }
     })
-  }, [l1NetworkDetails?.chainID, bridge])
+  }, [l1NetworkDetails?.chainID, bridge, arbTokenBridgeLoaded])
 
   return <></>
 }

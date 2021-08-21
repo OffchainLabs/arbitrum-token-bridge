@@ -1,4 +1,5 @@
 import { Bridge } from 'arb-ts'
+import { BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
 import { ArbTokenBridge } from '../../types/ArbTokenBridge'
@@ -18,6 +19,27 @@ export const setBridge = ({ state }: Context, bridge: Bridge) => {
 
 export const setNetworkID = ({ state }: Context, networkID: string) => {
   state.app.networkID = networkID
+}
+
+export const setIsDepositMode = (
+  { state }: Context,
+  isDepositMode: boolean
+) => {
+  state.app.isDepositMode = isDepositMode
+}
+
+export const setSelectedToken = (
+  { state }: Context,
+  token: BridgeToken | null
+) => {
+  state.app.selectedToken = token ? { ...token } : null
+}
+
+export const reset = ({ state }: Context) => {
+  state.app.verifying = WhiteListState.ALLOWED
+  state.app.connectionState = ConnectionState.LOADING
+  state.app.arbTokenBridgeLoaded = false
+  state.app.arbTokenBridge = {} as ArbTokenBridge
 }
 
 export const setPWLoadingState = (
@@ -46,7 +68,7 @@ export const setArbTokenBridge = (
   atb: ArbTokenBridge
 ) => {
   state.app.arbTokenBridge = atb
-  if (atb) {
+  if (atb && !state.app.arbTokenBridgeLoaded) {
     actions.app.setArbTokenBridgeLoaded(true)
   }
 }

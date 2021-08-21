@@ -1,5 +1,6 @@
 import { Bridge } from 'arb-ts'
 import { derived } from 'overmind'
+import { BridgeToken } from 'token-bridge-sdk'
 
 import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -17,6 +18,8 @@ export type AppState = {
   connectionState: ConnectionState
   networkID: string | null
   verifying: WhiteListState
+  selectedToken: BridgeToken | null
+  isDepositMode: boolean
 
   networkDetails: Network | null
   l1NetworkDetails: Network | null
@@ -32,6 +35,8 @@ export const defaultState: AppState = {
   connectionState: ConnectionState.LOADING,
   networkID: null,
   verifying: WhiteListState.VERIFYING,
+  selectedToken: null,
+  isDepositMode: true,
 
   networkDetails: derived((s: AppState) => {
     if (!s.networkID) return null

@@ -35,3 +35,7 @@ input[type=number] {
 .Toastify__toast {
     @apply bg-gray-200 text-gray-800 text-center
 }
+
+button, input {
+  outline: none!important;
+}

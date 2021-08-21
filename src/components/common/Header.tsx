@@ -56,7 +56,7 @@ const Header: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="z-30">
+          <div>
             <a
               href="https://discord.com/invite/5KE54JwyTs"
               target="_blank"

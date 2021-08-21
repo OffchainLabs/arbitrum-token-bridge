@@ -1,22 +1,21 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 
-import { TokenType } from 'token-bridge-sdk'
+import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
+import { BridgeContext } from '../App/App'
 
 const BalanceUpdater = (): JSX.Element => {
+  const bridge = useContext(BridgeContext)
   const {
-    app: { arbTokenBridge, bridge }
+    app: { arbTokenBridge }
   } = useAppState()
+  const latestTokenBridge = useLatest(arbTokenBridge)
 
   useEffect(() => {
-    if (bridge) {
-      arbTokenBridge?.balances?.update()
-      arbTokenBridge?.token?.updateBalances()
-    }
+    latestTokenBridge?.current?.balances?.update()
     const interval = setInterval(() => {
-      arbTokenBridge?.balances?.update()
-      arbTokenBridge?.token?.updateBalances()
+      latestTokenBridge?.current?.balances?.update()
     }, 5000)
     return () => clearInterval(interval)
   }, [bridge])

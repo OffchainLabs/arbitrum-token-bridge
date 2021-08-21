@@ -3,13 +3,15 @@ import React, { useMemo } from 'react'
 import { useAppState } from 'src/state'
 import { TxnType } from 'token-bridge-sdk'
 
-interface Props {
-  hash: string
+import { Tooltip } from './Tooltip'
+
+interface ExplorerLinkProps {
+  hash?: string
   type: TxnType | 'address' | 'chain'
   layer?: 1 | 2
 }
 
-const ExplorerLink = ({ hash, type, layer }: Props) => {
+const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
   const {
     app: { l1NetworkDetails, l2NetworkDetails }
   } = useAppState()
@@ -47,9 +49,15 @@ const ExplorerLink = ({ hash, type, layer }: Props) => {
   }
 
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="w-24">
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-24 relative group"
+    >
       <span className="truncate">
         {hash.substr(0, 15)}...{hash.substr(hash.length - 4)}
+        <Tooltip>{hash}</Tooltip>
       </span>
     </a>
   )

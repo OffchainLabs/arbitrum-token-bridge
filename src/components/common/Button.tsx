@@ -1,10 +1,11 @@
-import React, { ComponentProps, ComponentPropsWithRef, HTMLProps } from 'react'
+import React from 'react'
 
 type ButtonSize = 'sm' | 'md'
-type ButtonVariant = 'blue' | 'white'
+type ButtonVariant = 'blue' | 'navy' | 'white'
 
 const variants: Record<string, string> = {
   blue: 'bg-bright-blue text-white',
+  navy: 'bg-navy text-white',
   white: 'bg-white border border-gray-300 text-gray-700'
 }
 
@@ -19,6 +20,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: JSX.Element | string
   className?: string
 }
+
 const Button = ({
   children,
   variant = 'blue',
@@ -30,9 +32,9 @@ const Button = ({
   return (
     <button
       type="button"
-      className={`flex items-center justify-center shadow-sm rounded-md px-5 py-2.5 ${className} ${
-        variants[variant]
-      } ${sizeVariants[size]} ${disabled ? ' opacity-50 ' : ' opacity-100 '}`}
+      className={`flex items-center justify-center shadow-sm rounded-md px-5 py-2.5 hover:opacity-90 active:opacity-80  focus:outline-none 
+        ${className} ${variants[variant]} ${sizeVariants[size]} 
+        ${disabled ? ' opacity-50 ' : ' opacity-100 '}`}
       {...props}
     >
       {children}

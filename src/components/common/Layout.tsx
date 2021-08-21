@@ -7,7 +7,7 @@ const Layout: React.FC = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="bg-gray-800 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative min-h-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative min-h-heading">
           <Header />
 
           <div className="block">

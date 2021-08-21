@@ -18,13 +18,16 @@ module.exports = {
         serif: "'Inter', sans-serif"
       },
       height: {
-        'min-content': 'min-content'
+        'min-content': 'min-content',
       },
       minHeight: {
-        heading: '230px'
+        heading: '180px',
+      },
+      maxHeight: {
+        tokenList: '500px'
       },
       spacing: {
-        networkBox: '540px',
+        networkBox: '590px',
         table: '969px',
         metamaskGif: '160px'
       },
@@ -39,15 +42,28 @@ module.exports = {
           '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
         networkButton:
           '0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)'
-      }
+      },
+      ringWidth: {
+        'DEFAULT': '1px',
+      },
     }
   },
   variants: {
     extend: {
-      display: ['group-hover']
+      display: ['group-hover'],
+      backgroundColor: ['active'],
+      opacity: ['active'],
+      margin: ['active']
     }
   },
   plugins: [
     // require('@tailwindcss/forms'),
-  ]
+  ],
+  corePlugins: {
+    outline: false,
+    ringWidth: false,
+    ringColor: false,
+    ringOffsetWidth: false,
+    ringOffsetColor: false,
+  }
 }
