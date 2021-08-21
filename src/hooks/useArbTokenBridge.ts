@@ -208,6 +208,7 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
+        blockNumber: tx.blockNumber,
         sender: await bridge.l1Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
@@ -226,6 +227,7 @@ export const useArbTokenBridge = (
         txID: l2TxHash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
+        blockNumber: l2TxHash.blockNumber,
         sender: await bridge.l1Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
