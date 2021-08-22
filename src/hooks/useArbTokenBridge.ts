@@ -1,111 +1,40 @@
-import { useEffect, useState, useMemo, useCallback } from 'react'
-import {
-  ContractTransaction,
-  constants,
-  ethers,
-  utils,
-  Contract,
-  ContractReceipt,
-  BigNumber
-} from 'ethers'
+import { useCallback, useEffect, useState } from 'react'
+import { BigNumber, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import {
   Bridge,
-  BridgeHelper,
+  ERC20__factory,
   L1TokenData,
   L2ToL1EventResult,
-  OutgoingMessageState,
   OutboundTransferInitiatedResult,
-  ERC20__factory
+  OutgoingMessageState
 } from 'arb-ts'
 import useTransactions from './useTransactions'
+import {
+  AddressToSymbol,
+  ArbTokenBridge,
+  AssetType,
+  BridgeBalance,
+  BridgeToken,
+  ContractStorage,
+  ERC20BridgeToken,
+  ERC721Balance,
+  L2ToL1EventResultPlus,
+  PendingWithdrawalsMap,
+  TokenType
+} from './arbTokenBridge.types'
 
-export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
-  type: AssetType
-  value: BigNumber
-  tokenAddress?: string
-  outgoingMessageState: OutgoingMessageState
-  symbol: string
-}
-export interface PendingWithdrawalsMap {
-  [id: string]: L2ToL1EventResultPlus
-}
-export interface BridgeToken {
-  type: TokenType
-  name: string
-  symbol: string
-  allowed: boolean
-  address: string
-  l2Address?: string
-}
-
-export interface ERC20BridgeToken extends BridgeToken {
-  type: TokenType.ERC20
-  decimals: number
-}
 const { Zero } = constants
 /* eslint-disable no-shadow */
 
-export enum TokenType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721'
-}
-/* eslint-enable no-shadow */
-
-export enum AssetType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ETH = 'ETH'
-}
-
-export interface ContractStorage<T> {
-  [contractAddress: string]: T | undefined
-}
-export interface BridgeBalance {
-  balance: BigNumber
-
-  arbChainBalance: BigNumber
-}
-
-// removing 'tokens' / 'balance' could result in one interface
-/**
- * Holds balance values for ERC721 Token.
- * @name ERC721Balance
- * @alias ERC721Balance
- */
-export interface ERC721Balance {
-  /**
-   * User's NFT balance on L1
-   */
-  ethBalance: BigNumber
-  arbBalance: BigNumber
-
-  tokens: BigNumber[]
-  /**
-   *  User's NFTs on Arbitrum
-   */
-  arbChainTokens: BigNumber[]
-  /**
-   * All NFTs on Arbitrum
-   */
-  totalArbTokens: BigNumber[]
-  /**
-   * All of user's NFTs available in lockbox (ready to transfer out.)
-   */
-  lockBoxTokens: BigNumber[]
-}
-
 const slowInboxQueueTimeout = 1000 * 60 * 15
 
-interface AddressToSymbol {
-  [tokenAddress: string]: string
-}
 const addressToSymbol: AddressToSymbol = {}
 
 export const useArbTokenBridge = (
   bridge: Bridge,
   autoLoadCache = true
-): any => {
+): ArbTokenBridge => {
   const [walletAddress, setWalletAddress] = useState('')
 
   const defaultBalance = {
@@ -181,7 +110,7 @@ export const useArbTokenBridge = (
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
-      updateTransactionStatus,
+      updateTransaction,
       removeTransaction,
       addFailedTransaction
     }
@@ -208,12 +137,11 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        blockNumber: tx.blockNumber,
         sender: await bridge.l1Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
       const receipt = await tx.wait()
-      updateTransactionStatus(receipt)
+      updateTransaction(receipt, tx)
 
       const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
       if (!seqNum) return
@@ -227,7 +155,6 @@ export const useArbTokenBridge = (
         txID: l2TxHash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        blockNumber: l2TxHash.blockNumber,
         sender: await bridge.l1Bridge.getWalletAddress(),
         l1NetworkID: await l1NetworkIDCached()
       })
@@ -236,7 +163,7 @@ export const useArbTokenBridge = (
         undefined,
         slowInboxQueueTimeout
       )
-      updateTransactionStatus(l2TxnRec)
+      updateTransaction(l2TxnRec)
 
       // let l2TxnRec
       // try {
@@ -247,7 +174,7 @@ export const useArbTokenBridge = (
       //   )
       //   if(l2TxnRec.status === 0){
       //     console.warn('l2TxnRec failed', l2TxnRec)
-      //     updateTransactionStatus(l2TxnRec)
+      //     updateTransaction(l2TxnRec)
       //     return
       //   }
       // } catch (err){
@@ -272,7 +199,7 @@ export const useArbTokenBridge = (
       //   slowInboxQueueTimeout
       // )
       // // if it times out... it just errors? that's fine?
-      // updateTransactionStatus(retryableRec)
+      // updateTransaction(retryableRec)
 
       return receipt
     } catch (e) {
@@ -299,7 +226,7 @@ export const useArbTokenBridge = (
         })
         const receipt = await tx.wait()
 
-        updateTransactionStatus(receipt)
+        updateTransaction(receipt, tx)
 
         const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
           receipt
@@ -352,7 +279,7 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
-    updateTransactionStatus(receipt)
+    updateTransaction(receipt, tx)
     updateBridgeTokens()
   }
 
@@ -379,7 +306,7 @@ export const useArbTokenBridge = (
     try {
       const receipt = await tx.wait()
 
-      updateTransactionStatus(receipt)
+      updateTransaction(receipt, tx)
 
       const tokenDepositData = (
         await bridge.getDepositTokenEventData(receipt)
@@ -449,7 +376,7 @@ export const useArbTokenBridge = (
         slowInboxQueueTimeout
       )
 
-      updateTransactionStatus(retryableRec)
+      updateTransaction(retryableRec)
 
       return receipt
     } catch (err) {
@@ -478,7 +405,7 @@ export const useArbTokenBridge = (
     })
     try {
       const receipt = await tx.wait()
-      updateTransactionStatus(receipt)
+      updateTransaction(receipt, tx)
 
       const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
         receipt
@@ -966,7 +893,7 @@ export const useArbTokenBridge = (
       transactions,
       clearPendingTransactions,
       setTransactionConfirmed,
-      updateTransactionStatus,
+      updateTransaction,
       addTransaction
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,

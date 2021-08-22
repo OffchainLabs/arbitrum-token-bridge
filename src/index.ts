@@ -1,5 +1,14 @@
 export * from './hooks/useArbTokenBridge'
 export type {
+  ArbTokenBridge,
+  BridgeBalance,
+  L2ToL1EventResultPlus,
+  BridgeToken,
+  ERC20BridgeToken
+} from './hooks/arbTokenBridge.types'
+export { TokenType, AssetType } from './hooks/arbTokenBridge.types'
+
+export type {
   Transaction,
   TxnStatus,
   NewTransaction,

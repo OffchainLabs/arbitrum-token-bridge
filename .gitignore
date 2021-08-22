@@ -26,3 +26,6 @@ yarn-error.log*
 # built hooks files
 /dist
 docs
+
+# ide stuff
+.idea/
