@@ -8,11 +8,7 @@ import { TransferPanel } from '../TransferPanel/TransferPanel'
 
 const MainContent = () => {
   const {
-    app: {
-      arbTokenBridge: {
-        transactions: { transactions }
-      }
-    }
+    app: { sortedTransactions, mergedTransactions }
   } = useAppState()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
@@ -21,18 +17,18 @@ const MainContent = () => {
     <div className="container mx-auto px-4">
       <TransferPanel />
 
-      {transactions && (
+      {sortedTransactions?.length > 0 && (
         <>
-          <TransactionsTable transactions={transactions?.slice(0, 5)} />
+          <TransactionsTable transactions={mergedTransactions?.slice(0, 5)} />
 
           <div className="h-6" />
 
-          {transactions?.length > 5 && (
+          {sortedTransactions?.length > 5 && (
             <div className="max-w-networkBox mx-auto mb-4">
               <Button
                 onClick={() => setTransactionModalOpen(true)}
                 variant="white"
-                size="sm"
+                size="md"
                 className="w-full"
               >
                 View all

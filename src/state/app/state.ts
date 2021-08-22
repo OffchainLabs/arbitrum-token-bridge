@@ -1,8 +1,12 @@
-import { Bridge } from 'arb-ts'
+import { Bridge, L2ToL1EventResult } from 'arb-ts'
 import { derived } from 'overmind'
-import { BridgeToken } from 'token-bridge-sdk'
+import {
+  ArbTokenBridge,
+  BridgeToken,
+  L2ToL1EventResultPlus,
+  Transaction
+} from 'token-bridge-sdk'
 
-import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import Networks, { Network } from '../../util/networks'
 
@@ -12,14 +16,27 @@ export enum WhiteListState {
   DISALLOWED
 }
 
+export interface MergedTransaction {
+  direction: string
+  status: string
+  createdAt?: string
+  txId: string
+  asset: string
+  value: string | null
+}
+
 export type AppState = {
   bridge: Bridge | null
   arbTokenBridge: ArbTokenBridge
-  connectionState: ConnectionState
+  connectionState: number
   networkID: string | null
   verifying: WhiteListState
   selectedToken: BridgeToken | null
   isDepositMode: boolean
+  sortedTransactions: Transaction[]
+  pendingTransactions: Transaction[]
+  pendingTransactionsUpdated: boolean
+  mergedTransactions: MergedTransaction[]
 
   networkDetails: Network | null
   l1NetworkDetails: Network | null
@@ -27,6 +44,8 @@ export type AppState = {
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
+
+  changeNetwork: ((chainId: string) => Promise<void>) | null
 }
 
 export const defaultState: AppState = {
@@ -37,6 +56,46 @@ export const defaultState: AppState = {
   verifying: WhiteListState.VERIFYING,
   selectedToken: null,
   isDepositMode: true,
+  sortedTransactions: derived((s: AppState) => {
+    const transactions = s.arbTokenBridge?.transactions?.transactions || []
+    return [...transactions]
+      .filter(tx => tx.sender === s.arbTokenBridge.walletAddress)
+      .filter(
+        tx => !tx.l1NetworkID || tx.l1NetworkID === s.l1NetworkDetails?.chainID
+      )
+      .reverse()
+  }),
+  pendingTransactions: derived((s: AppState) => {
+    return s.sortedTransactions.filter(tx => tx.status === 'pending')
+  }),
+  pendingTransactionsUpdated: false,
+  mergedTransactions: derived((s: AppState) => {
+    const deposit: MergedTransaction[] = s.sortedTransactions.map(tx => {
+      return {
+        direction: tx.type,
+        status: tx.status,
+        createdAt: tx.timestampCreated?.toString(),
+        txId: tx.txID,
+        asset: tx.assetName,
+        value: tx.value
+      }
+    })
+    const withdraw: MergedTransaction[] = (
+      Object.values(
+        s.arbTokenBridge?.pendingWithdrawalsMap || []
+      ) as L2ToL1EventResultPlus[]
+    ).map(tx => {
+      return {
+        direction: 'outbox',
+        status: `${tx.outgoingMessageState}`,
+        createdAt: tx.timestamp,
+        txId: tx.uniqueId?.toString(),
+        asset: tx.type?.toLocaleLowerCase(),
+        value: tx.value?.toString()
+      }
+    })
+    return [...withdraw, ...deposit]
+  }),
 
   networkDetails: derived((s: AppState) => {
     if (!s.networkID) return null
@@ -64,7 +123,8 @@ export const defaultState: AppState = {
   }),
 
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
-  arbTokenBridgeLoaded: false
+  arbTokenBridgeLoaded: false,
+  changeNetwork: null
 }
 export const state: AppState = {
   ...defaultState

@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react'
 
 import { Bridge } from 'arb-ts'
-import { useArbTokenBridge } from 'token-bridge-sdk'
+import { ArbTokenBridge, useArbTokenBridge } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
-import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 
 const AppTokenBridgeStoreSync = ({
   bridge

@@ -1,40 +1,31 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import { Logger, LogLevel } from '@ethersproject/logger'
+import { LogLevel } from '@ethersproject/logger'
 import { Web3Provider } from '@ethersproject/providers'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWeb3React, Web3ReactProvider } from '@web3-react/core'
 import { InjectedConnector } from '@web3-react/injected-connector'
 import { Bridge } from 'arb-ts'
 import * as ethers from 'ethers'
+import { BigNumber } from 'ethers'
+import { hexValue, Logger } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import Loader from 'react-loader-spinner'
-import {
-  ConnectionState,
-  getInjectedWeb3,
-  setChangeListeners
-} from 'src/util/index'
+import { ConnectionState } from 'src/util/index'
 
 import { config, useActions, useAppState } from '../../state'
-import { reset } from '../../state/app/actions'
-import { WhiteListState } from '../../state/app/state'
-import networks from '../../util/networks'
+import networks, { Network } from '../../util/networks'
 import { Alert } from '../common/Alert'
 import { Layout } from '../common/Layout'
+import MessageOverlay from '../common/MessageOverlay'
 import { ConnectWarning } from '../ConnectWarning/ConnectWarning'
 import MainContent from '../MainContent/MainContent'
 import { AppTokenBridgeStoreSync } from '../syncers/AppTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
+import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { WhiteListUpdater } from '../syncers/WhiteListUpdater'
-
-const LoadingIndicator = (): JSX.Element => (
-  <div className="flex items-center justify-center mx-auto h-48">
-    <Loader type="Oval" color="rgb(45, 55, 75)" height={32} width={32} />
-  </div>
-)
 
 const NoMetamaskIndicator = (): JSX.Element => (
   <div className="container mx-auto px-4">
@@ -65,64 +56,46 @@ const NoMetamaskIndicator = (): JSX.Element => (
   </div>
 )
 
+export const BridgeContext = createContext<Bridge | null>(null)
+
 const AppContent = (): JSX.Element => {
+  const bridge = useContext(BridgeContext)
   const {
-    app: { connectionState, arbTokenBridgeLoaded, verifying, arbTokenBridge }
+    app: { connectionState }
   } = useAppState()
 
-  switch (connectionState) {
-    case ConnectionState.LOADING:
-      return <LoadingIndicator />
-    case ConnectionState.NO_METAMASK:
-      return <NoMetamaskIndicator />
-    case ConnectionState.WRONG_NETWORK:
-      return <ConnectWarning />
-    case ConnectionState.SEQUENCER_UPDATE:
-      return (
-        <Alert type="red">
-          Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for
-          maintenance. Thanks for your patience!
-        </Alert>
-      )
-    case ConnectionState.DEPOSIT_MODE:
-    case ConnectionState.WITHDRAW_MODE:
-      if (!arbTokenBridgeLoaded) {
-        return <LoadingIndicator />
-      }
+  if (connectionState === ConnectionState.NO_METAMASK) {
+    return <NoMetamaskIndicator />
+  }
+  if (connectionState === ConnectionState.WRONG_NETWORK) {
+    return <ConnectWarning />
+  }
+  if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
+    return (
+      <Alert type="red">
+        Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for
+        maintenance. Thanks for your patience!
+      </Alert>
+    )
+  }
 
-      if (verifying === WhiteListState.VERIFYING) {
-        return (
-          <div className="flex justify-center mb-4">
-            <Alert type="blue">Verifying...</Alert>
-          </div>
-        )
-      }
-      if (verifying === WhiteListState.DISALLOWED) {
-        return (
-          <div className="flex justify-center mb-4">
-            <Alert type="red">
-              Stop! You are attempting to use Mainnet Beta with unapproved
-              address {arbTokenBridge.walletAddress}! <br /> Switch to an
-              approved address or connect to Rinkeby for our public testnet.
-            </Alert>
-          </div>
-        )
-      }
-      return (
+  return (
+    <>
+      {bridge && (
         <>
+          <PendingTransactionsUpdater />
           <BalanceUpdater />
           <PWLoadedUpdater />
           <TokenListSyncer />
-
-          <MainContent />
         </>
-      )
-    default:
-      return <></>
-  }
-}
+      )}
 
-export const BridgeContext = createContext<Bridge | null>(null)
+      <MessageOverlay />
+
+      <MainContent />
+    </>
+  )
+}
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
@@ -145,12 +118,107 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   }, [])
 
   useEffect(() => {
+    if (provider) {
+      const changeNetwork = async (chainId: string) => {
+        const hexChainId = hexValue(BigNumber.from(chainId))
+        const metamask = await provider?.getProvider()
+        await metamask?.request({
+          method: 'wallet_switchEthereumChain',
+          params: [
+            {
+              chainId: hexChainId // A 0x-prefixed hexadecimal string
+            }
+          ]
+        })
+      }
+      actions.app.setChangeNetwork(changeNetwork)
+    }
+  }, [provider])
+
+  async function initBridge(): Promise<Bridge | undefined> {
+    function getL1Signer(network: Network) {
+      if (network.isArbitrum) {
+        const partnerNetwork = networks[network.partnerChainID]
+        const ethProvider = new ethers.providers.JsonRpcProvider(
+          partnerNetwork.url
+        )
+        return ethProvider.getSigner(usersMetamaskAddress!)
+      }
+      return library?.getSigner(0) as JsonRpcSigner
+    }
+
+    function getL2Signer(network: Network) {
+      if (network.isArbitrum) {
+        return library?.getSigner(0) as JsonRpcSigner
+      }
+      const partnerNetwork = networks[network.partnerChainID]
+
+      const arbProvider = new ethers.providers.JsonRpcProvider(
+        partnerNetwork.url
+      )
+      return arbProvider.getSigner(usersMetamaskAddress!)
+    }
+
+    actions.app.setNetworkID(`${networkVersion}`)
+
+    const network = networks[`${networkVersion}`]
+    if (!network) {
+      console.warn('WARNING: unsupported network')
+      actions.app.setConnectionState(ConnectionState.WRONG_NETWORK)
+      return
+    }
+
+    const l1Signer = getL1Signer(network)
+    const l2Signer = getL2Signer(network)
+    const bridge = await Bridge.init(
+      l1Signer,
+      l2Signer,
+      network.tokenBridge.l1Address,
+      network.tokenBridge.l2Address
+    )
+    setGlobalBridge(bridge)
+    if (!network.isArbitrum) {
+      console.info('deposit mode detected')
+      actions.app.setConnectionState(ConnectionState.DEPOSIT_MODE)
+    } else {
+      console.info('withdrawal mode detected')
+      actions.app.setConnectionState(ConnectionState.WITHDRAW_MODE)
+    }
+  }
+
+  // reset bridge on network switch, this inits all other resets
+  useEffect(() => {
     if (!active) {
       return
     }
 
+    if (globalBridge) {
+      setGlobalBridge(null)
+    }
+  }, [networkVersion])
+
+  // after bridge is set to null, we start recreating everything
+  useEffect(() => {
+    if (!active || globalBridge) {
+      return
+    }
+
     actions.app.reset()
-    setGlobalBridge(null)
+
+    // if (globalBridge) {
+    //   const network = networks[`${networkVersion}`]
+    //   // globalBridge.l1Bridge.l1Signer = getL1Signer(network)
+    //   // globalBridge.l2Bridge.l2Signer = getL2Signer(network)
+    //   globalBridge.l1Bridge = new L1Bridge(
+    //     network.tokenBridge.l1Address,
+    //     getL1Signer(network)
+    //   )
+    //   globalBridge.l2Bridge = new L2Bridge(
+    //     network.tokenBridge.l2Address,
+    //     getL2Signer(network)
+    //   )
+    //   return
+    // }
 
     try {
       if (!provider || !networkVersion || !library) {
@@ -158,70 +226,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         return
       }
 
-      actions.app.setNetworkID(`${networkVersion}`)
-      // setChangeListeners()
-
-      const network = networks[`${networkVersion}`]
-      if (!network) {
-        console.warn('WARNING: unsupported network')
-        actions.app.setConnectionState(ConnectionState.WRONG_NETWORK)
-        return
-      }
-
-      const partnerNetwork = networks[network.partnerChainID]
-      // if(network.chainID === '1' || partnerNetwork.chainID === '1'){
-      //   return setConnectionState(ConnectionState.SEQUENCER_UPDATE)
-      // }
-      if (!network.isArbitrum) {
-        console.info('deposit mode detected')
-        const arbProvider = new ethers.providers.JsonRpcProvider(
-          partnerNetwork.url
-        )
-
-        const l1Signer = library?.getSigner(0) as JsonRpcSigner
-        const l2Signer = arbProvider.getSigner(usersMetamaskAddress!)
-        Bridge.init(
-          l1Signer,
-          l2Signer,
-          network.tokenBridge.l1Address,
-          network.tokenBridge.l2Address
-        )
-          .then(b => {
-            setGlobalBridge(b)
-            // actions.app.setBridge(b)
-            actions.app.setConnectionState(ConnectionState.DEPOSIT_MODE)
-          })
-          .catch(ex => {
-            console.log(ex)
-          })
-      } else {
-        console.info('withdrawal mode detected')
-        const ethProvider = new ethers.providers.JsonRpcProvider(
-          partnerNetwork.url
-        )
-
-        const l1Signer = ethProvider.getSigner(usersMetamaskAddress!)
-        const l2Signer = library?.getSigner(0) as JsonRpcSigner
-        Bridge.init(
-          l1Signer,
-          l2Signer,
-          network.tokenBridge.l1Address,
-          network.tokenBridge.l2Address
-        )
-          .then(b => {
-            setGlobalBridge(b)
-            // actions.app.setBridge(b)
-            actions.app.setConnectionState(ConnectionState.WITHDRAW_MODE)
-          })
-          .catch(ex => {
-            console.log(ex)
-          })
-      }
+      initBridge()
     } catch (e) {
       console.log(e)
       actions.app.setConnectionState(ConnectionState.NO_METAMASK)
     }
-  }, [networkVersion])
+  }, [globalBridge, active, networkVersion])
 
   return (
     <BridgeContext.Provider value={globalBridge}>
@@ -236,24 +246,15 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     </BridgeContext.Provider>
   )
 }
-// Logger.setLogLevel(LogLevel.OFF)
-function getLibrary(provider: any): Web3Provider {
-  const library = new Web3Provider(provider, 'any')
-  // const library = new Web3Provider(provider)
-  library.pollingInterval = 3000
 
+function getLibrary(provider: any): Web3Provider {
+  Logger.setLogLevel(LogLevel.ERROR)
+
+  const library = new Web3Provider(provider)
+  // const library = new Web3Provider(provider)
+  library.pollingInterval = 2000
   return library
 }
-// window.onerror = function myErrorHandler(errorMsg, url, lineNumber) {
-//   console.log(`Error occured: ${errorMsg}`) // or any message
-//   return false
-// }
-// window.onunhandledrejection = promiseRejectionEvent => {
-//   console.log(`Error occured2: ${promiseRejectionEvent.reason}`) // or any message
-//   promiseRejectionEvent.preventDefault()
-//   promiseRejectionEvent.stopPropagation()
-//   promiseRejectionEvent.stopImmediatePropagation()
-// }
 
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))

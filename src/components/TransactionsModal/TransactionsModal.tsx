@@ -6,16 +6,14 @@ import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 
 export const TransactionsModalBody = (): JSX.Element => {
   const {
-    app: {
-      arbTokenBridge: {
-        transactions: { transactions }
-      }
-    }
+    app: { mergedTransactions }
   } = useAppState()
 
   return (
-    <div>
-      <TransactionsTable transactions={transactions} />
+    <div className="flex w-full justify-center ">
+      <div className="max-h-transactionsList overflow-auto  w-full">
+        <TransactionsTable transactions={mergedTransactions} />
+      </div>
     </div>
   )
 }

@@ -11,11 +11,14 @@ const BalanceUpdater = (): JSX.Element => {
     app: { arbTokenBridge }
   } = useAppState()
   const latestTokenBridge = useLatest(arbTokenBridge)
+  const latestBridge = useLatest(bridge)
 
   useEffect(() => {
     latestTokenBridge?.current?.balances?.update()
     const interval = setInterval(() => {
-      latestTokenBridge?.current?.balances?.update()
+      if (latestBridge.current) {
+        latestTokenBridge?.current?.balances?.update()
+      }
     }, 5000)
     return () => clearInterval(interval)
   }, [bridge])

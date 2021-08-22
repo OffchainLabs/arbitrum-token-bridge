@@ -1,5 +1,7 @@
 import React from 'react'
 
+import Loader from 'react-loader-spinner'
+
 type ButtonSize = 'sm' | 'md'
 type ButtonVariant = 'blue' | 'navy' | 'white'
 
@@ -10,14 +12,15 @@ const variants: Record<string, string> = {
 }
 
 const sizeVariants: Record<string, string> = {
-  md: 'text-base leading-6 font-medium',
-  sm: 'text-sm leading-5 font-medium'
+  md: 'text-base leading-6 font-medium h-10',
+  sm: 'text-sm leading-5 font-medium h-8'
 }
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   size?: ButtonSize
-  children: JSX.Element | string
+  children: React.ReactNode
+  isLoading?: boolean
   className?: string
 }
 
@@ -27,17 +30,26 @@ const Button = ({
   size = 'md',
   className,
   disabled,
+  isLoading,
   ...props
 }: ButtonProps): JSX.Element => {
   return (
     <button
       type="button"
-      className={`flex items-center justify-center shadow-sm rounded-md px-5 py-2.5 hover:opacity-90 active:opacity-80  focus:outline-none 
+      className={`flex items-center justify-center shadow-sm rounded-md px-5 py-2.5 focus:outline-none 
         ${className} ${variants[variant]} ${sizeVariants[size]} 
-        ${disabled ? ' opacity-50 ' : ' opacity-100 '}`}
+        ${
+          disabled
+            ? ' opacity-50 '
+            : ' hover:opacity-90 active:opacity-80 opacity-100 '
+        }`}
       {...props}
     >
-      {children}
+      {isLoading ? (
+        <Loader type="Oval" color="rgb(45, 55, 75)" height={14} width={14} />
+      ) : (
+        children
+      )}
     </button>
   )
 }

@@ -1,8 +1,8 @@
 import { Bridge } from 'arb-ts'
-import { BridgeToken } from 'token-bridge-sdk'
+import { BigNumber } from 'ethers'
+import { ArbTokenBridge, BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
-import { ArbTokenBridge } from '../../types/ArbTokenBridge'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState } from './state'
 
@@ -15,6 +15,13 @@ export const setConnectionState = (
 
 export const setBridge = ({ state }: Context, bridge: Bridge) => {
   state.app.bridge = bridge
+}
+
+export const setPendingTransactionsUpdated = (
+  { state }: Context,
+  updated: boolean
+) => {
+  state.app.pendingTransactionsUpdated = updated
 }
 
 export const setNetworkID = ({ state }: Context, networkID: string) => {
@@ -35,11 +42,19 @@ export const setSelectedToken = (
   state.app.selectedToken = token ? { ...token } : null
 }
 
+export const setChangeNetwork = (
+  { state }: Context,
+  func: (chainID: string) => Promise<void>
+) => {
+  state.app.changeNetwork = func
+}
+
 export const reset = ({ state }: Context) => {
-  state.app.verifying = WhiteListState.ALLOWED
+  state.app.arbTokenBridge = {} as ArbTokenBridge
+  state.app.verifying = WhiteListState.VERIFYING
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
-  state.app.arbTokenBridge = {} as ArbTokenBridge
+  state.app.pendingTransactionsUpdated = false
 }
 
 export const setPWLoadingState = (

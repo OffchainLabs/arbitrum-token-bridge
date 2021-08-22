@@ -1,7 +1,5 @@
 import mainnetTokenList from '../media/token-list-42161.json'
 
-export * from './web3'
-
 const allMainnetAddresses: Set<string> = new Set([])
 mainnetTokenList.tokens.forEach(tokenInfo => {
   allMainnetAddresses.add(tokenInfo.address.toLocaleLowerCase())

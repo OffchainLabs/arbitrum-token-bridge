@@ -1,4 +1,8 @@
-import React, { useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+
+import { Provider, TransactionReceipt } from '@ethersproject/providers'
+import { useLatest } from 'react-use'
+import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { Button } from '../common/Button'
@@ -10,12 +14,17 @@ import { NetworkBox } from './NetworkBox'
 const TransferPanel = (): JSX.Element => {
   const {
     app: {
+      changeNetwork,
       selectedToken,
       isDepositMode,
+      networkDetails,
+      pendingTransactions,
       arbTokenBridge: { eth, token, bridgeTokens }
     }
   } = useAppState()
   const [tokeModalOpen, setTokenModalOpen] = useState(false)
+  const latestEth = useLatest(eth)
+  const latestNetworkDetails = useLatest(networkDetails)
 
   const [depositing, setDepositing] = useState(false)
 
@@ -23,27 +32,46 @@ const TransferPanel = (): JSX.Element => {
   const [l2Amount, setl2Amount] = useState<string>('')
 
   const deposit = async () => {
-    setDepositing(false)
+    setDepositing(true)
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
+        if (networkDetails?.isArbitrum === true) {
+          await changeNetwork?.(networkDetails.partnerChainID)
+          while (
+            latestNetworkDetails.current?.isArbitrum ||
+            !latestEth.current
+          ) {
+            await new Promise(r => setTimeout(r, 100))
+          }
+        }
         if (selectedToken) {
-          console.log('bridgeTokens[selectedToken.address]', bridgeTokens)
           // TODO allowed returns false even after approval
           if (!bridgeTokens[selectedToken.address]?.allowed) {
             await token.approve(selectedToken.address)
           }
-          await token.deposit(selectedToken.address, amount)
+          token.deposit(selectedToken.address, amount)
         } else {
-          await eth.deposit(amount)
+          latestEth.current.deposit(amount)
         }
-      } else if (selectedToken) {
-        if (!bridgeTokens[selectedToken.address]?.allowed) {
-          await token.approve(selectedToken.address)
-        }
-        await token.withdraw(selectedToken.address, amount)
       } else {
-        await eth.withdraw(amount)
+        if (networkDetails?.isArbitrum === false) {
+          await changeNetwork?.(networkDetails.partnerChainID)
+          while (
+            !latestNetworkDetails.current?.isArbitrum ||
+            !latestEth.current
+          ) {
+            await new Promise(r => setTimeout(r, 100))
+          }
+        }
+        if (selectedToken) {
+          if (!bridgeTokens[selectedToken.address]?.allowed) {
+            await token.approve(selectedToken.address)
+          }
+          token.withdraw(selectedToken.address, amount)
+        } else {
+          eth.withdraw(amount)
+        }
       }
     } catch (ex) {
       console.log(ex)
@@ -64,7 +92,9 @@ const TransferPanel = (): JSX.Element => {
         >
           Token: {selectedToken ? selectedToken.symbol : 'Eth'}
         </button>
-        <StatusBadge>2 Processing</StatusBadge>
+        {pendingTransactions?.length > 0 && (
+          <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
+        )}
       </div>
       <div className="flex flex-col w-full max-w-networkBox mx-auto mb-8">
         <div className="flex flex-col">
@@ -89,30 +119,21 @@ const TransferPanel = (): JSX.Element => {
 
         <div className="h-6" />
         {isDepositMode ? (
-          <Button onClick={deposit} disabled={depositing}>
-            {/* {depositing ? ( */}
-            {/*  <Loader */}
-            {/*    type="Oval" */}
-            {/*    color="rgb(45, 55, 75)" */}
-            {/*    height={14} */}
-            {/*    width={14} */}
-            {/*  /> */}
-            {/* ) : ( */}
+          <Button
+            onClick={deposit}
+            disabled={depositing || (isDepositMode && l1Amount === '')}
+            isLoading={depositing}
+          >
             Deposit
-            {/* )} */}
           </Button>
         ) : (
-          <Button onClick={deposit} disabled={depositing} variant="navy">
-            {/* {depositing ? ( */}
-            {/*  <Loader */}
-            {/*    type="Oval" */}
-            {/*    color="rgb(45, 55, 75)" */}
-            {/*    height={14} */}
-            {/*    width={14} */}
-            {/*  /> */}
-            {/* ) : ( */}
+          <Button
+            onClick={deposit}
+            disabled={depositing || (isDepositMode && l2Amount === '')}
+            variant="navy"
+            isLoading={depositing}
+          >
             Withdraw
-            {/* )} */}
           </Button>
         )}
       </div>

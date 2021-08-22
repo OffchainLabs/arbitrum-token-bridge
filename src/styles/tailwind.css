@@ -39,3 +39,8 @@ input[type=number] {
 button, input {
   outline: none!important;
 }
+
+/*react error overlay hidden in dev mode while testing network switches which trow errors*/
+body > iframe {
+    display: none!important;
+}

@@ -18,16 +18,12 @@ const PWLoadedUpdater = (): JSX.Element => {
   } = useAppState()
 
   useEffect(() => {
-    if (!arbTokenBridgeLoaded) {
+    if (!arbTokenBridgeLoaded || !l1NetworkDetails?.chainID || !bridge) {
       return
     }
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
       networks[l1NetworkDetails?.chainID || ''].tokenBridge
-    const gatewaysToUse = [
-      l2ERC20Gateway,
-      l2CustomGateway,
-      l2WethGateway
-    ].filter(gw => gw)
+    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
     console.log('**** setting initial pending withdrawals ****')
 
     bridge?.l2Signer?.getTransactionCount()?.then((nonce: number) => {

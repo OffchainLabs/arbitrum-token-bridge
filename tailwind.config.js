@@ -12,7 +12,8 @@ module.exports = {
         gray1: '#333333',
         gray3: '#828282',
         gray6: '#F2F2F2',
-        'main-bg': '#E5E5E5'
+        'main-bg': '#E5E5E5',
+        tokenPill: '#EDF4FF'
       },
       fontFamily: {
         serif: "'Inter', sans-serif"
@@ -24,7 +25,8 @@ module.exports = {
         heading: '180px',
       },
       maxHeight: {
-        tokenList: '500px'
+        tokenList: '500px',
+        transactionsList: '550px'
       },
       spacing: {
         networkBox: '590px',

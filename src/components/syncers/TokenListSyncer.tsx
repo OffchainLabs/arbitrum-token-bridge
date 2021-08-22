@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 
-import tokenList from 'src/media/token-list-42161.json'
 import { TokenType } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
@@ -12,6 +11,7 @@ export interface TokenData {
   name: string
   symbol: string
 }
+
 export const TOKENS: TokenData[] = [
   {
     address: '0xc7ad46e0b8a400bb3c915120d284aafba8fc4735',
