@@ -9,7 +9,7 @@ mainnetTokenList.tokens.forEach(tokenInfo => {
   allMainnetAddresses.add(tokenInfo.extensions.l1Address.toLocaleLowerCase())
 })
 
-const hardcodedWhitelist = new Set(["0xe54942077Df7b8EEf8D4e6bCe2f7B58B0082b0cd"])
+const hardcodedWhitelist = new Set(["0xe54942077Df7b8EEf8D4e6bCe2f7B58B0082b0cd"].map((address)=> address.toLocaleLowerCase() ))
 
 export interface BridgeConfig {
   ethProvider: ethers.providers.JsonRpcProvider
