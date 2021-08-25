@@ -29,7 +29,7 @@
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
     "arb-ts": "0.0.30",
-    "ethers": "5.0.24",
+    "ethers": "^5.1.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
