@@ -15,7 +15,7 @@ import {
   L1TokenData,
   L2ToL1EventResult,
   OutgoingMessageState,
-  OutboundTransferInitiatedResult,
+  WithdrawalInitiated,
   ERC20__factory
 } from 'arb-ts'
 import useTransactions from './useTransactions'
@@ -383,7 +383,7 @@ export const useArbTokenBridge = (
         await bridge.getDepositTokenEventData(receipt)
       )[0]
 
-      const seqNum = tokenDepositData._transferId
+      const seqNum = tokenDepositData._sequenceNumber
 
       const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
         seqNum
@@ -710,6 +710,7 @@ export const useArbTokenBridge = (
       const l2TokenData = l2Tokens[address]
       const l2Address =
         l2TokenData && l2TokenData.ERC20 && l2TokenData.ERC20.contract.address
+
       if (l1TokenData.ERC20) {
         const { symbol, allowed, decimals, name } = l1TokenData.ERC20
         const bridgeToken: ERC20BridgeToken = {
@@ -818,7 +819,7 @@ export const useArbTokenBridge = (
     const gateWayWithdrawalsResults = gateWayWithdrawalsResultsNested.flat()
     const symbols = await Promise.all(
       gateWayWithdrawalsResults.map(withdrawEventData =>
-        getTokenSymbol(withdrawEventData.token)
+        getTokenSymbol(withdrawEventData.l1Token)
       )
     )
 
@@ -837,7 +838,7 @@ export const useArbTokenBridge = (
       })
     )
     return gateWayWithdrawalsResults.map(
-      (withdrawEventData: OutboundTransferInitiatedResult, i) => {
+      (withdrawEventData: WithdrawalInitiated, i) => {
         // TODO: length != 1
         const eventDataArr = bridge.getWithdrawalsInL2Transaction(l2Txns[i])
         const {
@@ -866,7 +867,7 @@ export const useArbTokenBridge = (
           data,
           type: AssetType.ERC20,
           value: withdrawEventData._amount,
-          tokenAddress: withdrawEventData.token,
+          tokenAddress: withdrawEventData.l1Token,
           outgoingMessageState: outgoingMessageStates[i],
           symbol: symbols[i]
         }
