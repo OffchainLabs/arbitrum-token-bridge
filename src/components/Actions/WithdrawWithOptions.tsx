@@ -9,7 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 
 import { makeStyles } from '@material-ui/core/styles'
 
-import { ConnextModal } from '@connext/vector-modal'
+// import { ConnextModal } from '@connext/vector-modal'
 import { connextTxn } from 'util/index'
 import { AssetType } from 'token-bridge-sdk'
 import ConnextIcon from 'media/images/connext.png'
@@ -109,7 +109,7 @@ const WithdrawWithOptions = ({
         setValue(e.target.value, max)
       }}
     >
-      <ConnextModal
+      {/* <ConnextModal
         showModal={showModal}
         onClose={() => setShowModal(false)}
         depositChainId={+l2Network.chainID}
@@ -142,7 +142,7 @@ const WithdrawWithOptions = ({
             type: 'connext-withdraw'
           })
         }}
-      />
+      /> */}
       <Form>
         <FormControl
           aria-label="Small"
