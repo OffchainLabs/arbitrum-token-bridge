@@ -144,8 +144,8 @@ const App = ({ bridge }: AppProps) => {
 
             setPWLoadedState(PendingWithdrawalsLoadedState.READY)
           })
-          .catch(() => {
-            console.warn('error getting setInitialPendingWithdrawals')
+          .catch((e:any) => {
+            console.warn('error getting setInitialPendingWithdrawals',e)
 
             setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
           })
