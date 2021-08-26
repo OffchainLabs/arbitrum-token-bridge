@@ -1,12 +1,20 @@
 import React, { FormEventHandler, useMemo, useState } from 'react'
 
 import { BigNumber } from 'ethers'
-import { formatEther } from 'ethers/lib/utils'
+import { formatEther, isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import { TokenType } from 'token-bridge-sdk'
+import {
+  getTokenStatus,
+  tokenLists,
+  TokenStatus,
+  TokenType
+} from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
+import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
+import TokenBlacklistedDialog from './TokenBlacklistedDialog'
+import TokenConfirmationDialog from './TokenConfirmationDialog'
 
 interface TokenRowProps {
   address: string | null
@@ -21,14 +29,16 @@ const TokenRow = ({
 }: TokenRowProps): JSX.Element => {
   const {
     app: {
+      networkID,
       arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
   const actions = useActions()
 
+  // TODO should I check in bridgeTokens or in token-bridge-sdk/token-list
   const token = useMemo(
     () => (address ? bridgeTokens[address] : null),
-    [address]
+    [address, bridgeTokens]
   )
 
   const tokenName = useMemo(() => {
@@ -45,6 +55,23 @@ const TokenRow = ({
     return token ? token.symbol : ''
   }, [token, address])
 
+  const tokenLogo = useMemo<string | undefined>(() => {
+    if (!address) {
+      return 'https://ethereum.org/static/4b5288012dc4b32ae7ff21fccac98de1/31987/eth-diamond-black-gray.png'
+    }
+    if (networkID === null) {
+      return undefined
+    }
+    const url = tokenLists[networkID]?.whiteList?.find(
+      whitelistedToken =>
+        whitelistedToken.address?.toLowerCase() === address?.toLowerCase()
+    )?.logoURI
+    if (url?.startsWith('ipfs')) {
+      return `https://ipfs.io/ipfs/${url.substr(7)}`
+    }
+    return url
+  }, [address, networkID])
+
   function selectToken() {
     actions.app.setSelectedToken(token || null)
     onTokenSelected()
@@ -57,7 +84,16 @@ const TokenRow = ({
       className="flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
     >
       <div className="flex items-center">
-        <div className="rounded-full w-8 h-8 mr-4 bg-navy" />
+        {tokenLogo ? (
+          <img
+            src={tokenLogo}
+            alt="Token logo"
+            className="rounded-full w-8 h-8 mr-4"
+          />
+        ) : (
+          <div className="rounded-full w-8 h-8 mr-4 bg-navy" />
+        )}
+
         <p className="text-base leading-6 font-bold text-gray-900">
           {tokenName}
         </p>
@@ -75,10 +111,14 @@ export const TokenModalBody = ({
 }: {
   onTokenSelected: () => void
 }): JSX.Element => {
+  const [confirmationOpen, setConfirmationOpen] = useState(false)
+  const [blacklistedOpen, setBlacklistedOpen] = useState(false)
+
   const {
     app: {
       arbTokenBridge: { balances, token, pendingWithdrawalsMap },
-      isDepositMode
+      isDepositMode,
+      networkID
     }
   } = useAppState()
   const [newToken, setNewToken] = useState('')
@@ -98,21 +138,31 @@ export const TokenModalBody = ({
     return []
   }, [balances.erc20, isDepositMode])
 
+  const storeNewToken = async () => {
+    await token.add(newToken, TokenType.ERC20)
+    await token.updateBalances()
+  }
+
   const addNewToken: FormEventHandler = async e => {
     e.preventDefault()
 
-    if (isAddingToken) {
+    if (!isAddress(newToken) || isAddingToken) {
       return
     }
     setIsAddingToken(true)
+    console.log(newToken, networkID!)
     try {
-      await token.add(newToken, TokenType.ERC20)
-      await token.updateBalances()
-
-      setNewToken('')
+      if (getTokenStatus(newToken, networkID!) === TokenStatus.BLACKLISTED) {
+        setBlacklistedOpen(true)
+      } else if (getTokenStatus(newToken, networkID!) === TokenStatus.NEUTRAL) {
+        setConfirmationOpen(true)
+      } else {
+        await storeNewToken()
+      }
     } catch (ex) {
       console.log(ex)
     } finally {
+      setNewToken('')
       setIsAddingToken(false)
     }
   }
@@ -140,6 +190,15 @@ export const TokenModalBody = ({
           />
         ))}
       </div>
+      <TokenConfirmationDialog
+        onAdd={storeNewToken}
+        open={confirmationOpen}
+        setOpen={setConfirmationOpen}
+      />
+      <TokenBlacklistedDialog
+        open={blacklistedOpen}
+        setOpen={setBlacklistedOpen}
+      />
       <form onSubmit={addNewToken} className="flex flex-col">
         <label
           htmlFor="newTokenAddress"
@@ -153,13 +212,14 @@ export const TokenModalBody = ({
             value={newToken}
             onChange={e => setNewToken(e.target.value)}
             placeholder="Token address"
-            className="text-dark-blue shadow-sm border border-gray-300 rounded-md p-2 w-full"
+            className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
           />
 
-          <button
+          <Button
+            variant="white"
             type="submit"
-            disabled={newToken === ''}
-            className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
+            disabled={newToken === '' || !isAddress(newToken)}
+            // className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
           >
             {isAddingToken ? (
               <Loader
@@ -171,7 +231,7 @@ export const TokenModalBody = ({
             ) : (
               'Add'
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

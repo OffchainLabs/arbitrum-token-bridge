@@ -129,7 +129,7 @@ const TransferPanel = (): JSX.Element => {
         ) : (
           <Button
             onClick={deposit}
-            disabled={depositing || (isDepositMode && l2Amount === '')}
+            disabled={depositing || (!isDepositMode && l2Amount === '')}
             variant="navy"
             isLoading={depositing}
           >

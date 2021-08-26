@@ -51,7 +51,7 @@ export const setChangeNetwork = (
 
 export const reset = ({ state }: Context) => {
   state.app.arbTokenBridge = {} as ArbTokenBridge
-  state.app.verifying = WhiteListState.VERIFYING
+  state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
   state.app.pendingTransactionsUpdated = false

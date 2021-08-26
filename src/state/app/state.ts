@@ -53,7 +53,7 @@ export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   connectionState: ConnectionState.LOADING,
   networkID: null,
-  verifying: WhiteListState.VERIFYING,
+  verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {

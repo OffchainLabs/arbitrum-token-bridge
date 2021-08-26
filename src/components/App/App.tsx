@@ -25,7 +25,6 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { WhiteListUpdater } from '../syncers/WhiteListUpdater'
 
 const NoMetamaskIndicator = (): JSX.Element => (
   <div className="container mx-auto px-4">
@@ -156,6 +155,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const arbProvider = new ethers.providers.JsonRpcProvider(
         partnerNetwork.url
       )
+
       return arbProvider.getSigner(usersMetamaskAddress!)
     }
 
@@ -235,11 +235,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   return (
     <BridgeContext.Provider value={globalBridge}>
-      <WhiteListUpdater
-        bridge={globalBridge}
-        walletAddress={usersMetamaskAddress}
-        chainID={networkVersion}
-      />
+      {/* //not needed for mainnet */}
+      {/* <WhiteListUpdater */}
+      {/*  bridge={globalBridge} */}
+      {/*  walletAddress={usersMetamaskAddress} */}
+      {/*  chainID={networkVersion} */}
+      {/* /> */}
 
       {globalBridge && <AppTokenBridgeStoreSync bridge={globalBridge} />}
       {children}
@@ -251,7 +252,6 @@ function getLibrary(provider: any): Web3Provider {
   Logger.setLogLevel(LogLevel.ERROR)
 
   const library = new Web3Provider(provider)
-  // const library = new Web3Provider(provider)
   library.pollingInterval = 2000
   return library
 }

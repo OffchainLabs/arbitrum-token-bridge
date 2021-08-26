@@ -1,5 +1,6 @@
-import { mainnetBlackList } from './mainnnetTokenLists';
-const mainnetWhitelist = [
+import { rinkebyBlackList, rinkebyWhitelist } from './rinkebyTokenLists';
+import { mainnetBlackList, mainnetWhitelist } from './mainnnetTokenLists';
+const mainnetWhitelistAddresses = [
     '0xc944e90c64b2c07662a292be6244bdf05cda44a7',
     '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2',
     '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
@@ -17,19 +18,21 @@ const mainnetWhitelist = [
     '0xa0b862F60edEf4452F25B4160F177db44DeB6Cf1',
     '0xf4D48Ce3ee1Ac3651998971541bAdbb9A14D7234'
 ];
-const tokenLists = {
+export const tokenLists = {
     '1': {
         whiteList: mainnetWhitelist,
         blackList: mainnetBlackList
-            .map(a => a.address.toLocaleLowerCase())
-            .map(a => a.toLocaleLowerCase())
     },
-    '42': {
-        whiteList: [
-            '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25',
-            '0xe41d965f6e7541139f8d9f331176867fb6972baf'
-        ].map(a => a.toLocaleLowerCase()),
-        blackList: [''].map(a => a.toLocaleLowerCase())
+    // '42': {
+    //   whiteList: [
+    //     '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25',
+    //     '0xe41d965f6e7541139f8d9f331176867fb6972baf'
+    //   ].map(a => a.toLocaleLowerCase()),
+    //   blackList: []
+    // },
+    '4': {
+        whiteList: rinkebyWhitelist,
+        blackList: rinkebyBlackList
     }
 };
 export var TokenStatus;
@@ -39,15 +42,19 @@ export var TokenStatus;
     TokenStatus[TokenStatus["NEUTRAL"] = 2] = "NEUTRAL";
 })(TokenStatus || (TokenStatus = {}));
 export const getTokenStatus = (_tokenAddress, network) => {
-    const tokenAddress = _tokenAddress.toLocaleLowerCase();
+    const tokenAddress = _tokenAddress.toLowerCase();
     const list = tokenLists[network];
     if (!list) {
         return TokenStatus.NEUTRAL;
     }
-    if (list.whiteList.includes(tokenAddress)) {
+    if (list.whiteList
+        .map(token => token.address.toLowerCase())
+        .includes(tokenAddress)) {
         return TokenStatus.WHITELISTED;
     }
-    else if (list.blackList.includes(tokenAddress)) {
+    else if (list.blackList
+        .map(token => token.address.toLowerCase())
+        .includes(tokenAddress)) {
         return TokenStatus.BLACKLISTED;
     }
     else {

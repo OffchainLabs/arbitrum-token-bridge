@@ -24,21 +24,27 @@ const PWLoadedUpdater = (): JSX.Element => {
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
       networks[l1NetworkDetails?.chainID || ''].tokenBridge
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
-    console.log('**** setting initial pending withdrawals ****')
+    console.log(
+      '**** setting initial pending withdrawals ****',
+      l2ERC20Gateway,
+      l2CustomGateway,
+      l2WethGateway
+    )
 
     bridge?.l2Signer?.getTransactionCount()?.then((nonce: number) => {
       if (nonce === 0) {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
       } else {
+        console.log('Nonce is ', nonce)
         setInitialPendingWithdrawals(gatewaysToUse)
           .then(() => {
             console.info('Setting withdawals to ready state')
 
             actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
           })
-          .catch(() => {
-            console.warn('error getting setInitialPendingWithdrawals')
+          .catch(ex => {
+            console.warn('error getting setInitialPendingWithdrawals', ex)
 
             actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.ERROR)
           })

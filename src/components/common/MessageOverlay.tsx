@@ -1,13 +1,10 @@
-import React, { Fragment, useRef, useState } from 'react'
+import React, { Fragment, useRef } from 'react'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { CheckIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 
 import { useAppState } from '../../state'
-import { WhiteListState } from '../../state/app/state'
 import { ConnectionState } from '../../util'
-import { Alert } from './Alert'
 
 const LoadingIndicator = (): JSX.Element => (
   <div className="flex items-center justify-center mx-auto">
@@ -17,52 +14,47 @@ const LoadingIndicator = (): JSX.Element => (
 
 const MessageOverlayContent = (): JSX.Element => {
   const {
-    app: { connectionState, arbTokenBridgeLoaded, verifying, arbTokenBridge }
+    app: { connectionState }
   } = useAppState()
 
-  // if (verifying === WhiteListState.VERIFYING) {
-  //   return (
-  //     <div className="flex justify-center mb-4">
-  //       <Alert type="blue">Verifying...</Alert>
-  //     </div>
-  //   )
-  // }
-
   if (
-    connectionState === ConnectionState.LOADING ||
-    verifying === WhiteListState.VERIFYING
+    connectionState === ConnectionState.LOADING
+    // ||
+    // verifying === WhiteListState.VERIFYING
   ) {
     return <LoadingIndicator />
   }
 
-  if (
-    connectionState !== ConnectionState.LOADING &&
-    verifying === WhiteListState.DISALLOWED
-  ) {
-    return (
-      <div className="flex justify-center shadow-xl">
-        <Alert type="red">
-          Stop! You are attempting to use Mainnet Beta with unapproved address{' '}
-          {arbTokenBridge.walletAddress}! <br /> Switch to an approved address
-          or connect to Rinkeby for our public testnet.
-        </Alert>
-      </div>
-    )
-  }
+  // // not needed for the Mainnet release, probably safe to just delete
+  // if (
+  //   connectionState !== ConnectionState.LOADING &&
+  //   verifying === WhiteListState.DISALLOWED
+  // ) {
+  //   return (
+  //     <div className="flex justify-center shadow-xl">
+  //       <Alert type="red">
+  //         Stop! You are attempting to use Mainnet Beta with unapproved address{' '}
+  //         {arbTokenBridge.walletAddress}! <br /> Switch to an approved address
+  //         or connect to Rinkeby for our public testnet.
+  //       </Alert>
+  //     </div>
+  //   )
+  // }
   return <div></div>
 }
 
 const MessageOverlay = (): JSX.Element => {
   const {
-    app: { connectionState, arbTokenBridgeLoaded, verifying }
+    app: { connectionState, arbTokenBridgeLoaded }
   } = useAppState()
   const focusRef = useRef(null)
 
   if (
     !arbTokenBridgeLoaded ||
-    connectionState === ConnectionState.LOADING ||
-    verifying === WhiteListState.VERIFYING ||
-    verifying === WhiteListState.DISALLOWED
+    connectionState === ConnectionState.LOADING
+    // ||
+    // verifying === WhiteListState.VERIFYING ||
+    // verifying === WhiteListState.DISALLOWED
   ) {
     return (
       <Transition.Root show as={Fragment}>

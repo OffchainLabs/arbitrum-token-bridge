@@ -1,8 +1,7 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts';
-import { BigNumber, ContractReceipt, Signer } from 'ethers';
-import { ContractTransaction } from '@ethersproject/contracts';
-import { NewTransaction, Transaction } from './useTransactions';
+import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers';
+import { FailedTransaction, NewTransaction, Transaction } from './useTransactions';
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
     type: AssetType;
     value: BigNumber;
@@ -94,13 +93,19 @@ export interface ArbTokenBridgeToken {
     triggerOutbox: (id: string) => Promise<void | ContractReceipt>;
     updateBalances: () => Promise<void>;
 }
-export interface ArbTokenBridgeTransactions {
-    transactions: Transaction[];
-    clearPendingTransactions: () => void;
-    setTransactionConfirmed: (txId: string) => void;
-    updateTransaction: (txReceipt: TransactionReceipt, tx?: ContractTransaction) => void;
+export interface TransactionActions {
+    addFailedTransaction: (transaction: FailedTransaction) => void;
+    setTransactionSuccess: (txID: string) => void;
+    setTransactionFailure: (txID?: string) => void;
+    removeTransaction: (txID: string) => void;
     addTransaction: (transaction: NewTransaction) => void;
+    clearPendingTransactions: () => void;
+    setTransactionConfirmed: (txID: string) => void;
+    updateTransaction: (txReceipt: TransactionReceipt, tx?: ethers.ContractTransaction) => void;
 }
+export declare type ArbTokenBridgeTransactions = {
+    transactions: Transaction[];
+} & Pick<TransactionActions, 'addTransaction' | 'clearPendingTransactions' | 'setTransactionConfirmed' | 'updateTransaction'>;
 export interface ArbTokenBridge {
     walletAddress: string;
     bridgeTokens: ContractStorage<BridgeToken>;

@@ -1,10 +1,4 @@
-import mainnetTokenList from '../media/token-list-42161.json'
-
-const allMainnetAddresses: Set<string> = new Set([])
-mainnetTokenList.tokens.forEach(tokenInfo => {
-  allMainnetAddresses.add(tokenInfo.address.toLocaleLowerCase())
-  allMainnetAddresses.add(tokenInfo.extensions.l1Address.toLocaleLowerCase())
-})
+import { tokenLists } from 'token-bridge-sdk'
 
 export enum ConnectionState {
   LOADING,
@@ -22,5 +16,5 @@ export enum PendingWithdrawalsLoadedState {
 }
 
 export const isMainnetWhiteListed = (address: string) => {
-  return allMainnetAddresses.has(address.toLocaleLowerCase())
+  return new Set(tokenLists['1'].whiteList).has(address.toLocaleLowerCase())
 }

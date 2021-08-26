@@ -1,6 +1,4 @@
-import { TransactionReceipt } from '@ethersproject/abstract-provider';
-import { AssetType } from './arbTokenBridge.types';
-import { ethers } from 'ethers';
+import { AssetType, TransactionActions } from './arbTokenBridge.types';
 export declare type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed';
 /** @interface
  * Transaction
@@ -31,14 +29,5 @@ export interface NewTransaction extends TransactionBase {
 export interface FailedTransaction extends TransactionBase {
     status: 'failure';
 }
-declare const useTransactions: () => [Transaction[], {
-    addTransaction: (transaction: NewTransaction) => void;
-    addFailedTransaction: (transaction: FailedTransaction) => void;
-    setTransactionSuccess: (txID: string) => void;
-    setTransactionFailure: (txID?: string | undefined) => void;
-    clearPendingTransactions: () => void;
-    setTransactionConfirmed: (txID: string) => void;
-    updateTransaction: (txReceipt: TransactionReceipt, tx?: ethers.ContractTransaction | undefined) => void;
-    removeTransaction: (txID: string) => void;
-}];
+declare const useTransactions: () => [Transaction[], TransactionActions];
 export default useTransactions;

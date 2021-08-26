@@ -1,47 +1,41 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 
-import { TokenType } from 'token-bridge-sdk'
+import { TokenType, tokenLists } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
+import { BridgeContext } from '../App/App'
 
-// TODO which list should I use
-export interface TokenData {
-  address: string
-  type: TokenType
-  name: string
-  symbol: string
-}
-
-export const TOKENS: TokenData[] = [
-  {
-    address: '0xc7ad46e0b8a400bb3c915120d284aafba8fc4735',
-    type: TokenType.ERC20,
-    name: 'Dai',
-    symbol: 'Dai'
-  },
-  {
-    address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-    type: TokenType.ERC20,
-    name: 'Uniswap',
-    symbol: 'Uni'
-  }
-]
 const TokenListSyncer = (): JSX.Element => {
+  const bridge = useContext(BridgeContext)
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, networkID }
   } = useAppState()
 
   useEffect(() => {
-    if (arbTokenBridge?.walletAddress) {
-      TOKENS.forEach(token => {
-        try {
-          arbTokenBridge?.token?.add(token.address, TokenType.ERC20)
-        } catch (ex) {
-          // not interested in ex here for now
-        }
-      })
+    if (!arbTokenBridge?.walletAddress || !networkID) {
+      return
     }
-  }, [arbTokenBridge?.walletAddress])
+    tokenLists[networkID]?.whiteList.forEach(token => {
+      bridge
+        ?.getAndUpdateL1TokenData(token.address) // check if exsits first before adding, because sdk will add to the cache even if it does not exist
+        .then(() => {
+          console.log('Adding token', token)
+          try {
+            arbTokenBridge?.token?.add(
+              token.address.toLowerCase(),
+              TokenType.ERC20
+            )
+          } catch (ex) {
+            // not interested in ex here for now
+          }
+        })
+        .catch(() => {
+          console.log(
+            `Tried to add ${token} but it is not deployed on the current network`
+          )
+        })
+    })
+  }, [arbTokenBridge?.walletAddress, networkID])
 
   return <></>
 }
