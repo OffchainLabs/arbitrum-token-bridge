@@ -198,7 +198,7 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
             const receipt = yield tx.wait();
             updateTransaction(receipt, tx);
             const tokenDepositData = (yield bridge.getDepositTokenEventData(receipt))[0];
-            const seqNum = tokenDepositData._transferId;
+            const seqNum = tokenDepositData._sequenceNumber;
             const l2RetryableHash = yield bridge.calculateL2RetryableTransactionHash(seqNum);
             const autoRedeemHash = yield bridge.calculateRetryableAutoRedeemTxnHash(seqNum);
             addTransaction({
@@ -521,7 +521,7 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
         const gateWayWithdrawalsResultsNested = yield Promise.all(gatewayAddresses.map(gatewayAddress => bridge.getGatewayWithdrawEventData(gatewayAddress, address)));
         console.log(`*** got token gateway event data in ${(new Date().getTime() - t) / 1000} seconds *** `);
         const gateWayWithdrawalsResults = gateWayWithdrawalsResultsNested.flat();
-        const symbols = yield Promise.all(gateWayWithdrawalsResults.map(withdrawEventData => getTokenSymbol(withdrawEventData.token)));
+        const symbols = yield Promise.all(gateWayWithdrawalsResults.map(withdrawEventData => getTokenSymbol(withdrawEventData.l1Token)));
         const l2Txns = yield Promise.all(gateWayWithdrawalsResults.map(withdrawEventData => bridge.getL2Transaction(withdrawEventData.txHash)));
         const outgoingMessageStates = yield Promise.all(gateWayWithdrawalsResults.map((withdrawEventData, i) => {
             const eventDataArr = bridge.getWithdrawalsInL2Transaction(l2Txns[i]);
@@ -546,7 +546,7 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
                 data,
                 type: AssetType.ERC20,
                 value: withdrawEventData._amount,
-                tokenAddress: withdrawEventData.token,
+                tokenAddress: withdrawEventData.l1Token,
                 outgoingMessageState: outgoingMessageStates[i],
                 symbol: symbols[i]
             };
