@@ -17,6 +17,13 @@ export const setBridge = ({ state }: Context, bridge: Bridge) => {
   state.app.bridge = bridge
 }
 
+export const setCurrentL1BlockNumber = (
+  { state }: Context,
+  blockNum: number
+) => {
+  state.app.currentL1BlockNumber = blockNum
+}
+
 export const setPendingTransactionsUpdated = (
   { state }: Context,
   updated: boolean

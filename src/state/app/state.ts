@@ -1,8 +1,11 @@
-import { Bridge, L2ToL1EventResult } from 'arb-ts'
+import { Bridge, OutgoingMessageState } from 'arb-ts'
+import dayjs from 'dayjs'
+import { ethers, BigNumber } from 'ethers'
 import { derived } from 'overmind'
 import {
   ArbTokenBridge,
   BridgeToken,
+  ERC20BridgeToken,
   L2ToL1EventResultPlus,
   Transaction
 } from 'token-bridge-sdk'
@@ -19,10 +22,22 @@ export enum WhiteListState {
 export interface MergedTransaction {
   direction: string
   status: string
-  createdAt?: string
+  createdAt: string | null
+  resolvedAt: string | null
   txId: string
   asset: string
   value: string | null
+  uniqueId: BigNumber | null
+  isWithdrawal: boolean
+  blockNum: number | null
+  tokenAddress: string | null
+}
+
+const outgoungStateToString = {
+  [OutgoingMessageState.NOT_FOUND]: 'Not Found',
+  [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
+  [OutgoingMessageState.CONFIRMED]: 'Confirmed',
+  [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
 export type AppState = {
@@ -37,6 +52,7 @@ export type AppState = {
   pendingTransactions: Transaction[]
   pendingTransactionsUpdated: boolean
   mergedTransactions: MergedTransaction[]
+  currentL1BlockNumber: number
 
   networkDetails: Network | null
   l1NetworkDetails: Network | null
@@ -74,10 +90,19 @@ export const defaultState: AppState = {
       return {
         direction: tx.type,
         status: tx.status,
-        createdAt: tx.timestampCreated?.toString(),
+        createdAt: tx.timestampCreated
+          ? dayjs(tx.timestampCreated).format('HH:mm:ss MM/DD/YYYY')
+          : null,
+        resolvedAt: tx.timestampResolved
+          ? dayjs(new Date(tx.timestampResolved)).format('HH:mm:ss MM/DD/YYYY')
+          : null,
         txId: tx.txID,
-        asset: tx.assetName,
-        value: tx.value
+        asset: tx.assetName?.toLowerCase(),
+        value: tx.value,
+        uniqueId: null, // not needed
+        isWithdrawal: false,
+        blockNum: tx.blockNumber || null,
+        tokenAddress: null // not needed
       }
     })
     const withdraw: MergedTransaction[] = (
@@ -86,16 +111,31 @@ export const defaultState: AppState = {
       ) as L2ToL1EventResultPlus[]
     ).map(tx => {
       return {
-        direction: 'outbox',
-        status: `${tx.outgoingMessageState}`,
-        createdAt: tx.timestamp,
+        direction: 'withdraw-l1',
+        status: outgoungStateToString[tx.outgoingMessageState],
+        createdAt: dayjs(tx.timestamp).format('HH:mm:ss MM/DD/YYYY'),
+        resolvedAt: null,
         txId: tx.uniqueId?.toString(),
-        asset: tx.type?.toLocaleLowerCase(),
-        value: tx.value?.toString()
+        asset: tx.symbol?.toLocaleLowerCase(),
+        value: ethers.utils.formatUnits(
+          tx.value?.toString(),
+          tx.tokenAddress
+            ? (
+                s.arbTokenBridge?.bridgeTokens[
+                  tx.tokenAddress
+                ] as ERC20BridgeToken
+              )?.decimals || 18
+            : 18
+        ),
+        uniqueId: tx.uniqueId,
+        isWithdrawal: true,
+        blockNum: tx.ethBlockNum.toNumber(),
+        tokenAddress: tx.tokenAddress || null
       }
     })
     return [...withdraw, ...deposit]
   }),
+  currentL1BlockNumber: 0,
 
   networkDetails: derived((s: AppState) => {
     if (!s.networkID) return null

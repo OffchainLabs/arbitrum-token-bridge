@@ -194,7 +194,7 @@ export default function Footer() {
             </div>
             <div className="mt-12 md:mt-0 order-4">
               <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                Offican Labs
+                Offchain Labs
               </h3>
               <ul className="mt-4 space-y-4">
                 {navigation.officanlabs.map(item => (

@@ -22,15 +22,15 @@ const Header: React.FC = () => {
                   Bridge
                 </a>
                 <a
-                  href="https://developer.offchainlabs.com/"
+                  href="https://portal.arbitrum.one/"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                   rel="noopener noreferrer"
                 >
-                  OffChain Labs
+                  Portal
                 </a>
                 <a
-                  href="https://developer.offchainlabs.com/"
+                  href="https://explorer.arbitrum.io/"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                   rel="noopener noreferrer"

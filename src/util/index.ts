@@ -16,5 +16,7 @@ export enum PendingWithdrawalsLoadedState {
 }
 
 export const isMainnetWhiteListed = (address: string) => {
-  return new Set(tokenLists['1'].whiteList).has(address.toLocaleLowerCase())
+  return !!tokenLists['1'].whiteList.find(
+    token => token.address.toLowerCase() === address.toLowerCase()
+  )
 }

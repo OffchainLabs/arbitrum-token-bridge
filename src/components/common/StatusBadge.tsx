@@ -3,6 +3,7 @@ import React from 'react'
 interface StatusBadgeProps {
   variant?: 'blue' | 'yellow' | 'green' | 'red'
   children: React.ReactNode
+  showDot?: boolean
 }
 
 const variants: Record<string, string> = {
@@ -20,13 +21,18 @@ const innerVariants: Record<string, string> = {
 
 const StatusBadge = ({
   variant = 'blue',
+  showDot = true,
   children
 }: StatusBadgeProps): JSX.Element => {
   return (
     <span
       className={`flex items-center px-3 py-1 inline-flex text-sm leading-5 font-medium rounded-xl ${variants[variant]}`}
     >
-      <span className={`mr-2 w-2 h-2 rounded-full ${innerVariants[variant]}`} />
+      {showDot && (
+        <span
+          className={`mr-2 w-2 h-2 rounded-full ${innerVariants[variant]}`}
+        />
+      )}
       {children}
     </span>
   )

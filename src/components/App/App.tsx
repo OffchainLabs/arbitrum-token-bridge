@@ -22,6 +22,7 @@ import { ConnectWarning } from '../ConnectWarning/ConnectWarning'
 import MainContent from '../MainContent/MainContent'
 import { AppTokenBridgeStoreSync } from '../syncers/AppTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
+import { CurrentL1BlockNumberUpdater } from '../syncers/CurrentL1BlockNumberUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
@@ -82,6 +83,7 @@ const AppContent = (): JSX.Element => {
     <>
       {bridge && (
         <>
+          <CurrentL1BlockNumberUpdater />
           <PendingTransactionsUpdater />
           <BalanceUpdater />
           <PWLoadedUpdater />
