@@ -272,8 +272,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }
-    if (tx?.timestamp) {
-      setResolvedTimestamp(txReceipt.transactionHash, tx.timestamp)
+    if (tx) {
+      setResolvedTimestamp(txReceipt.transactionHash, new Date().getTime())
     }
   }
 
