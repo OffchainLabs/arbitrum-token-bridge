@@ -87,7 +87,7 @@ const networks: Networks = {
     name: 'Arb1',
     url: 'https://arb1.arbitrum.io/rpc',
     gif: kovan,
-    explorerUrl: 'https://explorer.arbitrum.io',
+    explorerUrl: 'https://arbiscan.io',
     partnerChainID: '1',
     isArbitrum: true,
     tokenBridge: mainnetBridge,
