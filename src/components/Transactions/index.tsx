@@ -48,7 +48,7 @@ const TransactionHistory = ({
     () =>
       transactions
         .filter(txn => txn.sender === walletAddress)
-        .filter(txn => !txn.l1NetworkID || txn.l1NetworkID === l1NetworkID)
+        .filter(txn => txn.l1NetworkID === l1NetworkID)
         .reverse(),
     [transactions, walletAddress]
   )

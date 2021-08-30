@@ -38,7 +38,7 @@ const Header = ({
 
   const onClick = (e: any) => {
     e.preventDefault()
-    window.open(window.location.origin + '#info')
+    window.open('https://arbitrum.io/bridge-tutorial/')
   }
   const { name, isArbitrum } = useNetwork()
   const l2Network = useL2Network()

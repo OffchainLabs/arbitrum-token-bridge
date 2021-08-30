@@ -152,7 +152,7 @@ const TabsContainer = ({
               </Col>
             </Row>
             <Row style={{ fontSize: 14 }}>
-              {currentERC20Address ? (
+              {currentERC20Token ? (
                 <Col>
                   Token L1 Address:{' '}
                   <ExplorerLink
