@@ -11,9 +11,9 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { connextTxn, PendingWithdrawalsLoadedState } from 'util/index'
 import Alert from 'react-bootstrap/Alert'
-import { useL1Network } from 'components/App/NetworkContext'
+import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 import { Bridge, networks } from 'arb-ts'
-import { MAINNET_WHITELIST_ADDRESS } from './networks'
+import  Networks, { MAINNET_WHITELIST_ADDRESS } from './networks'
 import { renderAlert } from './Injecter'
 enum WhiteListState {
   VERIFYING,
@@ -36,7 +36,8 @@ const App = ({ bridge }: AppProps) => {
   const ethProvider = bridge.l1Bridge.l1Signer
     .provider as ethers.ethers.providers.Provider
 
-  const l1NetworkID = useL1Network().chainID
+  const l1NetworkID = useL1Network().chainID as string
+  const l2NetworkID = useL2Network().chainID as string
 
   const {
     walletAddress,
@@ -131,16 +132,17 @@ const App = ({ bridge }: AppProps) => {
       l2CustomGateway,
       l2WethGateway
     ].filter(gw => gw)
-    console.log('**** setting initial pending withdrawals ****')
+    console.log('**** starting: getting initial pending withdrawals ****')
 
     bridge.l2Signer.getTransactionCount().then((nonce: number) => {
       if (nonce === 0) {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         setPWLoadedState(PendingWithdrawalsLoadedState.READY)
       } else {
-        setInitialPendingWithdrawals(gatewaysToUse)
+        const bridgeUpdateBlockNumber = (Networks[l2NetworkID] &&  Networks[l2NetworkID].bridgeUpdateBlockNumber) || 0        
+        setInitialPendingWithdrawals(gatewaysToUse, { fromBlock:bridgeUpdateBlockNumber  })
           .then((res: any) => {
-            console.info('Setting withdawals to ready state')
+            console.info('Setting withdrawals to ready state')
 
             setPWLoadedState(PendingWithdrawalsLoadedState.READY)
           })

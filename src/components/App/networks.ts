@@ -18,6 +18,7 @@ export interface Network {
   gif?: string
   confirmPeriodBlocks?: number
   blockTime?: number //seconds
+  bridgeUpdateBlockNumber?: number
 }
 
 interface TokenBridge {
@@ -90,7 +91,8 @@ const networks: Networks = {
     partnerChainID: '1',
     isArbitrum: true,
     tokenBridge: mainnetBridge,
-    confirmPeriodBlocks: 45818
+    confirmPeriodBlocks: 45818,
+    bridgeUpdateBlockNumber: 224717
   },
   '421611': {
     chainID: '421611',
@@ -101,7 +103,8 @@ const networks: Networks = {
     partnerChainID: '4',
     isArbitrum: true,
     tokenBridge: RinkebyBridge,
-    confirmPeriodBlocks: 6545 // TODO
+    confirmPeriodBlocks: 6545, // TODO,
+    bridgeUpdateBlockNumber: 2386243
   },
   '4': {
     chainID: '4',
