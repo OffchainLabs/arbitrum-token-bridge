@@ -873,10 +873,10 @@ ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-arb-ts@0.0.31:
-  version "0.0.31"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.31.tgz#e9485c0a615e8a33d925080242e79252cfd13482"
-  integrity sha512-d/kgLovlq1Zafbc9aMyXlZpgNJKSV/b1Pf2V0QiqrVsfSR2jpqS72NoV31ivEAsWwQ36B2YpgANA+8wv0ABywg==
+arb-ts@0.0.33:
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.33.tgz#ed7e2de3ca40dc7dc737d47bc30d80f6301758b9"
+  integrity sha512-7/iotFdm52kdmMwq8/Nm31G5myl2Lcgqqyt/wZJRbz8vClxl8CTNEZn1XMwzvjjjCp8TSZHDT3bmlHp5Sz0Wjw==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
