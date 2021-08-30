@@ -745,10 +745,10 @@ export const useArbTokenBridge = (
     }
   }
 
-  const getEthWithdrawals = async () => {
+  const getEthWithdrawals = async (filter?: ethers.providers.Filter) => {
     const address = await bridge.l1Bridge.getWalletAddress()
     const t = new Date().getTime()
-    const withdrawalData = await bridge.getL2ToL1EventData(address)
+    const withdrawalData = await bridge.getL2ToL1EventData(address, filter)
 
     console.log(
       `*** got eth withdraw event in ${
@@ -801,13 +801,13 @@ export const useArbTokenBridge = (
       .filter((x): x is L2ToL1EventResultPlus => !!x)
   }
 
-  const getTokenWithdrawals = async (gatewayAddresses: string[]) => {
+  const getTokenWithdrawals = async (gatewayAddresses: string[], filter?: ethers.providers.Filter) => {
     const address = await bridge.l1Bridge.getWalletAddress()
     const t = new Date().getTime()
 
     const gateWayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
-        bridge.getGatewayWithdrawEventData(gatewayAddress, address)
+        bridge.getGatewayWithdrawEventData(gatewayAddress, address, filter)
       )
     )
     console.log(
@@ -876,15 +876,15 @@ export const useArbTokenBridge = (
     )
   }
 
-  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
+  const setInitialPendingWithdrawals = async (gatewayAddresses: string[], filter?: ethers.providers.Filter) => {
     const pendingWithdrawals: PendingWithdrawalsMap = {}
     const t = new Date().getTime()
     console.log('*** Getting initial pending withdrawal data ***')
 
     const l2ToL1Txns = (
       await Promise.all([
-        getEthWithdrawals(),
-        getTokenWithdrawals(gatewayAddresses)
+        getEthWithdrawals(filter),
+        getTokenWithdrawals(gatewayAddresses,filter)
       ])
     ).flat()
 
