@@ -65,7 +65,7 @@ const renderPopover = (
 ) => {
   const onClick = (e: any) => {
     e.preventDefault()
-    window.open(window.location.origin + '#info')
+    window.open('https://arbitrum.io/bridge-tutorial/')
   }
   return (
     <Popover id="popover-basic">
