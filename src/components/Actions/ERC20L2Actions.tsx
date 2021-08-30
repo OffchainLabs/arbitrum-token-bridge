@@ -6,6 +6,7 @@ import WithdrawWithOptions from './WithdrawWithOptions'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import WithdrawInfo from './WithdrawInfo'
 import { connextTxn } from 'util/index'
+import NumberInputForm from './numberInputForm'
 const { formatUnits } = utils
 type ActionsProps = {
   balances: BridgeBalance | undefined
@@ -30,38 +31,22 @@ const Actions = ({
     ? +formatUnits(balances.arbChainBalance, decimals)
     : 0
   const isDepositMode = useIsDepositMode()
-  const l2Only = false // TODO
-  const tokenSymbol = currentContract && currentContract.symbol
 
   return (
+    
     <div>
       <label htmlFor="basic-url">Token on L2: {arbChainBalance}</label>
-      {l2Only ? (
-        <div>
-          <i>{`${
-            tokenSymbol || 'Token'
-          } is an Arbitrum-only token; it can't be withdrawn to L1.`}</i>
-        </div>
-      ) : (
-        <>
-          {' '}
-          <WithdrawWithOptions
-            max={arbChainBalance}
-            text={'Withdraw Token'}
-            onSubmit={value => {
-              eth.withdraw(currentERC20Address, value)
-            }}
-            disabled={arbChainBalance === 0 || isDepositMode || l2Only}
-            buttonText={'withdraw'}
-            ethAddress={ethAddress}
-            assetId={currentERC20Address || undefined}
-            handleConnextTxn={handleConnextTxn}
-            tokenSymbol={tokenSymbol}
-            id={2}
-          />
-          <WithdrawInfo />
-        </>
-      )}
+      <NumberInputForm
+        max={arbChainBalance}
+        text={'Withdraw Token'}
+        onSubmit={value => {
+          eth.withdraw(currentERC20Address, value)
+        }}
+        disabled={isDepositMode || arbChainBalance === 0}
+        buttonText="withdraw"
+      /> 
+      <WithdrawInfo />
+
     </div>
   )
 }
