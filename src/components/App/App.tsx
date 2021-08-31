@@ -68,7 +68,21 @@ const AppContent = (): JSX.Element => {
     return <NoMetamaskIndicator />
   }
   if (connectionState === ConnectionState.WRONG_NETWORK) {
-    return <ConnectWarning />
+    return (
+      <div>
+        <div className="mb-4">
+          You are on the wrong network. Read our tutorial bellow on how to
+          switch networks.
+        </div>
+        <iframe
+          title="Bridge Tutorial"
+          src="https://arbitrum.io/bridge-tutorial/"
+          width="100%"
+          height={500}
+        />
+      </div>
+    )
+    // return <ConnectWarning />
   }
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
