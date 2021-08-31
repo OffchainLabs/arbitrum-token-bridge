@@ -20,6 +20,11 @@ import {
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 
+
+export const wait = (ms = 0) => {
+  return new Promise(res => setTimeout(res, ms))
+}
+
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
   value: BigNumber
@@ -224,6 +229,7 @@ export const useArbTokenBridge = (
       })
       const receipt = await tx.wait()
       updateTransactionStatus(receipt)
+      updateEthBalances()
 
       const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
       if (!seqNum) return
@@ -282,7 +288,7 @@ export const useArbTokenBridge = (
       // )
       // // if it times out... it just errors? that's fine?
       // updateTransactionStatus(retryableRec)
-
+      updateEthBalances()
       return receipt
     } catch (e) {
       console.error('depositEth err: ' + e)
@@ -307,7 +313,7 @@ export const useArbTokenBridge = (
           l1NetworkID: await l1NetworkIDCached()
         })
         const receipt = await tx.wait()
-
+        updateEthBalances()
         updateTransactionStatus(receipt)
 
         const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
@@ -387,6 +393,7 @@ export const useArbTokenBridge = (
     })
     try {
       const receipt = await tx.wait()
+      updateTokenBalances()
 
       updateTransactionStatus(receipt)
 
@@ -459,7 +466,7 @@ export const useArbTokenBridge = (
       )
 
       updateTransactionStatus(retryableRec)
-
+      updateTokenBalances()
       return receipt
     } catch (err) {
       setTransactionFailure(tx.hash)
@@ -488,6 +495,7 @@ export const useArbTokenBridge = (
     try {
       const receipt = await tx.wait()
       updateTransactionStatus(receipt)
+      updateTokenBalances()
 
       const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
         receipt
@@ -842,6 +850,8 @@ export const useArbTokenBridge = (
         bridge.getL2Transaction(withdrawEventData.txHash)
       )
     )
+    // pause to space out queries for rate limit:
+    await wait(500 * l2Txns.length)
 
     const outgoingMessageStates = await Promise.all(
       gateWayWithdrawalsResults.map((withdrawEventData, i) => {
