@@ -1,9 +1,10 @@
 {
-    "name": "Arb1",
-    "timestamp": "2021-08-23T23:16:37.005Z",
+    "logoURI": "https://raw.githubusercontent.com/OffchainLabs/arbitrum/master/docs/assets/arbitrum_logo.svg",
+    "name": "Arbitrum One",
+    "timestamp": "2021-08-30T18:34:01.181Z",
     "version": {
         "major": 0,
-        "minor": 1,
+        "minor": 2,
         "patch": 0
     },
     "tokens": [{
@@ -15,6 +16,17 @@
         "logoURI": "https://zapper.fi/images/ALCH-icon.png",
         "extensions": {
             "l1Address": "0x0000A1c00009A619684135B824Ba02f7FbF3A572",
+            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+    }, {
+        "chainId": 42161,
+        "address": "0xBfa641051Ba0a0Ad1b0AcF549a89536A0D76472E",
+        "name": "Badger",
+        "symbol": "BADGER",
+        "decimals": 18,
+        "logoURI": "https://zapper.fi/images/BADGER-icon.png",
+        "extensions": {
+            "l1Address": "0x3472A5A71965499acd81997a54BBA8D852C6E53d",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
@@ -111,7 +123,6 @@
         "name": "dForce EUR",
         "symbol": "EUX",
         "decimals": 18,
-        "logoURI": "",
         "extensions": {
             "l1Address": "0xb986F3a2d91d3704Dc974A24FB735dCc5E3C1E70",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
@@ -133,7 +144,6 @@
         "name": "GMX",
         "symbol": "GMX",
         "decimals": 18,
-        "logoURI": "",
         "extensions": {
             "l1Address": "0xbc30049ADC73dE06D7a98A5189203aAC66B2c830",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
@@ -145,6 +155,7 @@
         "symbol": "GNO",
         "decimals": 18,
         "logoURI": "https://zapper.fi/images/GNO-icon.png",
+
         "extensions": {
             "l1Address": "0x6810e776880C02933D47DB1b9fc05908e5386b96",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
@@ -210,7 +221,6 @@
         "name": "Plenny",
         "symbol": "PL2",
         "decimals": 18,
-        "logoURI": "",
         "extensions": {
             "l1Address": "0x3642c0680329ae3e103E2B5AB29DDfed4d43CBE5",
             "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
@@ -265,7 +275,6 @@
         "name": "Swapr",
         "symbol": "SWPR",
         "decimals": 18,
-        "logoURI": "",
         "extensions": {
             "l1Address": "0xe54942077Df7b8EEf8D4e6bCe2f7B58B0082b0cd",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
@@ -284,7 +293,7 @@
     }, {
         "chainId": 42161,
         "address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-        "name": "USD Coin (Arb1)",
+        "name": "USD Coin Arb1",
         "symbol": "USDC",
         "decimals": 6,
         "logoURI": "https://zapper.fi/images/USDC-icon.png",
@@ -298,7 +307,6 @@
         "name": "dForce USD",
         "symbol": "USX",
         "decimals": 18,
-        "logoURI": "",
         "extensions": {
             "l1Address": "0x0a5E677a6A24b2F1A2Bf4F3bFfC443231d2fDEc8",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
