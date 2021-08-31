@@ -411,6 +411,29 @@
         "l1Address": "0x57Ab1ec28D129707052df4dF418D58a2D46d5f51",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
+    },
+    {
+      "chainId": 42161,
+      "address": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "decimals": 6,
+      "logoURI": "https://storage.googleapis.com/zapper-fi-assets/tokens/ethereum/0xdac17f958d2ee523a2206206994597c13d831ec7.png",
+      "extensions": {
+        "l1Address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x3cd1833ce959e087d0ef0cb45ed06bffe60f23ba",
+      "name": "Land",
+      "symbol": "LAND",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x3258cd8134b6b28e814772dd91d5ecceea512818",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+      }
     }
   ]
 }
