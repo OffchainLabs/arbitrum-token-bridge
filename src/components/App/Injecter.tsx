@@ -49,8 +49,9 @@ const Injector = () => {
 
           const network = networks[networkVersion]
           if (!network) {
-            console.warn('WARNING: unsupported network')
-            return setConnectionState(ConnectionState.WRONG_NETWORK)
+            console.info('WARNING: unsupported network')
+            window.location.href = 'https://arbitrum.io/bridge-tutorial/';
+            return
           }
 
           const partnerNetwork = networks[network.partnerChainID]
