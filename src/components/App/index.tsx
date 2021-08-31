@@ -119,9 +119,10 @@ const App = ({ bridge }: AppProps) => {
     [arbProvider, addTransaction, updateTransactionStatus, ethProvider]
   )
   useEffect(() => {
+    balances.update()
     window.setInterval(() => {
       balances.update()
-    }, 5000)
+    }, 20000)
   }, [])
   useEffect(() => {
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } = networks[
