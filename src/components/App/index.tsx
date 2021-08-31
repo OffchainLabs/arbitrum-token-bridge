@@ -26,7 +26,7 @@ interface AppProps {
 }
 
 const App = ({ bridge }: AppProps) => {
-  const [whiteListState, setWhiteListState] = useState(WhiteListState.VERIFYING)
+  const [whiteListState, setWhiteListState] = useState(WhiteListState.ALLOWED)
   const [pwLoadedState, setPWLoadedState] = useState(
     PendingWithdrawalsLoadedState.LOADING
   )
@@ -49,21 +49,6 @@ const App = ({ bridge }: AppProps) => {
     pendingWithdrawalsMap,
     setInitialPendingWithdrawals
   } = useArbTokenBridge(bridge)
-
-  useEffect(() => {
-    if (!walletAddress) return
-    if (l1NetworkID !== '1') {
-      setWhiteListState(WhiteListState.ALLOWED)
-    } else {
-      bridge
-        .isWhiteListed(walletAddress, MAINNET_WHITELIST_ADDRESS)
-        .then(isAllowed => {
-          setWhiteListState(
-            isAllowed ? WhiteListState.ALLOWED : WhiteListState.DISALLOWED
-          )
-        })
-    }
-  }, [l1NetworkID, walletAddress])
 
   const [currentERC20Address, setCurrentERC20Address] = useLocalStorage(
     'currentERC20',
