@@ -154,5 +154,8 @@ export interface ArbTokenBridge {
   arbSigner: Signer
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
+  setInitialPendingWithdrawals: (
+    gatewayAddresses: string[],
+    filter?: ethers.providers.Filter
+  ) => Promise<void>
 }
