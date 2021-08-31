@@ -18,6 +18,7 @@ import { Tooltip } from '../common/Tooltip'
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
+  overflowX?: boolean
 }
 
 const StatusMappings: Record<TxnStatus, string> = {
@@ -36,8 +37,8 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       date={now
         .add(
           tx.direction === 'deposit-l1'
-            ? Math.max(10 - diffInSeconds + 10, 0)
-            : Math.max(10 * 60 - diffInSeconds + 10, 0),
+            ? Math.max(3 * 60 - diffInSeconds + 2, 0)
+            : Math.max(5 * 60 - diffInSeconds + 2, 0),
           'seconds'
         )
         .toDate()}
@@ -178,7 +179,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
               type="submit"
               className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
             >
-              Action
+              Claim
             </button>
             {!isDepositMode && (
               <Tooltip>Must be on l1 netowrk to claim withdrawal.</Tooltip>
@@ -192,7 +193,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 }
 
 const TransactionsTable = ({
-  transactions
+  transactions,
+  overflowX = true
 }: TransactionsTableProps): JSX.Element => {
   const {
     app: { pwLoadedState }
@@ -226,7 +228,7 @@ const TransactionsTable = ({
       </div>
 
       <div className="flex flex-col shadow-sm">
-        <div className="-my-2 overflow-x-auto ">
+        <div className={`-my-2 ${overflowX ? 'overflow-x-auto' : ''}`}>
           <div className="py-2 align-middle inline-block min-w-full ">
             <div className="overflow-hidden border-b border-gray-200 sm:rounded-lg">
               <table className="min-w-full divide-y divide-gray-200">

@@ -5,7 +5,8 @@ import { ArbTokenBridge, useArbTokenBridge } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
 
-const AppTokenBridgeStoreSync = ({
+// Syncs the arbTokenBridge data with the global store, so we dont have to drill with props but use store hooks to get data
+const ArbTokenBridgeStoreSync = ({
   bridge
 }: {
   bridge: Bridge
@@ -20,4 +21,4 @@ const AppTokenBridgeStoreSync = ({
   return <></>
 }
 
-export { AppTokenBridgeStoreSync }
+export { ArbTokenBridgeStoreSync }

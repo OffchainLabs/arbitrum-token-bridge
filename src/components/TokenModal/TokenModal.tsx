@@ -3,14 +3,10 @@ import React, { FormEventHandler, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 import { formatEther, isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import {
-  getTokenStatus,
-  tokenLists,
-  TokenStatus,
-  TokenType
-} from 'token-bridge-sdk'
+import { getTokenStatus, TokenStatus, TokenType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
+import { getTokenImg } from '../../util'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
 import TokenBlacklistedDialog from './TokenBlacklistedDialog'
@@ -62,14 +58,7 @@ const TokenRow = ({
     if (networkID === null) {
       return undefined
     }
-    const url = tokenLists[networkID]?.whiteList?.find(
-      whitelistedToken =>
-        whitelistedToken.address?.toLowerCase() === address?.toLowerCase()
-    )?.logoURI
-    if (url?.startsWith('ipfs')) {
-      return `https://ipfs.io/ipfs/${url.substr(7)}`
-    }
-    return url
+    return getTokenImg(networkID, address)
   }, [address, networkID])
 
   function selectToken() {

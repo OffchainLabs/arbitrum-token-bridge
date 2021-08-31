@@ -5,6 +5,7 @@ import { ethers } from 'ethers'
 import { useActions } from '../../state'
 import { BridgeContext } from '../App/App'
 
+// Updates the current block number which is used to calculate pending withdrawal time
 const CurrentL1BlockNumberUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
 

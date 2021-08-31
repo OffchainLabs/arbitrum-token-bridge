@@ -54,6 +54,7 @@ module.exports = {
     extend: {
       display: ['group-hover'],
       backgroundColor: ['active'],
+      boxShadow: ['active'],
       opacity: ['active'],
       margin: ['active']
     }

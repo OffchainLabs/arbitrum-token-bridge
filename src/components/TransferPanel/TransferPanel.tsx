@@ -18,11 +18,12 @@ const TransferPanel = (): JSX.Element => {
       isDepositMode,
       networkDetails,
       pendingTransactions,
+      arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens }
     }
   } = useAppState()
   const bridge = useContext(BridgeContext)
-  const [tokeModalOpen, setTokenModalOpen] = useState(false)
+  // const [tokeModalOpen, setTokenModalOpen] = useState(false)
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
   const latestNetworkDetails = useLatest(networkDetails)
@@ -42,6 +43,7 @@ const TransferPanel = (): JSX.Element => {
           while (
             latestNetworkDetails.current?.isArbitrum ||
             !latestEth.current ||
+            !arbTokenBridgeLoaded ||
             !bridge
           ) {
             await new Promise(r => setTimeout(r, 100))
@@ -63,6 +65,7 @@ const TransferPanel = (): JSX.Element => {
           while (
             !latestNetworkDetails.current?.isArbitrum ||
             !latestEth.current ||
+            !arbTokenBridgeLoaded ||
             !bridge
           ) {
             await new Promise(r => setTimeout(r, 100))
@@ -87,16 +90,16 @@ const TransferPanel = (): JSX.Element => {
 
   return (
     <>
-      <TokenModal isOpen={tokeModalOpen} setIsOpen={setTokenModalOpen} />
+      {/* <TokenModal isOpen={tokeModalOpen} setIsOpen={setTokenModalOpen} /> */}
 
-      <div className="flex justify-between max-w-networkBox mx-auto mb-4">
-        <button
-          type="button"
-          onClick={() => setTokenModalOpen(true)}
-          className="bg-white border border-gray-300 shadow-sm rounded-md py-2 px-4"
-        >
-          Token: {selectedToken ? selectedToken.symbol : 'Eth'}
-        </button>
+      <div className="flex justify-end max-w-networkBox w-full mx-auto mb-4">
+        {/* <button */}
+        {/*  type="button" */}
+        {/*  onClick={() => setTokenModalOpen(true)} */}
+        {/*  className="bg-white border border-gray-300 shadow-sm rounded-md py-2 px-4" */}
+        {/* > */}
+        {/*  Token: {selectedToken ? selectedToken.symbol : 'Eth'} */}
+        {/* </button> */}
         {pendingTransactions?.length > 0 && (
           <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
         )}

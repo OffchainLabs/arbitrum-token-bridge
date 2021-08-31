@@ -6,6 +6,7 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 
+// Updates pending transactions statuses on app load
 const PendingTransactionsUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const actions = useActions()

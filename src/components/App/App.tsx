@@ -20,7 +20,7 @@ import { Layout } from '../common/Layout'
 import MessageOverlay from '../common/MessageOverlay'
 import { ConnectWarning } from '../ConnectWarning/ConnectWarning'
 import MainContent from '../MainContent/MainContent'
-import { AppTokenBridgeStoreSync } from '../syncers/AppTokenBridgeStoreSync'
+import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { CurrentL1BlockNumberUpdater } from '../syncers/CurrentL1BlockNumberUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
@@ -258,7 +258,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       {/*  chainID={networkVersion} */}
       {/* /> */}
 
-      {globalBridge && <AppTokenBridgeStoreSync bridge={globalBridge} />}
+      {globalBridge && <ArbTokenBridgeStoreSync bridge={globalBridge} />}
       {children}
     </BridgeContext.Provider>
   )

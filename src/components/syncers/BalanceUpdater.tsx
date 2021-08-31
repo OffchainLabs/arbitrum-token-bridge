@@ -5,6 +5,7 @@ import { useLatest } from 'react-use'
 import { useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 
+// Updates all balances periodically
 const BalanceUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const {

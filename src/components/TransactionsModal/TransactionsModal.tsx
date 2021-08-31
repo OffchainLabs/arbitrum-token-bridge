@@ -11,8 +11,11 @@ export const TransactionsModalBody = (): JSX.Element => {
 
   return (
     <div className="flex w-full justify-center ">
-      <div className="max-h-transactionsList overflow-auto  w-full">
-        <TransactionsTable transactions={mergedTransactions} />
+      <div className="max-h-transactionsList overflow-auto w-full ">
+        <TransactionsTable
+          transactions={mergedTransactions}
+          overflowX={false}
+        />
       </div>
     </div>
   )

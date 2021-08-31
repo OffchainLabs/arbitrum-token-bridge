@@ -7,11 +7,13 @@ import { PendingWithdrawalsLoadedState } from '../../util'
 import networks from '../../util/networks'
 import { BridgeContext } from '../App/App'
 
+// Loads pending withdrawals on page load
 const PWLoadedUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
     app: {
+      networkID,
       arbTokenBridgeLoaded,
       arbTokenBridge: { setInitialPendingWithdrawals },
       l1NetworkDetails,
@@ -62,7 +64,7 @@ const PWLoadedUpdater = (): JSX.Element => {
           })
       }
     })
-  }, [l1NetworkDetails?.chainID, bridge, arbTokenBridgeLoaded])
+  }, [l1NetworkDetails?.chainID, bridge, arbTokenBridgeLoaded, networkID])
 
   return <></>
 }

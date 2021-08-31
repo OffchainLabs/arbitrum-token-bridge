@@ -6,6 +6,7 @@ import { useActions } from '../../state'
 import { WhiteListState } from '../../state/app/state'
 import { MAINNET_WHITELIST_ADDRESS } from '../../util/networks'
 
+// Checks if address is whitelisted for the mainnet
 const WhiteListUpdater = ({
   bridge,
   walletAddress,
