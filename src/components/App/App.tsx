@@ -101,7 +101,8 @@ const AppContent = (): JSX.Element => {
           <PendingTransactionsUpdater />
           <BalanceUpdater />
           <PWLoadedUpdater />
-          <TokenListSyncer />
+          {/* //TODO this is slow, adding all tokens, leaving it to the user for now to add them */}
+          {/* <TokenListSyncer /> */}
         </>
       )}
 
@@ -220,21 +221,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     actions.app.reset()
-
-    // if (globalBridge) {
-    //   const network = networks[`${networkVersion}`]
-    //   // globalBridge.l1Bridge.l1Signer = getL1Signer(network)
-    //   // globalBridge.l2Bridge.l2Signer = getL2Signer(network)
-    //   globalBridge.l1Bridge = new L1Bridge(
-    //     network.tokenBridge.l1Address,
-    //     getL1Signer(network)
-    //   )
-    //   globalBridge.l2Bridge = new L2Bridge(
-    //     network.tokenBridge.l2Address,
-    //     getL2Signer(network)
-    //   )
-    //   return
-    // }
 
     try {
       if (!provider || !networkVersion || !library) {
