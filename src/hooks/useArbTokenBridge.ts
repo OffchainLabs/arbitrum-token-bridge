@@ -3,11 +3,11 @@ import { BigNumber, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import {
   Bridge,
-  ERC20__factory,
   L1TokenData,
   L2ToL1EventResult,
   OutgoingMessageState,
-  WithdrawalInitiated
+  WithdrawalInitiated,
+  ERC20__factory
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 import {
@@ -100,9 +100,8 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
-  const [pendingWithdrawalsMap, setPendingWithdrawalMap] = useState<
-    PendingWithdrawalsMap
-  >({})
+  const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
+    useState<PendingWithdrawalsMap>({})
   const [
     transactions,
     {
@@ -537,12 +536,8 @@ export const useArbTokenBridge = (
     async (id: string) => {
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
-      const {
-        batchNumber,
-        indexInBatch,
-        tokenAddress,
-        value
-      } = pendingWithdrawalsMap[id]
+      const { batchNumber, indexInBatch, tokenAddress, value } =
+        pendingWithdrawalsMap[id]
       const res = await bridge.triggerL2ToL1Transaction(
         batchNumber,
         indexInBatch,
@@ -639,6 +634,7 @@ export const useArbTokenBridge = (
       const l2TokenData = l2Tokens[address]
       const l2Address =
         l2TokenData && l2TokenData.ERC20 && l2TokenData.ERC20.contract.address
+
       if (l1TokenData.ERC20) {
         const { symbol, allowed, decimals, name } = l1TokenData.ERC20
         const bridgeToken: ERC20BridgeToken = {
@@ -673,10 +669,10 @@ export const useArbTokenBridge = (
     }
   }
 
-  const getEthWithdrawals = async () => {
+  const getEthWithdrawals = async (filter?: ethers.providers.Filter) => {
     const address = await bridge.l1Bridge.getWalletAddress()
     const t = new Date().getTime()
-    const withdrawalData = await bridge.getL2ToL1EventData(address)
+    const withdrawalData = await bridge.getL2ToL1EventData(address, filter)
 
     console.log(
       `*** got eth withdraw event in ${
@@ -729,13 +725,16 @@ export const useArbTokenBridge = (
       .filter((x): x is L2ToL1EventResultPlus => !!x)
   }
 
-  const getTokenWithdrawals = async (gatewayAddresses: string[]) => {
+  const getTokenWithdrawals = async (
+    gatewayAddresses: string[],
+    filter?: ethers.providers.Filter
+  ) => {
     const address = await bridge.l1Bridge.getWalletAddress()
     const t = new Date().getTime()
 
     const gateWayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
-        bridge.getGatewayWithdrawEventData(gatewayAddress, address)
+        bridge.getGatewayWithdrawEventData(gatewayAddress, address, filter)
       )
     )
     console.log(
@@ -804,15 +803,18 @@ export const useArbTokenBridge = (
     )
   }
 
-  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
+  const setInitialPendingWithdrawals = async (
+    gatewayAddresses: string[],
+    filter?: ethers.providers.Filter
+  ) => {
     const pendingWithdrawals: PendingWithdrawalsMap = {}
     const t = new Date().getTime()
     console.log('*** Getting initial pending withdrawal data ***')
 
     const l2ToL1Txns = (
       await Promise.all([
-        getEthWithdrawals(),
-        getTokenWithdrawals(gatewayAddresses)
+        getEthWithdrawals(filter),
+        getTokenWithdrawals(gatewayAddresses, filter)
       ])
     ).flat()
 
@@ -845,9 +847,8 @@ export const useArbTokenBridge = (
   const addToExecutedMessagesCache = useCallback(
     (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const _executedMessagesCache = { ...executedMessagesCache }
-      _executedMessagesCache[
-        hashOutgoingMessage(batchNumber, indexInBatch)
-      ] = true
+      _executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)] =
+        true
       setExecutedMessagesCache(_executedMessagesCache)
     },
     [executedMessagesCache]
