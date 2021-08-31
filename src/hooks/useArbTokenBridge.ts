@@ -555,7 +555,6 @@ export const useArbTokenBridge = (
           console.warn('Address is not a token address ')
         }
       }
-      updateAllBalances()
       updateBridgeTokens()
       if (!ERC20Cache.includes(lCaseToken)) {
         setERC20Cache([...ERC20Cache, lCaseToken])
