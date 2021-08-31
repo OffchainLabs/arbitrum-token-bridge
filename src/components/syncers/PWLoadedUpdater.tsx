@@ -1,9 +1,10 @@
 import React, { useContext, useEffect } from 'react'
 
-import { networks } from 'arb-ts'
+import { networks as ArbNetworks } from 'arb-ts'
 
 import { useActions, useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
+import networks from '../../util/networks'
 import { BridgeContext } from '../App/App'
 
 const PWLoadedUpdater = (): JSX.Element => {
@@ -13,7 +14,8 @@ const PWLoadedUpdater = (): JSX.Element => {
     app: {
       arbTokenBridgeLoaded,
       arbTokenBridge: { setInitialPendingWithdrawals },
-      l1NetworkDetails
+      l1NetworkDetails,
+      l2NetworkDetails
     }
   } = useAppState()
 
@@ -22,7 +24,7 @@ const PWLoadedUpdater = (): JSX.Element => {
       return
     }
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
-      networks[l1NetworkDetails?.chainID || ''].tokenBridge
+      ArbNetworks[l1NetworkDetails?.chainID || ''].tokenBridge
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
     console.log(
       '**** setting initial pending withdrawals ****',
@@ -36,8 +38,18 @@ const PWLoadedUpdater = (): JSX.Element => {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
       } else {
-        console.log('Nonce is ', nonce)
-        setInitialPendingWithdrawals(gatewaysToUse)
+        const bridgeUpdateBlockNumber =
+          (networks[l2NetworkDetails?.chainID || ''] &&
+            networks[l2NetworkDetails?.chainID || '']
+              .bridgeUpdateBlockNumber) ||
+          0
+        console.log(
+          `Nonce is ${nonce} and bridgeUpdateBlockNumber is ${bridgeUpdateBlockNumber}`
+        )
+
+        setInitialPendingWithdrawals(gatewaysToUse, {
+          fromBlock: bridgeUpdateBlockNumber
+        })
           .then(() => {
             console.info('Setting withdawals to ready state')
 

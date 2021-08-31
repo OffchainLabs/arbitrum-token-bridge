@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { useCallback, useEffect, useState } from 'react';
 import { constants, ethers, utils } from 'ethers';
 import { useLocalStorage } from '@rehooks/local-storage';
-import { ERC20__factory, OutgoingMessageState } from 'arb-ts';
+import { OutgoingMessageState, ERC20__factory } from 'arb-ts';
 import useTransactions from './useTransactions';
 import { AssetType, TokenType } from './arbTokenBridge.types';
 const { Zero } = constants;
@@ -483,10 +483,10 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
             return '???';
         }
     });
-    const getEthWithdrawals = () => __awaiter(void 0, void 0, void 0, function* () {
+    const getEthWithdrawals = (filter) => __awaiter(void 0, void 0, void 0, function* () {
         const address = yield bridge.l1Bridge.getWalletAddress();
         const t = new Date().getTime();
-        const withdrawalData = yield bridge.getL2ToL1EventData(address);
+        const withdrawalData = yield bridge.getL2ToL1EventData(address, filter);
         console.log(`*** got eth withdraw event in ${(new Date().getTime() - t) / 1000} seconds ***`);
         const outgoingMessageStates = yield Promise.all(withdrawalData.map((eventData) => getOutGoingMessageState(eventData.batchNumber, eventData.indexInBatch)));
         return withdrawalData
@@ -515,10 +515,10 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
         })
             .filter((x) => !!x);
     });
-    const getTokenWithdrawals = (gatewayAddresses) => __awaiter(void 0, void 0, void 0, function* () {
+    const getTokenWithdrawals = (gatewayAddresses, filter) => __awaiter(void 0, void 0, void 0, function* () {
         const address = yield bridge.l1Bridge.getWalletAddress();
         const t = new Date().getTime();
-        const gateWayWithdrawalsResultsNested = yield Promise.all(gatewayAddresses.map(gatewayAddress => bridge.getGatewayWithdrawEventData(gatewayAddress, address)));
+        const gateWayWithdrawalsResultsNested = yield Promise.all(gatewayAddresses.map(gatewayAddress => bridge.getGatewayWithdrawEventData(gatewayAddress, address, filter)));
         console.log(`*** got token gateway event data in ${(new Date().getTime() - t) / 1000} seconds *** `);
         const gateWayWithdrawalsResults = gateWayWithdrawalsResultsNested.flat();
         const symbols = yield Promise.all(gateWayWithdrawalsResults.map(withdrawEventData => getTokenSymbol(withdrawEventData.l1Token)));
@@ -553,13 +553,13 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
             return eventDataPlus;
         });
     });
-    const setInitialPendingWithdrawals = (gatewayAddresses) => __awaiter(void 0, void 0, void 0, function* () {
+    const setInitialPendingWithdrawals = (gatewayAddresses, filter) => __awaiter(void 0, void 0, void 0, function* () {
         const pendingWithdrawals = {};
         const t = new Date().getTime();
         console.log('*** Getting initial pending withdrawal data ***');
         const l2ToL1Txns = (yield Promise.all([
-            getEthWithdrawals(),
-            getTokenWithdrawals(gatewayAddresses)
+            getEthWithdrawals(filter),
+            getTokenWithdrawals(gatewayAddresses, filter)
         ])).flat();
         console.log(`*** done getting pending withdrawals, took ${Math.round(new Date().getTime() - t) / 1000} seconds`);
         for (const l2ToL1Thing of l2ToL1Txns) {
@@ -578,7 +578,8 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
     }), [executedMessagesCache]);
     const addToExecutedMessagesCache = useCallback((batchNumber, indexInBatch) => {
         const _executedMessagesCache = Object.assign({}, executedMessagesCache);
-        _executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)] = true;
+        _executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)] =
+            true;
         setExecutedMessagesCache(_executedMessagesCache);
     }, [executedMessagesCache]);
     const hashOutgoingMessage = (batchNumber, indexInBatch) => {

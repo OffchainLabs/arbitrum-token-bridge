@@ -26,7 +26,8 @@
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-ts": "^0.0.31",
+    "arb-ts": "^0.0.35",
+    "ethers": "^5.4.6",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
@@ -42,5 +43,5 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
-  "yalcSig": "70a03478f98914710a9ac7aa73ff348d"
+  "yalcSig": "ae58071c154cc07a64dfcd3c4603a22c"
 }

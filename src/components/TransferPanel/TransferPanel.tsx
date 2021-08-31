@@ -1,10 +1,9 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
-import { Provider, TransactionReceipt } from '@ethersproject/providers'
 import { useLatest } from 'react-use'
-import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
+import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
@@ -22,8 +21,10 @@ const TransferPanel = (): JSX.Element => {
       arbTokenBridge: { eth, token, bridgeTokens }
     }
   } = useAppState()
+  const bridge = useContext(BridgeContext)
   const [tokeModalOpen, setTokenModalOpen] = useState(false)
   const latestEth = useLatest(eth)
+  const latestToken = useLatest(token)
   const latestNetworkDetails = useLatest(networkDetails)
 
   const [depositing, setDepositing] = useState(false)
@@ -40,17 +41,19 @@ const TransferPanel = (): JSX.Element => {
           await changeNetwork?.(networkDetails.partnerChainID)
           while (
             latestNetworkDetails.current?.isArbitrum ||
-            !latestEth.current
+            !latestEth.current ||
+            !bridge
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+          await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
           // TODO allowed returns false even after approval
           if (!bridgeTokens[selectedToken.address]?.allowed) {
-            await token.approve(selectedToken.address)
+            await latestToken.current.approve(selectedToken.address)
           }
-          token.deposit(selectedToken.address, amount)
+          latestToken.current.deposit(selectedToken.address, amount)
         } else {
           latestEth.current.deposit(amount)
         }
@@ -59,18 +62,20 @@ const TransferPanel = (): JSX.Element => {
           await changeNetwork?.(networkDetails.partnerChainID)
           while (
             !latestNetworkDetails.current?.isArbitrum ||
-            !latestEth.current
+            !latestEth.current ||
+            !bridge
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+          await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
           if (!bridgeTokens[selectedToken.address]?.allowed) {
-            await token.approve(selectedToken.address)
+            await latestToken.current.approve(selectedToken.address)
           }
-          token.withdraw(selectedToken.address, amount)
+          latestToken.current.withdraw(selectedToken.address, amount)
         } else {
-          eth.withdraw(amount)
+          latestEth.current.withdraw(amount)
         }
       }
     } catch (ex) {
