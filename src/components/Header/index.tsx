@@ -48,7 +48,7 @@ const Header = ({
   }, [name])
 
   const disClaimerReDirect  = (e:any)=>{
-    window.open(window.location.origin + '#info')
+    window.open(window.location.origin + '#tos')
     
     e.preventDefault()
   }
@@ -77,7 +77,7 @@ const Header = ({
           rel="noopener noreferrer"
           onClick={disClaimerReDirect}
         >
-          <u>DISCLAIMER</u>
+          <u>TERMS OF SERVICE</u>
         </a>{' '}
       </div>
 
