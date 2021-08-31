@@ -468,9 +468,7 @@ export const useArbTokenBridge = (
       }
       updateAllBalances()
       updateBridgeTokens()
-      if (!ERC20Cache.includes(lCaseToken)) {
-        setERC20Cache([...ERC20Cache, lCaseToken])
-      }
+      setERC20Cache([...ERC20Cache, lCaseToken])
       return l1Address
     },
     [ERC20Cache, setERC20Cache]
@@ -483,9 +481,7 @@ export const useArbTokenBridge = (
 
   useEffect(() => {
     const tokensToAdd = [
-      ...new Set(
-        [...ERC20Cache, ...defaultTokenList].map(t => t.toLocaleLowerCase())
-      )
+      ...new Set([...defaultTokenList].map(t => t.toLocaleLowerCase()))
     ].filter(tokenAddress => !tokenBlackList.includes(tokenAddress))
     if (autoLoadCache) {
       Promise.all(
