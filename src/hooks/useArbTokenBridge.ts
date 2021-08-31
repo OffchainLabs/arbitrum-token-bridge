@@ -20,7 +20,6 @@ import {
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 
-
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -202,15 +201,14 @@ export const useArbTokenBridge = (
     return networkID
   }, [l11NetworkID, bridge])
 
-  const walletAddressCached = useCallback(async()=>{
-    if(walletAddress){
+  const walletAddressCached = useCallback(async () => {
+    if (walletAddress) {
       return walletAddress
     } else {
       const address = await bridge.l1Bridge.getWalletAddress()
       setWalletAddress(address)
       return address
     }
-
   }, [walletAddress, bridge])
 
   const depositEth = async (etherVal: string) => {
@@ -362,7 +360,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: (tokenData && tokenData.symbol) || '???',
       assetType: AssetType.ERC20,
-      sender:  await walletAddressCached(),
+      sender: await walletAddressCached(),
       l1NetworkID: await l1NetworkIDCached()
     })
 
