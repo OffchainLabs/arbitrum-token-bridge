@@ -42,7 +42,10 @@ const Injector = () => {
 
           setNetworkID(networkVersion)
           setChangeListeners()
-
+          
+          if (window.location.hash === '#info') {
+            return setConnectionState(ConnectionState.WRONG_NETWORK)
+          }
 
           const network = networks[networkVersion]
           if (!network) {

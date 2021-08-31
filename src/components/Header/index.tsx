@@ -47,6 +47,11 @@ const Header = ({
     return `Connected to ${name}`
   }, [name])
 
+  const disClaimerReDirect  = (e:any)=>{
+    window.open(window.location.origin + '#info')
+    
+    e.preventDefault()
+  }
   return (
     <div className="col-lg-12">
       <div className="top-thing">
@@ -64,6 +69,15 @@ const Header = ({
           rel="noopener noreferrer"
         >
           <u>TOKEN LIST</u>
+        </a>{' '}
+
+        <a
+          href=""
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={disClaimerReDirect}
+        >
+          <u>DISCLAIMER</u>
         </a>{' '}
       </div>
 
