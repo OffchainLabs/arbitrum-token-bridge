@@ -121,7 +121,10 @@ const App = ({ bridge }: AppProps) => {
   useEffect(() => {
     balances.update()
     window.setInterval(() => {
-      balances.update()
+      eth.updateBalances()
+    }, 10000)
+    window.setInterval(() => {
+      token.updateBalances()
     }, 20000)
   }, [])
   useEffect(() => {
