@@ -1,6 +1,6 @@
 {
   "name": "token-bridge-sdk",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "SDK for transfering assets to and from Arbitrum",
@@ -43,5 +43,5 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
-  "yalcSig": "ae58071c154cc07a64dfcd3c4603a22c"
+  "yalcSig": "06818266779abae0ed03802c12aa6db8"
 }

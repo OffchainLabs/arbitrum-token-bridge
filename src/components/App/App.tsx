@@ -250,17 +250,18 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   }, [globalBridge, active, networkVersion])
 
   return (
-    <BridgeContext.Provider value={globalBridge}>
-      {/* //not needed for mainnet */}
-      {/* <WhiteListUpdater */}
-      {/*  bridge={globalBridge} */}
-      {/*  walletAddress={usersMetamaskAddress} */}
-      {/*  chainID={networkVersion} */}
-      {/* /> */}
-
+    <>
       {globalBridge && <ArbTokenBridgeStoreSync bridge={globalBridge} />}
-      {children}
-    </BridgeContext.Provider>
+      <BridgeContext.Provider value={globalBridge}>
+        {/* //not needed for mainnet */}
+        {/* <WhiteListUpdater */}
+        {/*  bridge={globalBridge} */}
+        {/*  walletAddress={usersMetamaskAddress} */}
+        {/*  chainID={networkVersion} */}
+        {/* /> */}
+        {children}
+      </BridgeContext.Provider>
+    </>
   )
 }
 
@@ -274,7 +275,6 @@ function getLibrary(provider: any): Web3Provider {
 
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
       <Provider value={overmind}>

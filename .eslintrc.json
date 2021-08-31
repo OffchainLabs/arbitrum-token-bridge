@@ -36,6 +36,7 @@
     "react/prop-types": "off",
     "no-nested-ternary": "off",
     "react/jsx-one-expression-per-line": "off",
+    "jsx-a11y/no-autofocus": "off",
     "jsx-a11y/label-has-associated-control": "off",
     "import/order": [
       "error",

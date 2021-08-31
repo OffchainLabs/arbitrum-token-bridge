@@ -8,6 +8,7 @@ import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import { TokenModal } from '../TokenModal/TokenModal'
+import { AmountBox } from './AmountBox'
 import { NetworkBox } from './NetworkBox'
 
 const TransferPanel = (): JSX.Element => {
@@ -112,9 +113,14 @@ const TransferPanel = (): JSX.Element => {
             setAmount={setl1Amount}
             className={isDepositMode ? 'order-1' : 'order-3'}
           />
-          <div className="h-2 relative flex justify-center order-2">
-            <div className="flex items-center justify-center">
-              <NetworkSwitchButton />
+          <div className="h-2 relative flex justify-center order-2 w-full">
+            <div className="flex items-center justify-end relative w-full">
+              <div className="absolute left-0 right-0 mx-auto flex items-center justify-center">
+                <NetworkSwitchButton />
+              </div>
+              {/* <div className="mr-4"> */}
+              {/*  <AmountBox amount={l1Amount} setAmount={setl1Amount} /> */}
+              {/* </div> */}
             </div>
           </div>
           <NetworkBox

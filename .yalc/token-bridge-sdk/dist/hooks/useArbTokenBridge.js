@@ -18,6 +18,7 @@ const { Zero } = constants;
 const slowInboxQueueTimeout = 1000 * 60 * 15;
 const addressToSymbol = {};
 export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
+    console.log('******* Init useArbTokenBridge *******');
     const [walletAddress, setWalletAddress] = useState('');
     const defaultBalance = {
         balance: constants.Zero,
@@ -320,9 +321,7 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
         }
         updateAllBalances();
         updateBridgeTokens();
-        if (!ERC20Cache.includes(lCaseToken)) {
-            setERC20Cache([...ERC20Cache, lCaseToken]);
-        }
+        setERC20Cache([...ERC20Cache, lCaseToken]);
         return l1Address;
     }), [ERC20Cache, setERC20Cache]);
     const expireCache = () => {
@@ -331,7 +330,7 @@ export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
     };
     useEffect(() => {
         const tokensToAdd = [
-            ...new Set([...ERC20Cache, ...defaultTokenList].map(t => t.toLocaleLowerCase()))
+            ...new Set([...defaultTokenList].map(t => t.toLocaleLowerCase()))
         ].filter(tokenAddress => !tokenBlackList.includes(tokenAddress));
         if (autoLoadCache) {
             Promise.all(tokensToAdd.map(address => {

@@ -46,7 +46,7 @@ const Header: React.FC = () => {
                   Documentation
                 </a>
                 <a
-                  href="https://bridge.arbitrum.io/token-list-42161.json"
+                  href="/data/token-list-42161.json"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                   rel="noopener noreferrer"

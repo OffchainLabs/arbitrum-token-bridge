@@ -15,6 +15,7 @@ const PWLoadedUpdater = (): JSX.Element => {
     app: {
       networkID,
       arbTokenBridgeLoaded,
+      pwLoadedState,
       arbTokenBridge: { setInitialPendingWithdrawals },
       l1NetworkDetails,
       l2NetworkDetails
@@ -22,7 +23,12 @@ const PWLoadedUpdater = (): JSX.Element => {
   } = useAppState()
 
   useEffect(() => {
-    if (!arbTokenBridgeLoaded || !l1NetworkDetails?.chainID || !bridge) {
+    if (
+      !arbTokenBridgeLoaded ||
+      !l1NetworkDetails?.chainID ||
+      !bridge ||
+      pwLoadedState !== PendingWithdrawalsLoadedState.LOADING
+    ) {
       return
     }
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
@@ -64,7 +70,13 @@ const PWLoadedUpdater = (): JSX.Element => {
           })
       }
     })
-  }, [l1NetworkDetails?.chainID, bridge, arbTokenBridgeLoaded, networkID])
+  }, [
+    l1NetworkDetails?.chainID,
+    bridge,
+    arbTokenBridgeLoaded,
+    networkID,
+    pwLoadedState
+  ])
 
   return <></>
 }

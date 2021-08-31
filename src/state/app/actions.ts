@@ -1,5 +1,4 @@
 import { Bridge } from 'arb-ts'
-import { BigNumber } from 'ethers'
 import { ArbTokenBridge, BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
@@ -62,6 +61,7 @@ export const reset = ({ state }: Context) => {
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
   state.app.pendingTransactionsUpdated = false
+  state.app.pwLoadedState = PendingWithdrawalsLoadedState.LOADING
 }
 
 export const setPWLoadingState = (

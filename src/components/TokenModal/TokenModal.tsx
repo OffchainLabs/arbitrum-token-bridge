@@ -1,12 +1,13 @@
-import React, { FormEventHandler, useMemo, useState } from 'react'
+import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 
 import { BigNumber } from 'ethers'
 import { formatEther, isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import { getTokenStatus, TokenStatus, TokenType } from 'token-bridge-sdk'
+import { TokenType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
-import { getTokenImg } from '../../util'
+import { getTokenImg, isTokenWhitelisted } from '../../util'
+import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
 import TokenBlacklistedDialog from './TokenBlacklistedDialog'
@@ -76,7 +77,7 @@ const TokenRow = ({
         {tokenLogo ? (
           <img
             src={tokenLogo}
-            alt="Token logo"
+            alt="logo"
             className="rounded-full w-8 h-8 mr-4"
           />
         ) : (
@@ -100,12 +101,13 @@ export const TokenModalBody = ({
 }: {
   onTokenSelected: () => void
 }): JSX.Element => {
+  const bridge = useContext(BridgeContext)
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [blacklistedOpen, setBlacklistedOpen] = useState(false)
 
   const {
     app: {
-      arbTokenBridge: { balances, token, pendingWithdrawalsMap },
+      arbTokenBridge: { balances, token },
       isDepositMode,
       networkID
     }
@@ -128,8 +130,18 @@ export const TokenModalBody = ({
   }, [balances.erc20, isDepositMode])
 
   const storeNewToken = async () => {
-    await token.add(newToken, TokenType.ERC20)
-    await token.updateBalances()
+    return bridge
+      ?.getAndUpdateL1TokenData(newToken) // check if exsits first before adding, because sdk will add to the cache even if it does not exist
+      .then(async () => {
+        await token.add(newToken, TokenType.ERC20)
+        token.updateBalances()
+      })
+      .catch(ex => {
+        console.log('Token address not existing on this network', ex)
+      })
+      .finally(() => {
+        setNewToken('')
+      })
   }
 
   const addNewToken: FormEventHandler = async e => {
@@ -141,9 +153,7 @@ export const TokenModalBody = ({
     setIsAddingToken(true)
     console.log(newToken, networkID!)
     try {
-      if (getTokenStatus(newToken, networkID!) === TokenStatus.BLACKLISTED) {
-        setBlacklistedOpen(true)
-      } else if (getTokenStatus(newToken, networkID!) === TokenStatus.NEUTRAL) {
+      if (!isTokenWhitelisted(networkID!, newToken)) {
         setConfirmationOpen(true)
       } else {
         await storeNewToken()
@@ -151,7 +161,6 @@ export const TokenModalBody = ({
     } catch (ex) {
       console.log(ex)
     } finally {
-      setNewToken('')
       setIsAddingToken(false)
     }
   }
