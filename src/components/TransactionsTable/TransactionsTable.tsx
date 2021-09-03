@@ -145,6 +145,24 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           {tx.status}
         </StatusBadge>
       </td>
+      <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
+        {tx.isWithdrawal && tx.status === 'Confirmed' && (
+          <div className="relative group">
+            <button
+              disabled={!isDepositMode}
+              onClick={handleTriggerOutbox}
+              type="submit"
+              className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
+            >
+              Claim
+            </button>
+            {!isDepositMode && (
+              <Tooltip>Must be on l1 netowrk to claim withdrawal.</Tooltip>
+            )}
+          </div>
+        )}
+        {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
+      </td>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
         {!tx.isWithdrawal && (
           <>
@@ -169,24 +187,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       </td>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
         {tx.value}
-      </td>
-      <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
-        {tx.isWithdrawal && tx.status === 'Confirmed' && (
-          <div className="relative group">
-            <button
-              disabled={!isDepositMode}
-              onClick={handleTriggerOutbox}
-              type="submit"
-              className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
-            >
-              Claim
-            </button>
-            {!isDepositMode && (
-              <Tooltip>Must be on l1 netowrk to claim withdrawal.</Tooltip>
-            )}
-          </div>
-        )}
-        {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
       </td>
     </tr>
   )
@@ -248,6 +248,12 @@ const TransactionsTable = ({
                     </th>
                     <th
                       scope="col"
+                      className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Action
+                    </th>
+                    <th
+                      scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Estimated Arrival Time
@@ -269,12 +275,6 @@ const TransactionsTable = ({
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Value
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Action
                     </th>
                   </tr>
                 </thead>

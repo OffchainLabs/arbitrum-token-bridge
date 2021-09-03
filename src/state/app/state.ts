@@ -1,6 +1,7 @@
 import { Bridge, OutgoingMessageState } from 'arb-ts'
 import dayjs from 'dayjs'
 import { ethers, BigNumber } from 'ethers'
+import _isEmpty from 'lodash/isEmpty'
 import { derived } from 'overmind'
 import {
   ArbTokenBridge,
@@ -133,7 +134,17 @@ export const defaultState: AppState = {
         tokenAddress: tx.tokenAddress || null
       }
     })
-    return [...withdraw, ...deposit]
+    return [...withdraw, ...deposit].sort((a, b) => {
+      if (_isEmpty(a.createdAt)) {
+        return 1
+      }
+      if (_isEmpty(b.createdAt)) {
+        return -1
+      }
+      const aTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY').toDate().getTime()
+      const bTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY').toDate().getTime()
+      return aTime - bTime
+    })
   }),
   currentL1BlockNumber: 0,
 

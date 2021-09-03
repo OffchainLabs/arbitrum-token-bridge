@@ -14,7 +14,7 @@ const MainContent = () => {
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="mx-auto px-4">
       <TransferPanel />
 
       {mergedTransactions?.length > 0 && (
