@@ -2194,11 +2194,6 @@
     semver "^7.3.2"
     tsutils "^3.17.1"
 
-"@uniswap/token-lists@^1.0.0-beta.24":
-  version "1.0.0-beta.24"
-  resolved "https://registry.yarnpkg.com/@uniswap/token-lists/-/token-lists-1.0.0-beta.24.tgz#6809b80bee58e4a2f235cdedc07113652c85a741"
-  integrity sha512-9IMltV7ITwxnjuK0LYXlUZhYIB8wVAdwx5NAbGjHF9ss+zKL9FTyFfWTFif/EL6PCWvST+2B15ofUwSVZd17RA==
-
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.8.5.tgz#51b1c5fe6576a34953bf4b253df9f0d490d9e359"
@@ -2547,17 +2542,16 @@ aproba@^1.0.3, aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-ts@0.0.35:
-  version "0.0.35"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.35.tgz#2e0066bc31e37de71eaa34f3912cd1f54ba88766"
-  integrity sha512-WgC7NiyqTHwqSalhgbLrbv0RMrjVnUeFtBlXvUvHmWN2D38ToT+Gp1sGHE47vywt+TU5DcU0wJRpt1xRVHb9yw==
+arb-ts@0.0.36:
+  version "0.0.36"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.36.tgz#23a5687148ca8552d43391bda57833a137739a52"
+  integrity sha512-wbZ7dOPqFCxtZgLqxoeFbVBNT8Jd93xEvv7C8eQ/7jmLobvFLJ7e0hyMIWad2Bcj3UlQyJPWyW7rxwiCWET0PA==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
     "@nomiclabs/hardhat-ethers" "^2.0.2"
     "@types/promise-poller" "^1.7.0"
-    "@uniswap/token-lists" "^1.0.0-beta.24"
     dotenv "^10.0.0"
     ethers "^5.1.0"
 
@@ -11384,15 +11378,15 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@0.4.23:
-  version "0.4.23"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.4.23.tgz#802d15f33392f850c45351f309175992a2c49b28"
-  integrity sha512-egWAMjEW+DifXd1ox+bJM1SO7Bpz1KSf6CoOZ3lUdunFXyyfiUPDMA3wf8KzRtSBvS2D/f1KL+k1xKJ0FKBCQg==
+token-bridge-sdk@0.4.24:
+  version "0.4.24"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.4.24.tgz#4fabe6d3b711a8542ecb1275cc0a7005346a16f5"
+  integrity sha512-qg56bvaOofaSIvIa9BkWXMQ1hxU9CZ7hI10QrdM+g2tYijNYzEZpScXUYPnZo78b0jhEtEdDSavzHi567fByiA==
   dependencies:
     "@ethersproject/bignumber" "^5.1.1"
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
-    arb-ts "0.0.35"
+    arb-ts "0.0.36"
     ethers "^5.1.0"
     lodash.clonedeep "^4.5.0"
     lodash.isempty "^4.4.0"
