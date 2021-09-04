@@ -35,8 +35,6 @@ export const useArbTokenBridge = (
   bridge: Bridge,
   autoLoadCache = true
 ): ArbTokenBridge => {
-  console.log('******* Init useArbTokenBridge *******');
-  
   const [walletAddress, setWalletAddress] = useState('')
 
   const defaultBalance = {

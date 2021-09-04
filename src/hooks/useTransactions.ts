@@ -12,7 +12,7 @@ type Action =
   | { type: 'CONFIRM_TRANSACTION'; txID: string }
   | { type: 'REMOVE_TRANSACTION'; txID: string }
   | { type: 'SET_BLOCK_NUMBER'; txID: string; blockNumber?: number }
-  | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: number }
+  | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -57,8 +57,8 @@ type TransactionBase = {
   sender: string
   blockNumber?: number
   l1NetworkID: string
-  timestampResolved?: number // time when its status was changed
-  timestampCreated?: Date //time when this transaction is first added to the list
+  timestampResolved?: string // time when its status was changed
+  timestampCreated?: string //time when this transaction is first added to the list
 }
 
 export interface Transaction extends TransactionBase {
@@ -108,7 +108,7 @@ function updateBlockNumber(
 function updateResolvedTimestamp(
   state: Transaction[],
   txID: string,
-  timestamp?: number
+  timestamp?: string
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -178,7 +178,10 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       console.warn(' Cannot add transaction: TxID not included (???)')
       return
     }
-    const tx = { ...transaction, timestampCreated: new Date() } as Transaction
+    const tx = {
+      ...transaction,
+      timestampCreated: new Date().toISOString()
+    } as Transaction
     return dispatch({
       type: 'ADD_TRANSACTION',
       transaction: tx
@@ -216,7 +219,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       blockNumber
     })
   }
-  const setResolvedTimestamp = (txID: string, timestamp?: number) => {
+  const setResolvedTimestamp = (txID: string, timestamp?: string) => {
     return dispatch({
       type: 'SET_RESOLVED_TIMESTAMP',
       txID,
@@ -273,7 +276,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }
     if (tx) {
-      setResolvedTimestamp(txReceipt.transactionHash, new Date().getTime())
+      setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
     }
   }
 
