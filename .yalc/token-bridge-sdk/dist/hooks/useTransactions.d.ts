@@ -17,8 +17,8 @@ declare type TransactionBase = {
     sender: string;
     blockNumber?: number;
     l1NetworkID: string;
-    timestampResolved?: number;
-    timestampCreated?: Date;
+    timestampResolved?: string;
+    timestampCreated?: string;
 };
 export interface Transaction extends TransactionBase {
     txID: string;

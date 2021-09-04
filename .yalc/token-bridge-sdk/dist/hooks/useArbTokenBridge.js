@@ -18,7 +18,6 @@ const { Zero } = constants;
 const slowInboxQueueTimeout = 1000 * 60 * 15;
 const addressToSymbol = {};
 export const useArbTokenBridge = (bridge, autoLoadCache = true) => {
-    console.log('******* Init useArbTokenBridge *******');
     const [walletAddress, setWalletAddress] = useState('');
     const defaultBalance = {
         balance: constants.Zero,

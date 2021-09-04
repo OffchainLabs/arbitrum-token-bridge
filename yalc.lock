@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "token-bridge-sdk": {
-      "signature": "06818266779abae0ed03802c12aa6db8",
+      "signature": "521cc3ea5ace8bc1060177f27f4cefb1",
       "file": true
     }
   }

@@ -96,7 +96,7 @@ const useTransactions = () => {
             console.warn(' Cannot add transaction: TxID not included (???)');
             return;
         }
-        const tx = Object.assign(Object.assign({}, transaction), { timestampCreated: new Date() });
+        const tx = Object.assign(Object.assign({}, transaction), { timestampCreated: new Date().toISOString() });
         return dispatch({
             type: 'ADD_TRANSACTION',
             transaction: tx
@@ -182,7 +182,7 @@ const useTransactions = () => {
             setTransactionBlock(txReceipt.transactionHash, tx.blockNumber);
         }
         if (tx) {
-            setResolvedTimestamp(txReceipt.transactionHash, new Date().getTime());
+            setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString());
         }
     };
     const checkAndUpdatePendingTransactions = useCallback(() => {

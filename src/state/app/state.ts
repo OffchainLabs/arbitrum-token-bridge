@@ -2,6 +2,8 @@ import { Bridge, OutgoingMessageState } from 'arb-ts'
 import dayjs from 'dayjs'
 import { ethers, BigNumber } from 'ethers'
 import _isEmpty from 'lodash/isEmpty'
+import _reverse from 'lodash/reverse'
+import _sortBy from 'lodash/sortBy'
 import { derived } from 'overmind'
 import {
   ArbTokenBridge,
@@ -23,6 +25,7 @@ export enum WhiteListState {
 export interface MergedTransaction {
   direction: string
   status: string
+  createdAtTime: number | null
   createdAt: string | null
   resolvedAt: string | null
   txId: string
@@ -52,6 +55,8 @@ export type AppState = {
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
   pendingTransactionsUpdated: boolean
+  depositsTransformed: MergedTransaction[]
+  withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
   currentL1BlockNumber: number
 
@@ -86,13 +91,16 @@ export const defaultState: AppState = {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')
   }),
   pendingTransactionsUpdated: false,
-  mergedTransactions: derived((s: AppState) => {
-    const deposit: MergedTransaction[] = s.sortedTransactions.map(tx => {
+  depositsTransformed: derived((s: AppState) => {
+    const deposits: MergedTransaction[] = s.sortedTransactions.map(tx => {
       return {
         direction: tx.type,
         status: tx.status,
         createdAt: tx.timestampCreated
           ? dayjs(tx.timestampCreated).format('HH:mm:ss MM/DD/YYYY')
+          : null,
+        createdAtTime: tx.timestampCreated
+          ? dayjs(tx.timestampCreated).toDate().getTime()
           : null,
         resolvedAt: tx.timestampResolved
           ? dayjs(new Date(tx.timestampResolved)).format('HH:mm:ss MM/DD/YYYY')
@@ -106,7 +114,10 @@ export const defaultState: AppState = {
         tokenAddress: null // not needed
       }
     })
-    const withdraw: MergedTransaction[] = (
+    return deposits
+  }),
+  withdrawalsTransformed: derived((s: AppState) => {
+    const withdrawals: MergedTransaction[] = (
       Object.values(
         s.arbTokenBridge?.pendingWithdrawalsMap || []
       ) as L2ToL1EventResultPlus[]
@@ -114,7 +125,10 @@ export const defaultState: AppState = {
       return {
         direction: 'withdraw-l1',
         status: outgoungStateToString[tx.outgoingMessageState],
-        createdAt: dayjs(tx.timestamp).format('HH:mm:ss MM/DD/YYYY'),
+        createdAt: dayjs(
+          new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
+        ).format('HH:mm:ss MM/DD/YYYY'),
+        createdAtTime: BigNumber.from(tx.timestamp).toNumber() * 1000,
         resolvedAt: null,
         txId: tx.uniqueId?.toString(),
         asset: tx.symbol?.toLocaleLowerCase(),
@@ -134,17 +148,33 @@ export const defaultState: AppState = {
         tokenAddress: tx.tokenAddress || null
       }
     })
-    return [...withdraw, ...deposit].sort((a, b) => {
-      if (_isEmpty(a.createdAt)) {
-        return 1
-      }
-      if (_isEmpty(b.createdAt)) {
-        return -1
-      }
-      const aTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY').toDate().getTime()
-      const bTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY').toDate().getTime()
-      return aTime - bTime
-    })
+    return withdrawals
+  }),
+  mergedTransactions: derived((s: AppState) => {
+    return _reverse(
+      _sortBy([...s.depositsTransformed, ...s.withdrawalsTransformed], item => {
+        if (_isEmpty(item.createdAt)) {
+          return -1
+        }
+        return item.createdAtTime
+      })
+    )
+    // return [...s.depositsTransformed, ...s.withdrawalsTransformed].sort(
+    //   (a, b) => {
+    //     if (_isEmpty(a.createdAt)) {
+    //       return 1
+    //     }
+    //     if (_isEmpty(b.createdAt)) {
+    //       return -1
+    //     }
+    //     const aTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY')
+    //     const bTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY')
+    //     if (aTime.isBefore(bTime)) {
+    //       return -1
+    //     }
+    //     return 1
+    //   }
+    // )
   }),
   currentL1BlockNumber: 0,
 
