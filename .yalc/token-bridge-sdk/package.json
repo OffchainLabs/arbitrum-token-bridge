@@ -1,6 +1,6 @@
 {
   "name": "token-bridge-sdk",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "SDK for transfering assets to and from Arbitrum",
@@ -26,7 +26,7 @@
   "dependencies": {
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-ts": "^0.0.35",
+    "arb-ts": "^0.0.36",
     "ethers": "^5.4.6",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
@@ -43,5 +43,5 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
-  "yalcSig": "521cc3ea5ace8bc1060177f27f4cefb1"
+  "yalcSig": "b8248f015e9d0da714ad3d78867d77de"
 }

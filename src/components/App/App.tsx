@@ -187,6 +187,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const l1Signer = getL1Signer(network)
     const l2Signer = getL2Signer(network)
+    console.info('Initializing bridge!!!')
     const bridge = await Bridge.init(
       l1Signer,
       l2Signer,
