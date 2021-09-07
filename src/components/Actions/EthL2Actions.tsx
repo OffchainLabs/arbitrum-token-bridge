@@ -33,7 +33,7 @@ const Actions = ({
         onSubmit={eth.withdraw}
         disabled={arbChainBalance === 0 || isDepositMode}
         buttonText={'withdraw'}
-        dialogText="You are about to initiate an Ether withdrawal! Once initialize, you will have to wait ~1 week before you can claim your funds on L1. Are you sure you want to proceed?"
+        dialogText="You are about to initiate an Ether withdrawal! Once initialized, you will have to wait ~1 week before you can claim your funds on L1. Are you sure you want to proceed?"
       />
       <WithdrawInfo />
 

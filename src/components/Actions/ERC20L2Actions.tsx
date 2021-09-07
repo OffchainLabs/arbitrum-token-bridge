@@ -46,7 +46,7 @@ const Actions = ({
         }}
         disabled={isDepositMode || arbChainBalance === 0}
         buttonText="withdraw"
-        dialogText={`You are about to initiate a ${symbol} withdrawal! Once initialize, you will have to wait ~1 week before you can claim your funds on L1. Are you sure you want to proceed?`}
+        dialogText={`You are about to initiate a ${symbol} withdrawal! Once initialized, you will have to wait ~1 week before you can claim your funds on L1. Are you sure you want to proceed?`}
       /> 
       <WithdrawInfo />
 
