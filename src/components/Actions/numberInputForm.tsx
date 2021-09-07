@@ -4,7 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
 import Tooltip from '@material-ui/core/Tooltip'
-
+import ConfirmDialog, { useConfirmDialog } from './ConfirmDialog'
 import Form from 'react-bootstrap/Form'
 
 type NumberInputFormProps = {
@@ -15,6 +15,7 @@ type NumberInputFormProps = {
   buttonText?: string
   readOnlyValue?: number
   buttonHoverText?: string
+  dialogText: string
 }
 
 const NumberInputForm = ({
@@ -24,20 +25,22 @@ const NumberInputForm = ({
   disabled = false,
   buttonText,
   readOnlyValue,
-  buttonHoverText = ''
+  buttonHoverText = '',
+  dialogText
 }: NumberInputFormProps) => {
   const [value, setValue] = useCappedNumberInput(
     readOnlyValue ? readOnlyValue : 0
   )
 
   const submit = useCallback(
-    (e: any) => {
-      e.preventDefault()
-      onSubmit(value.toString())
+    () => {
+      onSubmit(value.toString())      
       setValue(0, max)
     },
     [value, onSubmit]
   )
+
+  const {open, handleAccept, handleReject, handleClose, setDialogOpen} = useConfirmDialog(submit) 
 
   return (
     <InputGroup
@@ -47,7 +50,8 @@ const NumberInputForm = ({
         setValue(e.target.value, max)
       }}
     >
-      <Form onSubmit={submit}>
+      <ConfirmDialog dialogText={dialogText} open={open} handleAccept={handleAccept} handleReject={handleReject} handleClose ={handleClose} />
+      <Form onSubmit={setDialogOpen}>
         <FormControl
           aria-label="Small"
           aria-describedby="inputGroup-sizing-sm"
@@ -61,7 +65,7 @@ const NumberInputForm = ({
       </Form>
       <Tooltip title={buttonHoverText}>
         <span>
-          <Button disabled={disabled} type="submit" onClick={submit}>
+          <Button disabled={disabled} type="submit" onClick={setDialogOpen}>
             {buttonText || 'submit'}
           </Button>
         </span>
