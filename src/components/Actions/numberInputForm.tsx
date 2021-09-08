@@ -34,17 +34,23 @@ const NumberInputForm = ({
 
   const submit = useCallback(
     () => {      
-      if(!(+value)){
-        alert("You're trying to transfer 0 value; don't do that!")        
-        return
-      }
       onSubmit(value.toString())      
       setValue(0, max)
     },
     [value, onSubmit]
   )
 
+
   const {open, handleAccept, handleReject, handleClose, setDialogOpen} = useConfirmDialog(submit) 
+  const handleFormSubmit =  useCallback(()=>{
+    if(!(+value)){
+      alert("You're trying to transfer 0 value; don't do that!")        
+      return
+    } else {
+      setDialogOpen()
+    }
+
+  },[setDialogOpen, value])
 
   return (
     <InputGroup
@@ -55,7 +61,7 @@ const NumberInputForm = ({
       }}
     >
       <ConfirmDialog dialogText={dialogText} open={open} handleAccept={handleAccept} handleReject={handleReject} handleClose ={handleClose} />
-      <Form onSubmit={setDialogOpen}>
+      <Form onSubmit={handleFormSubmit}>
         <FormControl
           aria-label="Small"
           aria-describedby="inputGroup-sizing-sm"
@@ -69,7 +75,7 @@ const NumberInputForm = ({
       </Form>
       <Tooltip title={buttonHoverText}>
         <span>
-          <Button disabled={disabled} type="submit" onClick={setDialogOpen}>
+          <Button disabled={disabled} type="submit" onClick={handleFormSubmit}>
             {buttonText || 'submit'}
           </Button>
         </span>
