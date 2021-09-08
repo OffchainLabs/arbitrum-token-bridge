@@ -33,7 +33,11 @@ const NumberInputForm = ({
   )
 
   const submit = useCallback(
-    () => {
+    () => {      
+      if(!(+value)){
+        alert("You're trying to transfer 0 value; don't do that!")        
+        return
+      }
       onSubmit(value.toString())      
       setValue(0, max)
     },
