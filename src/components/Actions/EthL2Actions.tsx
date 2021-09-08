@@ -12,14 +12,12 @@ type ActionsProps = {
   balances: BridgeBalance | undefined
   eth: any
   ethAddress: string
-  handleConnextTxn: connextTxn
 }
 
 const Actions = ({
   balances,
   eth,
   ethAddress,
-  handleConnextTxn
 }: ActionsProps) => {
   const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
   const isDepositMode = useIsDepositMode()

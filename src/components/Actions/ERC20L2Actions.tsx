@@ -14,7 +14,6 @@ type ActionsProps = {
   bridgeTokens: any
   currentERC20Address: string
   ethAddress: string
-  handleConnextTxn: connextTxn
 }
 
 const Actions = ({
@@ -23,7 +22,6 @@ const Actions = ({
   bridgeTokens,
   currentERC20Address,
   ethAddress,
-  handleConnextTxn
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
   const decimals = (currentContract && currentContract.decimals) || 18
