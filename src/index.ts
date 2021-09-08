@@ -4,7 +4,9 @@ export type {
   BridgeBalance,
   L2ToL1EventResultPlus,
   BridgeToken,
-  ERC20BridgeToken
+  ERC20BridgeToken,
+  PendingWithdrawalsMap,
+  ContractStorage
 } from './hooks/arbTokenBridge.types'
 export { TokenType, AssetType } from './hooks/arbTokenBridge.types'
 
