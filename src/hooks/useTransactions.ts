@@ -1,6 +1,7 @@
-import React, { useReducer, useEffect, useCallback } from 'react'
-import { AssetType } from './useArbTokenBridge'
+import { useReducer, useEffect, useCallback } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
+import { AssetType, TransactionActions } from './arbTokenBridge.types'
+import { ethers } from 'ethers'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -10,6 +11,8 @@ type Action =
   | { type: 'CLEAR_PENDING' }
   | { type: 'CONFIRM_TRANSACTION'; txID: string }
   | { type: 'REMOVE_TRANSACTION'; txID: string }
+  | { type: 'SET_BLOCK_NUMBER'; txID: string; blockNumber?: number }
+  | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -54,6 +57,8 @@ type TransactionBase = {
   sender: string
   blockNumber?: number
   l1NetworkID: string
+  timestampResolved?: string // time when its status was changed
+  timestampCreated?: string //time when this transaction is first added to the list
 }
 
 export interface Transaction extends TransactionBase {
@@ -81,6 +86,42 @@ function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   }
   return newState
 }
+
+function updateBlockNumber(
+  state: Transaction[],
+  txID: string,
+  blockNumber?: number
+) {
+  const newState = [...state]
+  const index = newState.findIndex(txn => txn.txID === txID)
+  if (index === -1) {
+    console.warn('transaction not found', txID)
+    return state
+  }
+  newState[index] = {
+    ...newState[index],
+    blockNumber
+  }
+  return newState
+}
+
+function updateResolvedTimestamp(
+  state: Transaction[],
+  txID: string,
+  timestamp?: string
+) {
+  const newState = [...state]
+  const index = newState.findIndex(txn => txn.txID === txID)
+  if (index === -1) {
+    console.warn('transaction not found', txID)
+    return state
+  }
+  newState[index] = {
+    ...newState[index],
+    timestampResolved: timestamp
+  }
+  return newState
+}
 function reducer(state: Transaction[], action: Action) {
   switch (action.type) {
     case 'SET_INITIAL_TRANSACTIONS': {
@@ -104,6 +145,12 @@ function reducer(state: Transaction[], action: Action) {
     case 'CONFIRM_TRANSACTION': {
       return updateStatus(state, 'confirmed', action.txID)
     }
+    case 'SET_BLOCK_NUMBER': {
+      return updateBlockNumber(state, action.txID, action.blockNumber)
+    }
+    case 'SET_RESOLVED_TIMESTAMP': {
+      return updateResolvedTimestamp(state, action.txID, action.timestamp)
+    }
     default:
       return state
   }
@@ -115,20 +162,7 @@ const localStorageReducer = (state: Transaction[], action: Action) => {
   return newState
 }
 
-const useTransactions = (): [
-  Transaction[],
-  {
-    addTransaction: (transaction: NewTransaction) => void
-    addFailedTransaction: (transaction: FailedTransaction) => void
-
-    setTransactionSuccess: (txID: string) => void
-    setTransactionFailure: (txID?: string) => void
-    clearPendingTransactions: () => void
-    setTransactionConfirmed: (txID: string) => void
-    updateTransactionStatus: (txReceipt: TransactionReceipt) => void
-    removeTransaction: (txID: string) => void
-  }
-] => {
+const useTransactions = (): [Transaction[], TransactionActions] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
 
   useEffect(() => {
@@ -144,7 +178,10 @@ const useTransactions = (): [
       console.warn(' Cannot add transaction: TxID not included (???)')
       return
     }
-    const tx = transaction as Transaction
+    const tx = {
+      ...transaction,
+      timestampCreated: new Date().toISOString()
+    } as Transaction
     return dispatch({
       type: 'ADD_TRANSACTION',
       transaction: tx
@@ -175,6 +212,20 @@ const useTransactions = (): [
       txID: txID
     })
   }
+  const setTransactionBlock = (txID: string, blockNumber?: number) => {
+    return dispatch({
+      type: 'SET_BLOCK_NUMBER',
+      txID,
+      blockNumber
+    })
+  }
+  const setResolvedTimestamp = (txID: string, timestamp?: string) => {
+    return dispatch({
+      type: 'SET_RESOLVED_TIMESTAMP',
+      txID,
+      timestamp
+    })
+  }
   const setTransactionFailure = (txID?: string) => {
     if (!txID) {
       console.warn(' Cannot set transaction failure: TxID not included (???)')
@@ -198,7 +249,10 @@ const useTransactions = (): [
     })
   }
 
-  const updateTransactionStatus = (txReceipt: TransactionReceipt) => {
+  const updateTransaction = (
+    txReceipt: TransactionReceipt,
+    tx?: ethers.ContractTransaction
+  ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
         '*** TransactionHash not included in transaction receipt (???) *** '
@@ -206,14 +260,23 @@ const useTransactions = (): [
     }
     switch (txReceipt.status) {
       case 0: {
-        return setTransactionFailure(txReceipt.transactionHash)
+        setTransactionFailure(txReceipt.transactionHash)
+        break
       }
       case 1: {
-        return setTransactionSuccess(txReceipt.transactionHash)
+        setTransactionSuccess(txReceipt.transactionHash)
+        break
       }
       default:
         console.warn('*** Status not included in transaction receipt *** ')
         break
+    }
+    console.log('TX for update', tx)
+    if (tx?.blockNumber) {
+      setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
+    }
+    if (tx) {
+      setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
     }
   }
 
@@ -229,7 +292,7 @@ const useTransactions = (): [
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
-      updateTransactionStatus,
+      updateTransaction,
       removeTransaction,
       addFailedTransaction
     }

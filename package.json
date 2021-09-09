@@ -1,6 +1,6 @@
 {
   "name": "token-bridge-sdk",
-  "version": "0.4.24",
+  "version": "0.5.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "SDK for transfering assets to and from Arbitrum",
@@ -25,11 +25,10 @@
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs"
   },
   "dependencies": {
-    "@ethersproject/bignumber": "^5.1.1",
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
-    "arb-ts": "0.0.36",
-    "ethers": "^5.1.0",
+    "arb-ts": "^0.0.36",
+    "ethers": "^5.4.6",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
@@ -43,8 +42,8 @@
     "@types/lodash.clonedeep": "^4.5.6",
     "@types/lodash.isequal": "^4.5.5",
     "@types/node": "^12.0.0",
-    "@types/react": "^16.9.0",
-    "@types/react-dom": "^16.9.0",
+    "@types/react": "^17.0.19",
+    "@types/react-dom": "^17.0.9",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "better-docs": "^2.3.2",
@@ -60,7 +59,7 @@
     "dist/**/*"
   ],
   "peerDependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   }
 }
