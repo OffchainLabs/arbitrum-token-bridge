@@ -159,22 +159,6 @@ export const defaultState: AppState = {
         return item.createdAtTime
       })
     )
-    // return [...s.depositsTransformed, ...s.withdrawalsTransformed].sort(
-    //   (a, b) => {
-    //     if (_isEmpty(a.createdAt)) {
-    //       return 1
-    //     }
-    //     if (_isEmpty(b.createdAt)) {
-    //       return -1
-    //     }
-    //     const aTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY')
-    //     const bTime = dayjs(a.createdAt, 'HH:mm:ss MM/DD/YYYY')
-    //     if (aTime.isBefore(bTime)) {
-    //       return -1
-    //     }
-    //     return 1
-    //   }
-    // )
   }),
   currentL1BlockNumber: 0,
 

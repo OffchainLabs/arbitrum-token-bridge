@@ -1,17 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React from 'react'
 
 import dayjs from 'dayjs'
-import { ethers } from 'ethers'
 import Countdown from 'react-countdown'
-import Loader from 'react-loader-spinner'
 import { useAppState } from 'src/state'
-import { PendingWithdrawalsLoadedState } from 'src/util'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
 import { TxnStatus } from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 import { MergedTransaction } from '../../state/app/state'
-import { BridgeContext } from '../App/App'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
@@ -128,7 +124,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   return (
     <tr>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
-        {tx.direction}
+        {tx.direction === 'outbox' ? 'redeem from outbox' : tx.direction}
       </td>
       <td className="px-4 py-6  whitespace-nowrap text-sm ">
         <StatusBadge
@@ -146,7 +142,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         </StatusBadge>
       </td>
       <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
-        {tx.isWithdrawal && tx.status === 'Confirmed' && (
+        {tx.isWithdrawal && tx.status.toLowerCase() === 'confirmed' && (
           <div className="relative group">
             <button
               disabled={!isDepositMode}
@@ -157,7 +153,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
               Claim
             </button>
             {!isDepositMode && (
-              <Tooltip>Must be on l1 netowrk to claim withdrawal.</Tooltip>
+              <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
             )}
           </div>
         )}
@@ -180,7 +176,11 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         )}
       </td>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
-        <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />
+        {tx.uniqueId ? (
+          tx.uniqueId.toString()
+        ) : (
+          <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />
+        )}
       </td>
       <td className="px-4 py-6 whitespace-nowrap text-xs leading-4 font-medium text-navy">
         <span className="bg-tokenPill rounded-lg py-1 px-3">{tx.asset}</span>
@@ -196,37 +196,8 @@ const TransactionsTable = ({
   transactions,
   overflowX = true
 }: TransactionsTableProps): JSX.Element => {
-  const {
-    app: { pwLoadedState }
-  } = useAppState()
-
   return (
     <div>
-      <div className="flex items-end text-lg">
-        {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-          <div className="mb-4">
-            <StatusBadge showDot={false}>
-              <div className="mr-2">
-                <Loader
-                  type="Oval"
-                  color="rgb(45, 55, 75)"
-                  height={14}
-                  width={14}
-                />
-              </div>
-              Loading pending withdrawals
-            </StatusBadge>
-          </div>
-        )}
-        {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
-          <div className="mb-4">
-            <StatusBadge variant="red">
-              Loading pending withdrawals failed
-            </StatusBadge>
-          </div>
-        )}
-      </div>
-
       <div className="flex flex-col shadow-sm">
         <div className={`-my-2 ${overflowX ? 'overflow-x-auto' : ''}`}>
           <div className="py-2 align-middle inline-block min-w-full ">
@@ -238,7 +209,7 @@ const TransactionsTable = ({
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      Direction
+                      Action
                     </th>
                     <th
                       scope="col"
@@ -250,7 +221,7 @@ const TransactionsTable = ({
                       scope="col"
                       className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      Action
+                      Redeem
                     </th>
                     <th
                       scope="col"

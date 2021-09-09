@@ -21,8 +21,12 @@ module.exports = {
       height: {
         'min-content': 'min-content',
       },
-      minHeight: {
-        heading: '180px',
+      minHeight:
+      theme => {
+        return {
+          ...theme('spacing'),
+          heading: "180px"
+        }
       },
       maxHeight: {
         tokenList: '500px',

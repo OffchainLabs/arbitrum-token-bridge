@@ -1,19 +1,20 @@
 import React, { useContext, useState } from 'react'
 
+import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
+import { PendingWithdrawalsLoadedState } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
-import { TokenModal } from '../TokenModal/TokenModal'
-import { AmountBox } from './AmountBox'
 import { NetworkBox } from './NetworkBox'
 
 const TransferPanel = (): JSX.Element => {
   const {
     app: {
+      pwLoadedState,
       changeNetwork,
       selectedToken,
       isDepositMode,
@@ -23,6 +24,7 @@ const TransferPanel = (): JSX.Element => {
       arbTokenBridge: { eth, token, bridgeTokens }
     }
   } = useAppState()
+
   const bridge = useContext(BridgeContext)
   // const [tokeModalOpen, setTokenModalOpen] = useState(false)
   const latestEth = useLatest(eth)
@@ -91,16 +93,31 @@ const TransferPanel = (): JSX.Element => {
 
   return (
     <>
-      {/* <TokenModal isOpen={tokeModalOpen} setIsOpen={setTokenModalOpen} /> */}
-
-      <div className="flex justify-end max-w-networkBox w-full mx-auto mb-4">
-        {/* <button */}
-        {/*  type="button" */}
-        {/*  onClick={() => setTokenModalOpen(true)} */}
-        {/*  className="bg-white border border-gray-300 shadow-sm rounded-md py-2 px-4" */}
-        {/* > */}
-        {/*  Token: {selectedToken ? selectedToken.symbol : 'Eth'} */}
-        {/* </button> */}
+      <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto mb-4 min-h-10">
+        <div>
+          {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
+            <div>
+              <StatusBadge showDot={false}>
+                <div className="mr-2">
+                  <Loader
+                    type="Oval"
+                    color="rgb(45, 55, 75)"
+                    height={14}
+                    width={14}
+                  />
+                </div>
+                Loading pending withdrawals
+              </StatusBadge>
+            </div>
+          )}
+          {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
+            <div>
+              <StatusBadge variant="red">
+                Loading pending withdrawals failed
+              </StatusBadge>
+            </div>
+          )}
+        </div>
         {pendingTransactions?.length > 0 && (
           <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
         )}
@@ -118,9 +135,6 @@ const TransferPanel = (): JSX.Element => {
               <div className="absolute left-0 right-0 mx-auto flex items-center justify-center">
                 <NetworkSwitchButton />
               </div>
-              {/* <div className="mr-4"> */}
-              {/*  <AmountBox amount={l1Amount} setAmount={setl1Amount} /> */}
-              {/* </div> */}
             </div>
           </div>
           <NetworkBox
