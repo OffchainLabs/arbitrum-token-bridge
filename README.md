@@ -19,19 +19,20 @@ This project was created with [create-react-app](https://create-react-app.dev/).
 
 1. Fork this repo
 1. Clone your fork locally
-1. Copy the default environment variable file to a `.env.sample` file
+1. Copy the sample environment variable file to a `.env` file
 
     ```bash
     cp .env.sample .env
     ```
 1. Populate `INFURA_TOKEN` with the token generated earlier
-1. Install all the dependencies
+1. Install all dependencies
     ```bash
     yarn install
     ```
-1. Start the app in development mode on localhost:3000
+1. Start the app in development mode on port 3000
     ```bash
     yarn start
     ```
-1. Navigate to [http://localhost:3000/](http://localhost:3000/). The changes you make locally should live-reload in the app.
+1. Navigate to [http://localhost:3000/](http://localhost:3000/).
 1. The app will ask to connect to your Metamask
+1. The changes you make locally should live-reload in the app.
