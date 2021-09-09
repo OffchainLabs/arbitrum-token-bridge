@@ -25,10 +25,12 @@
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs"
   },
   "dependencies": {
+    "@apollo/client": "^3.4.10",
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
     "arb-ts": "^0.0.36",
     "ethers": "^5.4.6",
+    "graphql": "^15.5.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",

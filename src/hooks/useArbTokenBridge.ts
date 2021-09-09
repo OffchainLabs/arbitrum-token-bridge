@@ -24,6 +24,7 @@ import {
   TokenType
 } from './arbTokenBridge.types'
 
+import { getLatestOutboxEntryIndex, messageHasExecuted} from "../util/graph"
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -682,6 +683,49 @@ export const useArbTokenBridge = (
     }
   }
 
+  const getEthWithdrawalsV2 = async (filter?:ethers.providers.Filter)=>{
+    const address = await walletAddressCached()
+    const ethWithdrawalEventData = (await bridge.getL2ToL1EventData(address, filter)).filter((eventData: L2ToL1EventResult )=> !eventData.data || eventData.data === "0x"  )
+    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex()
+
+    const ethWithdrawalData:L2ToL1EventResultPlus[] = []
+    for (let  eventData of ethWithdrawalEventData) {
+      const {
+        caller,
+        destination,
+        uniqueId,
+        batchNumber,
+        indexInBatch,
+        arbBlockNum,
+        ethBlockNum,
+        timestamp,
+        callvalue,
+        data
+      } = eventData
+      const batchNumberDec  = batchNumber.toNumber()
+      let outgoingMessageState = batchNumberDec > lastOutboxEntryIndexDec ? OutgoingMessageState.UNCONFIRMED: (await getOutGoingMessageStateV2(batchNumber, indexInBatch))
+
+      const allWithdrawalData: L2ToL1EventResultPlus = {
+        caller,
+        destination,
+        uniqueId,
+        batchNumber,
+        indexInBatch,
+        arbBlockNum,
+        ethBlockNum,
+        timestamp,
+        callvalue,
+        data,
+        type: AssetType.ETH,
+        value: callvalue,
+        symbol: 'ETH',
+        outgoingMessageState
+      }
+      ethWithdrawalData.push(allWithdrawalData)
+    }
+    return ethWithdrawalData
+  }
+
   const getEthWithdrawals = async (filter?: ethers.providers.Filter) => {
     const address = await walletAddressCached()
     const t = new Date().getTime()
@@ -825,10 +869,9 @@ export const useArbTokenBridge = (
     const pendingWithdrawals: PendingWithdrawalsMap = {}
     const t = new Date().getTime()
     console.log('*** Getting initial pending withdrawal data ***')
-
     const l2ToL1Txns = (
       await Promise.all([
-        getEthWithdrawals(filter),
+        getEthWithdrawalsV2(filter),
         getTokenWithdrawals(gatewayAddresses, filter)
       ])
     ).flat()
@@ -845,6 +888,34 @@ export const useArbTokenBridge = (
     setPendingWithdrawalMap(pendingWithdrawals)
     return
   }
+
+  // call after we've confirmed the outbox entry has been created
+  const getOutGoingMessageStateV2 = useCallback(
+    async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
+      if (
+        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)]
+      ) {
+        return OutgoingMessageState.EXECUTED
+      } else {
+        const proofData = await bridge.tryGetProofOnce(batchNumber, indexInBatch)
+        // this should never occur
+        if(!proofData){
+          return OutgoingMessageState.UNCONFIRMED
+        }
+
+        const { path } = proofData
+        const res = await messageHasExecuted(path, batchNumber)
+
+        if(res){
+          addToExecutedMessagesCache(batchNumber, indexInBatch)
+          return OutgoingMessageState.EXECUTED
+        } else {
+          return OutgoingMessageState.CONFIRMED
+        }
+      }
+    },
+    [executedMessagesCache]
+  )
 
   const getOutGoingMessageState = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
