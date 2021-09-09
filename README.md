@@ -1,6 +1,6 @@
 # arb-token-bridge
 
-This repository contains the source code for the [Arbitrum bridge](https://bridge.arbitrum.io/) which enables users to deposit their funds from Ethereum mainet to the Arbitrum One. The bridge also enables withdrawls from Arbitrum One back to Ethereum mainnet.
+This repository contains the source code for the [Arbitrum bridge](https://bridge.arbitrum.io/) which enables users to deposit their funds from Ethereum mainet to Arbitrum One. The bridge also enables withdrawls from Arbitrum One back to Ethereum mainnet.
 
 ## Development
 
