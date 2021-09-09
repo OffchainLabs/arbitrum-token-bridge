@@ -21,9 +21,7 @@ export const useConfirmDialog = (  _handleAccept: ()=>void, _handleReject?: ()=>
     _handleReject && handleReject()
   }, [_handleReject,handleClose])
 
-  const setDialogOpen = ()=>{
-    console.warn('setting open');
-    
+  const setDialogOpen = ()=>{    
     setDialogState(true)
 
   }
