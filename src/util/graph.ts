@@ -16,10 +16,7 @@ export const getLatestOutboxEntryIndex = async ()=>{
     const res = await appolloClient.query({
         query: gql`{
           outboxEntries(orderBy:  outboxEntryIndex, orderDirection:desc, first: 1) {
-            id
             outboxEntryIndex
-            outputRoot
-            numInBatch
           }
         }
         `
