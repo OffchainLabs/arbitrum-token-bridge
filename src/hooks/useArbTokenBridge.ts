@@ -24,7 +24,7 @@ import {
   TokenType
 } from './arbTokenBridge.types'
 
-import { getLatestOutboxEntryIndex, messageHasExecuted} from "../util/graph"
+import { getLatestOutboxEntryIndex, messageHasExecuted, getETHWithdrawals} from "../util/graph"
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -684,24 +684,25 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?:ethers.providers.Filter)=>{
-    const address = await walletAddressCached()
-    const ethWithdrawalEventData = (await bridge.getL2ToL1EventData(address, filter)).filter((eventData: L2ToL1EventResult )=> !eventData.data || eventData.data === "0x"  )
+
     const networkID = await l1NetworkIDCached()
+    const address = await walletAddressCached()
+    const ethWithdrawalEventData  = await     getETHWithdrawals(address, networkID)
     const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
 
     const ethWithdrawalData:L2ToL1EventResultPlus[] = []
     for (let  eventData of ethWithdrawalEventData) {
       const {
-        caller,
         destination,
+        timestamp,
+        data,
+        caller,
         uniqueId,
         batchNumber,
         indexInBatch,
         arbBlockNum,
         ethBlockNum,
-        timestamp,
         callvalue,
-        data
       } = eventData
       const batchNumberDec  = batchNumber.toNumber()
       let outgoingMessageState = batchNumberDec > lastOutboxEntryIndexDec ? OutgoingMessageState.UNCONFIRMED: (await getOutGoingMessageStateV2(batchNumber, indexInBatch))
@@ -725,62 +726,6 @@ export const useArbTokenBridge = (
       ethWithdrawalData.push(allWithdrawalData)
     }
     return ethWithdrawalData
-  }
-
-  const getEthWithdrawals = async (filter?: ethers.providers.Filter) => {
-    const address = await walletAddressCached()
-    const t = new Date().getTime()
-    const withdrawalData = await bridge.getL2ToL1EventData(address, filter)
-
-    console.log(
-      `*** got eth withdraw event in ${
-        (new Date().getTime() - t) / 1000
-      } seconds ***`
-    )
-
-    const outgoingMessageStates = await Promise.all(
-      withdrawalData.map((eventData: L2ToL1EventResult) =>
-        getOutGoingMessageState(eventData.batchNumber, eventData.indexInBatch)
-      )
-    )
-
-    return withdrawalData
-      .map((eventData, i) => {
-        const {
-          caller,
-          destination,
-          uniqueId,
-          batchNumber,
-          indexInBatch,
-          arbBlockNum,
-          ethBlockNum,
-          timestamp,
-          callvalue,
-          data
-        } = eventData
-
-        if (!data || data === '0x') {
-          // is an eth withdrawal
-          const allWithdrawalData: L2ToL1EventResultPlus = {
-            caller,
-            destination,
-            uniqueId,
-            batchNumber,
-            indexInBatch,
-            arbBlockNum,
-            ethBlockNum,
-            timestamp,
-            callvalue,
-            data,
-            type: AssetType.ETH,
-            value: callvalue,
-            symbol: 'ETH',
-            outgoingMessageState: outgoingMessageStates[i]
-          }
-          return allWithdrawalData
-        }
-      })
-      .filter((x): x is L2ToL1EventResultPlus => !!x)
   }
 
   const getTokenWithdrawals = async (
