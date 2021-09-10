@@ -1,9 +1,0 @@
-{
-  "version": "v1",
-  "packages": {
-    "token-bridge-sdk": {
-      "signature": "b8248f015e9d0da714ad3d78867d77de",
-      "file": true
-    }
-  }
-}

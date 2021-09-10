@@ -204,7 +204,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
   }
 
-  // reset bridge on network switch, this inits all other resets
+  // STEP1 reset bridge on network switch or account switch, this inits all other resets
   useEffect(() => {
     if (!active) {
       return
@@ -213,9 +213,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     if (globalBridge) {
       setGlobalBridge(null)
     }
-  }, [networkVersion])
+  }, [networkVersion, usersMetamaskAddress])
 
-  // after bridge is set to null, we start recreating everything
+  // STEP2 after bridge is set to null, we start recreating everything
   useEffect(() => {
     if (!active || globalBridge) {
       return
