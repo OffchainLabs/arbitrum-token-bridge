@@ -219,7 +219,6 @@ export const useArbTokenBridge = (
       return receipt
     } catch (e) {
       console.error('depositEth err: ' + e)
-      setTransactionFailure(tx.hash)
     }
   }
 
@@ -272,7 +271,6 @@ export const useArbTokenBridge = (
         return receipt
       } catch (e) {
         console.error('withdrawEth err', e)
-        setTransactionFailure(tx.hash)
       }
     },
     [pendingWithdrawalsMap]
@@ -396,8 +394,8 @@ export const useArbTokenBridge = (
       updateTokenBalances()
       return receipt
     } catch (err) {
-      setTransactionFailure(tx.hash)
-    }
+      console.warn('deposit token failure', err);
+      }
   }
 
   const withdrawToken = async (erc20l1Address: string, amount: string) => {
@@ -450,9 +448,8 @@ export const useArbTokenBridge = (
 
       return receipt
     } catch (err) {
-      console.warn('err', err)
+      console.warn('withdraw token err', err)
 
-      setTransactionFailure(tx.hash)
     }
   }
 
@@ -589,7 +586,6 @@ export const useArbTokenBridge = (
         return rec
       } catch (err) {
         console.warn('WARNING: token outbox execute failed:', err)
-        setTransactionFailure(res.hash)
       }
     },
     [pendingWithdrawalsMap]
@@ -630,8 +626,7 @@ export const useArbTokenBridge = (
         }
         return rec
       } catch (err) {
-        console.warn('WARNING: token outbox execute failed:', err)
-        setTransactionFailure(res.hash)
+        console.warn('WARNING: ETH outbox execute failed:', err)
       }
     },
     [pendingWithdrawalsMap]
