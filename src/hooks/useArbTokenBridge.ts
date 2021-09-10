@@ -686,7 +686,8 @@ export const useArbTokenBridge = (
   const getEthWithdrawalsV2 = async (filter?:ethers.providers.Filter)=>{
     const address = await walletAddressCached()
     const ethWithdrawalEventData = (await bridge.getL2ToL1EventData(address, filter)).filter((eventData: L2ToL1EventResult )=> !eventData.data || eventData.data === "0x"  )
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex()
+    const networkID = await l1NetworkIDCached()
+    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
 
     const ethWithdrawalData:L2ToL1EventResultPlus[] = []
     for (let  eventData of ethWithdrawalEventData) {
@@ -904,7 +905,8 @@ export const useArbTokenBridge = (
         }
 
         const { path } = proofData
-        const res = await messageHasExecuted(path, batchNumber)
+        const l1NetworkID= await l1NetworkIDCached()
+        const res = await messageHasExecuted(path, batchNumber,l1NetworkID)
 
         if(res){
           addToExecutedMessagesCache(batchNumber, indexInBatch)
