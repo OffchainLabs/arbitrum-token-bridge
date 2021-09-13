@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
+import { TokenList } from '@uniswap/token-lists'
 import {
   Bridge,
   L1TokenData,
@@ -449,9 +450,27 @@ export const useArbTokenBridge = (
       return receipt
     } catch (err) {
       console.warn('withdraw token err', err)
-
     }
   }
+  const addTokensStatic = useCallback((arbTokenList: TokenList) =>{
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> ={}
+    for (let tokenData of arbTokenList.tokens) {
+      console.log(tokenData);
+
+      const { address: l2Address, name, symbol, extensions, decimals }      = tokenData
+      const l1Address = (extensions as any).l1Address as string
+      bridgeTokensToAdd[l1Address] ={
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        allowed: false,
+        address: l1Address,
+        l2Address,
+        decimals
+      }
+    }
+    setBridgeTokens({...bridgeTokens, ...bridgeTokensToAdd})
+  },[bridgeTokens])
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
@@ -489,7 +508,7 @@ export const useArbTokenBridge = (
   )
 
   const expireCache = (): void => {
-    clearERC20Cache()
+    // clearERC20Cache()
     clearERC721Cache()
   }
 
@@ -522,6 +541,29 @@ export const useArbTokenBridge = (
       arbChainBalance: l2Balance
     })
   }
+
+  const updateTokenData = useCallback(async (l1Address: string)=>{
+    const bridgeToken = bridgeTokens[l1Address]
+    if(!bridgeToken){
+      return
+    }
+    const  { l1Data, l2Data } = await bridge.updateTokenData(l1Address)
+    const erc20TokenBalance:BridgeBalance = {
+      balance: l1Data.ERC20?.balance || l1Data.CUSTOM?.balance || Zero,
+      arbChainBalance: l2Data?.ERC20?.balance || l2Data?.CUSTOM?.balance || Zero
+    }
+
+    setErc20Balances({...erc20Balances, [l1Address]: erc20TokenBalance})
+
+    if(!bridgeToken.allowed){
+      const allowed = l1Data?.ERC20?.allowed ||  l1Data?.CUSTOM?.allowed
+      if (allowed){
+        bridgeToken.allowed = true
+        setBridgeTokens({...bridgeTokens, [l1Address]:bridgeToken })
+      }
+    }
+
+  }, [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens])
 
   const updateTokenBalances = async () => {
     const { l1Tokens, l2Tokens } = await bridge.updateAllTokens()
@@ -893,6 +935,8 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
+      addTokensStatic,
+      updateTokenData,
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,

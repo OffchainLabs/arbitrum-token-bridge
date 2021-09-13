@@ -1,6 +1,8 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers'
+import { TokenList } from '@uniswap/token-lists'
+
 import {
   FailedTransaction,
   NewTransaction,
@@ -105,7 +107,9 @@ export interface ArbTokenBridgeCache {
 }
 
 export interface ArbTokenBridgeToken {
-  add: (erc20L1orL2Address: string, type: TokenType) => Promise<string>
+  add: (erc20L1orL2Address: string, type: TokenType) => Promise<string>,
+  addTokensStatic: (tokenList: TokenList) => void
+  updateTokenData: (l1Address: string)=>Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,
