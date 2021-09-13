@@ -27,9 +27,10 @@ const TokenRow = ({
   const {
     app: {
       networkID,
-      arbTokenBridge: { bridgeTokens }
+      arbTokenBridge: { bridgeTokens, token:_token} 
     }
   } = useAppState()
+  const {updateTokenData} = _token
   const actions = useActions()
 
   // TODO should I check in bridgeTokens or in token-bridge-sdk/token-list
@@ -63,6 +64,7 @@ const TokenRow = ({
   }, [address, networkID])
 
   function selectToken() {
+    token && updateTokenData(token.address)
     actions.app.setSelectedToken(token || null)
     onTokenSelected()
   }
@@ -90,7 +92,7 @@ const TokenRow = ({
       </div>
 
       <p className="text-base leading-6 font-medium text-gray-900">
-        {+formatEther(balance || 0)} {tokenSymbol}
+        {} {tokenSymbol}
       </p>
     </button>
   )
@@ -107,7 +109,7 @@ export const TokenModalBody = ({
 
   const {
     app: {
-      arbTokenBridge: { balances, token },
+      arbTokenBridge: { balances, token, bridgeTokens },
       isDepositMode,
       networkID
     }
@@ -115,26 +117,37 @@ export const TokenModalBody = ({
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
-  const tokensWithPositiveBalance = useMemo(() => {
-    if (balances.erc20) {
-      return Object.keys(balances.erc20).filter((addr: string) => {
-        if (isDepositMode) {
-          return !BigNumber.from(balances.erc20[addr]?.balance || 0).isZero()
-        }
-        return !BigNumber.from(
-          balances.erc20[addr]?.arbChainBalance || 0
-        ).isZero()
+  // const tokensWithPositiveBalance = useMemo(() => {
+  //   if (balances.erc20) {
+  //     return Object.keys(balances.erc20).filter((addr: string) => {
+  //       return addr
+  //       if (isDepositMode) {
+  //         return !BigNumber.from(balances.erc20[addr]?.balance || 0).isZero()
+  //       }
+  //       return !BigNumber.from(
+  //         balances.erc20[addr]?.arbChainBalance || 0
+  //       ).isZero()
+  //     })
+  //   }
+  //   return []
+  // }, [balances.erc20, isDepositMode])
+
+  const tokensToShow = useMemo(() => {
+    if (bridgeTokens) {
+      return Object.keys(bridgeTokens).map((addr: string) => {
+        return addr
       })
     }
     return []
   }, [balances.erc20, isDepositMode])
 
-  const storeNewToken = async () => {
+  const storeNewToken = async () => {    
     return bridge
       ?.getAndUpdateL1TokenData(newToken) // check if exsits first before adding, because sdk will add to the cache even if it does not exist
-      .then(async () => {
-        await token.add(newToken, TokenType.ERC20)
+      .then(async () => {        
+        await token.add(newToken, TokenType.ERC20)        
         token.updateBalances()
+        
       })
       .catch(ex => {
         console.log('Token address not existing on this network', ex)
@@ -163,8 +176,7 @@ export const TokenModalBody = ({
     } finally {
       setIsAddingToken(false)
     }
-  }
-
+  }  
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
@@ -175,7 +187,7 @@ export const TokenModalBody = ({
           }
           onTokenSelected={onTokenSelected}
         />
-        {tokensWithPositiveBalance.map(erc20Address => (
+        {tokensToShow.map(erc20Address => (
           <TokenRow
             key={erc20Address}
             address={erc20Address}
