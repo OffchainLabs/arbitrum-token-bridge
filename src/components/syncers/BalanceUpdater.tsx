@@ -19,22 +19,17 @@ const BalanceUpdater = (): JSX.Element => {
   }, [bridge])
 
   useEffect(() => {
+    if (latestBridge.current) {
+      latestTokenBridge?.current?.eth?.updateBalances()
+    }
     const interval = setInterval(() => {
       if (latestBridge.current) {
         latestTokenBridge?.current?.eth?.updateBalances()
       }
-    }, 10000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [bridge])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (latestBridge.current) {
-        latestTokenBridge?.current?.token?.updateBalances()
-      }
-    }, 25000)
-    return () => clearInterval(interval)
-  }, [bridge])
 
   return <></>
 }
