@@ -834,10 +834,10 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-arb-ts@^0.0.37:
-  version "0.0.37"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.37.tgz#242a05fdb0d98084d2f4c1fb06964777247ffa66"
-  integrity sha512-j7jGzp0RXggBZhD8mtrwt7sptH1fDEhn4SdCAnEN1zu5s7hSQ7XYRmndsWx60I0ciqT336TF7OsepDFYGiuTEw==
+arb-ts@0.0.38:
+  version "0.0.38"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.38.tgz#e38ffcbf9bf0a29d06b527dad6fbd8db5dab0c48"
+  integrity sha512-uZs1RpnukQ0/EZ/hWP3KR73mMkej4cjQaraIySzdNv+yRFlrPDD2OAjIrMYUmfg+honqJ2ec76IgCTbxPfsu0w==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
