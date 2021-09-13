@@ -27,10 +27,10 @@ const TokenRow = ({
   const {
     app: {
       networkID,
-      arbTokenBridge: { bridgeTokens, token:_token} 
+      arbTokenBridge: { bridgeTokens, token: _token }
     }
   } = useAppState()
-  const {updateTokenData} = _token
+  const { updateTokenData } = _token
   const actions = useActions()
 
   // TODO should I check in bridgeTokens or in token-bridge-sdk/token-list
@@ -141,13 +141,12 @@ export const TokenModalBody = ({
     return []
   }, [balances.erc20, isDepositMode])
 
-  const storeNewToken = async () => {    
+  const storeNewToken = async () => {
     return bridge
       ?.getAndUpdateL1TokenData(newToken) // check if exsits first before adding, because sdk will add to the cache even if it does not exist
-      .then(async () => {        
-        await token.add(newToken, TokenType.ERC20)        
+      .then(async () => {
+        await token.add(newToken, TokenType.ERC20)
         token.updateBalances()
-        
       })
       .catch(ex => {
         console.log('Token address not existing on this network', ex)
@@ -176,7 +175,7 @@ export const TokenModalBody = ({
     } finally {
       setIsAddingToken(false)
     }
-  }  
+  }
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
