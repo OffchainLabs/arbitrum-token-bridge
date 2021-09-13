@@ -30,7 +30,6 @@ const BalanceUpdater = (): JSX.Element => {
     return () => clearInterval(interval)
   }, [bridge])
 
-
   return <></>
 }
 
