@@ -12,7 +12,6 @@ import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 import {
   BridgeBalance,
   TokenType,
-  ERC721Balance,
   ContractStorage,
   BridgeToken
 } from 'token-bridge-sdk'
@@ -24,8 +23,6 @@ import EthL2Actions from 'components/Actions/EthL2Actions'
 import ERC20L1Actions from 'components/Actions/ERC20L1Actions'
 import ERC20L2Actions from 'components/Actions/ERC20L2Actions'
 
-import ERC721L1Actions from 'components/Actions/ERC721L1Actions'
-import ERC721L2Actions from 'components/Actions/ERC721L2Actions'
 import { Transaction } from 'token-bridge-sdk'
 
 import { providers } from 'ethers'
@@ -35,18 +32,15 @@ import { useL1Network } from 'components/App/NetworkContext'
 type TabProps = {
   ethBalances: BridgeBalance
   erc20BridgeBalance: BridgeBalance | undefined
-  erc721balance: ERC721Balance | undefined
   eth: any
   token: any
   currentERC20Address: string
-  currentERC721Address: string
   setCurrentERC20Address: React.Dispatch<string>
-  setCurrentERC721Address: React.Dispatch<string>
   bridgeTokens: ContractStorage<BridgeToken>
   addToken: (a: string, type: TokenType) => Promise<string>
   transactions: Transaction[]
   ethAddress: string
-  handleConnextTxn: connextTxn
+  handleConnextTxn?: connextTxn
   pendingWithdrawalsMap: PendingWithdrawalsMap
   ethProvider: providers.Provider
 }
@@ -59,12 +53,9 @@ const TabsContainer = ({
   addToken,
   eth,
   token,
-  erc721balance,
   currentERC20Address,
   bridgeTokens,
-  currentERC721Address,
   setCurrentERC20Address,
-  setCurrentERC721Address,
   transactions,
   ethAddress,
   handleConnextTxn,
@@ -88,12 +79,9 @@ const TabsContainer = ({
   const erc20BridgeTokens = brideTokensArray.filter(
     token => token.type === TokenType.ERC20
   )
-  const erc721BridgeTokens = brideTokensArray.filter(
-    token => token.type === TokenType.ERC721
-  )
+
 
   const currentERC20Token = bridgeTokens[currentERC20Address]
-  const currentERC721Token = bridgeTokens[currentERC721Address]
   const disabledWithdrawals = false
 
   const currentTokenL2Address =
@@ -130,7 +118,6 @@ const TabsContainer = ({
                   balances={ethBalances}
                   eth={eth}
                   ethAddress={ethAddress}
-                  handleConnextTxn={handleConnextTxn}
                 />
               </PanelWrapper>
             </Col>
@@ -201,7 +188,6 @@ const TabsContainer = ({
                     bridgeTokens={bridgeTokens}
                     currentERC20Address={currentERC20Address}
                     ethAddress={ethAddress}
-                    handleConnextTxn={handleConnextTxn}
                   />
                 </PanelWrapper>
               </Col>
@@ -209,56 +195,7 @@ const TabsContainer = ({
           </Container>
         </Tab>
       ) : null}
-      {/* <Tab eventKey="erc721" title="ERC-721">
-        <Container>
-          <Row>
-            <Col>
-              <ERC721BalanceUi
-                balances={erc721balance}
-                transactions={transactions}
-                bridgeTokens={bridgeTokens}
-                currentERC721Address={currentERC721Address}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <AssetDropDown
-                bridgeTokensArray={erc721BridgeTokens}
-                addToken={addToken}
-                tokenType={TokenType.ERC721}
-                currentToken={currentERC721Token}
-                setCurrentAddress={setCurrentERC721Address}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <PanelWrapper isDepositPanel={true}>
-                <ERC721L1Actions
-                  balances={erc721balance}
-                  eth={token}
-                  bridgeTokens={bridgeTokens}
-                  currentERC721Address={currentERC721Address}
-                />
-              </PanelWrapper>
-            </Col>
-            <Col>
-              <PanelWrapper
-                isDepositPanel={false}
-                disabledWithdrawals={disabledWithdrawals}
-              >
-                <ERC721L2Actions
-                  balances={erc721balance}
-                  eth={token}
-                  bridgeTokens={bridgeTokens}
-                  currentERC721Address={currentERC721Address}
-                />
-              </PanelWrapper>
-            </Col>
-          </Row>
-        </Container>
-      </Tab> */}
+
     </Tabs>
   )
 }

@@ -54,10 +54,6 @@ const App = ({ bridge }: AppProps) => {
     'currentERC20',
     ''
   )
-  const [currentERC721Address, setCurrentERC721Address] = useLocalStorage(
-    'currentERC721',
-    ''
-  )
 
   useEffect(() => {
     const allAddresses = Object.keys(bridgeTokens).sort()
@@ -72,14 +68,8 @@ const App = ({ bridge }: AppProps) => {
       return erc20[currentERC20Address]
     }
   })()
-  const erc721Balance = (() => {
-    const { erc721 } = balances
-    if (currentERC721Address && erc721 && erc721 && [currentERC721Address]) {
-      return erc721[currentERC721Address]
-    }
-  })()
 
-  const { addTransaction, updateTransactionStatus } = transactions
+  const { addTransaction, updateTransaction } = transactions
   interface ConnextTxnParams {
     value: string
     txID: string
@@ -89,20 +79,6 @@ const App = ({ bridge }: AppProps) => {
     type: 'connext-deposit' | 'connext-withdraw'
   }
 
-  const handleConnextTxn: connextTxn = useCallback(
-    async (newTxnData: ConnextTxnParams) => {
-      addTransaction({
-        ...newTxnData,
-        status: 'pending'
-      })
-      const provider =
-        newTxnData.type === 'connext-deposit' ? arbProvider : ethProvider
-
-      const receipt = await provider.waitForTransaction(newTxnData.txID)
-      updateTransactionStatus(receipt)
-    },
-    [arbProvider, addTransaction, updateTransactionStatus, ethProvider]
-  )
   useEffect(() => {
     balances.update()
     window.setInterval(() => {
@@ -170,10 +146,8 @@ const App = ({ bridge }: AppProps) => {
           ethAddress={walletAddress}
           ethBalance={balances.eth}
           erc20Balance={erc20Balance}
-          erc721Balance={erc721Balance}
           bridgeTokens={bridgeTokens}
           currentERC20Address={currentERC20Address ?? ''}
-          currentERC721Address={currentERC721Address ?? ''}
         />
       </div>
       <div className="row" id="bridgeRow">
@@ -184,15 +158,11 @@ const App = ({ bridge }: AppProps) => {
             addToken={token.add}
             eth={eth}
             token={token}
-            erc721balance={erc721Balance}
             bridgeTokens={bridgeTokens}
             currentERC20Address={currentERC20Address ?? ''}
-            currentERC721Address={currentERC721Address ?? ''}
             setCurrentERC20Address={setCurrentERC20Address}
-            setCurrentERC721Address={setCurrentERC721Address}
             transactions={transactions.transactions}
             ethAddress={walletAddress}
-            handleConnextTxn={handleConnextTxn}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
             ethProvider={ethProvider}
           />
@@ -206,7 +176,7 @@ const App = ({ bridge }: AppProps) => {
           clearPendingTransactions={transactions.clearPendingTransactions}
           walletAddress={walletAddress}
           setTransactionConfirmed={transactions.setTransactionConfirmed}
-          updateTransactionStatus={transactions.updateTransactionStatus}
+          updateTransactionStatus={transactions.updateTransaction}
         />
       </div>
     </div>
