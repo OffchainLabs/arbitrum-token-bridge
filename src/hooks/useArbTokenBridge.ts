@@ -508,7 +508,7 @@ export const useArbTokenBridge = (
   )
 
   const expireCache = (): void => {
-    // clearERC20Cache()
+    clearERC20Cache()
     clearERC721Cache()
   }
 
