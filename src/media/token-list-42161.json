@@ -1,8 +1,20 @@
 {
   "name": "Arbitrum One",
-  "timestamp": "2021-09-10T15:46:59.081Z",
-  "version": { "major": 1, "minor": 5, "patch": 2 },
+  "timestamp": "2021-09-14T14:29:55.906Z",
+  "version": { "major": 1, "minor": 6, "patch": 3 },
   "tokens": [
+    {
+      "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
+      "chainId": 42161,
+      "address": "0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d",
+      "name": "0xBitcoin Token",
+      "symbol": "0xBTC",
+      "decimals": 8,
+      "extensions": {
+        "l1Address": "0xB6eD7644C69416d67B522e20bC294A9a9B405B31",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
     {
       "logoURI": "https://zapper.fi/images/ALCH-icon.png",
       "chainId": 42161,
@@ -16,7 +28,19 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/BADGER-icon.png",
+      "logoURI": "https://zapper.fi/images/BAC-icon.png",
+      "chainId": 42161,
+      "address": "0x6F67043201C903bbCBC129750CB3b328Dd56a0a5",
+      "name": "BAC",
+      "symbol": "BAC",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x3449FC1Cd036255BA1EB19d65fF4BA2b8903A69a",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x3472A5A71965499acd81997a54BBA8D852C6E53d/logo.png",
       "chainId": 42161,
       "address": "0xBfa641051Ba0a0Ad1b0AcF549a89536A0D76472E",
       "name": "Badger",
@@ -28,7 +52,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/BAL-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xba100000625a3754423978a60c9317c58a424e3D/logo.png",
       "chainId": 42161,
       "address": "0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8",
       "name": "Balancer",
@@ -40,7 +64,18 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/BOND-icon.png",
+      "chainId": 42161,
+      "address": "0xBbFbde08Bf1BE235a3Fa97d6A27fFfA19Ac4a8a8",
+      "name": "BarkCoin",
+      "symbol": "BARK",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x5BD7EF7113a32b56127ac32272609c42c97849fF",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x0391D2021f89DC339F60Fff84546EA23E337750f/logo.png",
       "chainId": 42161,
       "address": "0x0D81E50bC677fa67341c44D7eaA9228DEE64A4e1",
       "name": "BarnBridge Governance Token",
@@ -48,6 +83,18 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0x0391D2021f89DC339F60Fff84546EA23E337750f",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xb683D83a532e2Cb7DFa5275eED3698436371cc9f/logo.png",
+      "chainId": 42161,
+      "address": "0xBA9a5Dd807c9F072850bE15a52dF3408BA25Fd18",
+      "name": "BTU Protocol",
+      "symbol": "BTU",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xb683D83a532e2Cb7DFa5275eED3698436371cc9f",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -88,7 +135,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/CREAM-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x2ba592F78dB6436527729929AAf6c908497cB200/logo.png",
       "chainId": 42161,
       "address": "0xf4D48Ce3ee1Ac3651998971541bAdbb9A14D7234",
       "name": "Cream",
@@ -100,7 +147,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/CRV-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xD533a949740bb3306d119CC777fa900bA034cd52/logo.png",
       "chainId": 42161,
       "address": "0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978",
       "name": "Curve DAO Token",
@@ -136,7 +183,19 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DHT-icon.png",
+      "logoURI": "https://zapper.fi/images/DF-icon.png",
+      "chainId": 42161,
+      "address": "0xaE6aab43C4f3E0cea4Ab83752C278f8dEbabA689",
+      "name": "dForce",
+      "symbol": "DF",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x431ad2ff6a9C365805eBaD47Ee021148d6f7DBe0",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xca1207647Ff814039530D7d35df0e1Dd2e91Fa84/logo.png",
       "chainId": 42161,
       "address": "0x8038F3C971414FD1FC220bA727F2D4A0fC98cb65",
       "name": "dHedge DAO Token",
@@ -148,7 +207,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DODO-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x43Dfc4159D86F3A37A5A4B3D4580b888ad7d4DDd/logo.png",
       "chainId": 42161,
       "address": "0x69Eb4FA4a2fbd498C257C57Ea8b7655a2559A581",
       "name": "DODO bird",
@@ -156,6 +215,17 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0x43Dfc4159D86F3A37A5A4B3D4580b888ad7d4DDd",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0xA7Aa2921618e3D63dA433829d448b58C9445A4c3",
+      "name": "DeversiFi Token",
+      "symbol": "DVF",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xDDdddd4301A082e62E84e43F474f044423921918",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -179,6 +249,18 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0xb986F3a2d91d3704Dc974A24FB735dCc5E3C1E70",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://zapper.fi/images/FOR-icon.png",
+      "chainId": 42161,
+      "address": "0x3816e40c1eB106c8fb7c05f901cfD58C7292D051",
+      "name": "The Force Token",
+      "symbol": "FOR",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x1FCdcE58959f536621d76f5b7FfB955baa5A672F",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -230,6 +312,17 @@
       }
     },
     {
+      "chainId": 42161,
+      "address": "0x9c67eE39e3C4954396b9142010653F17257dd39C",
+      "name": "Impermax",
+      "symbol": "IMX",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x7b35Ce522CB72e4077BaeB96Cb923A5529764a00",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "logoURI": "https://zapper.fi/images/KUN-icon.png",
       "chainId": 42161,
       "address": "0x04cb2d263a7489f02d813eaaB9Ba1bb8466347F2",
@@ -265,7 +358,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/LRC-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD/logo.png",
       "chainId": 42161,
       "address": "0x46d0cE7de6247b0A95f67b43B589b4041BaE7fbE",
       "name": "LoopringCoin V2",
@@ -301,7 +394,18 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/MKR-icon.png",
+      "chainId": 42161,
+      "address": "0xB20A02dfFb172C474BC4bDa3fD6f4eE70C04daf2",
+      "name": "Magic Internet Money",
+      "symbol": "MIM",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2/logo.png",
       "chainId": 42161,
       "address": "0x2e9a6Df78E42a30712c10a9Dc4b1C8656f8F2879",
       "name": "Maker",
@@ -372,7 +476,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/RGT-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xD291E7a03283640FDc51b121aC401383A46cC623/logo.png",
       "chainId": 42161,
       "address": "0xef888bcA6AB6B1d26dbeC977C455388ecd794794",
       "name": "Rari Governance Token",
@@ -380,6 +484,18 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0xD291E7a03283640FDc51b121aC401383A46cC623",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://zapper.fi/images/SAKE-icon.png",
+      "chainId": 42161,
+      "address": "0x552E4e96A0Ce6D36d161b63984848c8dAC471ea2",
+      "name": "SakeToken",
+      "symbol": "SAKE",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x066798d9ef0833ccc719076Dab77199eCbd178b0",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -396,7 +512,18 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/SUSHI-icon.png",
+      "chainId": 42161,
+      "address": "0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF",
+      "name": "Spell Token",
+      "symbol": "SPELL",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x090185f2135308BaD17527004364eBcC2D37e5F6",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x6B3595068778DD592e39A122f4f5a5cF09C90fE2/logo.png",
       "chainId": 42161,
       "address": "0xd4d42F0b6DEF4CE0383636770eF773390d85c61A",
       "name": "SushiToken",
@@ -415,6 +542,29 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0x6cAcDB97e3fC8136805a9E7c342d866ab77D0957",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0xA72159FC390f0E3C6D415e658264c7c4051E9b87",
+      "name": "Tracer",
+      "symbol": "TCR",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x9C4A4204B79dd291D6b6571C5BE8BbcD0622F050",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://zapper.fi/images/UBT-icon.png",
+      "chainId": 42161,
+      "address": "0x2aD62674A64E698C24831Faf824973C360430140",
+      "name": "UniBright",
+      "symbol": "UBT",
+      "decimals": 8,
+      "extensions": {
+        "l1Address": "0x8400D94A5cb0fa0D041a3788e395285d61c9ee5e",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -525,7 +675,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/YFI-icon.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e/logo.png",
       "chainId": 42161,
       "address": "0x82e3A8F066a6989666b031d916c43672085b1582",
       "name": "yearn.finance",
