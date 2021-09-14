@@ -13,7 +13,6 @@ interface PendingWithdrawalsProps {
   headerText: string
   triggerOutbox: (id: string) => {} | undefined
   ethProvider: providers.Provider
-  decimals?: number
   // Header
 }
 const { formatUnits } = utils
@@ -24,7 +23,6 @@ const PendingWithdrawals = ({
   headerText,
   triggerOutbox,
   ethProvider,
-  decimals = 18
 }: PendingWithdrawalsProps) => {
   const [currentL1BlockNumber, setCurrentL1BlockNumber] = useState(0)
   const { confirmPeriodBlocks = 45818 } = useL2Network()
@@ -132,6 +130,7 @@ const PendingWithdrawals = ({
         <tbody>
           {pendingWithdrawalsToShow.map((pw: L2ToL1EventResultPlus) => {
             const id = pw.uniqueId.toString()
+            const {decimals} = pw
 
             return (
               <tr key={id}>
