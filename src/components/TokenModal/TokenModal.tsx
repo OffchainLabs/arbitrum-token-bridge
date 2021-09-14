@@ -3,7 +3,7 @@ import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 import { formatEther, isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import { TokenType } from 'token-bridge-sdk'
+import { TokenType, BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { getTokenImg, isTokenWhitelisted } from '../../util'
@@ -116,7 +116,6 @@ export const TokenModalBody = ({
   } = useAppState()
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-
   // const tokensWithPositiveBalance = useMemo(() => {
   //   if (balances.erc20) {
   //     return Object.keys(balances.erc20).filter((addr: string) => {
@@ -133,13 +132,20 @@ export const TokenModalBody = ({
   // }, [balances.erc20, isDepositMode])
 
   const tokensToShow = useMemo(() => {
+    const tokenSearch = newToken.trim().toLowerCase()
     if (bridgeTokens) {
-      return Object.keys(bridgeTokens).map((addr: string) => {
-        return addr
+      return Object.keys(bridgeTokens).filter((addr: string) => {
+        if (!tokenSearch) return true
+
+        const bridgeToken = bridgeTokens[addr] as BridgeToken
+        const { address, l2Address, name, symbol } = bridgeToken
+        return (address + l2Address + name + symbol)
+          .toLowerCase()
+          .includes(tokenSearch)
       })
     }
     return []
-  }, [balances.erc20, isDepositMode])
+  }, [balances.erc20, isDepositMode, newToken])
 
   const storeNewToken = async () => {
     return bridge
@@ -178,6 +184,52 @@ export const TokenModalBody = ({
   }
   return (
     <div className="flex flex-col gap-6">
+      <TokenConfirmationDialog
+        onAdd={storeNewToken}
+        open={confirmationOpen}
+        setOpen={setConfirmationOpen}
+      />
+      <TokenBlacklistedDialog
+        open={blacklistedOpen}
+        setOpen={setBlacklistedOpen}
+      />
+      <form onSubmit={addNewToken} className="flex flex-col">
+        <label
+          htmlFor="newTokenAddress"
+          className="text-sm leading-5 font-medium text-gray-700 mb-1"
+        >
+          Search for token
+        </label>
+        <div className="flex items-stretch gap-2">
+          <input
+            id="newTokenAddress"
+            value={newToken}
+            onChange={e => setNewToken(e.target.value)}
+            placeholder="Token name, symbol, or address"
+            className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
+          />
+
+          {networkID === '4' || networkID === '421611' ? (
+            <Button
+              variant="white"
+              type="submit"
+              disabled={newToken === '' || !isAddress(newToken)}
+              // className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
+            >
+              {isAddingToken ? (
+                <Loader
+                  type="Oval"
+                  color="rgb(45, 55, 75)"
+                  height={16}
+                  width={16}
+                />
+              ) : (
+                'Add'
+              )}
+            </Button>
+          ) : null}
+        </div>
+      </form>
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
         <TokenRow
           address={null}
@@ -199,50 +251,6 @@ export const TokenModalBody = ({
           />
         ))}
       </div>
-      <TokenConfirmationDialog
-        onAdd={storeNewToken}
-        open={confirmationOpen}
-        setOpen={setConfirmationOpen}
-      />
-      <TokenBlacklistedDialog
-        open={blacklistedOpen}
-        setOpen={setBlacklistedOpen}
-      />
-      <form onSubmit={addNewToken} className="flex flex-col">
-        <label
-          htmlFor="newTokenAddress"
-          className="text-sm leading-5 font-medium text-gray-700 mb-1"
-        >
-          Don’t see your token? Enter token address
-        </label>
-        <div className="flex items-stretch gap-2">
-          <input
-            id="newTokenAddress"
-            value={newToken}
-            onChange={e => setNewToken(e.target.value)}
-            placeholder="Token address"
-            className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
-          />
-
-          <Button
-            variant="white"
-            type="submit"
-            disabled={newToken === '' || !isAddress(newToken)}
-            // className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
-          >
-            {isAddingToken ? (
-              <Loader
-                type="Oval"
-                color="rgb(45, 55, 75)"
-                height={16}
-                width={16}
-              />
-            ) : (
-              'Add'
-            )}
-          </Button>
-        </div>
-      </form>
     </div>
   )
 }
