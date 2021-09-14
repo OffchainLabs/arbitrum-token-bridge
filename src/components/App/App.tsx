@@ -101,8 +101,7 @@ const AppContent = (): JSX.Element => {
           <PendingTransactionsUpdater />
           <BalanceUpdater />
           <PWLoadedUpdater />
-          {/* //TODO this is slow, adding all tokens, leaving it to the user for now to add them */}
-          {/* <TokenListSyncer /> */}
+          <TokenListSyncer />
         </>
       )}
 
