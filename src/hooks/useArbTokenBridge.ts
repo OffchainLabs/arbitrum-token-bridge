@@ -13,6 +13,7 @@ import {
 import useTransactions from './useTransactions'
 import {
   AddressToSymbol,
+  AddressToDecimals,
   ArbTokenBridge,
   AssetType,
   BridgeBalance,
@@ -35,6 +36,7 @@ const { Zero } = constants
 const slowInboxQueueTimeout = 1000 * 60 * 15
 
 const addressToSymbol: AddressToSymbol = {}
+const addressToDecimals: AddressToDecimals = {}
 
 export const useArbTokenBridge = (
   bridge: Bridge,
@@ -262,7 +264,8 @@ export const useArbTokenBridge = (
             type: AssetType.ETH,
             value: weiValue,
             outgoingMessageState,
-            symbol: 'ETH'
+            symbol: 'ETH',
+            decimals: 18
           }
           setPendingWithdrawalMap({
             ...pendingWithdrawalsMap,
@@ -439,7 +442,8 @@ export const useArbTokenBridge = (
           tokenAddress: erc20l1Address,
           value: amountParsed,
           outgoingMessageState,
-          symbol: tokenData.symbol
+          symbol: tokenData.symbol,
+          decimals: tokenData.decimals
         }
         setPendingWithdrawalMap({
           ...pendingWithdrawalsMap,
@@ -719,6 +723,23 @@ export const useArbTokenBridge = (
     }
   }
 
+  const getTokenDecimals = async (_l1Address: string) => {
+    const l1Address = _l1Address.toLocaleLowerCase()
+    const dec =  addressToDecimals[l1Address]
+    if (dec) {
+      return dec
+    }
+    try {
+      const token = ERC20__factory.connect(l1Address, bridge.l1Provider)
+      const decimals = await token.decimals()
+      addressToDecimals[l1Address] = decimals
+      return decimals
+    } catch (err) {
+      console.warn('could not get token decimals', err)
+      return 18
+    }
+  }
+
   const getEthWithdrawals = async (filter?: ethers.providers.Filter) => {
     const address = await walletAddressCached()
     const t = new Date().getTime()
@@ -767,7 +788,8 @@ export const useArbTokenBridge = (
             type: AssetType.ETH,
             value: callvalue,
             symbol: 'ETH',
-            outgoingMessageState: outgoingMessageStates[i]
+            outgoingMessageState: outgoingMessageStates[i],
+            decimals: 18
           }
           return allWithdrawalData
         }
@@ -797,6 +819,11 @@ export const useArbTokenBridge = (
     const symbols = await Promise.all(
       gateWayWithdrawalsResults.map(withdrawEventData =>
         getTokenSymbol(withdrawEventData.l1Token)
+      )
+    )
+    const decimals = await Promise.all(
+      gateWayWithdrawalsResults.map(withdrawEventData =>
+        getTokenDecimals(withdrawEventData.l1Token)
       )
     )
 
@@ -848,7 +875,8 @@ export const useArbTokenBridge = (
           value: withdrawEventData._amount,
           tokenAddress: withdrawEventData.l1Token,
           outgoingMessageState: outgoingMessageStates[i],
-          symbol: symbols[i]
+          symbol: symbols[i],
+          decimals: decimals[i],
         }
         return eventDataPlus
       }

@@ -15,6 +15,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   tokenAddress?: string
   outgoingMessageState: OutgoingMessageState
   symbol: string
+  decimals: number
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
@@ -85,7 +86,9 @@ export interface ERC721Balance {
 export interface AddressToSymbol {
   [tokenAddress: string]: string
 }
-
+export interface AddressToDecimals {
+  [tokenAddress: string]: number
+}
 export interface ArbTokenBridgeBalances {
   eth: BridgeBalance
   erc20: ContractStorage<BridgeBalance>
