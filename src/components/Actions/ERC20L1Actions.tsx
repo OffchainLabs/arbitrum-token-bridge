@@ -92,7 +92,6 @@ const Actions = ({
         triggerOutbox={token.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
         ethProvider={ethProvider}
-        decimals={decimals}
       />
     </div>
   )
