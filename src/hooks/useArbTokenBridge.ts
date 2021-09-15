@@ -476,6 +476,49 @@ export const useArbTokenBridge = (
     setBridgeTokens({...bridgeTokens, ...bridgeTokensToAdd})
   },[bridgeTokens])
 
+  const addTokenV2 = useCallback(
+    async (erc20L1orL2Address: string) => {
+      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> ={}
+
+      let l1Address = erc20L1orL2Address
+      const _l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
+      const l1Data = _l1Data.ERC20 || _l1Data.CUSTOM
+      if(!l1Data){
+        console.log('l1 token data not found');
+        return ""
+      }
+
+      const { symbol, allowed, contract } =l1Data
+      const name = await contract.name()
+      const decimals = await contract.decimals()
+      let l2Address: string | undefined;
+      try {
+        const _l2Data = await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
+        const l2Data = _l2Data?.ERC20 || _l2Data?.CUSTOM
+        if(!l2Data){
+          throw new Error(``)
+        }
+        l2Address = l2Data.contract.address
+      } catch (error) {
+        console.info(`no L2 token for ${l1Address} (which is fine)`)
+      }
+
+      bridgeTokensToAdd[l1Address] ={
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        allowed,
+        address: l1Address,
+        l2Address,
+        decimals
+      }
+      const newBridgeTokens = {...bridgeTokens, ...bridgeTokensToAdd}
+      setBridgeTokens(newBridgeTokens)
+      return l1Address
+    },
+    [ERC20Cache, setERC20Cache,bridgeTokens]
+  )
+
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
       let l1Address = erc20L1orL2Address
@@ -558,14 +601,9 @@ export const useArbTokenBridge = (
     }
 
     setErc20Balances({...erc20Balances, [l1Address]: erc20TokenBalance})
+    const newBridgeTokens = {...bridgeTokens,[l1Address]:bridgeToken}
+    setBridgeTokens(newBridgeTokens)
 
-    if(!bridgeToken.allowed){
-      const allowed = l1Data?.ERC20?.allowed ||  l1Data?.CUSTOM?.allowed
-      if (allowed){
-        bridgeToken.allowed = true
-        setBridgeTokens({...bridgeTokens, [l1Address]:bridgeToken })
-      }
-    }
 
   }, [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens])
 
@@ -963,6 +1001,7 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
+      addTokenV2: addTokenV2,
       addTokensStatic,
       updateTokenData,
       approve: approveToken,
