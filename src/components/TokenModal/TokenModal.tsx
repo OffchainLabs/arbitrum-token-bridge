@@ -151,8 +151,7 @@ export const TokenModalBody = ({
     return bridge
       ?.getAndUpdateL1TokenData(newToken) // check if exsits first before adding, because sdk will add to the cache even if it does not exist
       .then(async () => {
-        await token.add(newToken, TokenType.ERC20)
-        token.updateBalances()
+        await token.addTokenV2(newToken)
       })
       .catch(ex => {
         console.log('Token address not existing on this network', ex)
