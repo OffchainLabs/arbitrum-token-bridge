@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
+import { TokenList } from '@uniswap/token-lists'
 import {
   Bridge,
   L1TokenData,
@@ -453,9 +454,70 @@ export const useArbTokenBridge = (
       return receipt
     } catch (err) {
       console.warn('withdraw token err', err)
-
     }
   }
+  const addTokensStatic = useCallback((arbTokenList: TokenList) =>{
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> ={}
+    for (let tokenData of arbTokenList.tokens) {
+      console.log(tokenData);
+
+      const { address: l2Address, name, symbol, extensions, decimals }      = tokenData
+      const l1Address = (extensions as any).l1Address as string
+      bridgeTokensToAdd[l1Address] ={
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        allowed: false,
+        address: l1Address,
+        l2Address,
+        decimals
+      }
+    }
+    setBridgeTokens({...bridgeTokens, ...bridgeTokensToAdd})
+  },[bridgeTokens])
+
+  const addTokenV2 = useCallback(
+    async (erc20L1orL2Address: string) => {
+      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> ={}
+
+      let l1Address = erc20L1orL2Address
+      const _l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
+      const l1Data = _l1Data.ERC20 || _l1Data.CUSTOM
+      if(!l1Data){
+        console.log('l1 token data not found');
+        return ""
+      }
+
+      const { symbol, allowed, contract } =l1Data
+      const name = await contract.name()
+      const decimals = await contract.decimals()
+      let l2Address: string | undefined;
+      try {
+        const _l2Data = await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
+        const l2Data = _l2Data?.ERC20 || _l2Data?.CUSTOM
+        if(!l2Data){
+          throw new Error(``)
+        }
+        l2Address = l2Data.contract.address
+      } catch (error) {
+        console.info(`no L2 token for ${l1Address} (which is fine)`)
+      }
+
+      bridgeTokensToAdd[l1Address] ={
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        allowed,
+        address: l1Address,
+        l2Address,
+        decimals
+      }
+      const newBridgeTokens = {...bridgeTokens, ...bridgeTokensToAdd}
+      setBridgeTokens(newBridgeTokens)
+      return l1Address
+    },
+    [ERC20Cache, setERC20Cache,bridgeTokens]
+  )
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
@@ -526,6 +588,24 @@ export const useArbTokenBridge = (
       arbChainBalance: l2Balance
     })
   }
+
+  const updateTokenData = useCallback(async (l1Address: string)=>{
+    const bridgeToken = bridgeTokens[l1Address]
+    if(!bridgeToken){
+      return
+    }
+    const  { l1Data, l2Data } = await bridge.updateTokenData(l1Address)
+    const erc20TokenBalance:BridgeBalance = {
+      balance: l1Data.ERC20?.balance || l1Data.CUSTOM?.balance || Zero,
+      arbChainBalance: l2Data?.ERC20?.balance || l2Data?.CUSTOM?.balance || Zero
+    }
+
+    setErc20Balances({...erc20Balances, [l1Address]: erc20TokenBalance})
+    const newBridgeTokens = {...bridgeTokens,[l1Address]:bridgeToken}
+    setBridgeTokens(newBridgeTokens)
+
+
+  }, [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens])
 
   const updateTokenBalances = async () => {
     const { l1Tokens, l2Tokens } = await bridge.updateAllTokens()
@@ -921,6 +1001,9 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
+      addTokenV2: addTokenV2,
+      addTokensStatic,
+      updateTokenData,
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,
