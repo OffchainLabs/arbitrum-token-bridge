@@ -2456,6 +2456,11 @@
     "@typescript-eslint/types" "4.30.0"
     eslint-visitor-keys "^2.0.0"
 
+"@uniswap/token-lists@^1.0.0-beta.25":
+  version "1.0.0-beta.25"
+  resolved "https://registry.yarnpkg.com/@uniswap/token-lists/-/token-lists-1.0.0-beta.25.tgz#e4279cf2581b297723d82eafd1bed35273070f07"
+  integrity sha512-XemgUs8YiYP7Xci+Wb8vPSnyxV9aTO6J5XLPzhZmgDFO1RY5JMnB0As8PJFia3Pg9JSRZ7+AahzxowPYhnUVWw==
+
 "@web3-react/abstract-connector@^6.0.7":
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/@web3-react/abstract-connector/-/abstract-connector-6.0.7.tgz#401b3c045f1e0fab04256311be49d5144e9badc6"
@@ -11620,13 +11625,14 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@^0.5.3:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.5.3.tgz#2863183c2f7fe88b8be00c1123f4144e329e88d6"
-  integrity sha512-NrHeoDmxzahddP/VyxVMRweiYFZJPh69G6UcDWeEEtiC2pfOoy3DlhkbuZ2Zc7uvzP+o4xdYqT0T/i4F1LBcvA==
+token-bridge-sdk@^0.5.5:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-0.5.5.tgz#b343a1b2dd27125f03755e52786d8d2a086642bf"
+  integrity sha512-86OhUQQh3+LMajZ1UhIEoLD0/l3j6z46JhqLm6wqyKVHRzIHoiXzK972JW9VXPped6ANBX1qlgV/gr6HmADyLg==
   dependencies:
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
+    "@uniswap/token-lists" "^1.0.0-beta.25"
     arb-ts "0.0.38"
     ethers "^5.4.6"
     lodash.clonedeep "^4.5.0"
