@@ -1,7 +1,9 @@
 import React, { useContext, useState, useMemo } from 'react'
 
+import { utils } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
+import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
@@ -10,8 +12,6 @@ import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import { NetworkBox } from './NetworkBox'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
-import { utils } from 'ethers'
 
 const TransferPanel = (): JSX.Element => {
   const {
@@ -36,16 +36,20 @@ const TransferPanel = (): JSX.Element => {
 
   const [transferring, setTransferring] = useState(false)
 
-  const [l1Amount, _setl1Amount] = useState<string>('')
-  const [l2Amount, _setl2Amount] = useState<string>('')
+  const [l1Amount, setL1AmountState] = useState<string>('')
+  const [l2Amount, setL2AmountState] = useState<string>('')
 
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
-    return _setl1Amount(isNaN(amountNum) || amountNum < 0 ? '0' : amount)
+    return setL1AmountState(
+      Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
+    )
   }
   const setl2Amount = (amount: string) => {
     const amountNum = +amount
-    return _setl2Amount(isNaN(amountNum) || amountNum < 0 ? '0' : amount)
+    return setL2AmountState(
+      Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
+    )
   }
 
   const l1Balance = useMemo(() => {
@@ -54,34 +58,32 @@ const TransferPanel = (): JSX.Element => {
         arbTokenBridge?.balances?.erc20[selectedToken.address]?.balance
       const decimals = (selectedToken as ERC20BridgeToken)?.decimals
       if (!balanceL1 || !decimals) {
-        return
+        return null
       }
       return utils.formatUnits(balanceL1, decimals)
-    } else {
-      let ethBalanceL1 = arbTokenBridge?.balances?.eth?.balance
-      if (!ethBalanceL1) {
-        return
-      }
-      return utils.formatUnits(ethBalanceL1, 18)
     }
+    const ethBalanceL1 = arbTokenBridge?.balances?.eth?.balance
+    if (!ethBalanceL1) {
+      return null
+    }
+    return utils.formatUnits(ethBalanceL1, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
       const balanceL2 =
         arbTokenBridge?.balances?.erc20[selectedToken.address]?.arbChainBalance
-      const decimals = (selectedToken as ERC20BridgeToken).decimals
+      const { decimals } = selectedToken as ERC20BridgeToken
       if (!balanceL2) {
-        return
+        return null
       }
       return utils.formatUnits(balanceL2, decimals)
-    } else {
-      let ethBalanceL2 = arbTokenBridge?.balances?.eth?.arbChainBalance
-      if (!ethBalanceL2) {
-        return
-      }
-      return utils.formatUnits(ethBalanceL2, 18)
     }
+    const ethBalanceL2 = arbTokenBridge?.balances?.eth?.arbChainBalance
+    if (!ethBalanceL2) {
+      return null
+    }
+    return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const transfer = async () => {

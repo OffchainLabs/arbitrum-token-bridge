@@ -21,7 +21,8 @@ const MainContent = () => {
       {isMainnet && (
         <div className="mb-4">
           <Alert type="blue">
-            NOTICE: You're using Arbitrum mainnet, still in beta phase. Be careful!
+            NOTICE: You're using Arbitrum mainnet, still in beta phase. Be
+            careful!
           </Alert>
         </div>
       )}
