@@ -65,7 +65,7 @@ const NoMetamaskIndicator = (): JSX.Element => {
   return (
     <div className="container mx-auto px-4">
       <div className="flex justify-center mb-4">
-        <Alert type="red">Ethereum provider not detected</Alert>
+        <Alert type="blue">Ethereum provider not detected, please login.</Alert>
       </div>
 
       <div className="flex justify-center mb-4">

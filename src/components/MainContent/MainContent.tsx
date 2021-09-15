@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import { useAppState } from '../../state'
+import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
@@ -8,13 +9,24 @@ import { TransferPanel } from '../TransferPanel/TransferPanel'
 
 const MainContent = () => {
   const {
-    app: { mergedTransactions }
+    app: { mergedTransactions, networkID }
   } = useAppState()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
+  const isMainnet = networkID === '1' || networkID === '42161'
+
   return (
     <div className="mx-auto px-4">
+      {isMainnet && (
+        <div className="mb-4">
+          <Alert type="blue">
+            NOTICE: You're connected to mainnet, still in beta phase. BE
+            CAREFUL!" warning (for both Ethereum L1 and Arbitrum 1)
+          </Alert>
+        </div>
+      )}
+
       <TransferPanel />
 
       {mergedTransactions?.length > 0 && (
