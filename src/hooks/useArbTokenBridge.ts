@@ -536,25 +536,29 @@ export const useArbTokenBridge = (
         // todo: error report to UI
         return ''
       }
-      const l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
       try {
-        await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
-      } catch (error) {
-        console.info(`no L2 token for ${l1Address} (which is fine)`)
-      }
-
-      if (!(l1Data && l1Data.ERC20)) {
-        try {
-          l1Address =
-            (await bridge.l2Bridge.getERC20L1Address(erc20L1orL2Address)) || ''
-          if (!l1Address) {
-            throw new Error('')
-          }
-          await bridge.getAndUpdateL1TokenData(l1Address)
-          await bridge.getAndUpdateL2TokenData(l1Address)
-        } catch (err) {
-          console.warn('Address is not a token address ')
+        // try to save l1 and (maybe) l2 data to bridge state
+        await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
+        const l2TokenData = await bridge.getAndUpdateL2TokenData(
+          erc20L1orL2Address
+        )
+        if (!l2TokenData) {
+          console.log('Token is on L1 but not L2 (which is fine)')
         }
+      } catch (err) {
+        console.log(`Not an L1 Token address, maybe it's an l2 address?`)
+        // check if erc20L1orL2Address was an L2 address of a registered token
+        const l1Address = await bridge.l2Bridge.getERC20L1Address(
+          erc20L1orL2Address
+        )
+        if (!l1Address) {
+          console.warn('token is on L2 but is not registred to the gateway')
+          return ""
+        }
+        // save l1 and l2 data to bridge state
+        await bridge.getAndUpdateL1TokenData(l1Address)
+        await bridge.getAndUpdateL2TokenData(l1Address)
+
       }
       updateBridgeTokens()
       setERC20Cache([...ERC20Cache, lCaseToken])

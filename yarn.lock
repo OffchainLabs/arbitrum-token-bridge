@@ -839,10 +839,10 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-arb-ts@0.0.38:
-  version "0.0.38"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.38.tgz#e38ffcbf9bf0a29d06b527dad6fbd8db5dab0c48"
-  integrity sha512-uZs1RpnukQ0/EZ/hWP3KR73mMkej4cjQaraIySzdNv+yRFlrPDD2OAjIrMYUmfg+honqJ2ec76IgCTbxPfsu0w==
+arb-ts@0.0.39:
+  version "0.0.39"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.39.tgz#914ed9cdac3a591f862ea9eb149f8e9ecbde13aa"
+  integrity sha512-XFkD+BtpMtQ3UCedTMJMkwHvAoEol2ImtZ/lFonxoQtHntryCGKuKM12/LqFWhwnUSGtrnARwo072eCGxackEQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
