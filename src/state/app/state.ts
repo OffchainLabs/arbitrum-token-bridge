@@ -134,13 +134,7 @@ export const defaultState: AppState = {
         asset: tx.symbol?.toLocaleLowerCase(),
         value: ethers.utils.formatUnits(
           tx.value?.toString(),
-          tx.tokenAddress
-            ? (
-                s.arbTokenBridge?.bridgeTokens[
-                  tx.tokenAddress
-                ] as ERC20BridgeToken
-              )?.decimals || 18
-            : 18
+          tx.decimals
         ),
         uniqueId: tx.uniqueId,
         isWithdrawal: true,
