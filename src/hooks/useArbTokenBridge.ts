@@ -531,7 +531,11 @@ export const useArbTokenBridge = (
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
       let l1Address = erc20L1orL2Address
-
+      const lCaseToken = l1Address.toLocaleLowerCase()
+      if (tokenBlackList.includes(lCaseToken)) {
+        // todo: error report to UI
+        return ''
+      }
       try {
         // try to save l1 and (maybe) l2 data to bridge state
         await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
@@ -557,7 +561,7 @@ export const useArbTokenBridge = (
 
       }
       updateBridgeTokens()
-      setERC20Cache([...ERC20Cache, l1Address.toLowerCase()])
+      setERC20Cache([...ERC20Cache, lCaseToken])
       return l1Address
     },
     [ERC20Cache, setERC20Cache]
