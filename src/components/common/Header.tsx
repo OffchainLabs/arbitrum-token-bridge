@@ -12,7 +12,7 @@ function ExplorerMenu() {
     <Menu as="div" className="relative inline-block text-left">
       <div>
         <Menu.Button className=" hidden md:inline-flex text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-          Options
+          Explorers
           <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
         </Menu.Button>
       </div>
@@ -94,14 +94,6 @@ const Header: React.FC = () => {
                   Portal
                 </a>
                 <ExplorerMenu />
-                <a
-                  href="https://explorer.arbitrum.io/"
-                  target="_blank"
-                  className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                  rel="noopener noreferrer"
-                >
-                  Explorer
-                </a>
                 <a
                   href="https://developer.offchainlabs.com/"
                   target="_blank"
