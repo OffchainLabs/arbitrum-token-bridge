@@ -10,7 +10,7 @@ const AmountBox = ({
   setAmount
 }: {
   amount: string
-  setAmount: Dispatch<SetStateAction<string>>
+  setAmount: (amount: string) => void
 }): JSX.Element => {
   const {
     app: { selectedToken, networkID }

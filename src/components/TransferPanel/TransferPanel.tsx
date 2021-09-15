@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useMemo } from 'react'
 
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
@@ -10,6 +10,8 @@ import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import { NetworkBox } from './NetworkBox'
+import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { utils } from 'ethers'
 
 const TransferPanel = (): JSX.Element => {
   const {
@@ -21,7 +23,8 @@ const TransferPanel = (): JSX.Element => {
       networkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token, bridgeTokens }
+      arbTokenBridge: { eth, token, bridgeTokens },
+      arbTokenBridge
     }
   } = useAppState()
 
@@ -33,8 +36,53 @@ const TransferPanel = (): JSX.Element => {
 
   const [depositing, setDepositing] = useState(false)
 
-  const [l1Amount, setl1Amount] = useState<string>('')
-  const [l2Amount, setl2Amount] = useState<string>('')
+  const [l1Amount, _setl1Amount] = useState<string>('')
+  const [l2Amount, _setl2Amount] = useState<string>('')
+
+  const setl1Amount = (amount: string) => {
+    const amountNum = +amount
+    return _setl1Amount(isNaN(amountNum) || amountNum < 0 ? '0' : amount)
+  }
+  const setl2Amount = (amount: string) => {
+    const amountNum = +amount
+    return _setl2Amount(isNaN(amountNum) || amountNum < 0 ? '0' : amount)
+  }
+
+  const l1Balance = useMemo(() => {
+    if (selectedToken) {
+      const balanceL1 =
+        arbTokenBridge?.balances?.erc20[selectedToken.address]?.balance
+      const decimals = (selectedToken as ERC20BridgeToken)?.decimals
+      if (!balanceL1 || !decimals) {
+        return
+      }
+      return utils.formatUnits(balanceL1, decimals)
+    } else {
+      let ethBalanceL1 = arbTokenBridge?.balances?.eth?.balance
+      if (!ethBalanceL1) {
+        return
+      }
+      return utils.formatUnits(ethBalanceL1, 18)
+    }
+  }, [selectedToken, arbTokenBridge, bridgeTokens])
+
+  const l2Balance = useMemo(() => {
+    if (selectedToken) {
+      const balanceL2 =
+        arbTokenBridge?.balances?.erc20[selectedToken.address]?.arbChainBalance
+      const decimals = (selectedToken as ERC20BridgeToken).decimals
+      if (!balanceL2) {
+        return
+      }
+      return utils.formatUnits(balanceL2, decimals)
+    } else {
+      let ethBalanceL2 = arbTokenBridge?.balances?.eth?.arbChainBalance
+      if (!ethBalanceL2) {
+        return
+      }
+      return utils.formatUnits(ethBalanceL2, 18)
+    }
+  }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const deposit = async () => {
     setDepositing(true)
@@ -90,6 +138,24 @@ const TransferPanel = (): JSX.Element => {
       setDepositing(false)
     }
   }
+
+  const disableDeposit = useMemo(() => {
+    const l1AmountNum = +l1Amount
+    return (
+      depositing ||
+      (isDepositMode &&
+        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
+    )
+  }, [depositing, isDepositMode, l1Amount, l1Balance])
+
+  const disableWithdrawal = useMemo(() => {
+    const l2AmountNum = +l2Amount
+    return (
+      depositing ||
+      (!isDepositMode &&
+        (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
+    )
+  }, [depositing, isDepositMode, l2Amount, l2Balance])
 
   return (
     <>
@@ -149,7 +215,7 @@ const TransferPanel = (): JSX.Element => {
         {isDepositMode ? (
           <Button
             onClick={deposit}
-            disabled={depositing || (isDepositMode && l1Amount === '')}
+            disabled={disableDeposit}
             isLoading={depositing}
           >
             Deposit
@@ -157,7 +223,7 @@ const TransferPanel = (): JSX.Element => {
         ) : (
           <Button
             onClick={deposit}
-            disabled={depositing || (!isDepositMode && l2Amount === '')}
+            disabled={disableWithdrawal}
             variant="navy"
             isLoading={depositing}
           >
