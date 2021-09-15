@@ -34,7 +34,7 @@ const TransferPanel = (): JSX.Element => {
   const latestToken = useLatest(token)
   const latestNetworkDetails = useLatest(networkDetails)
 
-  const [depositing, setDepositing] = useState(false)
+  const [transferring, setTransferring] = useState(false)
 
   const [l1Amount, _setl1Amount] = useState<string>('')
   const [l2Amount, _setl2Amount] = useState<string>('')
@@ -84,8 +84,8 @@ const TransferPanel = (): JSX.Element => {
     }
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
-  const deposit = async () => {
-    setDepositing(true)
+  const transfer = async () => {
+    setTransferring(true)
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
@@ -135,27 +135,27 @@ const TransferPanel = (): JSX.Element => {
     } catch (ex) {
       console.log(ex)
     } finally {
-      setDepositing(false)
+      setTransferring(false)
     }
   }
 
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
     return (
-      depositing ||
+      transferring ||
       (isDepositMode &&
         (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
     )
-  }, [depositing, isDepositMode, l1Amount, l1Balance])
+  }, [transferring, isDepositMode, l1Amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
     return (
-      depositing ||
+      transferring ||
       (!isDepositMode &&
         (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
     )
-  }, [depositing, isDepositMode, l2Amount, l2Balance])
+  }, [transferring, isDepositMode, l2Amount, l2Balance])
 
   return (
     <>
@@ -214,18 +214,18 @@ const TransferPanel = (): JSX.Element => {
         <div className="h-6" />
         {isDepositMode ? (
           <Button
-            onClick={deposit}
+            onClick={transfer}
             disabled={disableDeposit}
-            isLoading={depositing}
+            isLoading={transferring}
           >
             Deposit
           </Button>
         ) : (
           <Button
-            onClick={deposit}
+            onClick={transfer}
             disabled={disableWithdrawal}
             variant="navy"
-            isLoading={depositing}
+            isLoading={transferring}
           >
             Withdraw
           </Button>
