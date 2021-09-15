@@ -12,11 +12,13 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { ConnectionState } from 'src/util/index'
 
 import { config, useActions, useAppState } from '../../state'
 import networks, { Network } from '../../util/networks'
 import { Alert } from '../common/Alert'
+import { Button } from '../common/Button'
 import { Layout } from '../common/Layout'
 import MessageOverlay from '../common/MessageOverlay'
 import MainContent from '../MainContent/MainContent'
@@ -26,6 +28,7 @@ import { CurrentL1BlockNumberUpdater } from '../syncers/CurrentL1BlockNumberUpda
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
+import { TermsOfService } from '../TermsOfService/TermsOfService'
 
 const modalProviderOpts = {
   cacheProvider: false, // optional
@@ -55,6 +58,10 @@ const NoMetamaskIndicator = (): JSX.Element => {
     connect(modalProviderOpts)
   }
 
+  useEffect(() => {
+    showConnectionModal()
+  }, [])
+
   return (
     <div className="container mx-auto px-4">
       <div className="flex justify-center mb-4">
@@ -71,14 +78,13 @@ const NoMetamaskIndicator = (): JSX.Element => {
         </a>
       </div>
       <div className="flex justify-center">
-        <button
-          onClick={showConnectionModal}
+        <Button
+          onClick={() => showConnectionModal()}
           type="button"
-          className="bg-bright-blue hover:bg-faded-blue text-navy rounded-md text-sm font-medium"
-          style={{ padding: '10px 12px' }}
+          className="px-12"
         >
           Login
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -148,18 +154,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const {
     account: usersMetamaskAddress,
     provider: library,
-    network: networkInfo,
-    connect
+    network: networkInfo
   } = useWallet()
   const networkVersion = networkInfo?.chainId
-
-  function showConnectionModal() {
-    connect(modalProviderOpts)
-  }
-
-  useEffect(() => {
-    showConnectionModal()
-  }, [])
 
   useEffect(() => {
     if (library) {
@@ -277,13 +274,28 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
+function Routes() {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/tos">
+          <TermsOfService />
+        </Route>
+        <Route path="/">
+          <AppContent />
+        </Route>
+      </Switch>
+    </Router>
+  )
+}
+
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
   return (
     <Provider value={overmind}>
       <Layout>
         <Injector>
-          <AppContent />
+          <Routes />
         </Injector>
       </Layout>
     </Provider>

@@ -16,7 +16,7 @@ const Header: React.FC = () => {
             <div className="block">
               <div className="ml-6 flex items-baseline space-x-4">
                 <a
-                  href="#"
+                  href="/"
                   className="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Bridge

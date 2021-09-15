@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { useHistory, Link } from 'react-router-dom'
+
 const navigation = {
   product: [
     { name: 'What is Arbitrum', href: 'https://offchainlabs.com/#tech' },
@@ -17,7 +19,8 @@ const navigation = {
       name: 'Documentation',
       href: 'https://developer.offchainlabs.com/docs/developer_quickstart'
     },
-    { name: 'Github', href: 'https://github.com/OffchainLabs/arbitrum' }
+    { name: 'Github', href: 'https://github.com/OffchainLabs/arbitrum' },
+    { name: 'Terms of Service', href: '/tos' }
   ],
   officanlabs: [
     { name: 'Website', href: 'https://arbitrum.io' },
@@ -114,6 +117,7 @@ const navigation = {
 }
 
 export default function Footer() {
+  const router = useHistory()
   return (
     <footer className="bg-gray-800" aria-labelledby="footerHeading">
       <h2 id="footerHeading" className="sr-only">
@@ -165,12 +169,21 @@ export default function Footer() {
               <ul className="mt-4 space-y-4">
                 {navigation.community.map(item => (
                   <li key={item.name}>
-                    <a
-                      href={item.href}
-                      className="text-base text-gray-300 hover:text-white"
-                    >
-                      {item.name}
-                    </a>
+                    {item.href.startsWith('/') ? (
+                      <Link
+                        to={item.href}
+                        className="text-base text-gray-300 hover:text-white"
+                      >
+                        {item.name}
+                      </Link>
+                    ) : (
+                      <a
+                        href={item.href}
+                        className="text-base text-gray-300 hover:text-white"
+                      >
+                        {item.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
