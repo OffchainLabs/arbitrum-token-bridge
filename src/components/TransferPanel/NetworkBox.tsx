@@ -20,7 +20,7 @@ const NetworkBox = ({
   setAmount: Dispatch<SetStateAction<string>>
 }) => {
   const {
-    app: { isDepositMode, selectedToken, arbTokenBridge }
+    app: { isDepositMode, selectedToken, arbTokenBridge, networkID }
   } = useAppState()
 
   const balance = useMemo(() => {
@@ -38,6 +38,7 @@ const NetworkBox = ({
     return (isL1 && isDepositMode) || (!isL1 && !isDepositMode)
   }, [isDepositMode, isL1])
 
+  const isMainnet = networkID === '1' || networkID === '42161'
   return (
     <div
       className={`max-w-networkBox w-full mx-auto shadow-networkBox bg-white p-6 rounded-lg ${
@@ -47,7 +48,7 @@ const NetworkBox = ({
       <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row">
         <div className="flex flex-col">
           <p className="text-sm leading-5 font-medium text-gray-700 mb-1">
-            Layer {isL1 ? '1' : '2'}
+            Layer {isL1 ? '1' : '2'} {!isMainnet && <span>(testnet)</span>}
           </p>
           <div className="flex items-center text-lg leading-8 font-semibold text-bright-blue mb-1">
             <span>Balance: </span>
