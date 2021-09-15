@@ -21,8 +21,7 @@ const MainContent = () => {
       {isMainnet && (
         <div className="mb-4">
           <Alert type="blue">
-            NOTICE: You're connected to mainnet, still in beta phase. BE
-            CAREFUL!" warning (for both Ethereum L1 and Arbitrum 1)
+            NOTICE: You're using Arbitrum mainnet, still in beta phase. Be careful!
           </Alert>
         </div>
       )}
