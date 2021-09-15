@@ -19,7 +19,7 @@ const TokenListSyncer = (): JSX.Element => {
     }
     if (networkID === '1' || networkID === '42161') {
       arbTokenBridge.token.addTokensStatic(tokenListMainnet)
-    } else if (networkID == '4' || networkID === '421611') {
+    } else if (networkID === '4' || networkID === '421611') {
       arbTokenBridge.token.addTokensStatic(tokenListRinkeby)
     }
   }, [arbTokenBridge?.walletAddress, networkID])
