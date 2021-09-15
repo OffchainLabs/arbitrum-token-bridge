@@ -27,10 +27,12 @@ const TokenRow = ({
   const {
     app: {
       networkID,
-      arbTokenBridge: { bridgeTokens, token: _token }
+      arbTokenBridge: {
+        bridgeTokens,
+        token: { updateTokenData }
+      }
     }
   } = useAppState()
-  const { updateTokenData } = _token
   const actions = useActions()
 
   // TODO should I check in bridgeTokens or in token-bridge-sdk/token-list
@@ -64,7 +66,9 @@ const TokenRow = ({
   }, [address, networkID])
 
   function selectToken() {
-    token && updateTokenData(token.address)
+    if (token) {
+      updateTokenData(token.address)
+    }
     actions.app.setSelectedToken(token || null)
     onTokenSelected()
   }

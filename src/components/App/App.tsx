@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import { LogLevel } from '@ethersproject/logger'
-import { Web3Provider } from '@ethersproject/providers'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { useWeb3React, Web3ReactProvider } from '@web3-react/core'
-import { InjectedConnector } from '@web3-react/injected-connector'
+import { useWallet } from '@gimmixorg/use-wallet'
+// @ts-ignore
+import MewConnect from '@myetherwallet/mewconnect-web-client'
+import WalletConnectProvider from '@walletconnect/web3-provider'
 import { Bridge } from 'arb-ts'
+import Authereum from 'authereum'
 import * as ethers from 'ethers'
 import { BigNumber } from 'ethers'
-import { hexValue, Logger } from 'ethers/lib/utils'
+import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { ConnectionState } from 'src/util/index'
@@ -18,7 +19,6 @@ import networks, { Network } from '../../util/networks'
 import { Alert } from '../common/Alert'
 import { Layout } from '../common/Layout'
 import MessageOverlay from '../common/MessageOverlay'
-import { ConnectWarning } from '../ConnectWarning/ConnectWarning'
 import MainContent from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -27,34 +27,62 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 
-const NoMetamaskIndicator = (): JSX.Element => (
-  <div className="container mx-auto px-4">
-    <div className="flex justify-center mb-4">
-      <Alert type="red">
-        Ethereum provider not detected; make sure you have MetaMask connected.
-      </Alert>
-    </div>
+const modalProviderOpts = {
+  cacheProvider: false, // optional
+  providerOptions: {
+    mewconnect: {
+      package: MewConnect,
+      options: {
+        infuraId: process.env.REACT_APP_INFURA_KEY // required
+      }
+    },
+    walletconnect: {
+      package: WalletConnectProvider,
+      options: {
+        infuraId: process.env.REACT_APP_INFURA_KEY // required
+      }
+    },
+    authereum: {
+      package: Authereum
+    }
+  }
+}
 
-    <div className="flex justify-center mb-4">
-      <a
-        href="https://metamask.io/download.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <img width="150" src="/images/metamask-fox.svg" alt="Metamask" />
-      </a>
+const NoMetamaskIndicator = (): JSX.Element => {
+  const { connect } = useWallet()
+
+  function showConnectionModal() {
+    connect(modalProviderOpts)
+  }
+
+  return (
+    <div className="container mx-auto px-4">
+      <div className="flex justify-center mb-4">
+        <Alert type="red">Ethereum provider not detected</Alert>
+      </div>
+
+      <div className="flex justify-center mb-4">
+        <a
+          href="https://metamask.io/download.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img width="150" src="/images/metamask-fox.svg" alt="Metamask" />
+        </a>
+      </div>
+      <div className="flex justify-center">
+        <button
+          onClick={showConnectionModal}
+          type="button"
+          className="bg-bright-blue hover:bg-faded-blue text-navy rounded-md text-sm font-medium"
+          style={{ padding: '10px 12px' }}
+        >
+          Login
+        </button>
+      </div>
     </div>
-    <h4 className="text-center text-lg">
-      <a
-        href="https://metamask.io/download.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Install MetaMask
-      </a>
-    </h4>
-  </div>
-)
+  )
+}
 
 export const BridgeContext = createContext<Bridge | null>(null)
 
@@ -116,39 +144,43 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
   const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
+
   const {
-    activate,
-    library,
     account: usersMetamaskAddress,
-    chainId: networkVersion,
-    active,
-    connector: provider
-  } = useWeb3React<Web3Provider>()
+    provider: library,
+    network: networkInfo,
+    connect
+  } = useWallet()
+  const networkVersion = networkInfo?.chainId
+
+  function showConnectionModal() {
+    connect(modalProviderOpts)
+  }
 
   useEffect(() => {
-    activate(new InjectedConnector({}), ex => {
-      console.error('Could not login to metamask', ex)
-      actions.app.setConnectionState(ConnectionState.NO_METAMASK)
-    })
+    showConnectionModal()
   }, [])
 
   useEffect(() => {
-    if (provider) {
+    if (library) {
       const changeNetwork = async (chainId: string) => {
         const hexChainId = hexValue(BigNumber.from(chainId))
-        const metamask = await provider?.getProvider()
-        await metamask?.request({
-          method: 'wallet_switchEthereumChain',
-          params: [
-            {
-              chainId: hexChainId // A 0x-prefixed hexadecimal string
-            }
-          ]
-        })
+        const metamask = library?.provider
+        if (metamask !== undefined && metamask.isMetaMask) {
+          // @ts-ignore
+          await metamask.request({
+            method: 'wallet_switchEthereumChain',
+            params: [
+              {
+                chainId: hexChainId // A 0x-prefixed hexadecimal string
+              }
+            ]
+          })
+        }
       }
       actions.app.setChangeNetwork(changeNetwork)
     }
-  }, [provider])
+  }, [library])
 
   async function initBridge(): Promise<Bridge | undefined> {
     function getL1Signer(network: Network) {
@@ -205,7 +237,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   // STEP1 reset bridge on network switch or account switch, this inits all other resets
   useEffect(() => {
-    if (!active) {
+    if (!usersMetamaskAddress) {
       return
     }
 
@@ -216,14 +248,14 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   // STEP2 after bridge is set to null, we start recreating everything
   useEffect(() => {
-    if (!active || globalBridge) {
+    if (globalBridge) {
       return
     }
 
     actions.app.reset()
 
     try {
-      if (!provider || !networkVersion || !library) {
+      if (!networkVersion || !library) {
         actions.app.setConnectionState(ConnectionState.NO_METAMASK)
         return
       }
@@ -233,44 +265,28 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       console.log(e)
       actions.app.setConnectionState(ConnectionState.NO_METAMASK)
     }
-  }, [globalBridge, active, networkVersion])
+  }, [globalBridge, networkVersion])
 
   return (
     <>
       {globalBridge && <ArbTokenBridgeStoreSync bridge={globalBridge} />}
       <BridgeContext.Provider value={globalBridge}>
-        {/* //not needed for mainnet */}
-        {/* <WhiteListUpdater */}
-        {/*  bridge={globalBridge} */}
-        {/*  walletAddress={usersMetamaskAddress} */}
-        {/*  chainID={networkVersion} */}
-        {/* /> */}
         {children}
       </BridgeContext.Provider>
     </>
   )
 }
 
-function getLibrary(provider: any): Web3Provider {
-  Logger.setLogLevel(LogLevel.ERROR)
-
-  const library = new Web3Provider(provider)
-  library.pollingInterval = 2000
-  return library
-}
-
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
   return (
-    <Web3ReactProvider getLibrary={getLibrary}>
-      <Provider value={overmind}>
-        <Layout>
-          <Injector>
-            <AppContent />
-          </Injector>
-        </Layout>
-      </Provider>
-    </Web3ReactProvider>
+    <Provider value={overmind}>
+      <Layout>
+        <Injector>
+          <AppContent />
+        </Injector>
+      </Layout>
+    </Provider>
   )
 }
 
