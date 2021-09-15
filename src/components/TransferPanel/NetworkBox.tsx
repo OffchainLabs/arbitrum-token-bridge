@@ -17,7 +17,7 @@ const NetworkBox = ({
   isL1: boolean
   amount: string
   className?: string
-  setAmount: Dispatch<SetStateAction<string>>
+  setAmount: (amount: string) => void
 }) => {
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge, networkID }
