@@ -28,7 +28,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-use": "^17.2.4",
-    "token-bridge-sdk": "^0.5.5",
+    "token-bridge-sdk": "^0.5.7",
     "web-vitals": "^2.1.0"
   },
   "resolutions": {
@@ -43,7 +43,7 @@
     "test": "craco test",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"build/*token*.json\" && prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
   },
   "eslintConfig": {
     "extends": "react-app"
