@@ -1,7 +1,7 @@
 import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 
 import { BigNumber } from 'ethers'
-import { isAddress } from 'ethers/lib/utils'
+import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { BridgeToken } from 'token-bridge-sdk'
 
@@ -95,8 +95,19 @@ const TokenRow = ({
         </p>
       </div>
 
-      <p className="text-base leading-6 font-medium text-gray-900">
-        {} {tokenSymbol}
+      <p className="flex items-center text-base leading-6 font-medium text-gray-900">
+        {balance ? (
+          // @ts-ignore
+          +formatUnits(balance, token?.decimals || 18)
+        ) : (
+          <Loader
+            type="Oval"
+            color="rgb(40, 160, 240)"
+            height={14}
+            width={14}
+          />
+        )}{' '}
+        {tokenSymbol}
       </p>
     </button>
   )
@@ -138,18 +149,38 @@ export const TokenModalBody = ({
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
     if (bridgeTokens) {
-      return Object.keys(bridgeTokens).filter((addr: string) => {
-        if (!tokenSearch) return true
+      return Object.keys(bridgeTokens)
+        .sort((address1: string, address2: string) => {
+          const bal1 = isDepositMode
+            ? balances.erc20[address1]?.balance
+            : balances.erc20[address1]?.arbChainBalance
+          const bal2 = isDepositMode
+            ? balances.erc20[address2]?.balance
+            : balances.erc20[address2]?.arbChainBalance
+          if (!(bal1 || bal2)) {
+            return 0
+          }
+          if (!bal1) {
+            return 1
+          }
+          if (!bal2) {
+            return -1
+          }
 
-        const bridgeToken = bridgeTokens[addr] as BridgeToken
-        const { address, l2Address, name, symbol } = bridgeToken
-        return (address + l2Address + name + symbol)
-          .toLowerCase()
-          .includes(tokenSearch)
-      })
+          return bal1.gt(bal2) ? -1 : 1
+        })
+        .filter((addr: string) => {
+          if (!tokenSearch) return true
+
+          const bridgeToken = bridgeTokens[addr] as BridgeToken
+          const { address, l2Address, name, symbol } = bridgeToken
+          return (address + l2Address + name + symbol)
+            .toLowerCase()
+            .includes(tokenSearch)
+        })
     }
     return []
-  }, [balances.erc20, isDepositMode, newToken])
+  }, [bridgeTokens, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
     return bridge

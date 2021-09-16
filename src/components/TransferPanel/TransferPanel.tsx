@@ -38,18 +38,18 @@ const TransferPanel = (): JSX.Element => {
 
   const [transferring, setTransferring] = useState(false)
 
-  const [l1Amount, setl1AmountState] = useState<string>('')
-  const [l2Amount, setl2AmountState] = useState<string>('')
+  const [l1Amount, setL1AmountState] = useState<string>('')
+  const [l2Amount, setL2AmountState] = useState<string>('')
 
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
-    return setl1AmountState(
+    return setL1AmountState(
       Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
     )
   }
   const setl2Amount = (amount: string) => {
     const amountNum = +amount
-    return setl2AmountState(
+    return setL2AmountState(
       Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
     )
   }
@@ -60,13 +60,13 @@ const TransferPanel = (): JSX.Element => {
         arbTokenBridge?.balances?.erc20[selectedToken.address]?.balance
       const decimals = (selectedToken as ERC20BridgeToken)?.decimals
       if (!balanceL1 || !decimals) {
-        return
+        return null
       }
       return utils.formatUnits(balanceL1, decimals)
     }
     const ethBalanceL1 = arbTokenBridge?.balances?.eth?.balance
     if (!ethBalanceL1) {
-      return
+      return null
     }
     return utils.formatUnits(ethBalanceL1, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
@@ -77,13 +77,13 @@ const TransferPanel = (): JSX.Element => {
         arbTokenBridge?.balances?.erc20[selectedToken.address]?.arbChainBalance
       const { decimals } = selectedToken as ERC20BridgeToken
       if (!balanceL2) {
-        return
+        return null
       }
       return utils.formatUnits(balanceL2, decimals)
     }
     const ethBalanceL2 = arbTokenBridge?.balances?.eth?.arbChainBalance
     if (!ethBalanceL2) {
-      return
+      return null
     }
     return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])

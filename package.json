@@ -43,7 +43,7 @@
     "test": "craco test",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"build/*token*.json\" && prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
   },
   "eslintConfig": {
     "extends": "react-app"
