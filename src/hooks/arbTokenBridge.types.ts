@@ -50,9 +50,9 @@ export interface ContractStorage<T> {
   [contractAddress: string]: T | undefined
 }
 export interface BridgeBalance {
-  balance: BigNumber
+  balance: BigNumber | null
 
-  arbChainBalance: BigNumber
+  arbChainBalance: BigNumber | null
 }
 
 // removing 'tokens' / 'balance' could result in one interface

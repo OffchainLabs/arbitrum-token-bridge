@@ -45,8 +45,8 @@ export const useArbTokenBridge = (
   const [walletAddress, setWalletAddress] = useState('')
 
   const defaultBalance = {
-    balance: constants.Zero,
-    arbChainBalance: constants.Zero
+    balance: null,
+    arbChainBalance: null
   }
 
   const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
