@@ -1,7 +1,7 @@
 import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 
 import { BigNumber } from 'ethers'
-import { formatEther, isAddress } from 'ethers/lib/utils'
+import { formatEther, isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { TokenType, BridgeToken } from 'token-bridge-sdk'
 
@@ -95,8 +95,18 @@ const TokenRow = ({
         </p>
       </div>
 
-      <p className="text-base leading-6 font-medium text-gray-900">
-        {} {tokenSymbol}
+      <p className="flex items-center text-base leading-6 font-medium text-gray-900">
+        {balance ? (
+          +formatUnits(balance, token?.decimals || 18)
+        ) : (
+          <Loader
+            type="Oval"
+            color="rgb(40, 160, 240)"
+            height={14}
+            width={14}
+          />
+        )}{' '}
+        {tokenSymbol}
       </p>
     </button>
   )

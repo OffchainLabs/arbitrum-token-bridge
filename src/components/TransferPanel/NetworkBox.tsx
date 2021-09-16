@@ -22,8 +22,6 @@ const NetworkBox = ({
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge, networkID }
   } = useAppState()
-  console.log('bridgeToken', selectedToken);
-  
   const balance = useMemo(() => {
     let b: BridgeBalance | undefined = arbTokenBridge?.balances?.eth
     if (selectedToken) {
@@ -54,7 +52,9 @@ const NetworkBox = ({
           <div className="flex items-center text-lg leading-8 font-semibold text-bright-blue mb-1">
             <span>Balance: </span>
             {balance ? (
-              <span className="mx-1">{formatUnits(balance, selectedToken?.decimals || 18)}</span>
+              <span className="mx-1">
+                {formatUnits(balance, selectedToken?.decimals || 18)}
+              </span>
             ) : (
               <div className="mx-2">
                 <Loader
