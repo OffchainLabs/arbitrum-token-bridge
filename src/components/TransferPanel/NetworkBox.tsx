@@ -1,5 +1,7 @@
 import React, { Dispatch, SetStateAction, useMemo } from 'react'
 
+import { useWallet } from '@gimmixorg/use-wallet'
+import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { BridgeBalance } from 'token-bridge-sdk'
@@ -19,6 +21,7 @@ const NetworkBox = ({
   className?: string
   setAmount: (amount: string) => void
 }) => {
+  const { provider } = useWallet()
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge, networkID }
   } = useAppState()
@@ -38,6 +41,30 @@ const NetworkBox = ({
   }, [isDepositMode, isL1])
 
   const isMainnet = networkID === '1' || networkID === '42161'
+
+  async function setMaxAmount() {
+    if (!balance) {
+      return
+    }
+    if (selectedToken) {
+      // @ts-ignore
+      return formatUnits(balance, selectedToken?.decimals || 18)
+    }
+    const gasPrice: BigNumber | undefined = await provider?.getGasPrice()
+    if (!gasPrice) {
+      return
+    }
+    console.log('Gas price', formatUnits(gasPrice.toString(), 18))
+    const balanceMinusGas = formatUnits(
+      balance.sub(gasPrice).toString(),
+      // @ts-ignore
+      selectedToken?.decimals || 18
+    )
+    console.log('Price - gas price', balanceMinusGas)
+
+    setAmount(balanceMinusGas)
+  }
+
   return (
     <div
       className={`max-w-networkBox w-full mx-auto shadow-networkBox bg-white p-6 rounded-lg ${
@@ -53,6 +80,7 @@ const NetworkBox = ({
             <span>Balance: </span>
             {balance ? (
               <span className="mx-1">
+                {/* @ts-ignore */}
                 {formatUnits(balance, selectedToken?.decimals || 18)}
               </span>
             ) : (
@@ -80,7 +108,13 @@ const NetworkBox = ({
             </p>
           )}
         </div>
-        {canIEnterAmount && <AmountBox amount={amount} setAmount={setAmount} />}
+        {canIEnterAmount && (
+          <AmountBox
+            amount={amount}
+            setAmount={setAmount}
+            setMaxAmount={setMaxAmount}
+          />
+        )}
       </div>
     </div>
   )

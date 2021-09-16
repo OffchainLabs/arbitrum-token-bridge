@@ -230,6 +230,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       console.info('withdrawal mode detected')
       actions.app.setConnectionState(ConnectionState.WITHDRAW_MODE)
     }
+
+    console.log('Gas price', await library?.getGasPrice())
   }
 
   // STEP1 reset bridge on network switch or account switch, this inits all other resets
