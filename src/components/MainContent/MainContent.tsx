@@ -19,7 +19,7 @@ const MainContent = () => {
   return (
     <div className="mx-auto px-4">
       {isMainnet && (
-        <div className="mb-4">
+        <div className="mb-4 mx-auto max-w-networkBox w-full">
           <Alert type="blue">
             NOTICE: You're connected to mainnet, still in beta phase. BE
             CAREFUL!" warning (for both Ethereum L1 and Arbitrum 1)

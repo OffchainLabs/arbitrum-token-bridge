@@ -132,10 +132,7 @@ export const defaultState: AppState = {
         resolvedAt: null,
         txId: tx.uniqueId?.toString(),
         asset: tx.symbol?.toLocaleLowerCase(),
-        value: ethers.utils.formatUnits(
-          tx.value?.toString(),
-          tx.decimals
-        ),
+        value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
         uniqueId: tx.uniqueId,
         isWithdrawal: true,
         blockNum: tx.ethBlockNum.toNumber(),

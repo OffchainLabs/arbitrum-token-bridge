@@ -1,9 +1,9 @@
 import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 
 import { BigNumber } from 'ethers'
-import { formatEther, isAddress } from 'ethers/lib/utils'
+import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import { TokenType, BridgeToken } from 'token-bridge-sdk'
+import { BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { getTokenImg, isTokenWhitelisted } from '../../util'
@@ -15,7 +15,7 @@ import TokenConfirmationDialog from './TokenConfirmationDialog'
 
 interface TokenRowProps {
   address: string | null
-  balance: BigNumber | undefined
+  balance: BigNumber | null
   onTokenSelected: () => void
 }
 
@@ -246,9 +246,10 @@ export const TokenModalBody = ({
             key={erc20Address}
             address={erc20Address}
             balance={
-              isDepositMode
+              (isDepositMode
                 ? balances.erc20[erc20Address]?.balance
-                : balances.erc20[erc20Address]?.arbChainBalance
+                : balances.erc20[erc20Address]?.arbChainBalance) ??
+              BigNumber.from(0)
             }
             onTokenSelected={onTokenSelected}
           />

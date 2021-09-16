@@ -1,8 +1,7 @@
-import React, { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
 import { getTokenImg } from '../../util'
-import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { TokenModal } from '../TokenModal/TokenModal'
 
 const AmountBox = ({
@@ -38,11 +37,7 @@ const AmountBox = ({
         value={amount}
         onChange={e => setAmount(e.target.value)}
       />
-      {/* <p className="text-xl leading-8 font-normal text-gray1"> */}
-      {/*  {selectedToken ? selectedToken.symbol : 'Eth'} */}
-      {/* </p> */}
       <div className="flex items-center justify-end w-full">
-        {/* <NetworkSwitchButton /> */}
         <button
           type="button"
           onClick={() => setTokenModalOpen(true)}
