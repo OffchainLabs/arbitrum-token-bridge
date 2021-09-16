@@ -251,13 +251,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       return
     }
 
-    actions.app.reset()
-
     try {
       if (!networkVersion || !library) {
         actions.app.setConnectionState(ConnectionState.NO_METAMASK)
         return
       }
+
+      actions.app.reset(`${networkVersion}`)
 
       initBridge()
     } catch (e) {

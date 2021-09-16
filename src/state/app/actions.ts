@@ -55,7 +55,16 @@ export const setChangeNetwork = (
   state.app.changeNetwork = func
 }
 
-export const reset = ({ state }: Context) => {
+export const reset = ({ state }: Context, newChainId: string) => {
+  if (
+    state.app.l1NetworkDetails?.chainID !== newChainId &&
+    state.app.l2NetworkDetails?.chainID !== newChainId
+  ) {
+    // only reset the selected token if we are not switching between the pair of l1-l2 networks.
+    // we dont want to reset the token if we are switching from Rinkeby to Rinkarby for example
+    // because we are maybe in the process of auto switching the network and triggering deposit or withdraw
+    state.app.selectedToken = null
+  }
   state.app.arbTokenBridge = {} as ArbTokenBridge
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
