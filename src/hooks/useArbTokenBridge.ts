@@ -113,6 +113,7 @@ export const useArbTokenBridge = (
     transactions,
     {
       addTransaction,
+      addTransactions,
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
@@ -145,84 +146,22 @@ export const useArbTokenBridge = (
   const depositEth = async (etherVal: string) => {
     const weiValue: BigNumber = utils.parseEther(etherVal)
     const tx = await bridge.depositETH(weiValue)
-    try {
-      addTransaction({
-        type: 'deposit-l1',
-        status: 'pending',
-        value: etherVal,
-        txID: tx.hash,
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: await walletAddressCached(),
-        l1NetworkID: await l1NetworkIDCached()
-      })
-      const receipt = await tx.wait()
-      updateTransaction(receipt, tx)
-      updateEthBalances()
-
-      const seqNum = await bridge.getInboxSeqNumFromContractTransaction(receipt)
-      if (!seqNum) return
-
-      const l2TxHash = await bridge.calculateL2TransactionHash(seqNum[0])
-
-      addTransaction({
-        type: 'deposit-l2',
-        status: 'pending',
-        value: etherVal,
-        txID: l2TxHash,
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: await walletAddressCached(),
-        l1NetworkID: await l1NetworkIDCached()
-      })
-      const l2TxnRec = await bridge.l2Bridge.l2Provider.waitForTransaction(
-        l2TxHash,
-        undefined,
-        slowInboxQueueTimeout
-      )
-      updateTransaction(l2TxnRec)
-
-      // let l2TxnRec
-      // try {
-      //   l2TxnRec = await bridge.l2Provider.waitForTransaction(
-      //     l2TxHash,
-      //     undefined,
-      //     slowInboxQueueTimeout
-      //   )
-      //   if(l2TxnRec.status === 0){
-      //     console.warn('l2TxnRec failed', l2TxnRec)
-      //     updateTransaction(l2TxnRec)
-      //     return
-      //   }
-      // } catch (err){
-      //   console.warn('l2TxHash timed out', err)
-      //   removeTransaction(l2TxHash)
-      //   addFailedTransaction(
-      //     {
-      //       type: 'deposit-l2-auto-redeem',
-      //       status: 'failure',
-      //       value: etherVal,
-      //       txID: l2TxHash,
-      //       assetName: 'ETH',
-      //       assetType: AssetType.ETH,
-      //       sender: await bridge.getWalletAddress()
-      //     })
-      //     return
-      // }
-
-      // const retryableRec = await bridge.l2Provider.waitForTransaction(
-      //   l2TxHash,
-      //   undefined,
-      //   slowInboxQueueTimeout
-      // )
-      // // if it times out... it just errors? that's fine?
-      // updateTransaction(retryableRec)
-
-      updateEthBalances()
-      return receipt
-    } catch (e) {
-      console.error('depositEth err: ' + e)
-    }
+    addTransaction({
+      type: 'deposit-l1',
+      status: 'pending',
+      value: etherVal,
+      txID: tx.hash,
+      assetName: 'ETH',
+      assetType: AssetType.ETH,
+      sender: await walletAddressCached(),
+      l1NetworkID: await l1NetworkIDCached()
+    })
+    const receipt = await tx.wait()
+    const seqNums = await bridge.getInboxSeqNumFromContractTransaction(receipt)
+    if (!seqNums) return
+    const seqNum = seqNums[0]
+    updateTransaction(receipt, tx, seqNum.toNumber())
+    updateEthBalances()
   }
 
   const withdrawEth = useCallback(
@@ -322,80 +261,15 @@ export const useArbTokenBridge = (
     })
     try {
       const receipt = await tx.wait()
+      const seqNums = await bridge.getInboxSeqNumFromContractTransaction(
+        receipt
+      )
+      if (!seqNums) return
+      const seqNum = seqNums[0].toNumber()
       updateTokenBalances()
 
-      updateTransaction(receipt, tx)
+      updateTransaction(receipt, tx, seqNum)
 
-      const tokenDepositData = (
-        await bridge.getDepositTokenEventData(receipt)
-      )[0]
-
-      const seqNum = tokenDepositData._sequenceNumber
-
-      const l2RetryableHash = await bridge.calculateL2RetryableTransactionHash(
-        seqNum
-      )
-      const autoRedeemHash = await bridge.calculateRetryableAutoRedeemTxnHash(
-        seqNum
-      )
-
-      addTransaction({
-        type: 'deposit-l2',
-        status: 'pending',
-        value: amount,
-        txID: l2RetryableHash,
-        assetName: tokenData.symbol,
-        assetType: AssetType.ERC20,
-        sender: await bridge.l2Bridge.getWalletAddress(),
-        l1NetworkID: await l1NetworkIDCached()
-      })
-
-      let autoRedeemHashRec
-      try {
-        autoRedeemHashRec = await bridge.l2Bridge.l2Provider.waitForTransaction(
-          autoRedeemHash,
-          undefined,
-          slowInboxQueueTimeout
-        )
-        console.warn('auto redeem failed')
-        if (autoRedeemHashRec.status === 0) {
-          removeTransaction(l2RetryableHash)
-          addFailedTransaction({
-            type: 'deposit-l2-auto-redeem',
-            status: 'failure',
-            value: amount,
-            txID: autoRedeemHash,
-            assetName: tokenData.symbol,
-            assetType: AssetType.ERC20,
-            sender: await walletAddressCached(),
-            l1NetworkID: await l1NetworkIDCached()
-          })
-          return
-        }
-      } catch (err) {
-        console.warn('Auto redeem timed out')
-        // keep both the retryable and the auto-redeem as pending
-        addTransaction({
-          type: 'deposit-l2-auto-redeem',
-          status: 'pending',
-          value: amount,
-          txID: autoRedeemHash,
-          assetName: tokenData.symbol,
-          assetType: AssetType.ERC20,
-          sender: await walletAddressCached(),
-          l1NetworkID: await l1NetworkIDCached()
-        })
-        return
-      }
-
-      const retryableRec = await bridge.l2Bridge.l2Provider.waitForTransaction(
-        l2RetryableHash,
-        undefined,
-        slowInboxQueueTimeout
-      )
-
-      updateTransaction(retryableRec)
-      updateTokenBalances()
       return receipt
     } catch (err) {
       console.warn('deposit token failure', err)
@@ -530,7 +404,7 @@ export const useArbTokenBridge = (
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
-      let l1Address = erc20L1orL2Address
+      const l1Address = erc20L1orL2Address
       const lCaseToken = l1Address.toLocaleLowerCase()
       if (tokenBlackList.includes(lCaseToken)) {
         // todo: error report to UI
@@ -553,12 +427,11 @@ export const useArbTokenBridge = (
         )
         if (!l1Address) {
           console.warn('token is on L2 but is not registred to the gateway')
-          return ""
+          return ''
         }
         // save l1 and l2 data to bridge state
         await bridge.getAndUpdateL1TokenData(l1Address)
         await bridge.getAndUpdateL2TokenData(l1Address)
-
       }
       updateBridgeTokens()
       setERC20Cache([...ERC20Cache, lCaseToken])
@@ -1031,7 +904,8 @@ export const useArbTokenBridge = (
       clearPendingTransactions,
       setTransactionConfirmed,
       updateTransaction,
-      addTransaction
+      addTransaction,
+      addTransactions
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals

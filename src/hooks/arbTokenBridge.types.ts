@@ -134,11 +134,13 @@ export interface TransactionActions {
   removeTransaction: (txID: string) => void
 
   addTransaction: (transaction: NewTransaction) => void
+  addTransactions: (transactions: Transaction[]) => void
   clearPendingTransactions: () => void
   setTransactionConfirmed: (txID: string) => void
   updateTransaction: (
     txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction
+    tx?: ethers.ContractTransaction,
+    seqNum?: number
   ) => void
 }
 
@@ -150,6 +152,7 @@ export type ArbTokenBridgeTransactions = {
   | 'clearPendingTransactions'
   | 'setTransactionConfirmed'
   | 'updateTransaction'
+  | 'addTransactions'
 >
 
 export interface ArbTokenBridge {
