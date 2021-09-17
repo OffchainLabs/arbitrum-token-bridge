@@ -1,7 +1,12 @@
 import React, { Fragment } from 'react'
 
+import { useWallet } from '@gimmixorg/use-wallet'
 import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/solid'
+
+import { useAppState } from '../../state'
+import { modalProviderOpts } from '../../util/modelProviderOpts'
+import { Button } from './Button'
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ')
@@ -65,6 +70,15 @@ function ExplorerMenu() {
   )
 }
 const Header: React.FC = () => {
+  const {
+    app: { networkID }
+  } = useAppState()
+  const { disconnect, connect } = useWallet()
+
+  function showConnectionModal() {
+    connect(modalProviderOpts)
+  }
+
   return (
     <header>
       <div className="border-b border-gray-700">
@@ -121,16 +135,42 @@ const Header: React.FC = () => {
               </div>
             </div>
           </div>
-          <div>
-            <a
-              href="https://discord.com/invite/5KE54JwyTs"
-              target="_blank"
-              className="bg-bright-blue hover:bg-faded-blue text-navy rounded-md text-sm font-medium"
-              style={{ padding: '10px 12px' }}
-              rel="noopener noreferrer"
-            >
-              Join Community
-            </a>
+
+          <div className="flex items-center">
+            {networkID ? (
+              <button
+                onClick={() => {
+                  disconnect()
+                  localStorage.removeItem('WEB3_CONNECT_CACHED_PROVIDER')
+                  window.location.href = '/'
+                }}
+                type="button"
+                className="mr-4 text-white hover:text-navy hover:text-gray-200 hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
+                style={{ padding: '8px 12px' }}
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={showConnectionModal}
+                type="button"
+                className="mr-4 text-white hover:text-navy hover:text-gray-200 hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
+                style={{ padding: '8px 12px' }}
+              >
+                Login
+              </button>
+            )}
+            <div>
+              <a
+                href="https://discord.com/invite/5KE54JwyTs"
+                target="_blank"
+                className="bg-bright-blue hover:bg-faded-blue text-navy rounded-md text-sm font-medium"
+                style={{ padding: '10px 12px' }}
+                rel="noopener noreferrer"
+              >
+                Join Community
+              </a>
+            </div>
           </div>
         </div>
       </div>
