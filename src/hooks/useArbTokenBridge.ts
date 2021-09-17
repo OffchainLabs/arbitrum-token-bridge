@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
+import { TokenList } from '@uniswap/token-lists'
 import {
   Bridge,
   L1TokenData,
@@ -12,6 +13,7 @@ import {
 import useTransactions from './useTransactions'
 import {
   AddressToSymbol,
+  AddressToDecimals,
   ArbTokenBridge,
   AssetType,
   BridgeBalance,
@@ -35,6 +37,7 @@ const { Zero } = constants
 const slowInboxQueueTimeout = 1000 * 60 * 15
 
 const addressToSymbol: AddressToSymbol = {}
+const addressToDecimals: AddressToDecimals = {}
 
 export const useArbTokenBridge = (
   bridge: Bridge,
@@ -43,8 +46,8 @@ export const useArbTokenBridge = (
   const [walletAddress, setWalletAddress] = useState('')
 
   const defaultBalance = {
-    balance: constants.Zero,
-    arbChainBalance: constants.Zero
+    balance: null,
+    arbChainBalance: null
   }
 
   const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
@@ -220,7 +223,6 @@ export const useArbTokenBridge = (
       return receipt
     } catch (e) {
       console.error('depositEth err: ' + e)
-      setTransactionFailure(tx.hash)
     }
   }
 
@@ -263,7 +265,8 @@ export const useArbTokenBridge = (
             type: AssetType.ETH,
             value: weiValue,
             outgoingMessageState,
-            symbol: 'ETH'
+            symbol: 'ETH',
+            decimals: 18
           }
           setPendingWithdrawalMap({
             ...pendingWithdrawalsMap,
@@ -273,7 +276,6 @@ export const useArbTokenBridge = (
         return receipt
       } catch (e) {
         console.error('withdrawEth err', e)
-        setTransactionFailure(tx.hash)
       }
     },
     [pendingWithdrawalsMap]
@@ -397,7 +399,7 @@ export const useArbTokenBridge = (
       updateTokenBalances()
       return receipt
     } catch (err) {
-      setTransactionFailure(tx.hash)
+      console.warn('deposit token failure', err)
     }
   }
 
@@ -441,7 +443,8 @@ export const useArbTokenBridge = (
           tokenAddress: erc20l1Address,
           value: amountParsed,
           outgoingMessageState,
-          symbol: tokenData.symbol
+          symbol: tokenData.symbol,
+          decimals: tokenData.decimals
         }
         setPendingWithdrawalMap({
           ...pendingWithdrawalsMap,
@@ -451,11 +454,80 @@ export const useArbTokenBridge = (
 
       return receipt
     } catch (err) {
-      console.warn('err', err)
-
-      setTransactionFailure(tx.hash)
+      console.warn('withdraw token err', err)
     }
   }
+  const addTokensStatic = useCallback(
+    (arbTokenList: TokenList) => {
+      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+      for (const tokenData of arbTokenList.tokens) {
+        console.log(tokenData)
+
+        const {
+          address: l2Address,
+          name,
+          symbol,
+          extensions,
+          decimals
+        } = tokenData
+        const l1Address = (extensions as any).l1Address as string
+        bridgeTokensToAdd[l1Address] = {
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          allowed: false,
+          address: l1Address,
+          l2Address,
+          decimals
+        }
+      }
+      setBridgeTokens({ ...bridgeTokens, ...bridgeTokensToAdd })
+    },
+    [bridgeTokens]
+  )
+
+  const addTokenV2 = useCallback(
+    async (erc20L1orL2Address: string) => {
+      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+
+      const l1Address = erc20L1orL2Address
+      const _l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
+      const l1Data = _l1Data.ERC20 || _l1Data.CUSTOM
+      if (!l1Data) {
+        console.log('l1 token data not found')
+        return ''
+      }
+
+      const { symbol, allowed, contract } = l1Data
+      const name = await contract.name()
+      const decimals = await contract.decimals()
+      let l2Address: string | undefined
+      try {
+        const _l2Data = await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
+        const l2Data = _l2Data?.ERC20 || _l2Data?.CUSTOM
+        if (!l2Data) {
+          throw new Error(``)
+        }
+        l2Address = l2Data.contract.address
+      } catch (error) {
+        console.info(`no L2 token for ${l1Address} (which is fine)`)
+      }
+
+      bridgeTokensToAdd[l1Address] = {
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        allowed,
+        address: l1Address,
+        l2Address,
+        decimals
+      }
+      const newBridgeTokens = { ...bridgeTokens, ...bridgeTokensToAdd }
+      setBridgeTokens(newBridgeTokens)
+      return l1Address
+    },
+    [ERC20Cache, setERC20Cache, bridgeTokens]
+  )
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
@@ -465,25 +537,29 @@ export const useArbTokenBridge = (
         // todo: error report to UI
         return ''
       }
-      const l1Data = await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
       try {
-        await bridge.getAndUpdateL2TokenData(erc20L1orL2Address)
-      } catch (error) {
-        console.info(`no L2 token for ${l1Address} (which is fine)`)
-      }
-
-      if (!(l1Data && l1Data.ERC20)) {
-        try {
-          l1Address =
-            (await bridge.l2Bridge.getERC20L1Address(erc20L1orL2Address)) || ''
-          if (!l1Address) {
-            throw new Error('')
-          }
-          await bridge.getAndUpdateL1TokenData(l1Address)
-          await bridge.getAndUpdateL2TokenData(l1Address)
-        } catch (err) {
-          console.warn('Address is not a token address ')
+        // try to save l1 and (maybe) l2 data to bridge state
+        await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
+        const l2TokenData = await bridge.getAndUpdateL2TokenData(
+          erc20L1orL2Address
+        )
+        if (!l2TokenData) {
+          console.log('Token is on L1 but not L2 (which is fine)')
         }
+      } catch (err) {
+        console.log(`Not an L1 Token address, maybe it's an l2 address?`)
+        // check if erc20L1orL2Address was an L2 address of a registered token
+        const l1Address = await bridge.l2Bridge.getERC20L1Address(
+          erc20L1orL2Address
+        )
+        if (!l1Address) {
+          console.warn('token is on L2 but is not registred to the gateway')
+          return ""
+        }
+        // save l1 and l2 data to bridge state
+        await bridge.getAndUpdateL1TokenData(l1Address)
+        await bridge.getAndUpdateL2TokenData(l1Address)
+
       }
       updateBridgeTokens()
       setERC20Cache([...ERC20Cache, lCaseToken])
@@ -526,6 +602,26 @@ export const useArbTokenBridge = (
       arbChainBalance: l2Balance
     })
   }
+
+  const updateTokenData = useCallback(
+    async (l1Address: string) => {
+      const bridgeToken = bridgeTokens[l1Address]
+      if (!bridgeToken) {
+        return
+      }
+      const { l1Data, l2Data } = await bridge.updateTokenData(l1Address)
+      const erc20TokenBalance: BridgeBalance = {
+        balance: l1Data.ERC20?.balance || l1Data.CUSTOM?.balance || Zero,
+        arbChainBalance:
+          l2Data?.ERC20?.balance || l2Data?.CUSTOM?.balance || Zero
+      }
+
+      setErc20Balances({ ...erc20Balances, [l1Address]: erc20TokenBalance })
+      const newBridgeTokens = { ...bridgeTokens, [l1Address]: bridgeToken }
+      setBridgeTokens(newBridgeTokens)
+    },
+    [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens]
+  )
 
   const updateTokenBalances = async () => {
     const { l1Tokens, l2Tokens } = await bridge.updateAllTokens()
@@ -590,7 +686,6 @@ export const useArbTokenBridge = (
         return rec
       } catch (err) {
         console.warn('WARNING: token outbox execute failed:', err)
-        setTransactionFailure(res.hash)
       }
     },
     [pendingWithdrawalsMap]
@@ -631,8 +726,7 @@ export const useArbTokenBridge = (
         }
         return rec
       } catch (err) {
-        console.warn('WARNING: token outbox execute failed:', err)
-        setTransactionFailure(res.hash)
+        console.warn('WARNING: ETH outbox execute failed:', err)
       }
     },
     [pendingWithdrawalsMap]
@@ -682,6 +776,23 @@ export const useArbTokenBridge = (
       return '???'
     }
   }
+  const getTokenDecimals = async (_l1Address: string) => {
+    const l1Address = _l1Address.toLocaleLowerCase()
+    const dec = addressToDecimals[l1Address]
+    if (dec) {
+      return dec
+    }
+    try {
+      const token = ERC20__factory.connect(l1Address, bridge.l1Provider)
+      const decimals = await token.decimals()
+      addressToDecimals[l1Address] = decimals
+      return decimals
+    } catch (err) {
+      console.warn('could not get token decimals', err)
+      return 18
+    }
+  }
+
 
   const getEthWithdrawalsV2 = async (filter?:ethers.providers.Filter)=>{
 
@@ -721,7 +832,8 @@ export const useArbTokenBridge = (
         type: AssetType.ETH,
         value: callvalue,
         symbol: 'ETH',
-        outgoingMessageState
+        outgoingMessageState,
+        decimals: 18
       }
       ethWithdrawalData.push(allWithdrawalData)
     }
@@ -750,6 +862,11 @@ export const useArbTokenBridge = (
     const symbols = await Promise.all(
       gateWayWithdrawalsResults.map(withdrawEventData =>
         getTokenSymbol(withdrawEventData.l1Token)
+      )
+    )
+    const decimals = await Promise.all(
+      gateWayWithdrawalsResults.map(withdrawEventData =>
+        getTokenDecimals(withdrawEventData.l1Token)
       )
     )
 
@@ -801,7 +918,8 @@ export const useArbTokenBridge = (
           value: withdrawEventData._amount,
           tokenAddress: withdrawEventData.l1Token,
           outgoingMessageState: outgoingMessageStates[i],
-          symbol: symbols[i]
+          symbol: symbols[i],
+          decimals: decimals[i]
         }
         return eventDataPlus
       }
@@ -916,6 +1034,9 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
+      addTokenV2: addTokenV2,
+      addTokensStatic,
+      updateTokenData,
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,

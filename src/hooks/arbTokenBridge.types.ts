@@ -1,6 +1,8 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers'
+import { TokenList } from '@uniswap/token-lists'
+
 import {
   FailedTransaction,
   NewTransaction,
@@ -13,6 +15,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   tokenAddress?: string
   outgoingMessageState: OutgoingMessageState
   symbol: string
+  decimals: number
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
@@ -47,9 +50,9 @@ export interface ContractStorage<T> {
   [contractAddress: string]: T | undefined
 }
 export interface BridgeBalance {
-  balance: BigNumber
+  balance: BigNumber | null
 
-  arbChainBalance: BigNumber
+  arbChainBalance: BigNumber | null
 }
 
 // removing 'tokens' / 'balance' could result in one interface
@@ -83,7 +86,9 @@ export interface ERC721Balance {
 export interface AddressToSymbol {
   [tokenAddress: string]: string
 }
-
+export interface AddressToDecimals {
+  [tokenAddress: string]: number
+}
 export interface ArbTokenBridgeBalances {
   eth: BridgeBalance
   erc20: ContractStorage<BridgeBalance>
@@ -106,6 +111,9 @@ export interface ArbTokenBridgeCache {
 
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string, type: TokenType) => Promise<string>
+  addTokenV2: (erc20L1orL2Address: string) => Promise<string>
+  addTokensStatic: (tokenList: TokenList) => void
+  updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,

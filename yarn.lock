@@ -687,11 +687,6 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.20.23.tgz#d0d5885bb885ee9b1ed114a04ea586540a1b2e2a"
   integrity sha512-FW0q7NI8UnjbKrJK8NGr6QXY69ATw9IFe6ItIo5yozPwA9DU/xkhiPddctUVyrmFXvyFYerYgQak/qu200UBDw==
 
-"@types/promise-poller@^1.7.0":
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/@types/promise-poller/-/promise-poller-1.7.1.tgz#197716c260babbe2f47257ebc2cc04136fa4f618"
-  integrity sha512-RkrbNb89A/ew6HJ1UnF0c7/UATCaYpcpz43SGvIrb3uOQw/SVOkAw6h4A59ooIQF+eaKoiMat+EFRoVHk79qfw==
-
 "@types/prop-types@*":
   version "15.7.4"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.4.tgz#fcf7205c25dff795ee79af1e30da2c9790808f11"
@@ -777,6 +772,11 @@
     lodash "^4.17.15"
     semver "^7.3.2"
     tsutils "^3.17.1"
+
+"@uniswap/token-lists@^1.0.0-beta.25":
+  version "1.0.0-beta.25"
+  resolved "https://registry.yarnpkg.com/@uniswap/token-lists/-/token-lists-1.0.0-beta.25.tgz#e4279cf2581b297723d82eafd1bed35273070f07"
+  integrity sha512-XemgUs8YiYP7Xci+Wb8vPSnyxV9aTO6J5XLPzhZmgDFO1RY5JMnB0As8PJFia3Pg9JSRZ7+AahzxowPYhnUVWw==
 
 "@wry/context@^0.6.0":
   version "0.6.1"
@@ -888,16 +888,15 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-arb-ts@^0.0.36:
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.36.tgz#23a5687148ca8552d43391bda57833a137739a52"
-  integrity sha512-wbZ7dOPqFCxtZgLqxoeFbVBNT8Jd93xEvv7C8eQ/7jmLobvFLJ7e0hyMIWad2Bcj3UlQyJPWyW7rxwiCWET0PA==
+arb-ts@0.0.39:
+  version "0.0.39"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.39.tgz#914ed9cdac3a591f862ea9eb149f8e9ecbde13aa"
+  integrity sha512-XFkD+BtpMtQ3UCedTMJMkwHvAoEol2ImtZ/lFonxoQtHntryCGKuKM12/LqFWhwnUSGtrnARwo072eCGxackEQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
     "@nomiclabs/hardhat-ethers" "^2.0.2"
-    "@types/promise-poller" "^1.7.0"
     dotenv "^10.0.0"
     ethers "^5.1.0"
 
