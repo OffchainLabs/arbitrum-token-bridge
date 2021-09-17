@@ -75,13 +75,13 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   } = useAppState()
 
   const showRedeemRetryableButton = useMemo(() => {
-    return tx.direction === 'deposit-l2' &&
+    return (
+      tx.direction === 'deposit-l2' &&
       tx.asset !== 'eth' &&
-      tx.seqNum &&
+      tx.seqNum !== undefined &&
       seqNumToAutoRedeems[tx.seqNum] &&
       seqNumToAutoRedeems[tx.seqNum].status === 'failure'
-      ? true
-      : false
+    )
   }, [seqNumToAutoRedeems, tx])
 
   const redeemRetryable = useCallback(

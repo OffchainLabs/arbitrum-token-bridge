@@ -42,7 +42,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
         if (!seqNumArray || seqNumArray.length === 0) {
           return null
         }
-        seqNum = seqNumArray[0]
+        ;[seqNum] = seqNumArray
       }
 
       const l2ChainID = BigNumber.from(l2NetworkDetails.chainID)
