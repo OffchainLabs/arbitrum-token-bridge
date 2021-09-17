@@ -26,7 +26,11 @@ import {
   TokenType
 } from './arbTokenBridge.types'
 
-import { getLatestOutboxEntryIndex, messageHasExecuted, getETHWithdrawals} from "../util/graph"
+import {
+  getLatestOutboxEntryIndex,
+  messageHasExecuted,
+  getETHWithdrawals
+} from '../util/graph'
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -531,7 +535,7 @@ export const useArbTokenBridge = (
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
-      let l1Address = erc20L1orL2Address
+      const l1Address = erc20L1orL2Address
       const lCaseToken = l1Address.toLocaleLowerCase()
       if (tokenBlackList.includes(lCaseToken)) {
         // todo: error report to UI
@@ -554,12 +558,11 @@ export const useArbTokenBridge = (
         )
         if (!l1Address) {
           console.warn('token is on L2 but is not registred to the gateway')
-          return ""
+          return ''
         }
         // save l1 and l2 data to bridge state
         await bridge.getAndUpdateL1TokenData(l1Address)
         await bridge.getAndUpdateL2TokenData(l1Address)
-
       }
       updateBridgeTokens()
       setERC20Cache([...ERC20Cache, lCaseToken])
@@ -793,16 +796,14 @@ export const useArbTokenBridge = (
     }
   }
 
-
-  const getEthWithdrawalsV2 = async (filter?:ethers.providers.Filter)=>{
-
+  const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
     const networkID = await l1NetworkIDCached()
     const address = await walletAddressCached()
-    const ethWithdrawalEventData  = await     getETHWithdrawals(address, networkID)
+    const ethWithdrawalEventData = await getETHWithdrawals(address, networkID)
     const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
 
-    const ethWithdrawalData:L2ToL1EventResultPlus[] = []
-    for (let  eventData of ethWithdrawalEventData) {
+    const ethWithdrawalData: L2ToL1EventResultPlus[] = []
+    for (const eventData of ethWithdrawalEventData) {
       const {
         destination,
         timestamp,
@@ -813,10 +814,13 @@ export const useArbTokenBridge = (
         indexInBatch,
         arbBlockNum,
         ethBlockNum,
-        callvalue,
+        callvalue
       } = eventData
-      const batchNumberDec  = batchNumber.toNumber()
-      let outgoingMessageState = batchNumberDec > lastOutboxEntryIndexDec ? OutgoingMessageState.UNCONFIRMED: (await getOutGoingMessageStateV2(batchNumber, indexInBatch))
+      const batchNumberDec = batchNumber.toNumber()
+      const outgoingMessageState =
+        batchNumberDec > lastOutboxEntryIndexDec
+          ? OutgoingMessageState.UNCONFIRMED
+          : await getOutGoingMessageStateV2(batchNumber, indexInBatch)
 
       const allWithdrawalData: L2ToL1EventResultPlus = {
         caller,
@@ -961,17 +965,20 @@ export const useArbTokenBridge = (
       ) {
         return OutgoingMessageState.EXECUTED
       } else {
-        const proofData = await bridge.tryGetProofOnce(batchNumber, indexInBatch)
+        const proofData = await bridge.tryGetProofOnce(
+          batchNumber,
+          indexInBatch
+        )
         // this should never occur
-        if(!proofData){
+        if (!proofData) {
           return OutgoingMessageState.UNCONFIRMED
         }
 
         const { path } = proofData
-        const l1NetworkID= await l1NetworkIDCached()
-        const res = await messageHasExecuted(path, batchNumber,l1NetworkID)
+        const l1NetworkID = await l1NetworkIDCached()
+        const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
 
-        if(res){
+        if (res) {
           addToExecutedMessagesCache(batchNumber, indexInBatch)
           return OutgoingMessageState.EXECUTED
         } else {

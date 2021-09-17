@@ -1,6 +1,6 @@
 {
   "name": "token-bridge-sdk",
-  "version": "0.5.7",
+  "version": "0.5.7-beta.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "SDK for transfering assets to and from Arbitrum",
