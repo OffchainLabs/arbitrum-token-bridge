@@ -72,7 +72,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     () => new Set([...sortedTransactions.map(tx => tx.txID)]),
     [sortedTransactions]
   )
-  /** 
+  /**
    * For every L1 deposit, we ensure the relevant L2 transactions are included in the transaction list:
    * For Eth: the "deposit-l2" (which is the ticket creation)
    * For tokens, the ticket creation, auto-redeem, and user-txn.

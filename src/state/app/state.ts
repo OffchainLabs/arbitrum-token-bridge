@@ -159,7 +159,7 @@ export const defaultState: AppState = {
     )
   }),
   mergedTransactionsToShow: derived((s: AppState) => {
-    // group by seqNum
+    // group ticket-created by seqNum so we can match thyarnem with deposit-l2 txns later
     const seqNumToTicketCreation: SeqNumToTxn = {}
 
     s.mergedTransactions.forEach(txn => {
