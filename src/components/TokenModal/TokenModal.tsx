@@ -15,7 +15,7 @@ import TokenConfirmationDialog from './TokenConfirmationDialog'
 
 interface TokenRowProps {
   address: string | null
-  balance: BigNumber | null
+  balance: BigNumber | null | undefined
   onTokenSelected: () => void
 }
 
@@ -277,10 +277,9 @@ export const TokenModalBody = ({
             key={erc20Address}
             address={erc20Address}
             balance={
-              (isDepositMode
+              isDepositMode
                 ? balances.erc20[erc20Address]?.balance
-                : balances.erc20[erc20Address]?.arbChainBalance) ??
-              BigNumber.from(0)
+                : balances.erc20[erc20Address]?.arbChainBalance
             }
             onTokenSelected={onTokenSelected}
           />
