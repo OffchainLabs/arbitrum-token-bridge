@@ -9,7 +9,7 @@ import { TransferPanel } from '../TransferPanel/TransferPanel'
 
 const MainContent = () => {
   const {
-    app: { mergedTransactions, networkID }
+    app: { mergedTransactionsToShow, networkID }
   } = useAppState()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
@@ -29,13 +29,15 @@ const MainContent = () => {
 
       <TransferPanel />
 
-      {mergedTransactions?.length > 0 && (
+      {mergedTransactionsToShow?.length > 0 && (
         <>
-          <TransactionsTable transactions={mergedTransactions?.slice(0, 5)} />
+          <TransactionsTable
+            transactions={mergedTransactionsToShow?.slice(0, 5)}
+          />
 
           <div className="h-6" />
 
-          {mergedTransactions?.length > 5 && (
+          {mergedTransactionsToShow?.length > 5 && (
             <div className="max-w-networkBox mx-auto mb-4">
               <Button
                 onClick={() => setTransactionModalOpen(true)}
