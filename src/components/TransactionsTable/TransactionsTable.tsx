@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo, useCallback } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -68,9 +68,29 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       l1NetworkDetails,
       l2NetworkDetails,
       isDepositMode,
-      currentL1BlockNumber
+      currentL1BlockNumber,
+      seqNumToAutoRedeems,
+      bridge
     }
   } = useAppState()
+
+  const showRedeemRetryableButton = useMemo(() => {
+    return tx.direction === 'deposit-l2' &&
+      tx.asset !== 'eth' &&
+      tx.seqNum &&
+      seqNumToAutoRedeems[tx.seqNum] &&
+      seqNumToAutoRedeems[tx.seqNum].status === 'failure'
+      ? true
+      : false
+  }, [seqNumToAutoRedeems, tx])
+
+  const redeemRetryable = useCallback(
+    (userTxnHash: string) => {
+      if (!bridge) return
+      return bridge.l2Bridge.arbRetryableTx.redeem(userTxnHash)
+    },
+    [bridge]
+  )
 
   const { confirmPeriodBlocks = 45818 } = l2NetworkDetails as Network
   const { blockTime = 15 } = l1NetworkDetails as Network
@@ -157,6 +177,25 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
             )}
           </div>
         )}
+
+        {showRedeemRetryableButton && (
+          <div className="relative group">
+            <button
+              disabled={isDepositMode}
+              onClick={() => redeemRetryable(tx.txId)}
+              type="submit"
+              className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
+            >
+              Re-execute
+            </button>
+            {isDepositMode && (
+              <Tooltip>
+                Must be on l2 network to execute your l2 deposit.
+              </Tooltip>
+            )}
+          </div>
+        )}
+
         {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
       </td>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
@@ -196,6 +235,7 @@ const TransactionsTable = ({
   transactions,
   overflowX = true
 }: TransactionsTableProps): JSX.Element => {
+  // const seqNumToAutoRedeems = {}
   return (
     <div>
       <div className="flex flex-col shadow-sm">
