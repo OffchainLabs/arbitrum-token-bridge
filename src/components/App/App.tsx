@@ -2,11 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
-// @ts-ignore
-import MewConnect from '@myetherwallet/mewconnect-web-client'
-import WalletConnectProvider from '@walletconnect/web3-provider'
 import { Bridge } from 'arb-ts'
-import Authereum from 'authereum'
 import * as ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
@@ -16,6 +12,7 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { ConnectionState } from 'src/util/index'
 
 import { config, useActions, useAppState } from '../../state'
+import { modalProviderOpts } from '../../util/modelProviderOpts'
 import networks, { Network } from '../../util/networks'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
@@ -30,27 +27,6 @@ import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService } from '../TermsOfService/TermsOfService'
-
-const modalProviderOpts = {
-  cacheProvider: false, // optional
-  providerOptions: {
-    mewconnect: {
-      package: MewConnect,
-      options: {
-        infuraId: process.env.REACT_APP_INFURA_KEY // required
-      }
-    },
-    walletconnect: {
-      package: WalletConnectProvider,
-      options: {
-        infuraId: process.env.REACT_APP_INFURA_KEY // required
-      }
-    },
-    authereum: {
-      package: Authereum
-    }
-  }
-}
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -75,7 +51,11 @@ const NoMetamaskIndicator = (): JSX.Element => {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img width="150" src="/images/metamask-fox.svg" alt="Metamask" />
+          <img
+            className="w-full max-w-96"
+            src="/images/impact_transparent.png"
+            alt="Wallet"
+          />
         </a>
       </div>
       <div className="flex justify-center">
@@ -253,13 +233,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       return
     }
 
-    actions.app.reset()
-
     try {
       if (!networkVersion || !library) {
         actions.app.setConnectionState(ConnectionState.NO_METAMASK)
         return
       }
+
+      actions.app.reset(`${networkVersion}`)
 
       initBridge()
     } catch (e) {

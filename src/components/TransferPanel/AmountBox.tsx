@@ -7,11 +7,13 @@ import { TokenModal } from '../TokenModal/TokenModal'
 const AmountBox = ({
   amount,
   setAmount,
-  setMaxAmount
+  setMaxAmount,
+  showMaxButton
 }: {
   amount: string
   setAmount: (amount: string) => void
   setMaxAmount: () => void
+  showMaxButton: boolean
 }): JSX.Element => {
   const {
     app: { selectedToken, networkID }
@@ -31,13 +33,15 @@ const AmountBox = ({
   return (
     <div className="flex flex-col items-start sm:items-end text-left sm:text-right bg-white rounded-md">
       <TokenModal isOpen={tokeModalOpen} setIsOpen={setTokenModalOpen} />
-      <button
-        type="button"
-        onClick={setMaxAmount}
-        className="border border-1 rounded-sm  px-2 text-xs mb-1 hover:bg-gray-200"
-      >
-        max amount
-      </button>
+      {showMaxButton && (
+        <button
+          type="button"
+          onClick={setMaxAmount}
+          className="border border-1 rounded-sm  px-2 text-xs mb-1 hover:bg-gray-200"
+        >
+          max amount
+        </button>
+      )}
       <input
         type="number"
         autoFocus

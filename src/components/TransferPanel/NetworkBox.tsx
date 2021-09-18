@@ -65,6 +65,8 @@ const NetworkBox = ({
     setAmount(balanceMinusGas)
   }
 
+  const shouldShowMaxButton = !!selectedToken && !!balance && !balance.isZero()
+
   return (
     <div
       className={`max-w-networkBox w-full mx-auto shadow-networkBox bg-white p-6 rounded-lg ${
@@ -113,6 +115,7 @@ const NetworkBox = ({
             amount={amount}
             setAmount={setAmount}
             setMaxAmount={setMaxAmount}
+            showMaxButton={shouldShowMaxButton}
           />
         )}
       </div>
