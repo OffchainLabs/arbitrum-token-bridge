@@ -25,7 +25,7 @@ interface StatusProps {
 }
 const StatusDisplay = ({text, pwLoadedState}: StatusProps) => {
   if (pwLoadedState === PendingWithdrawalsLoadedState.LOADING){
-    return <div className="row"><i>Loading {text} </i> <Spinner role="status" animation="border"></Spinner> </div>
+    return <div className="row"><i>Loading {text} (could take a few minutes) </i> <Spinner role="status" animation="border"></Spinner> </div>
 
   } else if ( pwLoadedState === PendingWithdrawalsLoadedState.ERROR){
       return <div className="row" style={{color: "darkred"}}> Fetching pending withdrawals timed out; refresh/ try again shortly </div>
