@@ -5,7 +5,8 @@ import Table from 'react-bootstrap/Table'
 import { providers } from 'ethers'
 import { OutgoingMessageState } from 'arb-ts'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
-import Spinner from 'react-bootstrap/Spinner'
+import Spinner from  'react-bootstrap/Spinner'
+import { PendingWithdrawalsLoadedState } from 'util/index'
 
 interface PendingWithdrawalsProps {
   pendingWithdrawalsMap: PendingWithdrawalsMap
@@ -13,9 +14,25 @@ interface PendingWithdrawalsProps {
   headerText: string
   triggerOutbox: (id: string) => {} | undefined
   ethProvider: providers.Provider
+  pwLoadedState: PendingWithdrawalsLoadedState
   // Header
 }
 const { formatUnits } = utils
+
+interface StatusProps {
+    text: string,
+    pwLoadedState: PendingWithdrawalsLoadedState
+}
+const StatusDisplay = ({text, pwLoadedState}: StatusProps) => {
+  if (pwLoadedState === PendingWithdrawalsLoadedState.LOADING){
+    return <div className="row"><i>Loading {text} </i> <Spinner role="status" animation="border"></Spinner> </div>
+
+  } else if ( pwLoadedState === PendingWithdrawalsLoadedState.ERROR){
+      return <div className="row" style={{color: "darkred"}}> Fetching pending withdrawals timed out; refresh/ try again shortly </div>
+  } else {
+    return null
+  }
+}
 
 const PendingWithdrawals = ({
   pendingWithdrawalsMap,
@@ -23,6 +40,7 @@ const PendingWithdrawals = ({
   headerText,
   triggerOutbox,
   ethProvider,
+  pwLoadedState
 }: PendingWithdrawalsProps) => {
   const [currentL1BlockNumber, setCurrentL1BlockNumber] = useState(0)
   const { confirmPeriodBlocks = 45818 } = useL2Network()
@@ -116,6 +134,10 @@ const PendingWithdrawals = ({
   }
   return (
     <div>
+          <StatusDisplay
+            text={headerText}
+            pwLoadedState={pwLoadedState}
+          />
       <Table className="pw-table" striped bordered>
         <thead>
           <tr>{headerText}</tr>

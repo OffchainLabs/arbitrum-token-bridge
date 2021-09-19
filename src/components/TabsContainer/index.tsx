@@ -8,6 +8,7 @@ import PanelWrapper from './PanelWrapper'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { connextTxn } from 'util/index'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
+import { PendingWithdrawalsLoadedState } from 'util/index'
 
 import {
   BridgeBalance,
@@ -43,6 +44,7 @@ type TabProps = {
   handleConnextTxn?: connextTxn
   pendingWithdrawalsMap: PendingWithdrawalsMap
   ethProvider: providers.Provider
+  pwLoadedState: PendingWithdrawalsLoadedState
 }
 
 type TabName = 'eth' | 'erc20' | 'erc721'
@@ -60,7 +62,8 @@ const TabsContainer = ({
   ethAddress,
   handleConnextTxn,
   pendingWithdrawalsMap,
-  ethProvider
+  ethProvider,
+  pwLoadedState
 }: TabProps) => {
   const [key, setKey] = useLocalStorage('currentTab', 'eth')
   const [showModal, setShowModal] = React.useState(false)
@@ -106,6 +109,7 @@ const TabsContainer = ({
                   transactions={transactions}
                   pendingWithdrawalsMap={pendingWithdrawalsMap}
                   ethProvider={ethProvider}
+                  pwLoadedState={pwLoadedState}
                 />
               </PanelWrapper>
             </Col>
@@ -174,6 +178,8 @@ const TabsContainer = ({
                     transactions={transactions}
                     pendingWithdrawalsMap={pendingWithdrawalsMap}
                     ethProvider={ethProvider}
+                    pwLoadedState={pwLoadedState}
+
                   />
                 </PanelWrapper>
               </Col>
