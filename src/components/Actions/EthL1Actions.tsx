@@ -8,6 +8,7 @@ import { utils } from 'ethers'
 import { PendingWithdrawalsMap } from 'token-bridge-sdk'
 import { providers } from 'ethers'
 import { useL1Network } from 'components/App/NetworkContext'
+import { PendingWithdrawalsLoadedState } from 'util/index'
 
 const { formatEther } = utils
 type ActionsProps = {
@@ -16,6 +17,7 @@ type ActionsProps = {
   transactions: Transaction[]
   pendingWithdrawalsMap: PendingWithdrawalsMap
   ethProvider: providers.Provider
+  pwLoadedState: PendingWithdrawalsLoadedState
 }
 
 const Actions = ({
@@ -23,7 +25,8 @@ const Actions = ({
   eth,
   transactions,
   pendingWithdrawalsMap,
-  ethProvider
+  ethProvider,
+  pwLoadedState
 }: ActionsProps) => {
   const ethChainBalance = balances ? +formatEther(balances.balance) : 0
   const l1Network = useL1Network()
@@ -67,6 +70,7 @@ const Actions = ({
         triggerOutbox={eth.triggerOutbox}
         pendingWithdrawalsMap={pendingWithdrawalsMap}
         ethProvider={ethProvider}
+        pwLoadedState={pwLoadedState}
       />
 
       {/* {pendingEthBalance ? <label ><i>pending balance: {pendingEthBalance}</i></label> : null} */}

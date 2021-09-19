@@ -166,6 +166,7 @@ const App = ({ bridge }: AppProps) => {
             ethAddress={walletAddress}
             pendingWithdrawalsMap={pendingWithdrawalsMap}
             ethProvider={ethProvider}
+            pwLoadedState={pwLoadedState}
           />
         </div>
       </div>
