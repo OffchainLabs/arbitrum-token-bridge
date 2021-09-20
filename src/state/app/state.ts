@@ -58,7 +58,6 @@ export type AppState = {
   isDepositMode: boolean
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
-  pendingTransactionsUpdated: boolean
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
@@ -96,7 +95,6 @@ export const defaultState: AppState = {
   pendingTransactions: derived((s: AppState) => {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')
   }),
-  pendingTransactionsUpdated: false,
   depositsTransformed: derived((s: AppState) => {
     const deposits: MergedTransaction[] = s.sortedTransactions.map(tx => {
       return {
