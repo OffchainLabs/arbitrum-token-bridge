@@ -68,13 +68,7 @@ export const useArbTokenBridge = (
     ContractStorage<ERC721Balance>
   >({})
 
-  const defaultTokenList: string[] = [
-    // kovan addresses:
-    // '0xf36d7a74996e7def7a6bd52b4c2fe64019dada25', // ARBI
-    // '0xe41d965f6e7541139f8d9f331176867fb6972baf' // ARB
-    // '0x57Ca11067892510E022D65b0483b31Cd49155389', // ATKN
-    // '0xEe83ea3c089C36622EFc6Bf438114b62d5B4C162' // USDC
-  ]
+  const defaultTokenList: string[] = []
 
   const tokenBlackList: string[] = []
   const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
@@ -236,7 +230,7 @@ export const useArbTokenBridge = (
 
     const receipt = await tx.wait()
     updateTransaction(receipt, tx)
-    updateBridgeTokens()
+    updateTokenData(erc20L1Address)
   }
 
   const depositToken = async (erc20Address: string, amount: string) => {
@@ -266,10 +260,8 @@ export const useArbTokenBridge = (
       )
       if (!seqNums) return
       const seqNum = seqNums[0].toNumber()
-      updateTokenBalances()
-
       updateTransaction(receipt, tx, seqNum)
-
+      updateTokenData(erc20Address)
       return receipt
     } catch (err) {
       console.warn('deposit token failure', err)
@@ -298,7 +290,6 @@ export const useArbTokenBridge = (
     try {
       const receipt = await tx.wait()
       updateTransaction(receipt, tx)
-      updateTokenBalances()
 
       const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
         receipt
@@ -324,7 +315,7 @@ export const useArbTokenBridge = (
           [id]: l2ToL2EventDataResultPlus
         })
       }
-
+      updateTokenData(erc20l1Address)
       return receipt
     } catch (err) {
       console.warn('withdraw token err', err)
@@ -359,7 +350,7 @@ export const useArbTokenBridge = (
     [bridgeTokens]
   )
 
-  const addTokenV2 = useCallback(
+  const addToken = useCallback(
     async (erc20L1orL2Address: string) => {
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -402,44 +393,6 @@ export const useArbTokenBridge = (
     [ERC20Cache, setERC20Cache, bridgeTokens]
   )
 
-  const addToken = useCallback(
-    async (erc20L1orL2Address: string, type: TokenType = TokenType.ERC20) => {
-      const l1Address = erc20L1orL2Address
-      const lCaseToken = l1Address.toLocaleLowerCase()
-      if (tokenBlackList.includes(lCaseToken)) {
-        // todo: error report to UI
-        return ''
-      }
-      try {
-        // try to save l1 and (maybe) l2 data to bridge state
-        await bridge.getAndUpdateL1TokenData(erc20L1orL2Address)
-        const l2TokenData = await bridge.getAndUpdateL2TokenData(
-          erc20L1orL2Address
-        )
-        if (!l2TokenData) {
-          console.log('Token is on L1 but not L2 (which is fine)')
-        }
-      } catch (err) {
-        console.log(`Not an L1 Token address, maybe it's an l2 address?`)
-        // check if erc20L1orL2Address was an L2 address of a registered token
-        const l1Address = await bridge.l2Bridge.getERC20L1Address(
-          erc20L1orL2Address
-        )
-        if (!l1Address) {
-          console.warn('token is on L2 but is not registred to the gateway')
-          return ''
-        }
-        // save l1 and l2 data to bridge state
-        await bridge.getAndUpdateL1TokenData(l1Address)
-        await bridge.getAndUpdateL2TokenData(l1Address)
-      }
-      updateBridgeTokens()
-      setERC20Cache([...ERC20Cache, lCaseToken])
-      return l1Address
-    },
-    [ERC20Cache, setERC20Cache]
-  )
-
   const expireCache = (): void => {
     clearERC20Cache()
     clearERC721Cache()
@@ -452,7 +405,7 @@ export const useArbTokenBridge = (
     if (autoLoadCache) {
       Promise.all(
         tokensToAdd.map(address => {
-          return addToken(address, TokenType.ERC20).catch(err => {
+          return addToken(address).catch(err => {
             console.warn(`invalid cache entry erc20 ${address}`)
             console.warn(err)
           })
@@ -495,24 +448,6 @@ export const useArbTokenBridge = (
     [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens]
   )
 
-  const updateTokenBalances = async () => {
-    const { l1Tokens, l2Tokens } = await bridge.updateAllTokens()
-    const erc20TokenBalances: ContractStorage<BridgeBalance> = {}
-    for (const address of Object.keys(l1Tokens)) {
-      const l1TokenData = l1Tokens[address] as L1TokenData
-      const l2TokenData = l2Tokens[address]
-      const balance = l1TokenData.ERC20 ? l1TokenData.ERC20.balance : Zero
-      const arbChainBalance =
-        l2TokenData && l2TokenData.ERC20 ? l2TokenData.ERC20.balance : Zero
-      erc20TokenBalances[address] = { balance, arbChainBalance }
-    }
-    setErc20Balances(erc20TokenBalances)
-  }
-
-  const updateAllBalances = () => {
-    updateEthBalances()
-    updateTokenBalances()
-  }
 
   const triggerOutboxToken = useCallback(
     async (id: string) => {
@@ -604,34 +539,6 @@ export const useArbTokenBridge = (
     [pendingWithdrawalsMap]
   )
 
-  const updateBridgeTokens = useCallback(async () => {
-    const bridgeTokens: ContractStorage<BridgeToken> = {}
-
-    const { l1Tokens } = bridge
-    const { l2Tokens } = bridge.l2Bridge
-    for (const address of Object.keys(l1Tokens)) {
-      const l1TokenData = await bridge.getAndUpdateL1TokenData(address)
-      const l2TokenData = l2Tokens[address]
-      const l2Address =
-        l2TokenData && l2TokenData.ERC20 && l2TokenData.ERC20.contract.address
-
-      if (l1TokenData.ERC20) {
-        const { symbol, allowed, decimals, name } = l1TokenData.ERC20
-        const bridgeToken: ERC20BridgeToken = {
-          type: TokenType.ERC20,
-          name: name,
-          symbol,
-          allowed,
-          decimals,
-          address,
-          l2Address
-        }
-        bridgeTokens[address] = bridgeToken
-      }
-    }
-    setBridgeTokens(bridgeTokens)
-    return bridgeTokens
-  }, [bridge])
 
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
@@ -873,8 +780,7 @@ export const useArbTokenBridge = (
     balances: {
       eth: ethBalances,
       erc20: erc20Balances,
-      erc721: erc721Balances,
-      update: updateAllBalances
+      erc721: erc721Balances
     },
     cache: {
       erc20: ERC20Cache,
@@ -889,14 +795,12 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
-      addTokenV2: addTokenV2,
       addTokensStatic,
       updateTokenData,
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,
-      triggerOutbox: triggerOutboxToken,
-      updateBalances: updateTokenBalances
+      triggerOutbox: triggerOutboxToken
     },
     arbSigner: bridge.l2Bridge.l2Signer,
     transactions: {
