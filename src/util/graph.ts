@@ -27,6 +27,18 @@ const apolloL2RinkebyClient = new ApolloClient({
   cache: new InMemoryCache()
 })
 
+const apolloL2GatewaysRinkebyClient = new ApolloClient({
+  uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-rinkeby',
+  cache: new InMemoryCache()
+})
+
+
+const apolloL2GatewaysClient = new ApolloClient({
+  uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway',
+  cache: new InMemoryCache()
+})
+
+
 const networkIDAndLayerToClient = (networkID: string, layer: 1 | 2) => {
   switch (networkID) {
     case '1':
@@ -120,4 +132,49 @@ export const messageHasExecuted = async (
     }`
   })
   return res.data.length > 0
+}
+
+export const getTokenWithdrawals = async (sender:string, fromBlock: number, l1NetworkID: string)=>{
+  const client = ((l1NetworkID: string)=>{
+    switch (l1NetworkID) {
+      case '1':
+        return apolloL2GatewaysClient
+      case '4':
+        return apolloL2GatewaysRinkebyClient
+      default:
+        throw new Error('Unsupported network')
+      }
+
+  })(l1NetworkID)
+
+  const res = await client.query({
+    query: gql`{
+      withdrawals(
+        where: { l2BlockNum_gt: ${fromBlock}, from:"${sender}"}
+        orderBy: l2BlockNum
+        orderDirection: desc
+      ) {
+        id
+        l2BlockNum
+        from
+        to
+        amount
+        exitNum
+        exitInfo {
+          token {
+            id
+          }
+          gateway {
+            id
+          }
+        }
+      }
+    }
+    `
+  })
+    return res.data.withdrawals
+
+
+
+
 }
