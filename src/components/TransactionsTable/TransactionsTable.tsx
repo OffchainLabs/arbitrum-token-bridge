@@ -236,7 +236,6 @@ const TransactionsTable = ({
   transactions,
   overflowX = true
 }: TransactionsTableProps): JSX.Element => {
-  // const seqNumToAutoRedeems = {}
   return (
     <div>
       <div className="flex flex-col shadow-sm">
