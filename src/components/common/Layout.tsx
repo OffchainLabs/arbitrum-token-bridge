@@ -6,11 +6,12 @@ import { useAppState } from 'src/state'
 
 const Layout: React.FC = ({ children }) => {
   const {
-    app: { networkID }
+    app: { l1NetworkDetails }
   } = useAppState()
 
   const headerText = useMemo(() => {
-    switch (networkID) {
+    const l1NetworkId = l1NetworkDetails && l1NetworkDetails.chainID
+    switch (l1NetworkId) {
       case null:
         return null
       case '1':
@@ -20,7 +21,7 @@ const Layout: React.FC = ({ children }) => {
       default:
         return 'Arbitrum Bridge'
     }
-  }, [networkID])
+  }, [l1NetworkDetails])
   return (
     <div className="flex flex-col min-h-screen">
       <div className="bg-gray-800 overflow-hidden">
