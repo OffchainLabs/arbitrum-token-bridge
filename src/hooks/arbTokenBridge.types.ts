@@ -93,7 +93,6 @@ export interface ArbTokenBridgeBalances {
   eth: BridgeBalance
   erc20: ContractStorage<BridgeBalance>
   erc721: ContractStorage<ERC721Balance>
-  update: () => void
 }
 
 export interface ArbTokenBridgeEth {
@@ -110,8 +109,7 @@ export interface ArbTokenBridgeCache {
 }
 
 export interface ArbTokenBridgeToken {
-  add: (erc20L1orL2Address: string, type: TokenType) => Promise<string>
-  addTokenV2: (erc20L1orL2Address: string) => Promise<string>
+  add: (erc20L1orL2Address: string) => Promise<string>
   addTokensStatic: (tokenList: TokenList) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
@@ -124,7 +122,6 @@ export interface ArbTokenBridgeToken {
     amount: string
   ) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
-  updateBalances: () => Promise<void>
 }
 
 export interface TransactionActions {
@@ -134,11 +131,13 @@ export interface TransactionActions {
   removeTransaction: (txID: string) => void
 
   addTransaction: (transaction: NewTransaction) => void
+  addTransactions: (transactions: Transaction[]) => void
   clearPendingTransactions: () => void
   setTransactionConfirmed: (txID: string) => void
   updateTransaction: (
     txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction
+    tx?: ethers.ContractTransaction,
+    seqNum?: number
   ) => void
 }
 
@@ -150,6 +149,7 @@ export type ArbTokenBridgeTransactions = {
   | 'clearPendingTransactions'
   | 'setTransactionConfirmed'
   | 'updateTransaction'
+  | 'addTransactions'
 >
 
 export interface ArbTokenBridge {

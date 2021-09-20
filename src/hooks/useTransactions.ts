@@ -5,7 +5,7 @@ import { ethers } from 'ethers'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
-  | { type: 'SET_SUCCESS'; txID: string }
+  | { type: 'SET_SUCCESS'; txID: string; seqNum?: number }
   | { type: 'SET_FAILURE'; txID: string }
   | { type: 'SET_INITIAL_TRANSACTIONS'; transactions: Transaction[] }
   | { type: 'CLEAR_PENDING' }
@@ -13,6 +13,7 @@ type Action =
   | { type: 'REMOVE_TRANSACTION'; txID: string }
   | { type: 'SET_BLOCK_NUMBER'; txID: string; blockNumber?: number }
   | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
+  | { type: 'ADD_TRANSACTIONS'; transactions: Transaction[] }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -31,6 +32,7 @@ export type TxnType =
   | 'connext-deposit'
   | 'connext-withdraw'
   | 'deposit-l2-auto-redeem'
+  | 'deposit-l2-ticket-created'
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
@@ -44,6 +46,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
     case 'withdraw':
     case 'connext-withdraw':
     case 'deposit-l2-auto-redeem':
+    case 'deposit-l2-ticket-created':
       return 2
   }
 }
@@ -59,6 +62,7 @@ type TransactionBase = {
   l1NetworkID: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
+  seqNum?: number // for l1-initiati
 }
 
 export interface Transaction extends TransactionBase {
@@ -73,17 +77,26 @@ export interface FailedTransaction extends TransactionBase {
   status: 'failure'
 }
 
-function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
+function updateStatusAndSeqNum(
+  state: Transaction[],
+  status: TxnStatus,
+  txID: string,
+  seqNum?: number
+) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
   if (index === -1) {
     console.warn('transaction not found', txID)
     return state
   }
-  newState[index] = {
+  const newTxn = {
     ...newState[index],
     status
   }
+  if (seqNum) {
+    newTxn.seqNum = seqNum
+  }
+  newState[index] = newTxn
   return newState
 }
 
@@ -127,6 +140,21 @@ function reducer(state: Transaction[], action: Action) {
     case 'SET_INITIAL_TRANSACTIONS': {
       return [...action.transactions]
     }
+    case 'ADD_TRANSACTIONS': {
+      // sanity / safety check: ensure no duplicates:
+      const currentTxIds = new Set(state.map(tx => tx.txID))
+      const txsToAdd = action.transactions.filter(tx => {
+        if (!currentTxIds.has(tx.txID)) {
+          return true
+        } else {
+          console.warn(
+            `Warning: trying to add ${tx.txID} which is already included`
+          )
+          return false
+        }
+      })
+      return state.concat(txsToAdd)
+    }
     case 'ADD_TRANSACTION': {
       return state.concat(action.transaction)
     }
@@ -134,16 +162,16 @@ function reducer(state: Transaction[], action: Action) {
       return state.filter(txn => txn.txID !== action.txID)
     }
     case 'SET_SUCCESS': {
-      return updateStatus(state, 'success', action.txID)
+      return updateStatusAndSeqNum(state, 'success', action.txID)
     }
     case 'SET_FAILURE': {
-      return updateStatus(state, 'failure', action.txID)
+      return updateStatusAndSeqNum(state, 'failure', action.txID)
     }
     case 'CLEAR_PENDING': {
       return state.filter(txn => txn.status !== 'pending')
     }
     case 'CONFIRM_TRANSACTION': {
-      return updateStatus(state, 'confirmed', action.txID)
+      return updateStatusAndSeqNum(state, 'confirmed', action.txID)
     }
     case 'SET_BLOCK_NUMBER': {
       return updateBlockNumber(state, action.txID, action.blockNumber)
@@ -187,6 +215,18 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       transaction: tx
     })
   }
+  const addTransactions = (transactions: Transaction[]) => {
+    const timestampedTransactoins = transactions.map(txn => {
+      return {
+        ...txn,
+        timestampCreated: new Date().toISOString()
+      }
+    })
+    return dispatch({
+      type: 'ADD_TRANSACTIONS',
+      transactions: timestampedTransactoins
+    })
+  }
   const addFailedTransaction = (transaction: FailedTransaction) => {
     if (!transaction.txID) {
       console.warn(' Cannot add transaction: TxID not included (???)')
@@ -206,10 +246,11 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const setTransactionSuccess = (txID: string) => {
+  const setTransactionSuccess = (txID: string, seqNum?: number) => {
     return dispatch({
       type: 'SET_SUCCESS',
-      txID: txID
+      txID: txID,
+      seqNum: seqNum
     })
   }
   const setTransactionBlock = (txID: string, blockNumber?: number) => {
@@ -251,7 +292,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const updateTransaction = (
     txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction
+    tx?: ethers.ContractTransaction,
+    seqNum?: number
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
@@ -264,7 +306,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         break
       }
       case 1: {
-        setTransactionSuccess(txReceipt.transactionHash)
+        setTransactionSuccess(txReceipt.transactionHash, seqNum)
         break
       }
       default:
@@ -280,14 +322,11 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
-  const checkAndUpdatePendingTransactions = useCallback(() => {
-    const pendingTransactions = 1
-  }, [state])
-
   return [
     state,
     {
       addTransaction,
+      addTransactions,
       setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,
