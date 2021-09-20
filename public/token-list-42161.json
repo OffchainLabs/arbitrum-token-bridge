@@ -1,9 +1,9 @@
 {
     "name": "Arbitrum One",
-    "timestamp": "2021-09-18T16:15:56.873Z",
+    "timestamp": "2021-09-20T23:45:54.543Z",
     "version": {
         "major": 1,
-        "minor": 7,
+        "minor": 8,
         "patch": 3
     },
     "tokens": [{
@@ -36,6 +36,16 @@
         "decimals": 18,
         "extensions": {
             "l1Address": "0x0000A1c00009A619684135B824Ba02f7FbF3A572",
+            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+    }, {
+        "chainId": 42161,
+        "address": "0x3abccA0b837ce28A4b2447aDD3ca7EE69Df0ef24",
+        "name": "Amy Finance Token",
+        "symbol": "AMY",
+        "decimals": 18,
+        "extensions": {
+            "l1Address": "0x282dB609e787A132391Eb64820ba6129FceB2695",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
@@ -212,6 +222,16 @@
         "extensions": {
             "l1Address": "0x431ad2ff6a9C365805eBaD47Ee021148d6f7DBe0",
             "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+        }
+    }, {
+        "chainId": 42161,
+        "address": "0x1D54Aa7E322e02A0453c0F2fA21505cE7F2E9E93",
+        "name": "DFYN Token",
+        "symbol": "DFYN",
+        "decimals": 18,
+        "extensions": {
+            "l1Address": "0x9695e0114e12C0d3A3636fAb5A18e6b737529023",
+            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
         "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xca1207647Ff814039530D7d35df0e1Dd2e91Fa84/logo.png",
@@ -460,6 +480,16 @@
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
+        "chainId": 42161,
+        "address": "0xd67D9F7E018B4e7613b0251BBe3Ba3988Baf7C16",
+        "name": "New era",
+        "symbol": "NEC",
+        "decimals": 18,
+        "extensions": {
+            "l1Address": "0x1353a77abD236207D0588bCbBb52Bc3087f85351",
+            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+    }, {
         "logoURI": "https://zapper.fi/images/OCTO-icon.png",
         "chainId": 42161,
         "address": "0x52f5d9B3a2bB89D3aEC5829A3415c21115aCD633",
@@ -493,6 +523,17 @@
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
+        "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x429881672B9AE42b8EbA0E26cD9C73711b891Ca5/logo.png",
+        "chainId": 42161,
+        "address": "0x965772e0E9c84b6f359c8597C891108DcF1c5B1A",
+        "name": "PickleToken",
+        "symbol": "PICKLE",
+        "decimals": 18,
+        "extensions": {
+            "l1Address": "0x429881672B9AE42b8EbA0E26cD9C73711b891Ca5",
+            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+    }, {
         "chainId": 42161,
         "address": "0x3642c0680329ae3e103E2B5AB29DDfed4d43CBE5",
         "name": "Plenny",
@@ -522,6 +563,17 @@
         "decimals": 18,
         "extensions": {
             "l1Address": "0xD291E7a03283640FDc51b121aC401383A46cC623",
+            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+    }, {
+        "logoURI": "https://zapper.fi/images/ROUTE-icon.png",
+        "chainId": 42161,
+        "address": "0x5298060A95205BE6Dd4aBc21910A4bB23D6DCD8b",
+        "name": "Route",
+        "symbol": "ROUTE",
+        "decimals": 18,
+        "extensions": {
+            "l1Address": "0x16ECCfDbb4eE1A85A33f3A9B21175Cd7Ae753dB4",
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
