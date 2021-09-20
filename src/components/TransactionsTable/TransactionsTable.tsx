@@ -34,7 +34,7 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         .add(
           tx.direction === 'deposit-l1'
             ? Math.max(3 * 60 - diffInSeconds + 2, 0)
-            : Math.max(5 * 60 - diffInSeconds + 2, 0),
+            : Math.max(12 * 60 - diffInSeconds + 2, 0),
           'seconds'
         )
         .toDate()}
