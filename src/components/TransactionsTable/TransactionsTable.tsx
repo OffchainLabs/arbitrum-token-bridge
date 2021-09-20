@@ -28,13 +28,14 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const now = dayjs()
   const whenCreated = dayjs(tx?.createdAt)
   const diffInSeconds = now.diff(whenCreated, 'seconds')
+
   return (
     <Countdown
       date={now
         .add(
-          tx.direction === 'deposit-l1'
-            ? Math.max(3 * 60 - diffInSeconds + 2, 0)
-            : Math.max(12 * 60 - diffInSeconds + 2, 0),
+          tx.direction === 'deposit-l2'
+            ? Math.max(10 * 60 - diffInSeconds + 2, 0)
+            : Math.max(3 * 60 - diffInSeconds + 2, 0),
           'seconds'
         )
         .toDate()}

@@ -9,14 +9,21 @@ import { BridgeContext } from '../App/App'
 const BalanceUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, selectedToken }
   } = useAppState()
   const latestTokenBridge = useLatest(arbTokenBridge)
   const latestBridge = useLatest(bridge)
 
   useEffect(() => {
-    latestTokenBridge?.current?.balances?.update()
-  }, [bridge])
+    const interval = setInterval(() => {
+      if (latestBridge.current && selectedToken) {
+        latestTokenBridge?.current?.token?.updateTokenData(
+          selectedToken.address
+        )
+      }
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [latestBridge, selectedToken])
 
   useEffect(() => {
     if (latestBridge.current) {
