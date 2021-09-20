@@ -25,7 +25,7 @@ const PendingTransactionsUpdater = (): JSX.Element => {
 
   // eslint-disable-next-line consistent-return
   const checkAndUpdatePendingTransactions = useCallback(() => {
-    if (!arbTokenBridgeLoaded) return    
+    if (!arbTokenBridgeLoaded) return
     const pendingTransactions = actions.app.getPendingTransactions()
     if (pendingTransactions.length) {
       console.info(
