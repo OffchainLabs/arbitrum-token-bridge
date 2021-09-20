@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react'
 
+import { useAppState } from 'src/state'
+
 import Footer from './Footer'
 import { Header } from './Header'
-import { useAppState } from 'src/state'
 
 const Layout: React.FC = ({ children }) => {
   const {
