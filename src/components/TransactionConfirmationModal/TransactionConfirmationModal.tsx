@@ -78,18 +78,21 @@ export default function TransactionConfirmationModal({
                       {isDepositing ? (
                         <>
                           You are about to deposit {symbol} from L1 into
-                          Arbitrum!  <br/>  <br/>  It will take <b>10 minutes </b> for you to see your
-                          balance credited on L2. Moving your funds back to L1
-                          Ethereum (if you later wish to do so) takes ~1 week.  <br/>  <br/> 
+                          Arbitrum! <br /> <br /> It will take{' '}
+                          <b>10 minutes </b> for you to see your balance
+                          credited on L2. Moving your funds back to L1 Ethereum
+                          (if you later wish to do so) takes ~1 week. <br />{' '}
+                          <br />
                           Would you like to proceed?
                         </>
                       ) : (
                         <>
                           You are about to initiate a {symbol} withdrawal from
-                          Arbitrum to Ethereum! <br/>  <br/> Once initiated, you will have to
-                          <b> wait 1 week</b>, after which you will be able to claim
-                          your funds on L1 for roughly 200k gas.<br/>  <br/>  Would you like
-                          to proceed?
+                          Arbitrum to Ethereum! <br /> <br /> Once initiated,
+                          you will have to
+                          <b> wait 1 week</b>, after which you will be able to
+                          claim your funds on L1 for roughly 200k gas.
+                          <br /> <br /> Would you like to proceed?
                         </>
                       )}
                     </p>
