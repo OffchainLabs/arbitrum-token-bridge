@@ -448,7 +448,6 @@ export const useArbTokenBridge = (
     [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens]
   )
 
-
   const triggerOutboxToken = useCallback(
     async (id: string) => {
       if (!pendingWithdrawalsMap[id])
@@ -538,7 +537,6 @@ export const useArbTokenBridge = (
     },
     [pendingWithdrawalsMap]
   )
-
 
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
