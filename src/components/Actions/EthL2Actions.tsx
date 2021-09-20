@@ -19,7 +19,7 @@ const Actions = ({
   eth,
   ethAddress,
 }: ActionsProps) => {
-  const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
+  const arbChainBalance = balances && balances.arbChainBalance ? +formatEther(balances.arbChainBalance) : 0
   const isDepositMode = useIsDepositMode()
   
   return (

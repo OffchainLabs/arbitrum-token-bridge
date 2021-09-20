@@ -38,12 +38,8 @@ const Actions = ({
   const dialogSymbolReadout = currentContract && currentContract.symbol || "tokens"
   const decimals = (currentContract && currentContract.decimals) || 18
 
-  const ethChainBalance = balances
-    ? +formatUnits(balances.balance, decimals)
-    : 0
-  const arbChainBalance = balances
-    ? +formatUnits(balances.arbChainBalance, decimals)
-    : 0
+  const ethChainBalance = balances && balances.balance ? +formatUnits(balances.balance, decimals): 0
+  const arbChainBalance = balances && balances.arbChainBalance ? +formatUnits(balances.arbChainBalance, decimals)  : 0
   const isDepositMode = useIsDepositMode()
 
   const pendingTokenBalance = useMemo(() => {

@@ -19,10 +19,10 @@ const Balance = ({ balances, assetName }: BalanceProps) => {
         <h3>{assetName} Info</h3>
       </div>
       <div className="row">
-        User {assetName} Balance on Ethereum: {formatEther(balance)}
+        User {assetName} Balance on Ethereum: { (balance && formatEther(balance)) || 0}
       </div>
       <div className="row">
-        User {assetName} balance on ArbChain: {formatEther(arbChainBalance)}
+        User {assetName} balance on ArbChain: { (arbChainBalance && formatEther(arbChainBalance)) || 0}
       </div>
       <div className="row">User Lockbox Balance:</div>
     </div>

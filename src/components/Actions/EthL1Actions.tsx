@@ -28,7 +28,7 @@ const Actions = ({
   ethProvider,
   pwLoadedState
 }: ActionsProps) => {
-  const ethChainBalance = balances ? +formatEther(balances.balance) : 0
+  const ethChainBalance = balances && balances.balance ? +formatEther(balances.balance) : 0
   const l1Network = useL1Network()
 
   const pendingEthBalance = useMemo(() => {

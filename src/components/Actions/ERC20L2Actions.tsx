@@ -27,7 +27,7 @@ const Actions = ({
   const decimals = (currentContract && currentContract.decimals) || 18
   const symbol = (currentContract && currentContract.symbol) || "token"
 
-  const arbChainBalance = balances
+  const arbChainBalance = balances && balances.arbChainBalance
     ? +formatUnits(balances.arbChainBalance, decimals)
     : 0
   const isDepositMode = useIsDepositMode()
