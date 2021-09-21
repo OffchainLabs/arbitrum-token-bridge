@@ -135,10 +135,10 @@ export const messageHasExecuted = async (
 }
 
 interface GetTokenWithdrawalsResult {
-  l2ToL1Event: L2ToL1EventResult,
+  l2ToL1Event: L2ToL1EventResult
   otherData: {
-    value: BigNumber,
-    tokenAddress: string,
+    value: BigNumber
+    tokenAddress: string
     type: AssetType
   }
 }
@@ -148,7 +148,7 @@ export const getTokenWithdrawals = async (
   fromBlock: number,
   toBlock: number,
   l1NetworkID: string
-) :Promise<GetTokenWithdrawalsResult[]>=> {
+): Promise<GetTokenWithdrawalsResult[]> => {
   const client = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':
@@ -189,29 +189,44 @@ export const getTokenWithdrawals = async (
     }
     `
   })
-  return res.data.withdrawals.map((eventData:any)=>{
-    const { amount:value, exitInfo: {token:{id: tokenAddress}}, l2ToL1Event: {id, caller, destination, batchNumber,indexInBatch,arbBlockNum, ethBlockNum, timestamp,callvalue,data}
-  } = eventData
-  const l2ToL1Event = {
-    destination,
-    timestamp,
-    data,
-    caller,
-    uniqueId: BigNumber.from(id),
-    batchNumber: BigNumber.from(batchNumber),
-    indexInBatch: BigNumber.from(indexInBatch),
-    arbBlockNum: BigNumber.from(arbBlockNum),
-    ethBlockNum: BigNumber.from(ethBlockNum),
-    callvalue: BigNumber.from(callvalue)
-  } as L2ToL1EventResult
-    return{
+  return res.data.withdrawals.map((eventData: any) => {
+    const {
+      amount: value,
+      exitInfo: {
+        token: { id: tokenAddress }
+      },
+      l2ToL1Event: {
+        id,
+        caller,
+        destination,
+        batchNumber,
+        indexInBatch,
+        arbBlockNum,
+        ethBlockNum,
+        timestamp,
+        callvalue,
+        data
+      }
+    } = eventData
+    const l2ToL1Event = {
+      destination,
+      timestamp,
+      data,
+      caller,
+      uniqueId: BigNumber.from(id),
+      batchNumber: BigNumber.from(batchNumber),
+      indexInBatch: BigNumber.from(indexInBatch),
+      arbBlockNum: BigNumber.from(arbBlockNum),
+      ethBlockNum: BigNumber.from(ethBlockNum),
+      callvalue: BigNumber.from(callvalue)
+    } as L2ToL1EventResult
+    return {
       l2ToL1Event,
-    otherData:{
-      value: BigNumber.from(value),
-      tokenAddress,
-      type: AssetType.ERC20
-    }
-
+      otherData: {
+        value: BigNumber.from(value),
+        tokenAddress,
+        type: AssetType.ERC20
+      }
     }
   })
 }

@@ -801,7 +801,8 @@ export const useArbTokenBridge = (
     const networkID = await l1NetworkIDCached()
     const address = await walletAddressCached()
     const currentBlockNum = await bridge.l2Provider.getBlockNumber()
-    const startBlock = (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    const startBlock =
+      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
     const pivotBlock = currentBlockNum - 20
 
     const oldEthWithdrawalEventData = await getETHWithdrawals(
@@ -809,10 +810,14 @@ export const useArbTokenBridge = (
       startBlock,
       pivotBlock,
       networkID
-      )
-      const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, { fromBlock:pivotBlock})
-      const ethWithdrawalEventData= oldEthWithdrawalEventData.concat(recentETHWithdrawalData)
-      const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
+    )
+    const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, {
+      fromBlock: pivotBlock
+    })
+    const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
+      recentETHWithdrawalData
+    )
+    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
 
     const ethWithdrawalData: L2ToL1EventResultPlus[] = []
     for (const eventData of ethWithdrawalEventData) {
@@ -864,18 +869,24 @@ export const useArbTokenBridge = (
 
     const currentBlockNum = await bridge.l2Provider.getBlockNumber()
 
-    const startBlock = (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    const startBlock =
+      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
     const pivotBlock = currentBlockNum - 20
 
-    const results = await getTokenWithdrawalsGraph(address, startBlock, pivotBlock, l1NetworkID);
+    const results = await getTokenWithdrawalsGraph(
+      address,
+      startBlock,
+      pivotBlock,
+      l1NetworkID
+    )
 
     const symbols = await Promise.all(
-      results.map((resultData) =>
+      results.map(resultData =>
         getTokenSymbol(resultData.otherData.tokenAddress)
       )
     )
     const decimals = await Promise.all(
-      results.map((resultData) =>
+      results.map(resultData =>
         getTokenDecimals(resultData.otherData.tokenAddress)
       )
     )
@@ -886,8 +897,9 @@ export const useArbTokenBridge = (
         return getOutGoingMessageState(batchNumber, indexInBatch)
       })
     )
-    const oldTokenWithdrawals = results.map((resultsData, i)=>{
-      const {  caller,
+    const oldTokenWithdrawals = results.map((resultsData, i) => {
+      const {
+        caller,
         destination,
         uniqueId,
         batchNumber,
@@ -896,9 +908,10 @@ export const useArbTokenBridge = (
         ethBlockNum,
         timestamp,
         callvalue,
-        data } = resultsData.l2ToL1Event
+        data
+      } = resultsData.l2ToL1Event
       const { value, tokenAddress, type } = resultsData.otherData
-      const eventDataPlus:L2ToL1EventResultPlus =  {
+      const eventDataPlus: L2ToL1EventResultPlus = {
         caller,
         destination,
         uniqueId,
@@ -919,11 +932,10 @@ export const useArbTokenBridge = (
       return eventDataPlus
     })
 
-
-    const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {fromBlock:pivotBlock , toBlock:currentBlockNum})
-
-
-
+    const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {
+      fromBlock: pivotBlock,
+      toBlock: currentBlockNum
+    })
 
     const t = new Date().getTime()
 
