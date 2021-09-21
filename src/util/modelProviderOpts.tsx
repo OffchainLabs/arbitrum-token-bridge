@@ -17,7 +17,7 @@ export const modalProviderOpts = {
       options: {
         infuraId: process.env.REACT_APP_INFURA_KEY // required
       }
-    },
+    }
     // authereum: {
     //   package: Authereum
     // }
