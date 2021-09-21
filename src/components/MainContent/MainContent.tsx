@@ -22,7 +22,8 @@ const MainContent = () => {
         <div className="mb-4 mx-auto max-w-networkBox w-full">
           <Alert type="blue">
             NOTICE: You're using Arbitrum mainnet, still in beta phase. Be
-            careful!
+            careful! <a  target="_blank" href="https://offchain.medium.com/mainnet-for-everyone-27ce0f67c85e"><u>(more info)</u></a>
+            
           </Alert>
         </div>
       )}
