@@ -13,13 +13,15 @@ const AmountBox = ({
 }): JSX.Element => {
   return (
     <div className="flex flex-col items-center text-center bg-white rounded-md">
-      <button
-        type="button"
-        onClick={setMaxAmount}
-        className="border border-1 rounded-sm  px-2 text-xs mb-1 hover:bg-gray-200"
-      >
-        max amount
-      </button>
+      {showMaxButton && (
+        <button
+          type="button"
+          onClick={setMaxAmount}
+          className="border border-1 rounded-sm  px-2 text-xs mb-1 hover:bg-gray-200"
+        >
+          max amount
+        </button>
+      )}
       <input
         type="number"
         autoFocus
