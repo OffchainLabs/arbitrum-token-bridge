@@ -36,7 +36,7 @@ function ExplorerMenu() {
             <Menu.Item>
               {({ active }) => (
                 <a
-                  href="https://explorer.arbitrum.io/"
+                  href="https://arbiscan.io/"
                   target="_blank"
                   className={classNames(
                     active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
