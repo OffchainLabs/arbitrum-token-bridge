@@ -104,15 +104,12 @@ const NetworkBox = ({
         <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row">
           <div className="flex flex-col">
             <p className="text-sm leading-5 font-medium text-gray-700 mb-1">
-              Layer {isL1 ? '1' : '2'}{' '}
-              <span>
-                ({canIEnterAmount && balanceMemo}
-                {!isMainnet && 'testnet'})
-              </span>
+              Layer {isL1 ? '1' : '2'}
+              {' Balance: '}
+              <span>{canIEnterAmount && balanceMemo}</span>
             </p>
             {!canIEnterAmount && (
               <div className="flex items-center text-lg leading-8 font-semibold text-gray-700 mb-1">
-                <span className="mr-1">Balance: </span>
                 {balanceMemo}
               </div>
             )}
