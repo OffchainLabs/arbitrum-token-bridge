@@ -29,7 +29,8 @@ import {
 import {
   getLatestOutboxEntryIndex,
   messageHasExecuted,
-  getETHWithdrawals
+  getETHWithdrawals,
+  getTokenWithdrawals as getTokenWithdrawalsGraph
 } from '../util/graph'
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -799,8 +800,19 @@ export const useArbTokenBridge = (
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
     const networkID = await l1NetworkIDCached()
     const address = await walletAddressCached()
-    const ethWithdrawalEventData = await getETHWithdrawals(address, networkID)
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
+    const currentBlockNum = await bridge.l2Provider.getBlockNumber()
+    const startBlock = (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    const pivotBlock = currentBlockNum - 20
+
+    const oldEthWithdrawalEventData = await getETHWithdrawals(
+      address,
+      startBlock,
+      pivotBlock,
+      networkID
+      )
+      const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, { fromBlock:pivotBlock})
+      const ethWithdrawalEventData= oldEthWithdrawalEventData.concat(recentETHWithdrawalData)
+      const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
 
     const ethWithdrawalData: L2ToL1EventResultPlus[] = []
     for (const eventData of ethWithdrawalEventData) {
@@ -843,6 +855,80 @@ export const useArbTokenBridge = (
     }
     return ethWithdrawalData
   }
+  const getTokenWithdrawalsV2 = async (
+    gatewayAddresses: string[],
+    filter?: ethers.providers.Filter
+  ) => {
+    const address = await walletAddressCached()
+    const l1NetworkID = await l1NetworkIDCached()
+
+    const currentBlockNum = await bridge.l2Provider.getBlockNumber()
+
+    const startBlock = (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    const pivotBlock = currentBlockNum - 20
+
+    const results = await getTokenWithdrawalsGraph(address, startBlock, pivotBlock, l1NetworkID);
+
+    const symbols = await Promise.all(
+      results.map((resultData) =>
+        getTokenSymbol(resultData.otherData.tokenAddress)
+      )
+    )
+    const decimals = await Promise.all(
+      results.map((resultData) =>
+        getTokenDecimals(resultData.otherData.tokenAddress)
+      )
+    )
+
+    const outgoingMessageStates = await Promise.all(
+      results.map((withdrawEventData, i) => {
+        const { batchNumber, indexInBatch } = withdrawEventData.l2ToL1Event
+        return getOutGoingMessageState(batchNumber, indexInBatch)
+      })
+    )
+    const oldTokenWithdrawals = results.map((resultsData, i)=>{
+      const {  caller,
+        destination,
+        uniqueId,
+        batchNumber,
+        indexInBatch,
+        arbBlockNum,
+        ethBlockNum,
+        timestamp,
+        callvalue,
+        data } = resultsData.l2ToL1Event
+      const { value, tokenAddress, type } = resultsData.otherData
+      const eventDataPlus:L2ToL1EventResultPlus =  {
+        caller,
+        destination,
+        uniqueId,
+        batchNumber,
+        indexInBatch,
+        arbBlockNum,
+        ethBlockNum,
+        timestamp,
+        callvalue,
+        data,
+        type,
+        value,
+        tokenAddress,
+        outgoingMessageState: outgoingMessageStates[i],
+        symbol: symbols[i],
+        decimals: decimals[i]
+      }
+      return eventDataPlus
+    })
+
+
+    const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {fromBlock:pivotBlock , toBlock:currentBlockNum})
+
+
+
+
+    const t = new Date().getTime()
+
+    return oldTokenWithdrawals.concat(recentTokenWithdrawals)
+  }
 
   const getTokenWithdrawals = async (
     gatewayAddresses: string[],
@@ -879,8 +965,6 @@ export const useArbTokenBridge = (
         bridge.getL2Transaction(withdrawEventData.txHash)
       )
     )
-    // pause to space out queries for rate limit:
-    await wait(500 * l2Txns.length)
 
     const outgoingMessageStates = await Promise.all(
       gateWayWithdrawalsResults.map((withdrawEventData, i) => {
@@ -940,7 +1024,7 @@ export const useArbTokenBridge = (
     const l2ToL1Txns = (
       await Promise.all([
         getEthWithdrawalsV2(filter),
-        getTokenWithdrawals(gatewayAddresses, filter)
+        getTokenWithdrawalsV2(gatewayAddresses, filter)
       ])
     ).flat()
 
