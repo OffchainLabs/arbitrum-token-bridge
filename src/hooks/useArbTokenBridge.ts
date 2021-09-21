@@ -392,8 +392,9 @@ export const useArbTokenBridge = (
         l2Address,
         decimals
       }
-      const newBridgeTokens = { ...bridgeTokens, ...bridgeTokensToAdd }
-      setBridgeTokens(newBridgeTokens)
+      setBridgeTokens((oldBridgeTokens)=> {
+        return { ...oldBridgeTokens, ...bridgeTokensToAdd }
+      })
       return l1Address
     },
     [ERC20Cache, setERC20Cache, bridgeTokens]
