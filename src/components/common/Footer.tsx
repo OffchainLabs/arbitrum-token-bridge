@@ -20,7 +20,9 @@ const navigation = {
       href: 'https://developer.offchainlabs.com/docs/developer_quickstart'
     },
     { name: 'Github', href: 'https://github.com/OffchainLabs/arbitrum' },
-    { name: 'Terms of Service', href: '/tos' }
+    { name: 'Terms of Service', href: '/tos' },
+    { name: 'Tokens List JSON', href: '/token-list-42161.json' }
+
   ],
   officanlabs: [
     { name: 'Website', href: 'https://arbitrum.io' },
