@@ -109,6 +109,14 @@ const Header: React.FC = () => {
                 </a>
                 <ExplorerMenu />
                 <a
+                  href="https://arbitrum.io/bridge-tutorial/"
+                  target="_blank"
+                  className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  rel="noopener noreferrer"
+                >
+                  Tutorial
+                </a>
+                <a
                   href="https://developer.offchainlabs.com/"
                   target="_blank"
                   className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
