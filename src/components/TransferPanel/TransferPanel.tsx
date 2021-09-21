@@ -13,6 +13,7 @@ import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import TransactionConfirmationModal from '../TransactionConfirmationModal/TransactionConfirmationModal'
 import { NetworkBox } from './NetworkBox'
+import useWithdrawOnly from './useWithdrawOnly'
 
 const TransferPanel = (): JSX.Element => {
   const [confirmationOpen, setConfirmationOpen] = useState(false)
@@ -40,7 +41,7 @@ const TransferPanel = (): JSX.Element => {
 
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
-
+  const { shouldDisableDeposit } = useWithdrawOnly()
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
     return setL1AmountState(
@@ -146,6 +147,7 @@ const TransferPanel = (): JSX.Element => {
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
     return (
+      shouldDisableDeposit ||
       transferring ||
       (isDepositMode &&
         (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
