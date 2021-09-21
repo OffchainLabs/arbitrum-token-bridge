@@ -96,7 +96,7 @@ const App = ({ bridge }: AppProps) => {
       l2ERC20Gateway,
       l2CustomGateway,
       l2WethGateway,
-      l1NetworkID === "4" ? "0x1112Ba145988b59ad9F72f2e6a9AA7A4f364e117": "" /* <- dai gateway on  rinkarby*/
+      "0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65"
     ].filter(gw => gw)
     console.log('**** starting: getting initial pending withdrawals ****')
 
