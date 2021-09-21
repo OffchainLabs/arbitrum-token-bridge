@@ -1,22 +1,4 @@
-import * as ethers from 'ethers'
-import { AssetType } from 'token-bridge-sdk'
-import mainnetTokenList from '../media/token-list-42161.json'
-export * from './web3'
-
-const allMainnetAddresses: Set<string> = new Set([])
-mainnetTokenList.tokens.forEach(tokenInfo => {
-  allMainnetAddresses.add(tokenInfo.address.toLocaleLowerCase())
-  allMainnetAddresses.add(tokenInfo.extensions.l1Address.toLocaleLowerCase())
-})
-
-const hardcodedWhitelist = new Set(["0xe54942077Df7b8EEf8D4e6bCe2f7B58B0082b0cd"].map((address)=> address.toLocaleLowerCase() ))
-
-export interface BridgeConfig {
-  ethProvider: ethers.providers.JsonRpcProvider
-  arbProvider: ethers.providers.JsonRpcProvider
-  ethSigner?: ethers.ethers.providers.JsonRpcSigner
-  arbSigner: ethers.ethers.providers.JsonRpcSigner
-}
+import tokenListMainnet from './token-list-42161.json'
 
 export enum ConnectionState {
   LOADING,
@@ -27,15 +9,6 @@ export enum ConnectionState {
   SEQUENCER_UPDATE
 }
 
-interface ConnextTxnParams {
-  value: string
-  txID: string
-  assetName: string
-  assetType: AssetType
-  sender: string
-  type: 'connext-deposit' | 'connext-withdraw'
-}
-
 export enum PendingWithdrawalsLoadedState {
   LOADING,
   READY,
@@ -43,7 +16,43 @@ export enum PendingWithdrawalsLoadedState {
 }
 
 export const isMainnetWhiteListed = (address: string) => {
-  return allMainnetAddresses.has(address.toLocaleLowerCase()) || hardcodedWhitelist.has(address.toLocaleLowerCase())
+  return tokenListMainnet.tokens.find(
+    token =>
+      token.address.toLowerCase() === address.toLowerCase() ||
+      token.extensions.l1Address.toLowerCase() === address.toLowerCase()
+  )
 }
 
-export type connextTxn = (txnData: ConnextTxnParams) => Promise<void>
+export const getTokenImg = (
+  networkID: string,
+  address: string
+  // eslint-disable-next-line consistent-return
+): string | undefined => {
+  if (networkID === '1' || networkID === '42161') {
+    const url = tokenListMainnet.tokens.find(
+      token =>
+        token.address.toLowerCase() === address.toLowerCase() ||
+        token.extensions.l1Address.toLowerCase() === address.toLowerCase()
+    )?.logoURI
+    if (url?.startsWith('ipfs')) {
+      return `https://ipfs.io/ipfs/${url.substr(7)}`
+    }
+    return url
+  }
+}
+
+export const isTokenWhitelisted = (
+  networkID: string,
+  address: string
+): boolean => {
+  if (networkID === '1' || networkID === '42161') {
+    const hasToken = tokenListMainnet.tokens.find(
+      token =>
+        token.address.toLowerCase() === address.toLowerCase() ||
+        token.extensions.l1Address.toLowerCase() === address.toLowerCase()
+    )
+    return !!hasToken
+  }
+  // TODO not caring for non mainnet, add whatever you want?
+  return true
+}
