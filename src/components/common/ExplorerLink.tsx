@@ -30,6 +30,7 @@ const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
       case 'withdraw':
       case 'connext-withdraw':
       case 'deposit-l2-auto-redeem':
+      case 'deposit-l2-ticket-created':
         return `${l2Prefix}/tx/${hash}`
 
       case 'chain':

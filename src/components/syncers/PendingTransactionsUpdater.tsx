@@ -6,17 +6,11 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 
-// Updates pending transactions statuses on app load
 const PendingTransactionsUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
-    app: {
-      pendingTransactions,
-      pendingTransactionsUpdated,
-      arbTokenBridge,
-      arbTokenBridgeLoaded
-    }
+    app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
 
   const getTransactionReceipt = useCallback(
@@ -32,6 +26,7 @@ const PendingTransactionsUpdater = (): JSX.Element => {
   // eslint-disable-next-line consistent-return
   const checkAndUpdatePendingTransactions = useCallback(() => {
     if (!arbTokenBridgeLoaded) return
+    const pendingTransactions = actions.app.getPendingTransactions()
     if (pendingTransactions.length) {
       console.info(
         `Checking and updating ${pendingTransactions.length} pending transactions' statuses`
@@ -43,29 +38,22 @@ const PendingTransactionsUpdater = (): JSX.Element => {
       ).then((txReceipts: TransactionReceipt[]) => {
         txReceipts.forEach((txReceipt: TransactionReceipt, i) => {
           if (!txReceipt) {
-            console.warn(
-              'Transaction receipt not found:',
+            console.info(
+              'Transaction receipt not yet found:',
               pendingTransactions[i].txID
             )
           } else {
             arbTokenBridge?.transactions?.updateTransaction(txReceipt)
           }
         })
-        actions.app.setPendingTransactionsUpdated(true)
       })
     }
-  }, [
-    pendingTransactions,
-    getTransactionReceipt,
-    arbTokenBridge,
-    arbTokenBridgeLoaded
-  ])
+  }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
 
   useEffect(() => {
-    if (pendingTransactions?.length > 0 && !pendingTransactionsUpdated) {
-      checkAndUpdatePendingTransactions()
-    }
-  }, [pendingTransactions])
+    const intId = window.setInterval(checkAndUpdatePendingTransactions, 4000)
+    return () => window.clearInterval(intId)
+  }, [arbTokenBridgeLoaded])
 
   return <></>
 }

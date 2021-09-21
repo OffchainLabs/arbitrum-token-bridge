@@ -24,6 +24,7 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { CurrentL1BlockNumberUpdater } from '../syncers/CurrentL1BlockNumberUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
+import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService } from '../TermsOfService/TermsOfService'
 
@@ -113,6 +114,7 @@ const AppContent = (): JSX.Element => {
         <>
           <CurrentL1BlockNumberUpdater />
           <PendingTransactionsUpdater />
+          <RetryableTxnsIncluder />
           <BalanceUpdater />
           <PWLoadedUpdater />
           <TokenListSyncer />

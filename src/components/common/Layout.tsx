@@ -1,9 +1,28 @@
-import React from 'react'
+import React, { useMemo } from 'react'
+
+import { useAppState } from 'src/state'
 
 import Footer from './Footer'
 import { Header } from './Header'
 
 const Layout: React.FC = ({ children }) => {
+  const {
+    app: { l1NetworkDetails }
+  } = useAppState()
+
+  const headerText = useMemo(() => {
+    const l1NetworkId = l1NetworkDetails && l1NetworkDetails.chainID
+    switch (l1NetworkId) {
+      case null:
+        return null
+      case '1':
+        return 'Arbitrum One Bridge'
+      case '4':
+        return 'RinkArby Bridge'
+      default:
+        return 'Arbitrum Bridge'
+    }
+  }, [l1NetworkDetails])
   return (
     <div className="flex flex-col min-h-screen">
       <div className="bg-gray-800 overflow-hidden">
@@ -12,9 +31,7 @@ const Layout: React.FC = ({ children }) => {
 
           <div className="block">
             <div className="pt-10 pb-5 relative z-10">
-              <h1 className="text-3xl font-bold text-white">
-                Welcome to Arbitrum Bridge
-              </h1>
+              <h1 className="text-3xl font-bold text-white">{headerText}</h1>
             </div>
           </div>
 

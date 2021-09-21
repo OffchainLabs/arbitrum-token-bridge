@@ -23,13 +23,6 @@ export const setCurrentL1BlockNumber = (
   state.app.currentL1BlockNumber = blockNum
 }
 
-export const setPendingTransactionsUpdated = (
-  { state }: Context,
-  updated: boolean
-) => {
-  state.app.pendingTransactionsUpdated = updated
-}
-
 export const setNetworkID = ({ state }: Context, networkID: string) => {
   state.app.networkID = networkID
 }
@@ -69,7 +62,6 @@ export const reset = ({ state }: Context, newChainId: string) => {
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
-  state.app.pendingTransactionsUpdated = false
   state.app.pwLoadedState = PendingWithdrawalsLoadedState.LOADING
 }
 
@@ -102,4 +94,8 @@ export const setArbTokenBridge = (
   if (atb && !state.app.arbTokenBridgeLoaded) {
     actions.app.setArbTokenBridgeLoaded(true)
   }
+}
+
+export const getPendingTransactions = ({ state }: Context) => {
+  return state.app.pendingTransactions
 }

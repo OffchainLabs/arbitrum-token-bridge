@@ -10,7 +10,8 @@ import {
   BridgeToken,
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
-  Transaction
+  Transaction,
+  TxnType
 } from 'token-bridge-sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -21,9 +22,11 @@ export enum WhiteListState {
   ALLOWED,
   DISALLOWED
 }
-
+interface SeqNumToTxn {
+  [seqNum: number]: MergedTransaction
+}
 export interface MergedTransaction {
-  direction: string
+  direction: TxnType
   status: string
   createdAtTime: number | null
   createdAt: string | null
@@ -35,6 +38,7 @@ export interface MergedTransaction {
   isWithdrawal: boolean
   blockNum: number | null
   tokenAddress: string | null
+  seqNum?: number
 }
 
 const outgoungStateToString = {
@@ -54,10 +58,11 @@ export type AppState = {
   isDepositMode: boolean
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
-  pendingTransactionsUpdated: boolean
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
+  mergedTransactionsToShow: MergedTransaction[]
+  seqNumToAutoRedeems: SeqNumToTxn
   currentL1BlockNumber: number
 
   networkDetails: Network | null
@@ -90,7 +95,6 @@ export const defaultState: AppState = {
   pendingTransactions: derived((s: AppState) => {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')
   }),
-  pendingTransactionsUpdated: false,
   depositsTransformed: derived((s: AppState) => {
     const deposits: MergedTransaction[] = s.sortedTransactions.map(tx => {
       return {
@@ -111,7 +115,8 @@ export const defaultState: AppState = {
         uniqueId: null, // not needed
         isWithdrawal: false,
         blockNum: tx.blockNumber || null,
-        tokenAddress: null // not needed
+        tokenAddress: null, // not needed
+        seqNum: tx.seqNum
       }
     })
     return deposits
@@ -123,7 +128,7 @@ export const defaultState: AppState = {
       ) as L2ToL1EventResultPlus[]
     ).map(tx => {
       return {
-        direction: 'withdraw-l1',
+        direction: 'withdraw',
         status: outgoungStateToString[tx.outgoingMessageState],
         createdAt: dayjs(
           new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
@@ -150,6 +155,53 @@ export const defaultState: AppState = {
         return item.createdAtTime
       })
     )
+  }),
+  mergedTransactionsToShow: derived((s: AppState) => {
+    // group ticket-created by seqNum so we can match thyarnem with deposit-l2 txns later
+    const seqNumToTicketCreation: SeqNumToTxn = {}
+
+    s.mergedTransactions.forEach(txn => {
+      const { seqNum, direction } = txn
+      if (direction === 'deposit-l2-ticket-created' && seqNum) {
+        seqNumToTicketCreation[seqNum as number] = txn
+      }
+    })
+    return s.mergedTransactions.filter((txn: MergedTransaction) => {
+      const { asset, direction, status, seqNum } = txn
+      // I don't like having to string check here; I'd like to bring over the AssetType enum into mergedtransaction
+      if (txn.asset !== 'eth') {
+        switch (txn.direction) {
+          case 'deposit-l2-ticket-created': {
+            // show only if it fails
+            return status === 'failure'
+          }
+          case 'deposit-l2-auto-redeem': {
+            // show only if it fails
+            return status === 'failure'
+          }
+          case 'deposit-l2': {
+            // show unless the ticket creation failed
+            const ticketCreatedTxn = seqNumToTicketCreation[seqNum as number]
+            return !(ticketCreatedTxn && ticketCreatedTxn.status === 'failure')
+          }
+
+          default:
+            break
+        }
+      }
+      return true
+    })
+  }),
+  seqNumToAutoRedeems: derived((s: AppState) => {
+    const seqNumToTicketCreation: SeqNumToTxn = {}
+
+    s.mergedTransactions.forEach(txn => {
+      const { seqNum, direction } = txn
+      if (direction === 'deposit-l2-auto-redeem' && seqNum) {
+        seqNumToTicketCreation[seqNum as number] = txn
+      }
+    })
+    return seqNumToTicketCreation
   }),
   currentL1BlockNumber: 0,
 
