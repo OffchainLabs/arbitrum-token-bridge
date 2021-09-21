@@ -129,9 +129,6 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
-          if (!bridgeTokens[selectedToken.address]?.allowed) {
-            await latestToken.current.approve(selectedToken.address)
-          }
           latestToken.current.withdraw(selectedToken.address, amount)
         } else {
           latestEth.current.withdraw(amount)
