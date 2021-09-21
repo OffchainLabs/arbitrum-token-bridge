@@ -18,9 +18,9 @@ const Layout: React.FC = ({ children }) => {
       case '1':
         return 'Arbitrum One Bridge'
       case '4':
-        return 'RinkArby Bridge'
+        return 'RinkArby Testnet Bridge'
       default:
-        return 'Arbitrum Bridge'
+        return 'Arbitrum Mainnet Bridge'
     }
   }, [l1NetworkDetails])
   return (
