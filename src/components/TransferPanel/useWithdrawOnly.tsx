@@ -36,8 +36,6 @@ const useWithdrawOnly = () => {
         const token = ERC20__factory.connect(l2Address, bridge.l2Provider)
         const l2Bal = await token.balanceOf(userAddress)
         if (!l2Bal.eq(constants.Zero)) {
-          console.warn('bal found', l2Bal, arbTokenBridge.token)
-
           // add it if user has an L2 balance
 
           await arbTokenBridge.token.add(l1Address)
