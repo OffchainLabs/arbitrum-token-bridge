@@ -63,7 +63,7 @@ export const getLatestOutboxEntryIndex = async (networkID: string) => {
       }
     `
   })
-  return res.data.outboxEntryIndex as number
+  return res.data.outboxEntries?.[0]?.outboxEntryIndex as number
 }
 
 export const getETHWithdrawals = async (
@@ -131,7 +131,7 @@ export const messageHasExecuted = async (
       }
     }`
   })
-  return res.data.length > 0
+  return res.data.outboxOutputs.length > 0
 }
 
 interface GetTokenWithdrawalsResult {
