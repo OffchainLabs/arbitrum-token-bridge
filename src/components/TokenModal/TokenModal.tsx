@@ -96,19 +96,19 @@ const TokenRow = ({
       </div>
 
       <p className="flex items-center text-base leading-6 font-medium text-gray-900">
-        {balance ? (
-          // @ts-ignore
-          +formatUnits(balance, token?.decimals || 18)
-        ) : null
-        // (
-        //   <Loader
-        //     type="Oval"
-        //     color="rgb(40, 160, 240)"
-        //     height={14}
-        //     width={14}
-        //   />
-        // )
-        
+        {
+          balance
+            ? // @ts-ignore
+              +formatUnits(balance, token?.decimals || 18)
+            : null
+          // (
+          //   <Loader
+          //     type="Oval"
+          //     color="rgb(40, 160, 240)"
+          //     height={14}
+          //     width={14}
+          //   />
+          // )
         }{' '}
         {tokenSymbol}
       </p>
