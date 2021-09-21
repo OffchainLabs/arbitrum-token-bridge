@@ -99,14 +99,17 @@ const TokenRow = ({
         {balance ? (
           // @ts-ignore
           +formatUnits(balance, token?.decimals || 18)
-        ) : (
-          <Loader
-            type="Oval"
-            color="rgb(40, 160, 240)"
-            height={14}
-            width={14}
-          />
-        )}{' '}
+        ) : null
+        // (
+        //   <Loader
+        //     type="Oval"
+        //     color="rgb(40, 160, 240)"
+        //     height={14}
+        //     width={14}
+        //   />
+        // )
+        
+        }{' '}
         {tokenSymbol}
       </p>
     </button>
