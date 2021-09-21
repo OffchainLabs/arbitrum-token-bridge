@@ -134,7 +134,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     }
 
     if (minutesLeft === 0) {
-      return 'any minute!'
+      return 'about 1 hour'
     }
 
     return `~${blocksRemaining} blocks (~${minutesLeft} minute${
