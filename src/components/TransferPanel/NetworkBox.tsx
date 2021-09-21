@@ -118,7 +118,7 @@ const NetworkBox = ({
             )}
             {selectedToken && (
               <p className="text-sm leading-5 font-medium text-gray-500">
-                Token deployed at:
+                Token address:
                 <ExplorerLink
                   hash={isL1 ? selectedToken.address : selectedToken.l2Address}
                   type="address"
