@@ -437,16 +437,6 @@
             "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
         }
     }, {
-        "chainId": 42161,
-        "address": "0xB20A02dfFb172C474BC4bDa3fD6f4eE70C04daf2",
-        "name": "Magic Internet Money",
-        "symbol": "MIM",
-        "decimals": 18,
-        "extensions": {
-            "l1Address": "0x99D8a9C45b2ecA8864373A26D1459e3Dff1e17F3",
-            "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-        }
-    }, {
         "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2/logo.png",
         "chainId": 42161,
         "address": "0x2e9a6Df78E42a30712c10a9Dc4b1C8656f8F2879",
