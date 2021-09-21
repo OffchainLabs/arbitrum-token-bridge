@@ -392,7 +392,7 @@ export const useArbTokenBridge = (
         l2Address,
         decimals
       }
-      setBridgeTokens((oldBridgeTokens)=> {
+      setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...bridgeTokensToAdd }
       })
       return l1Address
