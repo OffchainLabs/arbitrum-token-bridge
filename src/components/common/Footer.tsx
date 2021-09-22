@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useHistory, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const navigation = {
   product: [
@@ -118,7 +118,6 @@ const navigation = {
 }
 
 export default function Footer() {
-  const router = useHistory()
   return (
     <footer className="bg-gray-800" aria-labelledby="footerHeading">
       <h2 id="footerHeading" className="sr-only">

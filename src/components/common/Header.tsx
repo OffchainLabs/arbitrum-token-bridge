@@ -6,7 +6,6 @@ import { ChevronDownIcon } from '@heroicons/react/solid'
 
 import { useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
-import { Button } from './Button'
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ')

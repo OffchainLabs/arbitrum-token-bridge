@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useMemo } from 'react'
+import React, { useMemo } from 'react'
 
 import { useWallet } from '@gimmixorg/use-wallet'
 import { BigNumber } from 'ethers'
@@ -24,7 +24,7 @@ const NetworkBox = ({
 }) => {
   const { provider } = useWallet()
   const {
-    app: { isDepositMode, selectedToken, arbTokenBridge, networkID }
+    app: { isDepositMode, selectedToken, arbTokenBridge }
   } = useAppState()
   const balance = useMemo(() => {
     let b: BridgeBalance | undefined = arbTokenBridge?.balances?.eth
@@ -40,8 +40,6 @@ const NetworkBox = ({
   const canIEnterAmount = useMemo(() => {
     return (isL1 && isDepositMode) || (!isL1 && !isDepositMode)
   }, [isDepositMode, isL1])
-
-  const isMainnet = networkID === '1' || networkID === '42161'
 
   async function setMaxAmount() {
     if (!balance) {

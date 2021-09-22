@@ -14,14 +14,10 @@ type ActionsProps = {
   ethAddress: string
 }
 
-const Actions = ({
-  balances,
-  eth,
-  ethAddress,
-}: ActionsProps) => {
+const Actions = ({ balances, eth, ethAddress }: ActionsProps) => {
   const arbChainBalance = balances ? +formatEther(balances.arbChainBalance) : 0
   const isDepositMode = useIsDepositMode()
-  
+
   return (
     <div>
       <label htmlFor="basic-url">ETH on L2: {arbChainBalance}</label>
@@ -34,7 +30,6 @@ const Actions = ({
         dialogText="You are about to initiate an Ether withdrawal! Once initialized, you will have to wait ~1 week before you can claim your funds on L1. Are you sure you want to proceed?"
       />
       <WithdrawInfo />
-
     </div>
   )
 }
