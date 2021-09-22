@@ -21,7 +21,7 @@ const isAllowed = async (bridge: Bridge, l1TokenAddress: string) => {
   const walletAddress = await bridge.l1Bridge.getWalletAddress()
   const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    BigNumber.from('0xffffffffffffffffffffffff')
+    BigNumber.from('0xffffffffffffffffffffffff').div(2)
   )
 }
 const TransferPanel = (): JSX.Element => {
