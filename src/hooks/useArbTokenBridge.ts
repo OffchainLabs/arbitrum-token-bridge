@@ -333,8 +333,6 @@ export const useArbTokenBridge = (
     (arbTokenList: TokenList) => {
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
       for (const tokenData of arbTokenList.tokens) {
-        console.log(tokenData)
-
         const {
           address: l2Address,
           name,
