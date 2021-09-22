@@ -584,11 +584,15 @@ export const useArbTokenBridge = (
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
-    const latestGraphBlockNumber =  await getBuiltInsGraphLatestBlockNumber(networkID)
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock )
+    const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
+      networkID
+    )
+    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
-    console.log(`*** L2 node block number: ${currentBlockNum} ***`);
-    console.log(`*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`);
+    console.log(`*** L2 node block number: ${currentBlockNum} ***`)
+    console.log(
+      `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
+    )
 
     const oldEthWithdrawalEventData = await getETHWithdrawals(
       address,
@@ -652,14 +656,17 @@ export const useArbTokenBridge = (
     const address = await walletAddressCached()
     const l1NetworkID = await l1NetworkIDCached()
 
-    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(l1NetworkID)
-    console.log(`*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`);
-
+    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
+      l1NetworkID
+    )
+    console.log(
+      `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
+    )
 
     const startBlock =
-    (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock )
+    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
     const results = await getTokenWithdrawalsGraph(
       address,
