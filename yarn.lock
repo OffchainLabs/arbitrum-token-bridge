@@ -12978,16 +12978,17 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-2.0.0.tgz#0c8fbf58f28801ebeb5cc3684ee8de1816867f13"
-  integrity sha512-gszfSCDp6dBCYiF+VnKM5/xRLJaIk0c8rQUJ8+kCfOL9CdsyiRVBN8p3VRooAlq65D1J9YjEodAPfpmtcjMtDw==
+token-bridge-sdk@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-2.0.1.tgz#f45a729b13040a6976ccc1f41c4a2304a3f6c8a3"
+  integrity sha512-VoIOzFKgSdnB2c6r8SgiJKckDeQ3iUkaPfK7PNB+RogBm1W1jj137iA94NnXT9+TFl2Y6bD4Zm7ZmXCUP1+qMw==
   dependencies:
     "@apollo/client" "^3.4.10"
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
     "@uniswap/token-lists" "^1.0.0-beta.25"
     arb-ts "0.0.39"
+    axios "^0.21.4"
     ethers "^5.4.6"
     graphql "^15.5.3"
     lodash.clonedeep "^4.5.0"
