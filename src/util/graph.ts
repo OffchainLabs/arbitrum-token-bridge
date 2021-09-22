@@ -238,7 +238,7 @@ const getLatestIndexedBlockNumber = async (subgraphName: string) => {
     const res = await axios.post(
       'https://api.thegraph.com/index-node/graphql',
       {
-        query: `{ indexingStatusForCurrentVersion(subgraphName: "${subgraphName}") { subgraph fatalError { message block { number } } nonFatalErrors {message } chains { network latestBlock { number }  } } }`
+        query: `{ indexingStatusForCurrentVersion(subgraphName: "${subgraphName}") {  chains { network latestBlock { number }  } } }`
       }
     )
     return res.data.data.indexingStatusForCurrentVersion.chains[0].latestBlock
