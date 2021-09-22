@@ -10,7 +10,12 @@ const RetryableTxnsIncluder = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
-    app: { arbTokenBridge, sortedTransactions, l2NetworkDetails }
+    app: {
+      arbTokenBridge,
+      sortedTransactions,
+      l2NetworkDetails,
+      arbTokenBridgeLoaded
+    }
   } = useAppState()
 
   const addTransactions = arbTokenBridge?.transactions?.addTransactions
@@ -73,12 +78,8 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     if (!bridge) {
       return
     }
-    // check 'deposit' and 'deposit-l1' for backwards compatibility with old client side cache
-    const successfulL1Deposits = sortedTransactions.filter(
-      (txn: Transaction) =>
-        (txn.type === 'deposit' || txn.type === 'deposit-l1') &&
-        txn.status === 'success'
-    )
+
+    const successfulL1Deposits = actions.app.getSuccessfulL1Deposits()
     Promise.all(successfulL1Deposits.map(getL2TxnHashes))
       .then(txnHashesArr => {
         const transactionsToAdd: Transaction[] = []
@@ -143,9 +144,9 @@ const RetryableTxnsIncluder = (): JSX.Element => {
       })
   }, [sortedTransactions, txIdsSet, bridge, addTransactions])
   useEffect(() => {
-    const intId = window.setInterval(checkAndAddL2DepositTxns, 5000)
+    const intId = window.setInterval(checkAndAddL2DepositTxns, 4000)
     return () => window.clearInterval(intId)
-  }, [checkAndAddL2DepositTxns])
+  }, [arbTokenBridgeLoaded])
 
   return <></>
 }

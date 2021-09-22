@@ -99,3 +99,7 @@ export const setArbTokenBridge = (
 export const getPendingTransactions = ({ state }: Context) => {
   return state.app.pendingTransactions
 }
+
+export const getSuccessfulL1Deposits = ({ state }: Context) => {
+  return state.app.successfulL1Deposits
+}

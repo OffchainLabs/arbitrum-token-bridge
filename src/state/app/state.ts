@@ -57,6 +57,7 @@ export type AppState = {
   isDepositMode: boolean
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
+  successfulL1Deposits: Transaction[]
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
@@ -93,6 +94,14 @@ export const defaultState: AppState = {
   }),
   pendingTransactions: derived((s: AppState) => {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')
+  }),
+  successfulL1Deposits: derived((s: AppState) => {
+    // check 'deposit' and 'deposit-l1' for backwards compatibility with old client side cache
+    return s.sortedTransactions.filter(
+      (txn: Transaction) =>
+        (txn.type === 'deposit' || txn.type === 'deposit-l1') &&
+        txn.status === 'success'
+    )
   }),
   depositsTransformed: derived((s: AppState) => {
     const deposits: MergedTransaction[] = s.sortedTransactions.map(tx => {
