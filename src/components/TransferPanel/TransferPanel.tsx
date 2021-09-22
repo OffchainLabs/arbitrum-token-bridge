@@ -1,6 +1,7 @@
 import React, { useContext, useState, useMemo } from 'react'
 
-import { utils } from 'ethers'
+import { ERC20__factory, Bridge } from 'arb-ts'
+import { utils, BigNumber } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
@@ -15,6 +16,14 @@ import TransactionConfirmationModal from '../TransactionConfirmationModal/Transa
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 
+const isAllowed = async (bridge: Bridge, l1TokenAddress: string) => {
+  const token = ERC20__factory.connect(l1TokenAddress, bridge.l1Provider)
+  const walletAddress = await bridge.l1Bridge.getWalletAddress()
+  const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
+  return (await token.allowance(walletAddress, gatewayAddress)).gte(
+    BigNumber.from('0xffffffffffffffffffffffff')
+  )
+}
 const TransferPanel = (): JSX.Element => {
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const {
@@ -90,6 +99,10 @@ const TransferPanel = (): JSX.Element => {
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const transfer = async () => {
+    // ** We can be assured bridge won't be null here; this is to appease typescript*/
+    if (!bridge) {
+      return
+    }
     setTransferring(true)
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
@@ -107,9 +120,12 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
-          // TODO allowed returns false even after approval
           if (!bridgeTokens[selectedToken.address]?.allowed) {
-            await latestToken.current.approve(selectedToken.address)
+            // ** Sanity check: ensure not allowed yet  */
+            const allowed = await isAllowed(bridge, selectedToken.address)
+            if (!allowed) {
+              await latestToken.current.approve(selectedToken.address)
+            }
           }
           latestToken.current.deposit(selectedToken.address, amount)
         } else {
