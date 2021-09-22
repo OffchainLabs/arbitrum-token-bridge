@@ -30,7 +30,9 @@ import {
   getLatestOutboxEntryIndex,
   messageHasExecuted,
   getETHWithdrawals,
-  getTokenWithdrawals as getTokenWithdrawalsGraph
+  getTokenWithdrawals as getTokenWithdrawalsGraph,
+  getL2GatewayGraphLatestBlockNumber,
+  getBuiltInsGraphLatestBlockNumber
 } from '../util/graph'
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -583,7 +585,12 @@ export const useArbTokenBridge = (
     const currentBlockNum = await bridge.l2Provider.getBlockNumber()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
-    const pivotBlock = currentBlockNum - 20
+
+    const latestGraphBlockNumber =  await getBuiltInsGraphLatestBlockNumber(networkID)
+    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock )
+
+    console.log(`*** L2 node block number: ${currentBlockNum} ***`);
+    console.log(`*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`);
 
     const oldEthWithdrawalEventData = await getETHWithdrawals(
       address,
@@ -647,11 +654,14 @@ export const useArbTokenBridge = (
     const address = await walletAddressCached()
     const l1NetworkID = await l1NetworkIDCached()
 
-    const currentBlockNum = await bridge.l2Provider.getBlockNumber()
+    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(l1NetworkID)
+    console.log(`*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`);
+
 
     const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
-    const pivotBlock = currentBlockNum - 20
+    (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+
+    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock )
 
     const results = await getTokenWithdrawalsGraph(
       address,
@@ -713,8 +723,7 @@ export const useArbTokenBridge = (
     })
 
     const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {
-      fromBlock: pivotBlock,
-      toBlock: currentBlockNum
+      fromBlock: pivotBlock
     })
 
     const t = new Date().getTime()
