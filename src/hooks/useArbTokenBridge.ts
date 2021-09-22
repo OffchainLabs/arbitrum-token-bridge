@@ -449,8 +449,11 @@ export const useArbTokenBridge = (
       }
 
       setErc20Balances({ ...erc20Balances, [l1Address]: erc20TokenBalance })
-      const newBridgeTokens = { ...bridgeTokens, [l1Address]: bridgeToken }
-      setBridgeTokens(newBridgeTokens)
+      bridgeToken.allowed = l1Data.ERC20?.allowed || l1Data.ERC20?.allowed || false
+      const newBridgeTokens = { [l1Address]: bridgeToken }
+      setBridgeTokens((oldBridgeTokens)=>{
+        return {...oldBridgeTokens, ...newBridgeTokens }
+      })
     },
     [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens]
   )
