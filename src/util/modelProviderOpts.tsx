@@ -1,7 +1,5 @@
 // @ts-ignore
-import MewConnect from '@myetherwallet/mewconnect-web-client'
 import WalletConnectProvider from '@walletconnect/web3-provider'
-import Authereum from 'authereum'
 
 export const modalProviderOpts = {
   cacheProvider: true,

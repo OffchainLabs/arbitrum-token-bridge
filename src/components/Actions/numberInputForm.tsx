@@ -32,25 +32,21 @@ const NumberInputForm = ({
     readOnlyValue ? readOnlyValue : 0
   )
 
-  const submit = useCallback(
-    () => {      
-      onSubmit(value.toString())      
-      setValue(0, max)
-    },
-    [value, onSubmit]
-  )
+  const submit = useCallback(() => {
+    onSubmit(value.toString())
+    setValue(0, max)
+  }, [value, onSubmit])
 
-
-  const {open, handleAccept, handleReject, handleClose, setDialogOpen} = useConfirmDialog(submit) 
-  const handleFormSubmit =  useCallback(()=>{
-    if(!(+value)){
-      alert("You're trying to transfer 0 value; don't do that!")        
+  const { open, handleAccept, handleReject, handleClose, setDialogOpen } =
+    useConfirmDialog(submit)
+  const handleFormSubmit = useCallback(() => {
+    if (!+value) {
+      alert("You're trying to transfer 0 value; don't do that!")
       return
     } else {
       setDialogOpen()
     }
-
-  },[setDialogOpen, value])
+  }, [setDialogOpen, value])
 
   return (
     <InputGroup
@@ -60,7 +56,13 @@ const NumberInputForm = ({
         setValue(e.target.value, max)
       }}
     >
-      <ConfirmDialog dialogText={dialogText} open={open} handleAccept={handleAccept} handleReject={handleReject} handleClose ={handleClose} />
+      <ConfirmDialog
+        dialogText={dialogText}
+        open={open}
+        handleAccept={handleAccept}
+        handleReject={handleReject}
+        handleClose={handleClose}
+      />
       <Form onSubmit={handleFormSubmit}>
         <FormControl
           aria-label="Small"

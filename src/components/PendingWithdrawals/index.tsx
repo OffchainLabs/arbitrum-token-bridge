@@ -5,7 +5,7 @@ import Table from 'react-bootstrap/Table'
 import { providers } from 'ethers'
 import { OutgoingMessageState } from 'arb-ts'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
-import Spinner from  'react-bootstrap/Spinner'
+import Spinner from 'react-bootstrap/Spinner'
 import { PendingWithdrawalsLoadedState } from 'util/index'
 
 interface PendingWithdrawalsProps {
@@ -20,15 +20,24 @@ interface PendingWithdrawalsProps {
 const { formatUnits } = utils
 
 interface StatusProps {
-    text: string,
-    pwLoadedState: PendingWithdrawalsLoadedState
+  text: string
+  pwLoadedState: PendingWithdrawalsLoadedState
 }
-const StatusDisplay = ({text, pwLoadedState}: StatusProps) => {
-  if (pwLoadedState === PendingWithdrawalsLoadedState.LOADING){
-    return <div className="row"><i>Loading {text} (could take a few minutes) </i> <Spinner role="status" animation="border"></Spinner> </div>
-
-  } else if ( pwLoadedState === PendingWithdrawalsLoadedState.ERROR){
-      return <div className="row" style={{color: "darkred"}}> Fetching pending withdrawals timed out; refresh/ try again shortly </div>
+const StatusDisplay = ({ text, pwLoadedState }: StatusProps) => {
+  if (pwLoadedState === PendingWithdrawalsLoadedState.LOADING) {
+    return (
+      <div className="row">
+        <i>Loading {text} (could take a few minutes) </i>{' '}
+        <Spinner role="status" animation="border"></Spinner>{' '}
+      </div>
+    )
+  } else if (pwLoadedState === PendingWithdrawalsLoadedState.ERROR) {
+    return (
+      <div className="row" style={{ color: 'darkred' }}>
+        {' '}
+        Fetching pending withdrawals timed out; refresh/ try again shortly{' '}
+      </div>
+    )
   } else {
     return null
   }
@@ -134,10 +143,7 @@ const PendingWithdrawals = ({
   }
   return (
     <div>
-          <StatusDisplay
-            text={headerText}
-            pwLoadedState={pwLoadedState}
-          />
+      <StatusDisplay text={headerText} pwLoadedState={pwLoadedState} />
       <Table className="pw-table" striped bordered>
         <thead>
           <tr>{headerText}</tr>
@@ -152,7 +158,7 @@ const PendingWithdrawals = ({
         <tbody>
           {pendingWithdrawalsToShow.map((pw: L2ToL1EventResultPlus) => {
             const id = pw.uniqueId.toString()
-            const {decimals} = pw
+            const { decimals } = pw
 
             return (
               <tr key={id}>

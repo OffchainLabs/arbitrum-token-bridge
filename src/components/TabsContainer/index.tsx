@@ -83,7 +83,6 @@ const TabsContainer = ({
     token => token.type === TokenType.ERC20
   )
 
-
   const currentERC20Token = bridgeTokens[currentERC20Address]
   const disabledWithdrawals = false
 
@@ -179,7 +178,6 @@ const TabsContainer = ({
                     pendingWithdrawalsMap={pendingWithdrawalsMap}
                     ethProvider={ethProvider}
                     pwLoadedState={pwLoadedState}
-
                   />
                 </PanelWrapper>
               </Col>
@@ -201,7 +199,6 @@ const TabsContainer = ({
           </Container>
         </Tab>
       ) : null}
-
     </Tabs>
   )
 }

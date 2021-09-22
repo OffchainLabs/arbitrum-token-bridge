@@ -80,10 +80,8 @@ const TransactionHistory = ({
     [usersTransactions]
   )
 
-  const [
-    checkedForInitialPendingTxns,
-    setCheckedForInitialPendingTxns
-  ] = useState(false)
+  const [checkedForInitialPendingTxns, setCheckedForInitialPendingTxns] =
+    useState(false)
   useEffect(() => {
     if (checkedForInitialPendingTxns) {
       return

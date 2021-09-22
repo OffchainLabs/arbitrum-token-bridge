@@ -192,7 +192,7 @@ export const TokenModalBody = ({
         await token.add(newToken)
       })
       .catch(ex => {
-        console.log('Token address not existing on this network', ex)
+        console.log('Token not found on this network', ex)
       })
       .finally(() => {
         setNewToken('')

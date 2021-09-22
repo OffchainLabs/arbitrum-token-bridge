@@ -8,7 +8,6 @@ import { derived } from 'overmind'
 import {
   ArbTokenBridge,
   BridgeToken,
-  ERC20BridgeToken,
   L2ToL1EventResultPlus,
   Transaction,
   TxnType

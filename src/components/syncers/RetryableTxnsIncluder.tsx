@@ -1,15 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import {
-  AssetType,
-  Transaction,
-  TxnStatus,
-  TxnType,
-  txnTypeToLayer,
-  useArbTokenBridge
-} from 'token-bridge-sdk'
+import { AssetType, Transaction, useArbTokenBridge } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
