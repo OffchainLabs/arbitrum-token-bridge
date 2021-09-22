@@ -7,6 +7,8 @@ import {
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1EventResult } from 'arb-ts'
 import { AssetType } from '../hooks/arbTokenBridge.types'
+import axios from 'axios'
+
 const apolloL1Mainnetlient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/arb-bridge-eth',
   cache: new InMemoryCache()
@@ -229,4 +231,51 @@ export const getTokenWithdrawals = async (
       }
     }
   })
+}
+
+const getLatestIndexedBlockNumber = async (subgraphName: string) => {
+  try {
+    const res = await axios.post(
+      'https://api.thegraph.com/index-node/graphql',
+      {
+        query: `{ indexingStatusForCurrentVersion(subgraphName: "${subgraphName}") {  chains { network latestBlock { number }  } } }`
+      }
+    )
+    return res.data.data.indexingStatusForCurrentVersion.chains[0].latestBlock
+      .number
+  } catch (err) {
+    console.warn('Error getting graph status:', err)
+
+    return 0
+  }
+}
+
+export const getBuiltInsGraphLatestBlockNumber = (l1NetworkID: string) => {
+  const subgraphName = ((l1NetworkID: string) => {
+    switch (l1NetworkID) {
+      case '1':
+        return 'fredlacs/arb-builtins'
+      case '4':
+        return 'fredlacs/arb-builtins-rinkeby'
+      default:
+        throw new Error('Unsupported netwowk')
+    }
+  })(l1NetworkID)
+
+  return getLatestIndexedBlockNumber(subgraphName)
+}
+
+export const getL2GatewayGraphLatestBlockNumber = (l1NetworkID: string) => {
+  const subgraphName = ((l1NetworkID: string) => {
+    switch (l1NetworkID) {
+      case '1':
+        return 'fredlacs/layer2-token-gateway'
+      case '4':
+        return 'fredlacs/layer2-token-gateway-rinkeby'
+      default:
+        throw new Error('Unsupported netwowk')
+    }
+  })(l1NetworkID)
+
+  return getLatestIndexedBlockNumber(subgraphName)
 }
