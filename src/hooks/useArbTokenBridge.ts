@@ -580,7 +580,6 @@ export const useArbTokenBridge = (
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
     const networkID = await l1NetworkIDCached()
     const address = await walletAddressCached()
-    const currentBlockNum = await bridge.l2Provider.getBlockNumber()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
@@ -589,7 +588,6 @@ export const useArbTokenBridge = (
     )
     const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
-    console.log(`*** L2 node block number: ${currentBlockNum} ***`)
     console.log(
       `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
     )
