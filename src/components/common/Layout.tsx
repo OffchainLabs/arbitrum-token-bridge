@@ -25,10 +25,12 @@ const Layout: React.FC = ({ children }) => {
   }, [l1NetworkDetails])
   return (
     <div className="flex flex-col min-h-screen">
+      <div className="bg-gray-800">
+        <Header />
+      </div>
+
       <div className="bg-gray-800 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative min-h-heading">
-          <Header />
-
           <div className="block">
             <div className="pt-10 pb-5 relative z-10">
               <h1 className="text-3xl font-bold text-white">{headerText}</h1>

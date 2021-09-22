@@ -25,7 +25,7 @@ module.exports = {
       theme => {
         return {
           ...theme('spacing'),
-          heading: "180px"
+          heading: "120px"
         }
       },
       maxHeight: {
