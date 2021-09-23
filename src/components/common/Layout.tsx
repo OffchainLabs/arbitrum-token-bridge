@@ -14,7 +14,7 @@ const Layout: React.FC = ({ children }) => {
     const l1NetworkId = l1NetworkDetails && l1NetworkDetails.chainID
     switch (l1NetworkId) {
       case null:
-        return null
+        return 'Arbitrum'
       case '1':
         return 'Arbitrum One Bridge'
       case '4':
