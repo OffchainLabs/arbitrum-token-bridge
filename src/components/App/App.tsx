@@ -9,6 +9,7 @@ import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
+import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 
 import { config, useActions, useAppState } from '../../state'
@@ -18,6 +19,7 @@ import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { Layout } from '../common/Layout'
 import MessageOverlay from '../common/MessageOverlay'
+import { DisclaimerModal } from '../DisclaimerModal/DisclaimerModal'
 import MainContent from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -258,15 +260,26 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 }
 
 function Routes() {
+  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(
+    'arbitrum:bridge:tos'
+  )
+
+  const isTosAccepted = tosAccepted !== undefined
   return (
     <Router>
+      <DisclaimerModal
+        setTosAccepted={setTosAccepted}
+        tosAccepted={isTosAccepted}
+      />
       <Switch>
         <Route path="/tos">
           <TermsOfService />
         </Route>
-        <Route path="/">
-          <AppContent />
-        </Route>
+        {isTosAccepted && (
+          <Route path="/">
+            <AppContent />
+          </Route>
+        )}
       </Switch>
     </Router>
   )
@@ -274,6 +287,7 @@ function Routes() {
 
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+
   return (
     <Provider value={overmind}>
       <Layout>

@@ -25,21 +25,6 @@ const MessageOverlayContent = (): JSX.Element => {
     return <LoadingIndicator />
   }
 
-  // // not needed for the Mainnet release, probably safe to just delete
-  // if (
-  //   connectionState !== ConnectionState.LOADING &&
-  //   verifying === WhiteListState.DISALLOWED
-  // ) {
-  //   return (
-  //     <div className="flex justify-center shadow-xl">
-  //       <Alert type="red">
-  //         Stop! You are attempting to use Mainnet Beta with unapproved address{' '}
-  //         {arbTokenBridge.walletAddress}! <br /> Switch to an approved address
-  //         or connect to Rinkeby for our public testnet.
-  //       </Alert>
-  //     </div>
-  //   )
-  // }
   return <div></div>
 }
 
@@ -61,7 +46,8 @@ const MessageOverlay = (): JSX.Element => {
         <Dialog
           as="div"
           auto-reopen="true"
-          className="fixed z-10 inset-0 overflow-y-auto"
+          className="fixed inset-0 overflow-y-auto"
+          style={{ zIndex: 999 }}
           onClose={() => {}}
           initialFocus={focusRef}
         >
