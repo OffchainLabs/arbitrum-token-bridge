@@ -13,7 +13,7 @@ import { connextTxn, PendingWithdrawalsLoadedState } from 'util/index'
 import Alert from 'react-bootstrap/Alert'
 import { useL1Network, useL2Network } from 'components/App/NetworkContext'
 import { Bridge, networks } from 'arb-ts'
-import  Networks, { MAINNET_WHITELIST_ADDRESS } from './networks'
+import Networks, { MAINNET_WHITELIST_ADDRESS } from './networks'
 import { renderAlert } from './Injecter'
 enum WhiteListState {
   VERIFYING,
@@ -89,14 +89,13 @@ const App = ({ bridge }: AppProps) => {
     }, 20000)
   }, [])
   useEffect(() => {
-    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } = networks[
-      l1NetworkID
-    ].tokenBridge
+    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
+      networks[l1NetworkID].tokenBridge
     const gatewaysToUse = [
       l2ERC20Gateway,
       l2CustomGateway,
       l2WethGateway,
-      "0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65"
+      '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
     ].filter(gw => gw)
     console.log('**** starting: getting initial pending withdrawals ****')
 
@@ -105,15 +104,20 @@ const App = ({ bridge }: AppProps) => {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         setPWLoadedState(PendingWithdrawalsLoadedState.READY)
       } else {
-        const bridgeUpdateBlockNumber = (Networks[l2NetworkID] &&  Networks[l2NetworkID].bridgeUpdateBlockNumber) || 0        
-        setInitialPendingWithdrawals(gatewaysToUse, { fromBlock:bridgeUpdateBlockNumber  })
+        const bridgeUpdateBlockNumber =
+          (Networks[l2NetworkID] &&
+            Networks[l2NetworkID].bridgeUpdateBlockNumber) ||
+          0
+        setInitialPendingWithdrawals(gatewaysToUse, {
+          fromBlock: bridgeUpdateBlockNumber
+        })
           .then((res: any) => {
             console.info('Setting withdrawals to ready state')
 
             setPWLoadedState(PendingWithdrawalsLoadedState.READY)
           })
-          .catch((e:any) => {
-            console.warn('error getting setInitialPendingWithdrawals',e)
+          .catch((e: any) => {
+            console.warn('error getting setInitialPendingWithdrawals', e)
 
             setPWLoadedState(PendingWithdrawalsLoadedState.ERROR)
           })

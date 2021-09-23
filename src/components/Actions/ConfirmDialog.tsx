@@ -1,47 +1,51 @@
-import React, { useCallback} from 'react';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import React, { useCallback } from 'react'
+import Button from '@material-ui/core/Button'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
 
-export const useConfirmDialog = (  _handleAccept: ()=>void, _handleReject?: ()=>void)=>{
-  const [open, setDialogState] = React.useState(false);
-  const handleClose = ()=>{
+export const useConfirmDialog = (
+  _handleAccept: () => void,
+  _handleReject?: () => void
+) => {
+  const [open, setDialogState] = React.useState(false)
+  const handleClose = () => {
     setDialogState(false)
   }
-  const handleAccept = useCallback(()=>{
+  const handleAccept = useCallback(() => {
     handleClose()
     _handleAccept()
-  }, [_handleAccept,handleClose])
+  }, [_handleAccept, handleClose])
 
-  const handleReject = useCallback(()=>{
+  const handleReject = useCallback(() => {
     handleClose()
     _handleReject && handleReject()
-  }, [_handleReject,handleClose])
+  }, [_handleReject, handleClose])
 
-  const setDialogOpen = ()=>{    
+  const setDialogOpen = () => {
     setDialogState(true)
-
   }
 
-  return { setDialogOpen, handleAccept, handleReject, open, handleClose}
-
+  return { setDialogOpen, handleAccept, handleReject, open, handleClose }
 }
 
-interface ConfirmDialogProps{
+interface ConfirmDialogProps {
   open: boolean
-  handleAccept: ()=>void
-  handleReject: ()=>void
-  handleClose: ()=>void
+  handleAccept: () => void
+  handleReject: () => void
+  handleClose: () => void
   dialogText: string
-
 }
 
-
-export default function ConfirmDialog({ open, handleAccept, handleReject, handleClose, dialogText}:  ConfirmDialogProps) {
-
+export default function ConfirmDialog({
+  open,
+  handleAccept,
+  handleReject,
+  handleClose,
+  dialogText
+}: ConfirmDialogProps) {
   return (
     <div>
       <Dialog
@@ -52,18 +56,18 @@ export default function ConfirmDialog({ open, handleAccept, handleReject, handle
       >
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-          { dialogText } 
+            {dialogText}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleAccept} color="primary" autoFocus>
             Proceed
           </Button>
-          <Button onClick={handleReject} color="primary" >
+          <Button onClick={handleReject} color="primary">
             No Thanks
           </Button>
         </DialogActions>
       </Dialog>
     </div>
-  );
+  )
 }

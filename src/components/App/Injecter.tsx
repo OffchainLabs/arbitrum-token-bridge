@@ -42,7 +42,7 @@ const Injector = () => {
 
           setNetworkID(networkVersion)
           setChangeListeners()
-          
+
           if (window.location.hash === '#tos') {
             return setConnectionState(ConnectionState.WRONG_NETWORK)
           }
@@ -50,7 +50,7 @@ const Injector = () => {
           const network = networks[networkVersion]
           if (!network) {
             console.info('WARNING: unsupported network')
-            window.location.href = 'https://arbitrum.io/bridge-tutorial/';
+            window.location.href = 'https://arbitrum.io/bridge-tutorial/'
             return
           }
 

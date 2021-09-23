@@ -35,7 +35,8 @@ const Actions = ({
   pwLoadedState
 }: ActionsProps) => {
   const currentContract = bridgeTokens[currentERC20Address]
-  const dialogSymbolReadout = currentContract && currentContract.symbol || "tokens"
+  const dialogSymbolReadout =
+    (currentContract && currentContract.symbol) || 'tokens'
   const decimals = (currentContract && currentContract.decimals) || 18
 
   const ethChainBalance = balances

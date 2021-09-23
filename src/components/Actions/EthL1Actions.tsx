@@ -59,7 +59,6 @@ const Actions = ({
         disabled={ethChainBalance === 0}
         buttonText="deposit"
         dialogText="You are about to deposit Ether from L1 into Arbitrum! It will take ~10 minutes for you to see your balance credited on L2. Would you like to proceed?"
-
       />
       <label htmlFor="basic-url"></label>
       <PendingWithdrawals

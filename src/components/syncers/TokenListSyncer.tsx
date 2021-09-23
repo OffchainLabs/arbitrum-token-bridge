@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react'
 
-import { TokenType } from 'token-bridge-sdk'
-
 import { useAppState } from '../../state'
 import tokenListMainnet from '../../util/token-list-42161.json'
 import tokenListRinkeby from '../../util/token-list-421611.json'

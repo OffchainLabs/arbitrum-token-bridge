@@ -1,9 +1,5 @@
 import React, { useMemo } from 'react'
-import {
-  BridgeBalance,
-  ContractStorage,
-  BridgeToken
-} from 'token-bridge-sdk'
+import { BridgeBalance, ContractStorage, BridgeToken } from 'token-bridge-sdk'
 import { useIsDepositMode } from 'components/App/ModeContext'
 import ExplorerLink from 'components/App/ExplorerLink'
 import { useNetwork, useL2Network } from 'components/App/NetworkContext'
@@ -22,7 +18,7 @@ const Header = ({
   ethBalance,
   erc20Balance,
   bridgeTokens,
-  currentERC20Address,
+  currentERC20Address
 }: Web3Data) => {
   const currentERC20 = bridgeTokens[currentERC20Address]
   const erc20Symbol = currentERC20 ? currentERC20.symbol : ''
@@ -40,9 +36,9 @@ const Header = ({
     return `Connected to ${name}`
   }, [name])
 
-  const disClaimerReDirect  = (e:any)=>{
+  const disClaimerReDirect = (e: any) => {
     window.open(window.location.origin + '#tos')
-    
+
     e.preventDefault()
   }
   return (
@@ -63,7 +59,6 @@ const Header = ({
         >
           <u>TOKEN LIST</u>
         </a>{' '}
-
         <a
           href=""
           target="_blank"
