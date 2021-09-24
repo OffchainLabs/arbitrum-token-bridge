@@ -148,9 +148,9 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     <tr>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
         {tx.direction === 'outbox'
-          ? 'withdrawal-l1'
+          ? 'withdrawal-redeem-on-l1'
           : tx.direction === 'withdraw'
-          ? 'withdrawal-l2'
+          ? 'withdrawal-initiated'
           : tx.direction}
       </td>
       <td className="px-4 py-6  whitespace-nowrap text-sm ">
