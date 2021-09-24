@@ -36,6 +36,7 @@ const Button = ({
   return (
     <button
       type="button"
+      disabled={disabled}
       className={`flex items-center justify-center shadow-sm rounded-md px-5 py-2.5 focus:outline-none 
         ${className} ${variants[variant]} ${sizeVariants[size]} 
         ${
