@@ -8,6 +8,7 @@ import { TxnType } from 'token-bridge-sdk'
 import { TxnStatus } from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 import { MergedTransaction } from '../../state/app/state'
+import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
@@ -71,7 +72,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       isDepositMode,
       currentL1BlockNumber,
       seqNumToAutoRedeems,
-      bridge
+      bridge,
+      networkDetails
     }
   } = useAppState()
 
@@ -145,7 +147,11 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   return (
     <tr>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
-        {tx.direction === 'outbox' ? 'redeem from outbox' : tx.direction}
+        {tx.direction === 'outbox'
+          ? 'withdrawal-redeem-on-l1'
+          : tx.direction === 'withdraw'
+          ? 'withdrawal-initiated'
+          : tx.direction}
       </td>
       <td className="px-4 py-6  whitespace-nowrap text-sm ">
         <StatusBadge
@@ -163,32 +169,43 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         </StatusBadge>
       </td>
       <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
-        {tx.isWithdrawal && tx.status.toLowerCase() === 'confirmed' && (
+        {tx.isWithdrawal && tx.status === 'Confirmed' && (
           <div className="relative group">
-            <button
-              disabled={!isDepositMode}
+            <Button
+              size="sm"
+              disabled={networkDetails?.isArbitrum}
               onClick={handleTriggerOutbox}
-              type="submit"
-              className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
             >
               Claim
-            </button>
-            {!isDepositMode && (
+            </Button>
+            {networkDetails?.isArbitrum && (
               <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
             )}
           </div>
         )}
 
+        {tx.isWithdrawal && tx.status === 'Unconfirmed' && (
+          <div className="relative group">
+            <Button variant="white" size="sm">
+              Claim
+            </Button>
+            <Tooltip>
+              Transaction must be confirmed: ETA: {calcEtaDisplay()}
+            </Tooltip>
+          </div>
+        )}
+
+        {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
+
         {showRedeemRetryableButton && (
           <div className="relative group">
-            <button
+            <Button
+              size="sm"
               disabled={isDepositMode}
               onClick={() => redeemRetryable(tx.txId)}
-              type="submit"
-              className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
             >
               Re-execute
-            </button>
+            </Button>
             {isDepositMode && (
               <Tooltip>
                 Must be on l2 network to execute your l2 deposit.
@@ -196,8 +213,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
             )}
           </div>
         )}
-
-        {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
       </td>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
         {!tx.isWithdrawal && (

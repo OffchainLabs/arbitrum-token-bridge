@@ -136,12 +136,14 @@ export const defaultState: AppState = {
       ) as L2ToL1EventResultPlus[]
     ).map(tx => {
       return {
-        direction: 'withdraw',
+        direction: tx.uniqueId ? 'outbox' : 'withdraw',
         status: outgoungStateToString[tx.outgoingMessageState],
         createdAt: dayjs(
           new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
         ).format('HH:mm:ss MM/DD/YYYY'),
-        createdAtTime: BigNumber.from(tx.timestamp).toNumber() * 1000,
+        createdAtTime:
+          BigNumber.from(tx.timestamp).toNumber() * 1000 +
+          (tx.uniqueId ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
         resolvedAt: null,
         txId: tx.uniqueId?.toString(),
         asset: tx.symbol?.toLocaleLowerCase(),
