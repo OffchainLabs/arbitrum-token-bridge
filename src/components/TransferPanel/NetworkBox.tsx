@@ -48,6 +48,7 @@ const NetworkBox = ({
     if (selectedToken) {
       // @ts-ignore
       setAmount(formatUnits(balance, selectedToken?.decimals || 18))
+      return
     }
     const gasPrice: BigNumber | undefined = await provider?.getGasPrice()
     if (!gasPrice) {
