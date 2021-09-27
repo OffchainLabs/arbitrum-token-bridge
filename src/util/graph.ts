@@ -8,6 +8,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1EventResult } from 'arb-ts'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import axios from 'axios'
+import { utils } from 'ethers'
 
 const apolloL1Mainnetlient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/arb-bridge-eth',
@@ -126,9 +127,10 @@ export const messageHasExecuted = async (
   networkID: string
 ) => {
   const client = networkIDAndLayerToClient(networkID, 1)
+  const batchHexString = utils.hexStripZeros(batchNumber.toHexString())
   const res = await client.query({
     query: gql`{
-      outboxOutputs(where: {path:${path.toNumber()}, outboxEntry:"${batchNumber.toHexString()}", spent:true }) {
+      outboxOutputs(where: {path:${path.toNumber()}, outboxEntry:"${batchHexString}", spent:true }) {
         id,
       }
     }`
