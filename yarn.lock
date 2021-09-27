@@ -12978,10 +12978,10 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-2.0.2.tgz#22102dd8e3ad97fd87e0bfcbcc51572ccefd6696"
-  integrity sha512-qg0YpWlwJPjxdKn4zx5r4xwAVELS6t9BNd+7unLIDysdO5B3k7pLf5M7KwZdNHFZt6sN7gOZfDB7OF4vMHZDjQ==
+token-bridge-sdk@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-2.0.3.tgz#6533d17155b0629fd130b0ef01fbd566debe7e7b"
+  integrity sha512-aINvS8GX1N3QlBsIiyfCT3av5ICW0bYkiUBKSOlX2DrXnWwRt1OwAyNQvghhsNdGQZTcd7pgQAhIXjNatsZ2HA==
   dependencies:
     "@apollo/client" "^3.4.10"
     "@rehooks/local-storage" "^2.3.0"
