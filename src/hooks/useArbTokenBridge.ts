@@ -609,6 +609,8 @@ export const useArbTokenBridge = (
     )
     const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
 
+    console.log(`*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`);
+
     const ethWithdrawalData: L2ToL1EventResultPlus[] = []
     for (const eventData of ethWithdrawalEventData) {
       const {
