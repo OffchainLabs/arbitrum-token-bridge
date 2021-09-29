@@ -26,7 +26,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-use": "^17.2.4",
-    "token-bridge-sdk": "2.0.3",
+    "token-bridge-sdk": "3.0.0-beta.0",
     "web-vitals": "^2.1.0"
   },
   "resolutions": {
@@ -41,7 +41,8 @@
     "test": "craco test",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
+    "getUnusedComponents": "ts-prune | grep ' default$'"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -81,6 +82,7 @@
     "postcss": "^7",
     "prettier": "^2.3.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@2.1.2",
+    "ts-prune": "^0.10.1",
     "typescript": "^4.3.5"
   }
 }
