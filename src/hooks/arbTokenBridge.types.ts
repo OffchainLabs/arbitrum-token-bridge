@@ -115,11 +115,11 @@ export interface ArbTokenBridgeToken {
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,
-    amount: string
+    amount: BigNumber
   ) => Promise<void | ContractReceipt>
   withdraw: (
     erc20l1Address: string,
-    amount: string
+    amount: BigNumber
   ) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
 }
@@ -154,7 +154,7 @@ export type ArbTokenBridgeTransactions = {
 
 export interface ArbTokenBridge {
   walletAddress: string
-  bridgeTokens: ContractStorage<BridgeToken>
+  bridgeTokens: ContractStorage<ERC20BridgeToken>
   balances: ArbTokenBridgeBalances
   cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
