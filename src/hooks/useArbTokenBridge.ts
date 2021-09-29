@@ -144,8 +144,8 @@ export const useArbTokenBridge = (
     }
   }, [walletAddress, bridge])
 
-  const depositEth = async (etherVal: string) => {
-    const weiValue: BigNumber = utils.parseEther(etherVal)
+  const depositEth = async (weiValue: BigNumber) => {
+    const etherVal = utils.formatUnits(weiValue, 18)
     const tx = await bridge.depositETH(weiValue)
     addTransaction({
       type: 'deposit-l1',
@@ -166,8 +166,8 @@ export const useArbTokenBridge = (
   }
 
   const withdrawEth = useCallback(
-    async (etherVal: string) => {
-      const weiValue: BigNumber = utils.parseEther(etherVal)
+    async (weiValue: BigNumber) => {
+      const etherVal = utils.formatUnits(weiValue, 18)
       const tx = await bridge.withdrawETH(weiValue)
       try {
         addTransaction({
@@ -351,7 +351,7 @@ export const useArbTokenBridge = (
     },
     [bridge, bridgeTokens]
   )
-   const addTokensStatic = useCallback(
+  const addTokensStatic = useCallback(
     (arbTokenList: TokenList) => {
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
       for (const tokenData of arbTokenList.tokens) {
