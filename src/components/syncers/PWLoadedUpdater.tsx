@@ -31,15 +31,15 @@ const PWLoadedUpdater = (): JSX.Element => {
     ) {
       return
     }
-    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
-      ArbNetworks[l1NetworkDetails?.chainID || ''].tokenBridge
-    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
-    console.log(
-      '**** setting initial pending withdrawals ****',
+    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway, l2DaiGateway } =
+      bridge.l2Bridge.network.tokenBridge
+    const gatewaysToUse = [
       l2ERC20Gateway,
       l2CustomGateway,
-      l2WethGateway
-    )
+      l2WethGateway,
+      l2DaiGateway
+    ]
+    console.log('**** setting initial pending withdrawals ****')
 
     bridge?.l2Signer?.getTransactionCount()?.then((nonce: number) => {
       if (nonce === 0) {
@@ -59,7 +59,7 @@ const PWLoadedUpdater = (): JSX.Element => {
           fromBlock: bridgeUpdateBlockNumber
         })
           .then(() => {
-            console.info('Setting withdawals to ready state')
+            console.info('Setting withdrawals to ready state')
 
             actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
           })
