@@ -207,9 +207,11 @@ export const useArbTokenBridge = (
             symbol: 'ETH',
             decimals: 18
           }
-          setPendingWithdrawalMap({
-            ...pendingWithdrawalsMap,
-            [id]: l2ToL2EventDataResultPlus
+          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+            return {
+              ...oldPendingWithdrawalsMap,
+              [id]: l2ToL2EventDataResultPlus
+            }
           })
         }
         return receipt
@@ -338,9 +340,12 @@ export const useArbTokenBridge = (
             symbol: symbol,
             decimals: decimals
           }
-          setPendingWithdrawalMap({
-            ...pendingWithdrawalsMap,
-            [id]: l2ToL2EventDataResultPlus
+
+          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+            return {
+              ...oldPendingWithdrawalsMap,
+              [id]: l2ToL2EventDataResultPlus
+            }
           })
         }
         updateTokenData(erc20l1Address)
