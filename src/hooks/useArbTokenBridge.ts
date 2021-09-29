@@ -229,7 +229,7 @@ export const useArbTokenBridge = (
       status: 'pending',
       value: null,
       txID: tx.hash,
-      assetName: tokenData.symbol || '???',
+      assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
       l1NetworkID: await l1NetworkIDCached()
@@ -462,8 +462,8 @@ export const useArbTokenBridge = (
       const tokenData = await bridge.l1Bridge.getL1TokenData(
         tokenAddress as string
       )
-      const symbol = tokenData.symbol || '??'
-      const decimals = tokenData.decimals || 18
+      const symbol = tokenData.symbol
+      const decimals = tokenData.decimals
 
       addTransaction({
         status: 'pending',
