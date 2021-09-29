@@ -5,6 +5,7 @@ import { AssetType, Transaction, useArbTokenBridge } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
+import { useInterval } from './BalanceUpdater'
 
 const RetryableTxnsIncluder = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
@@ -143,9 +144,14 @@ const RetryableTxnsIncluder = (): JSX.Element => {
         console.warn('Errors checking to retryable txns to add', err)
       })
   }, [sortedTransactions, txIdsSet, bridge, addTransactions])
+
+  const { forceTrigger: forceTriggerUpdate } = useInterval(
+    checkAndAddL2DepositTxns,
+    4000
+  )
   useEffect(() => {
-    const intId = window.setInterval(checkAndAddL2DepositTxns, 4000)
-    return () => window.clearInterval(intId)
+    // force trigger update each time loaded change happens
+    forceTriggerUpdate()
   }, [arbTokenBridgeLoaded])
 
   return <></>
