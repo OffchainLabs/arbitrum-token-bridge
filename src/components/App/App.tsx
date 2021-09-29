@@ -148,6 +148,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         const hexChainId = hexValue(BigNumber.from(chainId))
         const metamask = library?.provider
         if (metamask !== undefined && metamask.isMetaMask) {
+          console.log('Attempting to switch to chain', chainId)
           // @ts-ignore
           await metamask.request({
             method: 'wallet_switchEthereumChain',
@@ -157,6 +158,14 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
               }
             ]
           })
+        } else {
+          // provider is not metamask, so no `wallet_switchEthereumChain` support
+          console.log(
+            'Not sure if current provider supports wallet_switchEthereumChain'
+          )
+          // TODO: show user a nice dialogue box instead of alert
+          alert('Please connect to appropriate chain')
+          // TODO: reset state so user can attempt to press "Deposit" again
         }
       }
       actions.app.setChangeNetwork(changeNetwork)
