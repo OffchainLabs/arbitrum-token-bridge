@@ -41,7 +41,8 @@
     "test": "craco test",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\""
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
+    "getUnusedComponents": "ts-prune | grep ' default$'"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -81,6 +82,7 @@
     "postcss": "^7",
     "prettier": "^2.3.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@2.1.2",
+    "ts-prune": "^0.10.1",
     "typescript": "^4.3.5"
   }
 }
