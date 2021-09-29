@@ -4,7 +4,6 @@ import { ERC20__factory, Bridge } from 'arb-ts'
 import { utils, BigNumber } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
@@ -68,7 +67,7 @@ const TransferPanel = (): JSX.Element => {
     if (selectedToken) {
       const balanceL1 =
         arbTokenBridge?.balances?.erc20[selectedToken.address]?.balance
-      const decimals = (selectedToken as ERC20BridgeToken)?.decimals
+      const { decimals } = selectedToken
       if (!balanceL1 || !decimals) {
         return null
       }
@@ -85,7 +84,7 @@ const TransferPanel = (): JSX.Element => {
     if (selectedToken) {
       const balanceL2 =
         arbTokenBridge?.balances?.erc20[selectedToken.address]?.arbChainBalance
-      const { decimals } = selectedToken as ERC20BridgeToken
+      const { decimals } = selectedToken
       if (!balanceL2) {
         return null
       }
@@ -127,7 +126,7 @@ const TransferPanel = (): JSX.Element => {
               await latestToken.current.approve(selectedToken.address)
             }
           }
-          const { decimals } = selectedToken as ERC20BridgeToken
+          const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
           latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
@@ -148,7 +147,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
-          const { decimals } = selectedToken as ERC20BridgeToken
+          const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
           latestToken.current.withdraw(selectedToken.address, amountRaw)
         } else {

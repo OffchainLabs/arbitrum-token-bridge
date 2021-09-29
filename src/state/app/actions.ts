@@ -1,5 +1,5 @@
 import { Bridge } from 'arb-ts'
-import { ArbTokenBridge, BridgeToken } from 'token-bridge-sdk'
+import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -36,7 +36,7 @@ export const setIsDepositMode = (
 
 export const setSelectedToken = (
   { state }: Context,
-  token: BridgeToken | null
+  token: ERC20BridgeToken | null
 ) => {
   state.app.selectedToken = token ? { ...token } : null
 }
