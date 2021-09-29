@@ -127,9 +127,12 @@ const TransferPanel = (): JSX.Element => {
               await latestToken.current.approve(selectedToken.address)
             }
           }
-          latestToken.current.deposit(selectedToken.address, amount)
+          const { decimals } = selectedToken as ERC20BridgeToken
+          const amountRaw = utils.parseUnits(amount, decimals)
+          latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
-          latestEth.current.deposit(amount)
+          const amountRaw = utils.parseUnits(amount, 18)
+          latestEth.current.deposit(amountRaw)
         }
       } else {
         if (networkDetails?.isArbitrum === false) {
@@ -145,9 +148,12 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
-          latestToken.current.withdraw(selectedToken.address, amount)
+          const { decimals } = selectedToken as ERC20BridgeToken
+          const amountRaw = utils.parseUnits(amount, decimals)
+          latestToken.current.withdraw(selectedToken.address, amountRaw)
         } else {
-          latestEth.current.withdraw(amount)
+          const amountRaw = utils.parseUnits(amount, 18)
+          latestEth.current.withdraw(amountRaw)
         }
       }
     } catch (ex) {
