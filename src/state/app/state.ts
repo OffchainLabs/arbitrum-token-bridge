@@ -7,7 +7,7 @@ import _sortBy from 'lodash/sortBy'
 import { derived } from 'overmind'
 import {
   ArbTokenBridge,
-  BridgeToken,
+  ERC20BridgeToken,
   L2ToL1EventResultPlus,
   Transaction,
   TxnType
@@ -53,7 +53,7 @@ export type AppState = {
   connectionState: number
   networkID: string | null
   verifying: WhiteListState
-  selectedToken: BridgeToken | null
+  selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]

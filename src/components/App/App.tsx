@@ -199,12 +199,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const l1Signer = getL1Signer(network)
     const l2Signer = getL2Signer(network)
-    const bridge = await Bridge.init(
-      l1Signer,
-      l2Signer,
-      network.tokenBridge.l1Address,
-      network.tokenBridge.l2Address
-    )
+    const bridge = await Bridge.init(l1Signer, l2Signer)
     setGlobalBridge(bridge)
     if (!network.isArbitrum) {
       console.info('Deposit mode detected:')

@@ -3195,10 +3195,10 @@ aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-ts@0.0.42-beta.0:
-  version "0.0.42-beta.0"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-0.0.42-beta.0.tgz#fa59973a81d318148bdbe1ca9f2b5be6126257bd"
-  integrity sha512-JS0JPgQbN5AEnSOzFRNzvmYB6jV1hmOMtfTmugfmQJqCCF+M8iuhy8rIMXkgjlqYKRm/FBifZEjqLjfMoPuXlQ==
+arb-ts@1.0.0-beta.0:
+  version "1.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-1.0.0-beta.0.tgz#b506382d4a475b9087ca73c5dd67017fb72ba409"
+  integrity sha512-vlSmW3EkqHUus+Iyq0DV+7zPTUCIzrLJXKVnFb9EZ33NGRtEgJOm3SBrEuSHyCO7BhebsR5pPgo1rcXZBG1A+A==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -12998,16 +12998,16 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@2.0.3-beta.0:
-  version "2.0.3-beta.0"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-2.0.3-beta.0.tgz#e874a6cc1fd3321c49ccff7a2739f60e98c9c915"
-  integrity sha512-M3pCvlyqK1sPLphbLqPn7bw/iYIpOmm7mfHnUq99ExrjYwOyQRD7l0kkS5dMsNwXVKOup/CojlSi3iVSXAdrdA==
+token-bridge-sdk@3.0.0-beta.0:
+  version "3.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-3.0.0-beta.0.tgz#aa9c6676e02d017159af05c4cc19fb6fe15a84a3"
+  integrity sha512-asymSQJhBZfJlstX9jY+tGDiIxIPGGpOb+lrpg3/gYRpz7iJFteJlfBW6XTkvQ9i5d8IbuonOIcgGRTsDOl5/Q==
   dependencies:
     "@apollo/client" "^3.4.10"
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
     "@uniswap/token-lists" "^1.0.0-beta.25"
-    arb-ts "0.0.42-beta.0"
+    arb-ts "1.0.0-beta.0"
     axios "^0.21.4"
     ethers "^5.4.6"
     graphql "^15.5.3"
