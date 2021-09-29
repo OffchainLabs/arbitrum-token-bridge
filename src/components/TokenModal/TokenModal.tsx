@@ -3,7 +3,6 @@ import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 import { BigNumber } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import { BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { getTokenImg, isTokenWhitelisted } from '../../util'
@@ -174,8 +173,8 @@ export const TokenModalBody = ({
         })
         .filter((addr: string) => {
           if (!tokenSearch) return true
-
-          const bridgeToken = bridgeTokens[addr] as BridgeToken
+          const bridgeToken = bridgeTokens[addr]
+          if (!bridgeToken) return false
           const { address, l2Address, name, symbol } = bridgeToken
           return (address + l2Address + name + symbol)
             .toLowerCase()
@@ -186,8 +185,8 @@ export const TokenModalBody = ({
   }, [bridgeTokens, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
-    return bridge
-      ?.getAndUpdateL1TokenData(newToken) // check if exsits first before adding, because sdk will add to the cache even if it does not exist
+    return bridge?.l1Bridge
+      .getL1TokenData(newToken) // check if exitss first before adding, because sdk will add to the cache even if it does not exist
       .then(async () => {
         await token.add(newToken)
       })
