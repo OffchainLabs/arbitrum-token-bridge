@@ -5,7 +5,7 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
-import { useInterval } from './BalanceUpdater'
+import { useInterval } from '../common/Hooks'
 
 const PendingTransactionsUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
