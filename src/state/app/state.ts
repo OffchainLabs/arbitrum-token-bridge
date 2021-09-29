@@ -41,7 +41,7 @@ export interface MergedTransaction {
 }
 
 const outgoungStateToString = {
-  [OutgoingMessageState.NOT_FOUND]: 'Not Found',
+  [OutgoingMessageState.NOT_FOUND]: 'Unconfirmed',
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
   [OutgoingMessageState.EXECUTED]: 'Executed'
