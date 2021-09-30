@@ -1,0 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply font-serif;
+        @apply bg-main-bg;
+    }
+}
+
+#root, body {
+    @apply min-h-screen;
+    background-color: #E5E5E5;
+}
+
+/*** HIDE NUMBER INPUT STEPS BUTTONS ****/
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+
+.Toastify__toast-container {
+    padding:0 30px!important;
+}
+.Toastify__toast {
+    @apply bg-gray-200 text-gray-800 text-center
+}
+
+button, input {
+  outline: none!important;
+}
+
+/*react error overlay hidden in dev mode while testing network switches which trow errors*/
+body > iframe {
+    display: none!important;
+}
