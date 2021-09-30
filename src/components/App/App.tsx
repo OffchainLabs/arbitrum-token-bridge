@@ -163,7 +163,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           console.log(
             'Not sure if current provider supports wallet_switchEthereumChain'
           )
-          // TODO: show user a nice dialogue box instead of alert
+          // TODO: show user a nice dialogue box instead of
+          // eslint-disable-next-line no-alert
           alert('Please connect to appropriate chain')
           // TODO: reset state so user can attempt to press "Deposit" again
         }

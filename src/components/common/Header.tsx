@@ -2,12 +2,7 @@ import React, { Fragment } from 'react'
 
 import { useWallet } from '@gimmixorg/use-wallet'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
-import {
-  BellIcon,
-  ChevronDownIcon,
-  MenuIcon,
-  XIcon
-} from '@heroicons/react/solid'
+import { ChevronDownIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 
 import { useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
