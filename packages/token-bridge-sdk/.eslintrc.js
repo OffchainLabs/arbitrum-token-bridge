@@ -8,7 +8,7 @@ module.exports = {
     "eslint:recommended",
     "plugin:react/recommended", // Uses the recommended rules from @eslint-plugin-react
     "plugin:@typescript-eslint/recommended", // Uses the recommended rules from @typescript-eslint/eslint-plugin
-    "prettier/@typescript-eslint", // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
+    "prettier", // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
     "plugin:prettier/recommended" // Enable
   ],
   parserOptions: {
@@ -25,7 +25,14 @@ module.exports = {
     "@typescript-eslint/explicit-function-return-type": [1, { allowExpressions: true }],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-use-before-define":"off",
-    "@typescript-eslint/camelcase": "warn"
+    "@typescript-eslint/naming-convention": [
+      "warn",
+      {
+        "selector": "memberLike",
+        "modifiers": ["private"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "require"      }
+    ]
     // "sort-imports": [1], // it would be nice to use this but doens't autofix
   },
   settings: {
