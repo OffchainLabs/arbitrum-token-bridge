@@ -1,6 +1,4 @@
-import React, { useContext, useEffect } from 'react'
-
-import { networks as ArbNetworks } from 'arb-ts'
+import { useContext, useEffect } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'

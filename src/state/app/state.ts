@@ -177,7 +177,7 @@ export const defaultState: AppState = {
       }
     })
     return s.mergedTransactions.filter((txn: MergedTransaction) => {
-      const { asset, direction, status, seqNum } = txn
+      const { status, seqNum } = txn
       // I don't like having to string check here; I'd like to bring over the AssetType enum into mergedtransaction
       if (txn.asset !== 'eth') {
         switch (txn.direction) {

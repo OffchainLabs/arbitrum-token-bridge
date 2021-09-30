@@ -5,7 +5,6 @@ import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
-import { TxnStatus } from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 import { MergedTransaction } from '../../state/app/state'
 import { Button } from '../common/Button'
@@ -16,13 +15,6 @@ import { Tooltip } from '../common/Tooltip'
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
   overflowX?: boolean
-}
-
-const StatusMappings: Record<TxnStatus, string> = {
-  pending: 'Processing',
-  success: 'Success',
-  confirmed: 'Confirmed',
-  failure: 'Failed'
 }
 
 const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
@@ -40,7 +32,7 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           'seconds'
         )
         .toDate()}
-      renderer={({ hours, minutes, seconds, completed }) => {
+      renderer={({ hours, minutes, seconds /* , completed */ }) => {
         // if (completed) {
         //   // Render a completed state
         //   return <>Done</>
@@ -109,6 +101,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
     }
     if (!res) {
+      // eslint-disable-next-line no-alert
       alert("Can't claim this withdrawal yet; try again later")
     }
   }

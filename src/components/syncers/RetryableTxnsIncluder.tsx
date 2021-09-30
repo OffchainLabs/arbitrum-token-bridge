@@ -5,6 +5,7 @@ import { AssetType, Transaction, useArbTokenBridge } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
+import { useInterval } from '../common/Hooks'
 
 const RetryableTxnsIncluder = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
@@ -17,8 +18,6 @@ const RetryableTxnsIncluder = (): JSX.Element => {
       arbTokenBridgeLoaded
     }
   } = useAppState()
-
-  const addTransactions = arbTokenBridge?.transactions?.addTransactions
 
   const getL2TxnHashes = useCallback(
     async (depositTxn: Transaction) => {
@@ -137,15 +136,25 @@ const RetryableTxnsIncluder = (): JSX.Element => {
             }
           }
         })
-        addTransactions(transactionsToAdd)
+        arbTokenBridge?.transactions?.addTransactions(transactionsToAdd)
       })
       .catch(err => {
         console.warn('Errors checking to retryable txns to add', err)
       })
-  }, [sortedTransactions, txIdsSet, bridge, addTransactions])
+  }, [
+    sortedTransactions,
+    txIdsSet,
+    bridge,
+    arbTokenBridge?.transactions?.addTransactions
+  ])
+
+  const { forceTrigger: forceTriggerUpdate } = useInterval(
+    checkAndAddL2DepositTxns,
+    4000
+  )
   useEffect(() => {
-    const intId = window.setInterval(checkAndAddL2DepositTxns, 4000)
-    return () => window.clearInterval(intId)
+    // force trigger update each time loaded change happens
+    forceTriggerUpdate()
   }, [arbTokenBridgeLoaded])
 
   return <></>

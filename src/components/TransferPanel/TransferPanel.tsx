@@ -100,6 +100,7 @@ const TransferPanel = (): JSX.Element => {
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
     if (!bridge) {
+      // eslint-disable-next-line no-alert
       alert("Bridge null! This shouldn't happen. Let support know.")
       return
     }

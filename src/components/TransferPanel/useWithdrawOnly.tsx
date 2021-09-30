@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useCallback,
-  useMemo
-} from 'react'
+import { useEffect, useState, useContext, useCallback, useMemo } from 'react'
 
 import { ERC20__factory } from 'arb-ts'
 import { constants } from 'ethers'

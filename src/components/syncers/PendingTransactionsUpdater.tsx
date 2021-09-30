@@ -5,6 +5,7 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
+import { useInterval } from '../common/Hooks'
 
 const PendingTransactionsUpdater = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
@@ -49,10 +50,14 @@ const PendingTransactionsUpdater = (): JSX.Element => {
       })
     }
   }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
+  const { forceTrigger: forceTriggerUpdate } = useInterval(
+    checkAndUpdatePendingTransactions,
+    4000
+  )
 
   useEffect(() => {
-    const intId = window.setInterval(checkAndUpdatePendingTransactions, 4000)
-    return () => window.clearInterval(intId)
+    // force trigger update each time loaded change happens
+    forceTriggerUpdate()
   }, [arbTokenBridgeLoaded])
 
   return <></>
