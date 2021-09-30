@@ -19,8 +19,6 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     }
   } = useAppState()
 
-  const addTransactions = arbTokenBridge?.transactions?.addTransactions
-
   const getL2TxnHashes = useCallback(
     async (depositTxn: Transaction) => {
       if (!bridge || !l2NetworkDetails) {
@@ -138,12 +136,17 @@ const RetryableTxnsIncluder = (): JSX.Element => {
             }
           }
         })
-        addTransactions(transactionsToAdd)
+        arbTokenBridge?.transactions?.addTransactions(transactionsToAdd)
       })
       .catch(err => {
         console.warn('Errors checking to retryable txns to add', err)
       })
-  }, [sortedTransactions, txIdsSet, bridge, addTransactions])
+  }, [
+    sortedTransactions,
+    txIdsSet,
+    bridge,
+    arbTokenBridge?.transactions?.addTransactions
+  ])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddL2DepositTxns,
