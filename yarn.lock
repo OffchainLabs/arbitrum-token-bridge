@@ -888,10 +888,10 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-arb-ts@1.0.0-beta.0:
-  version "1.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-1.0.0-beta.0.tgz#b506382d4a475b9087ca73c5dd67017fb72ba409"
-  integrity sha512-vlSmW3EkqHUus+Iyq0DV+7zPTUCIzrLJXKVnFb9EZ33NGRtEgJOm3SBrEuSHyCO7BhebsR5pPgo1rcXZBG1A+A==
+arb-ts@1.0.0-beta.1:
+  version "1.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-1.0.0-beta.1.tgz#b320cdf6751e37e44e983260f6187b16ba700bf3"
+  integrity sha512-JIqL81VW+1WsAPu3Cf5W0NS3i7KmU4c3ejePMgtLIKPuHhFDEnKvH79wigDehkIhoqdGcZ/8HZTjIsQPJYldEQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
