@@ -3195,10 +3195,10 @@ aproba@^1.1.1:
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
   integrity sha512-Y9J6ZjXtoYh8RnXVCMOU/ttDmk1aBjunq9vO0ta5x85WDQiQfUF9sIPBITdbiiIVcBo03Hi3jMxigBtsddlXRw==
 
-arb-ts@1.0.0-beta.0:
-  version "1.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-1.0.0-beta.0.tgz#b506382d4a475b9087ca73c5dd67017fb72ba409"
-  integrity sha512-vlSmW3EkqHUus+Iyq0DV+7zPTUCIzrLJXKVnFb9EZ33NGRtEgJOm3SBrEuSHyCO7BhebsR5pPgo1rcXZBG1A+A==
+arb-ts@1.0.0-beta.1:
+  version "1.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-1.0.0-beta.1.tgz#b320cdf6751e37e44e983260f6187b16ba700bf3"
+  integrity sha512-JIqL81VW+1WsAPu3Cf5W0NS3i7KmU4c3ejePMgtLIKPuHhFDEnKvH79wigDehkIhoqdGcZ/8HZTjIsQPJYldEQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -12998,16 +12998,16 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-token-bridge-sdk@3.0.0-beta.0:
-  version "3.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-3.0.0-beta.0.tgz#aa9c6676e02d017159af05c4cc19fb6fe15a84a3"
-  integrity sha512-asymSQJhBZfJlstX9jY+tGDiIxIPGGpOb+lrpg3/gYRpz7iJFteJlfBW6XTkvQ9i5d8IbuonOIcgGRTsDOl5/Q==
+token-bridge-sdk@3.0.0-beta.1:
+  version "3.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/token-bridge-sdk/-/token-bridge-sdk-3.0.0-beta.1.tgz#306b6db65f44ee05d17ae82bbc23e3f3c6b50083"
+  integrity sha512-EGz1MIQ9MRfEX2h+PqOH78GKNsZ1vtqrxph+7JNZXh2W5WIyfsBPPq7/JSU5lR5OFGHBVJ/SQt8mMHiNZZhO0A==
   dependencies:
     "@apollo/client" "^3.4.10"
     "@rehooks/local-storage" "^2.3.0"
     "@types/lodash.isempty" "^4.4.6"
     "@uniswap/token-lists" "^1.0.0-beta.25"
-    arb-ts "1.0.0-beta.0"
+    arb-ts "1.0.0-beta.1"
     axios "^0.21.4"
     ethers "^5.4.6"
     graphql "^15.5.3"
