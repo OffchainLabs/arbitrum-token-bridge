@@ -59,9 +59,9 @@ export default function TransactionConfirmationModal({
           >
             <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div className="sm:flex sm:items-start">
-                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10">
                   <ExclamationIcon
-                    className="h-6 w-6 text-red-600"
+                    className="h-6 w-6"
                     aria-hidden="true"
                   />
                 </div>
@@ -91,7 +91,8 @@ export default function TransactionConfirmationModal({
                           Arbitrum to Ethereum! <br /> <br /> Once initiated,
                           you will have to
                           <b> wait 1 week</b>, after which you will be able to
-                          claim your funds on L1 for roughly 200k gas.
+                          claim your funds on Ethereum mainnet (L1) which may incur a
+                          high gas fee of roughly 200k gas.
                           <br /> <br /> Would you like to proceed?
                         </>
                       )}
