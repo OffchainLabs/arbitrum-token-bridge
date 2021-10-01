@@ -103,3 +103,7 @@ export const getPendingTransactions = ({ state }: Context) => {
 export const getSuccessfulL1Deposits = ({ state }: Context) => {
   return state.app.successfulL1Deposits
 }
+
+export const getSortedTransactions = ({ state }: Context) => {
+  return state.app.sortedTransactions
+}

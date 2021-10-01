@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { BigNumber } from 'ethers'
 import { AssetType, Transaction, useArbTokenBridge } from 'token-bridge-sdk'
@@ -11,12 +11,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
-    app: {
-      arbTokenBridge,
-      sortedTransactions,
-      l2NetworkDetails,
-      arbTokenBridgeLoaded
-    }
+    app: { arbTokenBridge, l2NetworkDetails, arbTokenBridgeLoaded }
   } = useAppState()
 
   const getL2TxnHashes = useCallback(
@@ -63,11 +58,6 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     },
     [useArbTokenBridge, l2NetworkDetails]
   )
-
-  const txIdsSet = useMemo(
-    () => new Set([...sortedTransactions.map(tx => tx.txID)]),
-    [sortedTransactions]
-  )
   /**
    * For every L1 deposit, we ensure the relevant L2 transactions are included in the transaction list:
    * For Eth: the "deposit-l2" (which is the ticket creation)
@@ -79,9 +69,14 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     }
 
     const successfulL1Deposits = actions.app.getSuccessfulL1Deposits()
+    const sortedTransactions = actions.app.getSortedTransactions()
+
     Promise.all(successfulL1Deposits.map(getL2TxnHashes))
       .then(txnHashesArr => {
         const transactionsToAdd: Transaction[] = []
+
+        const txIdsSet = new Set([...sortedTransactions.map(tx => tx.txID)])
+
         successfulL1Deposits.forEach((depositTxn: Transaction, i: number) => {
           const txnHashes = txnHashesArr[i]
           if (txnHashes === null) {
@@ -141,12 +136,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
       .catch(err => {
         console.warn('Errors checking to retryable txns to add', err)
       })
-  }, [
-    sortedTransactions,
-    txIdsSet,
-    bridge,
-    arbTokenBridge?.transactions?.addTransactions
-  ])
+  }, [bridge, arbTokenBridge?.transactions?.addTransactions])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddL2DepositTxns,
