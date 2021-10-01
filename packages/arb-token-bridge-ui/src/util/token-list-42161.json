@@ -330,8 +330,9 @@
             "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
     }, {
+        "logoURI": "https://storage.googleapis.com/zapper-fi-assets/tokens/arbitrum/0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a.png",
         "chainId": 42161,
-        "address": "0x590020B1005b8b25f1a2C82c5f743c540dcfa24d",
+        "address": "0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
         "name": "GMX",
         "symbol": "GMX",
         "decimals": 18,
