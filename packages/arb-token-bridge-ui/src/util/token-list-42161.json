@@ -1,7 +1,7 @@
 {
   "name": "Arbitrum One",
   "timestamp": "2021-10-02T22:57:35.195Z",
-  "version": { "major": 1, "minor": 10, "patch": 3 },
+  "version": { "major": 2, "minor": 10, "patch": 3 },
   "tokens": [
     {
       "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
@@ -35,17 +35,6 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0x0000A1c00009A619684135B824Ba02f7FbF3A572",
-        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
-    },
-    {
-      "chainId": 42161,
-      "address": "0x3abccA0b837ce28A4b2447aDD3ca7EE69Df0ef24",
-      "name": "Amy Finance Token",
-      "symbol": "AMY",
-      "decimals": 18,
-      "extensions": {
-        "l1Address": "0x282dB609e787A132391Eb64820ba6129FceB2695",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
