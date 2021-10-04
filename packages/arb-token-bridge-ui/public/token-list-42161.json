@@ -1,7 +1,7 @@
   {
     "name": "Arbitrum One",
     "timestamp": "2021-10-02T22:57:35.195Z",
-    "version": { "major": 2, "minor": 10, "patch": 3 },
+    "version": { "major": 2, "minor": 0, "patch": 0 },
     "tokens": [
       {
         "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
