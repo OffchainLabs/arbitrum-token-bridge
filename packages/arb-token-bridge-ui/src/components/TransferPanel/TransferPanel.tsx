@@ -130,7 +130,11 @@ const TransferPanel = (): JSX.Element => {
 
           if (!bridgeTokens[selectedToken.address]?.allowed) {
             // ** Sanity check: ensure not allowed yet  */
-            const allowed = await isAllowed(bridge, selectedToken.address, amountRaw)
+            const allowed = await isAllowed(
+              bridge,
+              selectedToken.address,
+              amountRaw
+            )
             if (!allowed) {
               await latestToken.current.approve(selectedToken.address)
             }
