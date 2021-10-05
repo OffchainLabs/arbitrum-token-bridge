@@ -51,6 +51,17 @@
         "l1Address": "0x160fd7c0469D74e67E9e07e9188e2EE2BCd2b329",
         "l1GatewayAddress": "0x917dc9a69F65dC3082D518192cd3725E1Fa96cA2"
       }
+    },
+    {
+      "chainId": 421611,
+      "address": "0xB47e6A5f8b33b3F17603C83a0535A9dcD7E32681",
+      "name": "Wrapped ETH",
+      "symbol": "WETH",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xc778417e063141139fce010982780140aa0cd5ab",
+        "l1GatewayAddress": "0x81d1a19cf7071732D4313c75dE8DD5b8CF697eFD"
+      }
     }
   ]
 }
