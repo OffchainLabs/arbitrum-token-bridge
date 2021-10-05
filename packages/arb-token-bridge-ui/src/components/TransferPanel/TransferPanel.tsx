@@ -15,12 +15,16 @@ import TransactionConfirmationModal from '../TransactionConfirmationModal/Transa
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 
-const isAllowed = async (bridge: Bridge, l1TokenAddress: string) => {
+const isAllowed = async (
+  bridge: Bridge,
+  l1TokenAddress: string,
+  amountNeeded: BigNumber
+) => {
   const token = ERC20__factory.connect(l1TokenAddress, bridge.l1Provider)
   const walletAddress = await bridge.l1Bridge.getWalletAddress()
   const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    BigNumber.from('0xffffffffffffffffffffffff').div(2)
+    amountNeeded
   )
 }
 const TransferPanel = (): JSX.Element => {
@@ -121,15 +125,16 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
         if (selectedToken) {
+          const { decimals } = selectedToken
+          const amountRaw = utils.parseUnits(amount, decimals)
+
           if (!bridgeTokens[selectedToken.address]?.allowed) {
             // ** Sanity check: ensure not allowed yet  */
-            const allowed = await isAllowed(bridge, selectedToken.address)
+            const allowed = await isAllowed(bridge, selectedToken.address, amountRaw)
             if (!allowed) {
               await latestToken.current.approve(selectedToken.address)
             }
           }
-          const { decimals } = selectedToken
-          const amountRaw = utils.parseUnits(amount, decimals)
           latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
