@@ -102,7 +102,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
     }
     if (!res) {
-      // eslint-disable-next-line no-alert
       toast.error("Can't claim this withdrawal yet; try again later")
     }
   }
