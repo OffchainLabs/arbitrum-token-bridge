@@ -2,6 +2,7 @@ import React, { useContext, useState, useMemo } from 'react'
 
 import { ERC20__factory, Bridge } from 'arb-ts'
 import { utils, BigNumber } from 'ethers'
+import { toast } from 'react-hot-toast'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 
@@ -105,7 +106,7 @@ const TransferPanel = (): JSX.Element => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
     if (!bridge) {
       // eslint-disable-next-line no-alert
-      alert("Bridge null! This shouldn't happen. Let support know.")
+      toast.error("Bridge null! This shouldn't happen. Let support know.")
       return
     }
     setTransferring(true)

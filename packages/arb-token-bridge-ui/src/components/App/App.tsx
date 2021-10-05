@@ -8,6 +8,7 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
+import { toast, Toaster } from 'react-hot-toast'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
@@ -165,7 +166,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           )
           // TODO: show user a nice dialogue box instead of
           // eslint-disable-next-line no-alert
-          alert('Please connect to appropriate chain')
+          toast.error('Please connect to appropriate chain')
           // TODO: reset state so user can attempt to press "Deposit" again
         }
       }
@@ -295,6 +296,19 @@ const App = (): JSX.Element => {
 
   return (
     <Provider value={overmind}>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 5000
+        }}
+        containerStyle={{
+          zIndex: 10000,
+          top: 20,
+          left: 20,
+          bottom: 20,
+          right: 20
+        }}
+      />
       <Layout>
         <Injector>
           <Routes />

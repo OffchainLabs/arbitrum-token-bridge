@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
+import { toast } from 'react-hot-toast'
 import { useAppState } from 'src/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
@@ -102,7 +103,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     }
     if (!res) {
       // eslint-disable-next-line no-alert
-      alert("Can't claim this withdrawal yet; try again later")
+      toast.error("Can't claim this withdrawal yet; try again later")
     }
   }
 
