@@ -277,13 +277,14 @@ export const useArbTokenBridge = (
         const seqNums = await bridge.getInboxSeqNumFromContractTransaction(
           receipt
         )
-        if (!seqNums) return
+        if (!seqNums) throw new Error("No sequence number detected")
         const seqNum = seqNums[0].toNumber()
         updateTransaction(receipt, tx, seqNum)
         updateTokenData(erc20L1Address)
         return receipt
       } catch (err) {
         console.warn('deposit token failure', err)
+        throw new Error("deposit token failure")
       }
     },
     [bridge, bridgeTokens]

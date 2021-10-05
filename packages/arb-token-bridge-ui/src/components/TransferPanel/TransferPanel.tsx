@@ -139,10 +139,10 @@ const TransferPanel = (): JSX.Element => {
               await latestToken.current.approve(selectedToken.address)
             }
           }
-          latestToken.current.deposit(selectedToken.address, amountRaw)
+          await latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          latestEth.current.deposit(amountRaw)
+          await latestEth.current.deposit(amountRaw)
         }
       } else {
         if (networkDetails?.isArbitrum === false) {
