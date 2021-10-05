@@ -284,7 +284,7 @@ export const useArbTokenBridge = (
         return receipt
       } catch (err) {
         console.warn('deposit token failure', err)
-        throw new Error("deposit token failure")
+        throw err;
       }
     },
     [bridge, bridgeTokens]
