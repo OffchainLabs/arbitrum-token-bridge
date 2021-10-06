@@ -386,20 +386,32 @@ export const useArbTokenBridge = (
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string) => {
+      let l1Address: string;
+      let l2Address: string | undefined
+      const maybeL1Address = await bridge.getERC20L1Address(erc20L1orL2Address)
+      if (maybeL1Address){
+        // looks like l2 address was provided
+        l1Address = maybeL1Address
+        l2Address = erc20L1orL2Address
+      } else {
+        // looks like l1 address was provided
+        l1Address = erc20L1orL2Address
+        l2Address = await bridge.getERC20L2Address(l1Address)
+      }
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
-      const l1Address = erc20L1orL2Address
       const l1Data = await bridge.l1Bridge.getL1TokenData(erc20L1orL2Address)
 
       const { symbol, allowed, contract } = l1Data
       const name = await contract.name()
       const decimals = await contract.decimals()
-      let l2Address: string | undefined
       try {
-        const l2Data = await bridge.l2Bridge.getL2TokenData(erc20L1orL2Address)
-        l2Address = l2Data.contract.address
+        // check if token is deployed at l2 address; if not this will throw
+        await bridge.l2Bridge.getL2TokenData(l2Address)
       } catch (error) {
         console.info(`no L2 token for ${l1Address} (which is fine)`)
+
+        l2Address = undefined
       }
 
       bridgeTokensToAdd[l1Address] = {
