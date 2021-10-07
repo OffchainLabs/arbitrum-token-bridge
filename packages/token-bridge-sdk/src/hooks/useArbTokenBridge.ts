@@ -503,7 +503,6 @@ export const useArbTokenBridge = (
 
 
   const updateTokenBalances = async (bridgeTokens:ContractStorage<BridgeToken>)=>{
-    console.warn('updating all token balances now');
     
     const walletAddress = await walletAddressCached()
 
@@ -532,7 +531,6 @@ export const useArbTokenBridge = (
           arbChainBalance: l2Address ?  l2AddressToBalanceMap[l2Address]: undefined
         } }
       }, {})
-      console.warn('done all token balances now');
 
       return {...oldERC20Balances, ...newERC20Balances}
     })
