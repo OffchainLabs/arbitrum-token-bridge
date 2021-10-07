@@ -1,7 +1,7 @@
 {
   "name": "Arbitrum One",
   "timestamp": "2021-10-02T22:57:35.195Z",
-  "version": { "major": 2, "minor": 0, "patch": 0 },
+  "version": { "major": 2, "minor": 1, "patch": 0 },
   "tokens": [
     {
       "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
@@ -432,7 +432,7 @@
       "name": "KAKI USDC",
       "symbol": "kUSDC",
       "decimals": 18,
-      "extensions": {
+       "extensions": {
         "l1Address": "0xa124ff1e97e7f3e4a796f6a2d3bf5d0e2d41973d",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
