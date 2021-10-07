@@ -1023,7 +1023,7 @@ export const useArbTokenBridge = (
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,
-      triggerOutbox: triggerOutboxToken,
+      triggerOutbox: triggerOutboxToken
     },
     arbSigner: bridge.l2Bridge.l2Signer,
     transactions: {
