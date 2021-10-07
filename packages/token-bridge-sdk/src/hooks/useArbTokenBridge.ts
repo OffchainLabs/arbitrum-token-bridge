@@ -378,10 +378,16 @@ export const useArbTokenBridge = (
         decimals
       }
     }
-    setBridgeTokens(oldBridgeTokens => ({
-      ...oldBridgeTokens,
-      ...bridgeTokensToAdd
-    }))
+    setBridgeTokens(oldBridgeTokens => {
+      const newBridgeTokens = {
+        ...oldBridgeTokens,
+        ...bridgeTokensToAdd
+      }
+      updateTokenBalances(newBridgeTokens)
+      return newBridgeTokens
+    })
+ 
+    
   }
 
   const addToken = useCallback(
@@ -494,6 +500,43 @@ export const useArbTokenBridge = (
     },
     [setErc20Balances, bridgeTokens, setBridgeTokens]
   )
+
+
+  const updateTokenBalances = async (bridgeTokens:ContractStorage<BridgeToken>)=>{
+    console.warn('updating all token balances now');
+    
+    const walletAddress = await walletAddressCached()
+
+    const l1Addresses  = Object.keys(bridgeTokens)
+    
+    const l2Addresses = l1Addresses.map((l1Address)=>{
+      return (bridgeTokens[l1Address] as ERC20BridgeToken).l2Address
+    }).filter((val): val is string => !!val)
+
+    const l1Balances = await bridge.getTokenBalanceBatch(walletAddress, l1Addresses, 'L1')
+    const l2Balances = await bridge.getTokenBalanceBatch(walletAddress, l2Addresses, 'L2')
+
+    const l2AddressToBalanceMap: {
+      [l2Address: string]: BigNumber | undefined
+    } = l2Balances.reduce((acc, l1Address)=>{
+        const { tokenAddr, balance } = l1Address
+        return {...acc, [tokenAddr]: balance}
+    },{})
+
+    setErc20Balances((oldERC20Balances)=>{
+      const newERC20Balances: ContractStorage<BridgeBalance> = l1Balances.reduce((acc, {tokenAddr: l1TokenAddress, balance: l1Balance})=>{
+      const l2Address = (bridgeTokens[l1TokenAddress] as ERC20BridgeToken).l2Address
+
+        return {...acc, [l1TokenAddress]:{
+          balance: l1Balance,
+          arbChainBalance: l2Address ?  l2AddressToBalanceMap[l2Address]: undefined
+        } }
+      }, {})
+      console.warn('done all token balances now');
+
+      return {...oldERC20Balances, ...newERC20Balances}
+    })
+  }
 
   const triggerOutboxToken = useCallback(
     async (id: string) => {
@@ -980,7 +1023,7 @@ export const useArbTokenBridge = (
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,
-      triggerOutbox: triggerOutboxToken
+      triggerOutbox: triggerOutboxToken,
     },
     arbSigner: bridge.l2Bridge.l2Signer,
     transactions: {

@@ -427,6 +427,18 @@
       }
     },
     {
+      "chainId": 42161,
+      "address": "0x4f947b40BEEB9D8130437781a560E5c7D089730f",
+      "name": "KAKI USDC",
+      "symbol": "kUSDC",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xa124ff1e97e7f3e4a796f6a2d3bf5d0e2d41973d",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+
+    {
       "logoURI": "https://zapper.fi/images/KUN-icon.png",
       "chainId": 42161,
       "address": "0x04cb2d263a7489f02d813eaaB9Ba1bb8466347F2",
