@@ -277,14 +277,14 @@ export const useArbTokenBridge = (
         const seqNums = await bridge.getInboxSeqNumFromContractTransaction(
           receipt
         )
-        if (!seqNums) throw new Error("No sequence number detected")
+        if (!seqNums) throw new Error('No sequence number detected')
         const seqNum = seqNums[0].toNumber()
         updateTransaction(receipt, tx, seqNum)
         updateTokenData(erc20L1Address)
         return receipt
       } catch (err) {
         console.warn('deposit token failure', err)
-        throw err;
+        throw err
       }
     },
     [bridge, bridgeTokens]
@@ -357,39 +357,39 @@ export const useArbTokenBridge = (
     },
     [bridge, bridgeTokens]
   )
-  const addTokensStatic = useCallback(
-    (arbTokenList: TokenList) => {
-      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-      for (const tokenData of arbTokenList.tokens) {
-        const {
-          address: l2Address,
-          name,
-          symbol,
-          extensions,
-          decimals
-        } = tokenData
-        const l1Address = (extensions as any).l1Address as string
-        bridgeTokensToAdd[l1Address] = {
-          name,
-          type: TokenType.ERC20,
-          symbol,
-          allowed: false,
-          address: l1Address,
-          l2Address,
-          decimals
-        }
+  const addTokensStatic = (arbTokenList: TokenList) => {
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    for (const tokenData of arbTokenList.tokens) {
+      const {
+        address: l2Address,
+        name,
+        symbol,
+        extensions,
+        decimals
+      } = tokenData
+      const l1Address = (extensions as any).l1Address as string
+      bridgeTokensToAdd[l1Address] = {
+        name,
+        type: TokenType.ERC20,
+        symbol,
+        allowed: false,
+        address: l1Address,
+        l2Address,
+        decimals
       }
-      setBridgeTokens({ ...bridgeTokens, ...bridgeTokensToAdd })
-    },
-    [bridgeTokens]
-  )
+    }
+    setBridgeTokens(oldBridgeTokens => ({
+      ...oldBridgeTokens,
+      ...bridgeTokensToAdd
+    }))
+  }
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string) => {
-      let l1Address: string;
+      let l1Address: string
       let l2Address: string | undefined
       const maybeL1Address = await bridge.getERC20L1Address(erc20L1orL2Address)
-      if (maybeL1Address){
+      if (maybeL1Address) {
         // looks like l2 address was provided
         l1Address = maybeL1Address
         l2Address = erc20L1orL2Address
@@ -482,14 +482,17 @@ export const useArbTokenBridge = (
         arbChainBalance: l2Data?.balance || Zero
       }
 
-      setErc20Balances({ ...erc20Balances, [l1Address]: erc20TokenBalance })
+      setErc20Balances(oldErc20Balances => ({
+        ...oldErc20Balances,
+        [l1Address]: erc20TokenBalance
+      }))
       bridgeToken.allowed = l1Data.allowed
       const newBridgeTokens = { [l1Address]: bridgeToken }
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })
     },
-    [setErc20Balances, erc20Balances, bridgeTokens, setBridgeTokens]
+    [setErc20Balances, bridgeTokens, setBridgeTokens]
   )
 
   const triggerOutboxToken = useCallback(
@@ -524,9 +527,11 @@ export const useArbTokenBridge = (
         const rec = await res.wait()
         if (rec.status === 1) {
           setTransactionConfirmed(rec.transactionHash)
-          const newPendingWithdrawalsMap = { ...pendingWithdrawalsMap }
-          delete newPendingWithdrawalsMap[id]
-          setPendingWithdrawalMap(newPendingWithdrawalsMap)
+          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+            const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
+            delete newPendingWithdrawalsMap[id]
+            return newPendingWithdrawalsMap
+          })
           addToExecutedMessagesCache(batchNumber, indexInBatch)
         } else {
           setTransactionFailure(rec.transactionHash)
@@ -565,9 +570,12 @@ export const useArbTokenBridge = (
         const rec = await res.wait()
         if (rec.status === 1) {
           setTransactionConfirmed(rec.transactionHash)
-          const newPendingWithdrawalsMap = { ...pendingWithdrawalsMap }
-          delete newPendingWithdrawalsMap[id]
-          setPendingWithdrawalMap(newPendingWithdrawalsMap)
+          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+            const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
+            delete newPendingWithdrawalsMap[id]
+            return newPendingWithdrawalsMap
+          })
+
           addToExecutedMessagesCache(batchNumber, indexInBatch)
         } else {
           setTransactionFailure(rec.transactionHash)
