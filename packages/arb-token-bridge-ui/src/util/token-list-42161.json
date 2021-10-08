@@ -1,7 +1,11 @@
 {
   "name": "Arbitrum One",
   "timestamp": "2021-10-02T22:57:35.195Z",
-  "version": { "major": 2, "minor": 2, "patch": 0 },
+  "version": {
+    "major": 2,
+    "minor": 3,
+    "patch": 0
+  },
   "tokens": [
     {
       "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
@@ -158,6 +162,17 @@
       }
     },
     {
+      "chainId": 42161,
+      "address": "0x989D099d29F62b839C8CbD41c82c6554a5515752",
+      "name": "Cryption Network Token",
+      "symbol": "CNT",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x429876c4a6f89FB470E92456B8313879DF98B63c",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "logoURI": "https://zapper.fi/images/COMP-icon.png",
       "chainId": 42161,
       "address": "0x354A6dA3fcde098F8389cad84b0182725c6C91dE",
@@ -300,6 +315,18 @@
       }
     },
     {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xEec2bE5c91ae7f8a338e1e5f3b5DE49d07AfdC81/logo.png",
+      "chainId": 42161,
+      "address": "0x6C2C06790b3E3E3c38e12Ee22F8183b37a13EE55",
+      "name": "Dopex Governance Token",
+      "symbol": "DPX",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xEec2bE5c91ae7f8a338e1e5f3b5DE49d07AfdC81",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "chainId": 42161,
       "address": "0xA7Aa2921618e3D63dA433829d448b58C9445A4c3",
       "name": "DeversiFi Token",
@@ -427,18 +454,6 @@
       }
     },
     {
-      "chainId": 42161,
-      "address": "0x4f947b40BEEB9D8130437781a560E5c7D089730f",
-      "name": "KAKI USDC",
-      "symbol": "kUSDC",
-      "decimals": 18,
-       "extensions": {
-        "l1Address": "0xa124ff1e97e7f3e4a796f6a2d3bf5d0e2d41973d",
-        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
-    },
-
-    {
       "logoURI": "https://zapper.fi/images/KUN-icon.png",
       "chainId": 42161,
       "address": "0x04cb2d263a7489f02d813eaaB9Ba1bb8466347F2",
@@ -482,6 +497,17 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x539bdE0d7Dbd336b79148AA742883198BBF60342",
+      "name": "MAGIC",
+      "symbol": "MAGIC",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xB0c7a3Ba49C7a6EaBa6cD4a96C55a1391070Ac9A",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -662,14 +688,14 @@
       }
     },
     {
-      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xD291E7a03283640FDc51b121aC401383A46cC623/logo.png",
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919/logo.png",
       "chainId": 42161,
-      "address": "0xef888bcA6AB6B1d26dbeC977C455388ecd794794",
-      "name": "Rari Governance Token",
-      "symbol": "RGT",
+      "address": "0xaeF5bbcbFa438519a5ea80B4c7181B4E78d419f2",
+      "name": "Rai Reflex Index",
+      "symbol": "RAI",
       "decimals": 18,
       "extensions": {
-        "l1Address": "0xD291E7a03283640FDc51b121aC401383A46cC623",
+        "l1Address": "0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -683,6 +709,18 @@
       "extensions": {
         "l1Address": "0x0ff5A8451A839f5F0BB3562689D9A44089738D11",
         "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+      }
+    },
+    {
+      "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xD291E7a03283640FDc51b121aC401383A46cC623/logo.png",
+      "chainId": 42161,
+      "address": "0xef888bcA6AB6B1d26dbeC977C455388ecd794794",
+      "name": "Rari Governance Token",
+      "symbol": "RGT",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xD291E7a03283640FDc51b121aC401383A46cC623",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
     {
@@ -774,6 +812,17 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0x6cAcDB97e3fC8136805a9E7c342d866ab77D0957",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0xFa51B42d4C9EA35F1758828226AaEdBeC50DD54E",
+      "name": "Taekwondo Access Credit",
+      "symbol": "TAC",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xDeeB6091A5ADc78fA0332BEE5A38a8908b6b566e",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
@@ -951,6 +1000,17 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0xEDD7c94FD7B4971b916d15067Bc454b9E1bAD980",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x4f947b40BEEB9D8130437781a560E5c7D089730f",
+      "name": "KAKI USDC",
+      "symbol": "kUSDC",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xa124ff1e97e7f3e4a796f6a2d3bf5d0e2d41973d",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
