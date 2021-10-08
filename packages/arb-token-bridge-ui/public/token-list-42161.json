@@ -1,7 +1,7 @@
   {
     "name": "Arbitrum One",
     "timestamp": "2021-10-02T22:57:35.195Z",
-    "version": { "major": 2, "minor": 1, "patch": 0 },
+    "version": { "major": 2, "minor": 2, "patch": 0 },
     "tokens": [
       {
         "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
@@ -671,6 +671,18 @@
         "extensions": {
           "l1Address": "0xD291E7a03283640FDc51b121aC401383A46cC623",
           "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+      },
+      {
+        "logoURI": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x0ff5A8451A839f5F0BB3562689D9A44089738D11/logo.png",
+        "chainId": 42161,
+        "address": "0x32Eb7902D4134bf98A28b963D26de779AF92A212",
+        "name": "Dopex Rebate Token",
+        "symbol": "RDPX",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x0ff5A8451A839f5F0BB3562689D9A44089738D11",
+          "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
         }
       },
       {
