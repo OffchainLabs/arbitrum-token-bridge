@@ -22,7 +22,11 @@ const TokenButton = (): JSX.Element => {
     if (networkID === null) {
       return undefined
     }
-    return resolveTokenImg(bridgeTokens[selectedAddress]?.logoURI)
+    const logo = bridgeTokens[selectedAddress]?.logoURI
+    if (logo) {
+      return resolveTokenImg(logo)
+    }
+    return undefined
   }, [selectedToken?.address, networkID])
 
   return (
