@@ -6,8 +6,7 @@
       "minor": 3,
       "patch": 0
     },
-    "tokens": [
-      {
+    "tokens": [{
         "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
         "chainId": 42161,
         "address": "0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d",
@@ -328,6 +327,17 @@
       },
       {
         "chainId": 42161,
+        "address": "0xE212f5E733257ed5628a2FeBcEdBc9222e535F51",
+        "name": "Digital Standard Unit",
+        "symbol": "DSU",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x605D26FBd5be761089281d5cec2Ce86eeA667109",
+          "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+      },
+      {
+        "chainId": 42161,
         "address": "0xA7Aa2921618e3D63dA433829d448b58C9445A4c3",
         "name": "DeversiFi Token",
         "symbol": "DVF",
@@ -346,6 +356,17 @@
         "decimals": 18,
         "extensions": {
           "l1Address": "0xa1d65E8fB6e87b60FECCBc582F7f97804B725521",
+          "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+      },
+      {
+        "chainId": 42161,
+        "address": "0xCE32aA8d60807182c0003Ef9cc1976Fa10E5d312",
+        "name": "Empty Set Share",
+        "symbol": "ESS",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x24aE124c4CC33D6791F8E8B63520ed7107ac8b3e",
           "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
       },
@@ -783,6 +804,17 @@
       },
       {
         "chainId": 42161,
+        "address": "0x326c33FD1113c1F29B35B4407F3d6312a8518431",
+        "name": "Strips Token",
+        "symbol": "STRP",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x97872EAfd79940C7b24f7BCc1EADb1457347ADc9",
+          "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+      },
+      {
+        "chainId": 42161,
         "address": "0x20f9628a485ebCc566622314f6e07E7Ee61fF332",
         "name": "SUM",
         "symbol": "SUM",
@@ -838,6 +870,18 @@
         }
       },
       {
+        "logoURI": "https://zapper.fi/images/TUSD-icon.png",
+        "chainId": 42161,
+        "address": "0x4D15a3A2286D883AF0AA1B3f21367843FAc63E07",
+        "name": "TrueUSD",
+        "symbol": "TUSD",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x0000000000085d4780B73119b644AE5ecd22b376",
+          "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+      },
+      {
         "logoURI": "https://zapper.fi/images/UBT-icon.png",
         "chainId": 42161,
         "address": "0x2aD62674A64E698C24831Faf824973C360430140",
@@ -846,6 +890,18 @@
         "decimals": 8,
         "extensions": {
           "l1Address": "0x8400D94A5cb0fa0D041a3788e395285d61c9ee5e",
+          "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+        }
+      },
+      {
+        "logoURI": "https://zapper.fi/images/UDT-icon.png",
+        "chainId": 42161,
+        "address": "0xd5d3aA404D7562d09a848F96a8a8d5D65977bF90",
+        "name": "Unlock Discount Token",
+        "symbol": "UDT",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x90DE74265a416e1393A450752175AED98fe11517",
           "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
         }
       },
