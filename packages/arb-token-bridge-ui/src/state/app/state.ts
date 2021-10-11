@@ -1,4 +1,4 @@
-import { Bridge, OutgoingMessageState } from 'arb-ts'
+import { OutgoingMessageState } from 'arb-ts'
 import dayjs from 'dayjs'
 import { ethers, BigNumber } from 'ethers'
 import _isEmpty from 'lodash/isEmpty'
@@ -48,7 +48,6 @@ const outgoungStateToString = {
 }
 
 export type AppState = {
-  bridge: Bridge | null
   arbTokenBridge: ArbTokenBridge
   connectionState: number
   networkID: string | null
@@ -76,7 +75,6 @@ export type AppState = {
 }
 
 export const defaultState: AppState = {
-  bridge: null,
   arbTokenBridge: {} as ArbTokenBridge,
   connectionState: ConnectionState.LOADING,
   networkID: null,

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useContext } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -7,6 +7,7 @@ import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
 
 import { MergedTransaction } from '../../state/app/state'
+import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
@@ -64,10 +65,10 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       isDepositMode,
       currentL1BlockNumber,
       seqNumToAutoRedeems,
-      bridge,
       networkDetails
     }
   } = useAppState()
+  const bridge = useContext(BridgeContext)
 
   const showRedeemRetryableButton = useMemo(() => {
     return (
