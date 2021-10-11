@@ -12,3 +12,10 @@ export enum PendingWithdrawalsLoadedState {
   READY,
   ERROR
 }
+
+export const resolveTokenImg = (url: string): string => {
+  if (url.startsWith('ipfs')) {
+    return `https://ipfs.io/ipfs/${url.substr(7)}`
+  }
+  return url
+}

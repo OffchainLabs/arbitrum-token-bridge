@@ -5,6 +5,7 @@ import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 
 import { useActions, useAppState } from '../../state'
+import { resolveTokenImg } from 'src/util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
@@ -60,7 +61,7 @@ const TokenRow = ({
     if (networkID === null) {
       return undefined
     }
-    return bridgeTokens[address]?.logoURI
+    return resolveTokenImg(bridgeTokens[address]?.logoURI)
   }, [address, networkID, bridgeTokens])
 
   function selectToken() {
