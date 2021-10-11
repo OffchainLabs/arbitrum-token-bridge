@@ -27,6 +27,7 @@ export interface BridgeToken {
   allowed: boolean
   address: string
   l2Address?: string
+  logoURI?: string
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
