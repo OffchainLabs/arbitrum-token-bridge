@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
+import { resolveTokenImg } from 'src/util'
 import { TokenModal } from '../TokenModal/TokenModal'
 
 const TokenButton = (): JSX.Element => {
@@ -21,7 +22,7 @@ const TokenButton = (): JSX.Element => {
     if (networkID === null) {
       return undefined
     }
-    return bridgeTokens[selectedAddress]?.logoURI
+    return resolveTokenImg(bridgeTokens[selectedAddress]?.logoURI)
   }, [selectedToken?.address, networkID])
 
   return (
