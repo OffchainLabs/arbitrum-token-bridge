@@ -1,26 +1,40 @@
 import React, { useEffect } from 'react'
 
-import { useAppState } from '../../state'
-import tokenListMainnet from '../../util/token-list-42161.json'
-import tokenListRinkeby from '../../util/token-list-421611.json'
+import { useAppState, useActions } from '../../state'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
 const TokenListSyncer = (): JSX.Element => {
   const {
-    app: { arbTokenBridge, networkID }
+    app: { arbTokenBridge, networkID, l2NetworkDetails }
   } = useAppState()
+  const actions = useActions()
 
   useEffect(() => {
-    if (!arbTokenBridge?.walletAddress || !networkID) {
+    if (!arbTokenBridge?.walletAddress || !l2NetworkDetails) {
       return
     }
-    if (networkID === '1' || networkID === '42161') {
-      arbTokenBridge.token.addTokensStatic(tokenListMainnet)
-    } else if (networkID === '4' || networkID === '421611') {
-      arbTokenBridge.token.addTokensStatic(tokenListRinkeby)
-    }
-  }, [arbTokenBridge?.walletAddress, networkID])
+    const { chainID } = l2NetworkDetails
+
+    const tokenListName = (() => {
+      switch (chainID) {
+        case '42161':
+          return 'token-list-42161.json'
+        case '421611':
+          return 'token-list-421611.json'
+        default:
+          console.warn('No list for current network')
+      }
+    })()
+    if (!tokenListName) return
+    fetch(tokenListName)
+      .then(response => {
+        return response.json()
+      })
+      .then(tokenListData => {
+        arbTokenBridge.token.addTokensStatic(tokenListData)
+      })
+  }, [arbTokenBridge?.walletAddress, l2NetworkDetails])
 
   return <></>
 }

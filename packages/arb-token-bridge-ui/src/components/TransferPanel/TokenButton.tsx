@@ -1,23 +1,27 @@
 import React, { useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
-import { getTokenImg } from '../../util'
 import { TokenModal } from '../TokenModal/TokenModal'
 
 const TokenButton = (): JSX.Element => {
   const {
-    app: { selectedToken, networkID }
+    app: {
+      selectedToken,
+      networkID,
+      arbTokenBridge: { bridgeTokens }
+    }
   } = useAppState()
   const [tokeModalOpen, setTokenModalOpen] = useState(false)
 
   const tokenLogo = useMemo<string | undefined>(() => {
-    if (!selectedToken?.address) {
+    const selectedAddress = selectedToken?.address
+    if (!selectedAddress) {
       return 'https://ethereum.org/static/4b5288012dc4b32ae7ff21fccac98de1/31987/eth-diamond-black-gray.png'
     }
     if (networkID === null) {
       return undefined
     }
-    return getTokenImg(networkID, selectedToken?.address)
+    return bridgeTokens[selectedAddress]?.logoURI
   }, [selectedToken?.address, networkID])
 
   return (

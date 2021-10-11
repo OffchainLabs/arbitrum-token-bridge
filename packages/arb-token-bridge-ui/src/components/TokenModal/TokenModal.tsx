@@ -5,7 +5,6 @@ import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 
 import { useActions, useAppState } from '../../state'
-import { getTokenImg, isTokenWhitelisted } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
@@ -61,8 +60,8 @@ const TokenRow = ({
     if (networkID === null) {
       return undefined
     }
-    return getTokenImg(networkID, address)
-  }, [address, networkID])
+    return bridgeTokens[address]?.logoURI
+  }, [address, networkID, bridgeTokens])
 
   function selectToken() {
     if (token) {
@@ -200,18 +199,16 @@ export const TokenModalBody = ({
 
   const addNewToken: FormEventHandler = async e => {
     e.preventDefault()
+    if (networkID === '1' || networkID === '42161') {
+      return alert("Can't add new tokens on mainnet yet")
+    }
 
     if (!isAddress(newToken) || isAddingToken) {
       return
     }
     setIsAddingToken(true)
-    console.log(newToken, networkID!)
     try {
-      if (!isTokenWhitelisted(networkID!, newToken)) {
-        setConfirmationOpen(true)
-      } else {
-        await storeNewToken()
-      }
+      await storeNewToken()
     } catch (ex) {
       console.log(ex)
     } finally {
