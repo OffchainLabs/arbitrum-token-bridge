@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
-import { resolveTokenImg } from 'src/util'
+import { resolveTokenImg } from '../../util'
 import { TokenModal } from '../TokenModal/TokenModal'
 
 const TokenButton = (): JSX.Element => {
