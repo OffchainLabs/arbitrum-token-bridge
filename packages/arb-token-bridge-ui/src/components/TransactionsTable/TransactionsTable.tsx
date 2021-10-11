@@ -75,6 +75,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       tx.direction === 'deposit-l2' &&
       tx.asset !== 'eth' &&
       tx.seqNum !== undefined &&
+      tx.status !== 'success' &&
       seqNumToAutoRedeems[tx.seqNum] &&
       seqNumToAutoRedeems[tx.seqNum].status === 'failure'
     )
@@ -195,14 +196,15 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           <div className="relative group">
             <Button
               size="sm"
-              disabled={isDepositMode}
+              disabled={!networkDetails?.isArbitrum}
               onClick={() => redeemRetryable(tx.txId)}
             >
               Re-execute
             </Button>
             {isDepositMode && (
               <Tooltip>
-                Must be on l2 network to execute your l2 deposit.
+                Must connect your wallet to l2 network to re-execute your l2
+                deposit.
               </Tooltip>
             )}
           </div>

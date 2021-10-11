@@ -102,3 +102,7 @@ export const getSuccessfulL1Deposits = ({ state }: Context) => {
 export const getSortedTransactions = ({ state }: Context) => {
   return state.app.sortedTransactions
 }
+
+export const getLatestNetworkDetails = ({ state }: Context) => {
+  return state.app.networkDetails
+}
