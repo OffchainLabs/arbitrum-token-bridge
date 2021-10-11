@@ -61,7 +61,11 @@ const TokenRow = ({
     if (networkID === null) {
       return undefined
     }
-    return resolveTokenImg(bridgeTokens[address]?.logoURI)
+    const logo = bridgeTokens[address]?.logoURI
+    if (logo) {
+      return resolveTokenImg(logo)
+    }
+    return undefined
   }, [address, networkID, bridgeTokens])
 
   function selectToken() {
