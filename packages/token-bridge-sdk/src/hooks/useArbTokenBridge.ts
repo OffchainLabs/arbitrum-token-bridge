@@ -365,7 +365,8 @@ export const useArbTokenBridge = (
         name,
         symbol,
         extensions,
-        decimals
+        decimals,
+        logoURI
       } = tokenData
       const l1Address = (extensions as any).l1Address as string
       bridgeTokensToAdd[l1Address] = {
@@ -375,7 +376,8 @@ export const useArbTokenBridge = (
         allowed: false,
         address: l1Address,
         l2Address,
-        decimals
+        decimals,
+        logoURI
       }
     }
     setBridgeTokens(oldBridgeTokens => {
@@ -406,8 +408,7 @@ export const useArbTokenBridge = (
       }
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
-      const l1Data = await bridge.l1Bridge.getL1TokenData(erc20L1orL2Address)
-
+      const l1Data = await bridge.l1Bridge.getL1TokenData(l1Address)
       const { symbol, allowed, contract } = l1Data
       const name = await contract.name()
       const decimals = await contract.decimals()
@@ -478,7 +479,7 @@ export const useArbTokenBridge = (
       if (!bridgeToken) {
         return
       }
-      const { l2Address } = bridgeToken
+      const { l2Address } = bridgeToken      
       const l1Data = await bridge.l1Bridge.getL1TokenData(l1Address)
       const l2Data =
         (l2Address && (await bridge.l2Bridge.getL2TokenData(l2Address))) ||

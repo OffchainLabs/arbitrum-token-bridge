@@ -1,4 +1,3 @@
-import { Bridge } from 'arb-ts'
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
@@ -10,10 +9,6 @@ export const setConnectionState = (
   connectionState: ConnectionState
 ) => {
   state.app.connectionState = connectionState
-}
-
-export const setBridge = ({ state }: Context, bridge: Bridge) => {
-  state.app.bridge = bridge
 }
 
 export const setCurrentL1BlockNumber = (

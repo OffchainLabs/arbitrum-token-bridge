@@ -1,0 +1,68 @@
+{
+    "name": "ArbRinkeby",
+    "timestamp": "2021-06-18T20:57:55.562Z",
+    "version": {
+      "major": 0,
+      "minor": 1,
+      "patch": 0
+    },
+    "tokens": [
+      {
+        "chainId": 421611,
+        "address": "0x049251A7175071316e089D0616d8B6aaCD2c93b8",
+        "name": "Uniswap",
+        "symbol": "UNI",
+        "decimals": 18,
+        "logoURI": "ipfs://QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg",
+        "extensions": {
+          "l1Address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+          "l1GatewayAddress": "0x917dc9a69F65dC3082D518192cd3725E1Fa96cA2"
+        }
+      },
+      {
+        "chainId": 421611,
+        "address": "0xf3f0384583d0574955Dccbb044A64Ad249cf9C3E",
+        "name": "Corn",
+        "symbol": "CORN",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0xd6A87faf418C818F93BE9aE8b63D1D4fE3e7df45",
+          "l1GatewayAddress": "0x917dc9a69F65dC3082D518192cd3725E1Fa96cA2"
+        }
+      },
+      {
+        "chainId": 421611,
+        "address": "0x2E228ef2A59686cC5c6fF06cD46ee302a4134F00",
+        "name": "Land",
+        "symbol": "LAND",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0x393FD5B96F6459511d7368778318c31d719720ad",
+          "l1GatewayAddress": "0x917dc9a69F65dC3082D518192cd3725E1Fa96cA2"
+        }
+      },
+      {
+        "chainId": 421611,
+        "address": "0xB17736aA76003F4873D9f4366190E5c6678d9a52",
+        "name": "Test USDC",
+        "symbol": "USDC",
+        "decimals": 6,
+        "extensions": {
+          "l1Address": "0x160fd7c0469D74e67E9e07e9188e2EE2BCd2b329",
+          "l1GatewayAddress": "0x917dc9a69F65dC3082D518192cd3725E1Fa96cA2"
+        }
+      },
+      {
+        "chainId": 421611,
+        "address": "0xB47e6A5f8b33b3F17603C83a0535A9dcD7E32681",
+        "name": "Wrapped ETH",
+        "symbol": "WETH",
+        "decimals": 18,
+        "extensions": {
+          "l1Address": "0xc778417e063141139fce010982780140aa0cd5ab",
+          "l1GatewayAddress": "0x81d1a19cf7071732D4313c75dE8DD5b8CF697eFD"
+        }
+      }
+    ]
+  }
+  

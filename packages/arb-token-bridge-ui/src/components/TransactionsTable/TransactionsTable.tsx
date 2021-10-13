@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useContext } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -7,6 +7,7 @@ import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
 
 import { MergedTransaction } from '../../state/app/state'
+import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
@@ -64,16 +65,17 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       isDepositMode,
       currentL1BlockNumber,
       seqNumToAutoRedeems,
-      bridge,
       networkDetails
     }
   } = useAppState()
+  const bridge = useContext(BridgeContext)
 
   const showRedeemRetryableButton = useMemo(() => {
     return (
       tx.direction === 'deposit-l2' &&
       tx.asset !== 'eth' &&
       tx.seqNum !== undefined &&
+      tx.status !== 'success' &&
       seqNumToAutoRedeems[tx.seqNum] &&
       seqNumToAutoRedeems[tx.seqNum].status === 'failure'
     )
@@ -194,14 +196,15 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           <div className="relative group">
             <Button
               size="sm"
-              disabled={isDepositMode}
+              disabled={!networkDetails?.isArbitrum}
               onClick={() => redeemRetryable(tx.txId)}
             >
               Re-execute
             </Button>
             {isDepositMode && (
               <Tooltip>
-                Must be on l2 network to execute your l2 deposit.
+                Must connect your wallet to l2 network to re-execute your l2
+                deposit.
               </Tooltip>
             )}
           </div>
