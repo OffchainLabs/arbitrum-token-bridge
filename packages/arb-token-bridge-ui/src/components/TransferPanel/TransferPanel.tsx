@@ -50,6 +50,7 @@ const TransferPanel = (): JSX.Element => {
   const latestNetworkDetails = useLatest(networkDetails)
 
   const [transferring, setTransferring] = useState(false)
+  const [transferError, setTransferError] = useState<string>('')
 
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
@@ -109,6 +110,7 @@ const TransferPanel = (): JSX.Element => {
       return
     }
     setTransferring(true)
+    showTransferError('');
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
@@ -168,9 +170,18 @@ const TransferPanel = (): JSX.Element => {
       }
     } catch (ex) {
       console.log(ex)
+      const txError = ex as { code: number, message: string }
+      if (txError && txError.code === 4001) { // user rejected tx
+        showTransferError("Transaction rejected by user.");
+      }
     } finally {
       setTransferring(false)
     }
+  }
+
+  const showTransferError = (msg: string) => {
+    setTransferError(msg);
+    setTimeout(() => { setTransferError('') }, 7000);
   }
 
   const disableDeposit = useMemo(() => {
@@ -215,6 +226,13 @@ const TransferPanel = (): JSX.Element => {
             <div>
               <StatusBadge variant="red">
                 Loading pending withdrawals failed
+              </StatusBadge>
+            </div>
+          )}
+          {transferError.length > 0 && (
+            <div>
+              <StatusBadge variant="red">
+                {transferError}
               </StatusBadge>
             </div>
           )}
