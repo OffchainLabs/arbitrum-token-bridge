@@ -1,6 +1,6 @@
 import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
 
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 
@@ -99,20 +99,17 @@ const TokenRow = ({
       </div>
 
       <p className="flex items-center text-base leading-6 font-medium text-gray-900">
-        {
-          balance
-            ? // @ts-ignore
-              +formatUnits(balance, token?.decimals || 18)
-            : null
-          // (
-          //   <Loader
-          //     type="Oval"
-          //     color="rgb(40, 160, 240)"
-          //     height={14}
-          //     width={14}
-          //   />
-          // )
-        }{' '}
+        {balance ? (
+          // @ts-ignore
+          +formatUnits(balance, token?.decimals || 18)
+        ) : (
+          <Loader
+            type="Oval"
+            color="rgb(40, 160, 240)"
+            height={14}
+            width={14}
+          />
+        )}{' '}
         {tokenSymbol}
       </p>
     </button>
@@ -176,7 +173,17 @@ export const TokenModalBody = ({
           return bal1.gt(bal2) ? -1 : 1
         })
         .filter((addr: string) => {
-          if (!tokenSearch) return true
+          if (!tokenSearch) {
+            const l1Bal = balances.erc20[addr]?.balance
+            const l2Bal = balances.erc20[addr]?.arbChainBalance
+
+            return !(
+              l1Bal &&
+              l1Bal.eq(constants.Zero) &&
+              l2Bal &&
+              l2Bal.eq(constants.Zero)
+            )
+          }
           const bridgeToken = bridgeTokens[addr]
           if (!bridgeToken) return false
           const { address, l2Address, name, symbol } = bridgeToken
