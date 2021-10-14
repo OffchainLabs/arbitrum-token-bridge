@@ -175,7 +175,7 @@ export const TokenModalBody = ({
         .filter((addr: string) => {
           if (!tokenSearch) {
             const l1Bal = balances.erc20[addr]?.balance
-            const l2Bal = balances.erc20[addr]?.balance
+            const l2Bal = balances.erc20[addr]?.arbChainBalance
 
             return !(
               l1Bal &&
