@@ -102,6 +102,13 @@ const TransferPanel = (): JSX.Element => {
     return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
+  const showTransferError = (msg: string) => {
+    setTransferError(msg)
+    setTimeout(() => {
+      setTransferError('')
+    }, 7000)
+  }
+
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
     if (!bridge) {
@@ -110,7 +117,7 @@ const TransferPanel = (): JSX.Element => {
       return
     }
     setTransferring(true)
-    showTransferError('');
+    setTransferError('')
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
@@ -170,18 +177,13 @@ const TransferPanel = (): JSX.Element => {
       }
     } catch (ex) {
       console.log(ex)
-      const txError = ex as { code: number, message: string }
-      if (txError && txError.code === 4001) { // user rejected tx
-        showTransferError("Transaction rejected by user.");
+      const txError = ex as { code: number; message: string }
+      if (txError && txError.code === 4001) {
+        showTransferError('Transaction rejected by user.')
       }
     } finally {
       setTransferring(false)
     }
-  }
-
-  const showTransferError = (msg: string) => {
-    setTransferError(msg);
-    setTimeout(() => { setTransferError('') }, 7000);
   }
 
   const disableDeposit = useMemo(() => {
@@ -231,9 +233,7 @@ const TransferPanel = (): JSX.Element => {
           )}
           {transferError.length > 0 && (
             <div>
-              <StatusBadge variant="red">
-                {transferError}
-              </StatusBadge>
+              <StatusBadge variant="red">{transferError}</StatusBadge>
             </div>
           )}
         </div>
