@@ -21,12 +21,12 @@ const MainContent = () => {
       {isMainnet && (
         <div className="mb-4 mx-auto max-w-networkBox w-full">
           <Alert type="blue">
-            NOTICE: You're using Arbitrum mainnet, still in beta phase. Be
-            careful!{' '}
+            NOTICE: Arbitrum One is in mainnet Beta, which currently includes
+            administrative controls.{' '}
             <a
               target="_blank"
               rel="noreferrer"
-              href="https://offchain.medium.com/mainnet-for-everyone-27ce0f67c85e"
+              href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
             >
               <u>(more info)</u>
             </a>
