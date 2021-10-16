@@ -169,10 +169,10 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          latestToken.current.withdraw(selectedToken.address, amountRaw)
+          await latestToken.current.withdraw(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          latestEth.current.withdraw(amountRaw)
+          await latestEth.current.withdraw(amountRaw)
         }
       }
     } catch (ex) {
