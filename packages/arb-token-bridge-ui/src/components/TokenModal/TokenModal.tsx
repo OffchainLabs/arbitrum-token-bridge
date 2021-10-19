@@ -211,9 +211,6 @@ export const TokenModalBody = ({
 
   const addNewToken: FormEventHandler = async e => {
     e.preventDefault()
-    if (networkID === '1' || networkID === '42161') {
-      return alert("Can't add new tokens on mainnet yet")
-    }
 
     if (!isAddress(newToken) || isAddingToken) {
       return

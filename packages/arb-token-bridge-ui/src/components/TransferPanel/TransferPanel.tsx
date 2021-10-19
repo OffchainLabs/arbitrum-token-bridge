@@ -112,6 +112,11 @@ const TransferPanel = (): JSX.Element => {
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
+        if (selectedToken && !selectedToken.l2Address) {
+          return alert(
+            `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://github.com/OffchainLabs/arbitrum/tree/master/packages/arb-ts`
+          )
+        }
         if (networkDetails?.isArbitrum === true) {
           await changeNetwork?.(networkDetails.partnerChainID)
           while (
