@@ -39,7 +39,8 @@ const TransferPanel = (): JSX.Element => {
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
-      arbTokenBridge
+      arbTokenBridge,
+      warningTokens
     }
   } = useAppState()
 
@@ -116,6 +117,27 @@ const TransferPanel = (): JSX.Element => {
           return alert(
             `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://github.com/OffchainLabs/arbitrum/tree/master/packages/arb-ts`
           )
+        }
+        const warningToken =
+          selectedToken && warningTokens[selectedToken.address]
+        if (warningToken) {
+          const description = (() => {
+            switch (warningToken.type) {
+              case 0:
+                return 'a supply rebasing token'
+              case 1:
+                return 'an interest accruing token'
+              default:
+                return 'a non-standard ERC20 token'
+            }
+          })()
+          // eslint-disable-next-line no-restricted-globals
+          const res = confirm(
+            `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.) Are you sure you would like to proceed?`
+          )
+          if (!res) {
+            return
+          }
         }
         if (networkDetails?.isArbitrum === true) {
           await changeNetwork?.(networkDetails.partnerChainID)
