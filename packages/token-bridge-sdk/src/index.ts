@@ -18,7 +18,3 @@ export type {
 } from './hooks/useTransactions'
 
 export { txnTypeToLayer } from './hooks/useTransactions'
-
-export { getTokenStatus, tokenLists, TokenStatus } from './util/tokenList'
-
-export { mainnetWhitelist, mainnetBlackList } from './util/mainnnetTokenLists'
