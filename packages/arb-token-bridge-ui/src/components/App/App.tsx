@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
 import { Bridge } from 'arb-ts'
+import axios from 'axios'
 import * as ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
@@ -141,6 +142,19 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     network: networkInfo
   } = useWallet()
   const networkVersion = networkInfo?.chainId
+
+  useEffect(() => {
+    axios
+      .get(
+        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/master/src/WarningList/warningTokens.json'
+      )
+      .then(res => {
+        actions.app.setWarningTokens(res.data)
+      })
+      .catch(err => {
+        console.warn('Failed to fetch warning tokens:', err)
+      })
+  }, [])
 
   useEffect(() => {
     if (library) {

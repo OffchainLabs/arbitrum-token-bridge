@@ -40,6 +40,13 @@ export interface MergedTransaction {
   seqNum?: number
 }
 
+export interface WarningTokens {
+  [address: string]: {
+    address: string
+    type: number
+  }
+}
+
 const outgoungStateToString = {
   [OutgoingMessageState.NOT_FOUND]: 'Unconfirmed',
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
@@ -49,6 +56,7 @@ const outgoungStateToString = {
 
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
+  warningTokens: WarningTokens
   connectionState: number
   networkID: string | null
   verifying: WhiteListState
@@ -76,6 +84,7 @@ export type AppState = {
 
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
+  warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
   networkID: null,
   verifying: WhiteListState.ALLOWED,

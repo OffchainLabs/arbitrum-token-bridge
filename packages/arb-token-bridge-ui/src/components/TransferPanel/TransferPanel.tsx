@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react'
+import React, { useContext, useState, useMemo, useCallback } from 'react'
 
 import { ERC20__factory, Bridge } from 'arb-ts'
 import { utils, BigNumber } from 'ethers'
@@ -39,7 +39,8 @@ const TransferPanel = (): JSX.Element => {
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
-      arbTokenBridge
+      arbTokenBridge,
+      warningTokens
     }
   } = useAppState()
 
@@ -101,6 +102,15 @@ const TransferPanel = (): JSX.Element => {
     return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
+  const showBridgeInstructions = useCallback(() => {
+    if (isDepositMode && selectedToken && !selectedToken.l2Address) {
+      return alert(
+        `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
+      )
+    }
+    return setConfirmationOpen(true)
+  }, [selectedToken, isDepositMode])
+
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
     if (!bridge) {
@@ -112,6 +122,32 @@ const TransferPanel = (): JSX.Element => {
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
+        if (selectedToken && !selectedToken.l2Address) {
+          return alert(
+            `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
+          )
+        }
+        const warningToken =
+          selectedToken && warningTokens[selectedToken.address]
+        if (warningToken) {
+          const description = (() => {
+            switch (warningToken.type) {
+              case 0:
+                return 'a supply rebasing token'
+              case 1:
+                return 'an interest accruing token'
+              default:
+                return 'a non-standard ERC20 token'
+            }
+          })()
+          // eslint-disable-next-line no-restricted-globals
+          const res = confirm(
+            `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.) Are you sure you would like to proceed?`
+          )
+          if (!res) {
+            return
+          }
+        }
         if (networkDetails?.isArbitrum === true) {
           await changeNetwork?.(networkDetails.partnerChainID)
           while (
@@ -258,7 +294,7 @@ const TransferPanel = (): JSX.Element => {
         />
         {isDepositMode ? (
           <Button
-            onClick={() => setConfirmationOpen(true)}
+            onClick={showBridgeInstructions}
             disabled={disableDeposit}
             isLoading={transferring}
           >
