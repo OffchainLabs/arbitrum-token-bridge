@@ -1,8 +1,8 @@
 {
   "name": "Arbitrum One OGs",
-  "timestamp": "2021-10-21T19:06:00.504Z",
+  "timestamp": "2021-10-22T14:14:55.222Z",
   "version": {
-    "major": 3,
+    "major": 4,
     "minor": 0,
     "patch": 0
   },
@@ -16,18 +16,6 @@
       "decimals": 8,
       "extensions": {
         "l1Address": "0xb6ed7644c69416d67b522e20bc294a9a9b405b31",
-        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
-        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
-    },
-    {
-      "chainId": 42161,
-      "address": "0x2e9a6Df78E42a30712c10a9Dc4b1C8656f8F2879",
-      "name": "Maker",
-      "symbol": "MKR",
-      "decimals": 18,
-      "extensions": {
-        "l1Address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
@@ -281,6 +269,19 @@
       }
     },
     {
+      "logoURI": "https://zapper.fi/images/DEFI5-icon.png",
+      "chainId": 42161,
+      "address": "0xdeBa25AF35e4097146d7629055E0EC3C71706324",
+      "name": "DEFI Top 5 Tokens Index",
+      "symbol": "DEFI5",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xfa6de2697d59e88ed7fc4dfe5a33dac43565ea41",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "logoURI": "https://zapper.fi/images/DEGEN-icon.png",
       "chainId": 42161,
       "address": "0xAE6e3540E97b0b9EA8797B157B510e133afb6282",
@@ -350,6 +351,18 @@
       "decimals": 18,
       "extensions": {
         "l1Address": "0xbaac2b4491727d78d2b78815144570b9f2fe8899",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x6C2C06790b3E3E3c38e12Ee22F8183b37a13EE55",
+      "name": "Dopex Governance Token",
+      "symbol": "DPX",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xeec2be5c91ae7f8a338e1e5f3b5de49d07afdc81",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
@@ -504,6 +517,19 @@
       }
     },
     {
+      "logoURI": "https://zapper.fi/images/GOVI-icon.png",
+      "chainId": 42161,
+      "address": "0x07E49d5dE43DDA6162Fa28D24d5935C151875283",
+      "name": "GOVI",
+      "symbol": "GOVI",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xeeaa40b28a2d1b0b08f6f97bb1dd4b75316c6107",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "logoURI": "https://zapper.fi/images/GRT-icon.png",
       "chainId": 42161,
       "address": "0x23A941036Ae778Ac51Ab04CEa08Ed6e2FE103614",
@@ -638,6 +664,18 @@
         "l1Address": "0x4e352cf164e64adcbad318c3a1e222e9eba4ce42",
         "l2GatewayAddress": "0x096760f208390250649e3e8763348e783aef5562",
         "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x2e9a6Df78E42a30712c10a9Dc4b1C8656f8F2879",
+      "name": "Maker",
+      "symbol": "MKR",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     },
     {
@@ -1053,6 +1091,19 @@
       }
     },
     {
+      "logoURI": "https://zapper.fi/images/VISR-icon.png",
+      "chainId": 42161,
+      "address": "0x995C235521820f2637303Ca1970c7c044583df44",
+      "name": "VISOR",
+      "symbol": "VISR",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xf938424f7210f31df2aee3011291b658f872e91e",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "logoURI": "https://zapper.fi/images/VOX-icon.png",
       "chainId": 42161,
       "address": "0x2eD14d1788dfB780fD216706096AeD018514ECcd",
@@ -1139,6 +1190,31 @@
         "l1Address": "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "logoURI": "https://zapper.fi/images/ZIPT-icon.png",
+      "chainId": 42161,
+      "address": "0x0F61B24272AF65EACF6adFe507028957698e032F",
+      "name": "Zippie",
+      "symbol": "ZIPT",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xedd7c94fd7b4971b916d15067bc454b9e1bad980",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
+      "chainId": 42161,
+      "address": "0x9Ab3FD50FcAe73A1AEDa959468FD0D662c881b42",
+      "name": "Interest-Bearing Bitcoin",
+      "symbol": "ibBTC",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0xc4e15973e6ff2a35cc804c2cf9d2a1b817a8b40f",
+        "l2GatewayAddress": "0x096760f208390250649e3e8763348e783aef5562",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
       }
     },
     {
