@@ -102,15 +102,13 @@ const TransferPanel = (): JSX.Element => {
     return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
-
-  const showBridgeInstructions = useCallback(()=>{
+  const showBridgeInstructions = useCallback(() => {
     if (isDepositMode && selectedToken && !selectedToken.l2Address) {
       return alert(
         `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
       )
-    } else {
-      setConfirmationOpen(true)
     }
+    return setConfirmationOpen(true)
   }, [selectedToken, isDepositMode])
 
   const transfer = async () => {
