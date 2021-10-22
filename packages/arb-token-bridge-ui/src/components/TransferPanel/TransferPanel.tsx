@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react'
+import React, { useContext, useState, useMemo, useCallback } from 'react'
 
 import { ERC20__factory, Bridge } from 'arb-ts'
 import { utils, BigNumber } from 'ethers'
@@ -101,6 +101,17 @@ const TransferPanel = (): JSX.Element => {
     }
     return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
+
+
+  const showBridgeInstructions = useCallback(()=>{
+    if (isDepositMode && selectedToken && !selectedToken.l2Address) {
+      return alert(
+        `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
+      )
+    } else {
+      setConfirmationOpen(true)
+    }
+  }, [selectedToken, isDepositMode])
 
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
@@ -285,7 +296,7 @@ const TransferPanel = (): JSX.Element => {
         />
         {isDepositMode ? (
           <Button
-            onClick={() => setConfirmationOpen(true)}
+            onClick={showBridgeInstructions}
             disabled={disableDeposit}
             isLoading={transferring}
           >
