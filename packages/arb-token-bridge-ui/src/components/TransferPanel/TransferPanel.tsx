@@ -36,6 +36,7 @@ const TransferPanel = (): JSX.Element => {
       selectedToken,
       isDepositMode,
       networkDetails,
+      l1NetworkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
@@ -103,13 +104,19 @@ const TransferPanel = (): JSX.Element => {
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const showBridgeInstructions = useCallback(() => {
-    if (isDepositMode && selectedToken && !selectedToken.l2Address) {
+    if (
+      l1NetworkDetails &&
+      l1NetworkDetails.chainID === '1' &&
+      isDepositMode &&
+      selectedToken &&
+      !selectedToken.l2Address
+    ) {
       return alert(
         `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
       )
     }
     return setConfirmationOpen(true)
-  }, [selectedToken, isDepositMode])
+  }, [selectedToken, isDepositMode, l1NetworkDetails])
 
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
