@@ -951,8 +951,9 @@ export const useArbTokenBridge = (
   // call after we've confirmed the outbox entry has been created
   const getOutGoingMessageStateV2 = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
+      const l1NetworkID = await l1NetworkIDCached()
       if (
-        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)]
+        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)]
       ) {
         return OutgoingMessageState.EXECUTED
       } else {
@@ -966,7 +967,6 @@ export const useArbTokenBridge = (
         }
 
         const { path } = proofData
-        const l1NetworkID = await l1NetworkIDCached()
         const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
 
         if (res) {
@@ -982,8 +982,9 @@ export const useArbTokenBridge = (
 
   const getOutGoingMessageState = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
+      const l1NetworkID = await l1NetworkIDCached()
       if (
-        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)]
+        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)]
       ) {
         return OutgoingMessageState.EXECUTED
       } else {
@@ -996,18 +997,20 @@ export const useArbTokenBridge = (
   const addToExecutedMessagesCache = useCallback(
     (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const _executedMessagesCache = { ...executedMessagesCache }
-      _executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch)] =
-        true
-      setExecutedMessagesCache(_executedMessagesCache)
+      l1NetworkIDCached().then((l1NetworkID: string)=>{
+        _executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)] = true
+        setExecutedMessagesCache(_executedMessagesCache)
+      })
     },
     [executedMessagesCache]
   )
 
   const hashOutgoingMessage = (
     batchNumber: BigNumber,
-    indexInBatch: BigNumber
+    indexInBatch: BigNumber,
+    l1NetworkID: string
   ) => {
-    return batchNumber.toString() + ',' + indexInBatch.toString()
+    return `${batchNumber.toString()},${indexInBatch.toString()},${l1NetworkID}`
   }
 
   return {
