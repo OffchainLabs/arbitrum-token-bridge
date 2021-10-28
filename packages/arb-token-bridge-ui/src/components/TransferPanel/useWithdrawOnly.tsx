@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext, useCallback, useMemo } from 'react'
 
-import { ERC20__factory } from 'arb-ts'
 import { constants } from 'ethers'
+import { ERC20__factory } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { BridgeContext } from '../App/App'

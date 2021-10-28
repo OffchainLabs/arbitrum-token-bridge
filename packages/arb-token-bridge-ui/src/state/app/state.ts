@@ -1,4 +1,3 @@
-import { OutgoingMessageState } from 'arb-ts'
 import dayjs from 'dayjs'
 import { ethers, BigNumber } from 'ethers'
 import _isEmpty from 'lodash/isEmpty'
@@ -10,7 +9,8 @@ import {
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
   Transaction,
-  TxnType
+  TxnType,
+  OutgoingMessageState
 } from 'token-bridge-sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
