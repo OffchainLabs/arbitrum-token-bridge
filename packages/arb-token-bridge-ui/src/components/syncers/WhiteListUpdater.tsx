@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { Bridge } from 'arb-ts'
+import { Bridge } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
 import { WhiteListState } from '../../state/app/state'

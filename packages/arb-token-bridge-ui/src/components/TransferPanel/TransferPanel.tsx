@@ -1,9 +1,9 @@
 import React, { useContext, useState, useMemo, useCallback } from 'react'
 
-import { ERC20__factory, Bridge } from 'arb-ts'
 import { utils, BigNumber } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
+import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'

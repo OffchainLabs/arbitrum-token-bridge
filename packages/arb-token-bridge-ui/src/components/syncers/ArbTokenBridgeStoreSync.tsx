@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { Bridge } from 'arb-ts'
-import { ArbTokenBridge, useArbTokenBridge } from 'token-bridge-sdk'
+import { ArbTokenBridge, useArbTokenBridge, Bridge } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
 
