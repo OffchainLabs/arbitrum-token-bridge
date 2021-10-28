@@ -1,10 +1,10 @@
 {
   "name": "Arbitrum One OGs",
-  "timestamp": "2021-10-22T14:14:55.222Z",
+  "timestamp": "2021-10-28T20:21:20.653Z",
   "version": {
     "major": 4,
     "minor": 0,
-    "patch": 1
+    "patch": 2
   },
   "tokens": [
     {
@@ -977,7 +977,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/TUSD-icon.png",
+      "logoURI": "https://images.prismic.io/tusd-homepage/fb4d581a-95ed-404c-b9de-7ab1365c1386_%E5%9B%BE%E5%B1%82+1.png",
       "chainId": 42161,
       "address": "0x4D15a3A2286D883AF0AA1B3f21367843FAc63E07",
       "name": "TrueUSD",
@@ -1044,7 +1044,7 @@
       "logoURI": "https://zapper.fi/images/USDC-icon.png",
       "chainId": 42161,
       "address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-      "name": "USD Coin Arb1",
+      "name": "USD Coin (Arb1)",
       "symbol": "USDC",
       "decimals": 6,
       "extensions": {
@@ -1242,5 +1242,6 @@
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     }
-  ]
+  ],
+  "logoURI": "ipfs://QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y"
 }
