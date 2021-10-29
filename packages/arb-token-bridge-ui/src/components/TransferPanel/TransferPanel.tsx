@@ -135,7 +135,7 @@ const TransferPanel = (): JSX.Element => {
           )
         }
         const warningToken =
-          selectedToken && warningTokens[selectedToken.address]
+          selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
           const description = (() => {
             switch (warningToken.type) {
