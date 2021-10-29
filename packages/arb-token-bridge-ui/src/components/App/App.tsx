@@ -238,14 +238,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const l1AddressIsEOA =
       (await l1Signer.provider.getCode(l1Address)).length <= 2
-    const l12ddressIsEOA =
+    const l2ddressIsEOA =
       (await l2Signer.provider.getCode(l2Address)).length <= 2
 
-    if (!l1AddressIsEOA || !l12ddressIsEOA) {
+    if (!l1AddressIsEOA || !l2ddressIsEOA) {
       actions.app.setConnectionState(ConnectionState.NOT_EOA)
       return undefined
     }
-    // const isAddressIsEOA =
     const bridge = await Bridge.init(l1Signer, l2Signer)
     setGlobalBridge(bridge)
     if (!network.isArbitrum) {
