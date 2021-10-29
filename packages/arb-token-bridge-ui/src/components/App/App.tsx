@@ -114,8 +114,8 @@ const AppContent = (): JSX.Element => {
   if (connectionState === ConnectionState.NOT_EOA) {
     return (
       <Alert type="red">
-        Looks like your wallet is connected to a contract; please
-        connect to an externally owned account instead.
+        Looks like your wallet is connected to a contract; please connect to an
+        externally owned account instead.
       </Alert>
     )
   }
