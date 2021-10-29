@@ -238,10 +238,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const l1AddressIsEOA =
       (await l1Signer.provider.getCode(l1Address)).length <= 2
-    const l2ddressIsEOA =
+    const l2AddressIsEOA =
       (await l2Signer.provider.getCode(l2Address)).length <= 2
 
-    if (!l1AddressIsEOA || !l2ddressIsEOA) {
+    if (!l1AddressIsEOA || !l2AddressIsEOA) {
       actions.app.setConnectionState(ConnectionState.NOT_EOA)
       return undefined
     }
