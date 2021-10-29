@@ -15,7 +15,14 @@ const withdrawOnlyTokens = [
     l1Address: '0xB4A3B0Faf0Ab53df58001804DdA5Bfc6a3D59008',
     l2Address: '0xe5a5Efe7ec8cdFA5F031D5159839A3b5E11B2e0F'
   }
-]
+].map(token => {
+  const { l1Address, l2Address } = token
+  return {
+    l1Address: l1Address.toLowerCase(),
+    l2Address: l2Address.toLowerCase()
+  }
+})
+
 const withdrawOnlyTokensL1Address = withdrawOnlyTokens.map(t => t.l1Address)
 
 const useWithdrawOnly = () => {
@@ -60,7 +67,9 @@ const useWithdrawOnly = () => {
 
   const shouldDisableDeposit = useMemo(() => {
     if (!selectedToken) return false
-    return withdrawOnlyTokensL1Address.includes(selectedToken.address)
+    return withdrawOnlyTokensL1Address.includes(
+      selectedToken.address.toLowerCase()
+    )
   }, [selectedToken])
 
   return { shouldDisableDeposit }
