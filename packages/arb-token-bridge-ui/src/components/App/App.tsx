@@ -111,6 +111,15 @@ const AppContent = (): JSX.Element => {
     )
   }
 
+  if (connectionState === ConnectionState.NOT_EOA) {
+    return (
+      <Alert type="red">
+        Looks like your wallet is connected to a contract; please
+        connect to an externally owned account instead.
+      </Alert>
+    )
+  }
+
   return (
     <>
       {bridge && (
@@ -223,6 +232,20 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const l1Signer = getL1Signer(network)
     const l2Signer = getL2Signer(network)
+
+    const l1Address = await l1Signer.getAddress()
+    const l2Address = await l2Signer.getAddress()
+
+    const l1AddressIsEOA =
+      (await l1Signer.provider.getCode(l1Address)).length <= 2
+    const l12ddressIsEOA =
+      (await l2Signer.provider.getCode(l2Address)).length <= 2
+
+    if (!l1AddressIsEOA || !l12ddressIsEOA) {
+      actions.app.setConnectionState(ConnectionState.NOT_EOA)
+      return undefined
+    }
+    // const isAddressIsEOA =
     const bridge = await Bridge.init(l1Signer, l2Signer)
     setGlobalBridge(bridge)
     if (!network.isArbitrum) {
