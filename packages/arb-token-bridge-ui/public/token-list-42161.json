@@ -1,10 +1,10 @@
 {
   "name": "Arbitrum One OGs",
-  "timestamp": "2021-10-22T14:14:55.222Z",
+  "timestamp": "2021-11-03T20:47:21.296Z",
   "version": {
     "major": 4,
     "minor": 0,
-    "patch": 1
+    "patch": 2
   },
   "tokens": [
     {
@@ -85,6 +85,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/badger_32.png",
       "chainId": 42161,
       "address": "0xBfa641051Ba0a0Ad1b0AcF549a89536A0D76472E",
       "name": "Badger",
@@ -97,6 +98,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/balancer-bal-logo.png",
       "chainId": 42161,
       "address": "0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8",
       "name": "Balancer",
@@ -121,6 +123,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/blanktoken_32.png",
       "chainId": 42161,
       "address": "0xA5eC9d64b64b8B9E94FEaA7538c084b38117E7Ba",
       "name": "GoBlank Token",
@@ -133,6 +136,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/barnbridge-bond-logo.png",
       "chainId": 42161,
       "address": "0x0D81E50bC677fa67341c44D7eaA9228DEE64A4e1",
       "name": "BarnBridge Governance Token",
@@ -145,6 +149,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/boostcoin_32.png",
       "chainId": 42161,
       "address": "0xd44e8F8768D4ed25119921a53802D8758A5b20dD",
       "name": "Boost",
@@ -157,6 +162,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/btu_32.png",
       "chainId": 42161,
       "address": "0xBA9a5Dd807c9F072850bE15a52dF3408BA25Fd18",
       "name": "BTU Protocol",
@@ -195,6 +201,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/cryptionnetwork_32.png",
       "chainId": 42161,
       "address": "0x989D099d29F62b839C8CbD41c82c6554a5515752",
       "name": "Cryption Network Token",
@@ -220,6 +227,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/coti-coti-logo.png",
       "chainId": 42161,
       "address": "0x6FE14d3CC2f7bDdffBa5CdB3BBE7467dd81ea101",
       "name": "COTI Token",
@@ -232,6 +240,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/cream-finance-cream-logo.png",
       "chainId": 42161,
       "address": "0xf4D48Ce3ee1Ac3651998971541bAdbb9A14D7234",
       "name": "Cream",
@@ -244,6 +253,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/curve-dao-token-crv-logo.png",
       "chainId": 42161,
       "address": "0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978",
       "name": "Curve DAO Token",
@@ -308,6 +318,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dfynnetwork_32.png",
       "chainId": 42161,
       "address": "0x1D54Aa7E322e02A0453c0F2fA21505cE7F2E9E93",
       "name": "DFYN Token",
@@ -320,6 +331,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dHedge_32.png",
       "chainId": 42161,
       "address": "0x8038F3C971414FD1FC220bA727F2D4A0fC98cb65",
       "name": "dHedge DAO Token",
@@ -332,6 +344,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dodo_32.png",
       "chainId": 42161,
       "address": "0x69Eb4FA4a2fbd498C257C57Ea8b7655a2559A581",
       "name": "DODO bird",
@@ -344,6 +357,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/thedogenft_32.png",
       "chainId": 42161,
       "address": "0x4425742F1EC8D98779690b5A3A6276Db85Ddc01A",
       "name": "The Doge NFT",
@@ -356,6 +370,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dopexgovernance_32.png",
       "chainId": 42161,
       "address": "0x6C2C06790b3E3E3c38e12Ee22F8183b37a13EE55",
       "name": "Dopex Governance Token",
@@ -380,6 +395,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dvf_32.png",
       "chainId": 42161,
       "address": "0xA7Aa2921618e3D63dA433829d448b58C9445A4c3",
       "name": "DeversiFi Token",
@@ -417,6 +433,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dforceeur_32.png",
       "chainId": 42161,
       "address": "0x969131D8ddC06C2Be11a13e6E7fACF22CF57d95e",
       "name": "dForce EUR",
@@ -442,6 +459,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/zel-flux-logo.png",
       "chainId": 42161,
       "address": "0x2338a5d62E9A766289934e8d2e83a443e8065b83",
       "name": "Flux Protocol",
@@ -467,6 +485,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/futureswap2_32.png",
       "chainId": 42161,
       "address": "0x488cc08935458403a0458e45E20c0159c8AB2c92",
       "name": "Futureswap Token",
@@ -543,6 +562,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/impermax_32.png",
       "chainId": 42161,
       "address": "0x9c67eE39e3C4954396b9142010653F17257dd39C",
       "name": "Impermax",
@@ -568,6 +588,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/farmland_32.png",
       "chainId": 42161,
       "address": "0x3CD1833Ce959E087D0eF0Cb45ed06BffE60F23Ba",
       "name": "Land",
@@ -593,6 +614,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/loopring-lrc-logo.png",
       "chainId": 42161,
       "address": "0x46d0cE7de6247b0A95f67b43B589b4041BaE7fbE",
       "name": "LoopringCoin V2",
@@ -642,6 +664,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/antimatter_32.png",
       "chainId": 42161,
       "address": "0xaaA62D9584Cbe8e4D68A43ec91BfF4fF1fAdB202",
       "name": "Antimatter.Finance Governance Token",
@@ -667,6 +690,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/maker-mkr-logo.png",
       "chainId": 42161,
       "address": "0x2e9a6Df78E42a30712c10a9Dc4b1C8656f8F2879",
       "name": "Maker",
@@ -717,6 +741,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/feistydoge_32.png",
       "chainId": 42161,
       "address": "0xc9c2B86CD4cdbAB70cd65D22EB044574c3539F6c",
       "name": "Feisty Doge NFT",
@@ -781,6 +806,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/pickle_32.png",
       "chainId": 42161,
       "address": "0x965772e0E9c84b6f359c8597C891108DcF1c5B1A",
       "name": "PickleToken",
@@ -818,6 +844,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/raireflexindex_32.png",
       "chainId": 42161,
       "address": "0xaeF5bbcbFa438519a5ea80B4c7181B4E78d419f2",
       "name": "Rai Reflex Index",
@@ -830,6 +857,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dopexrebate_32.png",
       "chainId": 42161,
       "address": "0x32Eb7902D4134bf98A28b963D26de779AF92A212",
       "name": "Dopex Rebate Token",
@@ -842,6 +870,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/RariGovernanceToken_32.png",
       "chainId": 42161,
       "address": "0xef888bcA6AB6B1d26dbeC977C455388ecd794794",
       "name": "Rari Governance Token",
@@ -893,6 +922,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/spelltoken_32.png",
       "chainId": 42161,
       "address": "0x3E6648C5a70A150A88bCE65F4aD4d506Fe15d2AF",
       "name": "Spell Token",
@@ -905,6 +935,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/strips_32.png",
       "chainId": 42161,
       "address": "0x326c33FD1113c1F29B35B4407F3d6312a8518431",
       "name": "Strips Token",
@@ -917,6 +948,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/sumswap_32.png",
       "chainId": 42161,
       "address": "0x20f9628a485ebCc566622314f6e07E7Ee61fF332",
       "name": "SUM",
@@ -929,6 +961,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/sushiswap-sushi-logo.png",
       "chainId": 42161,
       "address": "0xd4d42F0b6DEF4CE0383636770eF773390d85c61A",
       "name": "SushiToken",
@@ -953,6 +986,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/tkdcoop_32.png",
       "chainId": 42161,
       "address": "0xFa51B42d4C9EA35F1758828226AaEdBeC50DD54E",
       "name": "Taekwondo Access Credit",
@@ -977,7 +1011,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/TUSD-icon.png",
+      "logoURI": "https://images.prismic.io/tusd-homepage/fb4d581a-95ed-404c-b9de-7ab1365c1386_%E5%9B%BE%E5%B1%82+1.png",
       "chainId": 42161,
       "address": "0x4D15a3A2286D883AF0AA1B3f21367843FAc63E07",
       "name": "TrueUSD",
@@ -1029,6 +1063,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/unitynetwork_32.png",
       "chainId": 42161,
       "address": "0x250F471385894fc81183a99d6fDe8CE9C5B142d6",
       "name": "Unity Network",
@@ -1044,7 +1079,7 @@
       "logoURI": "https://zapper.fi/images/USDC-icon.png",
       "chainId": 42161,
       "address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-      "name": "USD Coin Arb1",
+      "name": "USD Coin (Arb1)",
       "symbol": "USDC",
       "decimals": 6,
       "extensions": {
@@ -1067,6 +1102,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/dforceusd_32.png",
       "chainId": 42161,
       "address": "0xcd14C3A2ba27819B352aae73414A26e2b366dC50",
       "name": "dForce USD",
@@ -1079,6 +1115,7 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/validator_32.png",
       "chainId": 42161,
       "address": "0x8d1c89DcF613e3e709AfE9Abecae591D0e2B64Ca",
       "name": "Validator",
@@ -1181,6 +1218,7 @@
       }
     },
     {
+      "logoURI": "https://cryptologos.cc/logos/yearn-finance-yfi-logo.png",
       "chainId": 42161,
       "address": "0x82e3A8F066a6989666b031d916c43672085b1582",
       "name": "yearn.finance",
@@ -1242,5 +1280,6 @@
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
       }
     }
-  ]
+  ],
+  "logoURI": "ipfs://QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y"
 }
