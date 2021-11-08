@@ -54,7 +54,7 @@ const SmartContractWalletDisplay = ({
       )[0]
         .mul(3)
         .div(2)
-      const res = await inbox.createRetryableTicket(
+      const res = await inbox.createRetryableTicketNoRefundAliasRewrite(
         recoveryAddress,
         recoverableEth,
         maxSubmissionPrice,
