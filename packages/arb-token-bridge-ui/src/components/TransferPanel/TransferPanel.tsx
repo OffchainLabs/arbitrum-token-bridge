@@ -45,7 +45,7 @@ const TransferPanel = (): JSX.Element => {
     }
   } = useAppState()
 
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
   // const [tokeModalOpen, setTokenModalOpen] = useState(false)
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)

@@ -7,7 +7,7 @@ import { BridgeContext } from '../App/App'
 
 // Loads pending withdrawals on page load
 const PWLoadedUpdater = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
   const actions = useActions()
   const {
     app: {

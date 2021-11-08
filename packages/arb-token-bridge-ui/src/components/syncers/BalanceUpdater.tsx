@@ -8,7 +8,7 @@ import { useInterval } from '../common/Hooks'
 
 // Updates all balances periodically
 const BalanceUpdater = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
   const {
     app: { arbTokenBridge, selectedToken }
   } = useAppState()

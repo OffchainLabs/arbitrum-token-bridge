@@ -74,10 +74,18 @@ const NoMetamaskIndicator = (): JSX.Element => {
   )
 }
 
-export const BridgeContext = createContext<Bridge | null>(null)
+interface BridgeContextInterface {
+  bridge: Bridge | null
+  isSmartContractWallet: boolean | null
+}
+
+export const BridgeContext = createContext<BridgeContextInterface>({
+  bridge: null,
+  isSmartContractWallet: null
+})
 
 const AppContent = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
   const {
     app: { connectionState }
   } = useAppState()
@@ -143,7 +151,36 @@ const AppContent = (): JSX.Element => {
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
-  const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
+  const [globalBridgeData, setGlobalBridgeData] =
+    useState<BridgeContextInterface>({
+      bridge: null,
+      isSmartContractWallet: null
+    })
+
+  const setGlobalBridge = async (bridge: Bridge | null) => {
+    if (!bridge) {
+      setGlobalBridgeData({
+        bridge: null,
+        isSmartContractWallet: null
+      })
+    } else {
+      const { l1Signer, l2Signer, l1Provider, l2Provider } = bridge
+      const l1Address = await l1Signer.getAddress()
+      const l2Address = await l2Signer.getAddress()
+      const l1AddressIsSmartContract =
+        (await l1Provider.getCode(l1Address)).length > 2
+      const l2AddressIsSmartContract =
+        (await l2Provider.getCode(l2Address)).length > 2
+
+      setGlobalBridgeData({
+        bridge,
+        isSmartContractWallet:
+          l1AddressIsSmartContract || l2AddressIsSmartContract
+      })
+    }
+  }
+
+  const { bridge: globalBridge } = globalBridgeData
 
   const {
     account: usersMetamaskAddress,
@@ -233,18 +270,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const l1Signer = getL1Signer(network)
     const l2Signer = getL2Signer(network)
 
-    const l1Address = await l1Signer.getAddress()
-    const l2Address = await l2Signer.getAddress()
-
-    const l1AddressIsEOA =
-      (await l1Signer.provider.getCode(l1Address)).length <= 2
-    const l2AddressIsEOA =
-      (await l2Signer.provider.getCode(l2Address)).length <= 2
-
-    if (!l1AddressIsEOA || !l2AddressIsEOA) {
-      actions.app.setConnectionState(ConnectionState.NOT_EOA)
-      return undefined
-    }
     const bridge = await Bridge.init(l1Signer, l2Signer)
     setGlobalBridge(bridge)
     if (!network.isArbitrum) {
@@ -293,7 +318,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return (
     <>
       {globalBridge && <ArbTokenBridgeStoreSync bridge={globalBridge} />}
-      <BridgeContext.Provider value={globalBridge}>
+      <BridgeContext.Provider value={globalBridgeData}>
         {children}
       </BridgeContext.Provider>
     </>

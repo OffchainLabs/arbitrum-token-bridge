@@ -8,7 +8,7 @@ import { BridgeContext } from '../App/App'
 import { useInterval } from '../common/Hooks'
 
 const PendingTransactionsUpdater = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
   const actions = useActions()
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }

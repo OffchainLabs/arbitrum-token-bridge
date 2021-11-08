@@ -121,7 +121,7 @@ export const TokenModalBody = ({
 }: {
   onTokenSelected: () => void
 }): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [blacklistedOpen, setBlacklistedOpen] = useState(false)
 

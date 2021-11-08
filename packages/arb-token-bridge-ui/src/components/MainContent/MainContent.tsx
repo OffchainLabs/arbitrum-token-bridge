@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 
 import { useAppState } from '../../state'
+import { BridgeContext } from '../App/App'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
+import { SmartContractWalletDisplay } from '../SmartContractWalletDisplay/SmartContractWalletDisplay'
 import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
@@ -11,6 +13,8 @@ const MainContent = () => {
   const {
     app: { mergedTransactionsToShow, networkID }
   } = useAppState()
+
+  const { bridge, isSmartContractWallet } = useContext(BridgeContext)
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
@@ -33,36 +37,41 @@ const MainContent = () => {
           </Alert>
         </div>
       )}
-
-      <TransferPanel />
-
-      {mergedTransactionsToShow?.length > 0 && (
+      {!isSmartContractWallet ? (
         <>
-          <TransactionsTable
-            transactions={mergedTransactionsToShow?.slice(0, 5)}
-          />
+          <TransferPanel />
 
-          <div className="h-6" />
+          {mergedTransactionsToShow?.length > 0 && (
+            <>
+              <TransactionsTable
+                transactions={mergedTransactionsToShow?.slice(0, 5)}
+              />
 
-          {mergedTransactionsToShow?.length > 5 && (
-            <div className="max-w-networkBox mx-auto mb-4">
-              <Button
-                onClick={() => setTransactionModalOpen(true)}
-                variant="white"
-                size="md"
-                className="w-full"
-              >
-                View all
-              </Button>
-            </div>
+              <div className="h-6" />
+
+              {mergedTransactionsToShow?.length > 5 && (
+                <div className="max-w-networkBox mx-auto mb-4">
+                  <Button
+                    onClick={() => setTransactionModalOpen(true)}
+                    variant="white"
+                    size="md"
+                    className="w-full"
+                  >
+                    View all
+                  </Button>
+                </div>
+              )}
+            </>
           )}
-        </>
-      )}
 
-      <TransactionsModal
-        isOpen={transactionsModalOpen}
-        setIsOpen={setTransactionModalOpen}
-      />
+          <TransactionsModal
+            isOpen={transactionsModalOpen}
+            setIsOpen={setTransactionModalOpen}
+          />
+        </>
+      ) : (
+        <SmartContractWalletDisplay bridge={bridge} />
+      )}
     </div>
   )
 }

@@ -68,7 +68,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       networkDetails
     }
   } = useAppState()
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
 
   const showRedeemRetryableButton = useMemo(() => {
     return (

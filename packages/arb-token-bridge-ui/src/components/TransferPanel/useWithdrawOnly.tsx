@@ -30,7 +30,7 @@ const useWithdrawOnly = () => {
     app: { selectedToken, arbTokenBridge, l1NetworkDetails }
   } = useAppState()
   const [doneAddingTokens, setDoneAddingTokens] = useState(false)
-  const bridge = useContext(BridgeContext)
+  const { bridge } = useContext(BridgeContext)
 
   const addTokens = useCallback(async () => {
     if (!bridge) return
