@@ -63,7 +63,7 @@ const SmartContractWalletDisplay = ({
         0,
         0,
         '',
-        {value: maxSubmissionPrice}
+        { value: maxSubmissionPrice }
       )
       await res.wait()
       alert(
