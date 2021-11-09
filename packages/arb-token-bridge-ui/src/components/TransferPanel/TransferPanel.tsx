@@ -221,10 +221,11 @@ const TransferPanel = (): JSX.Element => {
     return (
       shouldDisableDeposit ||
       transferring ||
+      !selectedToken ||
       (isDepositMode &&
         (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
     )
-  }, [transferring, isDepositMode, l1Amount, l1Balance])
+  }, [transferring, isDepositMode, l1Amount, l1Balance, selectedToken])
 
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
