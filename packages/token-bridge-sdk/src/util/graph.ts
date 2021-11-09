@@ -215,8 +215,8 @@ export const getTokenWithdrawals = async (
       arbBlockNum: BigNumber.from(arbBlockNum),
       ethBlockNum: BigNumber.from(ethBlockNum),
       callvalue: BigNumber.from(callvalue)
-    } as L2ToL1EventResult
-    const tokenAddress = `0x${data.slice(34,74)}`;
+    } as L2ToL1EventResult;
+    const tokenAddress = utils.hexDataSlice(data, 16, 36);
     return {
       l2ToL1Event,
       otherData: {
