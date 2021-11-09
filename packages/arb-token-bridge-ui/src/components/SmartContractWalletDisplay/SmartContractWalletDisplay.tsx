@@ -62,7 +62,8 @@ const SmartContractWalletDisplay = ({
         recoveryAddress,
         0,
         0,
-        ''
+        '',
+        {value: maxSubmissionPrice}
       )
       await res.wait()
       alert(
