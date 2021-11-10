@@ -1,3 +1,5 @@
+import { utils } from 'ethers'
+
 export enum ConnectionState {
   LOADING,
   NO_METAMASK,
@@ -19,3 +21,7 @@ export const resolveTokenImg = (url: string): string => {
   }
   return url
 }
+
+export const gnosisInterface = new utils.Interface([
+  'function getOwners() view returns (address[])'
+])

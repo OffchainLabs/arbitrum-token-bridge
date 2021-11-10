@@ -168,3 +168,10 @@ export interface ArbTokenBridge {
     filter?: ethers.providers.Filter
   ) => Promise<void>
 }
+
+
+export enum WalletType {
+  EOA,
+  SUPPORTED_CONTRACT_WALLET,
+  UNSUPPORTED_CONTRACT_WALLET
+}

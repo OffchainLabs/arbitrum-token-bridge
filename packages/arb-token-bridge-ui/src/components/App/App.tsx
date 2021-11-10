@@ -4,14 +4,14 @@ import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
 import axios from 'axios'
 import * as ethers from 'ethers'
-import { BigNumber } from 'ethers'
+import { BigNumber, Contract } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState } from 'src/util/index'
-import { Bridge } from 'token-bridge-sdk'
+import { ConnectionState, gnosisInterface } from 'src/util/index'
+import { Bridge, WalletType } from 'token-bridge-sdk'
 
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
@@ -76,12 +76,12 @@ const NoMetamaskIndicator = (): JSX.Element => {
 
 interface BridgeContextInterface {
   bridge: Bridge | null
-  isSmartContractWallet: boolean | null
+  walletType: WalletType | null
 }
 
 export const BridgeContext = createContext<BridgeContextInterface>({
   bridge: null,
-  isSmartContractWallet: null
+  walletType: null
 })
 
 const AppContent = (): JSX.Element => {
@@ -145,14 +145,14 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [globalBridgeData, setGlobalBridgeData] =
     useState<BridgeContextInterface>({
       bridge: null,
-      isSmartContractWallet: null
+      walletType: null
     })
 
   const setGlobalBridge = async (bridge: Bridge | null) => {
     if (!bridge) {
       setGlobalBridgeData({
         bridge: null,
-        isSmartContractWallet: null
+        walletType: null
       })
     } else {
       const { l1Signer, l2Signer, l1Provider, l2Provider } = bridge
@@ -163,10 +163,45 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const l2AddressIsSmartContract =
         (await l2Provider.getCode(l2Address)).length > 2
 
+      const walletType: WalletType = await (async () => {
+        if (!l1AddressIsSmartContract && !l2AddressIsSmartContract) {
+          return WalletType.EOA
+        }
+
+        if (l1AddressIsSmartContract && l1AddressIsSmartContract) {
+          // check gnosis
+          if (l1Address !== l2Address) {
+            return WalletType.UNSUPPORTED_CONTRACT_WALLET
+          }
+
+          try {
+            const l1Contract = new Contract(
+              l1Address,
+              gnosisInterface,
+              l1Provider
+            )
+            const l1Owners: string[] = (await l1Contract.getOwners()).sort()
+
+            const l2Contract = new Contract(
+              l2Address,
+              gnosisInterface,
+              l2Provider
+            )
+            const l2Owners: string[] = (await l2Contract.getOwners()).sort()
+
+            return JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
+              ? WalletType.SUPPORTED_CONTRACT_WALLET
+              : WalletType.UNSUPPORTED_CONTRACT_WALLET
+          } catch (e) {
+            return WalletType.UNSUPPORTED_CONTRACT_WALLET
+          }
+        }
+        return WalletType.UNSUPPORTED_CONTRACT_WALLET
+      })()
+
       setGlobalBridgeData({
         bridge,
-        isSmartContractWallet:
-          l1AddressIsSmartContract || l2AddressIsSmartContract
+        walletType
       })
     }
   }

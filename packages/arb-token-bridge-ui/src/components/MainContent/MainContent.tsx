@@ -1,5 +1,7 @@
 import React, { useState, useContext } from 'react'
 
+import { WalletType } from 'token-bridge-sdk'
+
 import { useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 import { Alert } from '../common/Alert'
@@ -14,7 +16,7 @@ const MainContent = () => {
     app: { mergedTransactionsToShow, networkID }
   } = useAppState()
 
-  const { bridge, isSmartContractWallet } = useContext(BridgeContext)
+  const { bridge, walletType } = useContext(BridgeContext)
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
@@ -37,7 +39,9 @@ const MainContent = () => {
           </Alert>
         </div>
       )}
-      {!isSmartContractWallet ? (
+      {walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET ? (
+        <SmartContractWalletDisplay bridge={bridge} />
+      ) : (
         <>
           <TransferPanel />
 
@@ -69,8 +73,6 @@ const MainContent = () => {
             setIsOpen={setTransactionModalOpen}
           />
         </>
-      ) : (
-        <SmartContractWalletDisplay bridge={bridge} />
       )}
     </div>
   )

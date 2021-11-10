@@ -8,7 +8,7 @@ export type {
   PendingWithdrawalsMap,
   ContractStorage
 } from './hooks/arbTokenBridge.types'
-export { TokenType, AssetType } from './hooks/arbTokenBridge.types'
+export { TokenType, AssetType, WalletType } from './hooks/arbTokenBridge.types'
 
 export type {
   Transaction,
