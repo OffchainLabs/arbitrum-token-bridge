@@ -43,7 +43,37 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Mainnet
+                  Mainnet (Arbiscan)
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="https://explorer.arbitrum.io/"
+                  target="_blank"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'block px-4 py-2 text-sm'
+                  )}
+                  rel="noreferrer"
+                >
+                  Mainnet (Offchain Labs)
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="https://testnet.arbiscan.io/"
+                  target="_blank"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'block px-4 py-2 text-sm'
+                  )}
+                  rel="noreferrer"
+                >
+                  Rinkarby (Arbiscan)
                 </a>
               )}
             </Menu.Item>
@@ -58,7 +88,7 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Rinkeby
+                  Rinkarby (Offchain Labs)
                 </a>
               )}
             </Menu.Item>
