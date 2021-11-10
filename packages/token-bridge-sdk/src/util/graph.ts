@@ -183,12 +183,7 @@ export const getTokenWithdrawals = async (
           callvalue,
           data
         },
-        amount,
-        exitInfo {
-          token {
-            id
-          }
-        }
+        amount
       }
     }
     `
@@ -196,9 +191,6 @@ export const getTokenWithdrawals = async (
   return res.data.withdrawals.map((eventData: any) => {
     const {
       amount: value,
-      exitInfo: {
-        token: { id: tokenAddress }
-      },
       l2ToL1Event: {
         id,
         caller,
@@ -224,6 +216,7 @@ export const getTokenWithdrawals = async (
       ethBlockNum: BigNumber.from(ethBlockNum),
       callvalue: BigNumber.from(callvalue)
     } as L2ToL1EventResult
+    const tokenAddress = utils.hexDataSlice(data, 16, 36)
     return {
       l2ToL1Event,
       otherData: {
