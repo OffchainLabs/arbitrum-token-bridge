@@ -6,10 +6,10 @@ import { useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
-import { SmartContractWalletDisplay } from '../SmartContractWalletDisplay/SmartContractWalletDisplay'
 import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
+import { UnsupportedSmartContractWalletDisplay } from '../UnsupportedSmartContractWalletDisplay/UnsupportedSmartContractWalletDisplay'
 
 const MainContent = () => {
   const {
@@ -40,7 +40,7 @@ const MainContent = () => {
         </div>
       )}
       {walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET ? (
-        <SmartContractWalletDisplay bridge={bridge} />
+        <UnsupportedSmartContractWalletDisplay bridge={bridge} />
       ) : (
         <>
           <TransferPanel />

@@ -8,7 +8,7 @@ import { useAppState } from '../../state'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 
-const SmartContractWalletDisplay = ({
+const UnsupportedSmartContractWalletDisplay = ({
   bridge
 }: {
   bridge: Bridge | null
@@ -44,26 +44,33 @@ const SmartContractWalletDisplay = ({
       if (networkDetails?.isArbitrum) {
         return alert('Connect to L1')
       }
+
       const inboxAddress =
         bridge.l1Bridge.network.ethBridge &&
         bridge.l1Bridge.network.ethBridge.inbox
       if (!inboxAddress) throw new Error('no inbox address for current network')
+
+      const l1ContractAddress = await bridge.l1Bridge.getWalletAddress()
+      const l2Alias = utils.hexValue(
+        BridgeHelper.applyL1ToL2Alias(l1ContractAddress)
+      )
+      const retryableParams = await bridge.getRetryableTxnParams(
+        '0x',
+        l2Alias,
+        recoveryAddress,
+        recoverableEth
+      )
       const inbox = Inbox__factory.connect(inboxAddress, bridge.l1Signer)
-      const maxSubmissionPrice = (
-        await bridge.l2Bridge.getTxnSubmissionPrice(0)
-      )[0]
-        .mul(3)
-        .div(2)
       const res = await inbox.createRetryableTicketNoRefundAliasRewrite(
         recoveryAddress,
         recoverableEth,
-        maxSubmissionPrice,
+        retryableParams.submissionPriceBid,
         recoveryAddress,
         recoveryAddress,
-        0,
-        0,
+        retryableParams.maxGasBid,
+        retryableParams.gasPriceBid,
         '',
-        { value: maxSubmissionPrice }
+        { value: retryableParams.totalDepositValue }
       )
       await res.wait()
       alert(
@@ -108,4 +115,4 @@ const SmartContractWalletDisplay = ({
   )
 }
 
-export { SmartContractWalletDisplay }
+export { UnsupportedSmartContractWalletDisplay }
