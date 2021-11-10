@@ -98,6 +98,7 @@ export interface ArbTokenBridgeBalances {
 
 export interface ArbTokenBridgeEth {
   deposit: (weiValue: BigNumber) => Promise<void | ContractReceipt>
+  depositFromContract: (weiValue: BigNumber) => Promise<void | ContractReceipt>
   withdraw: (weiValue: BigNumber) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>

@@ -8,7 +8,8 @@ import {
   L2ToL1EventResult,
   OutgoingMessageState,
   WithdrawalInitiated,
-  ERC20__factory
+  ERC20__factory,
+  Inbox__factory
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 import {
@@ -164,6 +165,47 @@ export const useArbTokenBridge = (
     updateTransaction(receipt, tx, seqNum.toNumber())
     updateEthBalances()
   }
+
+  const depositEthFromContract = async (weiValue: BigNumber) => {
+    const etherVal = utils.formatUnits(weiValue, 18)
+
+    const inboxAddress = bridge.l1Bridge.network.ethBridge?.inbox;
+    if(!inboxAddress) throw new Error("Inbox address not found")
+
+    const walletAddress = await walletAddressCached()
+    const inbox =  Inbox__factory.connect(inboxAddress, bridge.l1Signer)
+    const maxSubmissionPrice = (
+      await bridge.l2Bridge.getTxnSubmissionPrice(0)
+    )[0].mul(4)
+    const tx = await inbox.createRetryableTicketNoRefundAliasRewrite(
+      walletAddress,
+      0,
+      maxSubmissionPrice,
+      walletAddress,
+      walletAddress,
+      0,
+      0,
+      '',
+      { value: weiValue }
+    )
+    addTransaction({
+      type: 'deposit-l1',
+      status: 'pending',
+      value: etherVal,
+      txID: tx.hash,
+      assetName: 'ETH',
+      assetType: AssetType.ETH,
+      sender: walletAddress,
+      l1NetworkID: await l1NetworkIDCached()
+    })
+    const receipt = await tx.wait()
+    const seqNums = await bridge.getInboxSeqNumFromContractTransaction(receipt)
+    if (!seqNums) return
+    const seqNum = seqNums[0]
+    updateTransaction(receipt, tx, seqNum.toNumber())
+    updateEthBalances()
+  }
+
 
   const withdrawEth = useCallback(
     async (weiValue: BigNumber) => {
@@ -1028,6 +1070,7 @@ export const useArbTokenBridge = (
     },
     eth: {
       deposit: depositEth,
+      depositFromContract: depositEthFromContract,
       withdraw: withdrawEth,
       triggerOutbox: triggerOutboxEth,
       updateBalances: updateEthBalances

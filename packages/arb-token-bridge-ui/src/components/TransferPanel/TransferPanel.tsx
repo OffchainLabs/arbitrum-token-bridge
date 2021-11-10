@@ -3,7 +3,7 @@ import React, { useContext, useState, useMemo, useCallback } from 'react'
 import { utils, BigNumber } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
-import { ERC20__factory, Bridge } from 'token-bridge-sdk'
+import { ERC20__factory, Bridge, WalletType } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
@@ -45,7 +45,7 @@ const TransferPanel = (): JSX.Element => {
     }
   } = useAppState()
 
-  const { bridge } = useContext(BridgeContext)
+  const { bridge, walletType } = useContext(BridgeContext)
   // const [tokeModalOpen, setTokenModalOpen] = useState(false)
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -120,9 +120,15 @@ const TransferPanel = (): JSX.Element => {
 
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
-    if (!bridge) {
+    if (!bridge || walletType === null) {
       // eslint-disable-next-line no-alert
       alert("Bridge null! This shouldn't happen. Let support know.")
+      return
+    }
+    if (walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET) {
+      alert(
+        "Unsupported Contract Wallet! This shouldn't happen. Let support know."
+      )
       return
     }
     setTransferring(true)
@@ -185,7 +191,11 @@ const TransferPanel = (): JSX.Element => {
           await latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          await latestEth.current.deposit(amountRaw)
+          if (walletType === WalletType.EOA) {
+            await latestEth.current.deposit(amountRaw)
+          } else {
+            await latestEth.current.depositFromContract(amountRaw)
+          }
         }
       } else {
         if (networkDetails?.isArbitrum === false) {
