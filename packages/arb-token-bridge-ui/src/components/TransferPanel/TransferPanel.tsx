@@ -104,17 +104,17 @@ const TransferPanel = (): JSX.Element => {
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const showBridgeInstructions = useCallback(() => {
-    if (
-      l1NetworkDetails &&
-      l1NetworkDetails.chainID === '1' &&
-      isDepositMode &&
-      selectedToken &&
-      !selectedToken.l2Address
-    ) {
-      return alert(
-        `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
-      )
-    }
+    // if (
+    //   l1NetworkDetails &&
+    //   l1NetworkDetails.chainID === '1' &&
+    //   isDepositMode &&
+    //   selectedToken &&
+    //   !selectedToken.l2Address
+    // ) {
+    //   return alert(
+    //     `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
+    //   )
+    // }
     return setConfirmationOpen(true)
   }, [selectedToken, isDepositMode, l1NetworkDetails])
 
@@ -129,11 +129,11 @@ const TransferPanel = (): JSX.Element => {
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
       if (isDepositMode) {
-        if (selectedToken && !selectedToken.l2Address) {
-          return alert(
-            `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
-          )
-        }
+        // if (selectedToken && !selectedToken.l2Address) {
+        // return alert(
+        //   `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
+        // )
+        // }
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -219,10 +219,8 @@ const TransferPanel = (): JSX.Element => {
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
     return (
-      shouldDisableDeposit ||
-      transferring ||
-      (isDepositMode &&
-        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
+      shouldDisableDeposit || transferring
+      // || (isDepositMode && (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
     )
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
