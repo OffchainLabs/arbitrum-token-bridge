@@ -97,7 +97,7 @@ const UnsupportedSmartContractWalletDisplay = ({
           id="recoveryAddress"
           value={recoveryAddress}
           onChange={e => setRecoveryAddress(e.target.value)}
-          placeholder={`paste address to send your ${readableEth} to on L2`}
+          placeholder={`paste address to sweep your ${readableEth} to on L2`}
           className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
         />
         <Button
