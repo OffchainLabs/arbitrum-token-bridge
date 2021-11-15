@@ -909,6 +909,19 @@
       }
     },
     {
+      "logoURI": "https://storage.googleapis.com/zapper-fi-assets/tokens/ethereum/0x7697b462a7c4ff5f8b55bdbc2f4076c2af9cf51a.png",
+      "chainId": 42161,
+      "address": "0x82155ab6b6c1113cfb352c7573b010a88f5974bd",
+      "name": "Sarcophagus",
+      "symbol": "SARCO",
+      "decimals": 18,
+      "extensions": {
+        "l1Address": "0x7697b462a7c4ff5f8b55bdbc2f4076c2af9cf51a",
+        "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
+        "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
+      }
+    },
+    {
       "logoURI": "https://zapper.fi/images/SDT-icon.png",
       "chainId": 42161,
       "address": "0x7bA4a00d54A07461D9DB2aEF539e91409943AdC9",
