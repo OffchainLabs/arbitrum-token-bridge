@@ -58,7 +58,10 @@ const UnsupportedSmartContractWalletDisplay = ({
         '0x',
         l2Alias,
         recoveryAddress,
-        recoverableEth
+        recoverableEth,
+        {
+          includeL2Callvalue: false
+        }
       )
       const inbox = Inbox__factory.connect(inboxAddress, bridge.l1Signer)
       const res = await inbox.createRetryableTicketNoRefundAliasRewrite(
@@ -69,7 +72,7 @@ const UnsupportedSmartContractWalletDisplay = ({
         recoveryAddress,
         retryableParams.maxGasBid,
         retryableParams.gasPriceBid,
-        '',
+        '0x',
         { value: retryableParams.totalDepositValue }
       )
       await res.wait()
