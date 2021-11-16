@@ -196,10 +196,9 @@ export const TokenModalBody = ({
   }, [bridgeTokens, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
-    return token.add(newToken)
-      .catch(ex => {
-        console.log('Token not found on this network', ex)
-      })
+    return token.add(newToken).catch(ex => {
+      console.log('Token not found on this network', ex)
+    })
   }
 
   const addNewToken: FormEventHandler = async e => {
