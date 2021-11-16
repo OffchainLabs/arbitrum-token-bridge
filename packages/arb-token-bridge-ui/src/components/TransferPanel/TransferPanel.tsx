@@ -11,6 +11,7 @@ import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
+import { Tooltip } from '../common/Tooltip'
 import TransactionConfirmationModal from '../TransactionConfirmationModal/TransactionConfirmationModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
@@ -226,15 +227,26 @@ const TransferPanel = (): JSX.Element => {
     }
   }
 
+  const smartContractWalletEthDepositsDisabled = useMemo(() => {
+    return isDepositMode && walletType === WalletType.SUPPORTED_CONTRACT_WALLET
+  }, [walletType, isDepositMode])
+
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
     return (
       shouldDisableDeposit ||
       transferring ||
+      smartContractWalletEthDepositsDisabled ||
       (isDepositMode &&
         (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
     )
-  }, [transferring, isDepositMode, l1Amount, l1Balance])
+  }, [
+    transferring,
+    isDepositMode,
+    l1Amount,
+    l1Balance,
+    smartContractWalletEthDepositsDisabled
+  ])
 
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
@@ -314,8 +326,15 @@ const TransferPanel = (): JSX.Element => {
             onClick={showBridgeInstructions}
             disabled={disableDeposit}
             isLoading={transferring}
+            className="relative group"
           >
+            {' '}
             Deposit
+            {smartContractWalletEthDepositsDisabled ? (
+              <Tooltip>
+                ETH deposits not currently supported for smart contract wallets{' '}
+              </Tooltip>
+            ) : null}
           </Button>
         ) : (
           <Button
