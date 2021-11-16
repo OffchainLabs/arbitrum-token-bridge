@@ -200,9 +200,6 @@ export const TokenModalBody = ({
       .catch(ex => {
         console.log('Token not found on this network', ex)
       })
-      .finally(() => {
-        setNewToken('')
-      })
   }
 
   const addNewToken: FormEventHandler = async e => {
