@@ -9,7 +9,8 @@ const TokenButton = (): JSX.Element => {
     app: {
       selectedToken,
       networkID,
-      arbTokenBridge: { bridgeTokens }
+      arbTokenBridge: { bridgeTokens },
+      arbTokenBridgeLoaded
     }
   } = useAppState()
   const [tokeModalOpen, setTokenModalOpen] = useState(false)
@@ -19,7 +20,7 @@ const TokenButton = (): JSX.Element => {
     if (!selectedAddress) {
       return 'https://ethereum.org/static/4b5288012dc4b32ae7ff21fccac98de1/31987/eth-diamond-black-gray.png'
     }
-    if (networkID === null) {
+    if (networkID === null || !arbTokenBridgeLoaded) {
       return undefined
     }
     const logo = bridgeTokens[selectedAddress]?.logoURI
