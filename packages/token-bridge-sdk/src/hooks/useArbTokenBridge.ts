@@ -46,6 +46,14 @@ const slowInboxQueueTimeout = 1000 * 60 * 15
 const addressToSymbol: AddressToSymbol = {}
 const addressToDecimals: AddressToDecimals = {}
 
+
+
+class TokenDisabledError extends Error {
+  constructor(msg:string) {
+    super(msg);
+    this.name = "TokenDisabledError"; 
+  }
+}
 export const useArbTokenBridge = (
   bridge: Bridge,
   autoLoadCache = true
@@ -418,12 +426,19 @@ export const useArbTokenBridge = (
       const decimals = await contract.decimals()
       try {
         // check if token is deployed at l2 address; if not this will throw
+        console.warn('L2 address', l2Address);
+        
         const { balance } = await bridge.l2Bridge.getL2TokenData(l2Address)
         l2TokenBalance = balance
       } catch (error) {
         console.info(`no L2 token for ${l1Address} (which is fine)`)
 
         l2Address = undefined
+      }
+
+      const isDisabled = await bridge.l1Bridge.tokenIsDisabled(l1Address)
+      if(isDisabled){
+         throw new TokenDisabledError("Token currently disabled")
       }
 
       bridgeTokensToAdd[l1Address] = {
