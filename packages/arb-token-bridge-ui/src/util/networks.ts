@@ -82,7 +82,7 @@ const networks: Networks = {
   },
   '42161': {
     chainID: '42161',
-    name: 'Arb1',
+    name: 'Arbitrum One',
     url: 'https://arb1.arbitrum.io/rpc',
     gif: kovanGif,
     explorerUrl: 'https://arbiscan.io',
