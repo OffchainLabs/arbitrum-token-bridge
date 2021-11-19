@@ -227,9 +227,12 @@ const TransferPanel = (): JSX.Element => {
     }
   }
 
-  const smartContractWalletEthDepositsDisabled = useMemo(() => {
+  const smartContractWalletEthDepositsDisabled = false
+  /**
+    const smartContractWalletEthDepositsDisabled =  useMemo(() => {
     return isDepositMode && walletType === WalletType.SUPPORTED_CONTRACT_WALLET
   }, [walletType, isDepositMode])
+  */
 
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
