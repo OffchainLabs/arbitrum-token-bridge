@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 
-import { BridgeHelper, Inbox__factory } from 'arb-ts'
+import { BridgeHelper } from 'arb-ts'
 import { utils, constants } from 'ethers'
 import { Bridge } from 'token-bridge-sdk'
 
@@ -45,11 +45,6 @@ const UnsupportedSmartContractWalletDisplay = ({
         return alert('Connect to L1')
       }
 
-      const inboxAddress =
-        bridge.l1Bridge.network.ethBridge &&
-        bridge.l1Bridge.network.ethBridge.inbox
-      if (!inboxAddress) throw new Error('no inbox address for current network')
-
       const l1ContractAddress = await bridge.l1Bridge.getWalletAddress()
       const l2Alias = utils.hexValue(
         BridgeHelper.applyL1ToL2Alias(l1ContractAddress)
@@ -63,7 +58,7 @@ const UnsupportedSmartContractWalletDisplay = ({
           includeL2Callvalue: false
         }
       )
-      const inbox = Inbox__factory.connect(inboxAddress, bridge.l1Signer)
+      const inbox = await bridge.l1Bridge.getInbox()
       const res = await inbox.createRetryableTicketNoRefundAliasRewrite(
         recoveryAddress,
         recoverableEth,

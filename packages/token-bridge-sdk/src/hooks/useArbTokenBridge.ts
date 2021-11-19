@@ -9,7 +9,6 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated,
   ERC20__factory,
-  Inbox__factory
 } from 'arb-ts'
 import useTransactions from './useTransactions'
 import {
@@ -169,11 +168,8 @@ export const useArbTokenBridge = (
   const depositEthFromContract = async (weiValue: BigNumber) => {
     const etherVal = utils.formatUnits(weiValue, 18)
 
-    const inboxAddress = bridge.l1Bridge.network.ethBridge?.inbox;
-    if(!inboxAddress) throw new Error("Inbox address not found")
-
     const walletAddress = await walletAddressCached()
-    const inbox =  Inbox__factory.connect(inboxAddress, bridge.l1Signer)
+    const inbox =  await bridge.l1Bridge.getInbox()
     const maxSubmissionPrice = (
       await bridge.l2Bridge.getTxnSubmissionPrice(0)
     )[0].mul(4)
