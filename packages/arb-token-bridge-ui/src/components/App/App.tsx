@@ -168,7 +168,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           return WalletType.EOA
         }
 
-        if (l1AddressIsSmartContract && l1AddressIsSmartContract) {
+        if (l1AddressIsSmartContract && l2AddressIsSmartContract) {
           // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
           if (l1Address !== l2Address) {
             return WalletType.UNSUPPORTED_CONTRACT_WALLET
