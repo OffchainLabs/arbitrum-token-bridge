@@ -21,6 +21,18 @@
       },
       {
         "chainId": 421611,
+        "address": "0x2f3C1B6A51A469051A22986aA0dDF98466cc8D3c",
+        "name": "DAI Stablecoin",
+        "symbol": "DAI",
+        "decimals": 18,
+        "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1636636734",
+        "extensions": {
+          "l1Address": "0x6A9865aDE2B6207dAAC49f8bCba9705dEB0B0e6D",
+          "l1GatewayAddress": "0x10E6593CDda8c58a1d0f14C5164B376352a55f2F"
+        }
+      },
+      {
+        "chainId": 421611,
         "address": "0xf3f0384583d0574955Dccbb044A64Ad249cf9C3E",
         "name": "Corn",
         "symbol": "CORN",
