@@ -196,17 +196,9 @@ export const TokenModalBody = ({
   }, [bridgeTokens, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
-    return bridge?.l1Bridge
-      .getL1TokenData(newToken) // check if exitss first before adding, because sdk will add to the cache even if it does not exist
-      .then(async () => {
-        await token.add(newToken)
-      })
-      .catch(ex => {
-        console.log('Token not found on this network', ex)
-      })
-      .finally(() => {
-        setNewToken('')
-      })
+    return token.add(newToken).catch(ex => {
+      console.log('Token not found on this network', ex)
+    })
   }
 
   const addNewToken: FormEventHandler = async e => {

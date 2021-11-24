@@ -4,11 +4,11 @@
   "version": {
     "major": 4,
     "minor": 0,
-    "patch": 2
+    "patch": 3
   },
   "tokens": [
     {
-      "logoURI": "https://zapper.fi/images/0XBTC-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/4454/thumb/0xbtc.png?1561603765",
       "chainId": 42161,
       "address": "0x7cb16cb78ea464aD35c8a50ABF95dff3c9e09d5d",
       "name": "0xBitcoin Token",
@@ -33,7 +33,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/ALCH-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14719/thumb/sbEW5W8.png?1617939648",
       "chainId": 42161,
       "address": "0x0e15258734300290a651FdBAe8dEb039a8E7a2FA",
       "name": "Alchemy",
@@ -46,7 +46,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/ALN-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14379/thumb/uaLoLU8c_400x400_%281%29.png?1627873106",
       "chainId": 42161,
       "address": "0x9b3fa2A7C3EB36d048A5d38d81E7fAFC6bc47B25",
       "name": "Aluna",
@@ -59,7 +59,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/AUC-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/2165/thumb/Auc_Discord_Avatar1.png?1618983355",
       "chainId": 42161,
       "address": "0xea986d33eF8a20A96120ecc44dBdD49830192043",
       "name": "Auctus Token",
@@ -72,7 +72,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/BAC-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13246/thumb/BAC.png?1613231642",
       "chainId": 42161,
       "address": "0x6F67043201C903bbCBC129750CB3b328Dd56a0a5",
       "name": "BAC",
@@ -175,7 +175,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/CAP-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/11775/thumb/CAP.png?1594083244",
       "chainId": 42161,
       "address": "0x031d35296154279DC1984dCD93E392b1f946737b",
       "name": "Cap",
@@ -188,7 +188,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/CELR-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/4379/thumb/Celr.png?1554705437",
       "chainId": 42161,
       "address": "0x3a8B787f78D775AECFEEa15706D4221B40F345AB",
       "name": "CelerToken",
@@ -214,7 +214,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/COMP-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1592625425",
       "chainId": 42161,
       "address": "0x354A6dA3fcde098F8389cad84b0182725c6C91dE",
       "name": "Compound",
@@ -253,7 +253,7 @@
       }
     },
     {
-      "logoURI": "https://cryptologos.cc/logos/curve-dao-token-crv-logo.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12124/thumb/Curve.png?1597369484",
       "chainId": 42161,
       "address": "0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978",
       "name": "Curve DAO Token",
@@ -266,7 +266,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DAI-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1636636734",
       "chainId": 42161,
       "address": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
       "name": "Dai Stablecoin",
@@ -279,7 +279,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DEFI5-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13691/thumb/thGDKHo.png?1610959947",
       "chainId": 42161,
       "address": "0xdeBa25AF35e4097146d7629055E0EC3C71706324",
       "name": "DEFI Top 5 Tokens Index",
@@ -292,7 +292,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DEGEN-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14143/thumb/alpha_logo.png?1614651244",
       "chainId": 42161,
       "address": "0xAE6e3540E97b0b9EA8797B157B510e133afb6282",
       "name": "DEGEN Index",
@@ -305,7 +305,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DF-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/9709/thumb/xlGxxIjI_400x400.jpg?1571006794",
       "chainId": 42161,
       "address": "0xaE6aab43C4f3E0cea4Ab83752C278f8dEbabA689",
       "name": "dForce",
@@ -392,7 +392,8 @@
         "l1Address": "0x605d26fbd5be761089281d5cec2ce86eea667109",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/17482/thumb/photo_2021-08-03_09-24-16.png?1627953917"
     },
     {
       "logoURI": "https://etherscan.io/token/images/dvf_32.png",
@@ -408,7 +409,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/DXD-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/11148/thumb/dxdao.png?1607999331",
       "chainId": 42161,
       "address": "0xC3Ae0333F0F34aa734D5493276223d95B8F9Cb37",
       "name": "DXdao",
@@ -430,7 +431,8 @@
         "l1Address": "0x24ae124c4cc33d6791f8e8b63520ed7107ac8b3e",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/17481/thumb/photo_2021-08-03_03-26-29.png?1627953584"
     },
     {
       "logoURI": "https://etherscan.io/token/images/dforceeur_32.png",
@@ -446,7 +448,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/FLUX-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/11756/thumb/fluxres.png?1593748917",
       "chainId": 42161,
       "address": "0xF80D589b3Dbe130c270a69F1a69D050f268786Df",
       "name": "Flux",
@@ -472,7 +474,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/FOR-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/8242/thumb/for.png?1606195375",
       "chainId": 42161,
       "address": "0x3816e40c1eB106c8fb7c05f901cfD58C7292D051",
       "name": "The Force Token",
@@ -498,7 +500,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/FUSE-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/10347/thumb/vUXKHEe.png?1601523640",
       "chainId": 42161,
       "address": "0xBDeF0E9ef12E689F366fe494A7A7D0dad25D9286",
       "name": "Fuse Token",
@@ -523,7 +525,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/GNO-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/662/thumb/logo_square_simple_300px.png?1609402668",
       "chainId": 42161,
       "address": "0xa0b862F60edEf4452F25B4160F177db44DeB6Cf1",
       "name": "Gnosis Token",
@@ -536,7 +538,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/GOVI-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13875/thumb/GOVI.png?1612451531",
       "chainId": 42161,
       "address": "0x07E49d5dE43DDA6162Fa28D24d5935C151875283",
       "name": "GOVI",
@@ -549,7 +551,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/GRT-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1608145566",
       "chainId": 42161,
       "address": "0x23A941036Ae778Ac51Ab04CEa08Ed6e2FE103614",
       "name": "Graph Token",
@@ -575,7 +577,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/KUN-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13177/thumb/kun_logo.png?1605923919",
       "chainId": 42161,
       "address": "0x04cb2d263a7489f02d813eaaB9Ba1bb8466347F2",
       "name": "QIAN governance token",
@@ -601,7 +603,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/LINK-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700",
       "chainId": 42161,
       "address": "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4",
       "name": "ChainLink Token",
@@ -636,7 +638,8 @@
         "l1Address": "0xb0c7a3ba49c7a6eaba6cd4a96c55a1391070ac9a",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/18623/thumb/Magic.png?1635755672"
     },
     {
       "chainId": 42161,
@@ -651,7 +654,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/MATH-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/11335/thumb/2020-05-19-token-200.png?1589940590",
       "chainId": 42161,
       "address": "0x99F40b01BA9C469193B360f72740E416B17Ac332",
       "name": "MATH Token",
@@ -677,7 +680,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/MCB-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/11796/thumb/mcb.png?1594355515",
       "chainId": 42161,
       "address": "0x4e352cF164E64ADCBad318C3a1e222E9EBa4Ce42",
       "name": "MCDEX Token",
@@ -703,7 +706,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/MTA-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/11846/thumb/mStable.png?1594950533",
       "chainId": 42161,
       "address": "0x5298Ee77A8f9E226898403eBAC33e68a62F770A0",
       "name": "Meta",
@@ -716,7 +719,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/NDX-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13546/thumb/indexed-light.74bb5471.png?1609712728",
       "chainId": 42161,
       "address": "0xB965029343D55189c25a7f3e0c9394DC0F5D41b1",
       "name": "Indexed",
@@ -754,7 +757,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/OCTO-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12594/thumb/octofi-256x256-radius-22percent.png?1610679969",
       "chainId": 42161,
       "address": "0x52f5d9B3a2bB89D3aEC5829A3415c21115aCD633",
       "name": "Octo.fi",
@@ -767,7 +770,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/OHM-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14483/thumb/token_OHM_%281%29.png?1628311611",
       "chainId": 42161,
       "address": "0x6E6a3D8F1AfFAc703B1aEF1F43B8D2321bE40043",
       "name": "Olympus",
@@ -780,7 +783,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/OVR-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13429/thumb/ovr_logo.png?1608518911",
       "chainId": 42161,
       "address": "0x55704A0e9E2eb59E176C5b69655DbD3DCDCFc0F0",
       "name": "OVR",
@@ -793,7 +796,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/PERP-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12381/thumb/60d18e06844a844ad75901a9_mark_only_03.png?1628674771",
       "chainId": 42161,
       "address": "0x753D224bCf9AAFaCD81558c32341416df61D3DAC",
       "name": "Perpetual",
@@ -831,7 +834,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/PREMIA-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13962/thumb/apple-touch-icon.png?1623679482",
       "chainId": 42161,
       "address": "0x51fC0f6660482Ea73330E414eFd7808811a57Fa2",
       "name": "Premia",
@@ -883,7 +886,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/ROUTE-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13709/thumb/route_token_200x200-19.png?1611057698",
       "chainId": 42161,
       "address": "0x5298060A95205BE6Dd4aBc21910A4bB23D6DCD8b",
       "name": "Route",
@@ -896,7 +899,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/SAKE-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12428/thumb/sake.png?1599777402",
       "chainId": 42161,
       "address": "0x552E4e96A0Ce6D36d161b63984848c8dAC471ea2",
       "name": "SakeToken",
@@ -909,7 +912,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/SDT-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/13724/thumb/stakedao_logo.jpg?1611195011",
       "chainId": 42161,
       "address": "0x7bA4a00d54A07461D9DB2aEF539e91409943AdC9",
       "name": "Stake DAO Token",
@@ -983,7 +986,8 @@
         "l1Address": "0x6cacdb97e3fc8136805a9e7c342d866ab77d0957",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/18740/thumb/swapr.jpg?1633516501"
     },
     {
       "logoURI": "https://etherscan.io/token/images/tkdcoop_32.png",
@@ -1008,7 +1012,8 @@
         "l1Address": "0x9c4a4204b79dd291d6b6571c5be8bbcd0622f050",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/18271/thumb/tracer_logo.png?1631176676"
     },
     {
       "logoURI": "https://images.prismic.io/tusd-homepage/fb4d581a-95ed-404c-b9de-7ab1365c1386_%E5%9B%BE%E5%B1%82+1.png",
@@ -1024,7 +1029,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/UBT-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/2707/thumb/UnibrightLogo_colorful_500x500_preview.png?1547036916",
       "chainId": 42161,
       "address": "0x2aD62674A64E698C24831Faf824973C360430140",
       "name": "UniBright",
@@ -1037,7 +1042,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/UDT-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14545/thumb/unlock.jpg?1616948136",
       "chainId": 42161,
       "address": "0xd5d3aA404D7562d09a848F96a8a8d5D65977bF90",
       "name": "Unlock Discount Token",
@@ -1050,7 +1055,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/UNI-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604",
       "chainId": 42161,
       "address": "0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0",
       "name": "Uniswap",
@@ -1076,7 +1081,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/USDC-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
       "chainId": 42161,
       "address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
       "name": "USD Coin (Arb1)",
@@ -1089,7 +1094,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/USDT-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
       "chainId": 42161,
       "address": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
       "name": "Tether USD",
@@ -1128,7 +1133,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/VISR-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14381/thumb/visor_logo.png?1615782828",
       "chainId": 42161,
       "address": "0x995C235521820f2637303Ca1970c7c044583df44",
       "name": "VISOR",
@@ -1141,7 +1146,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/VOX-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12880/thumb/BSensIa.png?1603261093",
       "chainId": 42161,
       "address": "0x2eD14d1788dfB780fD216706096AeD018514ECcd",
       "name": "Vox.Finance",
@@ -1154,7 +1159,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/WBTC-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1548822744",
       "chainId": 42161,
       "address": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
       "name": "Wrapped BTC",
@@ -1176,10 +1181,11 @@
         "l1Address": "0x6dc02164d75651758ac74435806093e421b64605",
         "l2GatewayAddress": "0x09e9222e96e7b4ae2a407b98d48e330053351eee",
         "l1GatewayAddress": "0xa3A7B6F88361F48403514059F1F16C8E78d60EeC"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/2091/thumb/xaya_logo-1.png?1547036406"
     },
     {
-      "logoURI": "https://zapper.fi/images/WETH-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
       "chainId": 42161,
       "address": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
       "name": "Wrapped Ether",
@@ -1192,7 +1198,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/WOO-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/12921/thumb/w2UiemF__400x400.jpg?1603670367",
       "chainId": 42161,
       "address": "0xcAFcD85D8ca7Ad1e1C6F82F651fA15E33AEfD07b",
       "name": "Wootrade Network",
@@ -1205,7 +1211,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/XTK-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/14089/thumb/xToken.png?1614226407",
       "chainId": 42161,
       "address": "0xF0A5717Ec0883eE56438932b0fe4A20822735fBa",
       "name": "xToken",
@@ -1231,7 +1237,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/ZIPT-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/4302/thumb/zippie.jpg?1547039665",
       "chainId": 42161,
       "address": "0x0F61B24272AF65EACF6adFe507028957698e032F",
       "name": "Zippie",
@@ -1253,7 +1259,8 @@
         "l1Address": "0xc4e15973e6ff2a35cc804c2cf9d2a1b817a8b40f",
         "l2GatewayAddress": "0x096760f208390250649e3e8763348e783aef5562",
         "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
-      }
+      },
+      "logoURI": "https://assets.coingecko.com/coins/images/15500/thumb/ibbtc.png?1621077589"
     },
     {
       "chainId": 42161,
@@ -1268,7 +1275,7 @@
       }
     },
     {
-      "logoURI": "https://zapper.fi/images/sUSD-icon.png",
+      "logoURI": "https://assets.coingecko.com/coins/images/5013/thumb/sUSD.png?1616150765",
       "chainId": 42161,
       "address": "0xA970AF1a584579B618be4d69aD6F73459D112F95",
       "name": "Synth sUSD",

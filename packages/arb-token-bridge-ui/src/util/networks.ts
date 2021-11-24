@@ -82,7 +82,7 @@ const networks: Networks = {
   },
   '42161': {
     chainID: '42161',
-    name: 'Arb1',
+    name: 'Arbitrum One',
     url: 'https://arb1.arbitrum.io/rpc',
     gif: kovanGif,
     explorerUrl: 'https://arbiscan.io',
@@ -97,7 +97,7 @@ const networks: Networks = {
     name: 'RinkArby',
     url: 'https://rinkeby.arbitrum.io/rpc',
     gif: kovanGif,
-    explorerUrl: 'https://rinkeby-explorer.arbitrum.io',
+    explorerUrl: 'https://testnet.arbiscan.io',
     partnerChainID: '4',
     isArbitrum: true,
     tokenBridge: RinkebyBridge,

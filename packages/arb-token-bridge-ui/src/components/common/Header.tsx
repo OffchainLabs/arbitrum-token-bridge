@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useMemo } from 'react'
 
 import { useWallet } from '@gimmixorg/use-wallet'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
@@ -43,7 +43,37 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Mainnet
+                  Mainnet (Arbiscan)
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="https://explorer.arbitrum.io/"
+                  target="_blank"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'block px-4 py-2 text-sm'
+                  )}
+                  rel="noreferrer"
+                >
+                  Mainnet (Offchain Labs)
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="https://testnet.arbiscan.io/"
+                  target="_blank"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'block px-4 py-2 text-sm'
+                  )}
+                  rel="noreferrer"
+                >
+                  Rinkarby (Arbiscan)
                 </a>
               )}
             </Menu.Item>
@@ -58,7 +88,7 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Rinkeby
+                  Rinkarby (Offchain Labs)
                 </a>
               )}
             </Menu.Item>
@@ -114,6 +144,45 @@ const LoginButton: React.FC = () => {
           style={{ padding: '10px 12px' }}
         >
           Login
+        </button>
+      )}
+    </>
+  )
+}
+
+const AddNetworkButton: React.FC = () => {
+  const {
+    app: { networkID, changeNetwork, l2NetworkDetails }
+  } = useAppState()
+
+  const hide = useMemo(() => {
+    return (
+      !networkID ||
+      !l2NetworkDetails ||
+      !changeNetwork ||
+      (l2NetworkDetails && l2NetworkDetails.chainID === networkID)
+    )
+  }, [networkID, l2NetworkDetails])
+
+  return (
+    <>
+      {hide ? null : (
+        <button
+          onClick={() => {
+            const chainID: string | null =
+              l2NetworkDetails && l2NetworkDetails.chainID
+
+            if (!chainID || !changeNetwork) {
+              console.log("Can't add L2 network")
+              return
+            }
+            changeNetwork(chainID)
+          }}
+          type="button"
+          className="mr-4 text-white hover:text-navy hover:text-gray-200 hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
+          style={{ padding: '10px 12px' }}
+        >
+          Add L2 Network
         </button>
       )}
     </>
@@ -189,6 +258,7 @@ const Header: React.FC = () => {
               </div>
 
               <div className="hidden lg:flex items-center">
+                <AddNetworkButton />
                 <LoginButton />
                 <JoinCommunityButton />
               </div>
