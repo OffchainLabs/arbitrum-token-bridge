@@ -111,7 +111,7 @@ export interface ArbTokenBridgeCache {
 
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<string>
-  addTokensStatic: (tokenList: TokenList) => void
+  addTokensStatic: (tokenList: TokenList) => Promise<void>
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (

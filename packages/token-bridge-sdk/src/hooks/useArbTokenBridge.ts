@@ -357,7 +357,7 @@ export const useArbTokenBridge = (
     },
     [bridge, bridgeTokens]
   )
-  const addTokensStatic = (arbTokenList: TokenList) => {
+  const addTokensStatic = async (arbTokenList: TokenList) => {
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
@@ -368,7 +368,38 @@ export const useArbTokenBridge = (
         decimals,
         logoURI
       } = tokenData
-      const l1Address = (extensions as any).l1Address as string
+
+      const bridgeInfo = (() => {
+        // TODO: parsing the token list format could be from arbts or the tokenlist package
+        interface Extensions {
+          bridgeInfo: {
+            [chainId: string]: {
+              tokenAddress: string
+              originBridgeAddress: string
+              destBridgeAddress: string
+            }
+          }
+        }
+        const isExtensions = (obj: any): obj is Extensions => {
+          if (!obj) return false
+          if (!obj['bridgeInfo']) return false
+          return Object.keys(obj['bridgeInfo'])
+            .map(key => obj['bridgeInfo'][key])
+            .every(
+              e =>
+                e &&
+                'tokenAddress' in e &&
+                'originBridgeAddress' in e &&
+                'destBridgeAddress' in e
+            )
+        }
+        if (!isExtensions(extensions))
+          throw new Error('Object not of BridgeInfo format')
+        return extensions.bridgeInfo
+      })()
+
+      const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
+
       bridgeTokensToAdd[l1Address] = {
         name,
         type: TokenType.ERC20,
