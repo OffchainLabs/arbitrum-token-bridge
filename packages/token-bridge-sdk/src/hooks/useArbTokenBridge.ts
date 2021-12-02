@@ -368,7 +368,21 @@ export const useArbTokenBridge = (
         decimals,
         logoURI
       } = tokenData
-      const l1Address = (extensions as any).l1Address as string
+
+      // TODO: parsing the token list format could be from arbts or the tokenlist package
+      if(!extensions) throw new Error("No extensions object in token list")
+
+      const bridgeInfo = extensions["bridgeInfo"];
+      if(!bridgeInfo)
+        throw new Error("Token list extension object not formatted as expected")
+
+      // TODO: why do we need to access "1" here? it should just be an object
+      const bridgeInfoIndex = (bridgeInfo as any)[1]
+      if(!bridgeInfoIndex) throw new Error("Wrong index in bridge info")
+
+      const l1Address = bridgeInfoIndex["tokenAddress"]
+      if(!l1Address) throw new Error("No token address in extensions")
+      
       bridgeTokensToAdd[l1Address] = {
         name,
         type: TokenType.ERC20,
