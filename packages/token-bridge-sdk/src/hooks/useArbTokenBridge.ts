@@ -369,20 +369,41 @@ export const useArbTokenBridge = (
         logoURI
       } = tokenData
 
-      // TODO: parsing the token list format could be from arbts or the tokenlist package
-      if(!extensions) throw new Error("No extensions object in token list")
+      const l1Addresses = (() => {
+        // TODO: parsing the token list format could be from arbts or the tokenlist package
+        interface Extensions {
+          bridgeInfo: {
+            [key: string]: {
+              tokenAddress: string
+              originBridgeAddress: string
+              destBridgeAddress: string
+            }
+          }
+        }
+        const isExtensions = (obj: any): obj is Extensions => {
+          if (!obj) return false
+          if (!obj['bridgeInfo']) return false
+          return Object.keys(obj['bridgeInfo'])
+            .map(key => obj['bridgeInfo'][key])
+            .every(
+              e =>
+                e &&
+                'tokenAddress' in e &&
+                'originBridgeAddress' in e &&
+                'destBridgeAddress' in e
+            )
+        }
+        if (!isExtensions(extensions))
+          throw new Error('Object not of BridgeInfo format')
+        return Object.keys(extensions.bridgeInfo).map(
+          key => extensions.bridgeInfo[key].tokenAddress
+        )
+      })()
 
-      const bridgeInfo = extensions["bridgeInfo"];
-      if(!bridgeInfo)
-        throw new Error("Token list extension object not formatted as expected")
+      if (l1Addresses.length !== 1)
+        throw new Error('Ambiguous L1 address in token list.')
+      const l1Address = l1Addresses[0]
 
-      // TODO: why do we need to access "1" here? it should just be an object
-      const bridgeInfoIndex = (bridgeInfo as any)[1]
-      if(!bridgeInfoIndex) throw new Error("Wrong index in bridge info")
-
-      const l1Address = bridgeInfoIndex["tokenAddress"]
-      if(!l1Address) throw new Error("No token address in extensions")
-      
       bridgeTokensToAdd[l1Address] = {
         name,
         type: TokenType.ERC20,
