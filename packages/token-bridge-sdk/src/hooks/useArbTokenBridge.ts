@@ -357,7 +357,7 @@ export const useArbTokenBridge = (
     },
     [bridge, bridgeTokens]
   )
-  const addTokensStatic = (arbTokenList: TokenList) => {
+  const addTokensStatic = async (arbTokenList: TokenList) => {
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
@@ -369,11 +369,11 @@ export const useArbTokenBridge = (
         logoURI
       } = tokenData
 
-      const l1Addresses = (() => {
+      const bridgeInfo = (() => {
         // TODO: parsing the token list format could be from arbts or the tokenlist package
         interface Extensions {
           bridgeInfo: {
-            [key: string]: {
+            [chainId: string]: {
               tokenAddress: string
               originBridgeAddress: string
               destBridgeAddress: string
@@ -395,14 +395,10 @@ export const useArbTokenBridge = (
         }
         if (!isExtensions(extensions))
           throw new Error('Object not of BridgeInfo format')
-        return Object.keys(extensions.bridgeInfo).map(
-          key => extensions.bridgeInfo[key].tokenAddress
-        )
+        return extensions.bridgeInfo
       })()
 
-      if (l1Addresses.length !== 1)
-        throw new Error('Ambiguous L1 address in token list.')
-      const l1Address = l1Addresses[0]
+      const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
 
       bridgeTokensToAdd[l1Address] = {
         name,
