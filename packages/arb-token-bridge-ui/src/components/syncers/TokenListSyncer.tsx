@@ -32,7 +32,7 @@ const TokenListSyncer = (): JSX.Element => {
         return response.json()
       })
       .then(tokenListData => {
-        arbTokenBridge.token.addTokensStatic(tokenListData)
+        return arbTokenBridge.token.addTokensStatic(tokenListData)
       })
   }, [arbTokenBridge?.walletAddress, l2NetworkDetails])
 
