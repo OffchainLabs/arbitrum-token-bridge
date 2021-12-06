@@ -313,8 +313,11 @@ export const TokenModalBody = ({
   }, [bridgeTokens, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
-    return token.add(newToken).catch(ex => {
-      console.log('Token not found on this network', ex)
+    return token.add(newToken).catch((ex: Error) => {
+      console.log('Token not found on this network')
+      if (ex.name === 'TokenDisabledError') {
+        alert('This token is currently paused in the bridge')
+      }
     })
   }
 

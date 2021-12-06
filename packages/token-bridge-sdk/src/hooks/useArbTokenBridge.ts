@@ -46,6 +46,14 @@ const slowInboxQueueTimeout = 1000 * 60 * 15
 const addressToSymbol: AddressToSymbol = {}
 const addressToDecimals: AddressToDecimals = {}
 
+
+
+class TokenDisabledError extends Error {
+  constructor(msg:string) {
+    super(msg);
+    this.name = "TokenDisabledError"; 
+  }
+}
 export const useArbTokenBridge = (
   bridge: Bridge,
   autoLoadCache = true
@@ -381,7 +389,38 @@ export const useArbTokenBridge = (
         decimals,
         logoURI
       } = tokenData
-      const l1Address = (extensions as any).l1Address as string
+
+      const bridgeInfo = (() => {
+        // TODO: parsing the token list format could be from arbts or the tokenlist package
+        interface Extensions {
+          bridgeInfo: {
+            [chainId: string]: {
+              tokenAddress: string
+              originBridgeAddress: string
+              destBridgeAddress: string
+            }
+          }
+        }
+        const isExtensions = (obj: any): obj is Extensions => {
+          if (!obj) return false
+          if (!obj['bridgeInfo']) return false
+          return Object.keys(obj['bridgeInfo'])
+            .map(key => obj['bridgeInfo'][key])
+            .every(
+              e =>
+                e &&
+                'tokenAddress' in e &&
+                'originBridgeAddress' in e &&
+                'destBridgeAddress' in e
+            )
+        }
+        if (!isExtensions(extensions))
+          throw new Error('Object not of BridgeInfo format')
+        return extensions.bridgeInfo
+      })()
+
+      const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
+
       bridgeTokensToAdd[l1Address] = {
         name,
         type: TokenType.ERC20,
@@ -432,12 +471,19 @@ export const useArbTokenBridge = (
       const decimals = await contract.decimals()
       try {
         // check if token is deployed at l2 address; if not this will throw
+        console.warn('L2 address', l2Address);
+        
         const { balance } = await bridge.l2Bridge.getL2TokenData(l2Address)
         l2TokenBalance = balance
       } catch (error) {
         console.info(`no L2 token for ${l1Address} (which is fine)`)
 
         l2Address = undefined
+      }
+
+      const isDisabled = await bridge.l1Bridge.tokenIsDisabled(l1Address)
+      if(isDisabled){
+         throw new TokenDisabledError("Token currently disabled")
       }
 
       bridgeTokensToAdd[l1Address] = {
