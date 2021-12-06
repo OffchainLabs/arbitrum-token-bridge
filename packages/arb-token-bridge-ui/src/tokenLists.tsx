@@ -40,6 +40,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'token-list-421611.json',
     name: 'Rinkarby Tokens',
     isDefault: true,
-    logoURI: 'ipfs://QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
+    logoURI:
+      'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
   }
 ]
