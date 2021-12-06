@@ -20,7 +20,7 @@ const TokenListSyncer = (): JSX.Element => {
     const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
       bridgeTokenList => bridgeTokenList.originChainID === chainID
     )
-    // we can fetch each list asynchronously 
+    // we can fetch each list asynchronously
     tokenListsToSet.forEach(bridgeTokenList => {
       axios
         .get(bridgeTokenList.url, {

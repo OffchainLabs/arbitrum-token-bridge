@@ -378,7 +378,7 @@ export const useArbTokenBridge = (
     setBridgeTokens(newBridgeTokens)
   },[bridgeTokens])
   
-  const addTokensFromList = (arbTokenList: TokenList, listID?: number) => {
+  const addTokensFromList = async (arbTokenList: TokenList, listID?: number) => {
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
