@@ -209,7 +209,9 @@ export const TokenListBody = () => {
 
         return (
           <div className="flex items-center">
-            <div>{tokenList.name} </div>
+            <div className="text-base leading-6 font-bold text-gray-900">
+              {tokenList.name}{' '}
+            </div>
             <img
               src={tokenList.logoURI}
               alt="logo"
@@ -433,9 +435,9 @@ const TokenModal = ({
   const buttonText = useMemo(() => {
     switch (currentPannel) {
       case Pannel.TOKENS:
-        return 'View Token Lists'
+        return 'View Token Lists ↗'
       case Pannel.LISTS:
-        return 'View Tokens'
+        return 'View Tokens ↗'
       default:
         throw new Error('Unhandled switch case')
     }
