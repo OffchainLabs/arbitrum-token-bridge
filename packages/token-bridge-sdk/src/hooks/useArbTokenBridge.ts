@@ -357,7 +357,20 @@ export const useArbTokenBridge = (
     },
     [bridge, bridgeTokens]
   )
-  const addTokensStatic = (arbTokenList: TokenList) => {
+
+  const removeTokensFromList = useCallback( (listID: number)=>{
+    const newBridgeTokens = {...bridgeTokens}
+    for ( let address in bridgeTokens) {
+        const token = bridgeTokens[address]
+        if(!token) continue
+        if(token.listID === listID){
+          delete newBridgeTokens[address]
+        }
+    }
+    setBridgeTokens(newBridgeTokens)
+  },[bridgeTokens])
+  
+  const addTokensFromList = (arbTokenList: TokenList, listID?: number) => {
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
@@ -377,7 +390,8 @@ export const useArbTokenBridge = (
         address: l1Address,
         l2Address,
         decimals,
-        logoURI
+        logoURI,
+        listID
       }
     }
     setBridgeTokens(oldBridgeTokens => {
@@ -1034,7 +1048,8 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
-      addTokensStatic,
+      addTokensFromList,
+      removeTokensFromList,
       updateTokenData,
       approve: approveToken,
       deposit: depositToken,

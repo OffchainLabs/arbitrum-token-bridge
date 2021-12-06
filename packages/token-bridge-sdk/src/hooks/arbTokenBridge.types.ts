@@ -28,6 +28,7 @@ export interface BridgeToken {
   address: string
   l2Address?: string
   logoURI?: string
+  listID?: number // no listID indicates added by user
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
@@ -111,7 +112,8 @@ export interface ArbTokenBridgeCache {
 
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<string>
-  addTokensStatic: (tokenList: TokenList) => void
+  addTokensFromList: (tokenList: TokenList, listID?: number) => void
+  removeTokensFromList: (listID: number) => void 
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (

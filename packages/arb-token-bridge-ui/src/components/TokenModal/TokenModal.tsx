@@ -1,10 +1,19 @@
-import React, { FormEventHandler, useContext, useMemo, useState } from 'react'
+import React, {
+  FormEventHandler,
+  useContext,
+  useMemo,
+  useState,
+  useCallback
+} from 'react'
 
+import axios from 'axios'
 import { BigNumber, constants } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
+import { BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
+import { BRIDGE_TOKEN_LISTS, BridgeTokenList } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
@@ -16,12 +25,26 @@ interface TokenRowProps {
   address: string | null
   balance: BigNumber | null | undefined
   onTokenSelected: () => void
+  toggleCurrentPannel: () => void
+}
+interface TokenListViewProps {
+  toggleCurrentPannel: () => void
 }
 
+enum Pannel {
+  TOKENS,
+  LISTS
+}
+
+const listIdsToNames: any = {}
+BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
+  listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
+})
 const TokenRow = ({
   address,
   balance,
-  onTokenSelected
+  onTokenSelected,
+  toggleCurrentPannel
 }: TokenRowProps): JSX.Element => {
   const {
     app: {
@@ -76,6 +99,16 @@ const TokenRow = ({
     onTokenSelected()
   }
 
+  const source = (() => {
+    if (token === null || token === undefined) return ''
+    if (token === undefined) return ''
+    if (!token.listID) {
+      return 'user-added'
+    }
+
+    return listIdsToNames[token.listID]
+  })()
+
   return (
     <button
       onClick={selectToken}
@@ -96,6 +129,18 @@ const TokenRow = ({
         <p className="text-base leading-6 font-bold text-gray-900">
           {tokenName}
         </p>
+        <div className="text-xs leading-9 text-gray-600 self-end m-1.5">
+          {' '}
+          <button
+            type="button"
+            onClick={e => {
+              e.stopPropagation()
+              toggleCurrentPannel()
+            }}
+          >
+            {source}{' '}
+          </button>
+        </div>
       </div>
 
       <p className="flex items-center text-base leading-6 font-medium text-gray-900">
@@ -116,10 +161,82 @@ const TokenRow = ({
   )
 }
 
+export const TokenListBody = () => {
+  const {
+    app: {
+      l2NetworkDetails,
+      arbTokenBridge: {
+        bridgeTokens,
+        token: { removeTokensFromList, addTokensFromList }
+      }
+    }
+  } = useAppState()
+  const listsToShow: BridgeTokenList[] = BRIDGE_TOKEN_LISTS.filter(
+    tokenList => {
+      return !!(
+        l2NetworkDetails && tokenList.originChainID === l2NetworkDetails.chainID
+      )
+    }
+  )
+  const toggleTokenList = (
+    bridgeTokenList: BridgeTokenList,
+    isActive: boolean
+  ) => {
+    if (isActive) {
+      removeTokensFromList(bridgeTokenList.id)
+    } else {
+      axios
+        .get(bridgeTokenList.url, {
+          headers: {
+            'Access-Control-Allow-Origin': '*'
+          }
+        })
+        .then(response => {
+          return response.data
+        })
+        .then(tokenListData => {
+          addTokensFromList(tokenListData, bridgeTokenList.id)
+        })
+    }
+  }
+  return (
+    <div className="flex flex-col gap-6">
+      {listsToShow.map(tokenList => {
+        const isActive = Object.keys(bridgeTokens).some(address => {
+          const token = bridgeTokens[address]
+          return !!(token && tokenList.id === token.listID)
+        })
+
+        return (
+          <div className="flex items-center">
+            <div>{tokenList.name} </div>
+            <img
+              src={tokenList.logoURI}
+              alt="logo"
+              className="rounded-full w-8 h-8 mr-4"
+            />
+            <div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={() => toggleTokenList(tokenList, isActive)}
+                />
+                <span className="slider round"></span>
+              </label>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 export const TokenModalBody = ({
-  onTokenSelected
+  onTokenSelected,
+  toggleCurrentPannel
 }: {
   onTokenSelected: () => void
+  toggleCurrentPannel: () => void
 }): JSX.Element => {
   const bridge = useContext(BridgeContext)
   const [confirmationOpen, setConfirmationOpen] = useState(false)
@@ -228,18 +345,12 @@ export const TokenModalBody = ({
         setOpen={setBlacklistedOpen}
       />
       <form onSubmit={addNewToken} className="flex flex-col">
-        <label
-          htmlFor="newTokenAddress"
-          className="text-sm leading-5 font-medium text-gray-700 mb-1"
-        >
-          Search for token
-        </label>
         <div className="flex items-stretch gap-2">
           <input
             id="newTokenAddress"
             value={newToken}
             onChange={e => setNewToken(e.target.value)}
-            placeholder="Token name, symbol, or address"
+            placeholder="Search by token name, symbol, or address"
             className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
           />
 
@@ -271,6 +382,7 @@ export const TokenModalBody = ({
             isDepositMode ? balances.eth.balance : balances.eth.arbChainBalance
           }
           onTokenSelected={onTokenSelected}
+          toggleCurrentPannel={toggleCurrentPannel}
         />
         {tokensToShow.map(erc20Address => (
           <TokenRow
@@ -282,6 +394,7 @@ export const TokenModalBody = ({
                 : balances.erc20[erc20Address]?.arbChainBalance
             }
             onTokenSelected={onTokenSelected}
+            toggleCurrentPannel={toggleCurrentPannel}
           />
         ))}
       </div>
@@ -296,9 +409,50 @@ const TokenModal = ({
   isOpen: boolean
   setIsOpen: (open: boolean) => void
 }): JSX.Element => {
+  const [currentPannel, setCurrentPannel] = useState(Pannel.TOKENS)
+
+  const toggleCurrentPannel = useCallback(() => {
+    setCurrentPannel(
+      currentPannel === Pannel.TOKENS ? Pannel.LISTS : Pannel.TOKENS
+    )
+  }, [currentPannel])
+  const title = useMemo(() => {
+    switch (currentPannel) {
+      case Pannel.TOKENS:
+        return 'Choose token'
+      case Pannel.LISTS:
+        return 'Select Token List'
+      default:
+        throw new Error('Unhandled switch case')
+    }
+  }, [currentPannel])
+
+  const buttonText = useMemo(() => {
+    switch (currentPannel) {
+      case Pannel.TOKENS:
+        return 'View Token Lists'
+      case Pannel.LISTS:
+        return 'View Tokens'
+      default:
+        throw new Error('Unhandled switch case')
+    }
+  }, [currentPannel])
   return (
-    <Modal isOpen={isOpen} setIsOpen={setIsOpen} title="Choose token">
-      <TokenModalBody onTokenSelected={() => setIsOpen(false)} />
+    <Modal
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      title={title}
+      buttonText={buttonText}
+      buttonAction={toggleCurrentPannel}
+    >
+      {currentPannel === Pannel.TOKENS ? (
+        <TokenModalBody
+          onTokenSelected={() => setIsOpen(false)}
+          toggleCurrentPannel={toggleCurrentPannel}
+        />
+      ) : (
+        <TokenListBody />
+      )}
     </Modal>
   )
 }
