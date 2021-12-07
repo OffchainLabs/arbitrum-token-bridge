@@ -305,8 +305,10 @@ export const TokenModalBody = ({
           }
           const bridgeToken = bridgeTokens[addr]
           if (!bridgeToken) return false
-          const { address, l2Address, name, symbol } = bridgeToken
-          return (address + l2Address + name + symbol)
+          const { address, l2Address, name, symbol, listID } = bridgeToken
+          const listName =
+            listID && listIdsToNames[listID] ? listIdsToNames[listID] : ''
+          return (address + l2Address + name + symbol + listName)
             .toLowerCase()
             .includes(tokenSearch)
         })
