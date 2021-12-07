@@ -142,6 +142,13 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
+  const {
+    app: {
+      debugPannel: { voidSignerAddress }
+    }
+  } = useAppState()
+  // @ts-ignore
+  window.DEBUG_setVoidSigner = actions.app.setVoidSignerAddress
 
   const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
 
@@ -235,13 +242,22 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         const ethProvider = new ethers.providers.JsonRpcProvider(
           partnerNetwork.url
         )
-        return ethProvider.getSigner(usersMetamaskAddress!)
+        return ethProvider.getSigner(voidSignerAddress || usersMetamaskAddress!)
       }
+      if (voidSignerAddress) {
+        const ethProvider = new ethers.providers.JsonRpcProvider(network.url)
+        return ethProvider.getSigner(voidSignerAddress)
+      }
+
       return library?.getSigner(0) as JsonRpcSigner
     }
 
     function getL2Signer(network: Network) {
       if (network.isArbitrum) {
+        if (voidSignerAddress) {
+          const arbProvider = new ethers.providers.JsonRpcProvider(network.url)
+          return arbProvider.getSigner(voidSignerAddress)
+        }
         return library?.getSigner(0) as JsonRpcSigner
       }
       const partnerNetwork = networks[network.partnerChainID]
@@ -250,7 +266,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         partnerNetwork.url
       )
 
-      return arbProvider.getSigner(usersMetamaskAddress!)
+      return arbProvider.getSigner(voidSignerAddress || usersMetamaskAddress!)
     }
 
     actions.app.setNetworkID(`${networkVersion}`)
@@ -299,8 +315,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     if (globalBridge) {
       setGlobalBridge(null)
     }
-  }, [networkVersion, usersMetamaskAddress])
-
+  }, [networkVersion, usersMetamaskAddress, voidSignerAddress])
   // STEP2 after bridge is set to null, we start recreating everything
   useEffect(() => {
     if (globalBridge) {

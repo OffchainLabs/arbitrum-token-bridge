@@ -16,6 +16,11 @@ import {
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import Networks, { Network } from '../../util/networks'
 
+export interface DebugPannel {
+  show: boolean
+  voidSignerAddress?: string
+}
+
 export enum WhiteListState {
   VERIFYING,
   ALLOWED,
@@ -80,9 +85,14 @@ export type AppState = {
   arbTokenBridgeLoaded: boolean
 
   changeNetwork: ((chainId: string) => Promise<void>) | null
+  debugPannel: DebugPannel
 }
 
 export const defaultState: AppState = {
+  debugPannel: {
+    show: false,
+    voidSignerAddress: undefined
+  },
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,

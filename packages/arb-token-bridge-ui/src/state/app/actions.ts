@@ -88,6 +88,12 @@ export const setArbTokenBridgeLoaded = (
   state.app.arbTokenBridgeLoaded = loaded
 }
 
+export const setVoidSignerAddress = (
+  { state }: Context,
+  voidSignerAddress?: string
+) => {
+  state.app.debugPannel.voidSignerAddress = voidSignerAddress
+}
 export const setArbTokenBridge = (
   { state, actions }: Context,
   atb: ArbTokenBridge
