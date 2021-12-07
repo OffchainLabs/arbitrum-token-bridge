@@ -4354,10 +4354,10 @@ arb-bridge-eth@0.7.3, "arb-bridge-eth@https://gitpkg.now.sh/OffchainLabs/arbitru
     solidity-coverage v0.7.17
     typechain "^5.1.2"
 
-arb-bridge-peripherals@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/arb-bridge-peripherals/-/arb-bridge-peripherals-1.0.2.tgz#0749a9f56596376241ef4f4c025e1da2179970c9"
-  integrity sha512-H05XAIzKUQsEBh6h3bBsZPu7KsLmM7LojoQghEtXvenkUym2LARAV6nMBX9z1TzAI9y2UnLkj7rsScCe3d3q4w==
+arb-bridge-peripherals@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/arb-bridge-peripherals/-/arb-bridge-peripherals-1.0.3.tgz#985da333bcf5f8982d5093228149cb35b8479eb8"
+  integrity sha512-18SHY18UllDGwWL7BKdzB1cxRxNqS1vHnskp7YyC891sw4M5XSJDahNPiBB7L/pUOdSPdeJQsjEGERdiv0//cA==
   dependencies:
     "@nomiclabs/hardhat-ethers" "^2.0.1"
     "@nomiclabs/hardhat-etherscan" "^2.1.0"
@@ -4369,7 +4369,6 @@ arb-bridge-peripherals@1.0.2:
     arbos-precompiles "^1.0.1"
     dotenv "^10.0.0"
     ethereum-waffle "^3.2.0"
-    ethers "^5.4.5"
     hardhat "^2.6.1"
     hardhat-deploy "^0.9.1"
     hardhat-gas-reporter "^1.0.4"
@@ -4378,10 +4377,10 @@ arb-bridge-peripherals@1.0.2:
   optionalDependencies:
     "@openzeppelin/upgrades-core" "^1.7.6"
 
-arb-ts@2.0.0-beta.5:
-  version "2.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-2.0.0-beta.5.tgz#22bfd570cb27c2362f0ee8aa116f80f231d1b294"
-  integrity sha512-mERXwSDpOlj6/ejB/8XMRaoDCbRZjRJeyIsfr70oUWIc6F56JVAP9dl776SPhPdEW7Y+wqX26QpKdxmHF2Ba0A==
+arb-ts@2.0.0-beta.6:
+  version "2.0.0-beta.6"
+  resolved "https://registry.yarnpkg.com/arb-ts/-/arb-ts-2.0.0-beta.6.tgz#9b8042a4132ce8998575d26de2a9a9731a5f4f7d"
+  integrity sha512-VT3yUkFlAhWoDi/uSD82Rttrv+9+3jrAfwNcENIwoaWtWfx7x1bNNSbeRdKkpNR+GRWdt/4wOMdSX0+Ps8CPSQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -4389,7 +4388,7 @@ arb-ts@2.0.0-beta.5:
     "@nomiclabs/hardhat-ethers" "^2.0.2"
     "@typechain/ethers-v5" "^7.2.0"
     arb-bridge-eth "0.7.3"
-    arb-bridge-peripherals "1.0.2"
+    arb-bridge-peripherals "1.0.3"
     arbos-precompiles "1.0.1"
     dotenv "^10.0.0"
     ethers "^5.1.0"
@@ -8974,7 +8973,7 @@ ethers@^4.0.32, ethers@^4.0.40:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^5.0.1, ethers@^5.0.2, ethers@^5.4.5, ethers@^5.4.7:
+ethers@^5.0.1, ethers@^5.0.2, ethers@^5.4.7:
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.5.2.tgz#cd2e508c7342c44fa70392f722e8de8f2416489f"
   integrity sha512-EF5W+6Wwcu6BqVwpgmyR5U2+L4c1FQzlM/02dkZOugN3KF0cG9bzHZP+TDJglmPm2/IzCEJDT7KBxzayk7SAHw==
