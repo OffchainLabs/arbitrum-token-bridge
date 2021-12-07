@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
+import {
+  JsonRpcSigner,
+  JsonRpcProvider
+} from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
 import axios from 'axios'
 import * as ethers from 'ethers'
@@ -232,9 +235,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     function getL1Signer(network: Network) {
       if (network.isArbitrum) {
         const partnerNetwork = networks[network.partnerChainID]
-        const ethProvider = new ethers.providers.JsonRpcProvider(
-          partnerNetwork.url
-        )
+        const ethProvider = new JsonRpcProvider(partnerNetwork.url)
         return ethProvider.getSigner(usersMetamaskAddress!)
       }
       return library?.getSigner(0) as JsonRpcSigner
@@ -246,9 +247,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       }
       const partnerNetwork = networks[network.partnerChainID]
 
-      const arbProvider = new ethers.providers.JsonRpcProvider(
-        partnerNetwork.url
-      )
+      const arbProvider = new JsonRpcProvider(partnerNetwork.url)
 
       return arbProvider.getSigner(usersMetamaskAddress!)
     }
