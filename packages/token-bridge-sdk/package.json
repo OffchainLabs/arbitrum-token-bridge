@@ -30,7 +30,7 @@
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
     "@uniswap/token-lists": "^1.0.0-beta.25",
-    "arb-ts": "2.0.0-beta.4",
+    "arb-ts": "2.0.0-beta.5",
     "axios": "^0.21.4",
     "ethers": "^5.4.6",
     "graphql": "^15.5.3",
@@ -65,7 +65,7 @@
   "resolutions": {
     "**/@typescript-eslint/eslint-plugin": "^4.1.1",
     "**/@typescript-eslint/parser": "^4.1.1",
-    "arb-bridge-eth": "https://gitpkg.now.sh/OffchainLabs/arbitrum/packages/arb-bridge-eth?f5472d1f4a0f475c486cfaa18ec5d7c199e6ca6a"
+    "arb-bridge-eth": "https://gitpkg.now.sh/OffchainLabs/arbitrum/packages/arb-bridge-eth?9df0077482cf3b89a00e496d82b9b689399b7de9"
   },
   "files": [
     "dist/**/*"
