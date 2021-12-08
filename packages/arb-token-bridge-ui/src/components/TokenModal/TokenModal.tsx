@@ -16,7 +16,8 @@ import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  listIdsToNames
+  listIdsToNames,
+  addBridgeTokenListToBridge
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { BridgeContext } from '../App/App'
@@ -162,14 +163,12 @@ const TokenRow = ({
 
 export const TokenListBody = () => {
   const {
-    app: {
-      l2NetworkDetails,
-      arbTokenBridge: {
-        bridgeTokens,
-        token: { removeTokensFromList, addTokensFromList }
-      }
-    }
+    app: { l2NetworkDetails, arbTokenBridge }
   } = useAppState()
+  const {
+    bridgeTokens,
+    token: { removeTokensFromList, addTokensFromList }
+  } = arbTokenBridge
   const listsToShow: BridgeTokenList[] = BRIDGE_TOKEN_LISTS.filter(
     tokenList => {
       return !!(
@@ -184,18 +183,7 @@ export const TokenListBody = () => {
     if (isActive) {
       removeTokensFromList(bridgeTokenList.id)
     } else {
-      axios
-        .get(bridgeTokenList.url, {
-          headers: {
-            'Access-Control-Allow-Origin': '*'
-          }
-        })
-        .then(response => {
-          return response.data
-        })
-        .then(tokenListData => {
-          addTokensFromList(tokenListData, bridgeTokenList.id)
-        })
+      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     }
   }
   return (

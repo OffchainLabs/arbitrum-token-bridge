@@ -3,7 +3,10 @@ import React, { useEffect, useMemo } from 'react'
 import axios from 'axios'
 
 import { useAppState, useActions } from '../../state'
-import { BRIDGE_TOKEN_LISTS } from '../../tokenLists'
+import {
+  BRIDGE_TOKEN_LISTS,
+  addBridgeTokenListToBridge
+} from '../../tokenLists'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
@@ -23,21 +26,7 @@ const TokenListSyncer = (): JSX.Element => {
     )
     // we can fetch each list asynchronously
     tokenListsToSet.forEach(bridgeTokenList => {
-      axios
-        .get(bridgeTokenList.url, {
-          headers: {
-            'Access-Control-Allow-Origin': '*'
-          }
-        })
-        .then(response => {
-          return response.data
-        })
-        .then(tokenListData => {
-          arbTokenBridge.token.addTokensFromList(
-            tokenListData,
-            bridgeTokenList.id
-          )
-        })
+      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
   }, [arbTokenBridge?.walletAddress, l2NetworkDetails])
 

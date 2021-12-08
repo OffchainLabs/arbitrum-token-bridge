@@ -1,3 +1,6 @@
+import axios from 'axios'
+import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
+
 export interface BridgeTokenList {
   id: number
   originChainID: string
@@ -50,3 +53,28 @@ export const listIdsToNames: { [key: string]: string } = {}
 BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
   listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
 })
+
+export const addBridgeTokenListToBridge = (
+  bridgeTokenList: BridgeTokenList,
+  arbTokenBridge: ArbTokenBridge
+) => {
+  axios
+    .get(bridgeTokenList.url, {
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
+    .then(response => {
+      return response.data
+    })
+    .then(tokenListData => {
+      if (validateTokenList(tokenListData)) {
+        arbTokenBridge.token.addTokensFromList(
+          tokenListData,
+          bridgeTokenList.id
+        )
+      } else {
+        console.warn('Token List Invalid', tokenListData)
+      }
+    })
+}

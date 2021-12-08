@@ -19,8 +19,6 @@ export type {
 
 export { txnTypeToLayer } from './hooks/useTransactions'
 
-export {
-  OutgoingMessageState,
-  ERC20__factory,
-  Bridge
-} from "arb-ts"
+export { OutgoingMessageState, ERC20__factory, Bridge } from 'arb-ts'
+
+export { validateTokenList } from './util/index'
