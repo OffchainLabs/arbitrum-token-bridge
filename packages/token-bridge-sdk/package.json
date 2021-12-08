@@ -64,8 +64,7 @@
   },
   "resolutions": {
     "**/@typescript-eslint/eslint-plugin": "^4.1.1",
-    "**/@typescript-eslint/parser": "^4.1.1",
-    "arb-bridge-eth": "https://gitpkg.now.sh/OffchainLabs/arbitrum/packages/arb-bridge-eth?9df0077482cf3b89a00e496d82b9b689399b7de9"
+    "**/@typescript-eslint/parser": "^4.1.1"
   },
   "files": [
     "dist/**/*"
