@@ -101,7 +101,6 @@ const TokenRow = ({
 
   const source = (() => {
     if (token === null || token === undefined) return ''
-    if (token === undefined) return ''
     if (!token.listID) {
       return 'user-added'
     }
