@@ -36,7 +36,7 @@ enum Pannel {
   LISTS
 }
 
-const listIdsToNames: any = {}
+const listIdsToNames: { [key: string] : string } = {}
 BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
   listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
 })
