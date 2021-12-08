@@ -366,17 +366,19 @@ export const useArbTokenBridge = (
     [bridge, bridgeTokens]
   )
 
-  const removeTokensFromList = useCallback( (listID: number)=>{
-    const newBridgeTokens = {...bridgeTokens}
-    for ( let address in bridgeTokens) {
+  const removeTokensFromList =  (listID: number)=>{
+    setBridgeTokens((prevBridgeTokens)=>{
+      const newBridgeTokens = {...prevBridgeTokens}
+      for ( let address in bridgeTokens) {
         const token = bridgeTokens[address]
         if(!token) continue
         if(token.listID === listID){
           delete newBridgeTokens[address]
         }
     }
-    setBridgeTokens(newBridgeTokens)
-  },[bridgeTokens])
+     return newBridgeTokens
+    })
+  }
   
   const addTokensFromList = async (arbTokenList: TokenList, listID?: number) => {
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
