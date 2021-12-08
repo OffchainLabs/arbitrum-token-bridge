@@ -44,3 +44,9 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
       'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
   }
 ]
+
+export const listIdsToNames: { [key: string]: string } = {}
+
+BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
+  listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
+})

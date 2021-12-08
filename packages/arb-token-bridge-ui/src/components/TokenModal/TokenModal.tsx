@@ -13,7 +13,11 @@ import Loader from 'react-loader-spinner'
 import { BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
-import { BRIDGE_TOKEN_LISTS, BridgeTokenList } from '../../tokenLists'
+import {
+  BRIDGE_TOKEN_LISTS,
+  BridgeTokenList,
+  listIdsToNames
+} from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
@@ -36,10 +40,6 @@ enum Pannel {
   LISTS
 }
 
-const listIdsToNames: { [key: string] : string } = {}
-BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
-  listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
-})
 const TokenRow = ({
   address,
   balance,
