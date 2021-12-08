@@ -34,7 +34,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     originChainID: '42161',
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
-    isDefault: true,
+    isDefault: false,
     logoURI: 'https://gemini.com/static/images/loader.png'
   },
   {
@@ -45,6 +45,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI:
       'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
+  },
+  {
+    id: 5,
+    originChainID: '42161',
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
+    name: 'Arbed CMC List',
+    isDefault: false,
+    logoURI:
+      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
   }
 ]
 
