@@ -6,11 +6,9 @@ import React, {
   useCallback
 } from 'react'
 
-import axios from 'axios'
 import { BigNumber, constants } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
-import { BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -30,9 +28,6 @@ interface TokenRowProps {
   address: string | null
   balance: BigNumber | null | undefined
   onTokenSelected: () => void
-  toggleCurrentPannel: () => void
-}
-interface TokenListViewProps {
   toggleCurrentPannel: () => void
 }
 
