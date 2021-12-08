@@ -18,7 +18,8 @@ const TokenListSyncer = (): JSX.Element => {
     }
     const { chainID } = l2NetworkDetails
     const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList => bridgeTokenList.originChainID === chainID && bridgeTokenList.isDefault
+      bridgeTokenList =>
+        bridgeTokenList.originChainID === chainID && bridgeTokenList.isDefault
     )
     // we can fetch each list asynchronously
     tokenListsToSet.forEach(bridgeTokenList => {
