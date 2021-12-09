@@ -87,17 +87,14 @@ const Modal: React.FC<ModalProps> = ({
                     </button>
                   </div>
                 </div>
-
-                <div>{children}</div>
                 {!hideButton && (
                   <div className="mt-5 sm:mt-6">
                     {buttonAction && (
                       <button
                         type="button"
-                        className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-                        onClick={() => {
+                        className="inline-flex justify-center m-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                        onClick={e => {
                           buttonAction()
-                          setIsOpen(false)
                         }}
                       >
                         {buttonText}
@@ -113,6 +110,8 @@ const Modal: React.FC<ModalProps> = ({
                     )}
                   </div>
                 )}
+
+                <div>{children}</div>
               </div>
             </Transition.Child>
           </div>
