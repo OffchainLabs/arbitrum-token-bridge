@@ -7,9 +7,10 @@ import {
   L1TokenData,
   L2ToL1EventResult,
   OutgoingMessageState,
-  WithdrawalInitiated,
-  ERC20__factory
+  WithdrawalInitiated
 } from 'arb-ts'
+import { ERC20__factory } from 'arb-ts/dist/lib/abi/factories/ERC20__factory'
+
 import useTransactions from './useTransactions'
 import {
   AddressToSymbol,

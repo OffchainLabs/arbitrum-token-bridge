@@ -21,6 +21,7 @@ export { txnTypeToLayer } from './hooks/useTransactions'
 
 export {
   OutgoingMessageState,
-  ERC20__factory,
   Bridge
 } from "arb-ts"
+
+export { ERC20__factory } from 'arb-ts/dist/lib/abi/factories/ERC20__factory'
