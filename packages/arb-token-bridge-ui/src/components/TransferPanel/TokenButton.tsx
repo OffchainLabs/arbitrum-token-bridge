@@ -18,7 +18,7 @@ const TokenButton = (): JSX.Element => {
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
-      return 'https://ethereum.org/static/4b5288012dc4b32ae7ff21fccac98de1/31987/eth-diamond-black-gray.png'
+      return 'https://ethereum.org/static/6b935ac0e6194247347855dc3d328e83/13c43/eth-diamond-black.png'
     }
     if (networkID === null || !arbTokenBridgeLoaded) {
       return undefined
