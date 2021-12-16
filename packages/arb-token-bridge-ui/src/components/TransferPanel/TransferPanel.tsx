@@ -1,5 +1,6 @@
 import React, { useContext, useState, useMemo, useCallback } from 'react'
 
+import { useWallet } from '@gimmixorg/use-wallet'
 import { utils, BigNumber } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
@@ -38,6 +39,7 @@ const TransferPanel = (): JSX.Element => {
       isDepositMode,
       networkDetails,
       l1NetworkDetails,
+      l2NetworkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
@@ -45,6 +47,8 @@ const TransferPanel = (): JSX.Element => {
       warningTokens
     }
   } = useAppState()
+  const { provider } = useWallet()
+  const latestConnectedProvider = useLatest(provider)
 
   const { bridge, walletType } = useContext(BridgeContext)
   // const [tokeModalOpen, setTokenModalOpen] = useState(false)
@@ -174,6 +178,15 @@ const TransferPanel = (): JSX.Element => {
           }
           await new Promise(r => setTimeout(r, 3000))
         }
+
+        const l1ChainID = l1NetworkDetails?.chainID
+        const connectedChainID =
+          latestConnectedProvider.current?.network?.chainId
+        if (
+          !(l1ChainID && connectedChainID && +l1ChainID === connectedChainID)
+        ) {
+          return alert('Network connection issue; contact support')
+        }
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
@@ -210,6 +223,15 @@ const TransferPanel = (): JSX.Element => {
             await new Promise(r => setTimeout(r, 100))
           }
           await new Promise(r => setTimeout(r, 3000))
+        }
+
+        const l2ChainID = l2NetworkDetails?.chainID
+        const connectedChainID =
+          latestConnectedProvider.current?.network?.chainId
+        if (
+          !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
+        ) {
+          return alert('Network connection issue; contact support')
         }
         if (selectedToken) {
           const { decimals } = selectedToken

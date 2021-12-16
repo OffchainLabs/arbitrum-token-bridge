@@ -246,19 +246,51 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   useEffect(() => {
     if (library) {
       const changeNetwork = async (chainId: string) => {
+        const targetNetwork = networks[chainId]
+        if (!targetNetwork) {
+          throw new Error(`Cannot add unsupported network ${chainId}`)
+        }
         const hexChainId = hexValue(BigNumber.from(chainId))
         const metamask = library?.provider
-        if (metamask !== undefined && metamask.isMetaMask) {
+
+        if (metamask && metamask.isMetaMask) {
           console.log('Attempting to switch to chain', chainId)
-          // @ts-ignore
-          await metamask.request({
-            method: 'wallet_switchEthereumChain',
-            params: [
-              {
-                chainId: hexChainId // A 0x-prefixed hexadecimal string
-              }
-            ]
-          })
+          try {
+            // @ts-ignore
+            await metamask.request({
+              method: 'wallet_switchEthereumChain',
+              params: [
+                {
+                  chainId: hexChainId
+                }
+              ]
+            })
+          } catch (err: any) {
+            if (err.code === 4902) {
+              console.log(
+                `Network ${chainId} not yet added to metamask; adding now:`
+              )
+              // @ts-ignore
+              await metamask.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: hexChainId,
+                    chainName: targetNetwork.name,
+                    nativeCurrency: {
+                      name: 'Ether',
+                      symbol: 'ETH',
+                      decimals: 18
+                    },
+                    rpcUrls: [targetNetwork.url],
+                    blockExplorerUrls: [targetNetwork.explorerUrl]
+                  }
+                ]
+              })
+            } else {
+              throw new Error(err)
+            }
+          }
         } else {
           // provider is not metamask, so no `wallet_switchEthereumChain` support
           console.log(
