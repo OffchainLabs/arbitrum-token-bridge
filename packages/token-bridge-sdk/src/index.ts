@@ -25,3 +25,5 @@ export {
 } from "arb-ts"
 
 export { ERC20__factory } from 'arb-ts/dist/lib/abi/factories/ERC20__factory'
+
+export { validateTokenList } from './util/index'
