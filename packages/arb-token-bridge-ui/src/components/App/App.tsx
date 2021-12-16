@@ -171,6 +171,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         if (l1AddressIsSmartContract && l2AddressIsSmartContract) {
           // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
           if (l1Address !== l2Address) {
+            console.warn(
+              `SC wallet error: wallets have different addresses: l1: ${l1Address}; l2: ${l2Address} `
+            )
             return WalletType.UNSUPPORTED_CONTRACT_WALLET
           }
 
@@ -180,19 +183,31 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
               gnosisInterface,
               l1Provider
             )
-            const l1Owners: string[] = (await l1Contract.getOwners()).sort()
-
+            const l1Owners: string[] = [
+              ...(await l1Contract.getOwners())
+            ].sort()
             const l2Contract = new Contract(
               l2Address,
               gnosisInterface,
               l2Provider
             )
-            const l2Owners: string[] = (await l2Contract.getOwners()).sort()
-
-            return JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
+            const l2Owners: string[] = [
+              ...(await l2Contract.getOwners())
+            ].sort()
+            const walletsHaveSameOwners =
+              JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
+            if (!walletsHaveSameOwners) {
+              console.warn(
+                `SC wallet error; owners don't match:`,
+                l1Owners,
+                l2Owners
+              )
+            }
+            return walletsHaveSameOwners
               ? WalletType.SUPPORTED_CONTRACT_WALLET
               : WalletType.UNSUPPORTED_CONTRACT_WALLET
           } catch (e) {
+            console.warn('SC wallet error: error checking Gnosis wallet:', e)
             return WalletType.UNSUPPORTED_CONTRACT_WALLET
           }
         }
