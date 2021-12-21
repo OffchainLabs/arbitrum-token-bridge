@@ -384,7 +384,7 @@ export const useArbTokenBridge = (
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
-        address: l2Address,
+        address,
         name,
         symbol,
         extensions,
@@ -416,23 +416,40 @@ export const useArbTokenBridge = (
                 'destBridgeAddress' in e
             )
         }
-        if (!isExtensions(extensions))
-          throw new Error('Object not of BridgeInfo format')
-        return extensions.bridgeInfo
+        if (!isExtensions(extensions)){
+          return null
+        } else {
+          return extensions.bridgeInfo
+        }
       })()
 
-      const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
+      if(bridgeInfo){
+        const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
 
-      bridgeTokensToAdd[l1Address] = {
-        name,
-        type: TokenType.ERC20,
-        symbol,
-        allowed: false,
-        address: l1Address,
-        l2Address,
-        decimals,
-        logoURI,
-        listID
+        bridgeTokensToAdd[l1Address] = {
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          allowed: false,
+          address: l1Address,
+          l2Address: address,
+          decimals,
+          logoURI,
+          listID
+        }
+      } else {
+        // unbridged L1 token:
+        const l1Address = address
+        bridgeTokensToAdd[l1Address] = {
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          allowed: false,
+          address: l1Address,
+          decimals,
+          logoURI,
+          listID
+        }
       }
     }
     setBridgeTokens(oldBridgeTokens => {
