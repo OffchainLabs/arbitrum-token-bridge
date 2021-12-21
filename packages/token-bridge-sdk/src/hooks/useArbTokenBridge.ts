@@ -437,8 +437,11 @@ export const useArbTokenBridge = (
           logoURI,
           listID
         }
-      } else {
-        // unbridged L1 token:
+      }
+      // unbridged L1 token:
+      // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
+      else if (arbTokenList.tokens.length < 1000) {
+      
         const l1Address = address
         bridgeTokensToAdd[l1Address] = {
           name,
