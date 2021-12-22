@@ -34,7 +34,7 @@ const MainContent = () => {
         </div>
       )}
 
-      <div className="mb-4 mx-auto max-w-networkBox w-full mt-10">
+      <div className="mb-4 mx-auto max-w-networkBox w-full">
         <Alert type="ramps">
           Looking for fast bridges and direct fiat on-ramps for Arbitrum?&nbsp;
           <a
