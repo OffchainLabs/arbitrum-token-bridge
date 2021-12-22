@@ -34,17 +34,16 @@ const MainContent = () => {
         </div>
       )}
 
-      <div className="mb-4 mx-auto max-w-networkBox w-full mt-20">
+      <div className="mb-4 mx-auto max-w-networkBox w-full mt-10">
         <Alert type="ramps">
-          Looking for&nbsp;
+          Looking for fast bridges and direct fiat on-ramps for Arbitrum?&nbsp;
           <a
             target="_blank"
             rel="noreferrer"
             href="https://portal.arbitrum.one/#bridgesandonramps"
           >
-            <u>fast bridges and direct fiat on-ramps</u>
+            <u>Click here!</u>
           </a>
-          &nbsp;for Arbitrum?
         </Alert>
       </div>
 
