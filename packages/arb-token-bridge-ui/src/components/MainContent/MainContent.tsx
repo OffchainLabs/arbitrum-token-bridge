@@ -34,6 +34,20 @@ const MainContent = () => {
         </div>
       )}
 
+      <div className="mb-4 mx-auto max-w-networkBox w-full mt-20">
+        <Alert type="ramps">
+          Looking for&nbsp;
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://portal.arbitrum.one/#bridgesandonramps"
+          >
+            <u>fast bridges and direct fiat on-ramps</u>
+          </a>
+          &nbsp;for Arbitrum?
+        </Alert>
+      </div>
+
       <TransferPanel />
 
       {mergedTransactionsToShow?.length > 0 && (
