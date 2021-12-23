@@ -270,19 +270,19 @@ export const TokenModalBody = ({
           if (!bal2) {
             return -1
           }
-
           return bal1.gt(bal2) ? -1 : 1
         })
         .filter((addr: string) => {
           if (!tokenSearch) {
             const l1Bal = balances.erc20[addr]?.balance
             const l2Bal = balances.erc20[addr]?.arbChainBalance
-
-            return !(
-              l1Bal &&
-              l1Bal.eq(constants.Zero) &&
-              l2Bal &&
-              l2Bal.eq(constants.Zero)
+            if (!l1Bal && !l2Bal) {
+              // show as loading:
+              return true
+            }
+            return (
+              (l1Bal && l1Bal.gt(constants.Zero)) ||
+              (l2Bal && l2Bal.gt(constants.Zero))
             )
           }
           const bridgeToken = bridgeTokens[addr]
