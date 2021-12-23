@@ -381,6 +381,12 @@ export const useArbTokenBridge = (
   }
   
   const addTokensFromList = async (arbTokenList: TokenList, listID?: number) => {
+    const { l1Bridge: { network: { chainID: l1ChainIStr } }, l2Bridge: { network: { chainID: l2ChainIDStr } }  } = bridge
+
+    const l1ChainID = + l1ChainIStr
+    const l2ChainID = + l2ChainIDStr
+
+
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
@@ -389,8 +395,13 @@ export const useArbTokenBridge = (
         symbol,
         extensions,
         decimals,
-        logoURI
+        logoURI,
+        chainId
       } = tokenData
+
+      if(![l1ChainID, l2ChainID].includes(chainId)){
+        continue
+      }
 
       const bridgeInfo = (() => {
         // TODO: parsing the token list format could be from arbts or the tokenlist package
