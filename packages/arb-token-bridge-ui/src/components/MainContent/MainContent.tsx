@@ -34,6 +34,19 @@ const MainContent = () => {
         </div>
       )}
 
+      <div className="mb-4 mx-auto max-w-networkBox w-full">
+        <Alert type="ramps">
+          Looking for fast bridges and direct fiat on-ramps for Arbitrum?&nbsp;
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://portal.arbitrum.one/#bridgesandonramps"
+          >
+            <u>Click here!</u>
+          </a>
+        </Alert>
+      </div>
+
       <TransferPanel />
 
       {mergedTransactionsToShow?.length > 0 && (
