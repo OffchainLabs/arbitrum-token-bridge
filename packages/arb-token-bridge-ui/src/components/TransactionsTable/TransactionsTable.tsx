@@ -40,15 +40,19 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         // }
         // Render a countdown
         if (tx.direction === 'deposit-l1') {
+          const paddedSeconds = `0${seconds}`.slice(-2)
+
           return (
             <span className="text-bright-blue">
-              {minutes}:{seconds} Seconds
+              {minutes}:{paddedSeconds} Seconds
             </span>
           )
         }
+
+        const paddedMinutes = `0${minutes}`.slice(-2)
         return (
           <span className="text-bright-blue">
-            {hours}:{minutes} Mins
+            {hours}:{paddedMinutes} Mins
           </span>
         )
       }}
