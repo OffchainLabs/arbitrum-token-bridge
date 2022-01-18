@@ -5,7 +5,7 @@ import WalletLink from 'walletlink'
 import networks from './networks'
 
 export const modalProviderOpts = {
-  // cacheProvider: true,
+  cacheProvider: true,
   providerOptions: {
     // mewconnect: {
     //   package: MewConnect,
