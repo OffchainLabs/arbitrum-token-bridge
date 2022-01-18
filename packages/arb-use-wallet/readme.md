@@ -1,3 +1,5 @@
+### NOTE: forked from https://github.com/gimmixorg/use-wallet (@ commit d1cb8a2e30b0cbc208850116b372b4e7956fc509)
+
 # ✵ useWallet ✵
 
 An easy-to-integrate React hook for connecting and interacting with a Web 3 wallet.
