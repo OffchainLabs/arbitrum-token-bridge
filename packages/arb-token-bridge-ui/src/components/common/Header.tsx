@@ -1,8 +1,8 @@
 import React, { Fragment, useMemo } from 'react'
 
-import { useWallet } from '@gimmixorg/use-wallet'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
+import { useWallet } from 'arb-use-wallet'
 
 import { useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'

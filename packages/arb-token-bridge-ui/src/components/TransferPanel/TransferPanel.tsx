@@ -1,6 +1,6 @@
 import React, { useContext, useState, useMemo, useCallback } from 'react'
 
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from 'arb-use-wallet'
 import { utils, BigNumber } from 'ethers'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from 'arb-use-wallet'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'

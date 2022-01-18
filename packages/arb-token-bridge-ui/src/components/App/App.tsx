@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from 'arb-use-wallet'
 import axios from 'axios'
 import * as ethers from 'ethers'
 import { BigNumber } from 'ethers'
