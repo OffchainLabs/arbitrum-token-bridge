@@ -4,13 +4,13 @@
   "private": true,
   "dependencies": {
     "@ethersproject/providers": "^5.4.4",
-    "@gimmixorg/use-wallet": "^0.0.25",
     "@headlessui/react": "^1.4.0",
     "@heroicons/react": "^1.0.3",
     "@tailwindcss/forms": "^0.3.3",
     "@walletconnect/web3-provider": "^1.6.5",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
+    "arb-use-wallet": "^0.0.1",
     "axios": "^0.21.4",
     "classnames": "^2.3.1",
     "dayjs": "^1.10.6",
@@ -27,6 +27,7 @@
     "react-scripts": "4.0.3",
     "react-use": "^17.2.4",
     "token-bridge-sdk": "5.0.0",
+    "walletlink": "^2.4.4",
     "web-vitals": "^2.1.0"
   },
   "resolutions": {
