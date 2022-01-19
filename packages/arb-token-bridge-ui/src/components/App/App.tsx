@@ -185,7 +185,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         }
 
         if (l1AddressIsSmartContract && l2AddressIsSmartContract) {
-          // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
+          // check if gnosis / gnosis-like wallet w/ same L1 & L2 address & same owners
           if (l1Address !== l2Address) {
             console.warn(
               `SC wallet error: wallets have different addresses: l1: ${l1Address}; l2: ${l2Address} `
