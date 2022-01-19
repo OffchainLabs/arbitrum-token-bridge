@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@ethersproject/providers": "^5.4.4",
-    "@gimmixorg/use-wallet": "^0.0.25",
+    "@gimmixorg/use-wallet": "https://github.com/fredlacs/use-wallet#285c479707f2bc12bc6ba4237bf1cef0a403f3d9",
     "@headlessui/react": "^1.4.0",
     "@heroicons/react": "^1.0.3",
     "@tailwindcss/forms": "^0.3.3",
@@ -27,6 +27,7 @@
     "react-scripts": "4.0.3",
     "react-use": "^17.2.4",
     "token-bridge-sdk": "5.0.0",
+    "walletlink": "^2.4.4",
     "web-vitals": "^2.1.0"
   },
   "resolutions": {
