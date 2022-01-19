@@ -119,7 +119,6 @@ const AppContent = (): JSX.Element => {
     )
   }
 
-
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
       <Alert type="red">
