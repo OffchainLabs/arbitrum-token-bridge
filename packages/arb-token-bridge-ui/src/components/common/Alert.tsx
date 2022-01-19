@@ -4,7 +4,8 @@ import {
   CheckCircleIcon,
   ExclamationIcon,
   InformationCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  CreditCardIcon
 } from '@heroicons/react/solid'
 
 const Alert = ({
@@ -12,7 +13,7 @@ const Alert = ({
   type
 }: {
   children: React.ReactNode
-  type: 'red' | 'blue' | 'green' | 'yellow'
+  type: 'red' | 'blue' | 'green' | 'yellow' | 'ramps'
 }) => {
   return (
     <div
@@ -45,6 +46,12 @@ const Alert = ({
           )}
           {type === 'green' && (
             <CheckCircleIcon
+              className="h-5 w-5 text-green-400"
+              aria-hidden="true"
+            />
+          )}
+          {type === 'ramps' && (
+            <CreditCardIcon
               className="h-5 w-5 text-green-400"
               aria-hidden="true"
             />

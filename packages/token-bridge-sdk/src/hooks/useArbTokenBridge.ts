@@ -419,16 +419,27 @@ export const useArbTokenBridge = (
   }
   
   const addTokensFromList = async (arbTokenList: TokenList, listID?: number) => {
+    const { l1Bridge: { network: { chainID: l1ChainIStr } }, l2Bridge: { network: { chainID: l2ChainIDStr } }  } = bridge
+
+    const l1ChainID = + l1ChainIStr
+    const l2ChainID = + l2ChainIDStr
+
+
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
       const {
-        address: l2Address,
+        address,
         name,
         symbol,
         extensions,
         decimals,
-        logoURI
+        logoURI,
+        chainId
       } = tokenData
+
+      if(![l1ChainID, l2ChainID].includes(chainId)){
+        continue
+      }
 
       const bridgeInfo = (() => {
         // TODO: parsing the token list format could be from arbts or the tokenlist package
@@ -454,23 +465,43 @@ export const useArbTokenBridge = (
                 'destBridgeAddress' in e
             )
         }
-        if (!isExtensions(extensions))
-          throw new Error('Object not of BridgeInfo format')
-        return extensions.bridgeInfo
+        if (!isExtensions(extensions)){
+          return null
+        } else {
+          return extensions.bridgeInfo
+        }
       })()
 
-      const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
+      if(bridgeInfo){
+        const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
 
-      bridgeTokensToAdd[l1Address] = {
-        name,
-        type: TokenType.ERC20,
-        symbol,
-        allowed: false,
-        address: l1Address,
-        l2Address,
-        decimals,
-        logoURI,
-        listID
+        bridgeTokensToAdd[l1Address] = {
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          allowed: false,
+          address: l1Address,
+          l2Address: address,
+          decimals,
+          logoURI,
+          listID
+        }
+      }
+      // unbridged L1 token:
+      // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
+      else if (arbTokenList.tokens.length < 1000) {
+      
+        const l1Address = address
+        bridgeTokensToAdd[l1Address] = {
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          allowed: false,
+          address: l1Address,
+          decimals,
+          logoURI,
+          listID
+        }
       }
     }
     setBridgeTokens(oldBridgeTokens => {

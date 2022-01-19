@@ -6,7 +6,9 @@ export enum ConnectionState {
   WRONG_NETWORK,
   DEPOSIT_MODE,
   WITHDRAW_MODE,
-  SEQUENCER_UPDATE
+  SEQUENCER_UPDATE,
+  NOT_EOA,
+  NETWORK_ERROR
 }
 
 export enum PendingWithdrawalsLoadedState {

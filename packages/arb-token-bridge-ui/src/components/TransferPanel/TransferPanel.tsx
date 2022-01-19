@@ -191,6 +191,24 @@ const TransferPanel = (): JSX.Element => {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
+          // check that a registration is not currently in progress
+          const l2RoutedAddress = (
+            await bridge.l2Bridge.l2GatewayRouter.functions.calculateL2TokenAddress(
+              selectedToken.address
+            )
+          )[0]
+
+          if (
+            selectedToken.l2Address &&
+            selectedToken.l2Address.toLowerCase() !==
+              l2RoutedAddress.toLowerCase()
+          ) {
+            alert(
+              'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
+            )
+            return
+          }
+
           if (!bridgeTokens[selectedToken.address]?.allowed) {
             // ** Sanity check: ensure not allowed yet  */
             const allowed = await isAllowed(
