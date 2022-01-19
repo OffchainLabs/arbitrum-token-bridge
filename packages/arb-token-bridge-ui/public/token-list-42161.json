@@ -1842,6 +1842,26 @@
       }
     },
     {
+      "logoURI": "https://etherscan.io/token/images/speraxtoken_32.png",
+      "chainId": 42161,
+      "address": "0x5575552988A3A80504bBaeB1311674fCFd40aD4B",
+      "name": "Wrapped Sperax",
+      "symbol": "wSPA",
+      "decimals": 18,
+      "extensions": {
+        "bridgeInfo": {
+          "1": {
+            "tokenAddress": "0x2a95FE4c7e64e09856989F9eA0b57B9AB5f770CB",
+            "originBridgeAddress": "0x096760f208390250649e3e8763348e783aef5562",
+            "destBridgeAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+          }
+        },
+        "l1Address": "0x2a95FE4c7e64e09856989F9eA0b57B9AB5f770CB",
+        "l2GatewayAddress": "0x096760f208390250649e3e8763348e783aef5562",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+      }
+    },
+    {
       "logoURI": "https://assets.coingecko.com/coins/images/12921/thumb/w2UiemF__400x400.jpg?1603670367",
       "chainId": 42161,
       "address": "0xcAFcD85D8ca7Ad1e1C6F82F651fA15E33AEfD07b",
