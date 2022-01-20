@@ -4,7 +4,7 @@
   "version": {
     "major": 4,
     "minor": 1,
-    "patch": 5
+    "patch": 6
   },
   "tokens": [
     {
@@ -1845,8 +1845,8 @@
       "logoURI": "https://etherscan.io/token/images/speraxtoken_32.png",
       "chainId": 42161,
       "address": "0x5575552988A3A80504bBaeB1311674fCFd40aD4B",
-      "name": "Wrapped Sperax",
-      "symbol": "wSPA",
+      "name": "Sperax",
+      "symbol": "SPA",
       "decimals": 18,
       "extensions": {
         "bridgeInfo": {
