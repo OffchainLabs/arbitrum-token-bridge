@@ -10,6 +10,11 @@ import { AssetType } from '../hooks/arbTokenBridge.types'
 import axios from 'axios'
 import { utils } from 'ethers'
 
+interface NodeData {
+  afterSendCount: string
+  timestampCreated: string
+}
+
 const apolloL1Mainnetlient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/arb-bridge-eth',
   cache: new InMemoryCache()
@@ -51,6 +56,38 @@ const networkIDAndLayerToClient = (networkID: string, layer: 1 | 2) => {
   }
 }
 
+export const getNodes = async (
+  networkID: string,
+  minAfterSendCount = 0,
+  offset = 0
+): Promise<NodeData[]> => {
+  const client = networkIDAndLayerToClient(networkID, 1)
+  const res = await client.query({
+    query: gql`
+    {
+      nodes( 
+        orderBy: timestampCreated
+        orderDirection: desc
+        where:{ afterSendCount_gte: ${minAfterSendCount}} 
+        first: 1000,
+        skip: ${offset}
+
+      ){
+        afterSendCount,
+        timestampCreated,
+      }
+    }
+    `
+  })
+  const nodes = res.data.nodes as NodeData[]
+  if (nodes.length === 0) {
+    return nodes
+  } else {
+    return nodes.concat(
+      await getNodes(networkID, minAfterSendCount, offset + nodes.length)
+    )
+  }
+}
 export const getLatestOutboxEntryIndex = async (networkID: string) => {
   const client = networkIDAndLayerToClient(networkID, 1)
   const res = await client.query({
