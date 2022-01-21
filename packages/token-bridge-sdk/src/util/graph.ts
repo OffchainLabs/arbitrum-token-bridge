@@ -10,10 +10,20 @@ import { AssetType } from '../hooks/arbTokenBridge.types'
 import axios from 'axios'
 import { utils } from 'ethers'
 
-interface NodeData {
+export interface NodeDataResult {
   afterSendCount: string
   timestampCreated: string
 }
+
+interface GetTokenWithdrawalsResult {
+  l2ToL1Event: L2ToL1EventResult
+  otherData: {
+    value: BigNumber
+    tokenAddress: string
+    type: AssetType
+  }
+}
+
 
 const apolloL1Mainnetlient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/arb-bridge-eth',
@@ -60,14 +70,14 @@ export const getNodes = async (
   networkID: string,
   minAfterSendCount = 0,
   offset = 0
-): Promise<NodeData[]> => {
+): Promise<NodeDataResult[]> => {
   const client = networkIDAndLayerToClient(networkID, 1)
   const res = await client.query({
     query: gql`
     {
       nodes( 
-        orderBy: timestampCreated
-        orderDirection: desc
+        orderBy: afterSendCount
+        orderDirection: asc
         where:{ afterSendCount_gte: ${minAfterSendCount}} 
         first: 1000,
         skip: ${offset}
@@ -79,7 +89,7 @@ export const getNodes = async (
     }
     `
   })
-  const nodes = res.data.nodes as NodeData[]
+  const nodes = res.data.nodes as NodeDataResult[]
   if (nodes.length === 0) {
     return nodes
   } else {
@@ -115,7 +125,11 @@ export const getETHWithdrawals = async (
   const client = networkIDAndLayerToClient(networkID, 2)
   const res = await client.query({
     query: gql`{
-      l2ToL1Transactions(where: {caller:"${callerAddress}", data: "0x", arbBlockNum_gte: ${fromBlock}, arbBlockNum_lt:${toBlock}}) {
+      l2ToL1Transactions(
+        where: {caller:"${callerAddress}", data: "0x", arbBlockNum_gte: ${fromBlock}, arbBlockNum_lt:${toBlock}}
+        orderBy: timestamp
+        orderDirection: desc
+        ) {
         destination,
         timestamp,
         data,
@@ -173,15 +187,6 @@ export const messageHasExecuted = async (
     }`
   })
   return res.data.outboxOutputs.length > 0
-}
-
-interface GetTokenWithdrawalsResult {
-  l2ToL1Event: L2ToL1EventResult
-  otherData: {
-    value: BigNumber
-    tokenAddress: string
-    type: AssetType
-  }
 }
 
 export const getTokenWithdrawals = async (
