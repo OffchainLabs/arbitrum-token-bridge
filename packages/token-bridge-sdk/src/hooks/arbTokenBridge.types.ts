@@ -16,6 +16,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   outgoingMessageState: OutgoingMessageState
   symbol: string
   decimals: number
+  nodeBlockDeadline?: number | null // null indicates Node hasn't been created (asserted) yet; undefined indicates info not yet loaded 
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
@@ -113,7 +114,7 @@ export interface ArbTokenBridgeCache {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<string>
   addTokensFromList: (tokenList: TokenList, listID?: number) => void
-  removeTokensFromList: (listID: number) => void 
+  removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (

@@ -38,6 +38,7 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   seqNum?: number
+  nodeBlockDeadline?: number | null
 }
 
 export interface WarningTokens {
@@ -158,7 +159,8 @@ export const defaultState: AppState = {
         uniqueId: tx.uniqueId,
         isWithdrawal: true,
         blockNum: tx.ethBlockNum.toNumber(),
-        tokenAddress: tx.tokenAddress || null
+        tokenAddress: tx.tokenAddress || null,
+        nodeBlockDeadline: tx.nodeBlockDeadline
       }
     })
     return withdrawals

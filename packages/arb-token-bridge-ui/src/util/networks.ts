@@ -89,7 +89,7 @@ const networks: Networks = {
     partnerChainID: '1',
     isArbitrum: true,
     tokenBridge: mainnetBridge,
-    confirmPeriodBlocks: 48384,
+    confirmPeriodBlocks: 45818,
     bridgeUpdateBlockNumber: 224717
   },
   '421611': {

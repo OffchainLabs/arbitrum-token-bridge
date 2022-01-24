@@ -13,6 +13,8 @@ import { utils } from 'ethers'
 export interface NodeDataResult {
   afterSendCount: string
   timestampCreated: string
+  blockCreatedAt: string
+  id: string // hex
 }
 
 interface GetTokenWithdrawalsResult {
@@ -23,7 +25,6 @@ interface GetTokenWithdrawalsResult {
     type: AssetType
   }
 }
-
 
 const apolloL1Mainnetlient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/arb-bridge-eth',
@@ -85,6 +86,8 @@ export const getNodes = async (
       ){
         afterSendCount,
         timestampCreated,
+        blockCreatedAt,
+        id
       }
     }
     `
