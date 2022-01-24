@@ -1048,7 +1048,6 @@ export const useArbTokenBridge = (
     const nodes = await getNodes(l1NetworkID, smallestBatchNumber)
   
 
-    // todo: instead of reverse, sort by timestanp
     const unconfirmedWithdrawals = l2ToL1Data.filter((l2ToL1Data)=> l2ToL1Data.outgoingMessageState !==  OutgoingMessageState.CONFIRMED && l2ToL1Data.outgoingMessageState !==  OutgoingMessageState.EXECUTED ).sort((msgA,msgB)=>{
       // ensure sorted in ascending order by timestamp
       return +msgA.timestamp - +msgB.timestamp
