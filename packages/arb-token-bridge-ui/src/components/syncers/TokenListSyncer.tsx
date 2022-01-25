@@ -1,8 +1,6 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 
-import axios from 'axios'
-
-import { useAppState, useActions } from '../../state'
+import { useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   addBridgeTokenListToBridge
@@ -12,7 +10,7 @@ import {
 // In the token list we should show later only tokens with positive balances
 const TokenListSyncer = (): JSX.Element => {
   const {
-    app: { arbTokenBridge, networkID, l2NetworkDetails }
+    app: { arbTokenBridge, l2NetworkDetails }
   } = useAppState()
 
   useEffect(() => {

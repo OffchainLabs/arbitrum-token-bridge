@@ -4,8 +4,6 @@ import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import {
   Bridge,
-  L1TokenData,
-  L2ToL1EventResult,
   OutgoingMessageState,
   WithdrawalInitiated,
   ERC20__factory
@@ -49,8 +47,6 @@ function notNull<TValue>(value: TValue | null): value is TValue {
 }
 const { Zero } = constants
 /* eslint-disable no-shadow */
-
-const slowInboxQueueTimeout = 1000 * 60 * 15
 
 const addressToSymbol: AddressToSymbol = {}
 const addressToDecimals: AddressToDecimals = {}
