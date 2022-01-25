@@ -20,7 +20,7 @@
     "build": "rm -rf ./dist && tsc",
     "watch": "tsc --watch",
     "lint": "tsc --noEmit && eslint src/**/*.ts --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint --fix",
+    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint",
     "prepare": "install-peers",
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs",
     "test": "env TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha --require ts-node/register 'test/**/*.ts'"
@@ -54,7 +54,8 @@
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "better-docs": "^2.3.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.27.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.19.0",
