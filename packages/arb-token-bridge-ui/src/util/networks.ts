@@ -108,7 +108,7 @@ const networks: Networks = {
     explorerUrl: 'https://rinkeby.etherscan.io',
     partnerChainID: '421611',
     isArbitrum: false,
-    tokenBridge: RinkebyBridge,
+    tokenBridge: RinkebyBridge
   }
 }
 

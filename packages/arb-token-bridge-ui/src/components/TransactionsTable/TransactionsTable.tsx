@@ -112,7 +112,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     if (nodeBlockDeadline === undefined || !l2NetworkDetails) {
       return 'calculating...'
     }
-    if (nodeBlockDeadline === null) {
+    if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
       return l2NetworkDetails.chainID === '1' ? '~ 1 week' : '~1 day'
     }
 

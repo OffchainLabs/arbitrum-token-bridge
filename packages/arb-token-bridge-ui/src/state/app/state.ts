@@ -10,7 +10,8 @@ import {
   L2ToL1EventResultPlus,
   Transaction,
   TxnType,
-  OutgoingMessageState
+  OutgoingMessageState,
+  NodeBlockDeadlineStatus
 } from 'token-bridge-sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -38,7 +39,7 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   seqNum?: number
-  nodeBlockDeadline?: number | null
+  nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
 
 export interface WarningTokens {

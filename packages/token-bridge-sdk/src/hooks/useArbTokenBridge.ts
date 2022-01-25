@@ -217,14 +217,14 @@ export const useArbTokenBridge = (
             l2ToL2EventDataResult.batchNumber,
             l2ToL2EventDataResult.indexInBatch
           )
-          const l2ToL2EventDataResultPlus = {
+          const l2ToL2EventDataResultPlus:L2ToL1EventResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ETH,
             value: weiValue,
             outgoingMessageState,
             symbol: 'ETH',
             decimals: 18,
-            nodeBlockDeadline: null
+            nodeBlockDeadline: "NODE_NOT_CREATED"
           }
           setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
             return {
@@ -351,7 +351,7 @@ export const useArbTokenBridge = (
             l2ToL2EventDataResult.batchNumber,
             l2ToL2EventDataResult.indexInBatch
           )
-          const l2ToL2EventDataResultPlus = {
+          const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ERC20,
             tokenAddress: erc20l1Address,
@@ -359,7 +359,7 @@ export const useArbTokenBridge = (
             outgoingMessageState,
             symbol: symbol,
             decimals: decimals,
-            nodeBlockDeadline: null
+            nodeBlockDeadline: "NODE_NOT_CREATED"
           }
 
           setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -1094,7 +1094,7 @@ export const useArbTokenBridge = (
 
     // use alignment of elements and their indics in unconfirmedWithdrawals / deadlineBlockNumbers arrays to set deadlineBlockNumbers
     unconfirmedWithdrawals.forEach((withdrawalDatum, i)=>{
-      withdrawalDatum.nodeBlockDeadline =   i < deadlineBlockNumbers.length? deadlineBlockNumbers[i].toNumber() : null
+      withdrawalDatum.nodeBlockDeadline =   i < deadlineBlockNumbers.length? deadlineBlockNumbers[i].toNumber() : "NODE_NOT_CREATED"
     })
 
 

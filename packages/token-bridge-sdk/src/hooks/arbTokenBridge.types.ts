@@ -9,6 +9,9 @@ import {
   Transaction
 } from './useTransactions'
 
+
+export type NodeBlockDeadlineStatus = number |  "NODE_NOT_CREATED"
+
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
   value: BigNumber
@@ -16,7 +19,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   outgoingMessageState: OutgoingMessageState
   symbol: string
   decimals: number
-  nodeBlockDeadline?: number | null // null indicates Node hasn't been created (asserted) yet; undefined indicates info not yet loaded 
+  nodeBlockDeadline?: NodeBlockDeadlineStatus;
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
