@@ -14,7 +14,6 @@ import {
 import { Rollup__factory } from 'arb-ts/dist/lib/abi/factories/Rollup__factory'
 import { Node__factory } from 'arb-ts/dist/lib/abi/factories/Node__factory'
 
-
 import useTransactions from './useTransactions'
 import {
   AddressToSymbol,
@@ -45,8 +44,8 @@ export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
-function notNull<TValue>(value: TValue | null ): value is TValue {
-  return value !== null 
+function notNull<TValue>(value: TValue | null): value is TValue {
+  return value !== null
 }
 const { Zero } = constants
 /* eslint-disable no-shadow */
@@ -56,12 +55,10 @@ const slowInboxQueueTimeout = 1000 * 60 * 15
 const addressToSymbol: AddressToSymbol = {}
 const addressToDecimals: AddressToDecimals = {}
 
-
-
 class TokenDisabledError extends Error {
-  constructor(msg:string) {
-    super(msg);
-    this.name = "TokenDisabledError"; 
+  constructor(msg: string) {
+    super(msg)
+    this.name = 'TokenDisabledError'
   }
 }
 export const useArbTokenBridge = (
@@ -217,14 +214,14 @@ export const useArbTokenBridge = (
             l2ToL2EventDataResult.batchNumber,
             l2ToL2EventDataResult.indexInBatch
           )
-          const l2ToL2EventDataResultPlus:L2ToL1EventResultPlus = {
+          const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ETH,
             value: weiValue,
             outgoingMessageState,
             symbol: 'ETH',
             decimals: 18,
-            nodeBlockDeadline: "NODE_NOT_CREATED"
+            nodeBlockDeadline: 'NODE_NOT_CREATED'
           }
           setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
             return {
@@ -359,7 +356,7 @@ export const useArbTokenBridge = (
             outgoingMessageState,
             symbol: symbol,
             decimals: decimals,
-            nodeBlockDeadline: "NODE_NOT_CREATED"
+            nodeBlockDeadline: 'NODE_NOT_CREATED'
           }
 
           setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -378,40 +375,42 @@ export const useArbTokenBridge = (
     [bridge, bridgeTokens]
   )
 
-  const removeTokensFromList =  (listID: number)=>{
-    setBridgeTokens((prevBridgeTokens)=>{
-      const newBridgeTokens = {...prevBridgeTokens}
-      for ( let address in bridgeTokens) {
+  const removeTokensFromList = (listID: number) => {
+    setBridgeTokens(prevBridgeTokens => {
+      const newBridgeTokens = { ...prevBridgeTokens }
+      for (let address in bridgeTokens) {
         const token = bridgeTokens[address]
-        if(!token) continue
-        if(token.listID === listID){
+        if (!token) continue
+        if (token.listID === listID) {
           delete newBridgeTokens[address]
         }
-    }
-     return newBridgeTokens
+      }
+      return newBridgeTokens
     })
   }
-  
-  const addTokensFromList = async (arbTokenList: TokenList, listID?: number) => {
-    const { l1Bridge: { network: { chainID: l1ChainIStr } }, l2Bridge: { network: { chainID: l2ChainIDStr } }  } = bridge
 
-    const l1ChainID = + l1ChainIStr
-    const l2ChainID = + l2ChainIDStr
+  const addTokensFromList = async (
+    arbTokenList: TokenList,
+    listID?: number
+  ) => {
+    const {
+      l1Bridge: {
+        network: { chainID: l1ChainIStr }
+      },
+      l2Bridge: {
+        network: { chainID: l2ChainIDStr }
+      }
+    } = bridge
 
+    const l1ChainID = +l1ChainIStr
+    const l2ChainID = +l2ChainIDStr
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     for (const tokenData of arbTokenList.tokens) {
-      const {
-        address,
-        name,
-        symbol,
-        extensions,
-        decimals,
-        logoURI,
-        chainId
-      } = tokenData
+      const { address, name, symbol, extensions, decimals, logoURI, chainId } =
+        tokenData
 
-      if(![l1ChainID, l2ChainID].includes(chainId)){
+      if (![l1ChainID, l2ChainID].includes(chainId)) {
         continue
       }
 
@@ -439,14 +438,14 @@ export const useArbTokenBridge = (
                 'destBridgeAddress' in e
             )
         }
-        if (!isExtensions(extensions)){
+        if (!isExtensions(extensions)) {
           return null
         } else {
           return extensions.bridgeInfo
         }
       })()
 
-      if(bridgeInfo){
+      if (bridgeInfo) {
         const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
 
         bridgeTokensToAdd[l1Address] = {
@@ -464,7 +463,6 @@ export const useArbTokenBridge = (
       // unbridged L1 token:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
       else if (arbTokenList.tokens.length < 1000) {
-      
         const l1Address = address
         bridgeTokensToAdd[l1Address] = {
           name,
@@ -486,15 +484,13 @@ export const useArbTokenBridge = (
       updateTokenBalances(newBridgeTokens)
       return newBridgeTokens
     })
- 
-    
   }
 
   const addToken = useCallback(
     async (erc20L1orL2Address: string) => {
       let l1Address: string
       let l2Address: string | undefined
-      let l1TokenBalance: BigNumber | null  = null
+      let l1TokenBalance: BigNumber | null = null
       let l2TokenBalance: BigNumber | null = null
 
       const maybeL1Address = await bridge.getERC20L1Address(erc20L1orL2Address)
@@ -516,8 +512,8 @@ export const useArbTokenBridge = (
       const decimals = await contract.decimals()
       try {
         // check if token is deployed at l2 address; if not this will throw
-        console.warn('L2 address', l2Address);
-        
+        console.warn('L2 address', l2Address)
+
         const { balance } = await bridge.l2Bridge.getL2TokenData(l2Address)
         l2TokenBalance = balance
       } catch (error) {
@@ -527,8 +523,8 @@ export const useArbTokenBridge = (
       }
 
       const isDisabled = await bridge.l1Bridge.tokenIsDisabled(l1Address)
-      if(isDisabled){
-         throw new TokenDisabledError("Token currently disabled")
+      if (isDisabled) {
+        throw new TokenDisabledError('Token currently disabled')
       }
 
       bridgeTokensToAdd[l1Address] = {
@@ -545,7 +541,7 @@ export const useArbTokenBridge = (
       })
       setErc20Balances(oldBridgeBalances => {
         const newBal = {
-          [l1Address]:{
+          [l1Address]: {
             balance: l1TokenBalance,
             arbChainBalance: l2TokenBalance
           }
@@ -598,7 +594,7 @@ export const useArbTokenBridge = (
       if (!bridgeToken) {
         return
       }
-      const { l2Address } = bridgeToken      
+      const { l2Address } = bridgeToken
       const l1Data = await bridge.l1Bridge.getL1TokenData(l1Address)
       const l2Data =
         (l2Address && (await bridge.l2Bridge.getL2TokenData(l2Address))) ||
@@ -621,38 +617,58 @@ export const useArbTokenBridge = (
     [setErc20Balances, bridgeTokens, setBridgeTokens]
   )
 
-
-  const updateTokenBalances = async (bridgeTokens:ContractStorage<BridgeToken>)=>{
-    
+  const updateTokenBalances = async (
+    bridgeTokens: ContractStorage<BridgeToken>
+  ) => {
     const walletAddress = await walletAddressCached()
 
-    const l1Addresses  = Object.keys(bridgeTokens)
-    
-    const l2Addresses = l1Addresses.map((l1Address)=>{
-      return (bridgeTokens[l1Address] as ERC20BridgeToken).l2Address
-    }).filter((val): val is string => !!val)
+    const l1Addresses = Object.keys(bridgeTokens)
 
-    const l1Balances = await bridge.getTokenBalanceBatch(walletAddress, l1Addresses, 'L1')
-    const l2Balances = await bridge.getTokenBalanceBatch(walletAddress, l2Addresses, 'L2')
+    const l2Addresses = l1Addresses
+      .map(l1Address => {
+        return (bridgeTokens[l1Address] as ERC20BridgeToken).l2Address
+      })
+      .filter((val): val is string => !!val)
+
+    const l1Balances = await bridge.getTokenBalanceBatch(
+      walletAddress,
+      l1Addresses,
+      'L1'
+    )
+    const l2Balances = await bridge.getTokenBalanceBatch(
+      walletAddress,
+      l2Addresses,
+      'L2'
+    )
 
     const l2AddressToBalanceMap: {
       [l2Address: string]: BigNumber | undefined
-    } = l2Balances.reduce((acc, l1Address)=>{
-        const { tokenAddr, balance } = l1Address
-        return {...acc, [tokenAddr]: balance}
-    },{})
+    } = l2Balances.reduce((acc, l1Address) => {
+      const { tokenAddr, balance } = l1Address
+      return { ...acc, [tokenAddr]: balance }
+    }, {})
 
-    setErc20Balances((oldERC20Balances)=>{
-      const newERC20Balances: ContractStorage<BridgeBalance> = l1Balances.reduce((acc, {tokenAddr: l1TokenAddress, balance: l1Balance})=>{
-      const l2Address = (bridgeTokens[l1TokenAddress] as ERC20BridgeToken).l2Address
+    setErc20Balances(oldERC20Balances => {
+      const newERC20Balances: ContractStorage<BridgeBalance> =
+        l1Balances.reduce(
+          (acc, { tokenAddr: l1TokenAddress, balance: l1Balance }) => {
+            const l2Address = (bridgeTokens[l1TokenAddress] as ERC20BridgeToken)
+              .l2Address
 
-        return {...acc, [l1TokenAddress]:{
-          balance: l1Balance,
-          arbChainBalance: l2Address ?  l2AddressToBalanceMap[l2Address]: undefined
-        } }
-      }, {})
+            return {
+              ...acc,
+              [l1TokenAddress]: {
+                balance: l1Balance,
+                arbChainBalance: l2Address
+                  ? l2AddressToBalanceMap[l2Address]
+                  : undefined
+              }
+            }
+          },
+          {}
+        )
 
-      return {...oldERC20Balances, ...newERC20Balances}
+      return { ...oldERC20Balances, ...newERC20Balances }
     })
   }
 
@@ -1026,68 +1042,86 @@ export const useArbTokenBridge = (
     )
   }
 
-  // mutates provided array - assigns deadlineBlockNumbers to all asserted but unconfimred l2tol1 messages 
-  const addNodeDeadlineToUnconfirmedWithdrawals = async(l2ToL1Data: L2ToL1EventResultPlus[])=>{
-    if(l2ToL1Data.length === 0) return []
+  // mutates provided array - assigns deadlineBlockNumbers to all asserted but unconfimred l2tol1 messages
+  const addNodeDeadlineToUnconfirmedWithdrawals = async (
+    l2ToL1Data: L2ToL1EventResultPlus[]
+  ) => {
+    if (l2ToL1Data.length === 0) return []
     const l1NetworkID = await l1NetworkIDCached()
-    if(l1NetworkID !== '1' && l1NetworkID !== '4') throw new Error(`Unrecognized network: ${l1NetworkID}`)
+    if (l1NetworkID !== '1' && l1NetworkID !== '4')
+      throw new Error(`Unrecognized network: ${l1NetworkID}`)
     // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
     const oldOutboxOffset = l1NetworkID === '1' ? 30 : 326
 
     // ensure sorted in ascending order by timestamp (copy so provided array doesn't get mutated)
-    const sortedL2ToL1Data = [...l2ToL1Data].sort((msgA,msgB)=>{
+    const sortedL2ToL1Data = [...l2ToL1Data].sort((msgA, msgB) => {
       return +msgA.timestamp - +msgB.timestamp
     })
-    // get smallest batch number in messages for lower bound on graph query    
-    const smallestBatchNumber  = sortedL2ToL1Data[0].batchNumber.toNumber()
+    // get smallest batch number in messages for lower bound on graph query
+    const smallestBatchNumber = sortedL2ToL1Data[0].batchNumber.toNumber()
     const nodes = await getNodes(l1NetworkID, smallestBatchNumber)
-  
-    const unconfirmedWithdrawals = sortedL2ToL1Data.filter((l2ToL1Datum)=> ![OutgoingMessageState.EXECUTED,OutgoingMessageState.CONFIRMED].includes(l2ToL1Datum.outgoingMessageState))
-    
-    let currentNodeIndex = 0
-    let currentNode: NodeDataResult|undefined = nodes[currentNodeIndex]
-    // get node ids for messages included in a node, preserving order of unconfirmedWithdrawals array
-    const nodeIDs = unconfirmedWithdrawals.map((l1ToL2Datum: L2ToL1EventResultPlus)=>{
 
-        const batchNumberWithOffset = l1ToL2Datum.batchNumber.toNumber() + oldOutboxOffset
-        
+    const unconfirmedWithdrawals = sortedL2ToL1Data.filter(
+      l2ToL1Datum =>
+        ![
+          OutgoingMessageState.EXECUTED,
+          OutgoingMessageState.CONFIRMED
+        ].includes(l2ToL1Datum.outgoingMessageState)
+    )
+
+    let currentNodeIndex = 0
+    let currentNode: NodeDataResult | undefined = nodes[currentNodeIndex]
+    // get node ids for messages included in a node, preserving order of unconfirmedWithdrawals array
+    const nodeIDs = unconfirmedWithdrawals
+      .map((l1ToL2Datum: L2ToL1EventResultPlus) => {
+        const batchNumberWithOffset =
+          l1ToL2Datum.batchNumber.toNumber() + oldOutboxOffset
+
         // find first node with aftersendCount >= current messages batch number ('afterSendCount' is batchcount )
-        while(currentNode && +currentNode.afterSendCount < batchNumberWithOffset ) {
+        while (
+          currentNode &&
+          +currentNode.afterSendCount < batchNumberWithOffset
+        ) {
           currentNodeIndex++
           currentNode = nodes[currentNodeIndex]
         }
         // if we've reached the end of the node array, the message hasn't been included in a node, (so undefined)
         return currentNode ? BigNumber.from(currentNode.id) : null
-      }).filter(notNull)
-      
-      const rollupAddress  = bridge.l1Bridge.network.ethBridge?.rollup
-      if(!rollupAddress) throw new Error("Could not get rollup address")
-      const rollupIface = Rollup__factory.createInterface()
+      })
+      .filter(notNull)
 
-      const nodeAddresses: string[] = (await bridge.l1Bridge.getMulticallAggregate(
-          nodeIDs.map((nodeID)=>({
-            target: rollupAddress,
-            funcFragment: rollupIface.functions['getNode(uint256)'],
-            values: [ nodeID ]
-          })
-      ))).map((res)=> res && res[0])
+    const rollupAddress = bridge.l1Bridge.network.ethBridge?.rollup
+    if (!rollupAddress) throw new Error('Could not get rollup address')
+    const rollupIface = Rollup__factory.createInterface()
 
+    const nodeAddresses: string[] = (
+      await bridge.l1Bridge.getMulticallAggregate(
+        nodeIDs.map(nodeID => ({
+          target: rollupAddress,
+          funcFragment: rollupIface.functions['getNode(uint256)'],
+          values: [nodeID]
+        }))
+      )
+    ).map(res => res && res[0])
 
-      const nodeIface = Node__factory.createInterface()
+    const nodeIface = Node__factory.createInterface()
 
-      const deadlineBlockNumbers: BigNumber[] = (await bridge.l1Bridge.getMulticallAggregate(
-        nodeAddresses.map((nodeAddress:string)=>({
+    const deadlineBlockNumbers: BigNumber[] = (
+      await bridge.l1Bridge.getMulticallAggregate(
+        nodeAddresses.map((nodeAddress: string) => ({
           target: nodeAddress,
           funcFragment: nodeIface.functions['deadlineBlock()']
-        })
-    ))).map((res)=> res && res[0])
-
+        }))
+      )
+    ).map(res => res && res[0])
 
     // use alignment of elements and their indics in unconfirmedWithdrawals / deadlineBlockNumbers arrays to set deadlineBlockNumbers
-    unconfirmedWithdrawals.forEach((withdrawalDatum, i)=>{
-      withdrawalDatum.nodeBlockDeadline =   i < deadlineBlockNumbers.length? deadlineBlockNumbers[i].toNumber() : "NODE_NOT_CREATED"
+    unconfirmedWithdrawals.forEach((withdrawalDatum, i) => {
+      withdrawalDatum.nodeBlockDeadline =
+        i < deadlineBlockNumbers.length
+          ? deadlineBlockNumbers[i].toNumber()
+          : 'NODE_NOT_CREATED'
     })
-
 
     return l2ToL1Data
   }
@@ -1125,7 +1159,9 @@ export const useArbTokenBridge = (
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const l1NetworkID = await l1NetworkIDCached()
       if (
-        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)]
+        executedMessagesCache[
+          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+        ]
       ) {
         return OutgoingMessageState.EXECUTED
       } else {
@@ -1156,7 +1192,9 @@ export const useArbTokenBridge = (
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const l1NetworkID = await l1NetworkIDCached()
       if (
-        executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)]
+        executedMessagesCache[
+          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+        ]
       ) {
         return OutgoingMessageState.EXECUTED
       } else {
@@ -1169,8 +1207,10 @@ export const useArbTokenBridge = (
   const addToExecutedMessagesCache = useCallback(
     (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const _executedMessagesCache = { ...executedMessagesCache }
-      l1NetworkIDCached().then((l1NetworkID: string)=>{
-        _executedMessagesCache[hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)] = true
+      l1NetworkIDCached().then((l1NetworkID: string) => {
+        _executedMessagesCache[
+          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+        ] = true
         setExecutedMessagesCache(_executedMessagesCache)
       })
     },
