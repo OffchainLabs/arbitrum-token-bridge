@@ -1030,16 +1030,11 @@ export const useArbTokenBridge = (
   const addNodeDeadlineToUnconfirmedWithdrawals = async(l2ToL1Data: L2ToL1EventResultPlus[])=>{
     if(l2ToL1Data.length === 0) return []
     const l1NetworkID = await l1NetworkIDCached()
-    const oldOutboxOffset = (()=>{
-      switch (l1NetworkID) {
-        case '1':
-          return 30
-        case '4':
-          return 326
-        default:
-          throw new Error(`Unrecognized L1 network ${l1NetworkID}`)
-      }
-    })()
+    if(l1NetworkID !== '1' && l1NetworkID !== '4') throw new Error(`Unrecognized network: ${l1NetworkID}`)
+    
+    // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
+    const oldOutboxOffset = l1NetworkID === '1' ? 30 : 326
+
 
     // get smallest batch number in messages for lower bound on graph query    
     const smallestBatchNumber = l2ToL1Data.reduce((acc: BigNumber, currentL2ToL1Data:L2ToL1EventResultPlus )=>{
