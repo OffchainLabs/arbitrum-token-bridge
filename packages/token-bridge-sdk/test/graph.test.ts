@@ -4,7 +4,7 @@ import {
   messageHasExecuted,
   getNodes,
   getETHWithdrawals
-} from '../util/graph'
+} from '../src/util/graph'
 import { utils, BigNumber } from 'ethers'
 
 const assert = require('assert')

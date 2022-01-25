@@ -23,7 +23,7 @@
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint --fix",
     "prepare": "install-peers",
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs",
-    "test": "env TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha --require ts-node/register 'src/test/**/*.ts'"
+    "test": "env TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha --require ts-node/register 'test/**/*.ts'"
   },
   "dependencies": {
     "@apollo/client": "^3.4.10",
