@@ -1031,29 +1031,26 @@ export const useArbTokenBridge = (
     if(l2ToL1Data.length === 0) return []
     const l1NetworkID = await l1NetworkIDCached()
     if(l1NetworkID !== '1' && l1NetworkID !== '4') throw new Error(`Unrecognized network: ${l1NetworkID}`)
-    
     // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
     const oldOutboxOffset = l1NetworkID === '1' ? 30 : 326
 
-
+    // ensure sorted in ascending order by timestamp (copy so provided array doesn't get mutated)
+    const sortedL2ToL1Data = [...l2ToL1Data].sort((msgA,msgB)=>{
+      return +msgA.timestamp - +msgB.timestamp
+    })
     // get smallest batch number in messages for lower bound on graph query    
-    const smallestBatchNumber = l2ToL1Data.reduce((acc: BigNumber, currentL2ToL1Data:L2ToL1EventResultPlus )=>{
-      return acc.lt(currentL2ToL1Data.batchNumber) ? acc : currentL2ToL1Data.batchNumber
-    }, l2ToL1Data[0].batchNumber).toNumber()    
+    const smallestBatchNumber  = sortedL2ToL1Data[0].batchNumber.toNumber()
     const nodes = await getNodes(l1NetworkID, smallestBatchNumber)
   
 
-    const unconfirmedWithdrawals = l2ToL1Data.filter((l2ToL1Data)=> l2ToL1Data.outgoingMessageState !==  OutgoingMessageState.CONFIRMED && l2ToL1Data.outgoingMessageState !==  OutgoingMessageState.EXECUTED ).sort((msgA,msgB)=>{
-      // ensure sorted in ascending order by timestamp
-      return +msgA.timestamp - +msgB.timestamp
-    })
+    const unconfirmedWithdrawals = sortedL2ToL1Data.filter((l2ToL1Datum)=> l2ToL1Datum.outgoingMessageState !==  OutgoingMessageState.CONFIRMED && l2ToL1Datum.outgoingMessageState !==  OutgoingMessageState.EXECUTED )
     
     let currentNodeIndex = 0
     let currentNode: NodeDataResult|undefined = nodes[currentNodeIndex]
     // get node ids for messages included in a node, preserving order of unconfirmedWithdrawals array
-    const nodeIDs = unconfirmedWithdrawals.map((l1ToL2Data: L2ToL1EventResultPlus)=>{
+    const nodeIDs = unconfirmedWithdrawals.map((l1ToL2Datum: L2ToL1EventResultPlus)=>{
 
-        const batchNumberWithOffset = l1ToL2Data.batchNumber.toNumber() + oldOutboxOffset
+        const batchNumberWithOffset = l1ToL2Datum.batchNumber.toNumber() + oldOutboxOffset
         
         // find first node with aftersendCount >= current messages batch number ('afterSendCount' is batchcount )
         while(currentNode && +currentNode.afterSendCount < batchNumberWithOffset ) {
