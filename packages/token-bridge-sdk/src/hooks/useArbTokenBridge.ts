@@ -1042,8 +1042,7 @@ export const useArbTokenBridge = (
     const smallestBatchNumber  = sortedL2ToL1Data[0].batchNumber.toNumber()
     const nodes = await getNodes(l1NetworkID, smallestBatchNumber)
   
-
-    const unconfirmedWithdrawals = sortedL2ToL1Data.filter((l2ToL1Datum)=> l2ToL1Datum.outgoingMessageState !==  OutgoingMessageState.CONFIRMED && l2ToL1Datum.outgoingMessageState !==  OutgoingMessageState.EXECUTED )
+    const unconfirmedWithdrawals = sortedL2ToL1Data.filter((l2ToL1Datum)=> ![OutgoingMessageState.EXECUTED,OutgoingMessageState.CONFIRMED].includes(l2ToL1Datum.outgoingMessageState))
     
     let currentNodeIndex = 0
     let currentNode: NodeDataResult|undefined = nodes[currentNodeIndex]
