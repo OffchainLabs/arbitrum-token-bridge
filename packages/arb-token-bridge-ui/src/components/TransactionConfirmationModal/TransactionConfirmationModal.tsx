@@ -1,32 +1,104 @@
-import { Fragment, useRef } from 'react'
+import { Fragment, useMemo, useRef } from 'react'
 
 import { Dialog, Transition } from '@headlessui/react'
 import { ExclamationIcon } from '@heroicons/react/outline'
 
+export enum ModalStatus {
+  CLOSED,
+  DEPOSIT,
+  WITHDRAW,
+  NEW_TOKEN_DEPOSITING
+}
+
 export default function TransactionConfirmationModal({
-  open,
-  setOpen,
+  status,
+  closeModal,
   onConfirm,
   isDepositing,
   symbol,
   amount
 }: {
   onConfirm: () => void
-  open: boolean
+  status: ModalStatus
   isDepositing: boolean
-  setOpen: (open: boolean) => void
+  closeModal: () => void
   symbol: string
   amount: string
 }) {
   const cancelButtonRef = useRef(null)
 
+  const textContent = useMemo(() => {
+    switch (status) {
+      case ModalStatus.DEPOSIT:
+        return (
+          <>
+            You are about to deposit {symbol} from L1 into Arbitrum! <br />{' '}
+            <br /> It will take <b>10 minutes </b> for you to see your balance
+            credited on L2. Moving your funds back to L1 Ethereum (if you later
+            wish to do so) takes ~1 week. <br /> <br />
+            Would you like to proceed?
+          </>
+        )
+      case ModalStatus.WITHDRAW:
+        return (
+          <>
+            You are about to initiate a {symbol} withdrawal from Arbitrum to
+            Ethereum!c Once initiated, you will have to
+            <b> wait 1 week</b>, after which you will be able to claim your
+            funds on Ethereum mainnet (L1) which may incur a high gas fee of
+            roughly 200k gas.
+            <br /> <br /> Would you like to proceed?
+          </>
+        )
+      case ModalStatus.NEW_TOKEN_DEPOSITING:
+        return (
+          <>
+            {symbol} has not yet been bridged into Arbitrum — you could be the
+            first! <br /> <br />
+            Two things to consider:
+            <ul>
+              <li>
+                - Your deposit will cover the costs for paying for the token
+                contract deployment on L2, so the gas fee will be higher than an
+                ordinary deposit.
+              </li>
+              <li>
+                - You should only proceed if you're confident that {symbol} has
+                no unusual supply-altering mechanics (i.e., rebasing,
+                reflection).
+              </li>
+            </ul>
+            <br />
+            Are you sure you want to proceed?
+          </>
+        )
+      case ModalStatus.CLOSED:
+        return null
+    }
+  }, [status, symbol])
+
+  const buttonText = useMemo(() => {
+    switch (status) {
+      case ModalStatus.DEPOSIT:
+        return 'Deposit'
+      case ModalStatus.WITHDRAW:
+        return 'Withdraw'
+      case ModalStatus.NEW_TOKEN_DEPOSITING:
+        return 'Deposit/Deploy'
+      case ModalStatus.CLOSED:
+        return ''
+      default:
+        break
+    }
+  }, [status])
+
   return (
-    <Transition.Root show={open} as={Fragment}>
+    <Transition.Root show={status !== ModalStatus.CLOSED} as={Fragment}>
       <Dialog
         as="div"
         className="fixed z-10 inset-0 overflow-y-auto"
         initialFocus={cancelButtonRef}
-        onClose={setOpen}
+        onClose={closeModal}
       >
         <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
           <Transition.Child
@@ -71,29 +143,7 @@ export default function TransactionConfirmationModal({
                     {` ${amount} ${symbol}`}
                   </Dialog.Title>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      {isDepositing ? (
-                        <>
-                          You are about to deposit {symbol} from L1 into
-                          Arbitrum! <br /> <br /> It will take{' '}
-                          <b>10 minutes </b> for you to see your balance
-                          credited on L2. Moving your funds back to L1 Ethereum
-                          (if you later wish to do so) takes ~1 week. <br />{' '}
-                          <br />
-                          Would you like to proceed?
-                        </>
-                      ) : (
-                        <>
-                          You are about to initiate a {symbol} withdrawal from
-                          Arbitrum to Ethereum! <br /> <br /> Once initiated,
-                          you will have to
-                          <b> wait 1 week</b>, after which you will be able to
-                          claim your funds on Ethereum mainnet (L1) which may
-                          incur a high gas fee of roughly 200k gas.
-                          <br /> <br /> Would you like to proceed?
-                        </>
-                      )}
-                    </p>
+                    <p className="text-sm text-gray-500">{textContent}</p>
                   </div>
                 </div>
               </div>
@@ -103,15 +153,15 @@ export default function TransactionConfirmationModal({
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={() => {
                     onConfirm()
-                    setOpen(false)
+                    closeModal()
                   }}
                 >
-                  {isDepositing ? 'Deposit' : 'Withdraw'}
+                  {buttonText}
                 </button>
                 <button
                   type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                  onClick={() => setOpen(false)}
+                  onClick={() => closeModal()}
                   ref={cancelButtonRef}
                 >
                   Cancel
