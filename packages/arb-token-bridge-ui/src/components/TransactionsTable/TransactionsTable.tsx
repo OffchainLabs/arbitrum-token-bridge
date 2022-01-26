@@ -113,7 +113,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       return 'calculating...'
     }
     if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
-      return l2NetworkDetails.chainID === '1' ? '~ 1 week' : '~1 day'
+      return l2NetworkDetails.chainID === '42161' ? '~ 1 week' : '~1 day'
     }
 
     // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
