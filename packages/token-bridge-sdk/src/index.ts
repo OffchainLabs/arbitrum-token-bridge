@@ -6,7 +6,8 @@ export type {
   BridgeToken,
   ERC20BridgeToken,
   PendingWithdrawalsMap,
-  ContractStorage
+  ContractStorage,
+  NodeBlockDeadlineStatus
 } from './hooks/arbTokenBridge.types'
 export { TokenType, AssetType } from './hooks/arbTokenBridge.types'
 

@@ -13,7 +13,6 @@ export interface Network {
   partnerChainID: string
   tokenBridge: TokenBridge
   gif?: string
-  confirmPeriodBlocks?: number
   blockTime?: number // seconds
   bridgeUpdateBlockNumber?: number
 }
@@ -65,7 +64,6 @@ const networks: Networks = {
     isArbitrum: true,
     url: 'https://kovan5.arbitrum.io/rpc',
     explorerUrl: 'https://explorer5.arbitrum.io/#',
-    confirmPeriodBlocks: 900,
     partnerChainID: '42',
     tokenBridge: kovan5Bridge
   },
@@ -89,7 +87,6 @@ const networks: Networks = {
     partnerChainID: '1',
     isArbitrum: true,
     tokenBridge: mainnetBridge,
-    confirmPeriodBlocks: 48384,
     bridgeUpdateBlockNumber: 224717
   },
   '421611': {
@@ -101,7 +98,6 @@ const networks: Networks = {
     partnerChainID: '4',
     isArbitrum: true,
     tokenBridge: RinkebyBridge,
-    confirmPeriodBlocks: 6545, // TODO,
     bridgeUpdateBlockNumber: 2386243
   },
   '4': {
@@ -112,8 +108,7 @@ const networks: Networks = {
     explorerUrl: 'https://rinkeby.etherscan.io',
     partnerChainID: '421611',
     isArbitrum: false,
-    tokenBridge: RinkebyBridge,
-    confirmPeriodBlocks: 6545 // TODO
+    tokenBridge: RinkebyBridge
   }
 }
 

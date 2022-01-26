@@ -1,10 +1,10 @@
 {
-  "name": "Arbitrum One OGs",
+  "name": "Arb Whitelist Era",
   "timestamp": "2021-12-09T21:17:44.251Z",
   "version": {
     "major": 4,
-    "minor": 0,
-    "patch": 5
+    "minor": 1,
+    "patch": 6
   },
   "tokens": [
     {
@@ -1839,6 +1839,26 @@
         "l1Address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
         "l2GatewayAddress": "0x6c411ad3e74de3e7bd422b94a27770f5b86c623b",
         "l1GatewayAddress": "0xd92023E9d9911199a6711321D1277285e6d4e2db"
+      }
+    },
+    {
+      "logoURI": "https://etherscan.io/token/images/speraxtoken_32.png",
+      "chainId": 42161,
+      "address": "0x5575552988A3A80504bBaeB1311674fCFd40aD4B",
+      "name": "Sperax",
+      "symbol": "SPA",
+      "decimals": 18,
+      "extensions": {
+        "bridgeInfo": {
+          "1": {
+            "tokenAddress": "0x2a95FE4c7e64e09856989F9eA0b57B9AB5f770CB",
+            "originBridgeAddress": "0x096760f208390250649e3e8763348e783aef5562",
+            "destBridgeAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
+          }
+        },
+        "l1Address": "0x2a95FE4c7e64e09856989F9eA0b57B9AB5f770CB",
+        "l2GatewayAddress": "0x096760f208390250649e3e8763348e783aef5562",
+        "l1GatewayAddress": "0xcEe284F754E854890e311e3280b767F80797180d"
       }
     },
     {

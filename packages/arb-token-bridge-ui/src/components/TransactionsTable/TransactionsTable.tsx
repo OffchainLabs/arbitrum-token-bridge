@@ -89,7 +89,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     [bridge]
   )
 
-  const { confirmPeriodBlocks = 45818 } = l2NetworkDetails as Network
   const { blockTime = 15 } = l1NetworkDetails as Network
 
   const handleTriggerOutbox = async () => {
@@ -109,8 +108,18 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   }
 
   const calcEtaDisplay = () => {
+    const { nodeBlockDeadline } = tx
+    if (nodeBlockDeadline === undefined || !l2NetworkDetails) {
+      return 'calculating...'
+    }
+    if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
+      return l2NetworkDetails.chainID === '1' ? '~ 1 week' : '~1 day'
+    }
+
+    // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
+    const confirmationBufferBlocks = 120
     const blocksRemaining = Math.max(
-      confirmPeriodBlocks - (currentL1BlockNumber - tx.blockNum!),
+      nodeBlockDeadline + confirmationBufferBlocks - currentL1BlockNumber,
       0
     )
 
