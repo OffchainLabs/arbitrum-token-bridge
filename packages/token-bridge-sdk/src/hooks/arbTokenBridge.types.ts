@@ -9,6 +9,9 @@ import {
   Transaction
 } from './useTransactions'
 
+
+export type NodeBlockDeadlineStatus = number |  "NODE_NOT_CREATED"
+
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
   value: BigNumber
@@ -16,6 +19,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   outgoingMessageState: OutgoingMessageState
   symbol: string
   decimals: number
+  nodeBlockDeadline?: NodeBlockDeadlineStatus;
 }
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
@@ -113,7 +117,7 @@ export interface ArbTokenBridgeCache {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<string>
   addTokensFromList: (tokenList: TokenList, listID?: number) => void
-  removeTokensFromList: (listID: number) => void 
+  removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
   deposit: (

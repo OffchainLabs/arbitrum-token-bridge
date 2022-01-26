@@ -10,6 +10,11 @@ import {
   WithdrawalInitiated,
   ERC20__factory
 } from 'arb-ts'
+
+import { Rollup__factory } from 'arb-ts/dist/lib/abi/factories/Rollup__factory'
+import { Node__factory } from 'arb-ts/dist/lib/abi/factories/Node__factory'
+
+
 import useTransactions from './useTransactions'
 import {
   AddressToSymbol,
@@ -32,12 +37,17 @@ import {
   getETHWithdrawals,
   getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
-  getBuiltInsGraphLatestBlockNumber
+  getBuiltInsGraphLatestBlockNumber,
+  getNodes,
+  NodeDataResult
 } from '../util/graph'
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
+function notNull<TValue>(value: TValue | null ): value is TValue {
+  return value !== null 
+}
 const { Zero } = constants
 /* eslint-disable no-shadow */
 
@@ -207,13 +217,14 @@ export const useArbTokenBridge = (
             l2ToL2EventDataResult.batchNumber,
             l2ToL2EventDataResult.indexInBatch
           )
-          const l2ToL2EventDataResultPlus = {
+          const l2ToL2EventDataResultPlus:L2ToL1EventResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ETH,
             value: weiValue,
             outgoingMessageState,
             symbol: 'ETH',
-            decimals: 18
+            decimals: 18,
+            nodeBlockDeadline: "NODE_NOT_CREATED"
           }
           setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
             return {
@@ -340,14 +351,15 @@ export const useArbTokenBridge = (
             l2ToL2EventDataResult.batchNumber,
             l2ToL2EventDataResult.indexInBatch
           )
-          const l2ToL2EventDataResultPlus = {
+          const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
             ...l2ToL2EventDataResult,
             type: AssetType.ERC20,
             tokenAddress: erc20l1Address,
             value: amountRaw,
             outgoingMessageState,
             symbol: symbol,
-            decimals: decimals
+            decimals: decimals,
+            nodeBlockDeadline: "NODE_NOT_CREATED"
           }
 
           setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -1014,6 +1026,72 @@ export const useArbTokenBridge = (
     )
   }
 
+  // mutates provided array - assigns deadlineBlockNumbers to all asserted but unconfimred l2tol1 messages 
+  const addNodeDeadlineToUnconfirmedWithdrawals = async(l2ToL1Data: L2ToL1EventResultPlus[])=>{
+    if(l2ToL1Data.length === 0) return []
+    const l1NetworkID = await l1NetworkIDCached()
+    if(l1NetworkID !== '1' && l1NetworkID !== '4') throw new Error(`Unrecognized network: ${l1NetworkID}`)
+    // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
+    const oldOutboxOffset = l1NetworkID === '1' ? 30 : 326
+
+    // ensure sorted in ascending order by timestamp (copy so provided array doesn't get mutated)
+    const sortedL2ToL1Data = [...l2ToL1Data].sort((msgA,msgB)=>{
+      return +msgA.timestamp - +msgB.timestamp
+    })
+    // get smallest batch number in messages for lower bound on graph query    
+    const smallestBatchNumber  = sortedL2ToL1Data[0].batchNumber.toNumber()
+    const nodes = await getNodes(l1NetworkID, smallestBatchNumber)
+  
+    const unconfirmedWithdrawals = sortedL2ToL1Data.filter((l2ToL1Datum)=> ![OutgoingMessageState.EXECUTED,OutgoingMessageState.CONFIRMED].includes(l2ToL1Datum.outgoingMessageState))
+    
+    let currentNodeIndex = 0
+    let currentNode: NodeDataResult|undefined = nodes[currentNodeIndex]
+    // get node ids for messages included in a node, preserving order of unconfirmedWithdrawals array
+    const nodeIDs = unconfirmedWithdrawals.map((l1ToL2Datum: L2ToL1EventResultPlus)=>{
+
+        const batchNumberWithOffset = l1ToL2Datum.batchNumber.toNumber() + oldOutboxOffset
+        
+        // find first node with aftersendCount >= current messages batch number ('afterSendCount' is batchcount )
+        while(currentNode && +currentNode.afterSendCount < batchNumberWithOffset ) {
+          currentNodeIndex++
+          currentNode = nodes[currentNodeIndex]
+        }
+        // if we've reached the end of the node array, the message hasn't been included in a node, (so undefined)
+        return currentNode ? BigNumber.from(currentNode.id) : null
+      }).filter(notNull)
+      
+      const rollupAddress  = bridge.l1Bridge.network.ethBridge?.rollup
+      if(!rollupAddress) throw new Error("Could not get rollup address")
+      const rollupIface = Rollup__factory.createInterface()
+
+      const nodeAddresses: string[] = (await bridge.l1Bridge.getMulticallAggregate(
+          nodeIDs.map((nodeID)=>({
+            target: rollupAddress,
+            funcFragment: rollupIface.functions['getNode(uint256)'],
+            values: [ nodeID ]
+          })
+      ))).map((res)=> res && res[0])
+
+
+      const nodeIface = Node__factory.createInterface()
+
+      const deadlineBlockNumbers: BigNumber[] = (await bridge.l1Bridge.getMulticallAggregate(
+        nodeAddresses.map((nodeAddress:string)=>({
+          target: nodeAddress,
+          funcFragment: nodeIface.functions['deadlineBlock()']
+        })
+    ))).map((res)=> res && res[0])
+
+
+    // use alignment of elements and their indics in unconfirmedWithdrawals / deadlineBlockNumbers arrays to set deadlineBlockNumbers
+    unconfirmedWithdrawals.forEach((withdrawalDatum, i)=>{
+      withdrawalDatum.nodeBlockDeadline =   i < deadlineBlockNumbers.length? deadlineBlockNumbers[i].toNumber() : "NODE_NOT_CREATED"
+    })
+
+
+    return l2ToL1Data
+  }
+
   const setInitialPendingWithdrawals = async (
     gatewayAddresses: string[],
     filter?: ethers.providers.Filter
@@ -1034,6 +1112,7 @@ export const useArbTokenBridge = (
       } seconds`
     )
 
+    await addNodeDeadlineToUnconfirmedWithdrawals(l2ToL1Txns)
     for (const l2ToL1Thing of l2ToL1Txns) {
       pendingWithdrawals[l2ToL1Thing.uniqueId.toString()] = l2ToL1Thing
     }
