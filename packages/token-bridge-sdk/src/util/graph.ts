@@ -1,9 +1,4 @@
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-  gql
-} from '@apollo/client'
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1EventResult } from 'arb-ts'
 import { AssetType } from '../hooks/arbTokenBridge.types'

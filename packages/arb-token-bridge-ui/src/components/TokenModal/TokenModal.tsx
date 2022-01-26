@@ -1,6 +1,5 @@
 import React, {
   FormEventHandler,
-  useContext,
   useMemo,
   useState,
   useCallback
@@ -18,7 +17,6 @@ import {
   addBridgeTokenListToBridge
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
-import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
 import TokenBlacklistedDialog from './TokenBlacklistedDialog'
@@ -162,7 +160,7 @@ export const TokenListBody = () => {
   } = useAppState()
   const {
     bridgeTokens,
-    token: { removeTokensFromList, addTokensFromList }
+    token: { removeTokensFromList }
   } = arbTokenBridge
   const listsToShow: BridgeTokenList[] = BRIDGE_TOKEN_LISTS.filter(
     tokenList => {
@@ -222,7 +220,6 @@ export const TokenModalBody = ({
   onTokenSelected: () => void
   toggleCurrentPannel: () => void
 }): JSX.Element => {
-  const bridge = useContext(BridgeContext)
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [blacklistedOpen, setBlacklistedOpen] = useState(false)
 
