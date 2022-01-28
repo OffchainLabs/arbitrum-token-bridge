@@ -58,9 +58,7 @@ export default function TransactionConfirmationModal({
             Two things to consider:
             <ul>
               <li>
-                - Your deposit will cover the costs for paying for the token
-                contract deployment on L2, so the gas fee will be higher than an
-                ordinary deposit.
+                - The initial deposit is more expensive than the following ones. 
               </li>
               <li>
                 - You should only proceed if you're confident that {symbol} has
