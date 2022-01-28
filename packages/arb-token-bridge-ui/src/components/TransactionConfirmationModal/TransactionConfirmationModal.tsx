@@ -35,7 +35,8 @@ export default function TransactionConfirmationModal({
             You are about to deposit {symbol} from L1 into Arbitrum! <br />{' '}
             <br /> It will take <b>10 minutes </b> for you to see your balance
             credited on L2. Moving your funds back to L1 Ethereum (if you later
-            wish to do so) takes ~1 week. <br /> <br />
+            wish to do so) takes ~1 week when using the Canonical Arbitrum Bridge
+            (other Ethereum/Arbitrum bridges offer "fast-exits.") <br /> <br />
             Would you like to proceed?
           </>
         )
@@ -43,11 +44,10 @@ export default function TransactionConfirmationModal({
         return (
           <>
             You are about to initiate a {symbol} withdrawal from Arbitrum to
-            Ethereum!c Once initiated, you will have to
-            <b> wait 1 week</b>, after which you will be able to claim your
-            funds on Ethereum mainnet (L1) which may incur a high gas fee of
-            roughly 200k gas.
-            <br /> <br /> Would you like to proceed?
+            Ethereum! Once a withdrawal is initiated, you will have to
+            <b> wait 8 days </b>, after which you can claim your funds on
+            Ethereum mainnet (L1). Note this claim will incur a second L1 gas
+            fee.
           </>
         )
       case ModalStatus.NEW_TOKEN_DEPOSITING:
@@ -58,12 +58,18 @@ export default function TransactionConfirmationModal({
             Two things to consider:
             <ul>
               <li>
-                - The initial deposit is more expensive than the following ones. 
+                - The initial deposit is more expensive than the following ones.
               </li>
               <li>
-                - Some tokens will break with the token bridge. Do not bridge if the balance of {symbol}
-                changes in unexpected ways (such as passive interest or rebasing stablecoins).
-                <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">here</a>. If you're not a developer and not sure, join our Discord and ask the community! 
+                - Some tokens will break with the token bridge. Do not bridge if
+                the balance of {symbol}
+                changes in unexpected ways (such as passive interest or rebasing
+                stablecoins).
+                <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
+                  here
+                </a>
+                . If you're not a developer and not sure, join our Discord and
+                ask the community!
               </li>
             </ul>
             <br />
