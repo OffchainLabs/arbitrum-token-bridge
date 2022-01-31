@@ -34,7 +34,7 @@ export default function TransactionConfirmationModal({
           <>
             You are about to deposit {symbol} from Ethereum into Arbitrum! <br />{' '}
             <br /> It will take <b>10 minutes </b> for you to see your balance
-            credited on L2. Moving your funds back to L1 Ethereum (if you later
+            credited on Arbitrum. Moving your funds back to Ethereum (if you later
             wish to do so) takes ~1 week when using the Canonical Arbitrum
             Bridge (other Ethereum/Arbitrum bridges offer "fast-exits.") <br />{' '}
             <br />
