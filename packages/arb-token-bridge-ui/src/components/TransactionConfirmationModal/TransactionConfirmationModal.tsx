@@ -62,7 +62,7 @@ export default function TransactionConfirmationModal({
               </li>
               <li>
                 - Some tokens will break with the token bridge. Do not bridge if
-                the balance of {symbol}
+                the balance of {symbol} {' '}
                 changes in unexpected ways (such as passive interest or rebasing
                 stablecoins).
                 <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
