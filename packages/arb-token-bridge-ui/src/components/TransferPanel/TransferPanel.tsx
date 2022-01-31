@@ -139,10 +139,7 @@ const TransferPanel = (): JSX.Element => {
     }
     setTransferring(true)
     try {
-      let amount = isDepositMode ? l1Amount : l2Amount
-      if (amount === '' && isBridgingANewStandardToken) {
-        amount = '0'
-      }
+      const amount = isDepositMode ? l1Amount : l2Amount
 
       if (isDepositMode) {
         const warningToken =
@@ -265,9 +262,14 @@ const TransferPanel = (): JSX.Element => {
     return (
       shouldDisableDeposit ||
       transferring ||
+      l1Amount.trim() === '' ||
       (isDepositMode &&
         !isBridgingANewStandardToken &&
-        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
+        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance)) ||
+      // allow 0-amount deposits when bridging new token
+      (isDepositMode &&
+        isBridgingANewStandardToken &&
+        (l1Balance === null || l1AmountNum > +l1Balance))
     )
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
@@ -350,7 +352,7 @@ const TransferPanel = (): JSX.Element => {
             disabled={disableDeposit}
             isLoading={transferring}
           >
-            Deposit
+            {isBridgingANewStandardToken ? 'Deploy/Deposit' : 'Deposit'}
           </Button>
         ) : (
           <Button

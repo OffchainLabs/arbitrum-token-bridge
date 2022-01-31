@@ -32,11 +32,15 @@ export default function TransactionConfirmationModal({
       case ModalStatus.DEPOSIT:
         return (
           <>
-            You are about to deposit {symbol} from Ethereum into Arbitrum! <br />{' '}
-            <br /> It will take <b>10 minutes </b> for you to see your balance
-            credited on Arbitrum. Moving your funds back to Ethereum (if you later
-            wish to do so) may take ~8 days if your token is not supported by a <a href="https://portal.arbitrum.one/#bridgesandonramps">fast bridge</a>.<br />{' '}
-            <br />
+            You are about to deposit {symbol} from Ethereum into Arbitrum!{' '}
+            <br /> <br /> It will take <b>10 minutes </b> for you to see your
+            balance credited on Arbitrum. Moving your funds back to Ethereum (if
+            you later wish to do so) may take ~8 days if your token is not
+            supported by a{' '}
+            <a href="https://portal.arbitrum.one/#bridgesandonramps">
+              fast bridge
+            </a>
+            .<br /> <br />
             Would you like to proceed?
           </>
         )
@@ -62,14 +66,15 @@ export default function TransactionConfirmationModal({
               </li>
               <li>
                 - Some tokens will break with the token bridge. Do not bridge if
-                the balance of {symbol} {' '}
-                changes in unexpected ways (such as passive interest or rebasing
-                stablecoins).
-                <br />To read further, check the docs <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
+                the balance of {symbol} changes in unexpected ways (such as
+                passive interest or rebasing stablecoins).
+                <br />
+                To read further, check the docs{' '}
+                <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
                   here
                 </a>
-                . If you're not sure if the token is safe to be bridged, join our Discord and
-                ask the community!
+                . If you're not sure if the token is safe to be bridged, join
+                our Discord and ask the community!
               </li>
             </ul>
             <br />
