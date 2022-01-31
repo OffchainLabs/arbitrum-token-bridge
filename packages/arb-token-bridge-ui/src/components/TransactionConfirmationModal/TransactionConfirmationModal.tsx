@@ -65,10 +65,10 @@ export default function TransactionConfirmationModal({
                 the balance of {symbol} {' '}
                 changes in unexpected ways (such as passive interest or rebasing
                 stablecoins).
-                <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
+                <br />To read further, check the docs <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
                   here
                 </a>
-                . If you're not a developer and not sure, join our Discord and
+                . If you're not sure if the token is safe to be bridged, join our Discord and
                 ask the community!
               </li>
             </ul>
