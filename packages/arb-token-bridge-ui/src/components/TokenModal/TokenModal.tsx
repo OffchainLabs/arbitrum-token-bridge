@@ -1,9 +1,4 @@
-import React, {
-  FormEventHandler,
-  useMemo,
-  useState,
-  useCallback
-} from 'react'
+import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 
 import { BigNumber, constants } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
