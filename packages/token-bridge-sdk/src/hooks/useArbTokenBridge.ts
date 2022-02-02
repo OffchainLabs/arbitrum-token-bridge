@@ -402,6 +402,9 @@ export const useArbTokenBridge = (
     const l2ChainID = +l2ChainIDStr
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+
+    const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
+
     for (const tokenData of arbTokenList.tokens) {
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
@@ -443,7 +446,6 @@ export const useArbTokenBridge = (
 
       if (bridgeInfo) {
         const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
-
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -456,11 +458,11 @@ export const useArbTokenBridge = (
           listID
         }
       }
-      // unbridged L1 token:
+      // save potentially unbridged L1 tokens:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
       else if (arbTokenList.tokens.length < 1000) {
         const l1Address = address
-        bridgeTokensToAdd[l1Address] = {
+        candidateUnbridgedTokensToAdd.push({
           name,
           type: TokenType.ERC20,
           symbol,
@@ -469,9 +471,23 @@ export const useArbTokenBridge = (
           decimals,
           logoURI,
           listID
-        }
+        })
       }
     }
+
+    // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
+    const l1AddressesOfBridgedTokens = new Set(
+      Object.keys(bridgeTokensToAdd).map(
+        l1Address =>
+          l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
+      )
+    )
+    for (let l1TokenData of candidateUnbridgedTokensToAdd) {
+      if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
+        bridgeTokensToAdd[l1TokenData.address] = l1TokenData
+      }
+    }
+
     setBridgeTokens(oldBridgeTokens => {
       const newBridgeTokens = {
         ...oldBridgeTokens,
