@@ -32,53 +32,71 @@ export default function TransactionConfirmationModal({
       case ModalStatus.DEPOSIT:
         return (
           <>
-            You are about to deposit {symbol} from Ethereum into Arbitrum!{' '}
-            <br /> <br /> It will take <b>10 minutes </b> for you to see your
-            balance credited on Arbitrum. Moving your funds back to Ethereum (if
-            you later wish to do so) may take ~8 days if your token is not
-            supported by a{' '}
-            <a href="https://portal.arbitrum.one/#bridgesandonramps">
-              fast bridge
+            This transaction will take 10 minutes. <br /> <br />
+            NOTE: Withdrawing {symbol} back to Ethereum will take 8 days if your
+            token is not supported by a <span> </span>
+            <a
+              href="https://portal.arbitrum.one/#bridgesandonramps"
+              target="_blank"
+            >
+              <u>fast bridge</u>
             </a>
             .<br /> <br />
-            Would you like to proceed?
+            Proceed?
           </>
         )
       case ModalStatus.WITHDRAW:
         return (
           <>
-            You are about to initiate a {symbol} withdrawal from Arbitrum to
-            Ethereum! Once a withdrawal is initiated, you will have to
-            <b> wait 8 days </b>, after which you can claim your funds on
-            Ethereum mainnet (L1). Note this claim will incur a second L1 gas
-            fee.
+            This transaction will take{' '}
+            <span style={{ color: 'red' }}> 8 days</span>. <br />
+            <br />
+            After the 8 days, return to this bridge to claim your funds on
+            Ethereum mainnet (L1).
+            <br />
+            NOTE: This claim will incur a secondary L1 gas fee.
+            <br /> <br />
+            Proceed?
           </>
         )
       case ModalStatus.NEW_TOKEN_DEPOSITING:
         return (
           <>
-            {symbol} has not yet been bridged into Arbitrum — you could be the
-            first! <br /> <br />
-            Two things to consider:
+            You are the first to bridge {symbol} to Arbitrum 🎉 <br />
+            <br />
+            Important facts
+            <ol>
+              <li>1. Some tokens are not compatible with the bridge</li>
+              <li>
+                2. The initial bridge is more expensive than following ones
+              </li>
+            </ol>
+            <br />
+            <span style={{ color: 'red' }}>Do not bridge</span> if your token
+            does something non-standard like generates passive interest or is a
+            rebasing stablecoin. <br />
+            <br />
+            Not sure if your token is compatible?
             <ul>
               <li>
-                - The initial deposit is more expensive than the following ones.
+                •{' '}
+                <a
+                  href="https://developer.offchainlabs.com/docs/bridging_assets#the-arbitrum-generic-custom-gateway"
+                  target="_blank"
+                >
+                  <u>Check the docs</u>
+                </a>
               </li>
               <li>
-                - Some tokens will break with the token bridge. Do not bridge if
-                the balance of {symbol} changes in unexpected ways (such as
-                passive interest or rebasing stablecoins).
-                <br />
-                To read further, check the docs{' '}
-                <a href="https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging">
-                  here
+                {' '}
+                •{' '}
+                <a href="https://discord.gg/ZpZuw7p" target="_blank">
+                  <u>Join Discord And Ask</u>
                 </a>
-                . If you're not sure if the token is safe to be bridged, join
-                our Discord and ask the community!
               </li>
             </ul>
             <br />
-            Are you sure you want to proceed?
+            Proceed?
           </>
         )
       case ModalStatus.CLOSED:
@@ -89,17 +107,32 @@ export default function TransactionConfirmationModal({
   const buttonText = useMemo(() => {
     switch (status) {
       case ModalStatus.DEPOSIT:
-        return 'Deposit'
+        return 'MOVE FUNDS TO ARBITRUM'
       case ModalStatus.WITHDRAW:
-        return 'Withdraw'
+        return 'MOVE FUNDS TO ETHEREUM'
       case ModalStatus.NEW_TOKEN_DEPOSITING:
-        return 'Deposit/Deploy'
+        return 'BRIDGE TOKEN TO ARBITRUM'
       case ModalStatus.CLOSED:
         return ''
       default:
         break
     }
   }, [status])
+
+  const headerText = useMemo(() => {
+    switch (status) {
+      case ModalStatus.DEPOSIT:
+        return `Depositing ${symbol} To Arbitrum`
+      case ModalStatus.WITHDRAW:
+        return `Withdrawing ${symbol} To Ethereum`
+      case ModalStatus.NEW_TOKEN_DEPOSITING:
+        return 'New Token Detected!'
+      case ModalStatus.CLOSED:
+        return ''
+      default:
+        break
+    }
+  }, [status, symbol])
 
   return (
     <Transition.Root show={status !== ModalStatus.CLOSED} as={Fragment}>
@@ -148,8 +181,7 @@ export default function TransactionConfirmationModal({
                     as="h3"
                     className="text-lg leading-6 font-medium text-gray-900"
                   >
-                    {isDepositing ? 'Depositing' : 'Withdrawing'}
-                    {` ${amount} ${symbol}`}
+                    {headerText}
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">{textContent}</p>
@@ -173,7 +205,7 @@ export default function TransactionConfirmationModal({
                   onClick={() => closeModal()}
                   ref={cancelButtonRef}
                 >
-                  Cancel
+                  CANCEL
                 </button>
               </div>
             </div>
