@@ -273,6 +273,10 @@ const TransferPanel = (): JSX.Element => {
         selectedToken.address &&
         selectedToken.address.toLowerCase() ===
           '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
+      (selectedToken &&
+        selectedToken.address &&
+        selectedToken.address.toLowerCase() ===
+          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
       transferring ||
       (!isDepositMode &&
         (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
