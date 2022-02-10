@@ -14,6 +14,10 @@ const withdrawOnlyTokens = [
   {
     l1Address: '0xB4A3B0Faf0Ab53df58001804DdA5Bfc6a3D59008',
     l2Address: '0xe5a5Efe7ec8cdFA5F031D5159839A3b5E11B2e0F'
+  },
+  {
+    l1Address: '0x0e192d382a36de7011f795acc4391cd302003606',
+    l2Address: '0x488cc08935458403a0458e45E20c0159c8AB2c92'
   }
 ].map(token => {
   const { l1Address, l2Address } = token
