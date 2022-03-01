@@ -126,7 +126,11 @@ const TransferPanel = (): JSX.Element => {
         throw new Error('Invalid app state: no selected token')
       setConfirmationModalStatus(ModalStatus.NEW_TOKEN_DEPOSITING)
     } else {
-      setConfirmationModalStatus(ModalStatus.DEPOSIT)
+      const isAUserAddedToken =
+        selectedToken && selectedToken.listID === undefined
+      setConfirmationModalStatus(
+        isAUserAddedToken ? ModalStatus.USER_ADDED_DEPOSIT : ModalStatus.DEPOSIT
+      )
     }
   }, [isBridgingANewStandardToken, selectedToken])
 

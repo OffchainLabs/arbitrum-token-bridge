@@ -6,6 +6,7 @@ import { ExclamationIcon } from '@heroicons/react/outline'
 export enum ModalStatus {
   CLOSED,
   DEPOSIT,
+  USER_ADDED_DEPOSIT,
   WITHDRAW,
   NEW_TOKEN_DEPOSITING
 }
@@ -59,6 +60,39 @@ export default function TransactionConfirmationModal({
             Proceed?
           </>
         )
+      case ModalStatus.USER_ADDED_DEPOSIT:
+        return (
+          <>
+            You are about to deposit {symbol} to Arbitrum 🎉 <br />
+            <br />
+            <span style={{ color: 'red' }}>Do not bridge</span> if your token
+            does something non-standard like generates passive interest or is a
+            rebasing stablecoin. <br />
+            <br />
+            Not sure if your token is compatible?
+            <ul>
+              <li>
+                •{' '}
+                <a
+                  href="https://developer.offchainlabs.com/docs/bridging_assets#the-arbitrum-generic-custom-gateway"
+                  target="_blank"
+                >
+                  <u>Check the docs</u>
+                </a>
+              </li>
+              <li>
+                {' '}
+                •{' '}
+                <a href="https://discord.gg/ZpZuw7p" target="_blank">
+                  <u>Join Discord And Ask</u>
+                </a>
+              </li>
+            </ul>
+            <br />
+            Proceed?
+          </>
+        )
+
       case ModalStatus.NEW_TOKEN_DEPOSITING:
         return (
           <>
@@ -107,6 +141,7 @@ export default function TransactionConfirmationModal({
   const buttonText = useMemo(() => {
     switch (status) {
       case ModalStatus.DEPOSIT:
+      case ModalStatus.USER_ADDED_DEPOSIT:
         return 'MOVE FUNDS TO ARBITRUM'
       case ModalStatus.WITHDRAW:
         return 'MOVE FUNDS TO ETHEREUM'
@@ -122,6 +157,7 @@ export default function TransactionConfirmationModal({
   const headerText = useMemo(() => {
     switch (status) {
       case ModalStatus.DEPOSIT:
+      case ModalStatus.USER_ADDED_DEPOSIT:
         return `Depositing ${symbol} To Arbitrum`
       case ModalStatus.WITHDRAW:
         return `Withdrawing ${symbol} To Ethereum`
