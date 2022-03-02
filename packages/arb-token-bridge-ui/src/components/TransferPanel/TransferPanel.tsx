@@ -9,17 +9,19 @@ import { useLocation } from 'react-router-dom'
 
 import { useWallet } from '@gimmixorg/use-wallet'
 import { utils, BigNumber } from 'ethers'
+import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
-import { useAppState, useActions } from '../../state'
+import { useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import TransactionConfirmationModal from '../TransactionConfirmationModal/TransactionConfirmationModal'
+import { TokenSelectOrAddModal } from '../TokenModal/TokenSelectOrAddModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 
@@ -35,12 +37,32 @@ const isAllowed = async (
     amountNeeded
   )
 }
-const TransferPanel = (): JSX.Element => {
+
+function useTokenFromSearchParams() {
   const { search } = useLocation()
+
   const searchParams = new URLSearchParams(search)
   const tokenFromSearchParams = searchParams.get('token')?.toLowerCase()
 
-  const [confirmationOpen, setConfirmationOpen] = useState(false)
+  if (!tokenFromSearchParams) {
+    return undefined
+  }
+
+  if (!isAddress(tokenFromSearchParams)) {
+    return undefined
+  }
+
+  return tokenFromSearchParams
+}
+
+const TransferPanel = (): JSX.Element => {
+  const tokenFromSearchParams = useTokenFromSearchParams()
+
+  const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false)
+  const [selectTokenOpen, setSelectTokenOpen] = useState<boolean>(
+    typeof tokenFromSearchParams !== 'undefined'
+  )
+
   const {
     app: {
       pwLoadedState,
@@ -57,7 +79,6 @@ const TransferPanel = (): JSX.Element => {
       warningTokens
     }
   } = useAppState()
-  const actions = useActions()
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
@@ -72,33 +93,7 @@ const TransferPanel = (): JSX.Element => {
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
 
-  const [isTokenReadFromSearchParams, setIsTokenReadFromSearchParams] =
-    useState<boolean>(false)
-
   const { shouldDisableDeposit } = useWithdrawOnly()
-
-  useEffect(() => {
-    if (!tokenFromSearchParams || typeof bridgeTokens === 'undefined') {
-      return
-    }
-
-    // Only do this once, initially
-    if (isTokenReadFromSearchParams) {
-      return
-    }
-
-    const foundToken = bridgeTokens[tokenFromSearchParams]
-
-    // We already have the token within our list, so just select it
-    if (foundToken) {
-      token.updateTokenData(tokenFromSearchParams)
-      actions.app.setSelectedToken(foundToken)
-
-      setIsTokenReadFromSearchParams(true)
-    } else {
-      // TODO: Prompt the user to add the new token
-    }
-  }, [bridgeTokens])
 
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
@@ -378,6 +373,12 @@ const TransferPanel = (): JSX.Element => {
         </div>
 
         <div className="h-6" />
+
+        <TokenSelectOrAddModal
+          isOpen={selectTokenOpen}
+          setIsOpen={setSelectTokenOpen}
+          address={tokenFromSearchParams}
+        />
 
         <TransactionConfirmationModal
           onConfirm={transfer}
