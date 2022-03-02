@@ -1,4 +1,11 @@
-import React, { useContext, useState, useMemo, useCallback } from 'react'
+import React, {
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect
+} from 'react'
+import { useLocation } from 'react-router-dom'
 
 import { useWallet } from '@gimmixorg/use-wallet'
 import { utils, BigNumber } from 'ethers'
@@ -6,7 +13,7 @@ import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
-import { useAppState } from '../../state'
+import { useAppState, useActions } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
@@ -29,6 +36,10 @@ const isAllowed = async (
   )
 }
 const TransferPanel = (): JSX.Element => {
+  const { search } = useLocation()
+  const searchParams = new URLSearchParams(search)
+  const tokenFromSearchParams = searchParams.get('token')?.toLowerCase()
+
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const {
     app: {
@@ -46,6 +57,7 @@ const TransferPanel = (): JSX.Element => {
       warningTokens
     }
   } = useAppState()
+  const actions = useActions()
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
@@ -60,6 +72,23 @@ const TransferPanel = (): JSX.Element => {
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
   const { shouldDisableDeposit } = useWithdrawOnly()
+
+  useEffect(() => {
+    if (!tokenFromSearchParams || typeof bridgeTokens === 'undefined') {
+      return
+    }
+
+    const foundToken = bridgeTokens[tokenFromSearchParams]
+
+    // We already have the token within our list, so just select it
+    if (foundToken) {
+      token.updateTokenData(tokenFromSearchParams)
+      actions.app.setSelectedToken(foundToken)
+    } else {
+      // TODO: Prompt the user to add the new token
+    }
+  }, [bridgeTokens])
+
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
     return setL1AmountState(
