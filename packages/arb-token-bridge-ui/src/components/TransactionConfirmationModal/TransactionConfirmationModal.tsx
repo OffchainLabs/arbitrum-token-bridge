@@ -42,8 +42,7 @@ export default function TransactionConfirmationModal({
             >
               <u>fast bridge</u>
             </a>
-            .<br /> <br />
-            Proceed?
+            .<br />
           </>
         )
       case ModalStatus.WITHDRAW:
@@ -56,8 +55,7 @@ export default function TransactionConfirmationModal({
             Ethereum mainnet (L1).
             <br />
             NOTE: This claim will incur a secondary L1 gas fee.
-            <br /> <br />
-            Proceed?
+            <br />
           </>
         )
       case ModalStatus.USER_ADDED_DEPOSIT:
@@ -84,12 +82,11 @@ export default function TransactionConfirmationModal({
                 {' '}
                 •{' '}
                 <a href="https://discord.gg/ZpZuw7p" target="_blank">
-                  <u>Join Discord And Ask</u>
+                  <u>Join Discord and ask</u>
                 </a>
               </li>
             </ul>
             <br />
-            Proceed?
           </>
         )
 
@@ -98,7 +95,7 @@ export default function TransactionConfirmationModal({
           <>
             You are the first to bridge {symbol} to Arbitrum 🎉 <br />
             <br />
-            Important facts
+            <b>Important facts</b>
             <ol>
               <li>1. Some tokens are not compatible with the bridge</li>
               <li>
@@ -125,12 +122,11 @@ export default function TransactionConfirmationModal({
                 {' '}
                 •{' '}
                 <a href="https://discord.gg/ZpZuw7p" target="_blank">
-                  <u>Join Discord And Ask</u>
+                  <u>Join Discord and ask</u>
                 </a>
               </li>
             </ul>
             <br />
-            Proceed?
           </>
         )
       case ModalStatus.CLOSED:
