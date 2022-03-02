@@ -71,10 +71,19 @@ const TransferPanel = (): JSX.Element => {
 
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
+
+  const [isTokenReadFromSearchParams, setIsTokenReadFromSearchParams] =
+    useState<boolean>(false)
+
   const { shouldDisableDeposit } = useWithdrawOnly()
 
   useEffect(() => {
     if (!tokenFromSearchParams || typeof bridgeTokens === 'undefined') {
+      return
+    }
+
+    // Only do this once, initially
+    if (isTokenReadFromSearchParams) {
       return
     }
 
@@ -84,6 +93,8 @@ const TransferPanel = (): JSX.Element => {
     if (foundToken) {
       token.updateTokenData(tokenFromSearchParams)
       actions.app.setSelectedToken(foundToken)
+
+      setIsTokenReadFromSearchParams(true)
     } else {
       // TODO: Prompt the user to add the new token
     }
