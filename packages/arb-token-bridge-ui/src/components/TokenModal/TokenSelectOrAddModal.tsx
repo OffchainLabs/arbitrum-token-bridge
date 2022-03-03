@@ -101,9 +101,17 @@ const TokenSelectOrAddModal = ({
             </span>
             . Do you want to select it?
           </span>
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-2">
+            {!isSelectingToken && (
+              <button
+                className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 shadow-sm px-4 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                onClick={() => setIsOpen(false)}
+              >
+                Cancel
+              </button>
+            )}
             <button
-              className="inline-flex justify-center m-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+              className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
               onClick={async () => {
                 await selectToken(listedToken)
                 setIsOpen(false)
