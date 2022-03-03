@@ -61,6 +61,19 @@ function TokenSelectOrAddModal({
     return listedToken ? 'Select token' : 'Add token'
   }, [isLoadingTokenList, listedToken])
 
+  useEffect(() => {
+    if (isLoadingTokenList) {
+      return
+    }
+
+    const foundToken = debouncedBridgeTokens[address]
+
+    // This is the new token added by the user, select it
+    if (foundToken && !foundToken.listID) {
+      selectToken(foundToken)
+    }
+  }, [isLoadingTokenList, debouncedBridgeTokens])
+
   async function selectToken(_token: ERC20BridgeToken) {
     setIsSelectingToken(true)
 
