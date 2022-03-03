@@ -5,7 +5,7 @@ import { ERC20BridgeToken } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { Modal } from '../common/Modal'
 
-const TokenSelectOrAddModal = ({
+function TokenSelectOrAddModal({
   isOpen,
   setIsOpen,
   address
@@ -13,7 +13,7 @@ const TokenSelectOrAddModal = ({
   isOpen: boolean
   setIsOpen: (open: boolean) => void
   address: string
-}): JSX.Element | null => {
+}): JSX.Element {
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token }
