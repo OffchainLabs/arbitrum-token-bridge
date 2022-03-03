@@ -12,7 +12,7 @@ const TokenSelectOrAddModal = ({
 }: {
   isOpen: boolean
   setIsOpen: (open: boolean) => void
-  address: string | undefined
+  address: string
 }): JSX.Element | null => {
   const {
     app: {
@@ -34,7 +34,7 @@ const TokenSelectOrAddModal = ({
       return undefined
     }
 
-    return bridgeTokens[address || '']
+    return bridgeTokens[address]
   }, [bridgeTokens, isLoadingTokenList])
 
   async function selectToken(_token: ERC20BridgeToken) {
@@ -64,7 +64,7 @@ const TokenSelectOrAddModal = ({
     setIsAddingToken(true)
 
     try {
-      await storeNewToken(address!)
+      await storeNewToken(address)
     } catch (ex) {
       console.log(ex)
     } finally {

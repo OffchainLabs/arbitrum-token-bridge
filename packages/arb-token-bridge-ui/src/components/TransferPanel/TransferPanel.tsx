@@ -374,11 +374,13 @@ const TransferPanel = (): JSX.Element => {
 
         <div className="h-6" />
 
-        <TokenSelectOrAddModal
-          isOpen={selectTokenOpen}
-          setIsOpen={setSelectTokenOpen}
-          address={tokenFromSearchParams}
-        />
+        {typeof tokenFromSearchParams !== 'undefined' && (
+          <TokenSelectOrAddModal
+            isOpen={selectTokenOpen}
+            setIsOpen={setSelectTokenOpen}
+            address={tokenFromSearchParams}
+          />
+        )}
 
         <TransactionConfirmationModal
           onConfirm={transfer}
