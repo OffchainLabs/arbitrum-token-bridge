@@ -37,6 +37,14 @@ const TokenSelectOrAddModal = ({
     return bridgeTokens[address]
   }, [bridgeTokens, isLoadingTokenList])
 
+  const modalTitle = useMemo(() => {
+    if (isLoadingTokenList) {
+      return 'Loading token...'
+    }
+
+    return listedToken ? 'Select token' : 'Add token'
+  }, [isLoadingTokenList, listedToken])
+
   async function selectToken(_token: ERC20BridgeToken) {
     setIsSelectingToken(true)
 
@@ -73,18 +81,9 @@ const TokenSelectOrAddModal = ({
     }
   }
 
-  // if (isLoadingTokenList) {
-  //   return null
-  // }
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      setIsOpen={setIsOpen}
-      title={listedToken ? 'Select Token' : 'Add Token'}
-      hideButton
-    >
-      {listedToken ? (
+  function Content() {
+    if (listedToken) {
+      return (
         <div className="flex flex-col space-y-2">
           <div className="flex justify-center">
             <img
@@ -126,35 +125,49 @@ const TokenSelectOrAddModal = ({
             </button>
           </div>
         </div>
-      ) : (
-        <div className="flex flex-col space-y-2">
-          <span>
-            Token <span className="font-medium">{address}</span> is not on the
-            token list.
-          </span>
-          <span>Would you like to add it?</span>
-          <div className="flex justify-end space-x-2">
-            {!isAddingToken && (
-              <button
-                className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 shadow-sm px-4 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                onClick={() => setIsOpen(false)}
-              >
-                Cancel
-              </button>
-            )}
+      )
+    }
+
+    return (
+      <div className="flex flex-col space-y-2">
+        <span>
+          Token <span className="font-medium">{address}</span> is not on the
+          token list.
+        </span>
+        <span>Would you like to add it?</span>
+        <div className="flex justify-end space-x-2">
+          {!isAddingToken && (
             <button
-              className="inline-flex justify-center rounded-md shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-              disabled={isAddingToken}
-              onClick={addNewToken}
+              className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 shadow-sm px-4 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+              onClick={() => setIsOpen(false)}
             >
-              {isAddingToken ? (
-                <Loader type="Oval" color="#fff" height={20} width={20} />
-              ) : (
-                <span>Add Token</span>
-              )}
+              Cancel
             </button>
-          </div>
+          )}
+          <button
+            className="inline-flex justify-center rounded-md shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+            disabled={isAddingToken}
+            onClick={addNewToken}
+          >
+            {isAddingToken ? (
+              <Loader type="Oval" color="#fff" height={20} width={20} />
+            ) : (
+              <span>Add Token</span>
+            )}
+          </button>
         </div>
+      </div>
+    )
+  }
+
+  return (
+    <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
+      {isLoadingTokenList ? (
+        <div className="flex items-center justify-center h-32">
+          <Loader type="Oval" color="#000" height={32} width={32} />
+        </div>
+      ) : (
+        <Content />
       )}
     </Modal>
   )
