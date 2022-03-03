@@ -21,6 +21,7 @@ const TokenSelectOrAddModal = ({
   } = useAppState()
   const actions = useActions()
 
+  const [isSelectingToken, setIsSelectingToken] = useState<boolean>(false)
   const [isAddingToken, setIsAddingToken] = useState<boolean>(false)
 
   const isLoadingTokenList = useMemo(
@@ -37,8 +38,12 @@ const TokenSelectOrAddModal = ({
   }, [bridgeTokens, isLoadingTokenList])
 
   async function selectToken(_token: ERC20BridgeToken) {
+    setIsSelectingToken(true)
+
     await token.updateTokenData(_token.address)
     actions.app.setSelectedToken(_token)
+
+    setIsSelectingToken(false)
   }
 
   async function storeNewToken(newToken: string) {
@@ -99,12 +104,17 @@ const TokenSelectOrAddModal = ({
           <div className="flex justify-end">
             <button
               className="inline-flex justify-center m-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-              onClick={() => {
-                selectToken(listedToken)
+              onClick={async () => {
+                await selectToken(listedToken)
                 setIsOpen(false)
               }}
+              disabled={isSelectingToken}
             >
-              Select Token
+              {isSelectingToken ? (
+                <Loader type="Oval" color="#fff" height={20} width={20} />
+              ) : (
+                <span>Select Token</span>
+              )}
             </button>
           </div>
         </div>
