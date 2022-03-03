@@ -1,9 +1,25 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { Modal } from '../common/Modal'
+
+function useDebouncedState(value: any, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 function TokenSelectOrAddModal({
   isOpen,
@@ -24,18 +40,18 @@ function TokenSelectOrAddModal({
   const [isSelectingToken, setIsSelectingToken] = useState<boolean>(false)
   const [isAddingToken, setIsAddingToken] = useState<boolean>(false)
 
-  const isLoadingTokenList = useMemo(
-    () => typeof bridgeTokens === 'undefined',
-    [bridgeTokens]
-  )
+  // The `bridgeTokens` state updates a couple of times within a couple of renders.
+  // Debouncing it prevents wonky UI updates while finding the token within the list.
+  const debouncedBridgeTokens = useDebouncedState(bridgeTokens, 1000)
+  const isLoadingTokenList = typeof debouncedBridgeTokens === 'undefined'
 
   const listedToken = useMemo(() => {
     if (isLoadingTokenList) {
       return undefined
     }
 
-    return bridgeTokens[address]
-  }, [bridgeTokens, isLoadingTokenList])
+    return debouncedBridgeTokens[address]
+  }, [isLoadingTokenList, debouncedBridgeTokens])
 
   const modalTitle = useMemo(() => {
     if (isLoadingTokenList) {
