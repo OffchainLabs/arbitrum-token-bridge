@@ -5,8 +5,8 @@ import { ERC20BridgeToken } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { Modal } from '../common/Modal'
 
-function useDebouncedState(value: any, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value)
+function useDebouncedState<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
   useEffect(() => {
     const handler = setTimeout(() => {

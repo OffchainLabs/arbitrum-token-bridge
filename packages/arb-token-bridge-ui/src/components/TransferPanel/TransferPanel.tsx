@@ -38,7 +38,7 @@ const isAllowed = async (
   )
 }
 
-function useTokenFromSearchParams() {
+function useTokenFromSearchParams(): string | undefined {
   const { search } = useLocation()
 
   const searchParams = new URLSearchParams(search)
