@@ -524,8 +524,6 @@ export const useArbTokenBridge = (
       const decimals = await contract.decimals()
       try {
         // check if token is deployed at l2 address; if not this will throw
-        console.warn('L2 address', l2Address)
-
         const { balance } = await bridge.l2Bridge.getL2TokenData(l2Address)
         l2TokenBalance = balance
       } catch (error) {
