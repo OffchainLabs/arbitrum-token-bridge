@@ -231,8 +231,11 @@ export function TokenImportModal({
         <div className="flex flex-col space-y-2 -mb-6">
           <div className="py-4">
             <div className="flex flex-col">
-              <span>Whoops, looks like this token address is invalid.</span>
-              <span>Try asking the token team to update their link.</span>
+              <span>
+                Whoops, looks like this token address is invalid.
+                <br />
+                Try asking the token team to update their link.
+              </span>
             </div>
           </div>
           <ModalFooter
@@ -255,10 +258,13 @@ export function TokenImportModal({
 
         {status === ImportStatus.UNKNOWN && (
           <div className="flex flex-row items-center">
-            {/* <span>[WARNING]</span> */}
+            {/* TODO: add warning icon here */}
             <div className="flex flex-col">
-              <span>This token isn't found on an active token list.</span>
-              <span>Make sure you trust the source that led you here.</span>
+              <span>
+                This token isn't found on an active token list.
+                <br />
+                Make sure you trust the source that led you here.
+              </span>
             </div>
           </div>
         )}
