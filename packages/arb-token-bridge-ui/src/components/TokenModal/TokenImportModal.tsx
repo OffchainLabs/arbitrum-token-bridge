@@ -7,6 +7,7 @@ import {
   useContext
 } from 'react'
 import Loader from 'react-loader-spinner'
+import Tippy from '@tippyjs/react'
 import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
@@ -289,6 +290,29 @@ export function TokenImportModal({
           >
             {tokenToImport!.address}
           </a>
+          {status === ImportStatus.UNKNOWN && (
+            <div className="w-full flex justify-start pt-4">
+              <Tippy
+                theme="light"
+                content={
+                  <div>
+                    This token address doesn't exist in any of the token lists
+                    we have. This doesn't mean it's not good, it just means{' '}
+                    <span className="font-bold">proceed with caution.</span>
+                    <br />
+                    <br />
+                    It's easy to impersonate the name of any token, including
+                    ETH. Make sure you trust the source it came from. If it's a
+                    popular token, we should have it on our list. If it's a
+                    smaller or newer token, it's reasonable to believe we might
+                    not have it.
+                  </div>
+                }
+              >
+                <span className="underline cursor-pointer">I'm confused</span>
+              </Tippy>
+            </div>
+          )}
         </div>
         <ModalFooter
           hideCancel={isImportingToken}
