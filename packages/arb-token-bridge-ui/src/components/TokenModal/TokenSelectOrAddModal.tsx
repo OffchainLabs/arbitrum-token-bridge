@@ -1,8 +1,16 @@
-import { useState, useEffect, useMemo, MouseEventHandler } from 'react'
+import { L1TokenData } from 'arb-ts'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  MouseEventHandler,
+  useContext
+} from 'react'
 import Loader from 'react-loader-spinner'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
+import { BridgeContext } from '../App/App'
 import { Modal } from '../common/Modal'
 
 function useDebouncedState<T>(value: T, delay: number): T {
@@ -19,6 +27,17 @@ function useDebouncedState<T>(value: T, delay: number): T {
   }, [value, delay])
 
   return debouncedValue
+}
+
+function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    allowed: data.allowed,
+    address: data.contract.address,
+    decimals: data.decimals
+  }
 }
 
 function ModalFooter({
@@ -57,6 +76,13 @@ function ModalFooter({
   )
 }
 
+enum ImportStatus {
+  LOADING,
+  KNOWN,
+  UNKNOWN,
+  ERROR
+}
+
 function TokenSelectOrAddModal({
   isOpen,
   setIsOpen,
@@ -72,62 +98,89 @@ function TokenSelectOrAddModal({
     }
   } = useAppState()
   const actions = useActions()
+  const bridge = useContext(BridgeContext)
 
-  const [isSelectingToken, setIsSelectingToken] = useState<boolean>(false)
-  const [isAddingToken, setIsAddingToken] = useState<boolean>(false)
+  const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
+  const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
+  const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
 
   // The `bridgeTokens` state updates a couple of times within a couple of renders.
   // Debouncing it prevents wonky UI updates while finding the token within the list.
-  const debouncedBridgeTokens = useDebouncedState(bridgeTokens, 1000)
-  const isLoadingTokenList = typeof debouncedBridgeTokens === 'undefined'
-
-  const listedToken = useMemo(() => {
-    if (isLoadingTokenList) {
-      return undefined
-    }
-
-    return debouncedBridgeTokens[address]
-  }, [isLoadingTokenList, debouncedBridgeTokens])
+  const debouncedBridgeTokens = useDebouncedState(bridgeTokens, 3000)
+  const isLoadingTokenList =
+    typeof debouncedBridgeTokens === 'undefined' ||
+    Object.keys(debouncedBridgeTokens).length === 0
 
   const modalTitle = useMemo(() => {
-    if (isLoadingTokenList) {
-      return 'Loading token...'
+    switch (status) {
+      case ImportStatus.LOADING:
+        return 'Loading token'
+      case ImportStatus.KNOWN:
+        return 'Import known token'
+      case ImportStatus.UNKNOWN:
+        return (
+          <span>
+            Import <span style={{ color: '#CD0000' }}>unknown</span> token{' '}
+          </span>
+        )
+      case ImportStatus.ERROR:
+        return 'Invalid token address'
     }
-
-    return listedToken ? (
-      'Import known token'
-    ) : (
-      <span>
-        Import <span style={{ color: '#CD0000' }}>unknown</span> token{' '}
-      </span>
-    )
-  }, [isLoadingTokenList, listedToken])
+  }, [status])
 
   useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
     if (isLoadingTokenList) {
       return
     }
 
-    const foundToken = debouncedBridgeTokens[address]
+    // No longer loading, it's time to update status
+    if (status === ImportStatus.LOADING) {
+      const foundToken = debouncedBridgeTokens[address]
 
-    // This is the new token added by the user, select it
-    if (foundToken && !foundToken.listID) {
-      selectToken(foundToken)
+      if (foundToken) {
+        // Token can be found in the list
+        setTokenToImport(foundToken)
+        setStatus(ImportStatus.KNOWN)
+      } else {
+        // We have to fetch the token info
+        getL1TokenData(address)
+          ?.then(data => {
+            setTokenToImport(toERC20BridgeToken(data))
+            setStatus(ImportStatus.UNKNOWN)
+          })
+          .catch(() => {
+            setStatus(ImportStatus.ERROR)
+          })
+      }
     }
-  }, [isLoadingTokenList, debouncedBridgeTokens])
+
+    // The unknown token has now been added to the list, and we can select it
+    if (status === ImportStatus.UNKNOWN) {
+      const foundToken = debouncedBridgeTokens[address]
+
+      if (foundToken) {
+        setIsOpen(false)
+        selectToken(foundToken)
+      }
+    }
+  }, [isLoadingTokenList, debouncedBridgeTokens, status])
+
+  function getL1TokenData(_address: string) {
+    return bridge?.l1Bridge.getL1TokenData(_address)
+  }
 
   async function selectToken(_token: ERC20BridgeToken) {
-    setIsSelectingToken(true)
-
     await token.updateTokenData(_token.address)
     actions.app.setSelectedToken(_token)
-
-    setIsSelectingToken(false)
   }
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
-      console.log('Token not found on this network')
+      setStatus(ImportStatus.ERROR)
 
       if (ex.name === 'TokenDisabledError') {
         alert('This token is currently paused in the bridge')
@@ -135,24 +188,24 @@ function TokenSelectOrAddModal({
     })
   }
 
-  async function addNewToken() {
-    if (isAddingToken) {
+  function handletokenToImport() {
+    if (isImportingToken) {
       return
     }
 
-    setIsAddingToken(true)
+    setIsImportingToken(true)
 
-    try {
-      await storeNewToken(address)
-    } catch (ex) {
-      console.log(ex)
-    } finally {
+    if (status === ImportStatus.KNOWN) {
       setIsOpen(false)
-      setIsAddingToken(false)
+      selectToken(tokenToImport!)
+    } else {
+      storeNewToken(address).catch(() => {
+        setStatus(ImportStatus.ERROR)
+      })
     }
   }
 
-  if (isLoadingTokenList) {
+  if (status === ImportStatus.LOADING) {
     return (
       <Modal
         isOpen={isOpen}
@@ -167,71 +220,82 @@ function TokenSelectOrAddModal({
     )
   }
 
+  if (status === ImportStatus.ERROR) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        title={modalTitle}
+        hideButton
+      >
+        <div className="flex flex-col space-y-2 -mb-6">
+          <div className="py-4">
+            <div className="flex flex-col">
+              <span>Whoops, looks like this token address is invalid.</span>
+              <span>Try asking the token team to update their link.</span>
+            </div>
+          </div>
+          <ModalFooter
+            hideCancel={true}
+            actionButtonContent="Close"
+            onCancel={() => setIsOpen(false)}
+            onAction={() => setIsOpen(false)}
+          />
+        </div>
+      </Modal>
+    )
+  }
+
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
       <div className="flex flex-col space-y-2 -mb-6">
-        {listedToken ? (
-          <>
-            <span>This token is on an active token list as:</span>
-            <div className="flex flex-col items-center py-6">
-              <img
-                style={{ width: '25px', height: '25px' }}
-                className="rounded-full mb-4"
-                src={listedToken.logoURI}
-                alt={`${listedToken.name} logo`}
-              />
-              <span className="text-xl font-bold">{listedToken.symbol}</span>
-              <span className="mt-0 mb-4">{listedToken.name}</span>
-              <a
-                href={`https://etherscan.io/token/${listedToken.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: '#1366C1' }}
-                className="underline"
-              >
-                {listedToken.address}
-              </a>
-            </div>
-            <ModalFooter
-              hideCancel={isSelectingToken}
-              actionButtonContent={
-                isSelectingToken ? (
-                  <Loader type="Oval" color="#fff" height={20} width={20} />
-                ) : (
-                  <span>Select Token</span>
-                )
-              }
-              onCancel={() => setIsOpen(false)}
-              onAction={async () => {
-                if (!isSelectingToken) {
-                  await selectToken(listedToken)
-                  setIsOpen(false)
-                }
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <span>
-              Token <span className="font-medium">{address}</span> is not on the
-              token list.
-            </span>
-            <span>Would you like to add it?</span>
-
-            <ModalFooter
-              hideCancel={isAddingToken}
-              actionButtonContent={
-                isAddingToken ? (
-                  <Loader type="Oval" color="#fff" height={20} width={20} />
-                ) : (
-                  <span>Add Token</span>
-                )
-              }
-              onCancel={() => setIsOpen(false)}
-              onAction={addNewToken}
-            />
-          </>
+        {status === ImportStatus.KNOWN && (
+          <span>This token is on an active token list as:</span>
         )}
+
+        {status === ImportStatus.UNKNOWN && (
+          <div className="flex flex-row items-center">
+            {/* <span>[WARNING]</span> */}
+            <div className="flex flex-col">
+              <span>This token isn't found on an active token list.</span>
+              <span>Make sure you trust the source that led you here.</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col items-center py-4">
+          {tokenToImport?.logoURI && (
+            <img
+              style={{ width: '25px', height: '25px' }}
+              className="rounded-full mb-2"
+              src={tokenToImport!.logoURI}
+              alt={`${tokenToImport!.name} logo`}
+            />
+          )}
+          <span className="text-xl font-bold">{tokenToImport!.symbol}</span>
+          <span className="mt-0 mb-4">{tokenToImport!.name}</span>
+          <a
+            href={`https://etherscan.io/token/${tokenToImport!.address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#1366C1' }}
+            className="underline"
+          >
+            {tokenToImport!.address}
+          </a>
+        </div>
+        <ModalFooter
+          hideCancel={isImportingToken}
+          actionButtonContent={
+            isImportingToken ? (
+              <Loader type="Oval" color="#fff" height={20} width={20} />
+            ) : (
+              <span>Import token</span>
+            )
+          }
+          onCancel={() => setIsOpen(false)}
+          onAction={handletokenToImport}
+        />
       </div>
     </Modal>
   )
