@@ -74,8 +74,7 @@ const Modal: React.FC<ModalProps> = ({
                 }`}
               >
                 <div className="flex justify-between items-center mb-4">
-                  <div className="block w-6" />
-                  <div className="font-medium text-lg">{title}</div>
+                  <div className="font-bold text-lg">{title}</div>
                   <div className="block">
                     <button
                       type="button"
@@ -92,7 +91,7 @@ const Modal: React.FC<ModalProps> = ({
                     {buttonAction && (
                       <button
                         type="button"
-                        className="inline-flex justify-center m-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                        className="inline-flex justify-center mb-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
                         onClick={e => {
                           buttonAction()
                         }}
