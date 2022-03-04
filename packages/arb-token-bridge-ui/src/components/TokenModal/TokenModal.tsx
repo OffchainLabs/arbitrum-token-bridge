@@ -335,25 +335,23 @@ export const TokenModalBody = ({
             className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
           />
 
-          {networkID === '4' || networkID === '421611' ? (
-            <Button
-              variant="white"
-              type="submit"
-              disabled={newToken === '' || !isAddress(newToken)}
-              // className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
-            >
-              {isAddingToken ? (
-                <Loader
-                  type="Oval"
-                  color="rgb(45, 55, 75)"
-                  height={16}
-                  width={16}
-                />
-              ) : (
-                'Add'
-              )}
-            </Button>
-          ) : null}
+          <Button
+            variant="white"
+            type="submit"
+            disabled={newToken === '' || !isAddress(newToken)}
+            // className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
+          >
+            {isAddingToken ? (
+              <Loader
+                type="Oval"
+                color="rgb(45, 55, 75)"
+                height={16}
+                width={16}
+              />
+            ) : (
+              'Add'
+            )}
+          </Button>
         </div>
       </form>
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
