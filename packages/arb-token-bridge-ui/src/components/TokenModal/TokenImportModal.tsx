@@ -59,7 +59,7 @@ function ModalFooter({
     >
       {!hideCancel && (
         <button
-          className="w-full inline-flex items-center justify-center rounded-xl px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm hover:opacity-75 transition duration-200"
+          className="w-1/2 sm:w-auto inline-flex items-center justify-center rounded-xl px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm hover:opacity-75 transition duration-200"
           style={{ color: '#11365E' }}
           onClick={onCancel}
         >
@@ -67,7 +67,7 @@ function ModalFooter({
         </button>
       )}
       <button
-        className="inline-flex justify-center rounded-xl border border-transparent px-4 py-3 bg-dark-cyan text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm hover:opacity-75 transition duration-200"
+        className="w-1/2 sm:w-auto inline-flex justify-center rounded-xl border border-transparent px-4 py-3 bg-dark-cyan text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm hover:opacity-75 transition duration-200"
         style={{ backgroundColor: '#11365E' }}
         onClick={onAction}
       >
@@ -258,8 +258,31 @@ export function TokenImportModal({
         )}
 
         {status === ImportStatus.UNKNOWN && (
-          <div className="flex flex-row items-center">
-            {/* TODO: add warning icon here */}
+          <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-3 items-center">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2ZM0 10C0 4.47715 4.47715 0 10 0C15.5228 0 20 4.47715 20 10C20 15.5228 15.5228 20 10 20C4.47715 20 0 15.5228 0 10Z"
+                fill="#CD0000"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M10 12C9.44771 12 9 11.5523 9 11L9 5C9 4.44772 9.44772 4 10 4C10.5523 4 11 4.44772 11 5L11 11C11 11.5523 10.5523 12 10 12Z"
+                fill="#CD0000"
+              />
+              <path
+                d="M8.5 14.5C8.5 13.6716 9.17157 13 10 13C10.8284 13 11.5 13.6716 11.5 14.5C11.5 15.3284 10.8284 16 10 16C9.17157 16 8.5 15.3284 8.5 14.5Z"
+                fill="#CD0000"
+              />
+            </svg>
             <div className="flex flex-col">
               <span>
                 This token isn't found on an active token list.
@@ -286,10 +309,11 @@ export function TokenImportModal({
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}
-            className="underline"
+            className="underline break-all"
           >
             {tokenToImport!.address}
           </a>
+
           {status === ImportStatus.UNKNOWN && (
             <div className="w-full flex justify-start pt-4">
               <Tippy
