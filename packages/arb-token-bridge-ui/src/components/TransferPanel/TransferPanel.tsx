@@ -21,7 +21,7 @@ import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
 import TransactionConfirmationModal from '../TransactionConfirmationModal/TransactionConfirmationModal'
-import { TokenSelectOrAddModal } from '../TokenModal/TokenSelectOrAddModal'
+import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 
@@ -375,7 +375,7 @@ const TransferPanel = (): JSX.Element => {
         <div className="h-6" />
 
         {typeof tokenFromSearchParams !== 'undefined' && (
-          <TokenSelectOrAddModal
+          <TokenImportModal
             isOpen={selectTokenOpen}
             setIsOpen={setSelectTokenOpen}
             address={tokenFromSearchParams}

@@ -83,7 +83,7 @@ enum ImportStatus {
   ERROR
 }
 
-function TokenSelectOrAddModal({
+export function TokenImportModal({
   isOpen,
   setIsOpen,
   address
@@ -300,5 +300,3 @@ function TokenSelectOrAddModal({
     </Modal>
   )
 }
-
-export { TokenSelectOrAddModal }
