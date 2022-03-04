@@ -152,84 +152,87 @@ function TokenSelectOrAddModal({
     }
   }
 
-  function Content() {
-    if (listedToken) {
-      return (
-        <div className="flex flex-col space-y-2 -mb-6">
-          <span>This token is on an active token list as:</span>
-          <div className="flex flex-col items-center py-6">
-            <img
-              style={{ width: '25px', height: '25px' }}
-              className="rounded-full mb-4"
-              src={listedToken.logoURI}
-              alt={`${listedToken.name} logo`}
-            />
-            <span className="text-xl font-bold">{listedToken.symbol}</span>
-            <span className="mt-0 mb-4">{listedToken.name}</span>
-            <a
-              href={`https://etherscan.io/token/${listedToken.address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#1366C1' }}
-              className="underline"
-            >
-              {listedToken.address}
-            </a>
-          </div>
-          <ModalFooter
-            hideCancel={isSelectingToken}
-            actionButtonContent={
-              isSelectingToken ? (
-                <Loader type="Oval" color="#fff" height={20} width={20} />
-              ) : (
-                <span>Select Token</span>
-              )
-            }
-            onCancel={() => setIsOpen(false)}
-            onAction={async () => {
-              if (!isSelectingToken) {
-                await selectToken(listedToken)
-                setIsOpen(false)
-              }
-            }}
-          />
-        </div>
-      )
-    }
-
+  if (isLoadingTokenList) {
     return (
-      <div className="flex flex-col space-y-2 -mb-6">
-        <span>
-          Token <span className="font-medium">{address}</span> is not on the
-          token list.
-        </span>
-        <span>Would you like to add it?</span>
-
-        <ModalFooter
-          hideCancel={isAddingToken}
-          actionButtonContent={
-            isAddingToken ? (
-              <Loader type="Oval" color="#fff" height={20} width={20} />
-            ) : (
-              <span>Add Token</span>
-            )
-          }
-          onCancel={() => setIsOpen(false)}
-          onAction={addNewToken}
-        />
-      </div>
+      <Modal
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        title={modalTitle}
+        hideButton
+      >
+        <div className="flex items-center justify-center h-32">
+          <Loader type="Oval" color="#000" height={32} width={32} />
+        </div>
+      </Modal>
     )
   }
 
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
-      {isLoadingTokenList ? (
-        <div className="flex items-center justify-center h-32">
-          <Loader type="Oval" color="#000" height={32} width={32} />
-        </div>
-      ) : (
-        <Content />
-      )}
+      <div className="flex flex-col space-y-2 -mb-6">
+        {listedToken ? (
+          <>
+            <span>This token is on an active token list as:</span>
+            <div className="flex flex-col items-center py-6">
+              <img
+                style={{ width: '25px', height: '25px' }}
+                className="rounded-full mb-4"
+                src={listedToken.logoURI}
+                alt={`${listedToken.name} logo`}
+              />
+              <span className="text-xl font-bold">{listedToken.symbol}</span>
+              <span className="mt-0 mb-4">{listedToken.name}</span>
+              <a
+                href={`https://etherscan.io/token/${listedToken.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#1366C1' }}
+                className="underline"
+              >
+                {listedToken.address}
+              </a>
+            </div>
+            <ModalFooter
+              hideCancel={isSelectingToken}
+              actionButtonContent={
+                isSelectingToken ? (
+                  <Loader type="Oval" color="#fff" height={20} width={20} />
+                ) : (
+                  <span>Select Token</span>
+                )
+              }
+              onCancel={() => setIsOpen(false)}
+              onAction={async () => {
+                if (!isSelectingToken) {
+                  await selectToken(listedToken)
+                  setIsOpen(false)
+                }
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <span>
+              Token <span className="font-medium">{address}</span> is not on the
+              token list.
+            </span>
+            <span>Would you like to add it?</span>
+
+            <ModalFooter
+              hideCancel={isAddingToken}
+              actionButtonContent={
+                isAddingToken ? (
+                  <Loader type="Oval" color="#fff" height={20} width={20} />
+                ) : (
+                  <span>Add Token</span>
+                )
+              }
+              onCancel={() => setIsOpen(false)}
+              onAction={addNewToken}
+            />
+          </>
+        )}
+      </div>
     </Modal>
   )
 }
