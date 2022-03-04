@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, MouseEventHandler } from 'react'
 import Loader from 'react-loader-spinner'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
 
@@ -19,6 +19,42 @@ function useDebouncedState<T>(value: T, delay: number): T {
   }, [value, delay])
 
   return debouncedValue
+}
+
+function ModalFooter({
+  hideCancel = false,
+  actionButtonContent,
+  onCancel,
+  onAction
+}: {
+  actionButtonContent: JSX.Element | string | null
+  hideCancel: boolean
+  onCancel: MouseEventHandler<HTMLButtonElement>
+  onAction: MouseEventHandler<HTMLButtonElement>
+}) {
+  return (
+    <div
+      className="flex justify-end space-x-2 -mx-6 py-4 pr-6"
+      style={{ backgroundColor: '#F4F4F4' }}
+    >
+      {!hideCancel && (
+        <button
+          className="w-full inline-flex items-center justify-center rounded-xl px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm hover:opacity-75 transition duration-200"
+          style={{ color: '#11365E' }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      )}
+      <button
+        className="inline-flex justify-center rounded-xl border border-transparent px-4 py-3 bg-dark-cyan text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm hover:opacity-75 transition duration-200"
+        style={{ backgroundColor: '#11365E' }}
+        onClick={onAction}
+      >
+        {actionButtonContent}
+      </button>
+    </div>
+  )
 }
 
 function TokenSelectOrAddModal({
@@ -58,7 +94,13 @@ function TokenSelectOrAddModal({
       return 'Loading token...'
     }
 
-    return listedToken ? 'Select token' : 'Add token'
+    return listedToken ? (
+      'Import known token'
+    ) : (
+      <span>
+        Import <span style={{ color: '#CD0000' }}>unknown</span> token{' '}
+      </span>
+    )
   }, [isLoadingTokenList, listedToken])
 
   useEffect(() => {
@@ -113,78 +155,68 @@ function TokenSelectOrAddModal({
   function Content() {
     if (listedToken) {
       return (
-        <div className="flex flex-col space-y-2">
-          <div className="flex justify-center">
+        <div className="flex flex-col space-y-2 -mb-6">
+          <span>This token is on an active token list as:</span>
+          <div className="flex flex-col items-center py-6">
             <img
-              className="rounded-full w-8 h-8"
+              style={{ width: '25px', height: '25px' }}
+              className="rounded-full mb-4"
               src={listedToken.logoURI}
               alt={`${listedToken.name} logo`}
             />
-          </div>
-          <span>
-            Token <span className="font-medium">{listedToken.address}</span>{' '}
-            exists on our token list as{' '}
-            <span className="font-medium">
-              {listedToken.name} ({listedToken.symbol})
-            </span>
-            . Do you want to select it?
-          </span>
-          <div className="flex justify-end space-x-2">
-            {!isSelectingToken && (
-              <button
-                className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 shadow-sm px-4 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                onClick={() => setIsOpen(false)}
-              >
-                Cancel
-              </button>
-            )}
-            <button
-              className="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-              onClick={async () => {
-                await selectToken(listedToken)
-                setIsOpen(false)
-              }}
-              disabled={isSelectingToken}
+            <span className="text-xl font-bold">{listedToken.symbol}</span>
+            <span className="mt-0 mb-4">{listedToken.name}</span>
+            <a
+              href={`https://etherscan.io/token/${listedToken.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1366C1' }}
+              className="underline"
             >
-              {isSelectingToken ? (
+              {listedToken.address}
+            </a>
+          </div>
+          <ModalFooter
+            hideCancel={isSelectingToken}
+            actionButtonContent={
+              isSelectingToken ? (
                 <Loader type="Oval" color="#fff" height={20} width={20} />
               ) : (
                 <span>Select Token</span>
-              )}
-            </button>
-          </div>
+              )
+            }
+            onCancel={() => setIsOpen(false)}
+            onAction={async () => {
+              if (!isSelectingToken) {
+                await selectToken(listedToken)
+                setIsOpen(false)
+              }
+            }}
+          />
         </div>
       )
     }
 
     return (
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col space-y-2 -mb-6">
         <span>
           Token <span className="font-medium">{address}</span> is not on the
           token list.
         </span>
         <span>Would you like to add it?</span>
-        <div className="flex justify-end space-x-2">
-          {!isAddingToken && (
-            <button
-              className="w-full inline-flex items-center justify-center rounded-md border border-gray-300 shadow-sm px-4 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-              onClick={() => setIsOpen(false)}
-            >
-              Cancel
-            </button>
-          )}
-          <button
-            className="inline-flex justify-center rounded-md shadow-sm px-4 py-2 bg-bright-blue hover:bg-faded-blue text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-            disabled={isAddingToken}
-            onClick={addNewToken}
-          >
-            {isAddingToken ? (
+
+        <ModalFooter
+          hideCancel={isAddingToken}
+          actionButtonContent={
+            isAddingToken ? (
               <Loader type="Oval" color="#fff" height={20} width={20} />
             ) : (
               <span>Add Token</span>
-            )}
-          </button>
-        </div>
+            )
+          }
+          onCancel={() => setIsOpen(false)}
+          onAction={addNewToken}
+        />
       </div>
     )
   }

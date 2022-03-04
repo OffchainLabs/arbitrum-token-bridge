@@ -11,7 +11,7 @@ interface ModalProps {
   buttonAction?: () => void
   buttonHref?: string
   wide?: boolean
-  title?: string
+  title?: JSX.Element | string
   hideButton?: boolean
 }
 
