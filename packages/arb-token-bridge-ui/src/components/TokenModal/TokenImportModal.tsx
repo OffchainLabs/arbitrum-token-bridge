@@ -230,13 +230,16 @@ export function TokenImportModal({
         hideButton
       >
         <div className="flex flex-col space-y-2 -mb-6">
-          <div className="py-4">
+          <div>
             <div className="flex flex-col">
               <span>
                 Whoops, looks like this token address is invalid.
                 <br />
                 Try asking the token team to update their link.
               </span>
+            </div>
+            <div className="w-full flex justify-center py-4">
+              <img src="/images/grumpy-cat.jpg" alt="Grumpy cat" />
             </div>
           </div>
           <ModalFooter
