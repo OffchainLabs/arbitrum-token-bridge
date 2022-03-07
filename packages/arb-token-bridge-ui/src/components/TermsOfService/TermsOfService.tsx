@@ -1,3 +1,5 @@
+export const TOS_VERSION = 1
+
 const TermsOfService = () => {
   return (
     <div>

@@ -6,9 +6,11 @@ import { useRouteMatch } from 'react-router-dom'
 
 const DisclaimerModal = ({
   setTosAccepted,
-  tosAccepted
+  tosAccepted,
+  prevTosAccepted
 }: {
   tosAccepted: boolean
+  prevTosAccepted: boolean
   setTosAccepted: (value: string) => void
 }) => {
   const isTosRoute = useRouteMatch('/tos')
@@ -73,7 +75,9 @@ const DisclaimerModal = ({
                     as="h3"
                     className="text-lg leading-6 font-medium text-gray-900"
                   >
-                    Terms of Service
+                    {prevTosAccepted && !tosAccepted
+                      ? 'Updated Terms of Service'
+                      : 'Terms of Service'}
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 leading-6">
