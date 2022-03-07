@@ -150,8 +150,19 @@ export function TokenImportModal({
         // We have to fetch the token info
         getL1TokenData(address)
           ?.then(data => {
-            setTokenToImport(toERC20BridgeToken(data))
-            setStatus(ImportStatus.UNKNOWN)
+            if (data) {
+              const addressOnL1 = data.contract.address.toLowerCase()
+
+              if (debouncedBridgeTokens[addressOnL1]) {
+                // The address provided was an L2 address, and we found the L1 address in our list
+                setStatus(ImportStatus.KNOWN)
+                setTokenToImport(debouncedBridgeTokens[addressOnL1])
+              } else {
+                // We couldn't find the address in our list
+                setStatus(ImportStatus.UNKNOWN)
+                setTokenToImport(toERC20BridgeToken(data))
+              }
+            }
           })
           .catch(() => {
             setStatus(ImportStatus.ERROR)
@@ -170,8 +181,14 @@ export function TokenImportModal({
     }
   }, [isLoadingTokenList, debouncedBridgeTokens, status])
 
-  function getL1TokenData(_address: string) {
-    return bridge?.l1Bridge.getL1TokenData(_address)
+  async function getL1TokenData(eitherL1OrL2Address: string) {
+    const addressOnL1 = await bridge?.getERC20L1Address(eitherL1OrL2Address)
+
+    if (addressOnL1) {
+      return bridge?.l1Bridge.getL1TokenData(addressOnL1)
+    } else {
+      return bridge?.l1Bridge.getL1TokenData(eitherL1OrL2Address)
+    }
   }
 
   async function selectToken(_token: ERC20BridgeToken) {
@@ -301,20 +318,20 @@ export function TokenImportModal({
             <img
               style={{ width: '25px', height: '25px' }}
               className="rounded-full mb-2"
-              src={tokenToImport!.logoURI}
-              alt={`${tokenToImport!.name} logo`}
+              src={tokenToImport?.logoURI}
+              alt={`${tokenToImport?.name} logo`}
             />
           )}
-          <span className="text-xl font-bold">{tokenToImport!.symbol}</span>
-          <span className="mt-0 mb-4">{tokenToImport!.name}</span>
+          <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
+          <span className="mt-0 mb-4">{tokenToImport?.name}</span>
           <a
-            href={`https://etherscan.io/token/${tokenToImport!.address}`}
+            href={`https://etherscan.io/token/${tokenToImport?.address}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}
             className="underline break-all"
           >
-            {tokenToImport!.address}
+            {tokenToImport?.address}
           </a>
 
           {status === ImportStatus.UNKNOWN && (
