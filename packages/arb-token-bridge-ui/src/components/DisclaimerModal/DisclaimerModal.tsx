@@ -23,6 +23,10 @@ const DisclaimerModal = ({
     return null
   }
 
+  const tosText =  prevTosAccepted && !tosAccepted
+  ? 'Updated Terms of Service'
+  : 'Terms of Service'
+
   return (
     <Transition.Root show as={Fragment}>
       <Dialog
@@ -75,9 +79,7 @@ const DisclaimerModal = ({
                     as="h3"
                     className="text-lg leading-6 font-medium text-gray-900"
                   >
-                    {prevTosAccepted && !tosAccepted
-                      ? 'Updated Terms of Service'
-                      : 'Terms of Service'}
+                    { tosText }
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500 leading-6">
@@ -87,7 +89,7 @@ const DisclaimerModal = ({
                         target="_blank"
                         className="text-bright-blue hover:underline"
                       >
-                        Terms of Service
+                        { tosText }
                       </a>
                     </p>
                   </div>
