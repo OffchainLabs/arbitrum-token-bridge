@@ -29,7 +29,7 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { TermsOfService } from '../TermsOfService/TermsOfService'
+import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -358,16 +358,21 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 }
 
 function Routes() {
+  const [prevTosAccepted] = useLocalStorage<string>(
+    'arbitrum:bridge:tos' + (TOS_VERSION === 1 ? '' : `-v${TOS_VERSION - 1}`)
+  )
   const [tosAccepted, setTosAccepted] = useLocalStorage<string>(
-    'arbitrum:bridge:tos-v1'
+    'arbitrum:bridge:tos-v' + TOS_VERSION
   )
 
   const isTosAccepted = tosAccepted !== undefined
+  const isPrevTosAccepted = prevTosAccepted !== undefined
   return (
     <Router>
       <DisclaimerModal
         setTosAccepted={setTosAccepted}
         tosAccepted={isTosAccepted}
+        prevTosAccepted={isPrevTosAccepted}
       />
       <Switch>
         <Route path="/tos">
