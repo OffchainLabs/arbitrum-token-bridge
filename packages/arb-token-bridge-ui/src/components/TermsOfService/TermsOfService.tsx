@@ -6,7 +6,7 @@ const TermsOfService = () => {
       <h2 className="font-bold mb-2">ARBITRUM</h2>
       <h3 className="font-semibold mb-2"> TERMS OF SERVICE</h3>
       <h5>
-        <i>Date of Last Revision: August 31, 2021 </i>
+        <i>Date of Last Revision: March 7, 2022 </i>
       </h5>
       <br />
       <h3 className="font-semibold mb-2">
