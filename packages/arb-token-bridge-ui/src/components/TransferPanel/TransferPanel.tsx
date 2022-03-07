@@ -20,7 +20,9 @@ import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
-import TransactionConfirmationModal from '../TransactionConfirmationModal/TransactionConfirmationModal'
+import TransactionConfirmationModal, {
+  ModalStatus
+} from '../TransactionConfirmationModal/TransactionConfirmationModal'
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
@@ -58,7 +60,8 @@ function useTokenFromSearchParams(): string | undefined {
 const TransferPanel = (): JSX.Element => {
   const tokenFromSearchParams = useTokenFromSearchParams()
 
-  const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false)
+  const [confimationModalStatus, setConfirmationModalStatus] =
+    useState<ModalStatus>(ModalStatus.CLOSED)
   const [selectTokenOpen, setSelectTokenOpen] = useState<boolean>(
     typeof tokenFromSearchParams !== 'undefined'
   )
@@ -142,20 +145,29 @@ const TransferPanel = (): JSX.Element => {
     return utils.formatUnits(ethBalanceL2, 18)
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
-  const showBridgeInstructions = useCallback(() => {
-    if (
+  const isBridgingANewStandardToken = useMemo(() => {
+    return !!(
       l1NetworkDetails &&
       l1NetworkDetails.chainID === '1' &&
       isDepositMode &&
       selectedToken &&
       !selectedToken.l2Address
-    ) {
-      return alert(
-        `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
+    )
+  }, [l1NetworkDetails, isDepositMode, selectedToken])
+
+  const showModalOnDeposit = useCallback(() => {
+    if (isBridgingANewStandardToken) {
+      if (!selectedToken)
+        throw new Error('Invalid app state: no selected token')
+      setConfirmationModalStatus(ModalStatus.NEW_TOKEN_DEPOSITING)
+    } else {
+      const isAUserAddedToken =
+        selectedToken && selectedToken.listID === undefined
+      setConfirmationModalStatus(
+        isAUserAddedToken ? ModalStatus.USER_ADDED_DEPOSIT : ModalStatus.DEPOSIT
       )
     }
-    return setConfirmationOpen(true)
-  }, [selectedToken, isDepositMode, l1NetworkDetails])
+  }, [isBridgingANewStandardToken, selectedToken])
 
   const transfer = async () => {
     // ** We can be assured bridge won't be null here; this is to appease typescript*/
@@ -167,12 +179,8 @@ const TransferPanel = (): JSX.Element => {
     setTransferring(true)
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
+
       if (isDepositMode) {
-        if (selectedToken && !selectedToken.l2Address) {
-          return alert(
-            `${selectedToken.symbol} has not yet been bridged to L2; to bridge it yourself, see https://developer.offchainlabs.com/docs/bridging_assets#default-standard-bridging`
-          )
-        }
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -186,13 +194,9 @@ const TransferPanel = (): JSX.Element => {
                 return 'a non-standard ERC20 token'
             }
           })()
-          // eslint-disable-next-line no-restricted-globals
-          const res = confirm(
-            `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.) Are you sure you would like to proceed?`
+          return window.alert(
+            `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
-          if (!res) {
-            return
-          }
         }
         if (networkDetails?.isArbitrum === true) {
           await changeNetwork?.(networkDetails.partnerChainID)
@@ -251,6 +255,7 @@ const TransferPanel = (): JSX.Element => {
           await latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
+
           await latestEth.current.deposit(amountRaw)
         }
       } else {
@@ -296,8 +301,14 @@ const TransferPanel = (): JSX.Element => {
     return (
       shouldDisableDeposit ||
       transferring ||
+      l1Amount.trim() === '' ||
       (isDepositMode &&
-        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance))
+        !isBridgingANewStandardToken &&
+        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance)) ||
+      // allow 0-amount deposits when bridging new token
+      (isDepositMode &&
+        isBridgingANewStandardToken &&
+        (l1Balance === null || l1AmountNum > +l1Balance))
     )
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
@@ -384,23 +395,23 @@ const TransferPanel = (): JSX.Element => {
 
         <TransactionConfirmationModal
           onConfirm={transfer}
-          open={confirmationOpen}
-          setOpen={setConfirmationOpen}
+          status={confimationModalStatus}
+          closeModal={() => setConfirmationModalStatus(ModalStatus.CLOSED)}
           isDepositing={isDepositMode}
           symbol={selectedToken ? selectedToken.symbol : 'Eth'}
           amount={isDepositMode ? l1Amount : l2Amount}
         />
         {isDepositMode ? (
           <Button
-            onClick={showBridgeInstructions}
+            onClick={showModalOnDeposit}
             disabled={disableDeposit}
             isLoading={transferring}
           >
-            Deposit
+            {isBridgingANewStandardToken ? 'Deploy/Deposit' : 'Deposit'}
           </Button>
         ) : (
           <Button
-            onClick={() => setConfirmationOpen(true)}
+            onClick={() => setConfirmationModalStatus(ModalStatus.WITHDRAW)}
             disabled={disableWithdrawal}
             variant="navy"
             isLoading={transferring}
