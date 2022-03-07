@@ -95,6 +95,7 @@ export function TokenImportModal({
 }): JSX.Element {
   const {
     app: {
+      l1NetworkDetails,
       arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
@@ -325,7 +326,7 @@ export function TokenImportModal({
           <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
           <span className="mt-0 mb-4">{tokenToImport?.name}</span>
           <a
-            href={`https://etherscan.io/token/${tokenToImport?.address}`}
+            href={`${l1NetworkDetails?.explorerUrl}/token/${tokenToImport?.address}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}
