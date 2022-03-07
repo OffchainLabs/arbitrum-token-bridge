@@ -359,7 +359,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
 function Routes() {
   const [tosAccepted, setTosAccepted] = useLocalStorage<string>(
-    'arbitrum:bridge:tos'
+    'arbitrum:bridge:tos-v1'
   )
 
   const isTosAccepted = tosAccepted !== undefined
