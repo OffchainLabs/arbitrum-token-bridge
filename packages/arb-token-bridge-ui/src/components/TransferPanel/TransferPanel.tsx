@@ -62,7 +62,7 @@ const TransferPanel = (): JSX.Element => {
 
   const [confimationModalStatus, setConfirmationModalStatus] =
     useState<ModalStatus>(ModalStatus.CLOSED)
-  const [selectTokenOpen, setSelectTokenOpen] = useState<boolean>(
+  const [importTokenModalOpen, setImportTokenModalOpen] = useState<boolean>(
     typeof tokenFromSearchParams !== 'undefined'
   )
 
@@ -387,8 +387,8 @@ const TransferPanel = (): JSX.Element => {
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportModal
-            isOpen={selectTokenOpen}
-            setIsOpen={setSelectTokenOpen}
+            isOpen={importTokenModalOpen}
+            setIsOpen={setImportTokenModalOpen}
             address={tokenFromSearchParams}
           />
         )}
