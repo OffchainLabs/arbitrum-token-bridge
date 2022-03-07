@@ -15,7 +15,7 @@ import { useLatest } from 'react-use'
 import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
-import { PendingWithdrawalsLoadedState } from '../../util'
+import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
@@ -62,12 +62,12 @@ const TransferPanel = (): JSX.Element => {
 
   const [confimationModalStatus, setConfirmationModalStatus] =
     useState<ModalStatus>(ModalStatus.CLOSED)
-  const [importTokenModalOpen, setImportTokenModalOpen] = useState<boolean>(
-    typeof tokenFromSearchParams !== 'undefined'
-  )
+  const [importTokenModalOpen, setImportTokenModalOpen] =
+    useState<boolean>(false)
 
   const {
     app: {
+      connectionState,
       pwLoadedState,
       changeNetwork,
       selectedToken,
@@ -97,6 +97,12 @@ const TransferPanel = (): JSX.Element => {
   const [l2Amount, setL2AmountState] = useState<string>('')
 
   const { shouldDisableDeposit } = useWithdrawOnly()
+
+  useEffect(() => {
+    if (connectionState === ConnectionState.DEPOSIT_MODE) {
+      setImportTokenModalOpen(typeof tokenFromSearchParams !== 'undefined')
+    }
+  }, [connectionState])
 
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
