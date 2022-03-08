@@ -57,13 +57,20 @@ function useTokenFromSearchParams(): string | undefined {
   return tokenFromSearchParams
 }
 
+enum ImportTokenModalStatus {
+  // "IDLE" is here to distinguish between the modal never being opened, and being closed after a user interaction
+  IDLE,
+  OPEN,
+  CLOSED
+}
+
 const TransferPanel = (): JSX.Element => {
   const tokenFromSearchParams = useTokenFromSearchParams()
 
   const [confimationModalStatus, setConfirmationModalStatus] =
     useState<ModalStatus>(ModalStatus.CLOSED)
-  const [importTokenModalOpen, setImportTokenModalOpen] =
-    useState<boolean>(false)
+  const [importTokenModalStatus, setImportTokenModalStatus] =
+    useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
 
   const {
     app: {
@@ -99,10 +106,17 @@ const TransferPanel = (): JSX.Element => {
   const { shouldDisableDeposit } = useWithdrawOnly()
 
   useEffect(() => {
-    if (connectionState === ConnectionState.DEPOSIT_MODE) {
-      setImportTokenModalOpen(typeof tokenFromSearchParams !== 'undefined')
+    if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
+      return
     }
-  }, [connectionState])
+
+    if (
+      connectionState === ConnectionState.DEPOSIT_MODE ||
+      connectionState === ConnectionState.WITHDRAW_MODE
+    ) {
+      setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
+    }
+  }, [connectionState, importTokenModalStatus])
 
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
@@ -393,8 +407,10 @@ const TransferPanel = (): JSX.Element => {
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportModal
-            isOpen={importTokenModalOpen}
-            setIsOpen={setImportTokenModalOpen}
+            isOpen={importTokenModalStatus === ImportTokenModalStatus.OPEN}
+            setIsOpen={() =>
+              setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
+            }
             address={tokenFromSearchParams}
           />
         )}
