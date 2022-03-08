@@ -348,9 +348,9 @@ export function TokenImportModal({
                     <br />
                     It's easy to impersonate the name of any token, including
                     ETH. Make sure you trust the source it came from. If it's a
-                    popular token, we should have it on our list. If it's a
-                    smaller or newer token, it's reasonable to believe we might
-                    not have it.
+                    popular token, there's a good chance we have it on our list.
+                    If it's a smaller or newer token, it's reasonable to believe
+                    we might not have it.
                   </div>
                 }
               >
