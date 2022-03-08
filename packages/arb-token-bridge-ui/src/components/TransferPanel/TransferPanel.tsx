@@ -86,7 +86,7 @@ const TransferPanel = (): JSX.Element => {
   const latestConnectedProvider = useLatest(provider)
 
   const bridge = useContext(BridgeContext)
-  // const [tokeModalOpen, setTokenModalOpen] = useState(false)
+
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
   const latestNetworkDetails = useLatest(networkDetails)
