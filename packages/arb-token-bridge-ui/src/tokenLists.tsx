@@ -64,17 +64,32 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
   listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
 })
 
+interface TokenListWithId extends TokenList {
+  bridgeTokenListId: number
+}
+
+const STORAGE_KEY = 'arbitrum:bridge:token-lists'
+
 export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
 ) => {
-  fetchTokenListFromURL(bridgeTokenList.url).then(
-    ({ isValid, data: tokenList }) => {
-      if (isValid) {
-        arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-      }
-    }
+  const cache = getTokenLists()
+  const found = cache.find(
+    list => list.bridgeTokenListId === bridgeTokenList.id
   )
+
+  if (found) {
+    arbTokenBridge.token.addTokensFromList(found, bridgeTokenList.id)
+  } else {
+    fetchTokenListFromURL(bridgeTokenList.url).then(
+      ({ isValid, data: tokenList }) => {
+        if (isValid) {
+          arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
+        }
+      }
+    )
+  }
 }
 
 export async function fetchTokenListFromURL(
@@ -97,4 +112,39 @@ export async function fetchTokenListFromURL(
     console.warn('Token List URL Invalid', tokenListURL)
     return { isValid: false, data: undefined }
   }
+}
+
+export function fetchTokenLists(forChainId: string): Promise<void> {
+  return new Promise(resolve => {
+    Promise.all(
+      BRIDGE_TOKEN_LISTS
+        //
+        .filter(bridgeTokenList => bridgeTokenList.originChainID === forChainId)
+        .map(bridgeTokenList => fetchTokenListFromURL(bridgeTokenList.url))
+    ).then(responses => {
+      const tokenListsWithBridgeTokenListId = responses
+        .filter(({ isValid }) => isValid)
+        .map(({ data }, index) => ({
+          bridgeTokenListId: BRIDGE_TOKEN_LISTS[index].id,
+          ...data
+        }))
+
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(tokenListsWithBridgeTokenListId)
+      )
+
+      resolve()
+    })
+  })
+}
+
+export function getTokenLists(): TokenListWithId[] {
+  const storage = sessionStorage.getItem(STORAGE_KEY)
+
+  if (!storage) {
+    return []
+  }
+
+  return JSON.parse(storage)
 }
