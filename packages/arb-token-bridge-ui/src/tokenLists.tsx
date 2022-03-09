@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
 
 export interface BridgeTokenList {
@@ -67,23 +68,33 @@ export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
 ) => {
-  axios
-    .get(bridgeTokenList.url, {
+  fetchTokenListFromURL(bridgeTokenList.url).then(
+    ({ isValid, data: tokenList }) => {
+      if (isValid) {
+        arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
+      }
+    }
+  )
+}
+
+export async function fetchTokenListFromURL(
+  tokenListURL: string
+): Promise<{ isValid: boolean; data: TokenList | undefined }> {
+  try {
+    const { data } = await axios.get(tokenListURL, {
       headers: {
         'Access-Control-Allow-Origin': '*'
       }
     })
-    .then(response => {
-      return response.data
-    })
-    .then(tokenListData => {
-      if (validateTokenList(tokenListData)) {
-        arbTokenBridge.token.addTokensFromList(
-          tokenListData,
-          bridgeTokenList.id
-        )
-      } else {
-        console.warn('Token List Invalid', tokenListData)
-      }
-    })
+
+    if (!validateTokenList(data)) {
+      console.warn('Token List Invalid', data)
+      return { isValid: false, data }
+    }
+
+    return { isValid: true, data }
+  } catch (error) {
+    console.warn('Token List URL Invalid', tokenListURL)
+    return { isValid: false, data: undefined }
+  }
 }
