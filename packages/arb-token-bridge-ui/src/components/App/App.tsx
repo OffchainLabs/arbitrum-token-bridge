@@ -236,7 +236,11 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           )
           // TODO: show user a nice dialogue box instead of
           // eslint-disable-next-line no-alert
-          alert('Please connect to appropriate chain')
+          const targetTxName = targetNetwork.isArbitrum ? 'withdraw' : 'deposit'
+          alert(
+            `Please connect to ${targetNetwork.name} to ${targetTxName}; make sure your wallet is connected to ${targetNetwork.name} when you are signing your ${targetTxName} transaction.`
+          )
+
           // TODO: reset state so user can attempt to press "Deposit" again
         }
       }
