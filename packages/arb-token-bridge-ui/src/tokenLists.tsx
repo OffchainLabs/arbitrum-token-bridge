@@ -124,6 +124,7 @@ export function fetchTokenLists(forChainId: string): Promise<void> {
     ).then(responses => {
       const tokenListsWithBridgeTokenListId = responses
         .filter(({ isValid }) => isValid)
+        // Attach the bridge token list id so we can easily retrieve a list later
         .map(({ data }, index) => ({
           bridgeTokenListId: BRIDGE_TOKEN_LISTS[index].id,
           ...data
