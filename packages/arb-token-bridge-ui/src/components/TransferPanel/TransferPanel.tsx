@@ -1,13 +1,21 @@
-import React, { useContext, useState, useMemo, useCallback } from 'react'
+import React, {
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect
+} from 'react'
+import { useLocation } from 'react-router-dom'
 
 import { useWallet } from '@gimmixorg/use-wallet'
 import { utils, BigNumber } from 'ethers'
+import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
-import { PendingWithdrawalsLoadedState } from '../../util'
+import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
@@ -15,6 +23,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import TransactionConfirmationModal, {
   ModalStatus
 } from '../TransactionConfirmationModal/TransactionConfirmationModal'
+import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 
@@ -30,11 +39,42 @@ const isAllowed = async (
     amountNeeded
   )
 }
+
+function useTokenFromSearchParams(): string | undefined {
+  const { search } = useLocation()
+
+  const searchParams = new URLSearchParams(search)
+  const tokenFromSearchParams = searchParams.get('token')?.toLowerCase()
+
+  if (!tokenFromSearchParams) {
+    return undefined
+  }
+
+  if (!isAddress(tokenFromSearchParams)) {
+    return undefined
+  }
+
+  return tokenFromSearchParams
+}
+
+enum ImportTokenModalStatus {
+  // "IDLE" is here to distinguish between the modal never being opened, and being closed after a user interaction
+  IDLE,
+  OPEN,
+  CLOSED
+}
+
 const TransferPanel = (): JSX.Element => {
+  const tokenFromSearchParams = useTokenFromSearchParams()
+
   const [confimationModalStatus, setConfirmationModalStatus] =
     useState<ModalStatus>(ModalStatus.CLOSED)
+  const [importTokenModalStatus, setImportTokenModalStatus] =
+    useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
+
   const {
     app: {
+      connectionState,
       pwLoadedState,
       changeNetwork,
       selectedToken,
@@ -53,7 +93,7 @@ const TransferPanel = (): JSX.Element => {
   const latestConnectedProvider = useLatest(provider)
 
   const bridge = useContext(BridgeContext)
-  // const [tokeModalOpen, setTokenModalOpen] = useState(false)
+
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
   const latestNetworkDetails = useLatest(networkDetails)
@@ -62,7 +102,22 @@ const TransferPanel = (): JSX.Element => {
 
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
+
   const { shouldDisableDeposit } = useWithdrawOnly()
+
+  useEffect(() => {
+    if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
+      return
+    }
+
+    if (
+      connectionState === ConnectionState.DEPOSIT_MODE ||
+      connectionState === ConnectionState.WITHDRAW_MODE
+    ) {
+      setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
+    }
+  }, [connectionState, importTokenModalStatus])
+
   const setl1Amount = (amount: string) => {
     const amountNum = +amount
     return setL1AmountState(
@@ -349,6 +404,16 @@ const TransferPanel = (): JSX.Element => {
         </div>
 
         <div className="h-6" />
+
+        {typeof tokenFromSearchParams !== 'undefined' && (
+          <TokenImportModal
+            isOpen={importTokenModalStatus === ImportTokenModalStatus.OPEN}
+            setIsOpen={() =>
+              setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
+            }
+            address={tokenFromSearchParams}
+          />
+        )}
 
         <TransactionConfirmationModal
           onConfirm={transfer}
