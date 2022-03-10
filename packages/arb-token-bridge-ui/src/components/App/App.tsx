@@ -310,10 +310,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setGlobalBridge(bridge)
     if (!network.isArbitrum) {
       console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.DEPOSIT_MODE)
+      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     } else {
       console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.WITHDRAW_MODE)
+      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
     console.log('Gas price:', await library?.getGasPrice())
