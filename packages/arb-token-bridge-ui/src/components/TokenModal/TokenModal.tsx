@@ -3,6 +3,7 @@ import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { BigNumber, constants } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
+import { AutoSizer, List } from 'react-virtualized'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -18,6 +19,7 @@ import TokenBlacklistedDialog from './TokenBlacklistedDialog'
 import TokenConfirmationDialog from './TokenConfirmationDialog'
 
 interface TokenRowProps {
+  style?: React.CSSProperties
   address: string | null
   balance: BigNumber | null | undefined
   onTokenSelected: () => void
@@ -30,6 +32,7 @@ enum Pannel {
 }
 
 const TokenRow = ({
+  style,
   address,
   balance,
   onTokenSelected,
@@ -61,7 +64,7 @@ const TokenRow = ({
 
   const tokenSymbol = useMemo(() => {
     if (address === null) {
-      return 'Eth'
+      return 'ETH'
     }
     return token ? token.symbol : ''
   }, [token, address])
@@ -99,6 +102,7 @@ const TokenRow = ({
 
   return (
     <button
+      style={style}
       onClick={selectToken}
       type="button"
       className="flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
@@ -356,6 +360,7 @@ export const TokenModalBody = ({
       </form>
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
         <TokenRow
+          key="TokenRowEther"
           address={null}
           balance={
             isDepositMode ? balances.eth.balance : balances.eth.arbChainBalance
@@ -363,19 +368,34 @@ export const TokenModalBody = ({
           onTokenSelected={onTokenSelected}
           toggleCurrentPannel={toggleCurrentPannel}
         />
-        {tokensToShow.map(erc20Address => (
-          <TokenRow
-            key={erc20Address}
-            address={erc20Address}
-            balance={
-              isDepositMode
-                ? balances.erc20[erc20Address]?.balance
-                : balances.erc20[erc20Address]?.arbChainBalance
-            }
-            onTokenSelected={onTokenSelected}
-            toggleCurrentPannel={toggleCurrentPannel}
-          />
-        ))}
+        <AutoSizer disableHeight>
+          {({ width }) => (
+            <List
+              width={width}
+              height={410}
+              rowCount={tokensToShow.length}
+              rowHeight={74}
+              rowRenderer={virtualizedProps => {
+                const address = tokensToShow[virtualizedProps.index]
+
+                return (
+                  <TokenRow
+                    key={virtualizedProps.key}
+                    style={virtualizedProps.style}
+                    address={address}
+                    balance={
+                      isDepositMode
+                        ? balances.erc20[address]?.balance
+                        : balances.erc20[address]?.arbChainBalance
+                    }
+                    onTokenSelected={onTokenSelected}
+                    toggleCurrentPannel={toggleCurrentPannel}
+                  />
+                )
+              }}
+            />
+          )}
+        </AutoSizer>
       </div>
     </div>
   )
