@@ -115,18 +115,21 @@ export async function fetchTokenListFromURL(
 }
 
 export function fetchTokenLists(forChainId: string): Promise<void> {
+  const filteredTokenLists = BRIDGE_TOKEN_LISTS.filter(
+    bridgeTokenList => bridgeTokenList.originChainID === forChainId
+  )
+
   return new Promise(resolve => {
     Promise.all(
-      BRIDGE_TOKEN_LISTS
-        //
-        .filter(bridgeTokenList => bridgeTokenList.originChainID === forChainId)
-        .map(bridgeTokenList => fetchTokenListFromURL(bridgeTokenList.url))
+      filteredTokenLists.map(bridgeTokenList =>
+        fetchTokenListFromURL(bridgeTokenList.url)
+      )
     ).then(responses => {
       const tokenListsWithBridgeTokenListId = responses
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
         .map(({ data }, index) => ({
-          bridgeTokenListId: BRIDGE_TOKEN_LISTS[index].id,
+          bridgeTokenListId: filteredTokenLists[index].id,
           ...data
         }))
 
