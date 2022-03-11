@@ -10,7 +10,9 @@ import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
   listIdsToNames,
-  addBridgeTokenListToBridge
+  addBridgeTokenListToBridge,
+  getTokenLists,
+  useTokenLists
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
@@ -20,10 +22,15 @@ import TokenConfirmationDialog from './TokenConfirmationDialog'
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  address: string | null
-  balance: BigNumber | null | undefined
-  onTokenSelected: () => void
-  toggleCurrentPannel: () => void
+  onClick: React.MouseEventHandler<HTMLButtonElement>
+  token: {
+    name: string
+    symbol: string
+    logoURI?: string
+    address?: string
+    balance: BigNumber | null | undefined
+    tokenListInfo?: string
+  }
 }
 
 enum Pannel {
@@ -33,110 +40,63 @@ enum Pannel {
 
 const TokenRow = ({
   style,
-  address,
-  balance,
-  onTokenSelected,
-  toggleCurrentPannel
+  onClick,
+  token: { name, symbol, logoURI, address, balance, tokenListInfo }
 }: TokenRowProps): JSX.Element => {
   const {
-    app: {
-      networkID,
-      arbTokenBridge: {
-        bridgeTokens,
-        token: { updateTokenData }
-      }
-    }
+    app: { l1NetworkDetails }
   } = useAppState()
-  const actions = useActions()
 
-  // TODO should I check in bridgeTokens or in token-bridge-sdk/token-list
-  const token = useMemo(
-    () => (address ? bridgeTokens[address] : null),
-    [address, bridgeTokens]
-  )
-
-  const tokenName = useMemo(() => {
-    if (address === null) {
-      return 'Ethereum'
-    }
-    return token ? token.name : address
-  }, [token, address])
-
-  const tokenSymbol = useMemo(() => {
-    if (address === null) {
-      return 'ETH'
-    }
-    return token ? token.symbol : ''
-  }, [token, address])
-
-  const tokenLogo = useMemo<string | undefined>(() => {
-    if (!address) {
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-    }
-    if (networkID === null) {
+  const resolvedLogoURI = useMemo(() => {
+    if (!logoURI) {
       return undefined
     }
-    const logo = bridgeTokens[address]?.logoURI
-    if (logo) {
-      return resolveTokenImg(logo)
-    }
-    return undefined
-  }, [address, networkID, bridgeTokens])
 
-  function selectToken() {
-    if (token) {
-      updateTokenData(token.address)
-    }
-    actions.app.setSelectedToken(token || null)
-    onTokenSelected()
-  }
-
-  const source = (() => {
-    if (token === null || token === undefined) return ''
-    if (!token.listID) {
-      return 'user-added'
-    }
-
-    return listIdsToNames[token.listID]
-  })()
+    return resolveTokenImg(logoURI)
+  }, [logoURI])
 
   return (
     <button
-      style={style}
-      onClick={selectToken}
       type="button"
+      style={style}
+      onClick={onClick}
       className="flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
     >
       <div className="flex items-center">
-        {tokenLogo ? (
+        {resolvedLogoURI ? (
           <img
-            src={tokenLogo}
-            alt="logo"
+            src={resolvedLogoURI}
+            alt={`${name} logo`}
             className="rounded-full w-8 h-8 mr-4"
           />
         ) : (
           <div className="rounded-full w-8 h-8 mr-4 bg-navy" />
         )}
 
-        <p className="text-base leading-6 font-bold text-gray-900">
-          {tokenName}
-        </p>
-        <div className="text-xs leading-9 text-gray-600 self-end m-1.5">
-          {' '}
-          <button
-            type="button"
-            onClick={e => {
-              e.stopPropagation()
-              toggleCurrentPannel()
-            }}
+        <div className="flex flex-col items-start">
+          <span className="text-base leading-6 font-bold text-gray-900">
+            {name}{' '}
+            <span className="text-xs text-gray-600 font-normal">
+              {tokenListInfo}
+            </span>
+          </span>
+          {/* TODO: anchor shouldn't be nested within a button */}
+          <a
+            href={`${l1NetworkDetails?.explorerUrl}/token/${address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs underline text-blue-800"
+            onClick={e => e.stopPropagation()}
           >
-            {source}{' '}
-          </button>
+            {address?.toLowerCase()}
+          </a>
         </div>
       </div>
 
+      {/* {isImported || address === null ? ( */}
       <p className="flex items-center text-base leading-6 font-medium text-gray-900">
-        {balance ? (
+        0 {symbol}
+        {/* {balance ? (
           // @ts-ignore
           +formatUnits(balance, token?.decimals || 18)
         ) : (
@@ -147,7 +107,7 @@ const TokenRow = ({
             width={14}
           />
         )}{' '}
-        {tokenSymbol}
+        {symbol} */}
       </p>
     </button>
   )
@@ -187,7 +147,7 @@ export const TokenListBody = () => {
         })
 
         return (
-          <div className="flex items-center">
+          <div key={tokenList.id} className="flex items-center">
             <div className="text-base leading-6 font-bold text-gray-900">
               {tokenList.name}{' '}
             </div>
@@ -212,87 +172,144 @@ export const TokenListBody = () => {
     </div>
   )
 }
-export const TokenModalBody = ({
+
+export function TokenModalBody({
   onTokenSelected,
   toggleCurrentPannel
 }: {
   onTokenSelected: () => void
   toggleCurrentPannel: () => void
-}): JSX.Element => {
-  const [confirmationOpen, setConfirmationOpen] = useState(false)
-  const [blacklistedOpen, setBlacklistedOpen] = useState(false)
-
+}): JSX.Element {
   const {
     app: {
       arbTokenBridge: { balances, token, bridgeTokens },
       isDepositMode,
-      networkID
+      l1NetworkDetails,
+      l2NetworkDetails
     }
   } = useAppState()
+
+  const [confirmationOpen, setConfirmationOpen] = useState(false)
+  const [blacklistedOpen, setBlacklistedOpen] = useState(false)
+
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-  // const tokensWithPositiveBalance = useMemo(() => {
-  //   if (balances.erc20) {
-  //     return Object.keys(balances.erc20).filter((addr: string) => {
-  //       return addr
-  //       if (isDepositMode) {
-  //         return !BigNumber.from(balances.erc20[addr]?.balance || 0).isZero()
-  //       }
-  //       return !BigNumber.from(
-  //         balances.erc20[addr]?.arbChainBalance || 0
-  //       ).isZero()
-  //     })
-  //   }
-  //   return []
-  // }, [balances.erc20, isDepositMode])
+
+  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+
+  const tokens = useMemo(() => {
+    if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
+      return {}
+    }
+
+    return (
+      tokenLists
+        //
+        .reduce((acc: any, tokenList) => {
+          tokenList.tokens.forEach(token => {
+            if (
+              !token ||
+              !token.address ||
+              typeof token.address.toLowerCase !== 'function'
+            ) {
+              return
+            }
+
+            const address = token.address.toLowerCase()
+            const stringifiedChainId = String(token.chainId)
+
+            if (stringifiedChainId === l1NetworkDetails.chainID) {
+              // The token is an L1 token
+
+              if (typeof acc[address] === 'undefined') {
+                acc[address] = token
+                acc[address].tokenLists = []
+                acc[address].address = { l1: address, l2: undefined }
+              } else {
+                acc[address] = { ...token, ...acc[address] }
+              }
+
+              if (
+                !acc[address].tokenLists.includes(tokenList.bridgeTokenListId)
+              ) {
+                acc[address].tokenLists.push(tokenList.bridgeTokenListId)
+              }
+            } else if (stringifiedChainId === l2NetworkDetails.chainID) {
+              // The token is an L2 token
+              if (
+                token.extensions &&
+                token.extensions['bridgeInfo'] &&
+                // @ts-ignore
+                token.extensions['bridgeInfo'][l1NetworkDetails.chainID]
+              ) {
+                const addressOnL1 =
+                  // @ts-ignore
+                  token.extensions['bridgeInfo'][l1NetworkDetails.chainID]
+                    .tokenAddress
+
+                if (!addressOnL1) {
+                  return
+                }
+
+                if (typeof acc[addressOnL1] === 'undefined') {
+                  acc[addressOnL1] = {
+                    tokenLists: [],
+                    address: { l1: undefined, l2: address }
+                  }
+                } else {
+                  acc[addressOnL1].address.l2 = address
+                }
+
+                if (
+                  !acc[addressOnL1].tokenLists.includes(
+                    tokenList.bridgeTokenListId
+                  )
+                ) {
+                  acc[addressOnL1].tokenLists.push(tokenList.bridgeTokenListId)
+                }
+              }
+            }
+          })
+
+          return acc
+        }, {})
+    )
+  }, [l1NetworkDetails, l2NetworkDetails, tokenLists])
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-    if (bridgeTokens) {
-      return Object.keys(bridgeTokens)
-        .sort((address1: string, address2: string) => {
-          const bal1 = isDepositMode
-            ? balances.erc20[address1]?.balance
-            : balances.erc20[address1]?.arbChainBalance
-          const bal2 = isDepositMode
-            ? balances.erc20[address2]?.balance
-            : balances.erc20[address2]?.arbChainBalance
-          if (!(bal1 || bal2)) {
-            return 0
-          }
-          if (!bal1) {
-            return 1
-          }
-          if (!bal2) {
-            return -1
-          }
-          return bal1.gt(bal2) ? -1 : 1
-        })
-        .filter((addr: string) => {
-          if (!tokenSearch) {
-            const l1Bal = balances.erc20[addr]?.balance
-            const l2Bal = balances.erc20[addr]?.arbChainBalance
-            if (!l1Bal && !l2Bal) {
-              // show as loading:
-              return true
-            }
-            return (
-              (l1Bal && l1Bal.gt(constants.Zero)) ||
-              (l2Bal && l2Bal.gt(constants.Zero))
-            )
-          }
-          const bridgeToken = bridgeTokens[addr]
-          if (!bridgeToken) return false
-          const { address, l2Address, name, symbol, listID } = bridgeToken
-          const listName =
-            listID && listIdsToNames[listID] ? listIdsToNames[listID] : ''
-          return (address + l2Address + name + symbol + listName)
-            .toLowerCase()
-            .includes(tokenSearch)
-        })
-    }
-    return []
-  }, [bridgeTokens, isDepositMode, newToken, balances])
+
+    return Object.keys(tokens)
+      .sort((address1: string, address2: string) => {
+        const bal1 = isDepositMode
+          ? balances?.erc20[address1]?.balance
+          : balances?.erc20[address1]?.arbChainBalance
+        const bal2 = isDepositMode
+          ? balances?.erc20[address2]?.balance
+          : balances?.erc20[address2]?.arbChainBalance
+        if (!(bal1 || bal2)) {
+          return 0
+        }
+        if (!bal1) {
+          return 1
+        }
+        if (!bal2) {
+          return -1
+        }
+        return bal1.gt(bal2) ? -1 : 1
+      })
+      .filter((address: string) => {
+        if (!tokenSearch) {
+          return false
+        }
+
+        const token = tokens[address]
+
+        return (token.name + token.symbol + token.address.l1 + token.address.l2)
+          .toLowerCase()
+          .includes(tokenSearch)
+      })
+  }, [tokens, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
@@ -335,7 +352,7 @@ export const TokenModalBody = ({
             id="newTokenAddress"
             value={newToken}
             onChange={e => setNewToken(e.target.value)}
-            placeholder="Search by token name, symbol, or address"
+            placeholder="Search by token name, symbol, L1 or L2 address"
             className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
           />
 
@@ -343,7 +360,6 @@ export const TokenModalBody = ({
             variant="white"
             type="submit"
             disabled={newToken === '' || !isAddress(newToken)}
-            // className="flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 p-2 min-w-16"
           >
             {isAddingToken ? (
               <Loader
@@ -361,12 +377,16 @@ export const TokenModalBody = ({
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
         <TokenRow
           key="TokenRowEther"
-          address={null}
-          balance={
-            isDepositMode ? balances.eth.balance : balances.eth.arbChainBalance
-          }
-          onTokenSelected={onTokenSelected}
-          toggleCurrentPannel={toggleCurrentPannel}
+          onClick={() => {}}
+          token={{
+            name: 'Ether',
+            symbol: 'ETH',
+            logoURI:
+              'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png',
+            balance: isDepositMode
+              ? balances?.eth.balance
+              : balances?.eth.arbChainBalance
+          }}
         />
         <AutoSizer disableHeight>
           {({ width }) => (
@@ -378,18 +398,38 @@ export const TokenModalBody = ({
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
 
+                const tokenListInfo: string = (() => {
+                  if (tokens[address].tokenLists.length < 3) {
+                    return tokens[address].tokenLists
+                      .map((tokenListId: any) => listIdsToNames[tokenListId])
+                      .join(', ')
+                  }
+
+                  const firstTwoLists = tokens[address].tokenLists.slice(0, 2)
+                  const more = tokens[address].tokenLists.length - 2
+
+                  return (
+                    firstTwoLists
+                      .map((tokenListId: any) => listIdsToNames[tokenListId])
+                      .join(', ') + ` and ${more} more`
+                  )
+                })()
+
                 return (
                   <TokenRow
                     key={virtualizedProps.key}
                     style={virtualizedProps.style}
-                    address={address}
-                    balance={
-                      isDepositMode
-                        ? balances.erc20[address]?.balance
-                        : balances.erc20[address]?.arbChainBalance
-                    }
-                    onTokenSelected={onTokenSelected}
-                    toggleCurrentPannel={toggleCurrentPannel}
+                    onClick={() => {}}
+                    token={{
+                      name: tokens[address].name,
+                      symbol: tokens[address].symbol,
+                      logoURI: tokens[address].logoURI,
+                      address: address,
+                      balance: isDepositMode
+                        ? balances?.erc20[address]?.balance
+                        : balances?.erc20[address]?.arbChainBalance,
+                      tokenListInfo: tokenListInfo
+                    }}
                   />
                 )
               }}
