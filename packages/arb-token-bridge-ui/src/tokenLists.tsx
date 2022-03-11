@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
@@ -65,6 +66,7 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
 })
 
 interface TokenListWithId extends TokenList {
+  l2ChainId: string
   bridgeTokenListId: number
 }
 
@@ -125,6 +127,7 @@ export function fetchTokenLists(): Promise<void> {
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
         .map(({ data }, index) => ({
+          l2ChainId: BRIDGE_TOKEN_LISTS[index].originChainID,
           bridgeTokenListId: BRIDGE_TOKEN_LISTS[index].id,
           ...data
         }))
@@ -139,12 +142,34 @@ export function fetchTokenLists(): Promise<void> {
   })
 }
 
-export function getTokenLists(): TokenListWithId[] {
+export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
+  const [tokenLists, setTokenLists] = useState<TokenListWithId[]>(() =>
+    getTokenLists(forL2ChainId)
+  )
+
+  useEffect(() => {
+    setTokenLists(getTokenLists(forL2ChainId))
+  }, [forL2ChainId])
+
+  return tokenLists
+}
+
+export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
+  if (typeof forL2ChainId === 'undefined') {
+    return []
+  }
+
   const storage = sessionStorage.getItem(STORAGE_KEY)
 
   if (!storage) {
     return []
   }
 
-  return JSON.parse(storage)
+  const parsedStorage: TokenListWithId[] = JSON.parse(storage)
+
+  if (!forL2ChainId) {
+    return parsedStorage
+  }
+
+  return parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
 }
