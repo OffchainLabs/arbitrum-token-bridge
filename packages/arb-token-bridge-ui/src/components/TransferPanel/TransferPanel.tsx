@@ -111,8 +111,8 @@ const TransferPanel = (): JSX.Element => {
     }
 
     if (
-      connectionState === ConnectionState.DEPOSIT_MODE ||
-      connectionState === ConnectionState.WITHDRAW_MODE
+      connectionState === ConnectionState.L1_CONNECTED ||
+      connectionState === ConnectionState.L2_CONNECTED
     ) {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
