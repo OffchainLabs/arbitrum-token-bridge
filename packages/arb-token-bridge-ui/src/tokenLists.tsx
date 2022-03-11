@@ -114,14 +114,10 @@ export async function fetchTokenListFromURL(
   }
 }
 
-export function fetchTokenLists(forChainId: string): Promise<void> {
-  const filteredTokenLists = BRIDGE_TOKEN_LISTS.filter(
-    bridgeTokenList => bridgeTokenList.originChainID === forChainId
-  )
-
+export function fetchTokenLists(): Promise<void> {
   return new Promise(resolve => {
     Promise.all(
-      filteredTokenLists.map(bridgeTokenList =>
+      BRIDGE_TOKEN_LISTS.map(bridgeTokenList =>
         fetchTokenListFromURL(bridgeTokenList.url)
       )
     ).then(responses => {
@@ -129,7 +125,7 @@ export function fetchTokenLists(forChainId: string): Promise<void> {
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
         .map(({ data }, index) => ({
-          bridgeTokenListId: filteredTokenLists[index].id,
+          bridgeTokenListId: BRIDGE_TOKEN_LISTS[index].id,
           ...data
         }))
 
