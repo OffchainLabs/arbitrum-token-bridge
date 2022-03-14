@@ -28,6 +28,11 @@ import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
 import TokenBlacklistedDialog from './TokenBlacklistedDialog'
 import TokenConfirmationDialog from './TokenConfirmationDialog'
+import {
+  SearchableToken,
+  SearchableTokenStorage,
+  tokenListsToSearchableTokenStorage
+} from './TokenModalUtils'
 
 interface TokenRowProps {
   style?: React.CSSProperties
@@ -225,12 +230,6 @@ function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   }
 }
 
-interface SearchableToken extends ERC20BridgeToken {
-  tokenLists: number[]
-}
-
-type SearchableTokenStorage = { [address: string]: SearchableToken }
-
 export function TokenModalBody({
   onTokenSelected
 }: {
@@ -258,89 +257,12 @@ export function TokenModalBody({
       return {}
     }
 
-    return (
-      tokenLists
-        //
-        .reduce((acc: SearchableTokenStorage, tokenList: TokenListWithId) => {
-          tokenList.tokens.forEach(token => {
-            const address = token.address.toLowerCase()
-            const stringifiedChainId = String(token.chainId)
-
-            if (stringifiedChainId === l1NetworkDetails.chainID) {
-              // The address is from an L1 token
-
-              if (typeof acc[address] === 'undefined') {
-                // First time encountering the token through its L1 address
-                acc[address] = {
-                  ...token,
-                  type: TokenType.ERC20,
-                  l2Address: undefined,
-                  allowed: true,
-                  tokenLists: []
-                }
-              } else {
-                // Token was already added to the map through its L2 token
-                acc[address] = { ...acc[address], address }
-              }
-
-              const tokenLists = acc[address].tokenLists
-
-              if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
-                acc[address].tokenLists.push(tokenList.bridgeTokenListId)
-              }
-            } else if (stringifiedChainId === l2NetworkDetails.chainID) {
-              // The token is an L2 token
-              if (!token.extensions || token.extensions.bridgeInfo) {
-                return
-              }
-
-              // @ts-ignore
-              //
-              // TODO: should we upgrade '@uniswap/token-lists'?
-              const bridgeInfo: {
-                [chainId: string]: { tokenAddress: string }
-              } = token.extensions.bridgeInfo
-
-              if (bridgeInfo[l1NetworkDetails.chainID]) {
-                const addressOnL1 =
-                  bridgeInfo[l1NetworkDetails.chainID].tokenAddress
-
-                if (!addressOnL1) {
-                  return
-                }
-
-                if (typeof acc[addressOnL1] === 'undefined') {
-                  // Token is not on the list yet
-
-                  acc[addressOnL1] = {
-                    name: token.name,
-                    symbol: token.symbol,
-                    type: TokenType.ERC20,
-                    logoURI: token.logoURI,
-                    address: '',
-                    l2Address: address,
-                    decimals: token.decimals,
-                    allowed: true,
-                    tokenLists: []
-                  }
-                } else {
-                  // The token's L1 address is already on the list, just fill in its L2 address
-                  acc[addressOnL1].l2Address = address
-                }
-
-                const tokenLists = acc[addressOnL1].tokenLists
-
-                if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
-                  acc[addressOnL1].tokenLists.push(tokenList.bridgeTokenListId)
-                }
-              }
-            }
-          })
-
-          return acc
-        }, {})
+    return tokenListsToSearchableTokenStorage(
+      tokenLists,
+      l1NetworkDetails.chainID,
+      l2NetworkDetails.chainID
     )
-  }, [l1NetworkDetails, l2NetworkDetails, tokenLists])
+  }, [tokenLists, l1NetworkDetails, l2NetworkDetails])
 
   const tokensFromUser = useMemo(() => {
     const storage: SearchableTokenStorage = {}
