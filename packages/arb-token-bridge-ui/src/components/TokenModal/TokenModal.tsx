@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 
 import { BigNumber } from 'ethers'
-import { isAddress } from 'ethers/lib/utils'
+import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { L1TokenData } from 'arb-ts'
@@ -32,37 +32,65 @@ import TokenConfirmationDialog from './TokenConfirmationDialog'
 interface TokenRowProps {
   style?: React.CSSProperties
   onClick: React.MouseEventHandler<HTMLButtonElement>
-  token: {
-    name: string
-    symbol: string
-    logoURI?: string
-    address?: string
-    balance: BigNumber | null | undefined
-    tokenListInfo?: string
-  }
+  token: SearchableToken | null
+  tokenBalance: BigNumber | undefined | null
 }
 
-enum Pannel {
+enum Panel {
   TOKENS,
   LISTS
 }
 
-const TokenRow = ({
+function tokenListIdsToNames(ids: number[]): string {
+  return ids
+    .map((tokenListId: number) => listIdsToNames[tokenListId])
+    .join(', ')
+}
+
+function TokenRow({
   style,
   onClick,
-  token: { name, symbol, logoURI, address, balance, tokenListInfo }
-}: TokenRowProps): JSX.Element => {
+  token,
+  tokenBalance
+}: TokenRowProps): JSX.Element {
   const {
     app: { l1NetworkDetails }
   } = useAppState()
 
-  const resolvedLogoURI = useMemo(() => {
-    if (!logoURI) {
+  const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
+
+  const tokenLogoURI = useMemo(() => {
+    if (!token) {
+      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+    }
+
+    if (!token.logoURI) {
       return undefined
     }
 
-    return resolveTokenImg(logoURI)
-  }, [logoURI])
+    return resolveTokenImg(token.logoURI)
+  }, [token])
+
+  const tokenListInfo = useMemo(() => {
+    if (!token) {
+      return null
+    }
+
+    const tokenLists = token.tokenLists
+
+    if (tokenLists.length === 0) {
+      return 'Added by User'
+    }
+
+    if (tokenLists.length < 3) {
+      return tokenListIdsToNames(tokenLists)
+    }
+
+    const firstTwoLists = tokenLists.slice(0, 2)
+    const more = tokenLists.length - 2
+
+    return tokenListIdsToNames(firstTwoLists) + ` and ${more} more`
+  }, [token])
 
   return (
     <button
@@ -72,10 +100,10 @@ const TokenRow = ({
       className="flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
     >
       <div className="flex items-center">
-        {resolvedLogoURI ? (
+        {tokenLogoURI ? (
           <img
-            src={resolvedLogoURI}
-            alt={`${name} logo`}
+            src={tokenLogoURI}
+            alt={`${tokenName} logo`}
             className="rounded-full w-8 h-8 mr-4"
           />
         ) : (
@@ -84,39 +112,43 @@ const TokenRow = ({
 
         <div className="flex flex-col items-start">
           <span className="text-base leading-6 font-bold text-gray-900">
-            {name}{' '}
-            <span className="text-xs text-gray-600 font-normal">
-              {tokenListInfo}
-            </span>
+            {tokenName}
+            {token && (
+              <span className="text-xs text-gray-600 font-normal">
+                {' '}
+                {tokenListInfo}
+              </span>
+            )}
           </span>
-          {/* TODO: anchor shouldn't be nested within a button */}
-          <a
-            href={`${l1NetworkDetails?.explorerUrl}/token/${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs underline text-blue-800"
-            onClick={e => e.stopPropagation()}
-          >
-            {address?.toLowerCase()}
-          </a>
+          {token && (
+            // TODO: anchor shouldn't be nested within a button
+            <a
+              href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs underline text-blue-800"
+              onClick={e => e.stopPropagation()}
+            >
+              {token.address.toLowerCase()}
+            </a>
+          )}
         </div>
       </div>
 
-      {/* {isImported || address === null ? ( */}
       <p className="flex items-center text-base leading-6 font-medium text-gray-900">
-        0 {symbol}
-        {/* {balance ? (
-          // @ts-ignore
-          +formatUnits(balance, token?.decimals || 18)
+        {tokenBalance ? (
+          formatUnits(tokenBalance, token ? token.decimals : 18)
         ) : (
-          <Loader
-            type="Oval"
-            color="rgb(40, 160, 240)"
-            height={14}
-            width={14}
-          />
+          <div className="mr-2">
+            <Loader
+              type="Oval"
+              color="rgb(40, 160, 240)"
+              height={14}
+              width={14}
+            />
+          </div>
         )}{' '}
-        {symbol} */}
+        {token ? token.symbol : 'ETH'}
       </p>
     </button>
   )
@@ -213,15 +245,15 @@ export function TokenModalBody({
     }
   } = useAppState()
 
+  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [blacklistedOpen, setBlacklistedOpen] = useState(false)
 
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
-  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
-
-  const tokens = useMemo(() => {
+  const tokensFromLists = useMemo(() => {
     if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
       return {}
     }
@@ -312,8 +344,13 @@ export function TokenModalBody({
     )
   }, [l1NetworkDetails, l2NetworkDetails, tokenLists])
 
-  const tokensAddedByUser = useMemo(() => {
+  const tokensFromUser = useMemo(() => {
     const storage: SearchableTokenStorage = {}
+
+    // Can happen when switching networks.
+    if (typeof bridgeTokens === 'undefined') {
+      return {}
+    }
 
     Object.keys(bridgeTokens).forEach((_address: string) => {
       const bridgeToken = bridgeTokens[_address]
@@ -330,7 +367,7 @@ export function TokenModalBody({
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
 
-    return [...Object.keys(tokens), ...Object.keys(tokensAddedByUser)]
+    return [...Object.keys(tokensFromLists), ...Object.keys(tokensFromUser)]
       .sort((address1: string, address2: string) => {
         const bal1 = isDepositMode
           ? balances?.erc20[address1]?.balance
@@ -354,19 +391,19 @@ export function TokenModalBody({
           return false
         }
 
-        const token = tokens[address] || tokensAddedByUser[address]
+        const token = tokensFromLists[address] || tokensFromUser[address]
 
         return (
           token.name +
           token.symbol +
           token.address +
-          // So we don't concatenate "undefined" to the string.
+          // So we don't concatenate "undefined".
           (token.l2Address || '')
         )
           .toLowerCase()
           .includes(tokenSearch)
       })
-  }, [tokens, tokensAddedByUser, isDepositMode, newToken, balances])
+  }, [tokensFromLists, tokensFromUser, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
@@ -439,15 +476,12 @@ export function TokenModalBody({
         <TokenRow
           key="TokenRowEther"
           onClick={() => onTokenSelected(null)}
-          token={{
-            name: 'Ether',
-            symbol: 'ETH',
-            logoURI:
-              'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png',
-            balance: isDepositMode
+          token={null}
+          tokenBalance={
+            isDepositMode
               ? balances?.eth.balance
               : balances?.eth.arbChainBalance
-          }}
+          }
         />
         <AutoSizer disableHeight>
           {({ width }) => (
@@ -458,44 +492,20 @@ export function TokenModalBody({
               rowHeight={74}
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
-                const _token = tokens[address] || tokensAddedByUser[address]
-
-                const tokenListInfo: string = (() => {
-                  if (_token.tokenLists.length === 0) {
-                    return 'Added by You'
-                  }
-
-                  if (_token.tokenLists.length < 3) {
-                    return _token.tokenLists
-                      .map((tokenListId: any) => listIdsToNames[tokenListId])
-                      .join(', ')
-                  }
-
-                  const firstTwoLists = _token.tokenLists.slice(0, 2)
-                  const more = _token.tokenLists.length - 2
-
-                  return (
-                    firstTwoLists
-                      .map((tokenListId: any) => listIdsToNames[tokenListId])
-                      .join(', ') + ` and ${more} more`
-                  )
-                })()
+                const token =
+                  tokensFromLists[address] || tokensFromUser[address]
 
                 return (
                   <TokenRow
                     key={virtualizedProps.key}
                     style={virtualizedProps.style}
-                    onClick={() => onTokenSelected(_token)}
-                    token={{
-                      name: _token.name,
-                      symbol: _token.symbol,
-                      logoURI: _token.logoURI,
-                      address: address,
-                      balance: isDepositMode
+                    onClick={() => onTokenSelected(token)}
+                    token={token}
+                    tokenBalance={
+                      isDepositMode
                         ? balances?.erc20[address]?.balance
-                        : balances?.erc20[address]?.arbChainBalance,
-                      tokenListInfo: tokenListInfo
-                    }}
+                        : balances?.erc20[address]?.arbChainBalance
+                    }
                   />
                 )
               }}
@@ -524,35 +534,33 @@ const TokenModal = ({
   } = useActions()
   const bridge = useContext(BridgeContext)
 
-  const [currentPannel, setCurrentPannel] = useState(Pannel.TOKENS)
+  const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
-  const toggleCurrentPannel = useCallback(() => {
-    setCurrentPannel(
-      currentPannel === Pannel.TOKENS ? Pannel.LISTS : Pannel.TOKENS
-    )
-  }, [currentPannel])
+  const toggleCurrentPanel = useCallback(() => {
+    setCurrentPanel(currentPanel === Panel.TOKENS ? Panel.LISTS : Panel.TOKENS)
+  }, [currentPanel])
 
   const title = useMemo(() => {
-    switch (currentPannel) {
-      case Pannel.TOKENS:
+    switch (currentPanel) {
+      case Panel.TOKENS:
         return 'Choose token'
-      case Pannel.LISTS:
+      case Panel.LISTS:
         return 'Select Token List'
       default:
         throw new Error('Unhandled switch case')
     }
-  }, [currentPannel])
+  }, [currentPanel])
 
   const buttonText = useMemo(() => {
-    switch (currentPannel) {
-      case Pannel.TOKENS:
+    switch (currentPanel) {
+      case Panel.TOKENS:
         return 'View Token Lists ↗'
-      case Pannel.LISTS:
+      case Panel.LISTS:
         return 'View Tokens ↗'
       default:
         throw new Error('Unhandled switch case')
     }
-  }, [currentPannel])
+  }, [currentPanel])
 
   async function selectToken(_token: SearchableToken | null) {
     setIsOpen(false)
@@ -593,9 +601,9 @@ const TokenModal = ({
       setIsOpen={setIsOpen}
       title={title}
       buttonText={buttonText}
-      buttonAction={toggleCurrentPannel}
+      buttonAction={toggleCurrentPanel}
     >
-      {currentPannel === Pannel.TOKENS ? (
+      {currentPanel === Panel.TOKENS ? (
         <TokenModalBody onTokenSelected={selectToken} />
       ) : (
         <TokenListBody />
