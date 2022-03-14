@@ -98,64 +98,66 @@ function TokenRow({
   }, [token])
 
   return (
-    <button
-      type="button"
-      style={style}
-      onClick={onClick}
-      className="flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
-    >
-      <div className="flex items-center">
-        {tokenLogoURI ? (
-          <img
-            src={tokenLogoURI}
-            alt={`${tokenName} logo`}
-            className="rounded-full w-8 h-8 mr-4"
-          />
-        ) : (
-          <div className="rounded-full w-8 h-8 mr-4 bg-navy" />
-        )}
-
-        <div className="flex flex-col items-start">
-          <span className="text-base leading-6 font-bold text-gray-900">
-            {tokenName}
-            {token && (
-              <span className="text-xs text-gray-600 font-normal">
-                {' '}
-                {tokenListInfo}
-              </span>
-            )}
-          </span>
-          {token && (
-            // TODO: anchor shouldn't be nested within a button
-            <a
-              href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs underline text-blue-800"
-              onClick={e => e.stopPropagation()}
-            >
-              {token.address.toLowerCase()}
-            </a>
-          )}
-        </div>
-      </div>
-
-      <p className="flex items-center text-base leading-6 font-medium text-gray-900">
-        {tokenBalance ? (
-          formatUnits(tokenBalance, token ? token.decimals : 18)
-        ) : (
-          <div className="mr-2">
-            <Loader
-              type="Oval"
-              color="rgb(40, 160, 240)"
-              height={14}
-              width={14}
+    <div className="w-full" style={{ height: '82px' }}>
+      <button
+        type="button"
+        style={{ ...style, height: '74px' }}
+        onClick={onClick}
+        className="w-full flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
+      >
+        <div className="flex items-center">
+          {tokenLogoURI ? (
+            <img
+              src={tokenLogoURI}
+              alt={`${tokenName} logo`}
+              className="rounded-full w-8 h-8 mr-4"
             />
+          ) : (
+            <div className="rounded-full w-8 h-8 mr-4 bg-navy" />
+          )}
+
+          <div className="flex flex-col items-start">
+            <span className="text-base leading-6 font-bold text-gray-900">
+              {tokenName}
+              {token && (
+                <span className="text-xs text-gray-600 font-normal">
+                  {' '}
+                  {tokenListInfo}
+                </span>
+              )}
+            </span>
+            {token && (
+              // TODO: anchor shouldn't be nested within a button
+              <a
+                href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs underline text-blue-800"
+                onClick={e => e.stopPropagation()}
+              >
+                {token.address.toLowerCase()}
+              </a>
+            )}
           </div>
-        )}{' '}
-        {token ? token.symbol : 'ETH'}
-      </p>
-    </button>
+        </div>
+
+        <p className="flex items-center text-base leading-6 font-medium text-gray-900">
+          {tokenBalance ? (
+            formatUnits(tokenBalance, token ? token.decimals : 18)
+          ) : (
+            <div className="mr-2">
+              <Loader
+                type="Oval"
+                color="rgb(40, 160, 240)"
+                height={14}
+                width={14}
+              />
+            </div>
+          )}{' '}
+          {token ? token.symbol : 'ETH'}
+        </p>
+      </button>
+    </div>
   )
 }
 
@@ -409,7 +411,7 @@ export function TokenModalBody({
               width={width}
               height={410}
               rowCount={tokensToShow.length}
-              rowHeight={74}
+              rowHeight={82}
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
                 const token =
@@ -508,8 +510,12 @@ const TokenModal = ({
           l2Address: _token.l2Address
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.warn(error)
+
+      if (error.name === 'TokenDisabledError') {
+        alert('This token is currently paused in the bridge')
+      }
     }
   }
 

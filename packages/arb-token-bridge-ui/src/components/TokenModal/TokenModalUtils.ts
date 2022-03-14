@@ -45,7 +45,8 @@ export function tokenListsToSearchableTokenStorage(
             }
           } else if (stringifiedChainId === l2ChainId) {
             // The token is an L2 token
-            if (!token.extensions || token.extensions.bridgeInfo) {
+
+            if (!token.extensions?.bridgeInfo) {
               return
             }
 
@@ -57,7 +58,8 @@ export function tokenListsToSearchableTokenStorage(
             } = token.extensions.bridgeInfo
 
             if (bridgeInfo[l1ChainId]) {
-              const addressOnL1 = bridgeInfo[l1ChainId].tokenAddress
+              const addressOnL1 =
+                bridgeInfo[l1ChainId].tokenAddress.toLowerCase()
 
               if (!addressOnL1) {
                 return
