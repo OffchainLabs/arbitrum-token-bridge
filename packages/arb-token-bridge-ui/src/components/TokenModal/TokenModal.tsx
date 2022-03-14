@@ -193,6 +193,19 @@ function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   }
 }
 
+function toSearchableToken(data: ERC20BridgeToken): SearchableToken {
+  return {
+    name: data.name,
+    symbol: data.symbol,
+    logoURI: data.logoURI,
+    address: {
+      l1: data.address,
+      l2: data.l2Address
+    },
+    tokenLists: []
+  }
+}
+
 interface SearchableToken {
   name: string
   symbol: string
@@ -314,10 +327,25 @@ export function TokenModalBody({
     )
   }, [l1NetworkDetails, l2NetworkDetails, tokenLists])
 
+  const tokensAddedByUser = useMemo(() => {
+    const map: { [key: string]: SearchableToken } = {}
+
+    Object.keys(bridgeTokens).forEach((_address: string) => {
+      const bridgeToken = bridgeTokens[_address]
+
+      // Any tokens in the bridge that don't have a listID were added by the user.
+      if (bridgeToken && !bridgeToken.listID) {
+        map[_address] = toSearchableToken(bridgeToken)
+      }
+    })
+
+    return map
+  }, [bridgeTokens])
+
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
 
-    return Object.keys(tokens)
+    return [...Object.keys(tokens), ...Object.keys(tokensAddedByUser)]
       .sort((address1: string, address2: string) => {
         const bal1 = isDepositMode
           ? balances?.erc20[address1]?.balance
@@ -341,17 +369,18 @@ export function TokenModalBody({
           return false
         }
 
-        const token = tokens[address]
+        const token = tokens[address] || tokensAddedByUser[address]
 
         return (token.name + token.symbol + token.address.l1 + token.address.l2)
           .toLowerCase()
           .includes(tokenSearch)
       })
-  }, [tokens, isDepositMode, newToken, balances])
+  }, [tokens, tokensAddedByUser, isDepositMode, newToken, balances])
 
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
       console.log('Token not found on this network')
+
       if (ex.name === 'TokenDisabledError') {
         alert('This token is currently paused in the bridge')
       }
@@ -364,7 +393,9 @@ export function TokenModalBody({
     if (!isAddress(newToken) || isAddingToken) {
       return
     }
+
     setIsAddingToken(true)
+
     try {
       await storeNewToken()
     } catch (ex) {
@@ -436,16 +467,21 @@ export function TokenModalBody({
               rowHeight={74}
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
+                const _token = tokens[address] || tokensAddedByUser[address]
 
                 const tokenListInfo: string = (() => {
-                  if (tokens[address].tokenLists.length < 3) {
-                    return tokens[address].tokenLists
+                  if (_token.tokenLists.length === 0) {
+                    return 'Added by You'
+                  }
+
+                  if (_token.tokenLists.length < 3) {
+                    return _token.tokenLists
                       .map((tokenListId: any) => listIdsToNames[tokenListId])
                       .join(', ')
                   }
 
-                  const firstTwoLists = tokens[address].tokenLists.slice(0, 2)
-                  const more = tokens[address].tokenLists.length - 2
+                  const firstTwoLists = _token.tokenLists.slice(0, 2)
+                  const more = _token.tokenLists.length - 2
 
                   return (
                     firstTwoLists
@@ -458,11 +494,11 @@ export function TokenModalBody({
                   <TokenRow
                     key={virtualizedProps.key}
                     style={virtualizedProps.style}
-                    onClick={() => onTokenSelected(tokens[address])}
+                    onClick={() => onTokenSelected(_token)}
                     token={{
-                      name: tokens[address].name,
-                      symbol: tokens[address].symbol,
-                      logoURI: tokens[address].logoURI,
+                      name: _token.name,
+                      symbol: _token.symbol,
+                      logoURI: _token.logoURI,
                       address: address,
                       balance: isDepositMode
                         ? balances?.erc20[address]?.balance
