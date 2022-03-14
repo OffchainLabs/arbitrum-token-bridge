@@ -1,18 +1,27 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, {
+  FormEventHandler,
+  useMemo,
+  useState,
+  useCallback,
+  useContext
+} from 'react'
 
-import { BigNumber, constants } from 'ethers'
-import { isAddress, formatUnits } from 'ethers/lib/utils'
+import { BigNumber } from 'ethers'
+import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
+import { L1TokenData } from 'arb-ts'
+import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 
+import { BridgeContext } from '../App/App'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
   listIdsToNames,
   addBridgeTokenListToBridge,
-  getTokenLists,
-  useTokenLists
+  useTokenLists,
+  TokenListWithId
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
@@ -173,12 +182,34 @@ export const TokenListBody = () => {
   )
 }
 
+function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    allowed: data.allowed,
+    address: data.contract.address,
+    decimals: data.decimals
+  }
+}
+
+interface SearchableToken {
+  name: string
+  symbol: string
+  logoURI?: string
+  address: {
+    l1?: string
+    l2?: string
+  }
+  tokenLists: number[]
+}
+
+type SearchableTokenMap = { [key: string]: SearchableToken }
+
 export function TokenModalBody({
-  onTokenSelected,
-  toggleCurrentPannel
+  onTokenSelected
 }: {
-  onTokenSelected: () => void
-  toggleCurrentPannel: () => void
+  onTokenSelected: (token: SearchableToken | null) => void
 }): JSX.Element {
   const {
     app: {
@@ -204,17 +235,9 @@ export function TokenModalBody({
 
     return (
       tokenLists
-        //
-        .reduce((acc: any, tokenList) => {
+        // TODO: Refactor
+        .reduce((acc: SearchableTokenMap, tokenList: TokenListWithId) => {
           tokenList.tokens.forEach(token => {
-            if (
-              !token ||
-              !token.address ||
-              typeof token.address.toLowerCase !== 'function'
-            ) {
-              return
-            }
-
             const address = token.address.toLowerCase()
             const stringifiedChainId = String(token.chainId)
 
@@ -222,11 +245,22 @@ export function TokenModalBody({
               // The token is an L1 token
 
               if (typeof acc[address] === 'undefined') {
-                acc[address] = token
-                acc[address].tokenLists = []
-                acc[address].address = { l1: address, l2: undefined }
+                // First time encountering the token, as L1
+                acc[address] = {
+                  name: token.name,
+                  symbol: token.symbol,
+                  address: { l1: address, l2: undefined },
+                  tokenLists: []
+                }
               } else {
-                acc[address] = { ...token, ...acc[address] }
+                // Token was already added to the map through its L2 token
+                acc[address] = {
+                  ...acc[address],
+                  address: {
+                    l1: address,
+                    l2: acc[address].address.l2
+                  }
+                }
               }
 
               if (
@@ -242,7 +276,7 @@ export function TokenModalBody({
                 // @ts-ignore
                 token.extensions['bridgeInfo'][l1NetworkDetails.chainID]
               ) {
-                const addressOnL1 =
+                const addressOnL1: string =
                   // @ts-ignore
                   token.extensions['bridgeInfo'][l1NetworkDetails.chainID]
                     .tokenAddress
@@ -252,11 +286,15 @@ export function TokenModalBody({
                 }
 
                 if (typeof acc[addressOnL1] === 'undefined') {
+                  // Token is not on the list yet
                   acc[addressOnL1] = {
-                    tokenLists: [],
-                    address: { l1: undefined, l2: address }
+                    name: token.name,
+                    symbol: token.symbol,
+                    address: { l1: undefined, l2: address },
+                    tokenLists: []
                   }
                 } else {
+                  // Token is already on the list, just add its L2
                   acc[addressOnL1].address.l2 = address
                 }
 
@@ -335,6 +373,7 @@ export function TokenModalBody({
       setIsAddingToken(false)
     }
   }
+
   return (
     <div className="flex flex-col gap-6">
       <TokenConfirmationDialog
@@ -377,7 +416,7 @@ export function TokenModalBody({
       <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
         <TokenRow
           key="TokenRowEther"
-          onClick={() => {}}
+          onClick={() => onTokenSelected(null)}
           token={{
             name: 'Ether',
             symbol: 'ETH',
@@ -419,7 +458,7 @@ export function TokenModalBody({
                   <TokenRow
                     key={virtualizedProps.key}
                     style={virtualizedProps.style}
-                    onClick={() => {}}
+                    onClick={() => onTokenSelected(tokens[address])}
                     token={{
                       name: tokens[address].name,
                       symbol: tokens[address].symbol,
@@ -448,6 +487,16 @@ const TokenModal = ({
   isOpen: boolean
   setIsOpen: (open: boolean) => void
 }): JSX.Element => {
+  const {
+    app: {
+      arbTokenBridge: { token, bridgeTokens }
+    }
+  } = useAppState()
+  const {
+    app: { setSelectedToken }
+  } = useActions()
+  const bridge = useContext(BridgeContext)
+
   const [currentPannel, setCurrentPannel] = useState(Pannel.TOKENS)
 
   const toggleCurrentPannel = useCallback(() => {
@@ -455,6 +504,7 @@ const TokenModal = ({
       currentPannel === Pannel.TOKENS ? Pannel.LISTS : Pannel.TOKENS
     )
   }, [currentPannel])
+
   const title = useMemo(() => {
     switch (currentPannel) {
       case Pannel.TOKENS:
@@ -476,6 +526,40 @@ const TokenModal = ({
         throw new Error('Unhandled switch case')
     }
   }, [currentPannel])
+
+  async function selectToken(_token: SearchableToken | null) {
+    setIsOpen(false)
+
+    // It's Ether
+    if (_token === null) {
+      setSelectedToken(null)
+      return
+    }
+
+    // Sanity check
+    if (!_token.address.l1) {
+      return
+    }
+
+    try {
+      if (typeof bridgeTokens[_token.address.l1] === 'undefined') {
+        await token.add(_token.address.l1)
+      }
+
+      const data = await bridge?.l1Bridge.getL1TokenData(_token.address.l1)
+
+      if (data) {
+        token.updateTokenData(_token.address.l1)
+        setSelectedToken({
+          ...toERC20BridgeToken(data),
+          l2Address: _token.address.l2
+        })
+      }
+    } catch (error) {
+      console.warn(error)
+    }
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -485,10 +569,7 @@ const TokenModal = ({
       buttonAction={toggleCurrentPannel}
     >
       {currentPannel === Pannel.TOKENS ? (
-        <TokenModalBody
-          onTokenSelected={() => setIsOpen(false)}
-          toggleCurrentPannel={toggleCurrentPannel}
-        />
+        <TokenModalBody onTokenSelected={selectToken} />
       ) : (
         <TokenListBody />
       )}

@@ -65,7 +65,7 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
   listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
 })
 
-interface TokenListWithId extends TokenList {
+export interface TokenListWithId extends TokenList {
   l2ChainId: string
   bridgeTokenListId: number
 }
