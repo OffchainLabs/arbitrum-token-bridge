@@ -193,31 +193,11 @@ function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   }
 }
 
-function toSearchableToken(data: ERC20BridgeToken): SearchableToken {
-  return {
-    name: data.name,
-    symbol: data.symbol,
-    logoURI: data.logoURI,
-    address: {
-      l1: data.address,
-      l2: data.l2Address
-    },
-    tokenLists: []
-  }
-}
-
-interface SearchableToken {
-  name: string
-  symbol: string
-  logoURI?: string
-  address: {
-    l1?: string
-    l2?: string
-  }
+interface SearchableToken extends ERC20BridgeToken {
   tokenLists: number[]
 }
 
-type SearchableTokenMap = { [key: string]: SearchableToken }
+type SearchableTokenStorage = { [address: string]: SearchableToken }
 
 export function TokenModalBody({
   onTokenSelected
@@ -249,7 +229,7 @@ export function TokenModalBody({
     return (
       tokenLists
         // TODO: Refactor
-        .reduce((acc: SearchableTokenMap, tokenList: TokenListWithId) => {
+        .reduce((acc: SearchableTokenStorage, tokenList: TokenListWithId) => {
           tokenList.tokens.forEach(token => {
             const address = token.address.toLowerCase()
             const stringifiedChainId = String(token.chainId)
@@ -262,18 +242,17 @@ export function TokenModalBody({
                 acc[address] = {
                   name: token.name,
                   symbol: token.symbol,
-                  address: { l1: address, l2: undefined },
+                  type: TokenType.ERC20,
+                  logoURI: token.logoURI,
+                  address,
+                  l2Address: undefined,
+                  decimals: token.decimals,
+                  allowed: false,
                   tokenLists: []
                 }
               } else {
                 // Token was already added to the map through its L2 token
-                acc[address] = {
-                  ...acc[address],
-                  address: {
-                    l1: address,
-                    l2: acc[address].address.l2
-                  }
-                }
+                acc[address] = { ...acc[address], address }
               }
 
               if (
@@ -300,15 +279,21 @@ export function TokenModalBody({
 
                 if (typeof acc[addressOnL1] === 'undefined') {
                   // Token is not on the list yet
+
                   acc[addressOnL1] = {
                     name: token.name,
                     symbol: token.symbol,
-                    address: { l1: undefined, l2: address },
+                    type: TokenType.ERC20,
+                    logoURI: token.logoURI,
+                    address: '',
+                    l2Address: address,
+                    decimals: token.decimals,
+                    allowed: false,
                     tokenLists: []
                   }
                 } else {
                   // Token is already on the list, just add its L2
-                  acc[addressOnL1].address.l2 = address
+                  acc[addressOnL1].l2Address = address
                 }
 
                 if (
@@ -328,18 +313,18 @@ export function TokenModalBody({
   }, [l1NetworkDetails, l2NetworkDetails, tokenLists])
 
   const tokensAddedByUser = useMemo(() => {
-    const map: { [key: string]: SearchableToken } = {}
+    const storage: SearchableTokenStorage = {}
 
     Object.keys(bridgeTokens).forEach((_address: string) => {
       const bridgeToken = bridgeTokens[_address]
 
-      // Any tokens in the bridge that don't have a listID were added by the user.
+      // Any tokens in the bridge that don't have a list id were added by the user.
       if (bridgeToken && !bridgeToken.listID) {
-        map[_address] = toSearchableToken(bridgeToken)
+        storage[_address] = { ...bridgeToken, tokenLists: [] }
       }
     })
 
-    return map
+    return storage
   }, [bridgeTokens])
 
   const tokensToShow = useMemo(() => {
@@ -371,7 +356,13 @@ export function TokenModalBody({
 
         const token = tokens[address] || tokensAddedByUser[address]
 
-        return (token.name + token.symbol + token.address.l1 + token.address.l2)
+        return (
+          token.name +
+          token.symbol +
+          token.address +
+          // So we don't concatenate "undefined" to the string.
+          (token.l2Address || '')
+        )
           .toLowerCase()
           .includes(tokenSearch)
       })
@@ -573,22 +564,22 @@ const TokenModal = ({
     }
 
     // Sanity check
-    if (!_token.address.l1) {
+    if (!_token.address) {
       return
     }
 
     try {
-      if (typeof bridgeTokens[_token.address.l1] === 'undefined') {
-        await token.add(_token.address.l1)
+      if (typeof bridgeTokens[_token.address] === 'undefined') {
+        await token.add(_token.address)
       }
 
-      const data = await bridge?.l1Bridge.getL1TokenData(_token.address.l1)
+      const data = await bridge?.l1Bridge.getL1TokenData(_token.address)
 
       if (data) {
-        token.updateTokenData(_token.address.l1)
+        token.updateTokenData(_token.address)
         setSelectedToken({
           ...toERC20BridgeToken(data),
-          l2Address: _token.address.l2
+          l2Address: _token.l2Address
         })
       }
     } catch (error) {
