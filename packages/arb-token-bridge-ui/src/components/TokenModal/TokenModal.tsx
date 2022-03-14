@@ -260,26 +260,22 @@ export function TokenModalBody({
 
     return (
       tokenLists
-        // TODO: Refactor
+        //
         .reduce((acc: SearchableTokenStorage, tokenList: TokenListWithId) => {
           tokenList.tokens.forEach(token => {
             const address = token.address.toLowerCase()
             const stringifiedChainId = String(token.chainId)
 
             if (stringifiedChainId === l1NetworkDetails.chainID) {
-              // The token is an L1 token
+              // The address is from an L1 token
 
               if (typeof acc[address] === 'undefined') {
-                // First time encountering the token, as L1
+                // First time encountering the token through its L1 address
                 acc[address] = {
-                  name: token.name,
-                  symbol: token.symbol,
+                  ...token,
                   type: TokenType.ERC20,
-                  logoURI: token.logoURI,
-                  address,
                   l2Address: undefined,
-                  decimals: token.decimals,
-                  allowed: false,
+                  allowed: true,
                   tokenLists: []
                 }
               } else {
@@ -287,23 +283,27 @@ export function TokenModalBody({
                 acc[address] = { ...acc[address], address }
               }
 
-              if (
-                !acc[address].tokenLists.includes(tokenList.bridgeTokenListId)
-              ) {
+              const tokenLists = acc[address].tokenLists
+
+              if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
                 acc[address].tokenLists.push(tokenList.bridgeTokenListId)
               }
             } else if (stringifiedChainId === l2NetworkDetails.chainID) {
               // The token is an L2 token
-              if (
-                token.extensions &&
-                token.extensions['bridgeInfo'] &&
-                // @ts-ignore
-                token.extensions['bridgeInfo'][l1NetworkDetails.chainID]
-              ) {
-                const addressOnL1: string =
-                  // @ts-ignore
-                  token.extensions['bridgeInfo'][l1NetworkDetails.chainID]
-                    .tokenAddress
+              if (!token.extensions || token.extensions.bridgeInfo) {
+                return
+              }
+
+              // @ts-ignore
+              //
+              // TODO: should we upgrade '@uniswap/token-lists'?
+              const bridgeInfo: {
+                [chainId: string]: { tokenAddress: string }
+              } = token.extensions.bridgeInfo
+
+              if (bridgeInfo[l1NetworkDetails.chainID]) {
+                const addressOnL1 =
+                  bridgeInfo[l1NetworkDetails.chainID].tokenAddress
 
                 if (!addressOnL1) {
                   return
@@ -320,19 +320,17 @@ export function TokenModalBody({
                     address: '',
                     l2Address: address,
                     decimals: token.decimals,
-                    allowed: false,
+                    allowed: true,
                     tokenLists: []
                   }
                 } else {
-                  // Token is already on the list, just add its L2
+                  // The token's L1 address is already on the list, just fill in its L2 address
                   acc[addressOnL1].l2Address = address
                 }
 
-                if (
-                  !acc[addressOnL1].tokenLists.includes(
-                    tokenList.bridgeTokenListId
-                  )
-                ) {
+                const tokenLists = acc[addressOnL1].tokenLists
+
+                if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
                   acc[addressOnL1].tokenLists.push(tokenList.bridgeTokenListId)
                 }
               }
@@ -565,13 +563,11 @@ const TokenModal = ({
   async function selectToken(_token: SearchableToken | null) {
     setIsOpen(false)
 
-    // It's Ether
     if (_token === null) {
       setSelectedToken(null)
       return
     }
 
-    // Sanity check
     if (!_token.address) {
       return
     }
