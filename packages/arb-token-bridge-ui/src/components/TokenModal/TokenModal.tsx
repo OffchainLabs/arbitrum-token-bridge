@@ -19,8 +19,7 @@ import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
   listIdsToNames,
-  addBridgeTokenListToBridge,
-  useTokenLists
+  addBridgeTokenListToBridge
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
@@ -29,8 +28,8 @@ import TokenBlacklistedDialog from './TokenBlacklistedDialog'
 import TokenConfirmationDialog from './TokenConfirmationDialog'
 import {
   SearchableToken,
-  SearchableTokenStorage,
-  tokenListsToSearchableTokenStorage
+  useTokensFromLists,
+  useTokensFromUser
 } from './TokenModalUtils'
 
 interface TokenRowProps {
@@ -240,15 +239,15 @@ export function TokenModalBody({
 }): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { balances, token, bridgeTokens },
-      isDepositMode,
-      l1NetworkDetails,
-      l2NetworkDetails
+      arbTokenBridge: { balances, token },
+      isDepositMode
     }
   } = useAppState()
 
   const isDesktop = useMedia('(min-width: 640px)')
-  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+
+  const tokensFromUser = useTokensFromUser()
+  const tokensFromLists = useTokensFromLists()
 
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [blacklistedOpen, setBlacklistedOpen] = useState(false)
@@ -256,42 +255,10 @@ export function TokenModalBody({
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
-  const tokensFromLists = useMemo(() => {
-    if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
-      return {}
-    }
-
-    return tokenListsToSearchableTokenStorage(
-      tokenLists,
-      l1NetworkDetails.chainID,
-      l2NetworkDetails.chainID
-    )
-  }, [tokenLists, l1NetworkDetails, l2NetworkDetails])
-
-  const tokensFromUser = useMemo(() => {
-    const storage: SearchableTokenStorage = {}
-
-    // Can happen when switching networks.
-    if (typeof bridgeTokens === 'undefined') {
-      return {}
-    }
-
-    Object.keys(bridgeTokens).forEach((_address: string) => {
-      const bridgeToken = bridgeTokens[_address]
-
-      // Any tokens in the bridge that don't have a list id were added by the user.
-      if (bridgeToken && !bridgeToken.listID) {
-        storage[_address] = { ...bridgeToken, tokenLists: [] }
-      }
-    })
-
-    return storage
-  }, [bridgeTokens])
-
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
 
-    return [...Object.keys(tokensFromLists), ...Object.keys(tokensFromUser)]
+    return [...Object.keys(tokensFromUser), ...Object.keys(tokensFromLists)]
       .sort((address1: string, address2: string) => {
         const bal1 = isDepositMode
           ? balances?.erc20[address1]?.balance
@@ -315,7 +282,7 @@ export function TokenModalBody({
           return false
         }
 
-        const token = tokensFromLists[address] || tokensFromUser[address]
+        const token = tokensFromUser[address] || tokensFromLists[address]
 
         return (
           token.name +

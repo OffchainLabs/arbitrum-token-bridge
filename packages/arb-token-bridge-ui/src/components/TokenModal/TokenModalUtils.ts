@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 
-import { TokenListWithId } from '../../tokenLists'
+import { useAppState } from '../../state'
+import { TokenListWithId, useTokenLists } from '../../tokenLists'
 
 export interface SearchableToken extends ERC20BridgeToken {
   tokenLists: number[]
@@ -8,7 +10,55 @@ export interface SearchableToken extends ERC20BridgeToken {
 
 export type SearchableTokenStorage = { [address: string]: SearchableToken }
 
-export function tokenListsToSearchableTokenStorage(
+export function useTokensFromLists(): SearchableTokenStorage {
+  const {
+    app: { l1NetworkDetails, l2NetworkDetails }
+  } = useAppState()
+
+  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+
+  return useMemo(() => {
+    if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
+      return {}
+    }
+
+    return tokenListsToSearchableTokenStorage(
+      tokenLists,
+      l1NetworkDetails.chainID,
+      l2NetworkDetails.chainID
+    )
+  }, [tokenLists, l1NetworkDetails, l2NetworkDetails])
+}
+
+export function useTokensFromUser(): SearchableTokenStorage {
+  const {
+    app: {
+      arbTokenBridge: { bridgeTokens }
+    }
+  } = useAppState()
+
+  return useMemo(() => {
+    const storage: SearchableTokenStorage = {}
+
+    // Can happen when switching networks.
+    if (typeof bridgeTokens === 'undefined') {
+      return {}
+    }
+
+    Object.keys(bridgeTokens).forEach((_address: string) => {
+      const bridgeToken = bridgeTokens[_address]
+
+      // Any tokens in the bridge that don't have a list id were added by the user.
+      if (bridgeToken && !bridgeToken.listID) {
+        storage[_address] = { ...bridgeToken, tokenLists: [] }
+      }
+    })
+
+    return storage
+  }, [bridgeTokens])
+}
+
+function tokenListsToSearchableTokenStorage(
   tokenLists: TokenListWithId[],
   l1ChainId: string,
   l2ChainId: string

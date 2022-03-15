@@ -14,11 +14,7 @@ import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 import { Modal } from '../common/Modal'
-import { useTokenLists } from '../../tokenLists'
-import {
-  SearchableTokenStorage,
-  tokenListsToSearchableTokenStorage
-} from './TokenModalUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenModalUtils'
 
 function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   return {
@@ -86,50 +82,18 @@ export function TokenImportModal({
   const {
     app: {
       l1NetworkDetails,
-      l2NetworkDetails,
-      arbTokenBridge: { bridgeTokens, token }
+      arbTokenBridge: { token }
     }
   } = useAppState()
   const actions = useActions()
   const bridge = useContext(BridgeContext)
 
-  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+  const tokensFromUser = useTokensFromUser()
+  const tokensFromLists = useTokensFromLists()
 
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
-
-  const tokensFromLists = useMemo(() => {
-    if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
-      return {}
-    }
-
-    return tokenListsToSearchableTokenStorage(
-      tokenLists,
-      l1NetworkDetails.chainID,
-      l2NetworkDetails.chainID
-    )
-  }, [tokenLists, l1NetworkDetails, l2NetworkDetails])
-
-  const tokensFromUser = useMemo(() => {
-    const storage: SearchableTokenStorage = {}
-
-    // Can happen when switching networks.
-    if (typeof bridgeTokens === 'undefined') {
-      return {}
-    }
-
-    Object.keys(bridgeTokens).forEach((_address: string) => {
-      const bridgeToken = bridgeTokens[_address]
-
-      // Any tokens in the bridge that don't have a list id were added by the user.
-      if (bridgeToken && !bridgeToken.listID) {
-        storage[_address] = { ...bridgeToken, tokenLists: [] }
-      }
-    })
-
-    return storage
-  }, [bridgeTokens])
 
   const modalTitle = useMemo(() => {
     switch (status) {
