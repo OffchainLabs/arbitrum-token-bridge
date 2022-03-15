@@ -57,7 +57,10 @@ function TokenRow({
   tokenBalance
 }: TokenRowProps): JSX.Element {
   const {
-    app: { l1NetworkDetails }
+    app: {
+      l1NetworkDetails,
+      arbTokenBridge: { bridgeTokens }
+    }
   } = useAppState()
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
@@ -94,6 +97,14 @@ function TokenRow({
 
     return tokenListIdsToNames(firstTwoLists) + ` and ${more} more`
   }, [token])
+
+  const tokenIsAddedToTheBridge = useMemo(() => {
+    if (!token) {
+      return true
+    }
+
+    return typeof bridgeTokens[token.address] !== 'undefined'
+  }, [token, bridgeTokens])
 
   return (
     <div className="flex w-full" style={style}>
@@ -141,21 +152,27 @@ function TokenRow({
           </div>
         </div>
 
-        <p className="flex items-center text-xs sm:text-base leading-6 font-medium text-gray-900">
-          {tokenBalance ? (
-            formatUnits(tokenBalance, token ? token.decimals : 18)
-          ) : (
-            <div className="mr-2">
-              <Loader
-                type="Oval"
-                color="rgb(40, 160, 240)"
-                height={14}
-                width={14}
-              />
-            </div>
-          )}{' '}
-          {token ? token.symbol : 'ETH'}
-        </p>
+        {tokenIsAddedToTheBridge ? (
+          <span className="flex items-center text-xs sm:text-base leading-6 font-medium text-gray-900 whitespace-nowrap">
+            {tokenBalance ? (
+              formatUnits(tokenBalance, token ? token.decimals : 18)
+            ) : (
+              <div className="mr-2">
+                <Loader
+                  type="Oval"
+                  color="rgb(40, 160, 240)"
+                  height={14}
+                  width={14}
+                />
+              </div>
+            )}{' '}
+            {token ? token.symbol : 'ETH'}
+          </span>
+        ) : (
+          <span className="text-xs sm:text-base font-medium text-gray-900">
+            Import
+          </span>
+        )}
       </button>
     </div>
   )
