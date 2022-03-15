@@ -30,7 +30,7 @@ export function tokenListsToSearchableTokenStorage(
                 ...token,
                 type: TokenType.ERC20,
                 l2Address: undefined,
-                allowed: true,
+                allowed: false,
                 tokenLists: []
               }
             } else {
@@ -76,7 +76,7 @@ export function tokenListsToSearchableTokenStorage(
                   address: '',
                   l2Address: address,
                   decimals: token.decimals,
-                  allowed: true,
+                  allowed: false,
                   tokenLists: []
                 }
               } else {
