@@ -82,7 +82,8 @@ export function TokenImportModal({
   const {
     app: {
       l1NetworkDetails,
-      arbTokenBridge: { token }
+      arbTokenBridge: { token },
+      selectedToken
     }
   } = useAppState()
   const actions = useActions()
@@ -169,11 +170,12 @@ export function TokenImportModal({
   useEffect(() => {
     const foundToken = tokensFromUser[address]
 
-    if (foundToken) {
+    // Listen for the token to be added to the bridge so we can automatically select it
+    if (foundToken?.address !== selectedToken?.address) {
       setIsOpen(false)
       selectToken(foundToken)
     }
-  }, [tokensFromUser, address, selectToken, setIsOpen])
+  }, [tokensFromUser, address, selectedToken, selectToken, setIsOpen])
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
