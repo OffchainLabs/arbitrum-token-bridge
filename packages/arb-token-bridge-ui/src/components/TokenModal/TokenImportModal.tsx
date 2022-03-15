@@ -4,7 +4,8 @@ import {
   useEffect,
   useMemo,
   MouseEventHandler,
-  useContext
+  useContext,
+  useCallback
 } from 'react'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
@@ -13,22 +14,11 @@ import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
 import { Modal } from '../common/Modal'
-
-function useDebouncedState<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
+import { useTokenLists } from '../../tokenLists'
+import {
+  SearchableTokenStorage,
+  tokenListsToSearchableTokenStorage
+} from './TokenModalUtils'
 
 function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   return {
@@ -96,22 +86,50 @@ export function TokenImportModal({
   const {
     app: {
       l1NetworkDetails,
+      l2NetworkDetails,
       arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
   const actions = useActions()
   const bridge = useContext(BridgeContext)
 
+  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
 
-  // The `bridgeTokens` state updates a couple of times within a couple of renders.
-  // Debouncing it prevents wonky UI updates while finding the token within the list.
-  const debouncedBridgeTokens = useDebouncedState(bridgeTokens, 3000)
-  const isLoadingTokenList =
-    typeof debouncedBridgeTokens === 'undefined' ||
-    Object.keys(debouncedBridgeTokens).length === 0
+  const tokensFromLists = useMemo(() => {
+    if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
+      return {}
+    }
+
+    return tokenListsToSearchableTokenStorage(
+      tokenLists,
+      l1NetworkDetails.chainID,
+      l2NetworkDetails.chainID
+    )
+  }, [tokenLists, l1NetworkDetails, l2NetworkDetails])
+
+  const tokensFromUser = useMemo(() => {
+    const storage: SearchableTokenStorage = {}
+
+    // Can happen when switching networks.
+    if (typeof bridgeTokens === 'undefined') {
+      return {}
+    }
+
+    Object.keys(bridgeTokens).forEach((_address: string) => {
+      const bridgeToken = bridgeTokens[_address]
+
+      // Any tokens in the bridge that don't have a list id were added by the user.
+      if (bridgeToken && !bridgeToken.listID) {
+        storage[_address] = { ...bridgeToken, tokenLists: [] }
+      }
+    })
+
+    return storage
+  }, [bridgeTokens])
 
   const modalTitle = useMemo(() => {
     switch (status) {
@@ -130,72 +148,68 @@ export function TokenImportModal({
     }
   }, [status])
 
-  useEffect(() => {
-    if (!isOpen) {
-      return
-    }
+  const getL1TokenData = useCallback(
+    async (eitherL1OrL2Address: string) => {
+      const addressOnL1 = await bridge?.getERC20L1Address(eitherL1OrL2Address)
 
-    if (isLoadingTokenList) {
-      return
-    }
-
-    // No longer loading, it's time to update status
-    if (status === ImportStatus.LOADING) {
-      const foundToken = debouncedBridgeTokens[address]
-
-      if (foundToken) {
-        // Token can be found in the list
-        setTokenToImport(foundToken)
-        setStatus(ImportStatus.KNOWN)
+      if (addressOnL1) {
+        return bridge?.l1Bridge.getL1TokenData(addressOnL1)
       } else {
-        // We have to fetch the token info
-        getL1TokenData(address)
-          ?.then(data => {
-            if (data) {
-              const addressOnL1 = data.contract.address.toLowerCase()
-
-              if (debouncedBridgeTokens[addressOnL1]) {
-                // The address provided was an L2 address, and we found the L1 address in our list
-                setStatus(ImportStatus.KNOWN)
-                setTokenToImport(debouncedBridgeTokens[addressOnL1])
-              } else {
-                // We couldn't find the address in our list
-                setStatus(ImportStatus.UNKNOWN)
-                setTokenToImport(toERC20BridgeToken(data))
-              }
-            }
-          })
-          .catch(() => {
-            setStatus(ImportStatus.ERROR)
-          })
+        return bridge?.l1Bridge.getL1TokenData(eitherL1OrL2Address)
       }
+    },
+    [bridge]
+  )
+
+  const selectToken = useCallback(
+    async (_token: ERC20BridgeToken) => {
+      await token.updateTokenData(_token.address)
+      actions.app.setSelectedToken(_token)
+    },
+    [token, actions]
+  )
+
+  useEffect(() => {
+    const tokens = { ...tokensFromLists, ...tokensFromUser }
+
+    // The address provided was an L1 address, and we found it within our lists
+    if (typeof tokens[address] !== 'undefined') {
+      setTokenToImport(tokens[address])
+      setStatus(ImportStatus.KNOWN)
+
+      return
     }
 
-    // The unknown token has now been added to the list, and we can select it
-    if (status === ImportStatus.UNKNOWN) {
-      const foundToken = debouncedBridgeTokens[address]
+    // Can't find the address provided, so we look further
+    getL1TokenData(address)
+      .then(data => {
+        if (data) {
+          const addressOnL1 = data.contract.address.toLowerCase()
 
-      if (foundToken) {
-        setIsOpen(false)
-        selectToken(foundToken)
-      }
+          if (tokens[addressOnL1]) {
+            // The address provided was an L2 address, and we found the corresponding L1 address within our lists
+            setStatus(ImportStatus.KNOWN)
+            setTokenToImport(tokens[addressOnL1])
+          } else {
+            // We couldn't find the address within our lists
+            setStatus(ImportStatus.UNKNOWN)
+            setTokenToImport(toERC20BridgeToken(data))
+          }
+        }
+      })
+      .catch(() => {
+        setStatus(ImportStatus.ERROR)
+      })
+  }, [tokensFromLists, tokensFromUser, address, getL1TokenData])
+
+  useEffect(() => {
+    const foundToken = tokensFromUser[address]
+
+    if (foundToken) {
+      setIsOpen(false)
+      selectToken(foundToken)
     }
-  }, [isLoadingTokenList, debouncedBridgeTokens, status])
-
-  async function getL1TokenData(eitherL1OrL2Address: string) {
-    const addressOnL1 = await bridge?.getERC20L1Address(eitherL1OrL2Address)
-
-    if (addressOnL1) {
-      return bridge?.l1Bridge.getL1TokenData(addressOnL1)
-    } else {
-      return bridge?.l1Bridge.getL1TokenData(eitherL1OrL2Address)
-    }
-  }
-
-  async function selectToken(_token: ERC20BridgeToken) {
-    await token.updateTokenData(_token.address)
-    actions.app.setSelectedToken(_token)
-  }
+  }, [tokensFromUser, address, selectToken, setIsOpen])
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
@@ -207,7 +221,7 @@ export function TokenImportModal({
     })
   }
 
-  function handletokenToImport() {
+  function handleTokenImport() {
     if (isImportingToken) {
       return
     }
@@ -369,7 +383,7 @@ export function TokenImportModal({
             )
           }
           onCancel={() => setIsOpen(false)}
-          onAction={handletokenToImport}
+          onAction={handleTokenImport}
         />
       </div>
     </Modal>
