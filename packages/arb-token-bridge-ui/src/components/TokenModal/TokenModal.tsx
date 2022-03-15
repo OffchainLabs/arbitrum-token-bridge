@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useContext
 } from 'react'
-
+import { useMedia } from 'react-use'
 import { BigNumber } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
@@ -20,8 +20,7 @@ import {
   BridgeTokenList,
   listIdsToNames,
   addBridgeTokenListToBridge,
-  useTokenLists,
-  TokenListWithId
+  useTokenLists
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
@@ -98,34 +97,36 @@ function TokenRow({
   }, [token])
 
   return (
-    <div className="w-full" style={{ height: '82px' }}>
+    <div className="flex w-full" style={style}>
       <button
         type="button"
-        style={{ ...style, height: '74px' }}
         onClick={onClick}
-        className="w-full flex items-center justify-between border border-gray-300 rounded-md px-6 py-3 bg-white hover:bg-gray-100"
+        style={{ height: '84px' }}
+        className="w-full flex flex-col items-center sm:flex-row sm:justify-between p-2 sm:px-6 sm:py-3 border border-gray-300 rounded-md bg-white hover:bg-gray-100"
       >
-        <div className="flex items-center">
+        <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
           {tokenLogoURI ? (
             <img
               src={tokenLogoURI}
               alt={`${tokenName} logo`}
-              className="rounded-full w-8 h-8 mr-4"
+              className="rounded-full w-4 sm:w-8 h-4 sm:h-8 flex-grow-0"
             />
           ) : (
-            <div className="rounded-full w-8 h-8 mr-4 bg-navy" />
+            <div className="rounded-full w-4 sm:w-8 h-4 sm:h-8 bg-navy" />
           )}
 
-          <div className="flex flex-col items-start">
-            <span className="text-base leading-6 font-bold text-gray-900">
-              {tokenName}
+          <div className="flex flex-col items-start truncate">
+            <div>
+              <span className="font-bold text-xs sm:text-base leading-6 text-gray-900">
+                {tokenName}
+              </span>
               {token && (
                 <span className="text-xs text-gray-600 font-normal">
                   {' '}
                   {tokenListInfo}
                 </span>
               )}
-            </span>
+            </div>
             {token && (
               // TODO: anchor shouldn't be nested within a button
               <a
@@ -141,7 +142,7 @@ function TokenRow({
           </div>
         </div>
 
-        <p className="flex items-center text-base leading-6 font-medium text-gray-900">
+        <p className="flex items-center text-xs sm:text-base leading-6 font-medium text-gray-900">
           {tokenBalance ? (
             formatUnits(tokenBalance, token ? token.decimals : 18)
           ) : (
@@ -246,6 +247,7 @@ export function TokenModalBody({
     }
   } = useAppState()
 
+  const isDesktop = useMedia('(min-width: 640px)')
   const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
 
   const [confirmationOpen, setConfirmationOpen] = useState(false)
@@ -409,9 +411,9 @@ export function TokenModalBody({
           {({ width }) => (
             <List
               width={width}
-              height={410}
+              height={isDesktop ? 380 : 200}
               rowCount={tokensToShow.length}
-              rowHeight={82}
+              rowHeight={94}
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
                 const token =
