@@ -135,6 +135,10 @@ export function TokenImportModal({
   )
 
   useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
     const tokens = { ...tokensFromLists, ...tokensFromUser }
 
     // The address provided was an L1 address, and we found it within our lists
@@ -165,9 +169,13 @@ export function TokenImportModal({
       .catch(() => {
         setStatus(ImportStatus.ERROR)
       })
-  }, [tokensFromLists, tokensFromUser, address, getL1TokenData])
+  }, [isOpen, tokensFromLists, tokensFromUser, address, getL1TokenData])
 
   useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
     const foundToken = tokensFromUser[address]
 
     // Listen for the token to be added to the bridge so we can automatically select it
@@ -175,7 +183,7 @@ export function TokenImportModal({
       setIsOpen(false)
       selectToken(foundToken)
     }
-  }, [tokensFromUser, address, selectedToken, selectToken, setIsOpen])
+  }, [isOpen, tokensFromUser, address, selectedToken, selectToken, setIsOpen])
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
