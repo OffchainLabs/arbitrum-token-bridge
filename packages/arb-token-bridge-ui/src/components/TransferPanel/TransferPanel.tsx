@@ -261,17 +261,17 @@ const TransferPanel = (): JSX.Element => {
             return
           }
 
-          if (!bridgeTokens[selectedToken.address]?.allowed) {
-            // ** Sanity check: ensure not allowed yet  */
-            const allowed = await isAllowed(
-              bridge,
-              selectedToken.address,
-              amountRaw
-            )
-            if (!allowed) {
-              await latestToken.current.approve(selectedToken.address)
-            }
+          // Sanity check: ensure not allowed yet
+          const allowed = await isAllowed(
+            bridge,
+            selectedToken.address,
+            amountRaw
+          )
+
+          if (!allowed) {
+            await latestToken.current.approve(selectedToken.address)
           }
+
           await latestToken.current.deposit(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
