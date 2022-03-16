@@ -27,7 +27,6 @@ export interface BridgeToken {
   type: TokenType
   name: string
   symbol: string
-  allowed: boolean
   address: string
   l2Address?: string
   logoURI?: string
