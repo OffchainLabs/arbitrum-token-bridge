@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useContext } from 'react'
+import React, { useState, useMemo, useCallback, useContext } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -70,6 +70,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   } = useAppState()
   const bridge = useContext(BridgeContext)
 
+  const [isClaiming, setIsClaiming] = useState(false)
+
   const showRedeemRetryableButton = useMemo(() => {
     return (
       tx.direction === 'deposit-l2' &&
@@ -95,12 +97,29 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     if (tx.uniqueId === null) {
       return
     }
-    let res
-    if (tx.asset === 'eth') {
-      res = await arbTokenBridge.eth.triggerOutbox(tx.uniqueId.toString())
-    } else {
-      res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
+
+    let res, err
+
+    setIsClaiming(true)
+
+    try {
+      if (tx.asset === 'eth') {
+        res = await arbTokenBridge.eth.triggerOutbox(tx.uniqueId.toString())
+      } else {
+        res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
+      }
+    } catch (error: any) {
+      err = error
+      console.warn(err)
+    } finally {
+      setIsClaiming(false)
     }
+
+    // Don't show any alert in case user denies the signature
+    if (err.code === 4001) {
+      return
+    }
+
     if (!res) {
       // eslint-disable-next-line no-alert
       alert("Can't claim this withdrawal yet; try again later")
@@ -177,7 +196,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           <div className="relative group">
             <Button
               size="sm"
-              disabled={networkDetails?.isArbitrum}
+              disabled={isClaiming || networkDetails?.isArbitrum}
               onClick={handleTriggerOutbox}
             >
               Claim
