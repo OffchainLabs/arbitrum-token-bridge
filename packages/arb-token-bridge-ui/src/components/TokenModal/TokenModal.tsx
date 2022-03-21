@@ -322,6 +322,16 @@ export function TokenModalBody({
           .includes(tokenSearch)
       })
       .sort((address1: string, address2: string) => {
+        // Pin ETH to top
+        if (address1 === SpecialETHAddress) {
+          return -1
+        }
+
+        // Pin ETH to top
+        if (address2 === SpecialETHAddress) {
+          return 1
+        }
+
         const bal1 = getBalance(address1)
         const bal2 = getBalance(address2)
 
