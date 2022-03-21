@@ -5,6 +5,7 @@ import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
+import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
 import { BridgeContext } from '../App/App'
@@ -194,15 +195,23 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
         {tx.isWithdrawal && tx.status === 'Confirmed' && (
           <div className="relative group">
-            <Button
-              size="sm"
-              disabled={isClaiming || networkDetails?.isArbitrum}
-              onClick={handleTriggerOutbox}
-            >
-              Claim
-            </Button>
-            {networkDetails?.isArbitrum && (
-              <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
+            {isClaiming ? (
+              <div className="flex justify-center py-1">
+                <Loader type="Oval" color="#28A0F0" height={24} width={24} />
+              </div>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  disabled={networkDetails?.isArbitrum}
+                  onClick={handleTriggerOutbox}
+                >
+                  Claim
+                </Button>
+                {networkDetails?.isArbitrum && (
+                  <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
+                )}
+              </>
             )}
           </div>
         )}
