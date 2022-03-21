@@ -1,10 +1,11 @@
-import React, { useMemo, useCallback, useContext } from 'react'
+import React, { useState, useMemo, useCallback, useContext } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
+import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
 import { BridgeContext } from '../App/App'
@@ -70,6 +71,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   } = useAppState()
   const bridge = useContext(BridgeContext)
 
+  const [isClaiming, setIsClaiming] = useState(false)
+
   const showRedeemRetryableButton = useMemo(() => {
     return (
       tx.direction === 'deposit-l2' &&
@@ -95,12 +98,29 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     if (tx.uniqueId === null) {
       return
     }
-    let res
-    if (tx.asset === 'eth') {
-      res = await arbTokenBridge.eth.triggerOutbox(tx.uniqueId.toString())
-    } else {
-      res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
+
+    let res, err
+
+    setIsClaiming(true)
+
+    try {
+      if (tx.asset === 'eth') {
+        res = await arbTokenBridge.eth.triggerOutbox(tx.uniqueId.toString())
+      } else {
+        res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
+      }
+    } catch (error: any) {
+      err = error
+      console.warn(err)
+    } finally {
+      setIsClaiming(false)
     }
+
+    // Don't show any alert in case user denies the signature
+    if (err.code === 4001) {
+      return
+    }
+
     if (!res) {
       // eslint-disable-next-line no-alert
       alert("Can't claim this withdrawal yet; try again later")
@@ -175,15 +195,23 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
         {tx.isWithdrawal && tx.status === 'Confirmed' && (
           <div className="relative group">
-            <Button
-              size="sm"
-              disabled={networkDetails?.isArbitrum}
-              onClick={handleTriggerOutbox}
-            >
-              Claim
-            </Button>
-            {networkDetails?.isArbitrum && (
-              <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
+            {isClaiming ? (
+              <div className="flex justify-center py-1">
+                <Loader type="Oval" color="#28A0F0" height={24} width={24} />
+              </div>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  disabled={networkDetails?.isArbitrum}
+                  onClick={handleTriggerOutbox}
+                >
+                  Claim
+                </Button>
+                {networkDetails?.isArbitrum && (
+                  <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
+                )}
+              </>
             )}
           </div>
         )}
