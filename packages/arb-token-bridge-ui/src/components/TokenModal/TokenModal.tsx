@@ -99,6 +99,11 @@ function TokenRow({
   }, [token])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
+    // Can happen when switching networks.
+    if (typeof bridgeTokens === 'undefined') {
+      return true
+    }
+
     if (!token) {
       return true
     }
