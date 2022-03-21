@@ -301,21 +301,6 @@ export function TokenModalBody({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
-      .sort((address1: string, address2: string) => {
-        const bal1 = getBalance(address1)
-        const bal2 = getBalance(address2)
-
-        if (!(bal1 || bal2)) {
-          return 0
-        }
-        if (!bal1) {
-          return 1
-        }
-        if (!bal2) {
-          return -1
-        }
-        return bal1.gt(bal2) ? -1 : 1
-      })
       .filter((address: string) => {
         if (!tokenSearch) {
           return true
@@ -336,6 +321,21 @@ export function TokenModalBody({
         )
           .toLowerCase()
           .includes(tokenSearch)
+      })
+      .sort((address1: string, address2: string) => {
+        const bal1 = getBalance(address1)
+        const bal2 = getBalance(address2)
+
+        if (!(bal1 || bal2)) {
+          return 0
+        }
+        if (!bal1) {
+          return 1
+        }
+        if (!bal2) {
+          return -1
+        }
+        return bal1.gt(bal2) ? -1 : 1
       })
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
