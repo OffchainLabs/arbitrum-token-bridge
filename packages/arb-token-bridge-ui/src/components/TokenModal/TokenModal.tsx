@@ -468,10 +468,12 @@ export function TokenModalBody({
 
 const TokenModal = ({
   isOpen,
-  setIsOpen
+  setIsOpen,
+  onImportToken
 }: {
   isOpen: boolean
   setIsOpen: (open: boolean) => void
+  onImportToken: (address: string) => void
 }): JSX.Element => {
   const {
     app: {
@@ -524,8 +526,10 @@ const TokenModal = ({
     }
 
     try {
+      // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        await token.add(_token.address)
+        onImportToken(_token.address)
+        return
       }
 
       const data = await bridge?.l1Bridge.getL1TokenData(_token.address)
