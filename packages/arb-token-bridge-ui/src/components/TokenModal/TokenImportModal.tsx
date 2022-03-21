@@ -177,8 +177,12 @@ export function TokenImportModal({
 
     const foundToken = tokensFromUser[address]
 
+    if (typeof foundToken === 'undefined') {
+      return
+    }
+
     // Listen for the token to be added to the bridge so we can automatically select it
-    if (foundToken?.address !== selectedToken?.address) {
+    if (foundToken.address !== selectedToken?.address) {
       setIsOpen(false)
       selectToken(foundToken)
     }
