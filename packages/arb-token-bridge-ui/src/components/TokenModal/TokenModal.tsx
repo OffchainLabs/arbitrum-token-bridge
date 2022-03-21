@@ -64,6 +64,7 @@ function TokenRow({
   } = useAppState()
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
+  const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -116,7 +117,7 @@ function TokenRow({
       type="button"
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
-      className="w-full flex flex-col items-center sm:flex-row sm:justify-between p-2 sm:px-6 sm:py-3 bg-white hover:bg-gray-100"
+      className="w-full flex flex-col items-center sm:flex-row justify-center sm:justify-between p-2 sm:px-6 sm:py-3 bg-white hover:bg-gray-100"
     >
       <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
         {tokenLogoURI ? (
@@ -130,34 +131,34 @@ function TokenRow({
         )}
 
         <div className="flex flex-col items-start truncate">
-          <div>
-            <span className="font-bold text-xs sm:text-base leading-6 text-gray-900">
-              {tokenName}
+          <div className="flex items-center space-x-2">
+            <span className="font-medium text-xs sm:text-base text-gray-900">
+              {tokenSymbol}
             </span>
-            {token && (
-              <span className="text-xs text-gray-600 font-normal">
-                {' '}
-                {tokenListInfo}
-              </span>
-            )}
+            <span className="text-xs text-gray-500">{tokenName}</span>
           </div>
           {token && (
-            // TODO: anchor shouldn't be nested within a button
-            <a
-              href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs underline text-blue-800"
-              onClick={e => e.stopPropagation()}
-            >
-              {token.address.toLowerCase()}
-            </a>
+            <div className="flex flex-col items-start sm:space-y-1">
+              {/* TODO: anchor shouldn't be nested within a button */}
+              <a
+                href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs underline text-dark-blue"
+                onClick={e => e.stopPropagation()}
+              >
+                {token.address.toLowerCase()}
+              </a>
+              <span className="text-xs text-gray-500 font-normal">
+                {tokenListInfo}
+              </span>
+            </div>
           )}
         </div>
       </div>
 
       {tokenIsAddedToTheBridge ? (
-        <span className="flex items-center text-xs sm:text-base leading-6 font-medium text-gray-900 whitespace-nowrap">
+        <span className="flex items-center text-xs sm:text-sm text-gray-500 whitespace-nowrap">
           {tokenBalance ? (
             formatUnits(tokenBalance, token ? token.decimals : 18)
           ) : (
@@ -170,10 +171,10 @@ function TokenRow({
               />
             </div>
           )}{' '}
-          {token ? token.symbol : 'ETH'}
+          {tokenSymbol}
         </span>
       ) : (
-        <span className="text-xs sm:text-base font-medium text-gray-900">
+        <span className="text-xs sm:text-sm text-dark-blue font-medium">
           Import
         </span>
       )}
@@ -383,7 +384,7 @@ export function TokenModalBody({
             value={newToken}
             onChange={e => setNewToken(e.target.value)}
             placeholder="Search by token name, symbol, L1 or L2 address"
-            className="text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
+            className="text-sm text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
           />
 
           <Button
@@ -399,7 +400,7 @@ export function TokenModalBody({
                 width={16}
               />
             ) : (
-              'Add'
+              <span className="text-sm font-normal">Add</span>
             )}
           </Button>
         </div>
