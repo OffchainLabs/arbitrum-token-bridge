@@ -80,7 +80,6 @@ function tokenListsToSearchableTokenStorage(
                 ...token,
                 type: TokenType.ERC20,
                 l2Address: undefined,
-                allowed: false,
                 tokenLists: []
               }
             } else {
@@ -126,7 +125,6 @@ function tokenListsToSearchableTokenStorage(
                   address: '',
                   l2Address: address,
                   decimals: token.decimals,
-                  allowed: false,
                   tokenLists: []
                 }
               } else {
