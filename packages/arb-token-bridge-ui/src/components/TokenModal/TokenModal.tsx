@@ -297,8 +297,11 @@ export function TokenModalBody({
 
     return [
       SpecialETHAddress,
-      ...Object.keys(tokensFromUser),
-      ...Object.keys(tokensFromLists)
+      // Deduplicate addresses
+      ...new Set([
+        ...Object.keys(tokensFromUser),
+        ...Object.keys(tokensFromLists)
+      ])
     ]
       .filter((address: string) => {
         if (!tokenSearch) {
