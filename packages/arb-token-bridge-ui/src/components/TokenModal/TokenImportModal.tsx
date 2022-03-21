@@ -81,7 +81,7 @@ export function TokenImportModal({
   const {
     app: {
       l1NetworkDetails,
-      arbTokenBridge: { token },
+      arbTokenBridge: { bridgeTokens, token },
       selectedToken
     }
   } = useAppState()
@@ -201,10 +201,12 @@ export function TokenImportModal({
 
     setIsImportingToken(true)
 
-    if (status === ImportStatus.KNOWN) {
+    if (typeof bridgeTokens[address] !== 'undefined') {
+      // Token is already added to the bridge
       setIsOpen(false)
       selectToken(tokenToImport!)
     } else {
+      // Token is not added to the bridge, so we add it
       storeNewToken(address).catch(() => {
         setStatus(ImportStatus.ERROR)
       })
