@@ -44,7 +44,7 @@ function ModalFooter({
     >
       {!hideCancel && (
         <button
-          className="w-1/2 sm:w-auto inline-flex items-center justify-center rounded-xl px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm hover:opacity-75 transition duration-200"
+          className="w-1/2 sm:w-auto inline-flex items-center justify-center rounded-xl px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:text-sm hover:opacity-75 transition duration-200"
           style={{ color: '#11365E' }}
           onClick={onCancel}
         >
