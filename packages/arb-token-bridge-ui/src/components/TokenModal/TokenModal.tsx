@@ -248,6 +248,8 @@ function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   }
 }
 
+const SpecialETHAddress = 'eth.address'
+
 export function TokenModalBody({
   onTokenSelected
 }: {
@@ -271,17 +273,33 @@ export function TokenModalBody({
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
+  const getBalance = useCallback(
+    (address: string) => {
+      if (address === SpecialETHAddress) {
+        return isDepositMode
+          ? balances?.eth?.balance
+          : balances?.eth?.arbChainBalance
+      }
+
+      return isDepositMode
+        ? balances?.erc20[address]?.balance
+        : balances?.erc20[address]?.arbChainBalance
+    },
+    [isDepositMode, balances]
+  )
+
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
 
-    return [...Object.keys(tokensFromUser), ...Object.keys(tokensFromLists)]
+    return [
+      SpecialETHAddress,
+      ...Object.keys(tokensFromUser),
+      ...Object.keys(tokensFromLists)
+    ]
       .sort((address1: string, address2: string) => {
-        const bal1 = isDepositMode
-          ? balances?.erc20[address1]?.balance
-          : balances?.erc20[address1]?.arbChainBalance
-        const bal2 = isDepositMode
-          ? balances?.erc20[address2]?.balance
-          : balances?.erc20[address2]?.arbChainBalance
+        const bal1 = getBalance(address1)
+        const bal2 = getBalance(address2)
+
         if (!(bal1 || bal2)) {
           return 0
         }
@@ -295,7 +313,11 @@ export function TokenModalBody({
       })
       .filter((address: string) => {
         if (!tokenSearch) {
-          return false
+          return true
+        }
+
+        if (address === SpecialETHAddress) {
+          return 'ethereumeth'.includes(tokenSearch)
         }
 
         const token = tokensFromUser[address] || tokensFromLists[address]
@@ -310,7 +332,7 @@ export function TokenModalBody({
           .toLowerCase()
           .includes(tokenSearch)
       })
-  }, [tokensFromLists, tokensFromUser, isDepositMode, newToken, balances])
+  }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
@@ -379,17 +401,7 @@ export function TokenModalBody({
           </Button>
         </div>
       </form>
-      <div className="flex flex-col gap-4 overflow-auto max-h-tokenList">
-        <TokenRow
-          key="TokenRowEther"
-          onClick={() => onTokenSelected(null)}
-          token={null}
-          tokenBalance={
-            isDepositMode
-              ? balances?.eth.balance
-              : balances?.eth.arbChainBalance
-          }
-        />
+      <div className="flex flex-col overflow-auto max-h-tokenList">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List
@@ -399,6 +411,22 @@ export function TokenModalBody({
               rowHeight={94}
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
+
+                if (address === SpecialETHAddress) {
+                  return (
+                    <TokenRow
+                      key="TokenRowEther"
+                      onClick={() => onTokenSelected(null)}
+                      token={null}
+                      tokenBalance={
+                        isDepositMode
+                          ? balances?.eth.balance
+                          : balances?.eth.arbChainBalance
+                      }
+                    />
+                  )
+                }
+
                 const token =
                   tokensFromLists[address] || tokensFromUser[address]
 
