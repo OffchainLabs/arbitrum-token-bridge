@@ -21,7 +21,6 @@ function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
     name: data.name,
     type: TokenType.ERC20,
     symbol: data.symbol,
-    allowed: data.allowed,
     address: data.contract.address,
     decimals: data.decimals
   }
