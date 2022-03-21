@@ -13,7 +13,7 @@ const TokenButton = (): JSX.Element => {
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const [tokeModalOpen, setTokenModalOpen] = useState(false)
+  const [tokenModalOpen, setTokenModalOpen] = useState(false)
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
@@ -32,7 +32,7 @@ const TokenButton = (): JSX.Element => {
 
   return (
     <div>
-      <TokenModal isOpen={tokeModalOpen} setIsOpen={setTokenModalOpen} />
+      <TokenModal isOpen={tokenModalOpen} setIsOpen={setTokenModalOpen} />
       <button
         type="button"
         onClick={() => setTokenModalOpen(true)}
