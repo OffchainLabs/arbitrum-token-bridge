@@ -112,74 +112,72 @@ function TokenRow({
   }, [token, bridgeTokens])
 
   return (
-    <div className="flex w-full" style={style}>
-      <button
-        type="button"
-        onClick={onClick}
-        style={{ height: '84px' }}
-        className="w-full flex flex-col items-center sm:flex-row sm:justify-between p-2 sm:px-6 sm:py-3 border border-gray-300 rounded-md bg-white hover:bg-gray-100"
-      >
-        <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
-          {tokenLogoURI ? (
-            <img
-              src={tokenLogoURI}
-              alt={`${tokenName} logo`}
-              className="rounded-full w-4 sm:w-8 h-4 sm:h-8 flex-grow-0"
-            />
-          ) : (
-            <div className="rounded-full w-4 sm:w-8 h-4 sm:h-8 bg-navy" />
-          )}
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ ...style, minHeight: '84px' }}
+      className="w-full flex flex-col items-center sm:flex-row sm:justify-between p-2 sm:px-6 sm:py-3 bg-white hover:bg-gray-100"
+    >
+      <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
+        {tokenLogoURI ? (
+          <img
+            src={tokenLogoURI}
+            alt={`${tokenName} logo`}
+            className="rounded-full w-4 sm:w-8 h-4 sm:h-8 flex-grow-0"
+          />
+        ) : (
+          <div className="rounded-full w-4 sm:w-8 h-4 sm:h-8 bg-navy" />
+        )}
 
-          <div className="flex flex-col items-start truncate">
-            <div>
-              <span className="font-bold text-xs sm:text-base leading-6 text-gray-900">
-                {tokenName}
-              </span>
-              {token && (
-                <span className="text-xs text-gray-600 font-normal">
-                  {' '}
-                  {tokenListInfo}
-                </span>
-              )}
-            </div>
+        <div className="flex flex-col items-start truncate">
+          <div>
+            <span className="font-bold text-xs sm:text-base leading-6 text-gray-900">
+              {tokenName}
+            </span>
             {token && (
-              // TODO: anchor shouldn't be nested within a button
-              <a
-                href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs underline text-blue-800"
-                onClick={e => e.stopPropagation()}
-              >
-                {token.address.toLowerCase()}
-              </a>
+              <span className="text-xs text-gray-600 font-normal">
+                {' '}
+                {tokenListInfo}
+              </span>
             )}
           </div>
+          {token && (
+            // TODO: anchor shouldn't be nested within a button
+            <a
+              href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs underline text-blue-800"
+              onClick={e => e.stopPropagation()}
+            >
+              {token.address.toLowerCase()}
+            </a>
+          )}
         </div>
+      </div>
 
-        {tokenIsAddedToTheBridge ? (
-          <span className="flex items-center text-xs sm:text-base leading-6 font-medium text-gray-900 whitespace-nowrap">
-            {tokenBalance ? (
-              formatUnits(tokenBalance, token ? token.decimals : 18)
-            ) : (
-              <div className="mr-2">
-                <Loader
-                  type="Oval"
-                  color="rgb(40, 160, 240)"
-                  height={14}
-                  width={14}
-                />
-              </div>
-            )}{' '}
-            {token ? token.symbol : 'ETH'}
-          </span>
-        ) : (
-          <span className="text-xs sm:text-base font-medium text-gray-900">
-            Import
-          </span>
-        )}
-      </button>
-    </div>
+      {tokenIsAddedToTheBridge ? (
+        <span className="flex items-center text-xs sm:text-base leading-6 font-medium text-gray-900 whitespace-nowrap">
+          {tokenBalance ? (
+            formatUnits(tokenBalance, token ? token.decimals : 18)
+          ) : (
+            <div className="mr-2">
+              <Loader
+                type="Oval"
+                color="rgb(40, 160, 240)"
+                height={14}
+                width={14}
+              />
+            </div>
+          )}{' '}
+          {token ? token.symbol : 'ETH'}
+        </span>
+      ) : (
+        <span className="text-xs sm:text-base font-medium text-gray-900">
+          Import
+        </span>
+      )}
+    </button>
   )
 }
 
@@ -406,14 +404,14 @@ export function TokenModalBody({
           </Button>
         </div>
       </form>
-      <div className="flex flex-col overflow-auto max-h-tokenList">
+      <div className="flex flex-col overflow-auto max-h-tokenList border border-gray-300 rounded-md">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List
-              width={width}
+              width={width - 2}
               height={isDesktop ? 380 : 200}
               rowCount={tokensToShow.length}
-              rowHeight={94}
+              rowHeight={84}
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
 
