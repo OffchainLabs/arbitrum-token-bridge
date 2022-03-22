@@ -3,12 +3,7 @@ import { BigNumber, constants, ethers, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import {
-  Bridge,
-  OutgoingMessageState,
-  WithdrawalInitiated,
-  ERC20__factory
-} from 'arb-ts'
+import { Bridge, OutgoingMessageState, WithdrawalInitiated } from 'arb-ts'
 
 import { Rollup__factory } from 'arb-ts/dist/lib/abi/factories/Rollup__factory'
 import { Node__factory } from 'arb-ts/dist/lib/abi/factories/Node__factory'
@@ -43,9 +38,13 @@ import {
   L1Network,
   L2Network,
   EthBridger,
+  Erc20Bridger,
+  MultiCaller,
   getL1Network,
   getL2Network
 } from '@arbitrum/sdk'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -78,6 +77,7 @@ export const useArbTokenBridge = (
   const [l2Network, setL2Network] = useState<L2Network>()
 
   const [ethBridger, setEthBridger] = useState<EthBridger>()
+  const [erc20Bridger, setErc20Bridger] = useState<Erc20Bridger>()
 
   useEffect(() => {
     const sync = async function () {
@@ -88,6 +88,7 @@ export const useArbTokenBridge = (
       setL2Network(_l2Network)
 
       setEthBridger(new EthBridger(_l2Network))
+      setErc20Bridger(new Erc20Bridger(_l2Network))
     }
 
     sync()
@@ -166,6 +167,70 @@ export const useArbTokenBridge = (
   ] = useTransactions()
 
   const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
+
+  async function getL1TokenData(erc20L1Address: string) {
+    if (typeof l1Signer.provider === 'undefined') {
+      throw new Error(`No instance of L1Provider found`)
+    }
+
+    if (typeof erc20Bridger === 'undefined') {
+      throw new Error(`No instance of Erc20Bridger found`)
+    }
+
+    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+      erc20L1Address,
+      l1Signer.provider
+    )
+
+    const contract = ERC20__factory.connect(erc20L1Address, l1Signer)
+    const iface = ERC20__factory.createInterface()
+
+    const multiCallParams = [
+      {
+        targetAddr: erc20L1Address,
+        encoder: () => iface.encodeFunctionData('name'),
+        decoder: (data: string) => iface.decodeFunctionResult('name', data)[0]
+      },
+      {
+        targetAddr: erc20L1Address,
+        encoder: () => iface.encodeFunctionData('symbol'),
+        decoder: (data: string) => iface.decodeFunctionResult('symbol', data)[0]
+      },
+      {
+        targetAddr: erc20L1Address,
+        encoder: () => iface.encodeFunctionData('balanceOf', [walletAddress]),
+        decoder: (data: string) =>
+          iface.decodeFunctionResult('balanceOf', data)[0]
+      },
+      {
+        targetAddr: erc20L1Address,
+        encoder: () =>
+          iface.encodeFunctionData('allowance', [
+            walletAddress,
+            l1GatewayAddress
+          ]),
+        decoder: (data: string) =>
+          iface.decodeFunctionResult('allowance', data)[0]
+      },
+      {
+        targetAddr: erc20L1Address,
+        encoder: () => iface.encodeFunctionData('decimals'),
+        decoder: (data: string) =>
+          iface.decodeFunctionResult('decimals', data)[0]
+      }
+    ]
+
+    const multiCaller = new MultiCaller(
+      l1Signer.provider,
+      // TODO: fix, currently hard-coded to rinkeby l1 multicall
+      '0x5ba1e12693dc8f9c48aad8770482f4739beed696'
+    )
+
+    const [name, symbol, balance, allowance, decimals] =
+      await multiCaller.multiCall(multiCallParams)
+
+    return { name, symbol, balance, allowance, decimals, contract }
+  }
 
   const l1NetworkIDCached = useCallback(async () => {
     if (l11NetworkID) return l11NetworkID
@@ -310,54 +375,58 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-  const depositToken = useCallback(
-    async (erc20L1Address: string, amountRaw: BigNumber) => {
-      const bridgeToken = bridgeTokens[erc20L1Address]
-      const { symbol, decimals } = await (async () => {
-        if (bridgeToken) {
-          const { symbol, decimals } = bridgeToken
-          return { symbol, decimals }
-        }
-        const { symbol, decimals } = await bridge.l1Bridge.getL1TokenData(
-          erc20L1Address
-        )
-        addToken(erc20L1Address)
-        return { symbol, decimals }
-      })()
-      const amountReadable = await utils.formatUnits(amountRaw, decimals)
+  async function depositToken(erc20L1Address: string, amount: BigNumber) {
+    if (typeof l2Signer === 'undefined') {
+      throw new Error(`No instance of L2Signer found`)
+    }
 
-      const tx = await bridge.deposit({
-        erc20L1Address: erc20L1Address,
-        amount: amountRaw
-      })
+    if (typeof l2Signer.provider === 'undefined') {
+      throw new Error(`No instance of L2Signer found`)
+    }
 
-      addTransaction({
-        type: 'deposit-l1',
-        status: 'pending',
-        value: amountReadable,
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        sender: await walletAddressCached(),
-        l1NetworkID: await l1NetworkIDCached()
-      })
-      try {
-        const receipt = await tx.wait()
-        const seqNums = await bridge.getInboxSeqNumFromContractTransaction(
-          receipt
-        )
-        if (!seqNums) throw new Error('No sequence number detected')
-        const seqNum = seqNums[0].toNumber()
-        updateTransaction(receipt, tx, seqNum)
-        updateTokenData(erc20L1Address)
-        return receipt
-      } catch (err) {
-        console.warn('deposit token failure', err)
-        throw err
+    if (typeof erc20Bridger === 'undefined') {
+      throw new Error(`No instance of Erc20Bridger found`)
+    }
+
+    const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+
+    const tx = await erc20Bridger.deposit({
+      l1Signer,
+      l2Provider: l2Signer.provider,
+      erc20L1Address,
+      amount
+    })
+
+    addTransaction({
+      type: 'deposit-l1',
+      status: 'pending',
+      value: utils.formatUnits(amount, decimals),
+      txID: tx.hash,
+      assetName: symbol,
+      assetType: AssetType.ERC20,
+      // TODO: Update the following two calls
+      sender: await walletAddressCached(),
+      l1NetworkID: await l1NetworkIDCached()
+    })
+
+    try {
+      const receipt = await tx.wait()
+      const messages = await receipt.getL1ToL2Messages(l2Signer)
+
+      if (messages.length === 0) {
+        return
       }
-    },
-    [bridge, bridgeTokens]
-  )
+
+      const seqNum = messages.map(m => m.messageNumber)[0]
+
+      updateTransaction(receipt, tx, seqNum.toNumber())
+      updateTokenData(erc20L1Address)
+      return receipt
+    } catch (err) {
+      console.warn('deposit token failure', err)
+      throw err
+    }
+  }
 
   const withdrawToken = useCallback(
     async (erc20l1Address: string, amountRaw: BigNumber) => {
