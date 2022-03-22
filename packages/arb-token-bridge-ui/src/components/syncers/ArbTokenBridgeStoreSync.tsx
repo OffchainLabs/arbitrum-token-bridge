@@ -11,7 +11,12 @@ const ArbTokenBridgeStoreSync = ({
   bridge: Bridge
 }): JSX.Element => {
   const actions = useActions()
-  const arbTokenBridge: ArbTokenBridge = useArbTokenBridge(bridge, false)
+  const arbTokenBridge: ArbTokenBridge = useArbTokenBridge(
+    bridge,
+    false,
+    bridge.l1Signer,
+    bridge.l2Signer
+  )
 
   useEffect(() => {
     actions.app.setArbTokenBridge(arbTokenBridge)

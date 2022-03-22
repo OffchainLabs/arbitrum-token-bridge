@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
+import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import {
@@ -38,6 +39,13 @@ import {
   getNodes,
   NodeDataResult
 } from '../util/graph'
+import {
+  L1Network,
+  L2Network,
+  EthBridger,
+  getL1Network,
+  getL2Network
+} from '@arbitrum/sdk'
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -57,11 +65,33 @@ class TokenDisabledError extends Error {
     this.name = 'TokenDisabledError'
   }
 }
+
 export const useArbTokenBridge = (
   bridge: Bridge,
-  autoLoadCache = true
+  autoLoadCache = true,
+  l1Signer: Signer,
+  l2Signer: Signer
 ): ArbTokenBridge => {
   const [walletAddress, setWalletAddress] = useState('')
+
+  const [l1Network, setL1Network] = useState<L1Network>()
+  const [l2Network, setL2Network] = useState<L2Network>()
+
+  const [ethBridger, setEthBridger] = useState<EthBridger>()
+
+  useEffect(() => {
+    const sync = async function () {
+      const _l1Network = await getL1Network(l1Signer)
+      const _l2Network = await getL2Network(l2Signer)
+
+      setL1Network(_l1Network)
+      setL2Network(_l2Network)
+
+      setEthBridger(new EthBridger(_l2Network))
+    }
+
+    sync()
+  }, [l1Signer, l2Signer])
 
   const defaultBalance = {
     balance: null,
@@ -155,23 +185,50 @@ export const useArbTokenBridge = (
     }
   }, [walletAddress, bridge])
 
-  const depositEth = async (weiValue: BigNumber) => {
-    const etherVal = utils.formatUnits(weiValue, 18)
-    const tx = await bridge.depositETH(weiValue)
+  const depositEth = async (amount: BigNumber) => {
+    // TODO: clean up
+    if (typeof l1Signer === 'undefined') {
+      throw new Error(`No instance of L1Signer found`)
+    }
+
+    if (typeof l2Signer === 'undefined') {
+      throw new Error(`No instance of L2Signer found`)
+    }
+
+    if (typeof l2Signer.provider === 'undefined') {
+      throw new Error(`No instance of L2Signer found`)
+    }
+
+    if (typeof ethBridger === 'undefined') {
+      throw new Error(`No instance of EthBridger found`)
+    }
+
+    const tx = await ethBridger.deposit({
+      l1Signer,
+      l2Provider: l2Signer.provider,
+      amount
+    })
+
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: etherVal,
+      value: utils.formatUnits(amount, 18),
       txID: tx.hash,
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: await walletAddressCached(),
       l1NetworkID: await l1NetworkIDCached()
     })
+
     const receipt = await tx.wait()
-    const seqNums = await bridge.getInboxSeqNumFromContractTransaction(receipt)
-    if (!seqNums) return
-    const seqNum = seqNums[0]
+    const messages = await receipt.getL1ToL2Messages(l2Signer)
+
+    if (messages.length === 0) {
+      return
+    }
+
+    const seqNum = messages.map(m => m.messageNumber)[0]
+
     updateTransaction(receipt, tx, seqNum.toNumber())
     updateEthBalances()
   }
