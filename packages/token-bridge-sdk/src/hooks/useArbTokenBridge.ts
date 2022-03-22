@@ -183,42 +183,6 @@ export const useArbTokenBridge = (
     )
 
     const contract = ERC20__factory.connect(erc20L1Address, l1Signer)
-    const iface = ERC20__factory.createInterface()
-
-    const multiCallParams = [
-      {
-        targetAddr: erc20L1Address,
-        encoder: () => iface.encodeFunctionData('name'),
-        decoder: (data: string) => iface.decodeFunctionResult('name', data)[0]
-      },
-      {
-        targetAddr: erc20L1Address,
-        encoder: () => iface.encodeFunctionData('symbol'),
-        decoder: (data: string) => iface.decodeFunctionResult('symbol', data)[0]
-      },
-      {
-        targetAddr: erc20L1Address,
-        encoder: () => iface.encodeFunctionData('balanceOf', [walletAddress]),
-        decoder: (data: string) =>
-          iface.decodeFunctionResult('balanceOf', data)[0]
-      },
-      {
-        targetAddr: erc20L1Address,
-        encoder: () =>
-          iface.encodeFunctionData('allowance', [
-            walletAddress,
-            l1GatewayAddress
-          ]),
-        decoder: (data: string) =>
-          iface.decodeFunctionResult('allowance', data)[0]
-      },
-      {
-        targetAddr: erc20L1Address,
-        encoder: () => iface.encodeFunctionData('decimals'),
-        decoder: (data: string) =>
-          iface.decodeFunctionResult('decimals', data)[0]
-      }
-    ]
 
     const multiCaller = new MultiCaller(
       l1Signer.provider,
@@ -226,10 +190,15 @@ export const useArbTokenBridge = (
       '0x5ba1e12693dc8f9c48aad8770482f4739beed696'
     )
 
-    const [name, symbol, balance, allowance, decimals] =
-      await multiCaller.multiCall(multiCallParams)
+    const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
+      name: true,
+      symbol: true,
+      balanceOf: { account: walletAddress },
+      allowance: { owner: walletAddress, spender: l1GatewayAddress },
+      decimals: true
+    })
 
-    return { name, symbol, balance, allowance, decimals, contract }
+    return { ...tokenData, contract }
   }
 
   const l1NetworkIDCached = useCallback(async () => {
@@ -402,7 +371,7 @@ export const useArbTokenBridge = (
       status: 'pending',
       value: utils.formatUnits(amount, decimals),
       txID: tx.hash,
-      assetName: symbol,
+      assetName: symbol!,
       assetType: AssetType.ERC20,
       // TODO: Update the following two calls
       sender: await walletAddressCached(),
