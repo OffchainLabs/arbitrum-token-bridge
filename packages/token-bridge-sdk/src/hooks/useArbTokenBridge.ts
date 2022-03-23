@@ -175,6 +175,12 @@ export const useArbTokenBridge = (
 
   const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
 
+  /**
+   * Retrieves data about an ERC-20 token by its L1 address.
+   * Does not throw if the provided address is not a valid ERC-20 token.
+   * @param erc20L1Address
+   * @returns
+   */
   async function getL1TokenData(erc20L1Address: string) {
     if (typeof l1.signer.provider === 'undefined') {
       throw new Error(`No instance of L1Provider found`)
