@@ -94,8 +94,8 @@ export interface TokenBridgeParams {
 
 export const useArbTokenBridge = (
   bridge: Bridge,
-  autoLoadCache = true,
-  params: TokenBridgeParams
+  params: TokenBridgeParams,
+  autoLoadCache = true
 ): ArbTokenBridge => {
   const { l1, l2 } = params
 

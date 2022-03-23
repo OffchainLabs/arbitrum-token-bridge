@@ -20,8 +20,8 @@ export function ArbTokenBridgeStoreSync({
   const actions = useActions()
   const arbTokenBridge: ArbTokenBridge = useArbTokenBridge(
     bridge,
-    false,
-    tokenBridgeParams
+    tokenBridgeParams,
+    false
   )
 
   useEffect(() => {
