@@ -114,12 +114,16 @@ export function TokenImportModal({
 
   const getL1TokenData = useCallback(
     async (eitherL1OrL2Address: string) => {
-      const addressOnL1 = await bridge?.getERC20L1Address(eitherL1OrL2Address)
+      if (!bridge) {
+        return
+      }
+
+      const addressOnL1 = await bridge.getERC20L1Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return bridge?.l1Bridge.getL1TokenData(addressOnL1)
+        return bridge.l1Bridge.getL1TokenData(addressOnL1)
       } else {
-        return bridge?.l1Bridge.getL1TokenData(eitherL1OrL2Address)
+        return bridge.l1Bridge.getL1TokenData(eitherL1OrL2Address)
       }
     },
     [bridge]
