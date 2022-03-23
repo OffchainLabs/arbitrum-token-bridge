@@ -8,7 +8,7 @@ export interface SearchableToken extends ERC20BridgeToken {
   tokenLists: number[]
 }
 
-export type SearchableTokenStorage = { [address: string]: SearchableToken }
+export type SearchableTokenStorage = { [l1Address: string]: SearchableToken }
 
 export function useTokensFromLists(): SearchableTokenStorage {
   const {
