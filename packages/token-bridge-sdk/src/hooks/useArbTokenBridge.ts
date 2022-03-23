@@ -227,7 +227,7 @@ export const useArbTokenBridge = (
 
   const depositEth = async (amount: BigNumber) => {
     if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 Signer`)
+      throw new Error(`No provider found for L2 signer`)
     }
 
     const ethBridger = new EthBridger(l2.network)
@@ -253,8 +253,9 @@ export const useArbTokenBridge = (
     const messages = await receipt.getL1ToL2Messages(l2.signer)
 
     if (messages.length !== 1) {
-      // TODO: handle this
-      return
+      throw new Error(
+        `Expected a single L1 to L2 message but got ${messages.length}`
+      )
     }
 
     const seqNum = messages.map(m => m.messageNumber)[0]
@@ -342,7 +343,7 @@ export const useArbTokenBridge = (
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
     if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 Signer`)
+      throw new Error(`No provider found for L2 signer`)
     }
 
     const erc20Bridger = new Erc20Bridger(l2.network)
@@ -372,8 +373,9 @@ export const useArbTokenBridge = (
       const messages = await receipt.getL1ToL2Messages(l2.signer)
 
       if (messages.length !== 1) {
-        // TODO: handle this
-        return
+        throw new Error(
+          `Expected a single L1 to L2 message but got ${messages.length}`
+        )
       }
 
       const seqNum = messages.map(m => m.messageNumber)[0]
