@@ -65,9 +65,20 @@ function ModalFooter({
 enum ImportStatus {
   LOADING,
   KNOWN,
+  KNOWN_UNIMPORTED,
   UNKNOWN,
   ERROR
 }
+
+type TokenListSearchResult =
+  | {
+      found: false
+    }
+  | {
+      found: true
+      token: ERC20BridgeToken
+      status: ImportStatus
+    }
 
 export function TokenImportModal({
   isOpen,
@@ -100,6 +111,7 @@ export function TokenImportModal({
       case ImportStatus.LOADING:
         return 'Loading token'
       case ImportStatus.KNOWN:
+      case ImportStatus.KNOWN_UNIMPORTED:
         return 'Import known token'
       case ImportStatus.UNKNOWN:
         return (
@@ -129,6 +141,37 @@ export function TokenImportModal({
     [bridge]
   )
 
+  const searchForTokenInLists = useCallback(
+    (erc20L1Address: string): TokenListSearchResult => {
+      if (typeof bridgeTokens === 'undefined') {
+        return { found: false }
+      }
+
+      // We found the token in an imported list
+      if (typeof bridgeTokens[erc20L1Address] !== 'undefined') {
+        return {
+          found: true,
+          token: bridgeTokens[erc20L1Address]!,
+          status: ImportStatus.KNOWN
+        }
+      }
+
+      const tokens = { ...tokensFromLists, ...tokensFromUser }
+
+      // We found the token in an unimported list
+      if (typeof tokens[erc20L1Address] !== 'undefined') {
+        return {
+          found: true,
+          token: tokens[erc20L1Address],
+          status: ImportStatus.KNOWN_UNIMPORTED
+        }
+      }
+
+      return { found: false }
+    },
+    [bridgeTokens, tokensFromLists, tokensFromUser]
+  )
+
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
       await token.updateTokenData(_token.address)
@@ -142,12 +185,11 @@ export function TokenImportModal({
       return
     }
 
-    const tokens = { ...tokensFromLists, ...tokensFromUser }
+    const searchResult1 = searchForTokenInLists(address)
 
-    // The address provided was an L1 address, and we found it within our lists
-    if (typeof tokens[address] !== 'undefined') {
-      setTokenToImport(tokens[address])
-      setStatus(ImportStatus.KNOWN)
+    if (searchResult1.found) {
+      setStatus(searchResult1.status)
+      setTokenToImport(searchResult1.token)
 
       return
     }
@@ -157,11 +199,12 @@ export function TokenImportModal({
       .then(data => {
         if (data) {
           const addressOnL1 = data.contract.address.toLowerCase()
+          const searchResult2 = searchForTokenInLists(addressOnL1)
 
-          if (tokens[addressOnL1]) {
+          if (searchResult2.found) {
             // The address provided was an L2 address, and we found the corresponding L1 address within our lists
-            setStatus(ImportStatus.KNOWN)
-            setTokenToImport(tokens[addressOnL1])
+            setStatus(searchResult2.status)
+            setTokenToImport(searchResult2.token)
           } else {
             // We couldn't find the address within our lists
             setStatus(ImportStatus.UNKNOWN)
@@ -172,7 +215,7 @@ export function TokenImportModal({
       .catch(() => {
         setStatus(ImportStatus.ERROR)
       })
-  }, [isOpen, tokensFromLists, tokensFromUser, address, getL1TokenData])
+  }, [isOpen, address, searchForTokenInLists, getL1TokenData])
 
   useEffect(() => {
     if (!isOpen) {
@@ -272,7 +315,13 @@ export function TokenImportModal({
     <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
       <div className="flex flex-col space-y-2 -mb-6">
         {status === ImportStatus.KNOWN && (
-          <span>This token is on an active token list as:</span>
+          <span>This token is on an imported token list as:</span>
+        )}
+        {status === ImportStatus.KNOWN_UNIMPORTED && (
+          <span>
+            This token hasn't been imported yet but appears on a token list. Are
+            you sure you want to import it?
+          </span>
         )}
 
         {status === ImportStatus.UNKNOWN && (
