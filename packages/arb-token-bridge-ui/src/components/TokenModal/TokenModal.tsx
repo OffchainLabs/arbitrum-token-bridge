@@ -252,7 +252,7 @@ function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
   }
 }
 
-const SpecialETHAddress = 'eth.address'
+const ETH_IDENTIFIER = 'eth.address'
 
 export function TokenModalBody({
   onTokenSelected
@@ -279,7 +279,7 @@ export function TokenModalBody({
 
   const getBalance = useCallback(
     (address: string) => {
-      if (address === SpecialETHAddress) {
+      if (address === ETH_IDENTIFIER) {
         return isDepositMode
           ? balances?.eth?.balance
           : balances?.eth?.arbChainBalance
@@ -296,7 +296,7 @@ export function TokenModalBody({
     const tokenSearch = newToken.trim().toLowerCase()
 
     return [
-      SpecialETHAddress,
+      ETH_IDENTIFIER,
       // Deduplicate addresses
       ...new Set([
         ...Object.keys(tokensFromUser),
@@ -308,7 +308,7 @@ export function TokenModalBody({
           return true
         }
 
-        if (address === SpecialETHAddress) {
+        if (address === ETH_IDENTIFIER) {
           return 'ethereumeth'.includes(tokenSearch)
         }
 
@@ -326,12 +326,12 @@ export function TokenModalBody({
       })
       .sort((address1: string, address2: string) => {
         // Pin ETH to top
-        if (address1 === SpecialETHAddress) {
+        if (address1 === ETH_IDENTIFIER) {
           return -1
         }
 
         // Pin ETH to top
-        if (address2 === SpecialETHAddress) {
+        if (address2 === ETH_IDENTIFIER) {
           return 1
         }
 
@@ -429,7 +429,7 @@ export function TokenModalBody({
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
 
-                if (address === SpecialETHAddress) {
+                if (address === ETH_IDENTIFIER) {
                   return (
                     <TokenRow
                       key="TokenRowEther"
