@@ -368,26 +368,21 @@ export const useArbTokenBridge = (
       l1NetworkID: String(l1.network.chainID)
     })
 
-    try {
-      const receipt = await tx.wait()
-      const messages = await receipt.getL1ToL2Messages(l2.signer)
+    const receipt = await tx.wait()
+    const messages = await receipt.getL1ToL2Messages(l2.signer)
 
-      if (messages.length !== 1) {
-        throw new Error(
-          `Expected a single L1 to L2 message but got ${messages.length}`
-        )
-      }
-
-      const seqNum = messages.map(m => m.messageNumber)[0]
-
-      updateTransaction(receipt, tx, seqNum.toNumber())
-      updateTokenData(erc20L1Address)
-
-      return receipt
-    } catch (err) {
-      console.warn('deposit token failure', err)
-      throw err
+    if (messages.length !== 1) {
+      throw new Error(
+        `Expected a single L1 to L2 message but got ${messages.length}`
+      )
     }
+
+    const seqNum = messages.map(m => m.messageNumber)[0]
+
+    updateTransaction(receipt, tx, seqNum.toNumber())
+    updateTokenData(erc20L1Address)
+
+    return receipt
   }
 
   const withdrawToken = useCallback(
