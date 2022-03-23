@@ -9,9 +9,7 @@ import {
   L2Network,
   EthBridger,
   Erc20Bridger,
-  MultiCaller,
-  getL1Network,
-  getL2Network
+  MultiCaller
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -83,28 +81,25 @@ function getDefaultTokenSymbol(address: string) {
   )
 }
 
+export interface TokenBridgeParams {
+  l1: {
+    signer: Signer
+    network: L1Network
+  }
+  l2: {
+    signer: Signer
+    network: L2Network
+  }
+}
+
 export const useArbTokenBridge = (
   bridge: Bridge,
   autoLoadCache = true,
-  l1Signer: Signer,
-  l2Signer: Signer
+  params: TokenBridgeParams
 ): ArbTokenBridge => {
+  const { l1, l2 } = params
+
   const [walletAddress, setWalletAddress] = useState('')
-
-  const [l1Network, setL1Network] = useState<L1Network>()
-  const [l2Network, setL2Network] = useState<L2Network>()
-
-  useEffect(() => {
-    const sync = async function () {
-      const _l1Network = await getL1Network(l1Signer)
-      const _l2Network = await getL2Network(l2Signer)
-
-      setL1Network(_l1Network)
-      setL2Network(_l2Network)
-    }
-
-    sync()
-  }, [l1Signer, l2Signer])
 
   const defaultBalance = {
     balance: null,
@@ -181,19 +176,19 @@ export const useArbTokenBridge = (
   const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
 
   async function getL1TokenData(erc20L1Address: string) {
-    if (typeof l1Signer.provider === 'undefined') {
+    if (typeof l1.signer.provider === 'undefined') {
       throw new Error(`No instance of L1Provider found`)
     }
 
-    const erc20Bridger = new Erc20Bridger(l2Network!)
+    const erc20Bridger = new Erc20Bridger(l2.network)
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
-      l1Signer.provider
+      l1.signer.provider
     )
 
-    const contract = ERC20__factory.connect(erc20L1Address, l1Signer)
+    const contract = ERC20__factory.connect(erc20L1Address, l1.signer)
 
-    const multiCaller = await MultiCaller.fromProvider(l1Signer.provider)
+    const multiCaller = await MultiCaller.fromProvider(l1.signer.provider)
     const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
       name: true,
       symbol: true,
@@ -231,15 +226,15 @@ export const useArbTokenBridge = (
   }, [walletAddress, bridge])
 
   const depositEth = async (amount: BigNumber) => {
-    const ethBridger = new EthBridger(l2Network!)
-
-    if (typeof l2Signer.provider === 'undefined') {
-      throw new Error(`No instance of L2Signer found`)
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 Signer`)
     }
 
+    const ethBridger = new EthBridger(l2.network)
+
     const tx = await ethBridger.deposit({
-      l1Signer,
-      l2Provider: l2Signer.provider,
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
       amount
     })
 
@@ -255,7 +250,7 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
-    const messages = await receipt.getL1ToL2Messages(l2Signer)
+    const messages = await receipt.getL1ToL2Messages(l2.signer)
 
     if (messages.length !== 1) {
       // TODO: handle this
@@ -346,17 +341,17 @@ export const useArbTokenBridge = (
   }
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
-    if (typeof l2Signer.provider === 'undefined') {
-      throw new Error(`No instance of L2Signer found`)
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 Signer`)
     }
 
-    const erc20Bridger = new Erc20Bridger(l2Network!)
+    const erc20Bridger = new Erc20Bridger(l2.network)
 
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
     const tx = await erc20Bridger.deposit({
-      l1Signer,
-      l2Provider: l2Signer.provider,
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
       erc20L1Address,
       amount
     })
@@ -375,7 +370,7 @@ export const useArbTokenBridge = (
 
     try {
       const receipt = await tx.wait()
-      const messages = await receipt.getL1ToL2Messages(l2Signer)
+      const messages = await receipt.getL1ToL2Messages(l2.signer)
 
       if (messages.length !== 1) {
         // TODO: handle this

@@ -11,7 +11,8 @@ import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
-import { Bridge } from 'token-bridge-sdk'
+import { getL1Network, getL2Network } from '@arbitrum/sdk'
+import { Bridge, TokenBridgeParams } from 'token-bridge-sdk'
 
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
@@ -160,6 +161,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
   const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
+  const [tokenBridgeParams, setTokenBridgeParams] =
+    useState<TokenBridgeParams | null>(null)
 
   const {
     account: usersMetamaskAddress,
@@ -285,8 +288,22 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const l1Signer = getL1Signer(network)
     const l2Signer = getL2Signer(network)
 
+    const l1Network = await getL1Network(l1Signer)
+    const l2Network = await getL2Network(l2Signer)
+
     const l1Address = await l1Signer.getAddress()
     const l2Address = await l2Signer.getAddress()
+
+    setTokenBridgeParams({
+      l1: {
+        signer: l1Signer,
+        network: l1Network
+      },
+      l2: {
+        signer: l2Signer,
+        network: l2Network
+      }
+    })
 
     try {
       const l1AddressIsEOA =
@@ -353,7 +370,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   return (
     <>
-      {globalBridge && <ArbTokenBridgeStoreSync bridge={globalBridge} />}
+      {globalBridge && tokenBridgeParams && (
+        <ArbTokenBridgeStoreSync
+          bridge={globalBridge}
+          tokenBridgeParams={tokenBridgeParams}
+        />
+      )}
       <BridgeContext.Provider value={globalBridge}>
         {children}
       </BridgeContext.Provider>
