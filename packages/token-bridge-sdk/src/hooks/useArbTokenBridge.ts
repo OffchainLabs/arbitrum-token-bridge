@@ -244,7 +244,8 @@ export const useArbTokenBridge = (
     const receipt = await tx.wait()
     const messages = await receipt.getL1ToL2Messages(l2Signer)
 
-    if (messages.length === 0) {
+    if (messages.length !== 1) {
+      // TODO: handle this
       return
     }
 
@@ -371,7 +372,8 @@ export const useArbTokenBridge = (
       const receipt = await tx.wait()
       const messages = await receipt.getL1ToL2Messages(l2Signer)
 
-      if (messages.length === 0) {
+      if (messages.length !== 1) {
+        // TODO: handle this
         return
       }
 
