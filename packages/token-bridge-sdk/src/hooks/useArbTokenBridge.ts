@@ -184,12 +184,7 @@ export const useArbTokenBridge = (
 
     const contract = ERC20__factory.connect(erc20L1Address, l1Signer)
 
-    const multiCaller = new MultiCaller(
-      l1Signer.provider,
-      // TODO: fix, currently hard-coded to rinkeby l1 multicall
-      '0x5ba1e12693dc8f9c48aad8770482f4739beed696'
-    )
-
+    const multiCaller = await MultiCaller.fromProvider(l1Signer.provider)
     const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
       name: true,
       symbol: true,
