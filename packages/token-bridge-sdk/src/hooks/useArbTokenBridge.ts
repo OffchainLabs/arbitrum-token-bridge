@@ -76,9 +76,6 @@ export const useArbTokenBridge = (
   const [l1Network, setL1Network] = useState<L1Network>()
   const [l2Network, setL2Network] = useState<L2Network>()
 
-  const [ethBridger, setEthBridger] = useState<EthBridger>()
-  const [erc20Bridger, setErc20Bridger] = useState<Erc20Bridger>()
-
   useEffect(() => {
     const sync = async function () {
       const _l1Network = await getL1Network(l1Signer)
@@ -86,9 +83,6 @@ export const useArbTokenBridge = (
 
       setL1Network(_l1Network)
       setL2Network(_l2Network)
-
-      setEthBridger(new EthBridger(_l2Network))
-      setErc20Bridger(new Erc20Bridger(_l2Network))
     }
 
     sync()
@@ -215,6 +209,8 @@ export const useArbTokenBridge = (
   }, [walletAddress, bridge])
 
   const depositEth = async (amount: BigNumber) => {
+    const ethBridger = new EthBridger(l2Network!)
+
     // TODO: clean up
     if (typeof l1Signer === 'undefined') {
       throw new Error(`No instance of L1Signer found`)
@@ -226,10 +222,6 @@ export const useArbTokenBridge = (
 
     if (typeof l2Signer.provider === 'undefined') {
       throw new Error(`No instance of L2Signer found`)
-    }
-
-    if (typeof ethBridger === 'undefined') {
-      throw new Error(`No instance of EthBridger found`)
     }
 
     const tx = await ethBridger.deposit({
@@ -340,6 +332,8 @@ export const useArbTokenBridge = (
   }
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
+    const erc20Bridger = new Erc20Bridger(l2Network!)
+
     if (typeof l2Signer === 'undefined') {
       throw new Error(`No instance of L2Signer found`)
     }
