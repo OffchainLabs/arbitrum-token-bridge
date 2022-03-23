@@ -2,6 +2,7 @@ import { useReducer, useEffect } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
+import { L1ToL2Message } from '@arbitrum/sdk'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -14,6 +15,11 @@ type Action =
   | { type: 'SET_BLOCK_NUMBER'; txID: string; blockNumber?: number }
   | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
   | { type: 'ADD_TRANSACTIONS'; transactions: Transaction[] }
+  | {
+      type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION'
+      txID: string
+      l1ToL2Msg: L1ToL2Message
+    }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -63,6 +69,7 @@ type TransactionBase = {
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   seqNum?: number // for l1-initiati
+  l1ToL2Msg?: L1ToL2Message
 }
 
 export interface Transaction extends TransactionBase {
@@ -114,6 +121,34 @@ function updateBlockNumber(
   newState[index] = {
     ...newState[index],
     blockNumber
+  }
+  return newState
+}
+function updateTxnL1ToL2Msg(
+  state: Transaction[],
+  txID: string,
+  l1ToL2Msg: L1ToL2Message
+) {
+  const newState = [...state]
+  const index = newState.findIndex(txn => txn.txID === txID)
+  if (index === -1) {
+    console.warn('transaction not found', txID)
+    return state
+  }
+  const tx = newState[index]
+  if (tx.l1ToL2Msg) {
+    console.warn(`l1tol2msg for ${txID} already added`)
+    return state
+  }
+
+  if (!(tx.type === 'deposit' || tx.type === 'deposit-l1')) {
+    throw new Error(
+      "Attempting to add a l1tol2msg to a tx that isn't a deposit:" + txID
+    )
+  }
+  newState[index] = {
+    ...newState[index],
+    l1ToL2Msg
   }
   return newState
 }
@@ -179,6 +214,9 @@ function reducer(state: Transaction[], action: Action) {
     case 'SET_RESOLVED_TIMESTAMP': {
       return updateResolvedTimestamp(state, action.txID, action.timestamp)
     }
+    case 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION': {
+      return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2Msg)
+    }
     default:
       return state
   }
@@ -236,6 +274,14 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     return dispatch({
       type: 'ADD_TRANSACTION',
       transaction: tx
+    })
+  }
+
+  const addL1ToL2MsgToDepositTxn = (txID: string, l1ToL2Msg: L1ToL2Message) => {
+    return dispatch({
+      type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION',
+      txID: txID,
+      l1ToL2Msg
     })
   }
 
@@ -333,7 +379,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       setTransactionConfirmed,
       updateTransaction,
       removeTransaction,
-      addFailedTransaction
+      addFailedTransaction,
+      addL1ToL2MsgToDepositTxn
     }
   ]
 }

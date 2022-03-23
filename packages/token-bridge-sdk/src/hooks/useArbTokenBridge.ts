@@ -169,7 +169,8 @@ export const useArbTokenBridge = (
       setTransactionConfirmed,
       updateTransaction,
       removeTransaction,
-      addFailedTransaction
+      addFailedTransaction,
+      addL1ToL2MsgToDepositTxn
     }
   ] = useTransactions()
 
@@ -1356,7 +1357,8 @@ export const useArbTokenBridge = (
       setTransactionConfirmed,
       updateTransaction,
       addTransaction,
-      addTransactions
+      addTransactions,
+      addL1ToL2MsgToDepositTxn
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals
