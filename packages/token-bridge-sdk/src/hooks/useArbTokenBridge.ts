@@ -380,6 +380,7 @@ export const useArbTokenBridge = (
 
       updateTransaction(receipt, tx, seqNum.toNumber())
       updateTokenData(erc20L1Address)
+
       return receipt
     } catch (err) {
       console.warn('deposit token failure', err)
