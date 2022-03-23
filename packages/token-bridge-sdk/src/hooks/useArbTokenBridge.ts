@@ -218,12 +218,12 @@ export const useArbTokenBridge = (
   const walletAddressCached = useCallback(async () => {
     if (walletAddress) {
       return walletAddress
-    } else {
-      const address = await bridge.l1Bridge.getWalletAddress()
-      setWalletAddress(address)
-      return address
     }
-  }, [walletAddress, bridge])
+
+    const address = await l1.signer.getAddress()
+    setWalletAddress(address)
+    return address
+  }, [walletAddress, l1.signer])
 
   const depositEth = async (amount: BigNumber) => {
     if (typeof l2.signer.provider === 'undefined') {
@@ -246,7 +246,7 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: await walletAddressCached(),
-      l1NetworkID: await l1NetworkIDCached()
+      l1NetworkID: String(l1.network.chainID)
     })
 
     const receipt = await tx.wait()
@@ -363,9 +363,8 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: symbol,
       assetType: AssetType.ERC20,
-      // TODO: Update the following two calls
       sender: await walletAddressCached(),
-      l1NetworkID: await l1NetworkIDCached()
+      l1NetworkID: String(l1.network.chainID)
     })
 
     try {
