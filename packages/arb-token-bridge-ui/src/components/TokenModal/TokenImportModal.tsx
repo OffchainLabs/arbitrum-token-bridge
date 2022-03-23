@@ -124,6 +124,18 @@ export function TokenImportModal({
     }
   }, [status])
 
+  const isLoadingBridgeTokens = useMemo(() => {
+    if (typeof bridgeTokens === 'undefined') {
+      return true
+    }
+
+    if (Object.keys(bridgeTokens).length === 0) {
+      return true
+    }
+
+    return false
+  }, [bridgeTokens])
+
   const getL1TokenData = useCallback(
     async (eitherL1OrL2Address: string) => {
       if (!bridge) {
@@ -143,10 +155,6 @@ export function TokenImportModal({
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
-      if (typeof bridgeTokens === 'undefined') {
-        return { found: false }
-      }
-
       // We found the token in an imported list
       if (typeof bridgeTokens[erc20L1Address] !== 'undefined') {
         return {
@@ -185,6 +193,10 @@ export function TokenImportModal({
       return
     }
 
+    if (isLoadingBridgeTokens) {
+      return
+    }
+
     const searchResult1 = searchForTokenInLists(address)
 
     if (searchResult1.found) {
@@ -215,7 +227,14 @@ export function TokenImportModal({
       .catch(() => {
         setStatus(ImportStatus.ERROR)
       })
-  }, [isOpen, address, searchForTokenInLists, getL1TokenData])
+  }, [
+    isOpen,
+    isLoadingBridgeTokens,
+    address,
+    bridgeTokens,
+    searchForTokenInLists,
+    getL1TokenData
+  ])
 
   useEffect(() => {
     if (!isOpen) {
