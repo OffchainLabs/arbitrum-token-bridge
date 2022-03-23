@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
+import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
+import { Bridge, OutgoingMessageState, WithdrawalInitiated } from 'arb-ts'
 import {
-  Bridge,
-  OutgoingMessageState,
-  WithdrawalInitiated,
-  ERC20__factory
-} from 'arb-ts'
+  L1Network,
+  L2Network,
+  EthBridger,
+  Erc20Bridger,
+  MultiCaller
+} from '@arbitrum/sdk'
 
-import { Rollup__factory } from 'arb-ts/dist/lib/abi/factories/Rollup__factory'
-import { Node__factory } from 'arb-ts/dist/lib/abi/factories/Node__factory'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
+import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
 import useTransactions from './useTransactions'
 import {
@@ -38,6 +42,7 @@ import {
   getNodes,
   NodeDataResult
 } from '../util/graph'
+
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -57,10 +62,43 @@ class TokenDisabledError extends Error {
     this.name = 'TokenDisabledError'
   }
 }
+
+function getDefaultTokenName(address: string) {
+  const lowercased = address.toLowerCase()
+  return (
+    lowercased.substring(0, 5) +
+    '...' +
+    lowercased.substring(lowercased.length - 3)
+  )
+}
+
+function getDefaultTokenSymbol(address: string) {
+  const lowercased = address.toLowerCase()
+  return (
+    lowercased.substring(0, 5) +
+    '...' +
+    lowercased.substring(lowercased.length - 3)
+  )
+}
+
+export interface TokenBridgeParams {
+  l1: {
+    signer: Signer
+    network: L1Network
+  }
+  l2: {
+    signer: Signer
+    network: L2Network
+  }
+}
+
 export const useArbTokenBridge = (
   bridge: Bridge,
+  params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
+  const { l1, l2 } = params
+
   const [walletAddress, setWalletAddress] = useState('')
 
   const defaultBalance = {
@@ -137,6 +175,44 @@ export const useArbTokenBridge = (
 
   const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
 
+  /**
+   * Retrieves data about an ERC-20 token by its L1 address.
+   * Does not throw if the provided address is not a valid ERC-20 token.
+   * @param erc20L1Address
+   * @returns
+   */
+  async function getL1TokenData(erc20L1Address: string) {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No instance of L1Provider found`)
+    }
+
+    const erc20Bridger = new Erc20Bridger(l2.network)
+    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+      erc20L1Address,
+      l1.signer.provider
+    )
+
+    const contract = ERC20__factory.connect(erc20L1Address, l1.signer)
+
+    const multiCaller = await MultiCaller.fromProvider(l1.signer.provider)
+    const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
+      name: true,
+      symbol: true,
+      balanceOf: { account: walletAddress },
+      allowance: { owner: walletAddress, spender: l1GatewayAddress },
+      decimals: true
+    })
+
+    return {
+      name: tokenData.name || getDefaultTokenName(erc20L1Address),
+      symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
+      balance: tokenData.balance,
+      allowance: tokenData.allowance,
+      decimals: tokenData.decimals || 0,
+      contract
+    }
+  }
+
   const l1NetworkIDCached = useCallback(async () => {
     if (l11NetworkID) return l11NetworkID
     const network = await bridge.l1Bridge.l1Provider.getNetwork()
@@ -148,30 +224,48 @@ export const useArbTokenBridge = (
   const walletAddressCached = useCallback(async () => {
     if (walletAddress) {
       return walletAddress
-    } else {
-      const address = await bridge.l1Bridge.getWalletAddress()
-      setWalletAddress(address)
-      return address
     }
-  }, [walletAddress, bridge])
 
-  const depositEth = async (weiValue: BigNumber) => {
-    const etherVal = utils.formatUnits(weiValue, 18)
-    const tx = await bridge.depositETH(weiValue)
+    const address = await l1.signer.getAddress()
+    setWalletAddress(address)
+    return address
+  }, [walletAddress, l1.signer])
+
+  const depositEth = async (amount: BigNumber) => {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    const ethBridger = new EthBridger(l2.network)
+
+    const tx = await ethBridger.deposit({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      amount
+    })
+
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: etherVal,
+      value: utils.formatUnits(amount, 'wei'),
       txID: tx.hash,
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: await walletAddressCached(),
-      l1NetworkID: await l1NetworkIDCached()
+      l1NetworkID: String(l1.network.chainID)
     })
+
     const receipt = await tx.wait()
-    const seqNums = await bridge.getInboxSeqNumFromContractTransaction(receipt)
-    if (!seqNums) return
-    const seqNum = seqNums[0]
+    const messages = await receipt.getL1ToL2Messages(l2.signer)
+
+    if (messages.length !== 1) {
+      throw new Error(
+        `Expected a single L1 to L2 message but got ${messages.length}`
+      )
+    }
+
+    const seqNum = messages.map(m => m.messageNumber)[0]
+
     updateTransaction(receipt, tx, seqNum.toNumber())
     updateEthBalances()
   }
@@ -253,54 +347,49 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-  const depositToken = useCallback(
-    async (erc20L1Address: string, amountRaw: BigNumber) => {
-      const bridgeToken = bridgeTokens[erc20L1Address]
-      const { symbol, decimals } = await (async () => {
-        if (bridgeToken) {
-          const { symbol, decimals } = bridgeToken
-          return { symbol, decimals }
-        }
-        const { symbol, decimals } = await bridge.l1Bridge.getL1TokenData(
-          erc20L1Address
-        )
-        addToken(erc20L1Address)
-        return { symbol, decimals }
-      })()
-      const amountReadable = await utils.formatUnits(amountRaw, decimals)
+  async function depositToken(erc20L1Address: string, amount: BigNumber) {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
 
-      const tx = await bridge.deposit({
-        erc20L1Address: erc20L1Address,
-        amount: amountRaw
-      })
+    const erc20Bridger = new Erc20Bridger(l2.network)
 
-      addTransaction({
-        type: 'deposit-l1',
-        status: 'pending',
-        value: amountReadable,
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        sender: await walletAddressCached(),
-        l1NetworkID: await l1NetworkIDCached()
-      })
-      try {
-        const receipt = await tx.wait()
-        const seqNums = await bridge.getInboxSeqNumFromContractTransaction(
-          receipt
-        )
-        if (!seqNums) throw new Error('No sequence number detected')
-        const seqNum = seqNums[0].toNumber()
-        updateTransaction(receipt, tx, seqNum)
-        updateTokenData(erc20L1Address)
-        return receipt
-      } catch (err) {
-        console.warn('deposit token failure', err)
-        throw err
-      }
-    },
-    [bridge, bridgeTokens]
-  )
+    const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+
+    const tx = await erc20Bridger.deposit({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      erc20L1Address,
+      amount
+    })
+
+    addTransaction({
+      type: 'deposit-l1',
+      status: 'pending',
+      value: utils.formatUnits(amount, decimals),
+      txID: tx.hash,
+      assetName: symbol,
+      assetType: AssetType.ERC20,
+      sender: await walletAddressCached(),
+      l1NetworkID: String(l1.network.chainID)
+    })
+
+    const receipt = await tx.wait()
+    const messages = await receipt.getL1ToL2Messages(l2.signer)
+
+    if (messages.length !== 1) {
+      throw new Error(
+        `Expected a single L1 to L2 message but got ${messages.length}`
+      )
+    }
+
+    const seqNum = messages.map(m => m.messageNumber)[0]
+
+    updateTransaction(receipt, tx, seqNum.toNumber())
+    updateTokenData(erc20L1Address)
+
+    return receipt
+  }
 
   const withdrawToken = useCallback(
     async (erc20l1Address: string, amountRaw: BigNumber) => {
