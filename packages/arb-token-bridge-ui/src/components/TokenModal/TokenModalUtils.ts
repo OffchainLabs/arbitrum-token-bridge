@@ -122,7 +122,7 @@ function tokenListsToSearchableTokenStorage(
                   symbol: token.symbol,
                   type: TokenType.ERC20,
                   logoURI: token.logoURI,
-                  address: '',
+                  address: addressOnL1,
                   l2Address: address,
                   decimals: token.decimals,
                   tokenLists: []
