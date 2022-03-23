@@ -65,6 +65,24 @@ class TokenDisabledError extends Error {
   }
 }
 
+function getDefaultTokenName(address: string) {
+  const lowercased = address.toLowerCase()
+  return (
+    lowercased.substring(0, 5) +
+    '...' +
+    lowercased.substring(lowercased.length - 3)
+  )
+}
+
+function getDefaultTokenSymbol(address: string) {
+  const lowercased = address.toLowerCase()
+  return (
+    lowercased.substring(0, 5) +
+    '...' +
+    lowercased.substring(lowercased.length - 3)
+  )
+}
+
 export const useArbTokenBridge = (
   bridge: Bridge,
   autoLoadCache = true,
@@ -167,10 +185,7 @@ export const useArbTokenBridge = (
       throw new Error(`No instance of L1Provider found`)
     }
 
-    if (typeof erc20Bridger === 'undefined') {
-      throw new Error(`No instance of Erc20Bridger found`)
-    }
-
+    const erc20Bridger = new Erc20Bridger(l2Network!)
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1Signer.provider
@@ -187,7 +202,14 @@ export const useArbTokenBridge = (
       decimals: true
     })
 
-    return { ...tokenData, contract }
+    return {
+      name: tokenData.name || getDefaultTokenName(erc20L1Address),
+      symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
+      balance: tokenData.balance || BigNumber.from(0),
+      allowance: tokenData.allowance || BigNumber.from(0),
+      decimals: tokenData.decimals || 0,
+      contract
+    }
   }
 
   const l1NetworkIDCached = useCallback(async () => {
@@ -210,15 +232,6 @@ export const useArbTokenBridge = (
 
   const depositEth = async (amount: BigNumber) => {
     const ethBridger = new EthBridger(l2Network!)
-
-    // TODO: clean up
-    if (typeof l1Signer === 'undefined') {
-      throw new Error(`No instance of L1Signer found`)
-    }
-
-    if (typeof l2Signer === 'undefined') {
-      throw new Error(`No instance of L2Signer found`)
-    }
 
     if (typeof l2Signer.provider === 'undefined') {
       throw new Error(`No instance of L2Signer found`)
@@ -333,19 +346,11 @@ export const useArbTokenBridge = (
   }
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
-    const erc20Bridger = new Erc20Bridger(l2Network!)
-
-    if (typeof l2Signer === 'undefined') {
-      throw new Error(`No instance of L2Signer found`)
-    }
-
     if (typeof l2Signer.provider === 'undefined') {
       throw new Error(`No instance of L2Signer found`)
     }
 
-    if (typeof erc20Bridger === 'undefined') {
-      throw new Error(`No instance of Erc20Bridger found`)
-    }
+    const erc20Bridger = new Erc20Bridger(l2Network!)
 
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
@@ -361,7 +366,7 @@ export const useArbTokenBridge = (
       status: 'pending',
       value: utils.formatUnits(amount, decimals),
       txID: tx.hash,
-      assetName: symbol!,
+      assetName: symbol,
       assetType: AssetType.ERC20,
       // TODO: Update the following two calls
       sender: await walletAddressCached(),
