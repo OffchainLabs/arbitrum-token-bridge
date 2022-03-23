@@ -206,8 +206,8 @@ export const useArbTokenBridge = (
     return {
       name: tokenData.name || getDefaultTokenName(erc20L1Address),
       symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
-      balance: tokenData.balance || BigNumber.from(0),
-      allowance: tokenData.allowance || BigNumber.from(0),
+      balance: tokenData.balance,
+      allowance: tokenData.allowance,
       decimals: tokenData.decimals || 0,
       contract
     }
