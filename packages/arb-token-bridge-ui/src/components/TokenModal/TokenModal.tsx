@@ -24,6 +24,7 @@ import {
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
 import { Modal } from '../common/Modal'
+import { SafeImage } from '../common/SafeImage'
 import TokenBlacklistedDialog from './TokenBlacklistedDialog'
 import TokenConfirmationDialog from './TokenConfirmationDialog'
 import {
@@ -48,6 +49,14 @@ function tokenListIdsToNames(ids: number[]): string {
   return ids
     .map((tokenListId: number) => listIdsToNames[tokenListId])
     .join(', ')
+}
+
+function TokenLogoFallback() {
+  return (
+    <div className="flex rounded-full w-4 sm:w-8 h-4 sm:h-8 bg-navy items-center justify-center text-white text-sm font-medium">
+      ?
+    </div>
+  )
 }
 
 function TokenRow({
@@ -150,15 +159,12 @@ function TokenRow({
       className="w-full flex flex-col items-center sm:flex-row justify-center sm:justify-between p-2 sm:px-6 sm:py-3 bg-white hover:bg-gray-100"
     >
       <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
-        {tokenLogoURI ? (
-          <img
-            src={tokenLogoURI}
-            alt={`${tokenName} logo`}
-            className="rounded-full w-4 sm:w-8 h-4 sm:h-8 flex-grow-0"
-          />
-        ) : (
-          <div className="rounded-full w-4 sm:w-8 h-4 sm:h-8 bg-navy" />
-        )}
+        <SafeImage
+          src={tokenLogoURI}
+          alt={`${tokenName} logo`}
+          className="rounded-full w-4 sm:w-8 h-4 sm:h-8 flex-grow-0"
+          fallback={<TokenLogoFallback />}
+        />
 
         <div className="flex flex-col items-start truncate">
           <div className="flex items-center space-x-2">
