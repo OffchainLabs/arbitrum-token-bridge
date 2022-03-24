@@ -20,6 +20,7 @@ export type {
 
 export { txnTypeToLayer } from './hooks/useTransactions'
 
-export { OutgoingMessageState, ERC20__factory, Bridge } from 'arb-ts'
+export { OutgoingMessageState, Bridge } from 'arb-ts'
+export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export { validateTokenList } from './util/index'
