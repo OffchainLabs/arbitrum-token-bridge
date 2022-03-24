@@ -683,9 +683,10 @@ export const useArbTokenBridge = (
     })
   }, [])
 
-  const updateEthBalances = async () => {
-    const l1Balance = await bridge.getL1EthBalance()
-    const l2Balance = await bridge.getL2EthBalance()
+  async function updateEthBalances() {
+    const l1Balance = await l1.signer.getBalance()
+    const l2Balance = await l2.signer.getBalance()
+
     setEthBalances({
       balance: l1Balance,
       arbChainBalance: l2Balance
