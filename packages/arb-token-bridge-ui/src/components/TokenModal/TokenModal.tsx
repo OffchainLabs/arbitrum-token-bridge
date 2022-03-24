@@ -175,20 +175,24 @@ function TokenRow({
                 >
                   {token.address.toLowerCase()}
                 </a>
-              ) : tokenHasL2Address ? (
-                <a
-                  href={`${l2NetworkDetails?.explorerUrl}/token/${token.l2Address}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs underline text-dark-blue"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {token.l2Address?.toLowerCase()}
-                </a>
               ) : (
-                <span className="text-xs text-gray-900">
-                  This token hasn't been bridged to L2
-                </span>
+                <>
+                  {tokenHasL2Address ? (
+                    <a
+                      href={`${l2NetworkDetails?.explorerUrl}/token/${token.l2Address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs underline text-dark-blue"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {token.l2Address?.toLowerCase()}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-gray-900">
+                      This token hasn't been bridged to L2
+                    </span>
+                  )}
+                </>
               )}
               <span className="text-xs text-gray-500 font-normal">
                 {tokenListInfo}
