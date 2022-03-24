@@ -329,8 +329,15 @@ export const useArbTokenBridge = (
   )
 
   const approveToken = async (erc20L1Address: string) => {
-    const tx = await bridge.approveToken(erc20L1Address)
-    const tokenData = await bridge.l1Bridge.getL1TokenData(erc20L1Address)
+    const erc20Bridger = new Erc20Bridger(l2.network)
+
+    const tx = await erc20Bridger.approveToken({
+      l1Signer: l1.signer,
+      erc20L1Address
+    })
+
+    const tokenData = await getL1TokenData(erc20L1Address)
+
     addTransaction({
       type: 'approve',
       status: 'pending',
@@ -339,10 +346,11 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
-      l1NetworkID: await l1NetworkIDCached()
+      l1NetworkID: String(l1.network.chainID)
     })
 
     const receipt = await tx.wait()
+
     updateTransaction(receipt, tx)
     updateTokenData(erc20L1Address)
   }
