@@ -58,8 +58,10 @@ function TokenRow({
 }: TokenRowProps): JSX.Element {
   const {
     app: {
+      arbTokenBridge: { bridgeTokens },
       l1NetworkDetails,
-      arbTokenBridge: { bridgeTokens }
+      l2NetworkDetails,
+      isDepositMode
     }
   } = useAppState()
 
@@ -112,6 +114,34 @@ function TokenRow({
     return typeof bridgeTokens[token.address] !== 'undefined'
   }, [token, bridgeTokens])
 
+  const tokenHasL2Address = useMemo(() => {
+    if (!token) {
+      return false
+    }
+
+    return typeof token.l2Address !== 'undefined'
+  }, [token])
+
+  const tokenAddress = useMemo(() => {
+    if (!token) {
+      return undefined
+    }
+
+    return isDepositMode ? token.address : token.l2Address
+  }, [token, isDepositMode])
+
+  const tokenExplorerURL = useMemo(() => {
+    if (!token) {
+      return undefined
+    }
+
+    if (isDepositMode) {
+      return `${l1NetworkDetails?.explorerUrl}/token/${token.address}`
+    }
+
+    return `${l2NetworkDetails?.explorerUrl}/token/${token.l2Address}`
+  }, [l1NetworkDetails, l2NetworkDetails, isDepositMode, token])
+
   return (
     <button
       type="button"
@@ -140,15 +170,21 @@ function TokenRow({
           {token && (
             <div className="flex flex-col items-start sm:space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
-              <a
-                href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs underline text-dark-blue"
-                onClick={e => e.stopPropagation()}
-              >
-                {token.address.toLowerCase()}
-              </a>
+              {tokenHasL2Address ? (
+                <a
+                  href={tokenExplorerURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline text-dark-blue"
+                  onClick={e => e.stopPropagation()}
+                >
+                  {tokenAddress?.toLowerCase()}
+                </a>
+              ) : (
+                <span className="text-xs text-gray-900">
+                  This token hasn't been bridged to L2
+                </span>
+              )}
               <span className="text-xs text-gray-500 font-normal">
                 {tokenListInfo}
               </span>
