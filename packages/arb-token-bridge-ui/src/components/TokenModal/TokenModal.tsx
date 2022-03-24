@@ -125,17 +125,26 @@ function TokenRow({
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
-      return false
+      return true
     }
 
     return typeof token.l2Address !== 'undefined'
   }, [token])
+
+  const tokenIsBridgeable = useMemo(() => {
+    if (isDepositMode) {
+      return true
+    }
+
+    return tokenHasL2Address
+  }, [isDepositMode, tokenHasL2Address])
 
   return (
     <button
       type="button"
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
+      disabled={!tokenIsBridgeable}
       className="w-full flex flex-col items-center sm:flex-row justify-center sm:justify-between p-2 sm:px-6 sm:py-3 bg-white hover:bg-gray-100"
     >
       <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
@@ -189,26 +198,30 @@ function TokenRow({
         </div>
       </div>
 
-      {tokenIsAddedToTheBridge ? (
-        <span className="flex items-center text-xs sm:text-sm text-gray-500 whitespace-nowrap">
-          {tokenBalance ? (
-            formatUnits(tokenBalance, token ? token.decimals : 18)
+      {tokenIsBridgeable && (
+        <>
+          {tokenIsAddedToTheBridge ? (
+            <span className="flex items-center text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+              {tokenBalance ? (
+                formatUnits(tokenBalance, token ? token.decimals : 18)
+              ) : (
+                <div className="mr-2">
+                  <Loader
+                    type="Oval"
+                    color="rgb(40, 160, 240)"
+                    height={14}
+                    width={14}
+                  />
+                </div>
+              )}{' '}
+              {tokenSymbol}
+            </span>
           ) : (
-            <div className="mr-2">
-              <Loader
-                type="Oval"
-                color="rgb(40, 160, 240)"
-                height={14}
-                width={14}
-              />
-            </div>
-          )}{' '}
-          {tokenSymbol}
-        </span>
-      ) : (
-        <span className="text-xs sm:text-sm text-dark-blue font-medium">
-          Import
-        </span>
+            <span className="text-xs sm:text-sm text-dark-blue font-medium">
+              Import
+            </span>
+          )}
+        </>
       )}
     </button>
   )
