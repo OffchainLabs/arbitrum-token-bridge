@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -173,8 +173,6 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
-  const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
-
   /**
    * Retrieves data about an ERC-20 token by its L1 address.
    * Does not throw if the provided address is not a valid ERC-20 token.
@@ -213,13 +211,7 @@ export const useArbTokenBridge = (
     }
   }
 
-  const l1NetworkIDCached = useCallback(async () => {
-    if (l11NetworkID) return l11NetworkID
-    const network = await bridge.l1Bridge.l1Provider.getNetwork()
-    const networkID = await network.chainId.toString()
-    setL1NetWorkID(networkID)
-    return networkID
-  }, [l11NetworkID, bridge])
+  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
 
   const walletAddressCached = useCallback(async () => {
     if (walletAddress) {
@@ -252,7 +244,7 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: await walletAddressCached(),
-      l1NetworkID: String(l1.network.chainID)
+      l1NetworkID
     })
 
     const receipt = await tx.wait()
@@ -284,7 +276,7 @@ export const useArbTokenBridge = (
           assetType: AssetType.ETH,
           sender: await walletAddressCached(),
           blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
-          l1NetworkID: await l1NetworkIDCached()
+          l1NetworkID
         })
         const receipt = await tx.wait()
 
@@ -325,7 +317,7 @@ export const useArbTokenBridge = (
         console.error('withdrawEth err', e)
       }
     },
-    [pendingWithdrawalsMap]
+    [pendingWithdrawalsMap, l1NetworkID]
   )
 
   const approveToken = async (erc20L1Address: string) => {
@@ -346,7 +338,7 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
-      l1NetworkID: String(l1.network.chainID)
+      l1NetworkID
     })
 
     const receipt = await tx.wait()
@@ -379,7 +371,7 @@ export const useArbTokenBridge = (
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
-      l1NetworkID: String(l1.network.chainID)
+      l1NetworkID
     })
 
     const receipt = await tx.wait()
@@ -425,7 +417,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         sender: await bridge.l2Bridge.getWalletAddress(),
         blockNumber: tx.blockNumber || 0,
-        l1NetworkID: await l1NetworkIDCached()
+        l1NetworkID
       })
       try {
         const receipt = await tx.wait()
@@ -465,7 +457,7 @@ export const useArbTokenBridge = (
         console.warn('withdraw token err', err)
       }
     },
-    [bridge, bridgeTokens]
+    [bridge, bridgeTokens, l1NetworkID]
   )
 
   const removeTokensFromList = (listID: number) => {
@@ -542,7 +534,7 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
+        const l1Address = bridgeInfo[l1NetworkID].tokenAddress
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -802,7 +794,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         sender: await walletAddressCached(),
         txID: res.hash,
-        l1NetworkID: await l1NetworkIDCached()
+        l1NetworkID
       })
       try {
         const rec = await res.wait()
@@ -822,7 +814,7 @@ export const useArbTokenBridge = (
         console.warn('WARNING: token outbox execute failed:', err)
       }
     },
-    [pendingWithdrawalsMap]
+    [pendingWithdrawalsMap, l1NetworkID]
   )
 
   const triggerOutboxEth = useCallback(
@@ -844,7 +836,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ETH,
         sender: await walletAddressCached(),
         txID: res.hash,
-        l1NetworkID: await l1NetworkIDCached()
+        l1NetworkID
       })
 
       try {
@@ -866,7 +858,7 @@ export const useArbTokenBridge = (
         console.warn('WARNING: ETH outbox execute failed:', err)
       }
     },
-    [pendingWithdrawalsMap]
+    [pendingWithdrawalsMap, l1NetworkID]
   )
 
   const getTokenSymbol = async (_l1Address: string) => {
@@ -902,13 +894,12 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
-    const networkID = await l1NetworkIDCached()
     const address = await walletAddressCached()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
     const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
-      networkID
+      l1NetworkID
     )
     const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
@@ -920,7 +911,7 @@ export const useArbTokenBridge = (
       address,
       startBlock,
       pivotBlock,
-      networkID
+      l1NetworkID
     )
     const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, {
       fromBlock: pivotBlock
@@ -928,7 +919,7 @@ export const useArbTokenBridge = (
     const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
       recentETHWithdrawalData
     )
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
+    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
 
     console.log(
       `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
@@ -980,7 +971,6 @@ export const useArbTokenBridge = (
     filter?: ethers.providers.Filter
   ) => {
     const address = await walletAddressCached()
-    const l1NetworkID = await l1NetworkIDCached()
 
     const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
       l1NetworkID
@@ -1151,7 +1141,6 @@ export const useArbTokenBridge = (
     l2ToL1Data: L2ToL1EventResultPlus[]
   ) => {
     if (l2ToL1Data.length === 0) return []
-    const l1NetworkID = await l1NetworkIDCached()
     if (l1NetworkID !== '1' && l1NetworkID !== '4')
       throw new Error(`Unrecognized network: ${l1NetworkID}`)
     // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
@@ -1261,7 +1250,6 @@ export const useArbTokenBridge = (
   // call after we've confirmed the outbox entry has been created
   const getOutGoingMessageStateV2 = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      const l1NetworkID = await l1NetworkIDCached()
       if (
         executedMessagesCache[
           hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1289,12 +1277,11 @@ export const useArbTokenBridge = (
         }
       }
     },
-    [executedMessagesCache]
+    [executedMessagesCache, l1NetworkID]
   )
 
   const getOutGoingMessageState = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      const l1NetworkID = await l1NetworkIDCached()
       if (
         executedMessagesCache[
           hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1305,28 +1292,26 @@ export const useArbTokenBridge = (
         return bridge.getOutGoingMessageState(batchNumber, indexInBatch)
       }
     },
-    [executedMessagesCache]
+    [executedMessagesCache, l1NetworkID]
   )
 
   const addToExecutedMessagesCache = useCallback(
     (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const _executedMessagesCache = { ...executedMessagesCache }
-      l1NetworkIDCached().then((l1NetworkID: string) => {
-        _executedMessagesCache[
-          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-        ] = true
-        setExecutedMessagesCache(_executedMessagesCache)
-      })
+      _executedMessagesCache[
+        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+      ] = true
+      setExecutedMessagesCache(_executedMessagesCache)
     },
-    [executedMessagesCache]
+    [executedMessagesCache, l1NetworkID]
   )
 
   const hashOutgoingMessage = (
     batchNumber: BigNumber,
     indexInBatch: BigNumber,
-    l1NetworkID: string
+    _l1NetworkID: string
   ) => {
-    return `${batchNumber.toString()},${indexInBatch.toString()},${l1NetworkID}`
+    return `${batchNumber.toString()},${indexInBatch.toString()},${_l1NetworkID}`
   }
 
   return {
