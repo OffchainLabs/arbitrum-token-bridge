@@ -131,26 +131,6 @@ function TokenRow({
     return typeof token.l2Address !== 'undefined'
   }, [token])
 
-  const tokenAddress = useMemo(() => {
-    if (!token) {
-      return undefined
-    }
-
-    return isDepositMode ? token.address : token.l2Address
-  }, [token, isDepositMode])
-
-  const tokenExplorerURL = useMemo(() => {
-    if (!token) {
-      return undefined
-    }
-
-    if (isDepositMode) {
-      return `${l1NetworkDetails?.explorerUrl}/token/${token.address}`
-    }
-
-    return `${l2NetworkDetails?.explorerUrl}/token/${token.l2Address}`
-  }, [l1NetworkDetails, l2NetworkDetails, isDepositMode, token])
-
   return (
     <button
       type="button"
@@ -176,15 +156,25 @@ function TokenRow({
           {token && (
             <div className="flex flex-col items-start sm:space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
-              {tokenHasL2Address ? (
+              {isDepositMode ? (
                 <a
-                  href={tokenExplorerURL}
+                  href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs underline text-dark-blue"
                   onClick={e => e.stopPropagation()}
                 >
-                  {tokenAddress?.toLowerCase()}
+                  {token.address.toLowerCase()}
+                </a>
+              ) : tokenHasL2Address ? (
+                <a
+                  href={`${l2NetworkDetails?.explorerUrl}/token/${token.l2Address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline text-dark-blue"
+                  onClick={e => e.stopPropagation()}
+                >
+                  {token.l2Address?.toLowerCase()}
                 </a>
               ) : (
                 <span className="text-xs text-gray-900">
