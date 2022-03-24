@@ -222,10 +222,8 @@ export const TokenListBody = () => {
   const {
     app: { l2NetworkDetails, arbTokenBridge }
   } = useAppState()
-  const {
-    bridgeTokens,
-    token: { removeTokensFromList }
-  } = arbTokenBridge
+  const { bridgeTokens, token } = arbTokenBridge
+
   const listsToShow: BridgeTokenList[] = BRIDGE_TOKEN_LISTS.filter(
     tokenList => {
       return !!(
@@ -233,16 +231,23 @@ export const TokenListBody = () => {
       )
     }
   )
+
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
     isActive: boolean
   ) => {
     if (isActive) {
-      removeTokensFromList(bridgeTokenList.id)
+      token.removeTokensFromList(bridgeTokenList.id)
     } else {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     }
   }
+
+  // Can happen when switching networks.
+  if (typeof bridgeTokens === 'undefined') {
+    return null
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {listsToShow.map(tokenList => {
