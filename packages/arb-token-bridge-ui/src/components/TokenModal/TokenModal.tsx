@@ -249,7 +249,7 @@ export const TokenListBody = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 border border-gray-300 rounded-md p-6">
       {listsToShow.map(tokenList => {
         const isActive = Object.keys(bridgeTokens).some(address => {
           const token = bridgeTokens[address]
@@ -257,16 +257,8 @@ export const TokenListBody = () => {
         })
 
         return (
-          <div key={tokenList.id} className="flex items-center">
-            <div className="text-base leading-6 font-bold text-gray-900">
-              {tokenList.name}{' '}
-            </div>
-            <img
-              src={tokenList.logoURI}
-              alt="logo"
-              className="rounded-full w-8 h-8 mr-4"
-            />
-            <div>
+          <div key={tokenList.id} className="flex items-center space-x-3">
+            <div className="flex items-center">
               <label className="switch">
                 <input
                   type="checkbox"
@@ -275,6 +267,14 @@ export const TokenListBody = () => {
                 />
                 <span className="slider round"></span>
               </label>
+            </div>
+            <div className="flex flex-row items-center space-x-1">
+              <img
+                src={tokenList.logoURI}
+                alt={`${tokenList.name} Logo`}
+                className="rounded-full w-6 h-6"
+              />
+              <span className="text-sm text-gray-900">{tokenList.name}</span>
             </div>
           </div>
         )
