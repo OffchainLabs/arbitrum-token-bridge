@@ -15,6 +15,7 @@
   },
   "homepage": "https://offchainlabs.com",
   "scripts": {
+    "postinstall": "cd node_modules/arb-ts && yarn install && yarn build",
     "prepublishOnly": "yarn build && yarn format",
     "preversion": "yarn lint",
     "build": "rm -rf ./dist && tsc",
@@ -32,7 +33,7 @@
     "@uniswap/token-lists": "^1.0.0-beta.27",
     "ajv": "^8.6.3",
     "ajv-formats": "^2.1.1",
-    "arb-ts": "1.0.1",
+    "arb-ts": "https://gitpkg.now.sh/OffchainLabs/arbitrum/packages/arb-ts\\?94a0d65c9da69ebba13333c3ecc19d41fc8deb42",
     "axios": "^0.21.4",
     "ethers": "^5.4.6",
     "graphql": "^15.5.3",
