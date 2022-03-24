@@ -1343,7 +1343,7 @@ export const useArbTokenBridge = (
       withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken
     },
-    arbSigner: bridge.l2Bridge.l2Signer,
+    arbSigner: l2.signer,
     transactions: {
       transactions,
       clearPendingTransactions,
