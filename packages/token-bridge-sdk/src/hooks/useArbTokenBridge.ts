@@ -13,6 +13,7 @@ import {
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
 import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
@@ -173,15 +174,17 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
+  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
+
   /**
-   * Retrieves data about an ERC-20 token by its L1 address.
+   * Retrieves data about an ERC-20 token using its L1 address.
    * Does not throw if the provided address is not a valid ERC-20 token.
    * @param erc20L1Address
    * @returns
    */
   async function getL1TokenData(erc20L1Address: string) {
     if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No instance of L1Provider found`)
+      throw new Error(`No provider found for L1 signer`)
     }
 
     const erc20Bridger = new Erc20Bridger(l2.network)
@@ -211,7 +214,43 @@ export const useArbTokenBridge = (
     }
   }
 
-  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
+  /**
+   * Retrieves the L1 address of an ERC-20 token using its L2 address.
+   * @param erc20L2Address
+   * @returns
+   */
+  async function getL1ERC20Address(
+    erc20L2Address: string
+  ): Promise<string | null> {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    try {
+      return await new Erc20Bridger(l2.network).getL1ERC20Address(
+        erc20L2Address,
+        l2.signer.provider
+      )
+    } catch (error) {
+      return null
+    }
+  }
+
+  /**
+   * Retrieves the L2 address of an ERC-20 token using its L1 address.
+   * @param erc20L1Address
+   * @returns
+   */
+  async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    return await new Erc20Bridger(l2.network).getL2ERC20Address(
+      erc20L1Address,
+      l1.signer.provider
+    )
+  }
 
   const walletAddressCached = useCallback(async () => {
     if (walletAddress) {
@@ -592,7 +631,8 @@ export const useArbTokenBridge = (
       let l1TokenBalance: BigNumber | null = null
       let l2TokenBalance: BigNumber | null = null
 
-      const maybeL1Address = await bridge.getERC20L1Address(erc20L1orL2Address)
+      const maybeL1Address = await getL1ERC20Address(erc20L1orL2Address)
+
       if (maybeL1Address) {
         // looks like l2 address was provided
         l1Address = maybeL1Address
@@ -600,7 +640,7 @@ export const useArbTokenBridge = (
       } else {
         // looks like l1 address was provided
         l1Address = erc20L1orL2Address
-        l2Address = await bridge.getERC20L2Address(l1Address)
+        l2Address = await getL2ERC20Address(l1Address)
       }
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
