@@ -155,10 +155,6 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
 }
 
 export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  if (typeof forL2ChainId === 'undefined') {
-    return []
-  }
-
   const storage = sessionStorage.getItem(STORAGE_KEY)
 
   if (!storage) {
@@ -167,7 +163,7 @@ export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
 
   const parsedStorage: TokenListWithId[] = JSON.parse(storage)
 
-  if (!forL2ChainId) {
+  if (typeof forL2ChainId === 'undefined') {
     return parsedStorage
   }
 
