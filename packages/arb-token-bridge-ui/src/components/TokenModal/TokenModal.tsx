@@ -6,7 +6,6 @@ import React, {
   useContext
 } from 'react'
 import { useMedia } from 'react-use'
-import { BigNumber } from 'ethers'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
@@ -37,7 +36,6 @@ interface TokenRowProps {
   style?: React.CSSProperties
   onClick: React.MouseEventHandler<HTMLButtonElement>
   token: SearchableToken | null
-  tokenBalance: BigNumber | undefined | null
 }
 
 enum Panel {
@@ -59,15 +57,10 @@ function TokenLogoFallback() {
   )
 }
 
-function TokenRow({
-  style,
-  onClick,
-  token,
-  tokenBalance
-}: TokenRowProps): JSX.Element {
+function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens },
+      arbTokenBridge: { bridgeTokens, balances },
       l1NetworkDetails,
       l2NetworkDetails,
       isDepositMode
@@ -88,6 +81,18 @@ function TokenRow({
 
     return resolveTokenImg(token.logoURI)
   }, [token])
+
+  const tokenBalance = useMemo(() => {
+    if (!token) {
+      return isDepositMode
+        ? balances?.eth.balance
+        : balances?.eth.arbChainBalance
+    }
+
+    return isDepositMode
+      ? balances?.erc20[token.address]?.balance
+      : balances?.erc20[token.address]?.arbChainBalance
+  }, [token, isDepositMode, balances])
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
@@ -489,11 +494,6 @@ export function TokenModalBody({
                       key="TokenRowEther"
                       onClick={() => onTokenSelected(null)}
                       token={null}
-                      tokenBalance={
-                        isDepositMode
-                          ? balances?.eth.balance
-                          : balances?.eth.arbChainBalance
-                      }
                     />
                   )
                 }
@@ -507,11 +507,6 @@ export function TokenModalBody({
                     style={virtualizedProps.style}
                     onClick={() => onTokenSelected(token)}
                     token={token}
-                    tokenBalance={
-                      isDepositMode
-                        ? balances?.erc20[address]?.balance
-                        : balances?.erc20[address]?.arbChainBalance
-                    }
                   />
                 )
               }}
