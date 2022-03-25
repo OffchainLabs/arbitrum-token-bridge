@@ -340,8 +340,8 @@ export function TokenModalBody({
     (address: string) => {
       if (address === ETH_IDENTIFIER) {
         return isDepositMode
-          ? balances?.eth?.balance
-          : balances?.eth?.arbChainBalance
+          ? balances?.eth.balance
+          : balances?.eth.arbChainBalance
       }
 
       return isDepositMode
