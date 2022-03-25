@@ -32,12 +32,6 @@ import {
   useTokensFromUser
 } from './TokenModalUtils'
 
-interface TokenRowProps {
-  style?: React.CSSProperties
-  onClick: React.MouseEventHandler<HTMLButtonElement>
-  token: SearchableToken | null
-}
-
 enum Panel {
   TOKENS,
   LISTS
@@ -55,6 +49,12 @@ function TokenLogoFallback() {
       ?
     </div>
   )
+}
+
+interface TokenRowProps {
+  style?: React.CSSProperties
+  onClick: React.MouseEventHandler<HTMLButtonElement>
+  token: SearchableToken | null
 }
 
 function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
