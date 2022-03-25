@@ -756,26 +756,39 @@ export const useArbTokenBridge = (
   const updateTokenBalances = async (
     bridgeTokens: ContractStorage<BridgeToken>
   ) => {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
     const walletAddress = await walletAddressCached()
+    const l1MultiCaller = await MultiCaller.fromProvider(l1.signer.provider)
+    const l2MultiCaller = await MultiCaller.fromProvider(l2.signer.provider)
 
     const l1Addresses = Object.keys(bridgeTokens)
+    const l1AddressesBalances = await l1MultiCaller.getTokenData(l1Addresses, {
+      balanceOf: { account: walletAddress }
+    })
+    const l1Balances = l1Addresses.map((address: string, index: number) => ({
+      tokenAddr: address,
+      balance: l1AddressesBalances[index].balance
+    }))
 
     const l2Addresses = l1Addresses
       .map(l1Address => {
         return (bridgeTokens[l1Address] as ERC20BridgeToken).l2Address
       })
       .filter((val): val is string => !!val)
-
-    const l1Balances = await bridge.getTokenBalanceBatch(
-      walletAddress,
-      l1Addresses,
-      'L1'
-    )
-    const l2Balances = await bridge.getTokenBalanceBatch(
-      walletAddress,
-      l2Addresses,
-      'L2'
-    )
+    const l2AddressesBalances = await l2MultiCaller.getTokenData(l2Addresses, {
+      balanceOf: { account: walletAddress }
+    })
+    const l2Balances = l2Addresses.map((address: string, index: number) => ({
+      tokenAddr: address,
+      balance: l2AddressesBalances[index].balance
+    }))
 
     const l2AddressToBalanceMap: {
       [l2Address: string]: BigNumber | undefined
