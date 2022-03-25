@@ -710,7 +710,8 @@ export const useArbTokenBridge = (
         setERC20Cache(values.filter((val): val is string => !!val))
       })
     }
-    bridge.l1Bridge.getWalletAddress().then(_address => {
+
+    l1.signer.getAddress().then(_address => {
       setWalletAddress(_address)
     })
   }, [])
