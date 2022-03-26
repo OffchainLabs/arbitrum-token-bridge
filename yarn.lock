@@ -2223,7 +2223,7 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.2.tgz#830beaec4b4091a9e9398ac50f865ddea52186b9"
   integrity sha512-92FRmppjjqz29VMJ2dn+xdyXZBrMlE42AV6Kq6BwjWV7CNUW1hs2FtxSNLQE+gJhaZ6AAmYuO9y8dshhcBl7vA==
 
-"@rehooks/local-storage@2.4.0", "@rehooks/local-storage@^2.3.0":
+"@rehooks/local-storage@^2.3.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.0.tgz#fb884b2b657cad5f77aa6ab60bb3532f0e0725d2"
   integrity sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg==
@@ -10259,9 +10259,9 @@ minimatch@3.0.4, minimatch@^3.0.2, minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+  integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
 minipass-collect@^1.0.2:
   version "1.0.2"
