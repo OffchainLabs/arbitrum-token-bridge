@@ -20,11 +20,6 @@ type Action =
       txID: string
       l1ToL2MsgData: L1ToL2MessageData
     }
-  | {
-      type: 'UPDATE_L1TOL2MSG_STATUS'
-      txID: string
-      newStatus: L1ToL2MessageStatus
-    }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -40,8 +35,6 @@ export type TxnType =
   | 'withdraw'
   | 'outbox'
   | 'approve'
-  | 'connext-deposit'
-  | 'connext-withdraw'
   | 'deposit-l2-auto-redeem'
   | 'deposit-l2-ticket-created'
 
@@ -51,11 +44,9 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
     case 'deposit-l1':
     case 'outbox':
     case 'approve':
-    case 'connext-deposit':
       return 1
     case 'deposit-l2':
     case 'withdraw':
-    case 'connext-withdraw':
     case 'deposit-l2-auto-redeem':
     case 'deposit-l2-ticket-created':
       return 2
@@ -63,8 +54,9 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
 }
 
 export interface L1ToL2MessageData {
-  l1ToL2Msg?: L1ToL2MessageReader
   status: L1ToL2MessageStatus
+  retryableCreationTxID: string
+  l2TxID: string
 }
 type TransactionBase = {
   type: TxnType
@@ -135,29 +127,6 @@ function updateBlockNumber(
   return newState
 }
 
-function updateL1ToL2MsgStatus(
-  state: Transaction[],
-  txID: string,
-  newStatus: L1ToL2MessageStatus
-) {
-  const newState = [...state]
-  const index = newState.findIndex(txn => txn.txID === txID)
-  if (index === -1) {
-    console.warn('transaction not found', txID)
-    return state
-  }
-  const tx = { ...newState[index] }
-  if (!tx.l1ToL2MsgData) {
-    console.warn(`no l1Tol2msgdata`)
-    return state
-  }
-  tx.l1ToL2MsgData = {
-    ...tx.l1ToL2MsgData,
-    status: newStatus
-  }
-  newState[index] = tx
-  return newState
-}
 function updateTxnL1ToL2Msg(
   state: Transaction[],
   txID: string,
@@ -170,10 +139,10 @@ function updateTxnL1ToL2Msg(
     return state
   }
   const tx = newState[index]
-  if (tx.l1ToL2MsgData) {
-    console.warn(`l1tol2msg for ${txID} already added`)
-    return state
-  }
+  // if (tx.l1ToL2MsgData) {
+  //   console.warn(`l1tol2msg for ${txID} already added`)
+  //   return state
+  // }
 
   if (!(tx.type === 'deposit' || tx.type === 'deposit-l1')) {
     throw new Error(
@@ -207,6 +176,7 @@ function updateResolvedTimestamp(
 function reducer(state: Transaction[], action: Action) {
   switch (action.type) {
     case 'SET_INITIAL_TRANSACTIONS': {
+      // Add l1 to L2 stuff with pending status
       return [...action.transactions]
     }
     case 'ADD_TRANSACTIONS': {
@@ -251,9 +221,6 @@ function reducer(state: Transaction[], action: Action) {
     case 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION': {
       return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
     }
-    case 'UPDATE_L1TOL2MSG_STATUS': {
-      return updateL1ToL2MsgStatus(state, action.txID, action.newStatus)
-    }
     default:
       return state
   }
@@ -261,13 +228,7 @@ function reducer(state: Transaction[], action: Action) {
 
 const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
-  const stateForCache = state.map(tx => {
-    if (tx.l1ToL2MsgData) {
-      delete tx.l1ToL2MsgData.l1ToL2Msg
-    }
-    return
-  })
-  window.localStorage.setItem('arbTransactions', JSON.stringify(stateForCache))
+  window.localStorage.setItem('arbTransactions', JSON.stringify(newState))
   return newState
 }
 
@@ -320,27 +281,35 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const addL1ToL2MsgToDepositTxn = async (
+  const updateL1ToL2MsgData = async (
     txID: string,
-    l1ToL2Msg: L1ToL2MessageReader,
-    _status?: L1ToL2MessageStatus
+    l1ToL2Msg: L1ToL2MessageReader
   ) => {
-    const status = _status || (await l1ToL2Msg.status())
+    const status = await l1ToL2Msg.status()
     dispatch({
       type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION',
       txID: txID,
       l1ToL2MsgData: {
         status,
-        l1ToL2Msg
+        retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+        l2TxID: l1ToL2Msg.l2TxHash
       }
     })
 
     if (status === L1ToL2MessageStatus.NOT_YET_CREATED) {
+      console.warn('XXXX waiting for status')
+
       l1ToL2Msg.waitForStatus().then(({ status }) => {
+        console.warn('XXXXX status arrived, dispatching update', status)
+
         dispatch({
-          type: 'UPDATE_L1TOL2MSG_STATUS',
+          type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION', // todo; can be one thing
           txID,
-          newStatus: status
+          l1ToL2MsgData: {
+            status,
+            retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+            l2TxID: l1ToL2Msg.l2TxHash
+          }
         })
       })
     }
@@ -441,7 +410,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
-      addL1ToL2MsgToDepositTxn
+      updateL1ToL2MsgData
     }
   ]
 }

@@ -3,6 +3,7 @@ import React, { useState, useMemo, useCallback, useContext } from 'react'
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
+import { DepositStatus } from '../../state/app/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
@@ -13,11 +14,34 @@ import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
-import { L1ToL2MessageStatus } from "@arbitrum/sdk"
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
   overflowX?: boolean
+}
+
+const depositStatusDisplayText = (depositStatus: DepositStatus) => {
+  switch (depositStatus) {
+    case DepositStatus.L1_PENDING:
+      return 'waiting on l1...'
+    case DepositStatus.L1_FAILURE:
+      return 'l1 tx failed'
+    case DepositStatus.L2_PENDING:
+      return 'l1 confirmed, waiting on l2...'
+    case DepositStatus.L2_SUCCESS:
+      return 'success'
+    case DepositStatus.L2_FAILURE:
+      return 'l2 failed; try redeeeming' // todo: unclear
+    case DepositStatus.CREATION_FAILED:
+      return 'l2 failed; contact support'
+    case DepositStatus.EXPIRED:
+      return 'l2 tx expired'
+  }
+}
+
+const isDeposit = (tx: MergedTransaction) => {
+  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
 const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
@@ -74,10 +98,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const [isClaiming, setIsClaiming] = useState(false)
 
   const showRedeemRetryableButton = useMemo(() => {
-    if(tx.direction === 'deposit-l1' || tx.direction === 'deposit'){
-       if (tx.l1ToL2MsgData && tx.l1ToL2MsgData.status ===  L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 && tx.asset !== 'eth'){
-         return true
-       }
+    if (tx.depositStatus === DepositStatus.L2_FAILURE) {
+      return true
     }
     return false
   }, [tx])
@@ -166,28 +188,93 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     })`
   }
 
+  const actionDisplayText = (txnType: TxnType) => {
+    switch (tx.direction) {
+      case 'outbox':
+        return 'withdrawal-redeem-on-l1'
+      case 'withdraw':
+        return 'withdrawal-initiated'
+      case 'deposit':
+      case 'deposit-l1':
+        return 'deposit'
+
+      default:
+        return txnType
+    }
+  }
+
+  const statusDisplayText = (tx: MergedTransaction) => {
+    if (tx.depositStatus) {
+      return depositStatusDisplayText(tx.depositStatus)
+    } else {
+      return tx.status
+    }
+  }
+
+  const getStatusVariantColor = (tx: MergedTransaction) => {
+    if (tx.depositStatus) {
+      const { depositStatus } = tx
+
+      switch (depositStatus) {
+        case DepositStatus.L1_PENDING:
+        case DepositStatus.L2_PENDING:
+          return 'blue'
+        case DepositStatus.L1_FAILURE:
+        case DepositStatus.CREATION_FAILED:
+        case DepositStatus.EXPIRED:
+          return 'red'
+        case DepositStatus.L2_SUCCESS:
+          return 'green'
+        case DepositStatus.L2_FAILURE:
+          return 'yellow'
+      }
+    } else {
+      return tx.status === 'success'
+        ? 'green'
+        : tx.status === 'failure'
+        ? 'red'
+        : tx.status === 'pending'
+        ? 'blue'
+        : 'yellow'
+    }
+  }
+
+  const renderTxIDDisplay = (tx: MergedTransaction) => {
+    if (tx.uniqueId) return tx.uniqueId.toString()
+    if (isDeposit(tx)) {
+      // TODO: eth stuff
+      const targetL2Tx = (tx => {
+        if (!tx.l1ToL2MsgData) return ''
+        if (tx.asset === 'eth') {
+          return tx.l1ToL2MsgData.retryableCreationTxID
+        } else {
+          return tx.l1ToL2MsgData.l2TxID
+        }
+      })(tx)
+      return (
+        <>
+          L1: <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />{' '}
+          <br />
+          {targetL2Tx ? (
+            <>
+              L2: <ExplorerLink hash={targetL2Tx} type={'deposit-l2'} />{' '}
+            </>
+          ) : null}
+        </>
+      )
+    } else {
+      return <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />
+    }
+  }
+
   return (
     <tr>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
-        {tx.direction === 'outbox'
-          ? 'withdrawal-redeem-on-l1'
-          : tx.direction === 'withdraw'
-          ? 'withdrawal-initiated'
-          : tx.direction}
+        {actionDisplayText(tx.direction)}
       </td>
       <td className="px-4 py-6  whitespace-nowrap text-sm ">
-        <StatusBadge
-          variant={
-            tx.status === 'success'
-              ? 'green'
-              : tx.status === 'failure'
-              ? 'red'
-              : tx.status === 'pending'
-              ? 'blue'
-              : 'yellow'
-          }
-        >
-          {tx.status}
+        <StatusBadge variant={getStatusVariantColor(tx)}>
+          {statusDisplayText(tx)}
         </StatusBadge>
       </td>
       <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
@@ -262,11 +349,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         )}
       </td>
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
-        {tx.uniqueId ? (
-          tx.uniqueId.toString()
-        ) : (
-          <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />
-        )}
+        {renderTxIDDisplay(tx)}
       </td>
       <td className="px-4 py-6 whitespace-nowrap text-xs leading-4 font-medium text-navy">
         <span className="bg-tokenPill rounded-lg py-1 px-3">{tx.asset}</span>

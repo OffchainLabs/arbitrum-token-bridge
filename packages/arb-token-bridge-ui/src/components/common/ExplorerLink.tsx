@@ -23,12 +23,10 @@ const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
       case 'deposit':
       case 'deposit-l1':
       case 'approve':
-      case 'connext-deposit':
       case 'outbox':
         return `${l1Prefix}/tx/${hash}`
       case 'deposit-l2':
       case 'withdraw':
-      case 'connext-withdraw':
       case 'deposit-l2-auto-redeem':
       case 'deposit-l2-ticket-created':
         return `${l2Prefix}/tx/${hash}`
@@ -57,7 +55,7 @@ const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
       className="w-24 relative group"
     >
       <span className="truncate">
-        {hash.substr(0, 15)}...{hash.substr(hash.length - 4)}
+        {hash.substr(0, 10)}...{hash.substr(hash.length - 4)}
         <Tooltip>{hash}</Tooltip>
       </span>
     </a>

@@ -145,10 +145,7 @@ export interface TransactionActions {
     tx?: ethers.ContractTransaction,
     seqNum?: number
   ) => void
-  addL1ToL2MsgToDepositTxn: (
-    txID: string,
-    l1ToL2Msg: L1ToL2MessageReader
-  ) => void
+  updateL1ToL2MsgData: (txID: string, l1ToL2Msg: L1ToL2MessageReader) => void
 }
 
 export type ArbTokenBridgeTransactions = {
@@ -160,7 +157,7 @@ export type ArbTokenBridgeTransactions = {
   | 'setTransactionConfirmed'
   | 'updateTransaction'
   | 'addTransactions'
-  | 'addL1ToL2MsgToDepositTxn'
+  | 'updateL1ToL2MsgData'
 >
 
 export interface ArbTokenBridge {

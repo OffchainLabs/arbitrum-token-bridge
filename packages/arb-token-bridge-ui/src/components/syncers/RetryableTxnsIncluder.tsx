@@ -18,7 +18,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     if (!bridge) {
       return
     }
-
+    // TODO check for failures
     const successfulL1Deposits = actions.app.getSuccessfulL1Deposits()
 
     for (let depositTx of successfulL1Deposits.filter(
@@ -27,13 +27,9 @@ const RetryableTxnsIncluder = (): JSX.Element => {
       const depositTxRec = new L1TransactionReceipt(
         await bridge.l1Provider.getTransactionReceipt(depositTx.txID)
       ) //**todo: not found, i.e., reorg */
-      const l1ToL2Msgs = await depositTxRec.getL1ToL2Messages(bridge.l1Provider)
-      if (l1ToL2Msgs.length !== 1) {
-        // TODO: error handle
-      }
+      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(bridge.l2Provider)
 
-      const l1ToL2Msg = l1ToL2Msgs[0]
-      arbTokenBridge?.transactions?.addL1ToL2MsgToDepositTxn(
+      arbTokenBridge?.transactions?.updateL1ToL2MsgData(
         depositTx.txID,
         l1ToL2Msg
       )
@@ -42,7 +38,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messagges,
-    4000
+    5000
   )
   useEffect(() => {
     // force trigger update each time loaded change happens

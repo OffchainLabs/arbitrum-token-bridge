@@ -17,18 +17,58 @@ import {
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import Networks, { Network } from '../../util/networks'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 export enum WhiteListState {
   VERIFYING,
   ALLOWED,
   DISALLOWED
 }
-interface SeqNumToTxn {
-  [seqNum: number]: MergedTransaction
+
+export enum DepositStatus {
+  L1_PENDING = 1,
+  L1_FAILURE = 2,
+  L2_PENDING = 3,
+  L2_SUCCESS = 4,
+  L2_FAILURE = 5,
+  CREATION_FAILED = 6,
+  EXPIRED = 7
 }
+
+const getDepositStatus = (tx: Transaction) => {
+  if (tx.type !== 'deposit' && tx.type !== 'deposit-l1') return undefined
+  if (tx.status === 'failure') {
+    return DepositStatus.L1_FAILURE
+  }
+  if (tx.status === 'pending') {
+    return DepositStatus.L1_PENDING
+  }
+  // l1 succeeded...
+  const { l1ToL2MsgData } = tx
+  if (!l1ToL2MsgData) {
+    return DepositStatus.L2_PENDING
+  }
+
+  switch (l1ToL2MsgData.status) {
+    case L1ToL2MessageStatus.NOT_YET_CREATED:
+      return DepositStatus.L2_PENDING
+    case L1ToL2MessageStatus.CREATION_FAILED:
+      return DepositStatus.CREATION_FAILED
+    case L1ToL2MessageStatus.EXPIRED:
+      return DepositStatus.EXPIRED
+    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
+      return tx.assetType === 'ETH'
+        ? DepositStatus.L2_SUCCESS
+        : DepositStatus.L2_FAILURE
+    }
+    case L1ToL2MessageStatus.REDEEMED:
+      return DepositStatus.L2_SUCCESS
+  }
+}
+
 export interface MergedTransaction {
   direction: TxnType
-  status: string
+  status: string // todo: this is kind of all over the place r.n
   createdAtTime: number | null
   createdAt: string | null
   resolvedAt: string | null
@@ -41,7 +81,8 @@ export interface MergedTransaction {
   tokenAddress: string | null
   seqNum?: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  l1ToL2MsgData?:  L1ToL2MessageData
+  l1ToL2MsgData?: L1ToL2MessageData
+  depositStatus?: DepositStatus
 }
 
 export interface WarningTokens {
@@ -135,7 +176,8 @@ export const defaultState: AppState = {
         blockNum: tx.blockNumber || null,
         tokenAddress: null, // not needed
         seqNum: tx.seqNum,
-        l1ToL2MsgData: tx.l1ToL2MsgData
+        l1ToL2MsgData: tx.l1ToL2MsgData,
+        depositStatus: getDepositStatus(tx)
       }
     })
     return deposits
@@ -179,37 +221,15 @@ export const defaultState: AppState = {
     )
   }),
   mergedTransactionsToShow: derived((s: AppState) => {
-    // group ticket-created by seqNum so we can match thyarnem with deposit-l2 txns later
-    const seqNumToTicketCreation: SeqNumToTxn = {}
-
-    s.mergedTransactions.forEach(txn => {
-      const { seqNum, direction } = txn
-      if (direction === 'deposit-l2-ticket-created' && seqNum) {
-        seqNumToTicketCreation[seqNum as number] = txn
-      }
-    })
     return s.mergedTransactions.filter((txn: MergedTransaction) => {
-      const { status, seqNum } = txn
-      // I don't like having to string check here; I'd like to bring over the AssetType enum into mergedtransaction
-      if (txn.asset !== 'eth') {
-        switch (txn.direction) {
-          case 'deposit-l2-ticket-created': {
-            // show only if it fails
-            return status === 'failure'
-          }
-          case 'deposit-l2-auto-redeem': {
-            // show only if it fails
-            return status === 'failure'
-          }
-          case 'deposit-l2': {
-            // show unless the ticket creation failed
-            const ticketCreatedTxn = seqNumToTicketCreation[seqNum as number]
-            return !(ticketCreatedTxn && ticketCreatedTxn.status === 'failure')
-          }
-
-          default:
-            break
-        }
+      switch (txn.direction) {
+        // TODO: remove from cache
+        case 'deposit-l2-ticket-created':
+        case 'deposit-l2-auto-redeem':
+        case 'deposit-l2':
+          return false
+        default:
+          break
       }
       return true
     })
