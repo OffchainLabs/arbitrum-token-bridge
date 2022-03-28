@@ -62,7 +62,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   }
 }
 
-interface L1ToL2MessageData {
+export interface L1ToL2MessageData {
   l1ToL2Msg?: L1ToL2MessageReader
   status: L1ToL2MessageStatus
 }
@@ -261,10 +261,11 @@ function reducer(state: Transaction[], action: Action) {
 
 const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
-  const stateForCache = state.forEach(tx => {
+  const stateForCache = state.map(tx => {
     if (tx.l1ToL2MsgData) {
       delete tx.l1ToL2MsgData.l1ToL2Msg
     }
+    return
   })
   window.localStorage.setItem('arbTransactions', JSON.stringify(stateForCache))
   return newState

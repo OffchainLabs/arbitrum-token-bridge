@@ -11,7 +11,8 @@ import {
   Transaction,
   TxnType,
   OutgoingMessageState,
-  NodeBlockDeadlineStatus
+  NodeBlockDeadlineStatus,
+  L1ToL2MessageData
 } from 'token-bridge-sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -40,6 +41,7 @@ export interface MergedTransaction {
   tokenAddress: string | null
   seqNum?: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
+  l1ToL2MsgData?:  L1ToL2MessageData
 }
 
 export interface WarningTokens {
@@ -133,7 +135,8 @@ export const defaultState: AppState = {
         isWithdrawal: false,
         blockNum: tx.blockNumber || null,
         tokenAddress: null, // not needed
-        seqNum: tx.seqNum
+        seqNum: tx.seqNum,
+        l1ToL2MsgData: tx.l1ToL2MsgData
       }
     })
     return deposits
