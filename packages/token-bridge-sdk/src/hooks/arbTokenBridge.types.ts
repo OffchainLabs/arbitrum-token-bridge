@@ -2,7 +2,7 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { L1ToL2Message } from '@arbitrum/sdk'
+import { L1ToL2MessageReader } from '@arbitrum/sdk'
 
 import {
   FailedTransaction,
@@ -145,7 +145,10 @@ export interface TransactionActions {
     tx?: ethers.ContractTransaction,
     seqNum?: number
   ) => void
-  addL1ToL2MsgToDepositTxn: (txID: string, l1ToL2Msg: L1ToL2Message) => void
+  addL1ToL2MsgToDepositTxn: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReader
+  ) => void
 }
 
 export type ArbTokenBridgeTransactions = {

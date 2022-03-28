@@ -2,7 +2,7 @@ import { useReducer, useEffect } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
-import { L1ToL2Message } from '@arbitrum/sdk'
+import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -18,7 +18,12 @@ type Action =
   | {
       type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION'
       txID: string
-      l1ToL2Msg: L1ToL2Message
+      l1ToL2MsgData: L1ToL2MessageData
+    }
+  | {
+      type: 'UPDATE_L1TOL2MSG_STATUS'
+      txID: string
+      newStatus: L1ToL2MessageStatus
     }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
@@ -56,6 +61,11 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
       return 2
   }
 }
+
+interface L1ToL2MessageData {
+  l1ToL2Msg?: L1ToL2MessageReader
+  status: L1ToL2MessageStatus
+}
 type TransactionBase = {
   type: TxnType
   status: TxnStatus
@@ -69,7 +79,7 @@ type TransactionBase = {
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   seqNum?: number // for l1-initiati
-  l1ToL2Msg?: L1ToL2Message
+  l1ToL2MsgData?: L1ToL2MessageData
 }
 
 export interface Transaction extends TransactionBase {
@@ -124,10 +134,34 @@ function updateBlockNumber(
   }
   return newState
 }
+
+function updateL1ToL2MsgStatus(
+  state: Transaction[],
+  txID: string,
+  newStatus: L1ToL2MessageStatus
+) {
+  const newState = [...state]
+  const index = newState.findIndex(txn => txn.txID === txID)
+  if (index === -1) {
+    console.warn('transaction not found', txID)
+    return state
+  }
+  const tx = { ...newState[index] }
+  if (!tx.l1ToL2MsgData) {
+    console.warn(`no l1Tol2msgdata`)
+    return state
+  }
+  tx.l1ToL2MsgData = {
+    ...tx.l1ToL2MsgData,
+    status: newStatus
+  }
+  newState[index] = tx
+  return newState
+}
 function updateTxnL1ToL2Msg(
   state: Transaction[],
   txID: string,
-  l1ToL2Msg: L1ToL2Message
+  l1ToL2MsgData: L1ToL2MessageData
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -136,7 +170,7 @@ function updateTxnL1ToL2Msg(
     return state
   }
   const tx = newState[index]
-  if (tx.l1ToL2Msg) {
+  if (tx.l1ToL2MsgData) {
     console.warn(`l1tol2msg for ${txID} already added`)
     return state
   }
@@ -148,7 +182,7 @@ function updateTxnL1ToL2Msg(
   }
   newState[index] = {
     ...newState[index],
-    l1ToL2Msg
+    l1ToL2MsgData
   }
   return newState
 }
@@ -215,7 +249,10 @@ function reducer(state: Transaction[], action: Action) {
       return updateResolvedTimestamp(state, action.txID, action.timestamp)
     }
     case 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION': {
-      return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2Msg)
+      return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
+    }
+    case 'UPDATE_L1TOL2MSG_STATUS': {
+      return updateL1ToL2MsgStatus(state, action.txID, action.newStatus)
     }
     default:
       return state
@@ -224,7 +261,12 @@ function reducer(state: Transaction[], action: Action) {
 
 const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
-  window.localStorage.setItem('arbTransactions', JSON.stringify(newState))
+  const stateForCache = state.forEach(tx => {
+    if (tx.l1ToL2MsgData) {
+      delete tx.l1ToL2MsgData.l1ToL2Msg
+    }
+  })
+  window.localStorage.setItem('arbTransactions', JSON.stringify(stateForCache))
   return newState
 }
 
@@ -277,12 +319,30 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const addL1ToL2MsgToDepositTxn = (txID: string, l1ToL2Msg: L1ToL2Message) => {
-    return dispatch({
+  const addL1ToL2MsgToDepositTxn = async (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReader,
+    _status?: L1ToL2MessageStatus
+  ) => {
+    const status = _status || (await l1ToL2Msg.status())
+    dispatch({
       type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION',
       txID: txID,
-      l1ToL2Msg
+      l1ToL2MsgData: {
+        status,
+        l1ToL2Msg
+      }
     })
+
+    if (status === L1ToL2MessageStatus.NOT_YET_CREATED) {
+      l1ToL2Msg.waitForStatus().then(({ status }) => {
+        dispatch({
+          type: 'UPDATE_L1TOL2MSG_STATUS',
+          txID,
+          newStatus: status
+        })
+      })
+    }
   }
 
   const removeTransaction = (txID: string) => {
