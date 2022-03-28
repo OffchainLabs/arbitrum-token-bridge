@@ -13,6 +13,7 @@ import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
+import { L1ToL2MessageStatus } from "@arbitrum/sdk"
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
@@ -65,7 +66,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       l2NetworkDetails,
       isDepositMode,
       currentL1BlockNumber,
-      seqNumToAutoRedeems,
       networkDetails
     }
   } = useAppState()
@@ -74,15 +74,13 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const [isClaiming, setIsClaiming] = useState(false)
 
   const showRedeemRetryableButton = useMemo(() => {
-    return (
-      tx.direction === 'deposit-l2' &&
-      tx.asset !== 'eth' &&
-      tx.seqNum !== undefined &&
-      tx.status !== 'success' &&
-      seqNumToAutoRedeems[tx.seqNum] &&
-      seqNumToAutoRedeems[tx.seqNum].status === 'failure'
-    )
-  }, [seqNumToAutoRedeems, tx])
+    if(tx.direction === 'deposit-l1' || tx.direction === 'deposit'){
+       if (tx.l1ToL2MsgData && tx.l1ToL2MsgData.status ===  L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 && tx.asset !== 'eth'){
+         return true
+       }
+    }
+    return false
+  }, [tx])
 
   const redeemRetryable = useCallback(
     (userTxnHash: string) => {

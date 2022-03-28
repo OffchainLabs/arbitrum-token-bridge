@@ -73,7 +73,6 @@ export type AppState = {
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
   mergedTransactionsToShow: MergedTransaction[]
-  seqNumToAutoRedeems: SeqNumToTxn
   currentL1BlockNumber: number
 
   networkDetails: Network | null
@@ -214,17 +213,6 @@ export const defaultState: AppState = {
       }
       return true
     })
-  }),
-  seqNumToAutoRedeems: derived((s: AppState) => {
-    const seqNumToTicketCreation: SeqNumToTxn = {}
-
-    s.mergedTransactions.forEach(txn => {
-      const { seqNum, direction } = txn
-      if (direction === 'deposit-l2-auto-redeem' && seqNum) {
-        seqNumToTicketCreation[seqNum as number] = txn
-      }
-    })
-    return seqNumToTicketCreation
   }),
   currentL1BlockNumber: 0,
 
