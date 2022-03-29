@@ -363,8 +363,16 @@ export function TokenModalBody({
       ])
     ]
       .filter((address: string) => {
+        // Which tokens to show while the search is not active
         if (!tokenSearch) {
-          return true
+          // Always show ETH
+          if (address === ETH_IDENTIFIER) {
+            return true
+          }
+
+          const balance = getBalance(address)
+          // Only show tokens with a balance greater than zero
+          return balance && balance.gt(0)
         }
 
         if (address === ETH_IDENTIFIER) {
