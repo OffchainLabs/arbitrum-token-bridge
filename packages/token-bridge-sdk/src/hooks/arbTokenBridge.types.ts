@@ -167,7 +167,7 @@ export interface ArbTokenBridge {
   cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
-  arbSigner: Signer 
+  arbSigner: Signer
   l1Signer: Signer
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap

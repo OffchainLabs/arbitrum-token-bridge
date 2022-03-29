@@ -56,7 +56,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
 export interface L1ToL2MessageData {
   status: L1ToL2MessageStatus
   retryableCreationTxID: string
-  l2TxID: string,
+  l2TxID: string
   fetchingUpdate: boolean
 }
 type TransactionBase = {
@@ -229,13 +229,9 @@ function reducer(state: Transaction[], action: Action) {
 
 const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
-  // don't cache fetchingUpdate state 
-  console.warn('newState', newState);
-  
-  const stateForCache = newState.map((tx)=>{
-    console.warn('tx', tx);
-    
-    if(tx.l1ToL2MsgData && tx.l1ToL2MsgData.fetchingUpdate){
+  // don't cache fetchingUpdate state
+  const stateForCache = newState.map(tx => {
+    if (tx.l1ToL2MsgData && tx.l1ToL2MsgData.fetchingUpdate) {
       return {
         ...tx,
         l1ToL2MsgData: {
@@ -317,10 +313,10 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
 
     if (shouldFetchUpdate) {
-      console.warn('XXXX waiting for status')
+      console.info('waiting for L1toL2Msg status for', txID)
 
       l1ToL2Msg.waitForStatus().then(({ status }) => {
-        console.warn('XXXXX status arrived, dispatching update', status)
+        console.info(`1toL2Msg status arrived for ${txID}, dispatching update`,status)
 
         dispatch({
           type: 'UPDATE_L1TOL2MSG_DATA',

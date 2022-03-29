@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useContext } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -13,7 +13,7 @@ import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
-import {  L1ToL2MessageWriter } from '@arbitrum/sdk'
+import { L1ToL2MessageWriter } from '@arbitrum/sdk'
 import { BigNumber } from 'ethers'
 
 interface TransactionsTableProps {
@@ -32,7 +32,7 @@ const depositStatusDisplayText = (depositStatus: DepositStatus) => {
     case DepositStatus.L2_SUCCESS:
       return 'success'
     case DepositStatus.L2_FAILURE:
-      return 'l2 txn failed; try re-executing' 
+      return 'l2 txn failed; try re-executing'
     case DepositStatus.CREATION_FAILED:
       return 'l2 failed; contact support'
     case DepositStatus.EXPIRED:
@@ -107,17 +107,19 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     async (tx: MergedTransaction) => {
       const l2Signer = arbTokenBridge.arbSigner
       const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
-      if(!retryableCreationTxID) throw new Error("Can't redeem; txid not found")
-      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(l2Signer,retryableCreationTxID, BigNumber.from(0))
+      if (!retryableCreationTxID)
+        throw new Error("Can't redeem; txid not found")
+      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
+        l2Signer,
+        retryableCreationTxID,
+        BigNumber.from(0)
+      )
       const res = await l1ToL2Msg.redeem()
       const rec = await res.wait()
       // update in store
-      arbTokenBridge.transactions.updateL1ToL2MsgData(
-        tx.txId,
-        l1ToL2Msg
-      )
+      arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
     },
-    [ arbTokenBridge ]
+    [arbTokenBridge]
   )
 
   const { blockTime = 15 } = l1NetworkDetails as Network

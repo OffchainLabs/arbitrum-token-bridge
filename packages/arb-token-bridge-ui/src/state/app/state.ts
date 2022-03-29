@@ -68,7 +68,7 @@ const getDepositStatus = (tx: Transaction) => {
 
 export interface MergedTransaction {
   direction: TxnType
-  status: string 
+  status: string
   createdAtTime: number | null
   createdAt: string | null
   resolvedAt: string | null
@@ -151,9 +151,10 @@ export const defaultState: AppState = {
     return s.sortedTransactions.filter(
       (txn: Transaction) =>
         (txn.type === 'deposit' || txn.type === 'deposit-l1') &&
-        txn.status === 'success' && (
-          !txn.l1ToL2MsgData || (txn.l1ToL2MsgData.status === L1ToL2MessageStatus.NOT_YET_CREATED && !txn.l1ToL2MsgData.fetchingUpdate)
-        )
+        txn.status === 'success' &&
+        (!txn.l1ToL2MsgData ||
+          (txn.l1ToL2MsgData.status === L1ToL2MessageStatus.NOT_YET_CREATED &&
+            !txn.l1ToL2MsgData.fetchingUpdate))
     )
   }),
   depositsTransformed: derived((s: AppState) => {
