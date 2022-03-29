@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useContext } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -9,6 +9,7 @@ import { TxnType } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
+import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
@@ -48,12 +49,11 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const now = dayjs()
   const whenCreated = dayjs(tx?.createdAt)
   const diffInSeconds = now.diff(whenCreated, 'seconds')
-  // TODO update:
   return (
     <Countdown
       date={now
         .add(
-          tx.direction === 'deposit-l2'
+          tx.depositStatus === DepositStatus.L2_PENDING
             ? Math.max(10 * 60 - diffInSeconds + 2, 0)
             : Math.max(3 * 60 - diffInSeconds + 2, 0),
           'seconds'
@@ -93,7 +93,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       networkDetails
     }
   } = useAppState()
-
+  const bridge = useContext(BridgeContext)
   const [isClaiming, setIsClaiming] = useState(false)
 
   const showRedeemRetryableButton = useMemo(() => {
@@ -105,7 +105,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
   const redeemRetryable = useCallback(
     async (tx: MergedTransaction) => {
-      const l2Signer = arbTokenBridge.arbSigner
+      if (!bridge) return
+      const l2Signer = bridge.l2Bridge.l2Signer
       const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
       if (!retryableCreationTxID)
         throw new Error("Can't redeem; txid not found")
@@ -119,7 +120,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       // update in store
       arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
     },
-    [arbTokenBridge]
+    [arbTokenBridge, bridge]
   )
 
   const { blockTime = 15 } = l1NetworkDetails as Network
@@ -344,7 +345,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
         {!tx.isWithdrawal && (
           <>
-            {tx.createdAt && tx.status === 'pending' ? (
+            {(tx.createdAt && tx.status === 'pending') ||
+            tx.depositStatus === DepositStatus.L2_PENDING ? (
               <PendingCountdown tx={tx} />
             ) : (
               <span>{tx.resolvedAt ?? tx.createdAt ?? 'N/A'}</span>

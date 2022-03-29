@@ -316,7 +316,10 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       console.info('waiting for L1toL2Msg status for', txID)
 
       l1ToL2Msg.waitForStatus().then(({ status }) => {
-        console.info(`1toL2Msg status arrived for ${txID}, dispatching update`,status)
+        console.info(
+          `1toL2Msg status arrived for ${txID}, dispatching update`,
+          status
+        )
 
         dispatch({
           type: 'UPDATE_L1TOL2MSG_DATA',
