@@ -187,8 +187,7 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
 
   /**
-   * Retrieves data about an ERC-20 token using its L1 address.
-   * Does not throw if the provided address is not a valid ERC-20 token.
+   * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
    * @param erc20L1Address
    * @returns
    */
