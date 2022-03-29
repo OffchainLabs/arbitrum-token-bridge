@@ -12,6 +12,7 @@ import {
   MultiCaller
 } from '@arbitrum/sdk'
 
+import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
@@ -80,6 +81,15 @@ function getDefaultTokenSymbol(address: string) {
     '...' +
     lowercased.substring(lowercased.length - 3)
   )
+}
+
+export interface L1TokenData {
+  name: string
+  symbol: string
+  balance: BigNumber
+  allowance: BigNumber
+  decimals: number
+  contract: ERC20
 }
 
 export interface TokenBridgeParams {
@@ -182,7 +192,7 @@ export const useArbTokenBridge = (
    * @param erc20L1Address
    * @returns
    */
-  async function getL1TokenData(erc20L1Address: string) {
+  async function getL1TokenData(erc20L1Address: string): Promise<L1TokenData> {
     if (typeof l1.signer.provider === 'undefined') {
       throw new Error(`No provider found for L1 signer`)
     }
@@ -203,6 +213,14 @@ export const useArbTokenBridge = (
       allowance: { owner: walletAddress, spender: l1GatewayAddress },
       decimals: true
     })
+
+    if (typeof tokenData.balance === 'undefined') {
+      throw new Error(`No balance method available`)
+    }
+
+    if (typeof tokenData.allowance === 'undefined') {
+      throw new Error(`No allowance method available`)
+    }
 
     return {
       name: tokenData.name || getDefaultTokenName(erc20L1Address),
