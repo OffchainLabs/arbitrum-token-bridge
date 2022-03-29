@@ -523,7 +523,7 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: symbol,
         assetType: AssetType.ERC20,
-        sender: await bridge.l2Bridge.getWalletAddress(),
+        sender: await l2.signer.getAddress(),
         blockNumber: tx.blockNumber || 0,
         l1NetworkID
       })
