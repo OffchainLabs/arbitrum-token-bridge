@@ -49,7 +49,7 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const now = dayjs()
   const whenCreated = dayjs(tx?.createdAt)
   const diffInSeconds = now.diff(whenCreated, 'seconds')
-
+  // TODO update:
   return (
     <Countdown
       date={now
