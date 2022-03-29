@@ -456,9 +456,7 @@ export const useArbTokenBridge = (
           const { symbol, decimals } = bridgeToken
           return { symbol, decimals }
         }
-        const { symbol, decimals } = await bridge.l1Bridge.getL1TokenData(
-          erc20l1Address
-        )
+        const { symbol, decimals } = await getL1TokenData(erc20l1Address)
         addToken(erc20l1Address)
         return { symbol, decimals }
       })()
@@ -747,7 +745,7 @@ export const useArbTokenBridge = (
         return
       }
       const { l2Address } = bridgeToken
-      const l1Data = await bridge.l1Bridge.getL1TokenData(l1Address)
+      const l1Data = await getL1TokenData(l1Address)
       const l2Data =
         (l2Address && (await bridge.l2Bridge.getL2TokenData(l2Address))) ||
         undefined
@@ -848,11 +846,7 @@ export const useArbTokenBridge = (
         true
       )
 
-      const tokenData = await bridge.l1Bridge.getL1TokenData(
-        tokenAddress as string
-      )
-      const symbol = tokenData.symbol
-      const decimals = tokenData.decimals
+      const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
 
       addTransaction({
         status: 'pending',
