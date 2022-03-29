@@ -307,6 +307,22 @@ export const useArbTokenBridge = (
     )
   }
 
+  /**
+   * Retrieves data about whether an ERC-20 token is disabled on the router.
+   * @param erc20L1Address
+   * @returns
+   */
+  async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    return new Erc20Bridger(l2.network).l1TokenIsDisabled(
+      erc20L1Address,
+      l1.signer.provider
+    )
+  }
+
   const walletAddressCached = useCallback(async () => {
     if (walletAddress) {
       return walletAddress
@@ -710,7 +726,8 @@ export const useArbTokenBridge = (
       l2Address = undefined
     }
 
-    const isDisabled = await bridge.l1Bridge.tokenIsDisabled(l1Address)
+    const isDisabled = await l1TokenIsDisabled(l1Address)
+
     if (isDisabled) {
       throw new TokenDisabledError('Token currently disabled')
     }
