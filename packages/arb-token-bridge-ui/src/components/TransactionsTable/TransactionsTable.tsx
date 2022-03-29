@@ -9,7 +9,6 @@ import { TxnType } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
-import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
@@ -94,7 +93,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       networkDetails
     }
   } = useAppState()
-  const bridge = useContext(BridgeContext)
 
   const [isClaiming, setIsClaiming] = useState(false)
 
@@ -107,20 +105,19 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
   const redeemRetryable = useCallback(
     async (tx: MergedTransaction) => {
-      if (!bridge) return
-      const l2Signer = bridge.l2Bridge.l2Signer
+      const l2Signer = arbTokenBridge.arbSigner
       const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
       if(!retryableCreationTxID) throw new Error("Can't redeem; txid not found")
       const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(l2Signer,retryableCreationTxID, BigNumber.from(0))
       const res = await l1ToL2Msg.redeem()
       const rec = await res.wait()
       // update in store
-      arbTokenBridge?.transactions?.updateL1ToL2MsgData(
+      arbTokenBridge.transactions.updateL1ToL2MsgData(
         tx.txId,
         l1ToL2Msg
       )
     },
-    [bridge, arbTokenBridge]
+    [ arbTokenBridge ]
   )
 
   const { blockTime = 15 } = l1NetworkDetails as Network

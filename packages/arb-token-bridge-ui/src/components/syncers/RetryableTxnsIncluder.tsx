@@ -1,11 +1,9 @@
 import { useCallback, useContext, useEffect } from 'react'
 import { useActions, useAppState } from '../../state'
-import { BridgeContext } from '../App/App'
 import { useInterval } from '../common/Hooks'
 import { L1TransactionReceipt } from '@arbitrum/sdk'
 
 const RetryableTxnsIncluder = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
@@ -15,23 +13,27 @@ const RetryableTxnsIncluder = (): JSX.Element => {
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
    */
   const checkAndAddMissingL1ToL2Messagges = useCallback(async () => {
-    if (!bridge) {
+    if (!arbTokenBridge) {
+      return
+    }
+    const { provider: l1Provider } = arbTokenBridge.l1Signer
+    if(!l1Provider){
       return
     }
     const l1DepositsWithUntrackedL2Messages = actions.app.l1DepositsWithUntrackedL2Messages()
 
     for (let depositTx of l1DepositsWithUntrackedL2Messages) {
       const depositTxRec = new L1TransactionReceipt(
-        await bridge.l1Provider.getTransactionReceipt(depositTx.txID)
+        await l1Provider.getTransactionReceipt(depositTx.txID)
       ) //**TODO: not found, i.e., reorg */
-      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(bridge.l2Provider)
+      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(arbTokenBridge.arbSigner)
 
       arbTokenBridge?.transactions?.updateL1ToL2MsgData(
         depositTx.txID,
         l1ToL2Msg
       )
     }
-  }, [bridge, arbTokenBridge?.transactions?.addTransactions])
+  }, [ arbTokenBridge?.transactions?.addTransactions])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messagges,

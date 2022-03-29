@@ -1351,6 +1351,7 @@ export const useArbTokenBridge = (
       triggerOutbox: triggerOutboxToken
     },
     arbSigner: bridge.l2Bridge.l2Signer,
+    l1Signer: l1.signer,
     transactions: {
       transactions,
       clearPendingTransactions,
