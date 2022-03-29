@@ -33,7 +33,7 @@ const depositStatusDisplayText = (depositStatus: DepositStatus) => {
     case DepositStatus.L2_SUCCESS:
       return 'success'
     case DepositStatus.L2_FAILURE:
-      return 'l2 failed; try redeeeming' // todo: unclear
+      return 'l2 txn failed; try re-executing' 
     case DepositStatus.CREATION_FAILED:
       return 'l2 failed; contact support'
     case DepositStatus.EXPIRED:
@@ -253,7 +253,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const renderTxIDDisplay = (tx: MergedTransaction) => {
     if (tx.uniqueId) return tx.uniqueId.toString()
     if (isDeposit(tx)) {
-      // TODO: eth stuff
       const targetL2Tx = (tx => {
         if (!tx.l1ToL2MsgData) return ''
         if (tx.asset === 'eth') {

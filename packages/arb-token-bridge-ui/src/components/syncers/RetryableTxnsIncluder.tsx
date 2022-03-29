@@ -18,13 +18,12 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     if (!bridge) {
       return
     }
-    // TODO check for failures
-    const successfulL1Deposits = actions.app.getSuccessfulL1Deposits()
+    const l1DepositsWithUntrackedL2Messages = actions.app.l1DepositsWithUntrackedL2Messages()
 
-    for (let depositTx of successfulL1Deposits) {
+    for (let depositTx of l1DepositsWithUntrackedL2Messages) {
       const depositTxRec = new L1TransactionReceipt(
         await bridge.l1Provider.getTransactionReceipt(depositTx.txID)
-      ) //**todo: not found, i.e., reorg */
+      ) //**TODO: not found, i.e., reorg */
       const l1ToL2Msg = await depositTxRec.getL1ToL2Message(bridge.l2Provider)
 
       arbTokenBridge?.transactions?.updateL1ToL2MsgData(

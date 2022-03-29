@@ -16,7 +16,7 @@ type Action =
   | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
   | { type: 'ADD_TRANSACTIONS'; transactions: Transaction[] }
   | {
-      type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION'
+      type: 'UPDATE_L1TOL2MSG_DATA'
       txID: string
       l1ToL2MsgData: L1ToL2MessageData
     }
@@ -219,7 +219,7 @@ function reducer(state: Transaction[], action: Action) {
     case 'SET_RESOLVED_TIMESTAMP': {
       return updateResolvedTimestamp(state, action.txID, action.timestamp)
     }
-    case 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION': {
+    case 'UPDATE_L1TOL2MSG_DATA': {
       return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
     }
     default:
@@ -306,7 +306,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     const status = await l1ToL2Msg.status()
     const shouldFetchUpdate = status === L1ToL2MessageStatus.NOT_YET_CREATED
     dispatch({
-      type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION',
+      type: 'UPDATE_L1TOL2MSG_DATA',
       txID: txID,
       l1ToL2MsgData: {
         status,
@@ -323,7 +323,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('XXXXX status arrived, dispatching update', status)
 
         dispatch({
-          type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION', // todo; can be one thing
+          type: 'UPDATE_L1TOL2MSG_DATA',
           txID,
           l1ToL2MsgData: {
             status,

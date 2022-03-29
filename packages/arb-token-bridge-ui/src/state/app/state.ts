@@ -68,7 +68,7 @@ const getDepositStatus = (tx: Transaction) => {
 
 export interface MergedTransaction {
   direction: TxnType
-  status: string // todo: this is kind of all over the place r.n
+  status: string 
   createdAtTime: number | null
   createdAt: string | null
   resolvedAt: string | null
@@ -109,7 +109,7 @@ export type AppState = {
   isDepositMode: boolean
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
-  successfulL1Deposits: Transaction[]
+  l1DepositsWithUntrackedL2Messages: Transaction[]
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
@@ -146,7 +146,7 @@ export const defaultState: AppState = {
   pendingTransactions: derived((s: AppState) => {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')
   }),
-  successfulL1Deposits: derived((s: AppState) => {
+  l1DepositsWithUntrackedL2Messages: derived((s: AppState) => {
     // check 'deposit' and 'deposit-l1' for backwards compatibility with old client side cache
     return s.sortedTransactions.filter(
       (txn: Transaction) =>
