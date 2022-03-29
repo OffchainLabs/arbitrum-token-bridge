@@ -31,12 +31,12 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 export type TxnType =
   | 'deposit'
   | 'deposit-l1'
-  | 'deposit-l2'
+  | 'deposit-l2' // unused; keeping for cache backwrads compatability
   | 'withdraw'
   | 'outbox'
   | 'approve'
-  | 'deposit-l2-auto-redeem'
-  | 'deposit-l2-ticket-created'
+  | 'deposit-l2-auto-redeem' // unused; keeping for cache backwrads compatability
+  | 'deposit-l2-ticket-created' // unused; keeping for cache backwrads compatability
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
