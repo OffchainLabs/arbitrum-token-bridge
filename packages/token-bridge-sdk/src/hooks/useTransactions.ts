@@ -140,10 +140,6 @@ function updateTxnL1ToL2Msg(
     return state
   }
   const tx = newState[index]
-  // if (tx.l1ToL2MsgData) {
-  //   console.warn(`l1tol2msg for ${txID} already added`)
-  //   return state
-  // }
 
   if (!(tx.type === 'deposit' || tx.type === 'deposit-l1')) {
     throw new Error(
