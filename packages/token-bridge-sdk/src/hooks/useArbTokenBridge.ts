@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -13,6 +13,7 @@ import {
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
 import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
@@ -174,17 +175,17 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
-  const [l11NetworkID, setL1NetWorkID] = useState<string | null>(null)
+  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
 
   /**
-   * Retrieves data about an ERC-20 token by its L1 address.
+   * Retrieves data about an ERC-20 token using its L1 address.
    * Does not throw if the provided address is not a valid ERC-20 token.
    * @param erc20L1Address
    * @returns
    */
   async function getL1TokenData(erc20L1Address: string) {
     if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No instance of L1Provider found`)
+      throw new Error(`No provider found for L1 signer`)
     }
 
     const erc20Bridger = new Erc20Bridger(l2.network)
@@ -214,13 +215,43 @@ export const useArbTokenBridge = (
     }
   }
 
-  const l1NetworkIDCached = useCallback(async () => {
-    if (l11NetworkID) return l11NetworkID
-    const network = await bridge.l1Bridge.l1Provider.getNetwork()
-    const networkID = await network.chainId.toString()
-    setL1NetWorkID(networkID)
-    return networkID
-  }, [l11NetworkID, bridge])
+  /**
+   * Retrieves the L1 address of an ERC-20 token using its L2 address.
+   * @param erc20L2Address
+   * @returns
+   */
+  async function getL1ERC20Address(
+    erc20L2Address: string
+  ): Promise<string | null> {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    try {
+      return await new Erc20Bridger(l2.network).getL1ERC20Address(
+        erc20L2Address,
+        l2.signer.provider
+      )
+    } catch (error) {
+      return null
+    }
+  }
+
+  /**
+   * Retrieves the L2 address of an ERC-20 token using its L1 address.
+   * @param erc20L1Address
+   * @returns
+   */
+  async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    return await new Erc20Bridger(l2.network).getL2ERC20Address(
+      erc20L1Address,
+      l1.signer.provider
+    )
+  }
 
   const walletAddressCached = useCallback(async () => {
     if (walletAddress) {
@@ -253,7 +284,7 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: await walletAddressCached(),
-      l1NetworkID: String(l1.network.chainID)
+      l1NetworkID
     })
 
     const receipt = await tx.wait()
@@ -285,7 +316,7 @@ export const useArbTokenBridge = (
           assetType: AssetType.ETH,
           sender: await walletAddressCached(),
           blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
-          l1NetworkID: await l1NetworkIDCached()
+          l1NetworkID
         })
         const receipt = await tx.wait()
 
@@ -326,12 +357,19 @@ export const useArbTokenBridge = (
         console.error('withdrawEth err', e)
       }
     },
-    [pendingWithdrawalsMap]
+    [pendingWithdrawalsMap, l1NetworkID]
   )
 
   const approveToken = async (erc20L1Address: string) => {
-    const tx = await bridge.approveToken(erc20L1Address)
-    const tokenData = await bridge.l1Bridge.getL1TokenData(erc20L1Address)
+    const erc20Bridger = new Erc20Bridger(l2.network)
+
+    const tx = await erc20Bridger.approveToken({
+      l1Signer: l1.signer,
+      erc20L1Address
+    })
+
+    const tokenData = await getL1TokenData(erc20L1Address)
+
     addTransaction({
       type: 'approve',
       status: 'pending',
@@ -340,10 +378,11 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
-      l1NetworkID: await l1NetworkIDCached()
+      l1NetworkID
     })
 
     const receipt = await tx.wait()
+
     updateTransaction(receipt, tx)
     updateTokenData(erc20L1Address)
   }
@@ -372,7 +411,7 @@ export const useArbTokenBridge = (
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
-      l1NetworkID: String(l1.network.chainID)
+      l1NetworkID
     })
 
     const receipt = await tx.wait()
@@ -418,7 +457,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         sender: await bridge.l2Bridge.getWalletAddress(),
         blockNumber: tx.blockNumber || 0,
-        l1NetworkID: await l1NetworkIDCached()
+        l1NetworkID
       })
       try {
         const receipt = await tx.wait()
@@ -458,7 +497,7 @@ export const useArbTokenBridge = (
         console.warn('withdraw token err', err)
       }
     },
-    [bridge, bridgeTokens]
+    [bridge, bridgeTokens, l1NetworkID]
   )
 
   const removeTokensFromList = (listID: number) => {
@@ -535,7 +574,7 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[await l1NetworkIDCached()].tokenAddress
+        const l1Address = bridgeInfo[l1NetworkID].tokenAddress
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -593,7 +632,8 @@ export const useArbTokenBridge = (
       let l1TokenBalance: BigNumber | null = null
       let l2TokenBalance: BigNumber | null = null
 
-      const maybeL1Address = await bridge.getERC20L1Address(erc20L1orL2Address)
+      const maybeL1Address = await getL1ERC20Address(erc20L1orL2Address)
+
       if (maybeL1Address) {
         // looks like l2 address was provided
         l1Address = maybeL1Address
@@ -601,7 +641,7 @@ export const useArbTokenBridge = (
       } else {
         // looks like l1 address was provided
         l1Address = erc20L1orL2Address
-        l2Address = await bridge.getERC20L2Address(l1Address)
+        l2Address = await getL2ERC20Address(l1Address)
       }
       const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -676,9 +716,10 @@ export const useArbTokenBridge = (
     })
   }, [])
 
-  const updateEthBalances = async () => {
-    const l1Balance = await bridge.getL1EthBalance()
-    const l2Balance = await bridge.getL2EthBalance()
+  async function updateEthBalances() {
+    const l1Balance = await l1.signer.getBalance()
+    const l2Balance = await l2.signer.getBalance()
+
     setEthBalances({
       balance: l1Balance,
       arbChainBalance: l2Balance
@@ -794,7 +835,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         sender: await walletAddressCached(),
         txID: res.hash,
-        l1NetworkID: await l1NetworkIDCached()
+        l1NetworkID
       })
       try {
         const rec = await res.wait()
@@ -814,7 +855,7 @@ export const useArbTokenBridge = (
         console.warn('WARNING: token outbox execute failed:', err)
       }
     },
-    [pendingWithdrawalsMap]
+    [pendingWithdrawalsMap, l1NetworkID]
   )
 
   const triggerOutboxEth = useCallback(
@@ -836,7 +877,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ETH,
         sender: await walletAddressCached(),
         txID: res.hash,
-        l1NetworkID: await l1NetworkIDCached()
+        l1NetworkID
       })
 
       try {
@@ -858,7 +899,7 @@ export const useArbTokenBridge = (
         console.warn('WARNING: ETH outbox execute failed:', err)
       }
     },
-    [pendingWithdrawalsMap]
+    [pendingWithdrawalsMap, l1NetworkID]
   )
 
   const getTokenSymbol = async (_l1Address: string) => {
@@ -894,13 +935,12 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
-    const networkID = await l1NetworkIDCached()
     const address = await walletAddressCached()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
     const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
-      networkID
+      l1NetworkID
     )
     const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
@@ -912,7 +952,7 @@ export const useArbTokenBridge = (
       address,
       startBlock,
       pivotBlock,
-      networkID
+      l1NetworkID
     )
     const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, {
       fromBlock: pivotBlock
@@ -920,7 +960,7 @@ export const useArbTokenBridge = (
     const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
       recentETHWithdrawalData
     )
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(networkID)
+    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
 
     console.log(
       `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
@@ -972,7 +1012,6 @@ export const useArbTokenBridge = (
     filter?: ethers.providers.Filter
   ) => {
     const address = await walletAddressCached()
-    const l1NetworkID = await l1NetworkIDCached()
 
     const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
       l1NetworkID
@@ -1143,7 +1182,6 @@ export const useArbTokenBridge = (
     l2ToL1Data: L2ToL1EventResultPlus[]
   ) => {
     if (l2ToL1Data.length === 0) return []
-    const l1NetworkID = await l1NetworkIDCached()
     if (l1NetworkID !== '1' && l1NetworkID !== '4')
       throw new Error(`Unrecognized network: ${l1NetworkID}`)
     // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
@@ -1253,7 +1291,6 @@ export const useArbTokenBridge = (
   // call after we've confirmed the outbox entry has been created
   const getOutGoingMessageStateV2 = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      const l1NetworkID = await l1NetworkIDCached()
       if (
         executedMessagesCache[
           hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1281,12 +1318,11 @@ export const useArbTokenBridge = (
         }
       }
     },
-    [executedMessagesCache]
+    [executedMessagesCache, l1NetworkID]
   )
 
   const getOutGoingMessageState = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      const l1NetworkID = await l1NetworkIDCached()
       if (
         executedMessagesCache[
           hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1297,28 +1333,26 @@ export const useArbTokenBridge = (
         return bridge.getOutGoingMessageState(batchNumber, indexInBatch)
       }
     },
-    [executedMessagesCache]
+    [executedMessagesCache, l1NetworkID]
   )
 
   const addToExecutedMessagesCache = useCallback(
     (batchNumber: BigNumber, indexInBatch: BigNumber) => {
       const _executedMessagesCache = { ...executedMessagesCache }
-      l1NetworkIDCached().then((l1NetworkID: string) => {
-        _executedMessagesCache[
-          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-        ] = true
-        setExecutedMessagesCache(_executedMessagesCache)
-      })
+      _executedMessagesCache[
+        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+      ] = true
+      setExecutedMessagesCache(_executedMessagesCache)
     },
-    [executedMessagesCache]
+    [executedMessagesCache, l1NetworkID]
   )
 
   const hashOutgoingMessage = (
     batchNumber: BigNumber,
     indexInBatch: BigNumber,
-    l1NetworkID: string
+    _l1NetworkID: string
   ) => {
-    return `${batchNumber.toString()},${indexInBatch.toString()},${l1NetworkID}`
+    return `${batchNumber.toString()},${indexInBatch.toString()},${_l1NetworkID}`
   }
 
   return {
