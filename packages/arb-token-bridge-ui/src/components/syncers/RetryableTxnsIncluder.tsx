@@ -21,9 +21,7 @@ const RetryableTxnsIncluder = (): JSX.Element => {
     // TODO check for failures
     const successfulL1Deposits = actions.app.getSuccessfulL1Deposits()
 
-    for (let depositTx of successfulL1Deposits.filter(
-      depositTx => !depositTx.l1ToL2MsgData
-    )) {
+    for (let depositTx of successfulL1Deposits) {
       const depositTxRec = new L1TransactionReceipt(
         await bridge.l1Provider.getTransactionReceipt(depositTx.txID)
       ) //**todo: not found, i.e., reorg */

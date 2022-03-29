@@ -151,7 +151,9 @@ export const defaultState: AppState = {
     return s.sortedTransactions.filter(
       (txn: Transaction) =>
         (txn.type === 'deposit' || txn.type === 'deposit-l1') &&
-        txn.status === 'success'
+        txn.status === 'success' && (
+          !txn.l1ToL2MsgData || (txn.l1ToL2MsgData.status === L1ToL2MessageStatus.NOT_YET_CREATED && !txn.l1ToL2MsgData.fetchingUpdate)
+        )
     )
   }),
   depositsTransformed: derived((s: AppState) => {

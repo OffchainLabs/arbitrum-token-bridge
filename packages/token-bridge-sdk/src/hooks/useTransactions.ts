@@ -56,7 +56,8 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
 export interface L1ToL2MessageData {
   status: L1ToL2MessageStatus
   retryableCreationTxID: string
-  l2TxID: string
+  l2TxID: string,
+  fetchingUpdate: boolean
 }
 type TransactionBase = {
   type: TxnType
@@ -228,7 +229,24 @@ function reducer(state: Transaction[], action: Action) {
 
 const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
-  window.localStorage.setItem('arbTransactions', JSON.stringify(newState))
+  // don't cache fetchingUpdate state 
+  console.warn('newState', newState);
+  
+  const stateForCache = newState.map((tx)=>{
+    console.warn('tx', tx);
+    
+    if(tx.l1ToL2MsgData && tx.l1ToL2MsgData.fetchingUpdate){
+      return {
+        ...tx,
+        l1ToL2MsgData: {
+          ...tx.l1ToL2MsgData,
+          fetchingUpdate: false
+        }
+      }
+    }
+    return tx
+  })
+  window.localStorage.setItem('arbTransactions', JSON.stringify(stateForCache))
   return newState
 }
 
@@ -286,17 +304,19 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     l1ToL2Msg: L1ToL2MessageReader
   ) => {
     const status = await l1ToL2Msg.status()
+    const shouldFetchUpdate = status === L1ToL2MessageStatus.NOT_YET_CREATED
     dispatch({
       type: 'ADD_L1TOL2MSG_TO_DEPOSIT_TRANSACTION',
       txID: txID,
       l1ToL2MsgData: {
         status,
         retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-        l2TxID: l1ToL2Msg.l2TxHash
+        l2TxID: l1ToL2Msg.l2TxHash,
+        fetchingUpdate: shouldFetchUpdate
       }
     })
 
-    if (status === L1ToL2MessageStatus.NOT_YET_CREATED) {
+    if (shouldFetchUpdate) {
       console.warn('XXXX waiting for status')
 
       l1ToL2Msg.waitForStatus().then(({ status }) => {
@@ -308,7 +328,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
           l1ToL2MsgData: {
             status,
             retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-            l2TxID: l1ToL2Msg.l2TxHash
+            l2TxID: l1ToL2Msg.l2TxHash,
+            fetchingUpdate: false
           }
         })
       })

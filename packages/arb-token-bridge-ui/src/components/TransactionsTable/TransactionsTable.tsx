@@ -14,7 +14,8 @@ import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {  L1ToL2MessageWriter } from '@arbitrum/sdk'
+import { BigNumber } from 'ethers'
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
@@ -105,11 +106,21 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   }, [tx])
 
   const redeemRetryable = useCallback(
-    (userTxnHash: string) => {
+    async (tx: MergedTransaction) => {
       if (!bridge) return
-      return bridge.l2Bridge.arbRetryableTx.redeem(userTxnHash)
+      const l2Signer = bridge.l2Bridge.l2Signer
+      const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
+      if(!retryableCreationTxID) throw new Error("Can't redeem; txid not found")
+      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(l2Signer,retryableCreationTxID, BigNumber.from(0))
+      const res = await l1ToL2Msg.redeem()
+      const rec = await res.wait()
+      // update in store
+      arbTokenBridge?.transactions?.updateL1ToL2MsgData(
+        tx.txId,
+        l1ToL2Msg
+      )
     },
-    [bridge]
+    [bridge, arbTokenBridge]
   )
 
   const { blockTime = 15 } = l1NetworkDetails as Network
@@ -319,7 +330,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
             <Button
               size="sm"
               disabled={!networkDetails?.isArbitrum}
-              onClick={() => redeemRetryable(tx.txId)}
+              onClick={() => redeemRetryable(tx)}
             >
               Re-execute
             </Button>
