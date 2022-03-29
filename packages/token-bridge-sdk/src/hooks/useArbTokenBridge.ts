@@ -15,6 +15,9 @@ import {
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
+import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
+import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
+
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
 import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
@@ -90,6 +93,11 @@ export interface L1TokenData {
   allowance: BigNumber
   decimals: number
   contract: ERC20
+}
+
+export interface L2TokenData {
+  balance: BigNumber
+  contract: StandardArbERC20
 }
 
 export interface TokenBridgeParams {
@@ -227,6 +235,36 @@ export const useArbTokenBridge = (
       balance: tokenData.balance,
       allowance: tokenData.allowance,
       decimals: tokenData.decimals || 0,
+      contract
+    }
+  }
+
+  /**
+   * Retrieves data about an ERC-20 token using its L2 address. Throws if fails to retrieve balance.
+   * @param erc20L2Address
+   * @returns
+   */
+  async function getL2TokenData(erc20L2Address: string): Promise<L2TokenData> {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    const contract = StandardArbERC20__factory.connect(
+      erc20L2Address,
+      l2.signer
+    )
+
+    const multiCaller = await MultiCaller.fromProvider(l2.signer.provider)
+    const [tokenData] = await multiCaller.getTokenData([erc20L2Address], {
+      balanceOf: { account: walletAddress }
+    })
+
+    if (typeof tokenData.balance === 'undefined') {
+      throw new Error(`No balance method available`)
+    }
+
+    return {
+      balance: tokenData.balance,
       contract
     }
   }
@@ -664,7 +702,7 @@ export const useArbTokenBridge = (
 
     try {
       // check if token is deployed at l2 address; if not this will throw
-      const { balance } = await bridge.l2Bridge.getL2TokenData(l2Address)
+      const { balance } = await getL2TokenData(l2Address)
       l2TokenBalance = balance
     } catch (error) {
       console.info(`no L2 token for ${l1Address} (which is fine)`)
@@ -746,8 +784,7 @@ export const useArbTokenBridge = (
       const { l2Address } = bridgeToken
       const l1Data = await getL1TokenData(l1Address)
       const l2Data =
-        (l2Address && (await bridge.l2Bridge.getL2TokenData(l2Address))) ||
-        undefined
+        (l2Address && (await getL2TokenData(l2Address))) || undefined
       const erc20TokenBalance: BridgeBalance = {
         balance: l1Data.balance,
         arbChainBalance: l2Data?.balance || Zero
