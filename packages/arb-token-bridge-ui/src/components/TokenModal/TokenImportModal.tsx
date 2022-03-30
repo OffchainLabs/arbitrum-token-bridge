@@ -1,18 +1,15 @@
-import { L1TokenData } from 'arb-ts'
 import {
   useState,
   useEffect,
   useMemo,
   MouseEventHandler,
-  useContext,
   useCallback
 } from 'react'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
-import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
+import { TokenType, ERC20BridgeToken, L1TokenData } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
-import { BridgeContext } from '../App/App'
 import { Modal } from '../common/Modal'
 import { useTokensFromLists, useTokensFromUser } from './TokenModalUtils'
 
@@ -97,7 +94,6 @@ export function TokenImportModal({
     }
   } = useAppState()
   const actions = useActions()
-  const bridge = useContext(BridgeContext)
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -138,19 +134,19 @@ export function TokenImportModal({
 
   const getL1TokenData = useCallback(
     async (eitherL1OrL2Address: string) => {
-      if (!bridge) {
+      if (typeof token === 'undefined') {
         return
       }
 
-      const addressOnL1 = await bridge.getERC20L1Address(eitherL1OrL2Address)
+      const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return bridge.l1Bridge.getL1TokenData(addressOnL1)
+        return token.getL1TokenData(addressOnL1)
       } else {
-        return bridge.l1Bridge.getL1TokenData(eitherL1OrL2Address)
+        return token.getL1TokenData(eitherL1OrL2Address)
       }
     },
-    [bridge]
+    [token]
   )
 
   const searchForTokenInLists = useCallback(
