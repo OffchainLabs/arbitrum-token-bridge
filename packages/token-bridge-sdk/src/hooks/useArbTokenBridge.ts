@@ -12,10 +12,7 @@ import {
   MultiCaller
 } from '@arbitrum/sdk'
 
-import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-
-import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
@@ -34,7 +31,9 @@ import {
   ERC721Balance,
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
-  TokenType
+  TokenType,
+  L1TokenData,
+  L2TokenData
 } from './arbTokenBridge.types'
 
 import {
@@ -84,20 +83,6 @@ function getDefaultTokenSymbol(address: string) {
     '...' +
     lowercased.substring(lowercased.length - 3)
   )
-}
-
-export interface L1TokenData {
-  name: string
-  symbol: string
-  balance: BigNumber
-  allowance: BigNumber
-  decimals: number
-  contract: ERC20
-}
-
-export interface L2TokenData {
-  balance: BigNumber
-  contract: StandardArbERC20
 }
 
 export interface TokenBridgeParams {

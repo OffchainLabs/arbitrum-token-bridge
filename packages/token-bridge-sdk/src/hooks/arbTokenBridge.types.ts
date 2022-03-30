@@ -2,6 +2,8 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
+import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
+import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 
 import {
   FailedTransaction,
@@ -48,6 +50,20 @@ export enum AssetType {
   ERC20 = 'ERC20',
   ERC721 = 'ERC721',
   ETH = 'ETH'
+}
+
+export interface L1TokenData {
+  name: string
+  symbol: string
+  balance: BigNumber
+  allowance: BigNumber
+  decimals: number
+  contract: ERC20
+}
+
+export interface L2TokenData {
+  balance: BigNumber
+  contract: StandardArbERC20
 }
 
 export interface ContractStorage<T> {
