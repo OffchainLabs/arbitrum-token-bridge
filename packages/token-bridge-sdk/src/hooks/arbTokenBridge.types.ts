@@ -143,6 +143,8 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber
   ) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
+  getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
+  getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
 }
 
 export interface TransactionActions {
