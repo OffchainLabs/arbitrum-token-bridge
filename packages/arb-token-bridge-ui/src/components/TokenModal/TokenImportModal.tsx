@@ -7,21 +7,15 @@ import {
 } from 'react'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
-import { TokenType, ERC20BridgeToken, L1TokenData } from 'token-bridge-sdk'
+import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { Modal } from '../common/Modal'
-import { useTokensFromLists, useTokensFromUser } from './TokenModalUtils'
-
-function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.contract.address,
-    decimals: data.decimals
-  }
-}
+import {
+  useTokensFromLists,
+  useTokensFromUser,
+  toERC20BridgeToken
+} from './TokenModalUtils'
 
 function ModalFooter({
   hideCancel = false,

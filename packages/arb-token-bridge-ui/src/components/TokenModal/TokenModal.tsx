@@ -3,7 +3,6 @@ import { useMedia } from 'react-use'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
-import { ERC20BridgeToken, TokenType, L1TokenData } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -21,7 +20,8 @@ import TokenConfirmationDialog from './TokenConfirmationDialog'
 import {
   SearchableToken,
   useTokensFromLists,
-  useTokensFromUser
+  useTokensFromUser,
+  toERC20BridgeToken
 } from './TokenModalUtils'
 
 enum Panel {
@@ -291,16 +291,6 @@ export const TokenListBody = () => {
       })}
     </div>
   )
-}
-
-function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.contract.address,
-    decimals: data.decimals
-  }
 }
 
 const ETH_IDENTIFIER = 'eth.address'

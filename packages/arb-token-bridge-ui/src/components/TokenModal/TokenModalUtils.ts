@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
+import { ERC20BridgeToken, L1TokenData, TokenType } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { TokenListWithId, useTokenLists } from '../../tokenLists'
@@ -144,4 +144,14 @@ function tokenListsToSearchableTokenStorage(
         return acc
       }, {})
   )
+}
+
+export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.contract.address,
+    decimals: data.decimals
+  }
 }
