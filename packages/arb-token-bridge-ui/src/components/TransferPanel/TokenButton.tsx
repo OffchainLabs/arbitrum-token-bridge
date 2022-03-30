@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
 import { resolveTokenImg } from '../../util'
+import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { TokenModal } from '../TokenModal/TokenModal'
 
-const TokenButton = (): JSX.Element => {
+export function TokenButton(): JSX.Element {
   const {
     app: {
       selectedToken,
@@ -13,7 +14,10 @@ const TokenButton = (): JSX.Element => {
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const [tokeModalOpen, setTokenModalOpen] = useState(false)
+
+  const [tokenModalOpen, setTokenModalOpen] = useState(false)
+  const [tokenImportModalOpen, setTokenImportModalOpen] = useState(false)
+  const [tokenToImport, setTokenToImport] = useState<string>()
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
@@ -30,9 +34,32 @@ const TokenButton = (): JSX.Element => {
     return undefined
   }, [selectedToken?.address, networkID])
 
+  // Reset the token back to undefined every time the modal closes
+  useEffect(() => {
+    if (!tokenImportModalOpen) {
+      setTokenToImport(undefined)
+    }
+  }, [tokenImportModalOpen])
+
+  function handleImportToken(address: string) {
+    setTokenToImport(address)
+    setTokenImportModalOpen(true)
+  }
+
   return (
     <div>
-      <TokenModal isOpen={tokeModalOpen} setIsOpen={setTokenModalOpen} />
+      <TokenModal
+        isOpen={tokenModalOpen}
+        setIsOpen={setTokenModalOpen}
+        onImportToken={handleImportToken}
+      />
+      {typeof tokenToImport !== 'undefined' && (
+        <TokenImportModal
+          isOpen={tokenImportModalOpen}
+          setIsOpen={setTokenImportModalOpen}
+          address={tokenToImport}
+        />
+      )}
       <button
         type="button"
         onClick={() => setTokenModalOpen(true)}
@@ -53,5 +80,3 @@ const TokenButton = (): JSX.Element => {
     </div>
   )
 }
-
-export { TokenButton }

@@ -1,10 +1,7 @@
-import { useEffect, useState, useContext, useCallback, useMemo } from 'react'
-
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { constants } from 'ethers'
-import { ERC20__factory } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
-import { BridgeContext } from '../App/App'
 
 const withdrawOnlyTokens = [
   {
@@ -18,6 +15,18 @@ const withdrawOnlyTokens = [
   {
     l1Address: '0x0e192d382a36de7011f795acc4391cd302003606',
     l2Address: '0x488cc08935458403a0458e45E20c0159c8AB2c92'
+  },
+  {
+    l1Address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+    l2Address: ''
+  },
+  {
+    l1Address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+    l2Address: ''
+  },
+  {
+    l1Address: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
+    l2Address: ''
   }
 ].map(token => {
   const { l1Address, l2Address } = token
@@ -34,32 +43,33 @@ const useWithdrawOnly = () => {
     app: { selectedToken, arbTokenBridge, l1NetworkDetails }
   } = useAppState()
   const [doneAddingTokens, setDoneAddingTokens] = useState(false)
-  const bridge = useContext(BridgeContext)
 
   const addTokens = useCallback(async () => {
-    if (!bridge) return
-    const userAddress = await bridge.l2Signer.getAddress()
     try {
       for (let i = 0; i < withdrawOnlyTokens.length; i += 1) {
         const { l1Address, l2Address } = withdrawOnlyTokens[i]
-        const token = ERC20__factory.connect(l2Address, bridge.l2Provider)
-        const l2Bal = await token.balanceOf(userAddress)
-        if (!l2Bal.eq(constants.Zero)) {
-          // add it if user has an L2 balance
 
+        if (!l2Address) {
+          continue
+        }
+
+        const { balance } = await arbTokenBridge.token.getL2TokenData(l2Address)
+
+        // add it if user has an L2 balance
+        if (!balance.eq(constants.Zero)) {
           await arbTokenBridge.token.add(l1Address)
         }
       }
     } catch (err) {
       console.warn(err)
     }
-  }, [bridge, arbTokenBridge])
+  }, [arbTokenBridge])
 
   useEffect(() => {
     if (
-      !bridge ||
       !arbTokenBridge ||
       !arbTokenBridge.token ||
+      arbTokenBridge.walletAddress === '' ||
       doneAddingTokens ||
       !(l1NetworkDetails && l1NetworkDetails.chainID === '1')
     )
@@ -67,7 +77,7 @@ const useWithdrawOnly = () => {
     // when ready/ on load, add tokens
     addTokens()
     setDoneAddingTokens(true)
-  }, [bridge, doneAddingTokens, arbTokenBridge])
+  }, [doneAddingTokens, arbTokenBridge])
 
   const shouldDisableDeposit = useMemo(() => {
     if (!selectedToken) return false
