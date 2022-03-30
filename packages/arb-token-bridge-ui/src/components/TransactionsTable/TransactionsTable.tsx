@@ -113,7 +113,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
         l2Signer,
         retryableCreationTxID,
-        BigNumber.from(0)
+        BigNumber.from(tx.seqNum)
       )
       const res = await l1ToL2Msg.redeem()
       const rec = await res.wait()
