@@ -1,18 +1,10 @@
-import React, {
-  FormEventHandler,
-  useMemo,
-  useState,
-  useCallback,
-  useContext
-} from 'react'
+import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { useMedia } from 'react-use'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
-import { L1TokenData } from 'arb-ts'
-import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
+import { ERC20BridgeToken, TokenType, L1TokenData } from 'token-bridge-sdk'
 
-import { BridgeContext } from '../App/App'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -543,7 +535,6 @@ const TokenModal = ({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const bridge = useContext(BridgeContext)
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -571,7 +562,7 @@ const TokenModal = ({
         return
       }
 
-      const data = await bridge?.l1Bridge.getL1TokenData(_token.address)
+      const data = await token?.getL1TokenData(_token.address)
 
       if (data) {
         token.updateTokenData(_token.address)
