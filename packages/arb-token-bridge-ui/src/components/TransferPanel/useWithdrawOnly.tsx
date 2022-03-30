@@ -18,6 +18,18 @@ const withdrawOnlyTokens = [
   {
     l1Address: '0x0e192d382a36de7011f795acc4391cd302003606',
     l2Address: '0x488cc08935458403a0458e45E20c0159c8AB2c92'
+  },
+  {
+    l1Address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+    l2Address: ''
+  },
+  {
+    l1Address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+    l2Address: ''
+  },
+  {
+    l1Address: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
+    l2Address: ''
   }
 ].map(token => {
   const { l1Address, l2Address } = token
@@ -42,6 +54,7 @@ const useWithdrawOnly = () => {
     try {
       for (let i = 0; i < withdrawOnlyTokens.length; i += 1) {
         const { l1Address, l2Address } = withdrawOnlyTokens[i]
+        if (!l2Address) continue
         const token = ERC20__factory.connect(l2Address, bridge.l2Provider)
         const l2Bal = await token.balanceOf(userAddress)
         if (!l2Bal.eq(constants.Zero)) {
