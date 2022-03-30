@@ -240,13 +240,16 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           return 'yellow'
       }
     } else {
-      return tx.status === 'success'
-        ? 'green'
-        : tx.status === 'failure'
-        ? 'red'
-        : tx.status === 'pending'
-        ? 'blue'
-        : 'yellow'
+      switch (tx.status) {
+        case 'success':
+          return 'green'
+        case 'failure':
+          return 'red'
+        case 'pending':
+          return 'blue'
+        default:
+          return 'yellow'
+      }
     }
   }
 
