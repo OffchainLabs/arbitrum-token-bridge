@@ -110,6 +110,7 @@ export type AppState = {
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
   l1DepositsWithUntrackedL2Messages: Transaction[]
+  failedRetryablesToRedeem: MergedTransaction[]
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
@@ -155,6 +156,11 @@ export const defaultState: AppState = {
         (!txn.l1ToL2MsgData ||
           (txn.l1ToL2MsgData.status === L1ToL2MessageStatus.NOT_YET_CREATED &&
             !txn.l1ToL2MsgData.fetchingUpdate))
+    )
+  }),
+  failedRetryablesToRedeem: derived((s: AppState) => {
+    return s.depositsTransformed.filter(
+      tx => tx.depositStatus === DepositStatus.L2_FAILURE
     )
   }),
   depositsTransformed: derived((s: AppState) => {

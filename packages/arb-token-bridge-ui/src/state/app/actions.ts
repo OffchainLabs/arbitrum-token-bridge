@@ -109,3 +109,7 @@ export const l1DepositsWithUntrackedL2Messages = ({ state }: Context) => {
 export const getSortedTransactions = ({ state }: Context) => {
   return state.app.sortedTransactions
 }
+
+export const getFailedRetryablesToRedeem = ({ state }: Context) => {
+  return state.app.failedRetryablesToRedeem
+}

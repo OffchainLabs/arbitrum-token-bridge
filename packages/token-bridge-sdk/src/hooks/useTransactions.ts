@@ -293,9 +293,10 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const updateL1ToL2MsgData = async (
     txID: string,
-    l1ToL2Msg: L1ToL2MessageReader
+    l1ToL2Msg: L1ToL2MessageReader,
+    _status?: L1ToL2MessageStatus
   ) => {
-    const status = await l1ToL2Msg.status()
+    const status = _status || (await l1ToL2Msg.status())
     const shouldFetchUpdate = status === L1ToL2MessageStatus.NOT_YET_CREATED
     dispatch({
       type: 'UPDATE_L1TOL2MSG_DATA',
