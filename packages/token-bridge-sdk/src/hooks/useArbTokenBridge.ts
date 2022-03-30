@@ -1443,7 +1443,9 @@ export const useArbTokenBridge = (
       withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken,
       getL1TokenData,
-      getL2TokenData
+      getL2TokenData,
+      getL1ERC20Address,
+      getL2ERC20Address
     },
     arbSigner: l2.signer,
     transactions: {

@@ -145,6 +145,8 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
+  getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
+  getL2ERC20Address: (erc20L1Address: string) => Promise<string>
 }
 
 export interface TransactionActions {
