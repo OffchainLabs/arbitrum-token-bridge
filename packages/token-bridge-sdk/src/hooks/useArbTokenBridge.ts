@@ -13,6 +13,7 @@ import {
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
 import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
@@ -30,7 +31,9 @@ import {
   ERC721Balance,
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
-  TokenType
+  TokenType,
+  L1TokenData,
+  L2TokenData
 } from './arbTokenBridge.types'
 
 import {
@@ -177,12 +180,11 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
 
   /**
-   * Retrieves data about an ERC-20 token using its L1 address.
-   * Does not throw if the provided address is not a valid ERC-20 token.
+   * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
    * @param erc20L1Address
    * @returns
    */
-  async function getL1TokenData(erc20L1Address: string) {
+  async function getL1TokenData(erc20L1Address: string): Promise<L1TokenData> {
     if (typeof l1.signer.provider === 'undefined') {
       throw new Error(`No provider found for L1 signer`)
     }
@@ -204,12 +206,50 @@ export const useArbTokenBridge = (
       decimals: true
     })
 
+    if (typeof tokenData.balance === 'undefined') {
+      throw new Error(`No balance method available`)
+    }
+
+    if (typeof tokenData.allowance === 'undefined') {
+      throw new Error(`No allowance method available`)
+    }
+
     return {
       name: tokenData.name || getDefaultTokenName(erc20L1Address),
       symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
       balance: tokenData.balance,
       allowance: tokenData.allowance,
       decimals: tokenData.decimals || 0,
+      contract
+    }
+  }
+
+  /**
+   * Retrieves data about an ERC-20 token using its L2 address. Throws if fails to retrieve balance.
+   * @param erc20L2Address
+   * @returns
+   */
+  async function getL2TokenData(erc20L2Address: string): Promise<L2TokenData> {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    const contract = StandardArbERC20__factory.connect(
+      erc20L2Address,
+      l2.signer
+    )
+
+    const multiCaller = await MultiCaller.fromProvider(l2.signer.provider)
+    const [tokenData] = await multiCaller.getTokenData([erc20L2Address], {
+      balanceOf: { account: walletAddress }
+    })
+
+    if (typeof tokenData.balance === 'undefined') {
+      throw new Error(`No balance method available`)
+    }
+
+    return {
+      balance: tokenData.balance,
       contract
     }
   }
@@ -247,6 +287,22 @@ export const useArbTokenBridge = (
     }
 
     return await new Erc20Bridger(l2.network).getL2ERC20Address(
+      erc20L1Address,
+      l1.signer.provider
+    )
+  }
+
+  /**
+   * Retrieves data about whether an ERC-20 token is disabled on the router.
+   * @param erc20L1Address
+   * @returns
+   */
+  async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    return new Erc20Bridger(l2.network).l1TokenIsDisabled(
       erc20L1Address,
       l1.signer.provider
     )
@@ -438,9 +494,7 @@ export const useArbTokenBridge = (
           const { symbol, decimals } = bridgeToken
           return { symbol, decimals }
         }
-        const { symbol, decimals } = await bridge.l1Bridge.getL1TokenData(
-          erc20l1Address
-        )
+        const { symbol, decimals } = await getL1TokenData(erc20l1Address)
         addToken(erc20l1Address)
         return { symbol, decimals }
       })()
@@ -454,7 +508,7 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: symbol,
         assetType: AssetType.ERC20,
-        sender: await bridge.l2Bridge.getWalletAddress(),
+        sender: await l2.signer.getAddress(),
         blockNumber: tx.blockNumber || 0,
         l1NetworkID
       })
@@ -624,70 +678,67 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addToken = useCallback(
-    async (erc20L1orL2Address: string) => {
-      let l1Address: string
-      let l2Address: string | undefined
-      let l1TokenBalance: BigNumber | null = null
-      let l2TokenBalance: BigNumber | null = null
+  async function addToken(erc20L1orL2Address: string) {
+    let l1Address: string
+    let l2Address: string | undefined
+    let l1TokenBalance: BigNumber | null = null
+    let l2TokenBalance: BigNumber | null = null
 
-      const maybeL1Address = await getL1ERC20Address(erc20L1orL2Address)
+    const maybeL1Address = await getL1ERC20Address(erc20L1orL2Address)
 
-      if (maybeL1Address) {
-        // looks like l2 address was provided
-        l1Address = maybeL1Address
-        l2Address = erc20L1orL2Address
-      } else {
-        // looks like l1 address was provided
-        l1Address = erc20L1orL2Address
-        l2Address = await getL2ERC20Address(l1Address)
-      }
-      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    if (maybeL1Address) {
+      // looks like l2 address was provided
+      l1Address = maybeL1Address
+      l2Address = erc20L1orL2Address
+    } else {
+      // looks like l1 address was provided
+      l1Address = erc20L1orL2Address
+      l2Address = await getL2ERC20Address(l1Address)
+    }
 
-      const l1Data = await bridge.l1Bridge.getL1TokenData(l1Address)
-      const { symbol, contract, balance } = l1Data
-      l1TokenBalance = balance
-      const name = await contract.name()
-      const decimals = await contract.decimals()
-      try {
-        // check if token is deployed at l2 address; if not this will throw
-        const { balance } = await bridge.l2Bridge.getL2TokenData(l2Address)
-        l2TokenBalance = balance
-      } catch (error) {
-        console.info(`no L2 token for ${l1Address} (which is fine)`)
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    const { name, symbol, balance, decimals } = await getL1TokenData(l1Address)
 
-        l2Address = undefined
-      }
+    l1TokenBalance = balance
 
-      const isDisabled = await bridge.l1Bridge.tokenIsDisabled(l1Address)
-      if (isDisabled) {
-        throw new TokenDisabledError('Token currently disabled')
-      }
+    try {
+      // check if token is deployed at l2 address; if not this will throw
+      const { balance } = await getL2TokenData(l2Address)
+      l2TokenBalance = balance
+    } catch (error) {
+      console.info(`no L2 token for ${l1Address} (which is fine)`)
 
-      bridgeTokensToAdd[l1Address] = {
-        name,
-        type: TokenType.ERC20,
-        symbol,
-        address: l1Address,
-        l2Address,
-        decimals
-      }
-      setBridgeTokens(oldBridgeTokens => {
-        return { ...oldBridgeTokens, ...bridgeTokensToAdd }
-      })
-      setErc20Balances(oldBridgeBalances => {
-        const newBal = {
-          [l1Address]: {
-            balance: l1TokenBalance,
-            arbChainBalance: l2TokenBalance
-          }
+      l2Address = undefined
+    }
+
+    const isDisabled = await l1TokenIsDisabled(l1Address)
+
+    if (isDisabled) {
+      throw new TokenDisabledError('Token currently disabled')
+    }
+
+    bridgeTokensToAdd[l1Address] = {
+      name,
+      type: TokenType.ERC20,
+      symbol,
+      address: l1Address,
+      l2Address,
+      decimals
+    }
+    setBridgeTokens(oldBridgeTokens => {
+      return { ...oldBridgeTokens, ...bridgeTokensToAdd }
+    })
+    setErc20Balances(oldBridgeBalances => {
+      const newBal = {
+        [l1Address]: {
+          balance: l1TokenBalance,
+          arbChainBalance: l2TokenBalance
         }
-        return { ...oldBridgeBalances, ...newBal }
-      })
-      return l1Address
-    },
-    [ERC20Cache, setERC20Cache, bridgeTokens]
-  )
+      }
+      return { ...oldBridgeBalances, ...newBal }
+    })
+    return l1Address
+  }
 
   const expireCache = (): void => {
     clearERC20Cache()
@@ -710,7 +761,8 @@ export const useArbTokenBridge = (
         setERC20Cache(values.filter((val): val is string => !!val))
       })
     }
-    bridge.l1Bridge.getWalletAddress().then(_address => {
+
+    l1.signer.getAddress().then(_address => {
       setWalletAddress(_address)
     })
   }, [])
@@ -732,10 +784,9 @@ export const useArbTokenBridge = (
         return
       }
       const { l2Address } = bridgeToken
-      const l1Data = await bridge.l1Bridge.getL1TokenData(l1Address)
+      const l1Data = await getL1TokenData(l1Address)
       const l2Data =
-        (l2Address && (await bridge.l2Bridge.getL2TokenData(l2Address))) ||
-        undefined
+        (l2Address && (await getL2TokenData(l2Address))) || undefined
       const erc20TokenBalance: BridgeBalance = {
         balance: l1Data.balance,
         arbChainBalance: l2Data?.balance || Zero
@@ -756,26 +807,39 @@ export const useArbTokenBridge = (
   const updateTokenBalances = async (
     bridgeTokens: ContractStorage<BridgeToken>
   ) => {
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
     const walletAddress = await walletAddressCached()
+    const l1MultiCaller = await MultiCaller.fromProvider(l1.signer.provider)
+    const l2MultiCaller = await MultiCaller.fromProvider(l2.signer.provider)
 
     const l1Addresses = Object.keys(bridgeTokens)
+    const l1AddressesBalances = await l1MultiCaller.getTokenData(l1Addresses, {
+      balanceOf: { account: walletAddress }
+    })
+    const l1Balances = l1Addresses.map((address: string, index: number) => ({
+      tokenAddr: address,
+      balance: l1AddressesBalances[index].balance
+    }))
 
     const l2Addresses = l1Addresses
       .map(l1Address => {
         return (bridgeTokens[l1Address] as ERC20BridgeToken).l2Address
       })
       .filter((val): val is string => !!val)
-
-    const l1Balances = await bridge.getTokenBalanceBatch(
-      walletAddress,
-      l1Addresses,
-      'L1'
-    )
-    const l2Balances = await bridge.getTokenBalanceBatch(
-      walletAddress,
-      l2Addresses,
-      'L2'
-    )
+    const l2AddressesBalances = await l2MultiCaller.getTokenData(l2Addresses, {
+      balanceOf: { account: walletAddress }
+    })
+    const l2Balances = l2Addresses.map((address: string, index: number) => ({
+      tokenAddr: address,
+      balance: l2AddressesBalances[index].balance
+    }))
 
     const l2AddressToBalanceMap: {
       [l2Address: string]: BigNumber | undefined
@@ -820,11 +884,7 @@ export const useArbTokenBridge = (
         true
       )
 
-      const tokenData = await bridge.l1Bridge.getL1TokenData(
-        tokenAddress as string
-      )
-      const symbol = tokenData.symbol
-      const decimals = tokenData.decimals
+      const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
 
       addTransaction({
         status: 'pending',
@@ -1381,7 +1441,11 @@ export const useArbTokenBridge = (
       approve: approveToken,
       deposit: depositToken,
       withdraw: withdrawToken,
-      triggerOutbox: triggerOutboxToken
+      triggerOutbox: triggerOutboxToken,
+      getL1TokenData,
+      getL2TokenData,
+      getL1ERC20Address,
+      getL2ERC20Address
     },
     arbSigner: l2.signer,
     transactions: {

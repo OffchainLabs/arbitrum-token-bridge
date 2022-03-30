@@ -1,18 +1,9 @@
-import React, {
-  FormEventHandler,
-  useMemo,
-  useState,
-  useCallback,
-  useContext
-} from 'react'
+import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { useMedia } from 'react-use'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
-import { L1TokenData } from 'arb-ts'
-import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
 
-import { BridgeContext } from '../App/App'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -29,7 +20,8 @@ import TokenConfirmationDialog from './TokenConfirmationDialog'
 import {
   SearchableToken,
   useTokensFromLists,
-  useTokensFromUser
+  useTokensFromUser,
+  toERC20BridgeToken
 } from './TokenModalUtils'
 
 enum Panel {
@@ -301,16 +293,6 @@ export const TokenListBody = () => {
   )
 }
 
-function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.contract.address,
-    decimals: data.decimals
-  }
-}
-
 const ETH_IDENTIFIER = 'eth.address'
 
 export function TokenModalBody({
@@ -543,7 +525,6 @@ const TokenModal = ({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const bridge = useContext(BridgeContext)
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -571,7 +552,7 @@ const TokenModal = ({
         return
       }
 
-      const data = await bridge?.l1Bridge.getL1TokenData(_token.address)
+      const data = await token?.getL1TokenData(_token.address)
 
       if (data) {
         token.updateTokenData(_token.address)
