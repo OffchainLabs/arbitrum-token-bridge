@@ -86,6 +86,7 @@ function getDefaultTokenSymbol(address: string) {
 }
 
 export interface TokenBridgeParams {
+  walletAddress: string
   l1: {
     signer: Signer
     network: L1Network
@@ -101,9 +102,7 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
-  const { l1, l2 } = params
-
-  const [walletAddress, setWalletAddress] = useState('')
+  const { walletAddress, l1, l2 } = params
 
   const defaultBalance = {
     balance: null,
@@ -308,16 +307,6 @@ export const useArbTokenBridge = (
     )
   }
 
-  const walletAddressCached = useCallback(async () => {
-    if (walletAddress) {
-      return walletAddress
-    }
-
-    const address = await l1.signer.getAddress()
-    setWalletAddress(address)
-    return address
-  }, [walletAddress, l1.signer])
-
   const depositEth = async (amount: BigNumber) => {
     if (typeof l2.signer.provider === 'undefined') {
       throw new Error(`No provider found for L2 signer`)
@@ -338,7 +327,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: 'ETH',
       assetType: AssetType.ETH,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       l1NetworkID
     })
 
@@ -369,7 +358,7 @@ export const useArbTokenBridge = (
           txID: tx.hash,
           assetName: 'ETH',
           assetType: AssetType.ETH,
-          sender: await walletAddressCached(),
+          sender: walletAddress,
           blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
           l1NetworkID
         })
@@ -412,7 +401,7 @@ export const useArbTokenBridge = (
         console.error('withdrawEth err', e)
       }
     },
-    [pendingWithdrawalsMap, l1NetworkID]
+    [pendingWithdrawalsMap, l1NetworkID, walletAddress]
   )
 
   const approveToken = async (erc20L1Address: string) => {
@@ -432,7 +421,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       l1NetworkID
     })
 
@@ -465,7 +454,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: symbol,
       assetType: AssetType.ERC20,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       l1NetworkID
     })
 
@@ -761,10 +750,6 @@ export const useArbTokenBridge = (
         setERC20Cache(values.filter((val): val is string => !!val))
       })
     }
-
-    l1.signer.getAddress().then(_address => {
-      setWalletAddress(_address)
-    })
   }, [])
 
   async function updateEthBalances() {
@@ -815,7 +800,6 @@ export const useArbTokenBridge = (
       throw new Error(`No provider found for L2 signer`)
     }
 
-    const walletAddress = await walletAddressCached()
     const l1MultiCaller = await MultiCaller.fromProvider(l1.signer.provider)
     const l2MultiCaller = await MultiCaller.fromProvider(l2.signer.provider)
 
@@ -892,7 +876,7 @@ export const useArbTokenBridge = (
         value: ethers.utils.formatUnits(value, decimals),
         assetName: symbol,
         assetType: AssetType.ERC20,
-        sender: await walletAddressCached(),
+        sender: walletAddress,
         txID: res.hash,
         l1NetworkID
       })
@@ -914,7 +898,7 @@ export const useArbTokenBridge = (
         console.warn('WARNING: token outbox execute failed:', err)
       }
     },
-    [pendingWithdrawalsMap, l1NetworkID]
+    [pendingWithdrawalsMap, l1NetworkID, walletAddress]
   )
 
   const triggerOutboxEth = useCallback(
@@ -934,7 +918,7 @@ export const useArbTokenBridge = (
         value: ethers.utils.formatEther(value),
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        sender: await walletAddressCached(),
+        sender: walletAddress,
         txID: res.hash,
         l1NetworkID
       })
@@ -958,7 +942,7 @@ export const useArbTokenBridge = (
         console.warn('WARNING: ETH outbox execute failed:', err)
       }
     },
-    [pendingWithdrawalsMap, l1NetworkID]
+    [pendingWithdrawalsMap, l1NetworkID, walletAddress]
   )
 
   const getTokenSymbol = async (_l1Address: string) => {
@@ -994,7 +978,6 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
-    const address = await walletAddressCached()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
@@ -1008,14 +991,17 @@ export const useArbTokenBridge = (
     )
 
     const oldEthWithdrawalEventData = await getETHWithdrawals(
-      address,
+      walletAddress,
       startBlock,
       pivotBlock,
       l1NetworkID
     )
-    const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, {
-      fromBlock: pivotBlock
-    })
+    const recentETHWithdrawalData = await bridge.getL2ToL1EventData(
+      walletAddress,
+      {
+        fromBlock: pivotBlock
+      }
+    )
     const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
       recentETHWithdrawalData
     )
@@ -1070,8 +1056,6 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: ethers.providers.Filter
   ) => {
-    const address = await walletAddressCached()
-
     const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
       l1NetworkID
     )
@@ -1085,7 +1069,7 @@ export const useArbTokenBridge = (
     const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
     const results = await getTokenWithdrawalsGraph(
-      address,
+      walletAddress,
       startBlock,
       pivotBlock,
       l1NetworkID
@@ -1156,12 +1140,15 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: ethers.providers.Filter
   ) => {
-    const address = await walletAddressCached()
     const t = new Date().getTime()
 
     const gateWayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
-        bridge.getGatewayWithdrawEventData(gatewayAddress, address, filter)
+        bridge.getGatewayWithdrawEventData(
+          gatewayAddress,
+          walletAddress,
+          filter
+        )
       )
     )
     console.log(

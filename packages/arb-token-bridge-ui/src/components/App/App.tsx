@@ -75,6 +75,11 @@ const NoMetamaskIndicator = (): JSX.Element => {
   )
 }
 
+interface Signers {
+  l1Signer: JsonRpcSigner
+  l2Signer: JsonRpcSigner
+}
+
 export const BridgeContext = createContext<Bridge | null>(null)
 
 const AppContent = (): JSX.Element => {
@@ -86,6 +91,7 @@ const AppContent = (): JSX.Element => {
   if (connectionState === ConnectionState.NO_METAMASK) {
     return <NoMetamaskIndicator />
   }
+
   if (connectionState === ConnectionState.WRONG_NETWORK) {
     return (
       <div>
@@ -101,8 +107,8 @@ const AppContent = (): JSX.Element => {
         />
       </div>
     )
-    // return <ConnectWarning />
   }
+
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
       <Alert type="red">
@@ -169,7 +175,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     provider: library,
     network: networkInfo
   } = useWallet()
-  const networkVersion = networkInfo?.chainId
+  const networkId = networkInfo?.chainId
 
   useEffect(() => {
     axios
@@ -251,7 +257,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
   }, [library])
 
-  async function initBridge(): Promise<Bridge | undefined> {
+  function getSigners(network: Network): Signers {
     function getL1Signer(network: Network) {
       if (network.isArbitrum) {
         const partnerNetwork = networks[network.partnerChainID]
@@ -260,6 +266,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         )
         return ethProvider.getSigner(usersMetamaskAddress!)
       }
+
       return library?.getSigner(0) as JsonRpcSigner
     }
 
@@ -267,49 +274,62 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       if (network.isArbitrum) {
         return library?.getSigner(0) as JsonRpcSigner
       }
-      const partnerNetwork = networks[network.partnerChainID]
 
+      const partnerNetwork = networks[network.partnerChainID]
       const arbProvider = new ethers.providers.JsonRpcProvider(
         partnerNetwork.url
       )
-
       return arbProvider.getSigner(usersMetamaskAddress!)
     }
 
-    actions.app.setNetworkID(`${networkVersion}`)
+    return {
+      l1Signer: getL1Signer(network),
+      l2Signer: getL2Signer(network)
+    }
+  }
 
-    const network = networks[`${networkVersion}`]
+  async function getNetworks(signers: Signers) {
+    const { l1Signer, l2Signer } = signers
+
+    const l1Network = await getL1Network(l1Signer)
+    const l2Network = await getL2Network(l2Signer)
+
+    return { l1Network, l2Network }
+  }
+
+  async function getAddresses(signers: Signers) {
+    const { l1Signer, l2Signer } = signers
+
+    const l1Address = await l1Signer.getAddress()
+    const l2Address = await l2Signer.getAddress()
+
+    return { l1Address, l2Address }
+  }
+
+  async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
+    return (await _signer.provider.getCode(_address)).length <= 2
+  }
+
+  async function initBridge(): Promise<Bridge | undefined> {
+    const network = networks[`${networkId}`]
+
     if (!network) {
       console.warn('WARNING: unsupported network')
       actions.app.setConnectionState(ConnectionState.WRONG_NETWORK)
       return
     }
 
-    const l1Signer = getL1Signer(network)
-    const l2Signer = getL2Signer(network)
+    actions.app.setNetworkID(`${networkId}`)
 
-    const l1Network = await getL1Network(l1Signer)
-    const l2Network = await getL2Network(l2Signer)
+    const signers = getSigners(network)
+    const { l1Signer, l2Signer } = signers
 
-    const l1Address = await l1Signer.getAddress()
-    const l2Address = await l2Signer.getAddress()
-
-    setTokenBridgeParams({
-      l1: {
-        signer: l1Signer,
-        network: l1Network
-      },
-      l2: {
-        signer: l2Signer,
-        network: l2Network
-      }
-    })
+    const { l1Network, l2Network } = await getNetworks(signers)
+    const { l1Address, l2Address } = await getAddresses(signers)
 
     try {
-      const l1AddressIsEOA =
-        (await l1Signer.provider.getCode(l1Address)).length <= 2
-      const l2AddressIsEOA =
-        (await l2Signer.provider.getCode(l2Address)).length <= 2
+      const l1AddressIsEOA = await addressIsEOA(l1Address, l1Signer)
+      const l2AddressIsEOA = await addressIsEOA(l2Address, l2Signer)
 
       if (!l1AddressIsEOA || !l2AddressIsEOA) {
         actions.app.setConnectionState(ConnectionState.NOT_EOA)
@@ -323,8 +343,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
     }
 
-    const bridge = await Bridge.init(l1Signer, l2Signer)
-    setGlobalBridge(bridge)
+    setGlobalBridge(await Bridge.init(l1Signer, l2Signer))
+    setTokenBridgeParams({
+      walletAddress: l1Address,
+      l1: { signer: l1Signer, network: l1Network },
+      l2: { signer: l2Signer, network: l2Network }
+    })
+
     if (!network.isArbitrum) {
       console.info('Deposit mode detected:')
       actions.app.setIsDepositMode(true)
@@ -347,7 +372,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     if (globalBridge) {
       setGlobalBridge(null)
     }
-  }, [networkVersion, usersMetamaskAddress])
+  }, [networkId, usersMetamaskAddress])
 
   // STEP2 after bridge is set to null, we start recreating everything
   useEffect(() => {
@@ -356,19 +381,19 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     try {
-      if (!networkVersion || !library) {
+      if (!networkId || !library) {
         actions.app.setConnectionState(ConnectionState.NO_METAMASK)
         return
       }
 
-      actions.app.reset(`${networkVersion}`)
+      actions.app.reset(`${networkId}`)
 
       initBridge()
     } catch (e) {
       console.log(e)
       actions.app.setConnectionState(ConnectionState.NO_METAMASK)
     }
-  }, [globalBridge, networkVersion])
+  }, [globalBridge, networkId])
 
   return (
     <>
