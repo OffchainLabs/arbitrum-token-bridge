@@ -1,150 +1,81 @@
-import { useCallback, useContext, useEffect } from 'react'
-
-import { BigNumber } from 'ethers'
-import { AssetType, Transaction, useArbTokenBridge } from 'token-bridge-sdk'
-
+import { useCallback, useEffect, useContext } from 'react'
 import { useActions, useAppState } from '../../state'
 import { BridgeContext } from '../App/App'
+
 import { useInterval } from '../common/Hooks'
+import { L1TransactionReceipt, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 const RetryableTxnsIncluder = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
   const actions = useActions()
   const {
-    app: { arbTokenBridge, l2NetworkDetails, arbTokenBridgeLoaded }
+    app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
+  const bridge = useContext(BridgeContext)
 
-  const getL2TxnHashes = useCallback(
-    async (depositTxn: Transaction) => {
-      if (!bridge || !l2NetworkDetails) {
-        return null
-      }
-      let seqNum: BigNumber
-      if (depositTxn.seqNum) {
-        seqNum = BigNumber.from(depositTxn.seqNum)
-      } else {
-        // for backwards compatibility, add seqNum to cached old deposits
-        const rec = await bridge.l1Provider.getTransactionReceipt(
-          depositTxn.txID
-        )
-        const seqNumArray = await bridge.getInboxSeqNumFromContractTransaction(
-          rec
-        )
-        if (!seqNumArray || seqNumArray.length === 0) {
-          return null
-        }
-        ;[seqNum] = seqNumArray
-      }
+  const checkAndUpdateFailedRetryables = useCallback(async () => {
+    if (!bridge) {
+      return
+    }
+    const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
 
-      const l2ChainID = BigNumber.from(l2NetworkDetails.chainID)
-      const retryableTicketHash = await bridge.calculateL2TransactionHash(
-        seqNum,
-        l2ChainID
+    for (let depositTx of failedRetryablesToRedeem) {
+      const depositTxRec = new L1TransactionReceipt(
+        await bridge.l1Provider.getTransactionReceipt(depositTx.txId)
+      ) //**TODO: not found, i.e., reorg */
+      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(
+        bridge.l2Bridge.l2Signer
       )
-      const autoRedeemHash = await bridge.calculateRetryableAutoRedeemTxnHash(
-        seqNum,
-        l2ChainID
-      )
-      const userTxnHash = await bridge.calculateL2RetryableTransactionHash(
-        seqNum,
-        l2ChainID
-      )
-      return {
-        retryableTicketHash,
-        autoRedeemHash,
-        userTxnHash,
-        seqNum
+      const status = await l1ToL2Msg.status()
+      if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
+        arbTokenBridge?.transactions?.updateL1ToL2MsgData(
+          depositTx.txId,
+          l1ToL2Msg,
+          status
+        )
       }
-    },
-    [useArbTokenBridge, l2NetworkDetails]
-  )
+    }
+  }, [arbTokenBridge?.transactions?.addTransactions, bridge])
+
   /**
-   * For every L1 deposit, we ensure the relevant L2 transactions are included in the transaction list:
-   * For Eth: the "deposit-l2" (which is the ticket creation)
-   * For tokens, the ticket creation, auto-redeem, and user-txn.
+   * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
    */
-  const checkAndAddL2DepositTxns = useCallback(() => {
+  const checkAndAddMissingL1ToL2Messagges = useCallback(async () => {
     if (!bridge) {
       return
     }
 
-    const successfulL1Deposits = actions.app.getSuccessfulL1Deposits()
-    const sortedTransactions = actions.app.getSortedTransactions()
+    const l1DepositsWithUntrackedL2Messages =
+      actions.app.l1DepositsWithUntrackedL2Messages()
 
-    Promise.all(successfulL1Deposits.map(getL2TxnHashes))
-      .then(txnHashesArr => {
-        const transactionsToAdd: Transaction[] = []
+    for (let depositTx of l1DepositsWithUntrackedL2Messages) {
+      const depositTxRec = new L1TransactionReceipt(
+        await bridge.l1Provider.getTransactionReceipt(depositTx.txID)
+      ) //**TODO: not found, i.e., reorg */
+      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(
+        bridge.l2Bridge.l2Signer
+      )
 
-        const txIdsSet = new Set([...sortedTransactions.map(tx => tx.txID)])
-
-        successfulL1Deposits.forEach((depositTxn: Transaction, i: number) => {
-          const txnHashes = txnHashesArr[i]
-          if (txnHashes === null) {
-            console.log('Could not find seqNum for', depositTxn.txID)
-            return
-          }
-          const { retryableTicketHash, autoRedeemHash, userTxnHash } = txnHashes
-          const seqNum = txnHashes.seqNum.toNumber()
-          // add ticket creation if not yet included
-          if (!txIdsSet.has(retryableTicketHash)) {
-            transactionsToAdd.push({
-              ...depositTxn,
-              ...{
-                status: 'pending',
-                type:
-                  depositTxn.assetType === 'ETH'
-                    ? 'deposit-l2'
-                    : 'deposit-l2-ticket-created',
-                txID: retryableTicketHash,
-                seqNum,
-                blockNumber: undefined
-              }
-            })
-          }
-
-          if (depositTxn.assetType === AssetType.ERC20) {
-            // add autoredeem if not yet included (tokens only)
-            if (!txIdsSet.has(autoRedeemHash)) {
-              transactionsToAdd.push({
-                ...depositTxn,
-                ...{
-                  status: 'pending',
-                  type: 'deposit-l2-auto-redeem',
-                  txID: autoRedeemHash,
-                  seqNum,
-                  blockNumber: undefined
-                }
-              })
-            }
-            // add user-txn if not yet included (tokens only)
-            if (!txIdsSet.has(userTxnHash)) {
-              transactionsToAdd.push({
-                ...depositTxn,
-                ...{
-                  status: 'pending',
-                  type: 'deposit-l2',
-                  txID: userTxnHash,
-                  seqNum,
-                  blockNumber: undefined
-                }
-              })
-            }
-          }
-        })
-        arbTokenBridge?.transactions?.addTransactions(transactionsToAdd)
-      })
-      .catch(err => {
-        console.warn('Errors checking to retryable txns to add', err)
-      })
-  }, [bridge, arbTokenBridge?.transactions?.addTransactions])
+      arbTokenBridge?.transactions?.updateL1ToL2MsgData(
+        depositTx.txID,
+        l1ToL2Msg
+      )
+    }
+  }, [arbTokenBridge?.transactions?.addTransactions, bridge])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
-    checkAndAddL2DepositTxns,
-    4000
+    checkAndAddMissingL1ToL2Messagges,
+    5000
   )
+
+  const { forceTrigger: forceTriggerUpdateFailedRetryables } = useInterval(
+    checkAndUpdateFailedRetryables,
+    10000
+  )
+
   useEffect(() => {
     // force trigger update each time loaded change happens
     forceTriggerUpdate()
+    forceTriggerUpdateFailedRetryables()
   }, [arbTokenBridgeLoaded])
 
   return <></>

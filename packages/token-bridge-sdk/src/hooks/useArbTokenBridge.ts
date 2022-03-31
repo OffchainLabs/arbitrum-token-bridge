@@ -173,7 +173,8 @@ export const useArbTokenBridge = (
       setTransactionConfirmed,
       updateTransaction,
       removeTransaction,
-      addFailedTransaction
+      addFailedTransaction,
+      updateL1ToL2MsgData
     }
   ] = useTransactions()
 
@@ -1447,14 +1448,14 @@ export const useArbTokenBridge = (
       getL1ERC20Address,
       getL2ERC20Address
     },
-    arbSigner: l2.signer,
     transactions: {
       transactions,
       clearPendingTransactions,
       setTransactionConfirmed,
       updateTransaction,
       addTransaction,
-      addTransactions
+      addTransactions,
+      updateL1ToL2MsgData
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals

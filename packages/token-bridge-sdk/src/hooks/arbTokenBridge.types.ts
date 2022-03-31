@@ -1,7 +1,8 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
-import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers'
+import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
+import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 
@@ -164,6 +165,11 @@ export interface TransactionActions {
     tx?: ethers.ContractTransaction,
     seqNum?: number
   ) => void
+  updateL1ToL2MsgData: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReader,
+    status?: L1ToL2MessageStatus
+  ) => void
 }
 
 export type ArbTokenBridgeTransactions = {
@@ -175,6 +181,7 @@ export type ArbTokenBridgeTransactions = {
   | 'setTransactionConfirmed'
   | 'updateTransaction'
   | 'addTransactions'
+  | 'updateL1ToL2MsgData'
 >
 
 export interface ArbTokenBridge {
@@ -184,7 +191,6 @@ export interface ArbTokenBridge {
   cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
-  arbSigner: Signer
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
   setInitialPendingWithdrawals: (
