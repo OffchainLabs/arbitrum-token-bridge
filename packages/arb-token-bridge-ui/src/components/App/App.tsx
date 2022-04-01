@@ -1,9 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
 import axios from 'axios'
-import * as ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
@@ -11,12 +16,11 @@ import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
-import { getL1Network, getL2Network } from '@arbitrum/sdk'
 import { Bridge, TokenBridgeParams } from 'token-bridge-sdk'
 
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
-import networks, { Network } from '../../util/networks'
+import networks from '../../util/networks'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { Layout } from '../common/Layout'
@@ -31,6 +35,9 @@ import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
+
+import { useNetworks, UseNetworksStatus } from '../../hooks/useNetworks'
+import { useSigners, UseSignersStatus } from '../../hooks/useSigners'
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -75,9 +82,8 @@ const NoMetamaskIndicator = (): JSX.Element => {
   )
 }
 
-interface Signers {
-  l1Signer: JsonRpcSigner
-  l2Signer: JsonRpcSigner
+async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
+  return (await _signer.provider.getCode(_address)).length <= 2
 }
 
 export const BridgeContext = createContext<Bridge | null>(null)
@@ -166,16 +172,108 @@ const AppContent = (): JSX.Element => {
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
+  const _networks = useNetworks()
+  const _signers = useSigners()
+
   const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
 
-  const {
-    account: usersMetamaskAddress,
-    provider: library,
-    network: networkInfo
-  } = useWallet()
-  const networkId = networkInfo?.chainId
+  const { provider: library } = useWallet()
+
+  const initBridge = useCallback(
+    async (signers: {
+      l1Signer: JsonRpcSigner
+      l2Signer: JsonRpcSigner
+    }): Promise<Bridge | undefined> => {
+      if (_networks.status !== UseNetworksStatus.CONNECTED) {
+        return
+      }
+
+      const { l1Signer, l2Signer } = signers
+
+      const l1Address = await l1Signer.getAddress()
+      const l2Address = await l2Signer.getAddress()
+
+      try {
+        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Signer)
+        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Signer)
+
+        if (!l1AddressIsEOA || !l2AddressIsEOA) {
+          actions.app.setConnectionState(ConnectionState.NOT_EOA)
+          return undefined
+        }
+      } catch (err) {
+        console.warn('CONNECTION ERROR', err)
+
+        // The get code queries doubles as as network liveness check
+        // We could check err.code === 'NETWORK_ERROR' for more granular handling, but any error can/should be handled.
+        actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
+      }
+
+      const l1Network = _networks.data.isArbitrum
+        ? _networks.data.partnerNetwork
+        : _networks.data.network
+      const l2Network = _networks.data.isArbitrum
+        ? _networks.data.network
+        : _networks.data.partnerNetwork
+
+      setGlobalBridge(await Bridge.init(l1Signer, l2Signer))
+      setTokenBridgeParams({
+        walletAddress: l1Address,
+        l1: { signer: l1Signer, network: l1Network },
+        l2: { signer: l2Signer, network: l2Network }
+      })
+    },
+    [_networks]
+  )
+
+  // Listen for account and network changes
+  useEffect(() => {
+    // Any time one of those changes
+    setGlobalBridge(null)
+    setTokenBridgeParams(null)
+
+    switch (_networks.status) {
+      case UseNetworksStatus.NOT_CONNECTED: {
+        actions.app.setConnectionState(ConnectionState.NO_METAMASK)
+        return
+      }
+
+      case UseNetworksStatus.NOT_SUPPORTED: {
+        actions.app.setConnectionState(ConnectionState.WRONG_NETWORK)
+        return
+      }
+
+      default: {
+        const { network, isArbitrum } = _networks.data
+        const networkId = String(network.chainID)
+
+        // TODO: We're still relying on the old networks. We should switch to @arbitrum/sdk networks.
+        actions.app.reset(networkId)
+        actions.app.setNetworkID(networkId)
+
+        if (!isArbitrum) {
+          console.info('Deposit mode detected:')
+          actions.app.setIsDepositMode(true)
+          actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+        } else {
+          console.info('Withdrawal mode detected:')
+          actions.app.setIsDepositMode(false)
+          actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+        }
+      }
+    }
+  }, [_networks])
+
+  // Listen for signers changes
+  useEffect(() => {
+    if (_signers.status !== UseSignersStatus.SUCCESS) {
+      return
+    }
+
+    initBridge(_signers.data)
+  }, [_signers, initBridge])
 
   useEffect(() => {
     axios
@@ -256,144 +354,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setChangeNetwork(changeNetwork)
     }
   }, [library])
-
-  function getSigners(network: Network): Signers {
-    function getL1Signer(network: Network) {
-      if (network.isArbitrum) {
-        const partnerNetwork = networks[network.partnerChainID]
-        const ethProvider = new ethers.providers.JsonRpcProvider(
-          partnerNetwork.url
-        )
-        return ethProvider.getSigner(usersMetamaskAddress!)
-      }
-
-      return library?.getSigner(0) as JsonRpcSigner
-    }
-
-    function getL2Signer(network: Network) {
-      if (network.isArbitrum) {
-        return library?.getSigner(0) as JsonRpcSigner
-      }
-
-      const partnerNetwork = networks[network.partnerChainID]
-      const arbProvider = new ethers.providers.JsonRpcProvider(
-        partnerNetwork.url
-      )
-      return arbProvider.getSigner(usersMetamaskAddress!)
-    }
-
-    return {
-      l1Signer: getL1Signer(network),
-      l2Signer: getL2Signer(network)
-    }
-  }
-
-  async function getNetworks(signers: Signers) {
-    const { l1Signer, l2Signer } = signers
-
-    const l1Network = await getL1Network(l1Signer)
-    const l2Network = await getL2Network(l2Signer)
-
-    return { l1Network, l2Network }
-  }
-
-  async function getAddresses(signers: Signers) {
-    const { l1Signer, l2Signer } = signers
-
-    const l1Address = await l1Signer.getAddress()
-    const l2Address = await l2Signer.getAddress()
-
-    return { l1Address, l2Address }
-  }
-
-  async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
-    return (await _signer.provider.getCode(_address)).length <= 2
-  }
-
-  async function initBridge(): Promise<Bridge | undefined> {
-    const network = networks[`${networkId}`]
-
-    if (!network) {
-      console.warn('WARNING: unsupported network')
-      actions.app.setConnectionState(ConnectionState.WRONG_NETWORK)
-      return
-    }
-
-    actions.app.setNetworkID(`${networkId}`)
-
-    const signers = getSigners(network)
-    const { l1Signer, l2Signer } = signers
-
-    const { l1Network, l2Network } = await getNetworks(signers)
-    const { l1Address, l2Address } = await getAddresses(signers)
-
-    try {
-      const l1AddressIsEOA = await addressIsEOA(l1Address, l1Signer)
-      const l2AddressIsEOA = await addressIsEOA(l2Address, l2Signer)
-
-      if (!l1AddressIsEOA || !l2AddressIsEOA) {
-        actions.app.setConnectionState(ConnectionState.NOT_EOA)
-        return undefined
-      }
-    } catch (err) {
-      console.warn('CONNECTION ERROR', err)
-
-      // The get code queries doubles as as network liveness check
-      // We could check err.code === 'NETWORK_ERROR' for more granular handling, but any error can/should be handled.
-      actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
-    }
-
-    setGlobalBridge(await Bridge.init(l1Signer, l2Signer))
-    setTokenBridgeParams({
-      walletAddress: l1Address,
-      l1: { signer: l1Signer, network: l1Network },
-      l2: { signer: l2Signer, network: l2Network }
-    })
-
-    if (!network.isArbitrum) {
-      console.info('Deposit mode detected:')
-      actions.app.setIsDepositMode(true)
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
-      console.info('Withdrawal mode detected:')
-      actions.app.setIsDepositMode(false)
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    }
-
-    console.log('Gas price:', await library?.getGasPrice())
-  }
-
-  // STEP1 reset bridge on network switch or account switch, this inits all other resets
-  useEffect(() => {
-    if (!usersMetamaskAddress) {
-      return
-    }
-
-    if (globalBridge) {
-      setGlobalBridge(null)
-    }
-  }, [networkId, usersMetamaskAddress])
-
-  // STEP2 after bridge is set to null, we start recreating everything
-  useEffect(() => {
-    if (globalBridge) {
-      return
-    }
-
-    try {
-      if (!networkId || !library) {
-        actions.app.setConnectionState(ConnectionState.NO_METAMASK)
-        return
-      }
-
-      actions.app.reset(`${networkId}`)
-
-      initBridge()
-    } catch (e) {
-      console.log(e)
-      actions.app.setConnectionState(ConnectionState.NO_METAMASK)
-    }
-  }, [globalBridge, networkId])
 
   return (
     <>
