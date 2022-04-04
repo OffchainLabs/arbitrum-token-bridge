@@ -1,7 +1,5 @@
 export enum ConnectionState {
   LOADING,
-  NO_METAMASK,
-  WRONG_NETWORK,
   L1_CONNECTED,
   L2_CONNECTED,
   SEQUENCER_UPDATE,
