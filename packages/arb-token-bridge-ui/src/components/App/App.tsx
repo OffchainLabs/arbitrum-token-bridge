@@ -153,7 +153,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
   const _networks = useNetworks()
-  const _signers = useSigners()
+  const signers = useSigners()
 
   const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
   const [tokenBridgeParams, setTokenBridgeParams] =
@@ -230,21 +230,21 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
-    if (_signers.status !== UseSignersStatus.SUCCESS) {
+    if (signers.status !== UseSignersStatus.SUCCESS) {
       return
     }
 
     initBridge({
       l1: {
-        signer: _signers.data.l1Signer,
+        signer: signers.l1Signer,
         network: l1Network
       },
       l2: {
-        signer: _signers.data.l2Signer,
+        signer: signers.l2Signer,
         network: l2Network
       }
     })
-  }, [_networks, _signers, initBridge])
+  }, [_networks, signers, initBridge])
 
   useEffect(() => {
     axios

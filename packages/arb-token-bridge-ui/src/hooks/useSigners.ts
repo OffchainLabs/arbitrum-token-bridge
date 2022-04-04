@@ -12,15 +12,25 @@ export enum UseSignersStatus {
   SUCCESS = 'success'
 }
 
+export type UseSignersDataUnknown = {
+  l1Signer: undefined
+  l2Signer: undefined
+}
+
 export type UseSignersData = {
   l1Signer: JsonRpcSigner
   l2Signer: JsonRpcSigner
 }
 
 export type UseSignersResult =
-  | { status: UseSignersStatus.NETWORK_NOT_CONNECTED }
-  | { status: UseSignersStatus.NETWORK_NOT_SUPPORTED }
-  | { status: UseSignersStatus.SUCCESS; data: UseSignersData }
+  | ({ status: UseSignersStatus.NETWORK_NOT_CONNECTED } & UseSignersDataUnknown)
+  | ({ status: UseSignersStatus.NETWORK_NOT_SUPPORTED } & UseSignersDataUnknown)
+  | ({ status: UseSignersStatus.SUCCESS } & UseSignersData)
+
+const defaults: UseSignersDataUnknown = {
+  l1Signer: undefined,
+  l2Signer: undefined
+}
 
 export function useSigners(): UseSignersResult {
   const networks = useNetworks()
@@ -28,11 +38,11 @@ export function useSigners(): UseSignersResult {
 
   return useMemo(() => {
     if (networks.status === UseNetworksStatus.NOT_CONNECTED) {
-      return { status: UseSignersStatus.NETWORK_NOT_CONNECTED }
+      return { status: UseSignersStatus.NETWORK_NOT_CONNECTED, ...defaults }
     }
 
     if (networks.status === UseNetworksStatus.NOT_SUPPORTED) {
-      return { status: UseSignersStatus.NETWORK_NOT_SUPPORTED }
+      return { status: UseSignersStatus.NETWORK_NOT_SUPPORTED, ...defaults }
     }
 
     const { l1Network, l2Network, isConnectedToArbitrum } = networks
@@ -44,19 +54,15 @@ export function useSigners(): UseSignersResult {
     if (isConnectedToArbitrum) {
       return {
         status: UseSignersStatus.SUCCESS,
-        data: {
-          l1Signer: partnerProvider.getSigner(address!),
-          l2Signer: provider?.getSigner(0) as JsonRpcSigner
-        }
+        l1Signer: partnerProvider.getSigner(address!),
+        l2Signer: provider?.getSigner(0) as JsonRpcSigner
       }
     }
 
     return {
       status: UseSignersStatus.SUCCESS,
-      data: {
-        l1Signer: provider?.getSigner(0) as JsonRpcSigner,
-        l2Signer: partnerProvider.getSigner(address!)
-      }
+      l1Signer: provider?.getSigner(0) as JsonRpcSigner,
+      l2Signer: partnerProvider.getSigner(address!)
     }
   }, [networks, address, provider])
 }
