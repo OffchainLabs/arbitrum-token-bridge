@@ -486,72 +486,75 @@ export const useArbTokenBridge = (
     return receipt
   }
 
-  const withdrawToken = useCallback(
-    async (erc20l1Address: string, amountRaw: BigNumber) => {
-      const bridgeToken = bridgeTokens[erc20l1Address]
-      const { symbol, decimals } = await (async () => {
-        if (bridgeToken) {
-          const { symbol, decimals } = bridgeToken
-          return { symbol, decimals }
-        }
-        const { symbol, decimals } = await getL1TokenData(erc20l1Address)
-        addToken(erc20l1Address)
+  async function withdrawToken(erc20l1Address: string, amount: BigNumber) {
+    const bridgeToken = bridgeTokens[erc20l1Address]
+
+    const { symbol, decimals } = await (async () => {
+      if (bridgeToken) {
+        const { symbol, decimals } = bridgeToken
         return { symbol, decimals }
-      })()
-      const amountReadable = await utils.formatUnits(amountRaw, decimals)
-
-      const tx = await bridge.withdrawERC20(erc20l1Address, amountRaw)
-      addTransaction({
-        type: 'withdraw',
-        status: 'pending',
-        value: amountReadable,
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        sender: await l2.signer.getAddress(),
-        blockNumber: tx.blockNumber || 0,
-        l1NetworkID
-      })
-      try {
-        const receipt = await tx.wait()
-        updateTransaction(receipt, tx)
-
-        const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
-          receipt
-        )
-        if (l2ToL2EventData.length === 1) {
-          const l2ToL2EventDataResult = l2ToL2EventData[0]
-          const id = l2ToL2EventDataResult.uniqueId.toString()
-          const outgoingMessageState = await getOutGoingMessageState(
-            l2ToL2EventDataResult.batchNumber,
-            l2ToL2EventDataResult.indexInBatch
-          )
-          const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
-            ...l2ToL2EventDataResult,
-            type: AssetType.ERC20,
-            tokenAddress: erc20l1Address,
-            value: amountRaw,
-            outgoingMessageState,
-            symbol: symbol,
-            decimals: decimals,
-            nodeBlockDeadline: 'NODE_NOT_CREATED'
-          }
-
-          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-            return {
-              ...oldPendingWithdrawalsMap,
-              [id]: l2ToL2EventDataResultPlus
-            }
-          })
-        }
-        updateTokenData(erc20l1Address)
-        return receipt
-      } catch (err) {
-        console.warn('withdraw token err', err)
       }
-    },
-    [bridge, bridgeTokens, l1NetworkID]
-  )
+      const { symbol, decimals } = await getL1TokenData(erc20l1Address)
+      addToken(erc20l1Address)
+      return { symbol, decimals }
+    })()
+
+    const erc20Bridger = new Erc20Bridger(l2.network)
+    const tx = await erc20Bridger.withdraw({
+      l2Signer: l2.signer,
+      erc20l1Address,
+      amount
+    })
+
+    addTransaction({
+      type: 'withdraw',
+      status: 'pending',
+      value: utils.formatUnits(amount, decimals),
+      txID: tx.hash,
+      assetName: symbol,
+      assetType: AssetType.ERC20,
+      sender: await l2.signer.getAddress(),
+      blockNumber: tx.blockNumber || 0,
+      l1NetworkID
+    })
+
+    try {
+      const receipt = await tx.wait()
+      updateTransaction(receipt, tx)
+
+      const l2ToL1Events = receipt.getL2ToL1Events()
+
+      if (l2ToL1Events.length === 1) {
+        const l2ToL2EventDataResult = l2ToL1Events[0]
+        const id = l2ToL2EventDataResult.uniqueId.toString()
+        const outgoingMessageState = await getOutGoingMessageState(
+          l2ToL2EventDataResult.batchNumber,
+          l2ToL2EventDataResult.indexInBatch
+        )
+        const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
+          ...l2ToL2EventDataResult,
+          type: AssetType.ERC20,
+          tokenAddress: erc20l1Address,
+          value: amount,
+          outgoingMessageState,
+          symbol: symbol,
+          decimals: decimals,
+          nodeBlockDeadline: 'NODE_NOT_CREATED'
+        }
+
+        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+          return {
+            ...oldPendingWithdrawalsMap,
+            [id]: l2ToL2EventDataResultPlus
+          }
+        })
+      }
+      updateTokenData(erc20l1Address)
+      return receipt
+    } catch (err) {
+      console.warn('withdraw token err', err)
+    }
+  }
 
   const removeTokensFromList = (listID: number) => {
     setBridgeTokens(prevBridgeTokens => {
