@@ -216,7 +216,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const network = isConnectedToArbitrum ? l2Network : l1Network
     const networkId = String(network.chainID)
 
-    // TODO: We're still relying on the old networks. We should switch to @arbitrum/sdk networks.
+    // TODO: Deprecate network utils in favor of @arbitrum/sdk networks
     actions.app.reset(networkId)
     actions.app.setNetworkID(networkId)
 
