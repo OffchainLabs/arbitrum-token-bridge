@@ -3,7 +3,7 @@ import { BigNumber, constants, ethers, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import { Bridge, OutgoingMessageState, WithdrawalInitiated } from 'arb-ts'
+import { Bridge } from 'arb-ts'
 import {
   L1Network,
   L2Network,
@@ -33,7 +33,9 @@ import {
   PendingWithdrawalsMap,
   TokenType,
   L1TokenData,
-  L2TokenData
+  L2TokenData,
+  OutgoingMessageState,
+  WithdrawalInitiated
 } from './arbTokenBridge.types'
 
 import {

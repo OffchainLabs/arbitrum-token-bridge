@@ -1,5 +1,4 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
@@ -14,7 +13,26 @@ import {
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 
-interface L2ToL1EventResult {
+export enum OutgoingMessageState {
+  /**
+   * No corresponding {@link L2ToL1EventResult} emitted
+   */
+  NOT_FOUND = 0,
+  /**
+   * ArbSys.sendTxToL1 called, but assertion not yet confirmed
+   */
+  UNCONFIRMED = 1,
+  /**
+   * Assertion for outgoing message confirmed, but message not yet executed
+   */
+  CONFIRMED = 2,
+  /**
+   * Outgoing message executed (terminal state)
+   */
+  EXECUTED = 3
+}
+
+export interface L2ToL1EventResult {
   caller: string
   destination: string
   uniqueId: BigNumber
@@ -22,7 +40,7 @@ interface L2ToL1EventResult {
   indexInBatch: BigNumber
   arbBlockNum: BigNumber
   ethBlockNum: BigNumber
-  timestamp: BigNumber
+  timestamp: BigNumber | string // TODO: Clean up
   callvalue: BigNumber
   data: string
 }
@@ -36,6 +54,17 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
+
+export interface WithdrawalInitiated {
+  l1Token: string
+  _from: string
+  _to: string
+  _l2ToL1Id: BigNumber
+  _exitNum: BigNumber
+  _amount: BigNumber
+  txHash: string
+}
+
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
 }
