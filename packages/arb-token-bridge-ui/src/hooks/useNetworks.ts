@@ -8,15 +8,27 @@ export enum UseNetworksStatus {
   CONNECTED = 'network_connected'
 }
 
+export type UseNetworksDataUnknown = {
+  l1Network: undefined
+  l2Network: undefined
+  isConnectedToArbitrum: undefined
+}
+
 export type UseNetworksData = {
   l1Network: L1Network
   l2Network: L2Network
   isConnectedToArbitrum: boolean
 }
 
+const defaults: UseNetworksDataUnknown = {
+  l1Network: undefined,
+  l2Network: undefined,
+  isConnectedToArbitrum: undefined
+}
+
 export type UseNetworksResult =
-  | { status: UseNetworksStatus.NOT_CONNECTED; data: undefined }
-  | { status: UseNetworksStatus.NOT_SUPPORTED; data: undefined }
+  | ({ status: UseNetworksStatus.NOT_CONNECTED } & UseNetworksDataUnknown)
+  | ({ status: UseNetworksStatus.NOT_SUPPORTED } & UseNetworksDataUnknown)
   | ({ status: UseNetworksStatus.CONNECTED } & UseNetworksData)
 
 export function useNetworks(): UseNetworksResult {
@@ -24,7 +36,7 @@ export function useNetworks(): UseNetworksResult {
 
   const [result, setResult] = useState<UseNetworksResult>({
     status: UseNetworksStatus.NOT_CONNECTED,
-    data: undefined
+    ...defaults
   })
 
   const updateNetworks = useCallback((networkId: number) => {
@@ -63,7 +75,7 @@ export function useNetworks(): UseNetworksResult {
           .catch(() =>
             setResult({
               status: UseNetworksStatus.NOT_SUPPORTED,
-              data: undefined
+              ...defaults
             })
           )
       })
