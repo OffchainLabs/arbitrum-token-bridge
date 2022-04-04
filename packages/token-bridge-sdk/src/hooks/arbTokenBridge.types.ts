@@ -1,5 +1,5 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
+import { OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
@@ -13,6 +13,19 @@ import {
 } from './useTransactions'
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
+
+interface L2ToL1EventResult {
+  caller: string
+  destination: string
+  uniqueId: BigNumber
+  batchNumber: BigNumber
+  indexInBatch: BigNumber
+  arbBlockNum: BigNumber
+  ethBlockNum: BigNumber
+  timestamp: BigNumber
+  callvalue: BigNumber
+  data: string
+}
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType

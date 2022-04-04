@@ -358,63 +358,62 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  const withdrawEth = useCallback(
-    async (weiValue: BigNumber) => {
-      const etherVal = utils.formatUnits(weiValue, 18)
-      const tx = await bridge.withdrawETH(weiValue)
-      try {
-        addTransaction({
-          type: 'withdraw',
-          status: 'pending',
-          value: etherVal,
-          txID: tx.hash,
-          assetName: 'ETH',
-          assetType: AssetType.ETH,
-          sender: await walletAddressCached(),
-          blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
-          l1NetworkID
-        })
-        const receipt = await tx.wait()
+  async function withdrawEth(amount: BigNumber) {
+    const ethBridger = new EthBridger(l2.network)
+    const tx = await ethBridger.withdraw({ l2Signer: l2.signer, amount })
 
-        updateTransaction(receipt, tx)
-        updateEthBalances()
-        const l2ToL2EventData = await bridge.getWithdrawalsInL2Transaction(
-          receipt
+    try {
+      addTransaction({
+        type: 'withdraw',
+        status: 'pending',
+        value: utils.formatUnits(amount, 'wei'),
+        txID: tx.hash,
+        assetName: 'ETH',
+        assetType: AssetType.ETH,
+        sender: await walletAddressCached(),
+        blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
+        l1NetworkID
+      })
+
+      const receipt = await tx.wait()
+
+      updateTransaction(receipt, tx)
+      updateEthBalances()
+
+      const l2ToL1Events = receipt.getL2ToL1Events()
+
+      if (l2ToL1Events.length === 1) {
+        const l2ToL1EventResult = l2ToL1Events[0]
+        console.info('withdraw event data:', l2ToL1EventResult)
+
+        const id = l2ToL1EventResult.uniqueId.toString()
+
+        const outgoingMessageState = await getOutGoingMessageState(
+          l2ToL1EventResult.batchNumber,
+          l2ToL1EventResult.indexInBatch
         )
-
-        if (l2ToL2EventData.length === 1) {
-          const l2ToL2EventDataResult = l2ToL2EventData[0]
-          console.info('withdraw event data:', l2ToL2EventDataResult)
-
-          const id = l2ToL2EventDataResult.uniqueId.toString()
-
-          const outgoingMessageState = await getOutGoingMessageState(
-            l2ToL2EventDataResult.batchNumber,
-            l2ToL2EventDataResult.indexInBatch
-          )
-          const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
-            ...l2ToL2EventDataResult,
-            type: AssetType.ETH,
-            value: weiValue,
-            outgoingMessageState,
-            symbol: 'ETH',
-            decimals: 18,
-            nodeBlockDeadline: 'NODE_NOT_CREATED'
-          }
-          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-            return {
-              ...oldPendingWithdrawalsMap,
-              [id]: l2ToL2EventDataResultPlus
-            }
-          })
+        const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
+          ...l2ToL1EventResult,
+          type: AssetType.ETH,
+          value: amount,
+          outgoingMessageState,
+          symbol: 'ETH',
+          decimals: 18,
+          nodeBlockDeadline: 'NODE_NOT_CREATED'
         }
-        return receipt
-      } catch (e) {
-        console.error('withdrawEth err', e)
+        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+          return {
+            ...oldPendingWithdrawalsMap,
+            [id]: l2ToL1EventResultPlus
+          }
+        })
       }
-    },
-    [pendingWithdrawalsMap, l1NetworkID]
-  )
+
+      return receipt
+    } catch (e) {
+      console.error('withdrawEth err', e)
+    }
+  }
 
   const approveToken = async (erc20L1Address: string) => {
     const erc20Bridger = new Erc20Bridger(l2.network)
