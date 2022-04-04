@@ -1290,7 +1290,7 @@ export const useArbTokenBridge = (
       })
       .filter(notNull)
 
-    const rollupAddress = bridge.l1Bridge.network.ethBridge?.rollup
+    const rollupAddress = l2.network.ethBridge.rollup
     if (!rollupAddress) throw new Error('Could not get rollup address')
     const rollupIface = Rollup__factory.createInterface()
 
