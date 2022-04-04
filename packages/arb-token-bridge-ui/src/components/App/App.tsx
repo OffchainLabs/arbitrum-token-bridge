@@ -261,6 +261,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   useEffect(() => {
     if (library) {
+      async function logGasPrice() {
+        console.log('Gas price:', await library?.getGasPrice())
+      }
+
       const changeNetwork = async (chainId: string) => {
         const targetNetwork = networks[chainId]
         if (!targetNetwork) {
@@ -322,6 +326,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           // TODO: reset state so user can attempt to press "Deposit" again
         }
       }
+
+      logGasPrice()
       actions.app.setChangeNetwork(changeNetwork)
     }
   }, [library])
