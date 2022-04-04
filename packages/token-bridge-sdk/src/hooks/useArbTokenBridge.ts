@@ -527,14 +527,14 @@ export const useArbTokenBridge = (
       const l2ToL1Events = receipt.getL2ToL1Events()
 
       if (l2ToL1Events.length === 1) {
-        const l2ToL2EventDataResult = l2ToL1Events[0]
-        const id = l2ToL2EventDataResult.uniqueId.toString()
+        const l2ToL1EventDataResult = l2ToL1Events[0]
+        const id = l2ToL1EventDataResult.uniqueId.toString()
         const outgoingMessageState = await getOutGoingMessageState(
-          l2ToL2EventDataResult.batchNumber,
-          l2ToL2EventDataResult.indexInBatch
+          l2ToL1EventDataResult.batchNumber,
+          l2ToL1EventDataResult.indexInBatch
         )
-        const l2ToL2EventDataResultPlus: L2ToL1EventResultPlus = {
-          ...l2ToL2EventDataResult,
+        const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
+          ...l2ToL1EventDataResult,
           type: AssetType.ERC20,
           tokenAddress: erc20l1Address,
           value: amount,
@@ -547,7 +547,7 @@ export const useArbTokenBridge = (
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           return {
             ...oldPendingWithdrawalsMap,
-            [id]: l2ToL2EventDataResultPlus
+            [id]: l2ToL1EventDataResultPlus
           }
         })
       }
@@ -883,6 +883,7 @@ export const useArbTokenBridge = (
         throw new Error('Outbox message not found')
       const { batchNumber, indexInBatch, tokenAddress, value } =
         pendingWithdrawalsMap[id]
+      // number #1
       const res = await bridge.triggerL2ToL1Transaction(
         batchNumber,
         indexInBatch,
