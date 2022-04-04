@@ -8,60 +8,64 @@ export enum UseNetworksStatus {
   CONNECTED = 'network_connected'
 }
 
-export type UseNetworksData =
-  | { network: L1Network; partnerNetwork: L2Network; isArbitrum: false }
-  | { network: L2Network; partnerNetwork: L1Network; isArbitrum: true }
+export type UseNetworksData = {
+  l1Network: L1Network
+  l2Network: L2Network
+  isConnectedToArbitrum: boolean
+}
 
 export type UseNetworksResult =
-  | { status: UseNetworksStatus.NOT_CONNECTED }
-  | { status: UseNetworksStatus.NOT_SUPPORTED }
-  | { status: UseNetworksStatus.CONNECTED; data: UseNetworksData }
+  | { status: UseNetworksStatus.NOT_CONNECTED; data: undefined }
+  | { status: UseNetworksStatus.NOT_SUPPORTED; data: undefined }
+  | ({ status: UseNetworksStatus.CONNECTED } & UseNetworksData)
 
 export function useNetworks(): UseNetworksResult {
   const { network: networkInfo } = useWallet()
 
   const [result, setResult] = useState<UseNetworksResult>({
-    status: UseNetworksStatus.NOT_CONNECTED
+    status: UseNetworksStatus.NOT_CONNECTED,
+    data: undefined
   })
 
-  const updateNetworks = useCallback((_networkId: number) => {
+  const updateNetworks = useCallback((networkId: number) => {
     // Check if the network is an L1 network
-    getL1Network(_networkId)
+    getL1Network(networkId)
       // The network is an L1 network
-      .then(async _network => {
+      .then(async l1Network => {
         // TODO: Handle multiple partner networks
-        const [_partnerNetworkChainId] = _network.partnerChainIDs
-        const _partnerNetwork = await getL2Network(_partnerNetworkChainId)
+        const [l2NetworkChainId] = l1Network.partnerChainIDs
+        const l2Network = await getL2Network(l2NetworkChainId)
 
         setResult({
           status: UseNetworksStatus.CONNECTED,
-          data: {
-            network: _network,
-            partnerNetwork: _partnerNetwork,
-            isArbitrum: false
-          }
+          l1Network,
+          l2Network,
+          isConnectedToArbitrum: false
         })
       })
       // The network is not an L1 network
       .catch(() => {
         // Check if the network is an L2 network
-        getL2Network(_networkId)
+        getL2Network(networkId)
           // The network is an L2 network
-          .then(async _network => {
-            const _partnerNetworkChainId = _network.partnerChainID
-            const _partnerNetwork = await getL1Network(_partnerNetworkChainId)
+          .then(async l2Network => {
+            const l1NetworkChainId = l2Network.partnerChainID
+            const l1Network = await getL1Network(l1NetworkChainId)
 
             setResult({
               status: UseNetworksStatus.CONNECTED,
-              data: {
-                network: _network,
-                partnerNetwork: _partnerNetwork,
-                isArbitrum: true
-              }
+              l1Network,
+              l2Network,
+              isConnectedToArbitrum: true
             })
           })
           // The network is not supported
-          .catch(() => setResult({ status: UseNetworksStatus.NOT_SUPPORTED }))
+          .catch(() =>
+            setResult({
+              status: UseNetworksStatus.NOT_SUPPORTED,
+              data: undefined
+            })
+          )
       })
   }, [])
 

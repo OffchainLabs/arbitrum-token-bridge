@@ -34,10 +34,11 @@ export function useSigners(): UseSignersResult {
       return { status: UseSignersStatus.NETWORK_NOT_SUPPORTED }
     }
 
-    const { partnerNetwork, isArbitrum } = networks.data
+    const { l1Network, l2Network, isConnectedToArbitrum } = networks
+    const partnerNetwork = isConnectedToArbitrum ? l1Network : l2Network
     const partnerProvider = new providers.JsonRpcProvider(partnerNetwork.rpcURL)
 
-    if (isArbitrum) {
+    if (isConnectedToArbitrum) {
       return {
         status: UseSignersStatus.SUCCESS,
         data: {

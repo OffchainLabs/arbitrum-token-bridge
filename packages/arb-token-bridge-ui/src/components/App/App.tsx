@@ -17,6 +17,7 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { Bridge, TokenBridgeParams } from 'token-bridge-sdk'
+import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
@@ -94,27 +95,6 @@ const AppContent = (): JSX.Element => {
     app: { connectionState }
   } = useAppState()
 
-  if (connectionState === ConnectionState.NO_METAMASK) {
-    return <NoMetamaskIndicator />
-  }
-
-  if (connectionState === ConnectionState.WRONG_NETWORK) {
-    return (
-      <div>
-        <div className="mb-4">
-          You are on the wrong network. Read our tutorial bellow on how to
-          switch networks.
-        </div>
-        <iframe
-          title="Bridge Tutorial"
-          src="https://arbitrum.io/bridge-tutorial/"
-          width="100%"
-          height={500}
-        />
-      </div>
-    )
-  }
-
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
       <Alert type="red">
@@ -182,15 +162,20 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { provider: library } = useWallet()
 
   const initBridge = useCallback(
-    async (signers: {
-      l1Signer: JsonRpcSigner
-      l2Signer: JsonRpcSigner
-    }): Promise<Bridge | undefined> => {
-      if (_networks.status !== UseNetworksStatus.CONNECTED) {
-        return
+    async (params: {
+      l1: {
+        signer: JsonRpcSigner
+        network: L1Network
       }
-
-      const { l1Signer, l2Signer } = signers
+      l2: {
+        signer: JsonRpcSigner
+        network: L2Network
+      }
+    }): Promise<Bridge | undefined> => {
+      const {
+        l1: { signer: l1Signer },
+        l2: { signer: l2Signer }
+      } = params
 
       const l1Address = await l1Signer.getAddress()
       const l2Address = await l2Signer.getAddress()
@@ -211,21 +196,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
       }
 
-      const l1Network = _networks.data.isArbitrum
-        ? _networks.data.partnerNetwork
-        : _networks.data.network
-      const l2Network = _networks.data.isArbitrum
-        ? _networks.data.network
-        : _networks.data.partnerNetwork
-
       setGlobalBridge(await Bridge.init(l1Signer, l2Signer))
-      setTokenBridgeParams({
-        walletAddress: l1Address,
-        l1: { signer: l1Signer, network: l1Network },
-        l2: { signer: l2Signer, network: l2Network }
-      })
+      setTokenBridgeParams({ walletAddress: l1Address, ...params })
     },
-    [_networks]
+    []
   )
 
   // Listen for account and network changes
@@ -234,46 +208,43 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setGlobalBridge(null)
     setTokenBridgeParams(null)
 
-    switch (_networks.status) {
-      case UseNetworksStatus.NOT_CONNECTED: {
-        actions.app.setConnectionState(ConnectionState.NO_METAMASK)
-        return
-      }
-
-      case UseNetworksStatus.NOT_SUPPORTED: {
-        actions.app.setConnectionState(ConnectionState.WRONG_NETWORK)
-        return
-      }
-
-      default: {
-        const { network, isArbitrum } = _networks.data
-        const networkId = String(network.chainID)
-
-        // TODO: We're still relying on the old networks. We should switch to @arbitrum/sdk networks.
-        actions.app.reset(networkId)
-        actions.app.setNetworkID(networkId)
-
-        if (!isArbitrum) {
-          console.info('Deposit mode detected:')
-          actions.app.setIsDepositMode(true)
-          actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-        } else {
-          console.info('Withdrawal mode detected:')
-          actions.app.setIsDepositMode(false)
-          actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-        }
-      }
+    if (_networks.status !== UseNetworksStatus.CONNECTED) {
+      return
     }
-  }, [_networks])
 
-  // Listen for signers changes
-  useEffect(() => {
+    const { l1Network, l2Network, isConnectedToArbitrum } = _networks
+    const network = isConnectedToArbitrum ? l2Network : l1Network
+    const networkId = String(network.chainID)
+
+    // TODO: We're still relying on the old networks. We should switch to @arbitrum/sdk networks.
+    actions.app.reset(networkId)
+    actions.app.setNetworkID(networkId)
+
+    if (!isConnectedToArbitrum) {
+      console.info('Deposit mode detected:')
+      actions.app.setIsDepositMode(true)
+      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+    } else {
+      console.info('Withdrawal mode detected:')
+      actions.app.setIsDepositMode(false)
+      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+    }
+
     if (_signers.status !== UseSignersStatus.SUCCESS) {
       return
     }
 
-    initBridge(_signers.data)
-  }, [_signers, initBridge])
+    initBridge({
+      l1: {
+        signer: _signers.data.l1Signer,
+        network: l1Network
+      },
+      l2: {
+        signer: _signers.data.l2Signer,
+        network: l2Network
+      }
+    })
+  }, [_networks, _signers, initBridge])
 
   useEffect(() => {
     axios
@@ -401,15 +372,44 @@ function Routes() {
   )
 }
 
+function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
+  const { status } = useNetworks()
+
+  if (status === UseNetworksStatus.NOT_CONNECTED) {
+    return <NoMetamaskIndicator />
+  }
+
+  if (status === UseNetworksStatus.NOT_SUPPORTED) {
+    return (
+      <div>
+        <div className="mb-4">
+          You are on the wrong network. Read our tutorial below on how to switch
+          networks.
+        </div>
+        <iframe
+          title="Bridge Tutorial"
+          src="https://arbitrum.io/bridge-tutorial/"
+          width="100%"
+          height={500}
+        />
+      </div>
+    )
+  }
+
+  return children
+}
+
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
     <Provider value={overmind}>
       <Layout>
-        <Injector>
-          <Routes />
-        </Injector>
+        <NetworkReady>
+          <Injector>
+            <Routes />
+          </Injector>
+        </NetworkReady>
       </Layout>
     </Provider>
   )
