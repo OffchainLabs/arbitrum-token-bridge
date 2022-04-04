@@ -968,12 +968,13 @@ export const useArbTokenBridge = (
 
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
+
     if (addressToSymbol[l1Address]) {
       return addressToSymbol[l1Address]
     }
+
     try {
-      const token = ERC20__factory.connect(l1Address, bridge.l1Provider)
-      const symbol = await token.symbol()
+      const { symbol } = await getL1TokenData(l1Address)
       addressToSymbol[l1Address] = symbol
       return symbol
     } catch (err) {
@@ -981,15 +982,16 @@ export const useArbTokenBridge = (
       return '???'
     }
   }
+
   const getTokenDecimals = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
-    const dec = addressToDecimals[l1Address]
-    if (dec) {
-      return dec
+
+    if (addressToDecimals[l1Address]) {
+      return addressToDecimals[l1Address]
     }
+
     try {
-      const token = ERC20__factory.connect(l1Address, bridge.l1Provider)
-      const decimals = await token.decimals()
+      const { decimals } = await getL1TokenData(l1Address)
       addressToDecimals[l1Address] = decimals
       return decimals
     } catch (err) {
