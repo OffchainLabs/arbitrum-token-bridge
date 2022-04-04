@@ -4,6 +4,7 @@ import { providers } from 'ethers'
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 
 import { useNetworks, UseNetworksStatus } from './useNetworks'
+import { rpcURLs } from '../util/networks'
 
 export enum UseSignersStatus {
   NETWORK_NOT_CONNECTED = 'network_not_connected',
@@ -36,7 +37,9 @@ export function useSigners(): UseSignersResult {
 
     const { l1Network, l2Network, isConnectedToArbitrum } = networks
     const partnerNetwork = isConnectedToArbitrum ? l1Network : l2Network
-    const partnerProvider = new providers.JsonRpcProvider(partnerNetwork.rpcURL)
+    const partnerProvider = new providers.JsonRpcProvider(
+      partnerNetwork.rpcURL || rpcURLs[partnerNetwork.chainID]
+    )
 
     if (isConnectedToArbitrum) {
       return {
