@@ -1,7 +1,11 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  L1ToL2MessageReader,
+  L1ToL2MessageStatus,
+  L2ToL1MessageStatus as OutgoingMessageState
+} from '@arbitrum/sdk'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
@@ -11,6 +15,8 @@ import {
   NewTransaction,
   Transaction
 } from './useTransactions'
+
+export { OutgoingMessageState }
 
 export enum TokenType {
   ERC20 = 'ERC20',
@@ -24,25 +30,6 @@ export enum AssetType {
 }
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
-
-export enum OutgoingMessageState {
-  /**
-   * No corresponding {@link L2ToL1EventResult} emitted
-   */
-  NOT_FOUND = 0,
-  /**
-   * ArbSys.sendTxToL1 called, but assertion not yet confirmed
-   */
-  UNCONFIRMED = 1,
-  /**
-   * Assertion for outgoing message confirmed, but message not yet executed
-   */
-  CONFIRMED = 2,
-  /**
-   * Outgoing message executed (terminal state)
-   */
-  EXECUTED = 3
-}
 
 export interface L2ToL1EventResult {
   caller: string
