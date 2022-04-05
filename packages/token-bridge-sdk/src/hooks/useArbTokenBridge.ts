@@ -395,7 +395,7 @@ export const useArbTokenBridge = (
 
         const id = l2ToL1EventResult.uniqueId.toString()
 
-        const outgoingMessageState = await getOutGoingMessageState(
+        const outgoingMessageState = await getOutgoingMessageState(
           l2ToL1EventResult.batchNumber,
           l2ToL1EventResult.indexInBatch
         )
@@ -534,7 +534,7 @@ export const useArbTokenBridge = (
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
         const id = l2ToL1EventDataResult.uniqueId.toString()
-        const outgoingMessageState = await getOutGoingMessageState(
+        const outgoingMessageState = await getOutgoingMessageState(
           l2ToL1EventDataResult.batchNumber,
           l2ToL1EventDataResult.indexInBatch
         )
@@ -1109,7 +1109,7 @@ export const useArbTokenBridge = (
       const outgoingMessageState =
         batchNumberDec > lastOutboxEntryIndexDec
           ? OutgoingMessageState.UNCONFIRMED
-          : await getOutGoingMessageStateV2(batchNumber, indexInBatch)
+          : await getOutgoingMessageStateV2(batchNumber, indexInBatch)
 
       const allWithdrawalData: L2ToL1EventResultPlus = {
         caller,
@@ -1172,7 +1172,7 @@ export const useArbTokenBridge = (
     const outgoingMessageStates = await Promise.all(
       results.map((withdrawEventData, i) => {
         const { batchNumber, indexInBatch } = withdrawEventData.l2ToL1Event
-        return getOutGoingMessageState(batchNumber, indexInBatch)
+        return getOutgoingMessageState(batchNumber, indexInBatch)
       })
     )
     const oldTokenWithdrawals = results.map((resultsData, i) => {
@@ -1278,7 +1278,7 @@ export const useArbTokenBridge = (
         const l2TxReceipt = new L2TransactionReceipt(txReceipt)
         // TODO: length != 1
         const [{ batchNumber, indexInBatch }] = l2TxReceipt.getL2ToL1Events()
-        return getOutGoingMessageState(batchNumber, indexInBatch)
+        return getOutgoingMessageState(batchNumber, indexInBatch)
       })
     )
 
@@ -1437,7 +1437,7 @@ export const useArbTokenBridge = (
   }
 
   // call after we've confirmed the outbox entry has been created
-  async function getOutGoingMessageStateV2(
+  async function getOutgoingMessageStateV2(
     batchNumber: BigNumber,
     indexInBatch: BigNumber
   ) {
@@ -1451,44 +1451,61 @@ export const useArbTokenBridge = (
       ]
     ) {
       return OutgoingMessageState.EXECUTED
+    }
+
+    const proofData = await L2ToL1MessageReader.tryGetProof(
+      l2.signer.provider,
+      batchNumber,
+      indexInBatch
+    )
+
+    // this should never occur
+    if (!proofData) {
+      return OutgoingMessageState.UNCONFIRMED
+    }
+
+    const { path } = proofData
+    const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
+
+    if (res) {
+      addToExecutedMessagesCache(batchNumber, indexInBatch)
+      return OutgoingMessageState.EXECUTED
     } else {
-      const proofData = await L2ToL1MessageReader.tryGetProof(
-        l2.signer.provider,
-        batchNumber,
-        indexInBatch
-      )
-
-      // this should never occur
-      if (!proofData) {
-        return OutgoingMessageState.UNCONFIRMED
-      }
-
-      const { path } = proofData
-      const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
-
-      if (res) {
-        addToExecutedMessagesCache(batchNumber, indexInBatch)
-        return OutgoingMessageState.EXECUTED
-      } else {
-        return OutgoingMessageState.CONFIRMED
-      }
+      return OutgoingMessageState.CONFIRMED
     }
   }
 
-  const getOutGoingMessageState = useCallback(
-    async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      if (
-        executedMessagesCache[
-          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-        ]
-      ) {
-        return OutgoingMessageState.EXECUTED
-      } else {
-        return bridge.getOutGoingMessageState(batchNumber, indexInBatch)
-      }
-    },
-    [executedMessagesCache, l1NetworkID]
-  )
+  async function getOutgoingMessageState(
+    batchNumber: BigNumber,
+    indexInBatch: BigNumber
+  ) {
+    if (
+      executedMessagesCache[
+        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+      ]
+    ) {
+      return OutgoingMessageState.EXECUTED
+    }
+
+    if (typeof l1.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L1 signer`)
+    }
+
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
+    const messageReader = new L2ToL1MessageReader(
+      l1.signer.provider,
+      outboxAddress,
+      batchNumber,
+      indexInBatch
+    )
+
+    const proofInfo = await messageReader.tryGetProof(l2.signer.provider)
+    return await messageReader.status(proofInfo)
+  }
 
   const addToExecutedMessagesCache = useCallback(
     (batchNumber: BigNumber, indexInBatch: BigNumber) => {
