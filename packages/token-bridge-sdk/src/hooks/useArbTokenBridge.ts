@@ -9,7 +9,9 @@ import {
   L2Network,
   EthBridger,
   Erc20Bridger,
-  MultiCaller
+  MultiCaller,
+  L2ToL1MessageReader,
+  L2TransactionReceipt
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -1392,37 +1394,43 @@ export const useArbTokenBridge = (
   }
 
   // call after we've confirmed the outbox entry has been created
-  const getOutGoingMessageStateV2 = useCallback(
-    async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      if (
-        executedMessagesCache[
-          hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-        ]
-      ) {
+  async function getOutGoingMessageStateV2(
+    batchNumber: BigNumber,
+    indexInBatch: BigNumber
+  ) {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
+    if (
+      executedMessagesCache[
+        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+      ]
+    ) {
+      return OutgoingMessageState.EXECUTED
+    } else {
+      const proofData = await L2ToL1MessageReader.tryGetProof(
+        l2.signer.provider,
+        batchNumber,
+        indexInBatch
+      )
+
+      // this should never occur
+      if (!proofData) {
+        return OutgoingMessageState.UNCONFIRMED
+      }
+
+      const { path } = proofData
+      const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
+
+      if (res) {
+        addToExecutedMessagesCache(batchNumber, indexInBatch)
         return OutgoingMessageState.EXECUTED
       } else {
-        const proofData = await bridge.tryGetProofOnce(
-          batchNumber,
-          indexInBatch
-        )
-        // this should never occur
-        if (!proofData) {
-          return OutgoingMessageState.UNCONFIRMED
-        }
-
-        const { path } = proofData
-        const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
-
-        if (res) {
-          addToExecutedMessagesCache(batchNumber, indexInBatch)
-          return OutgoingMessageState.EXECUTED
-        } else {
-          return OutgoingMessageState.CONFIRMED
-        }
+        return OutgoingMessageState.CONFIRMED
       }
-    },
-    [executedMessagesCache, l1NetworkID]
-  )
+    }
+  }
 
   const getOutGoingMessageState = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
