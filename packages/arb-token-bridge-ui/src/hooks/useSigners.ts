@@ -37,7 +37,10 @@ export function useSigners(): UseSignersResult {
   const { account: address, provider } = useWallet()
 
   return useMemo(() => {
-    if (networks.status === UseNetworksStatus.NOT_CONNECTED) {
+    if (
+      typeof provider === 'undefined' ||
+      networks.status === UseNetworksStatus.NOT_CONNECTED
+    ) {
       return { status: UseSignersStatus.NETWORK_NOT_CONNECTED, ...defaults }
     }
 
@@ -55,13 +58,13 @@ export function useSigners(): UseSignersResult {
       return {
         status: UseSignersStatus.SUCCESS,
         l1Signer: partnerProvider.getSigner(address!),
-        l2Signer: provider?.getSigner(0) as JsonRpcSigner
+        l2Signer: provider.getSigner(0) as JsonRpcSigner
       }
     }
 
     return {
       status: UseSignersStatus.SUCCESS,
-      l1Signer: provider?.getSigner(0) as JsonRpcSigner,
+      l1Signer: provider.getSigner(0) as JsonRpcSigner,
       l2Signer: partnerProvider.getSigner(address!)
     }
   }, [networks, address, provider])
