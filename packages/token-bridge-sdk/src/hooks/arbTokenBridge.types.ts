@@ -31,6 +31,7 @@ export enum AssetType {
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 
+// todo: use L2ToL1TransactionEvent['args']
 export interface L2ToL1EventResult {
   caller: string
   destination: string
