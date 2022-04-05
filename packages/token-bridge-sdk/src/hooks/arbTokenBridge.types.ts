@@ -4,6 +4,7 @@ import { TokenList } from '@uniswap/token-lists'
 import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
+import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
 import {
   FailedTransaction,
@@ -66,13 +67,7 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
 
-export interface WithdrawalInitiated {
-  l1Token: string
-  _from: string
-  _to: string
-  _l2ToL1Id: BigNumber
-  _exitNum: BigNumber
-  _amount: BigNumber
+export type WithdrawalInitiated = WithdrawalInitiatedEvent['args'] & {
   txHash: string
 }
 

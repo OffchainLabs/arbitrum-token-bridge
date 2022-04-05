@@ -1176,62 +1176,85 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: ethers.providers.Filter
   ) => {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
     const address = await walletAddressCached()
     const t = new Date().getTime()
 
-    const gateWayWithdrawalsResultsNested = await Promise.all(
+    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
+      l1NetworkID
+    )
+    const startBlock =
+      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+
+    const erc20Bridger = new Erc20Bridger(l2.network)
+
+    const gatewayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
-        bridge.getGatewayWithdrawEventData(gatewayAddress, address, filter)
+        erc20Bridger.getL2WithdrawalEvents(
+          l2.signer.provider,
+          gatewayAddress,
+          { fromBlock: pivotBlock, toBlock: 'latest' },
+          undefined,
+          address
+        )
       )
     )
+
     console.log(
       `*** got token gateway event data in ${
         (new Date().getTime() - t) / 1000
       } seconds *** `
     )
 
-    const gateWayWithdrawalsResults = gateWayWithdrawalsResultsNested.flat()
+    const gatewayWithdrawalsResults = gatewayWithdrawalsResultsNested.flat()
     const symbols = await Promise.all(
-      gateWayWithdrawalsResults.map(withdrawEventData =>
+      gatewayWithdrawalsResults.map(withdrawEventData =>
         getTokenSymbol(withdrawEventData.l1Token)
       )
     )
     const decimals = await Promise.all(
-      gateWayWithdrawalsResults.map(withdrawEventData =>
+      gatewayWithdrawalsResults.map(withdrawEventData =>
         getTokenDecimals(withdrawEventData.l1Token)
       )
     )
 
     const l2Txns = await Promise.all(
-      gateWayWithdrawalsResults.map(withdrawEventData =>
-        bridge.getL2Transaction(withdrawEventData.txHash)
+      gatewayWithdrawalsResults.map(withdrawEventData =>
+        l2.signer.provider.getTransactionReceipt(withdrawEventData.txHash)
       )
     )
 
     const outgoingMessageStates = await Promise.all(
-      gateWayWithdrawalsResults.map((withdrawEventData, i) => {
-        const eventDataArr = bridge.getWithdrawalsInL2Transaction(l2Txns[i])
+      l2Txns.map(txReceipt => {
+        const l2TxReceipt = new L2TransactionReceipt(txReceipt)
         // TODO: length != 1
-        const { batchNumber, indexInBatch } = eventDataArr[0]
+        const [{ batchNumber, indexInBatch }] = l2TxReceipt.getL2ToL1Events()
         return getOutGoingMessageState(batchNumber, indexInBatch)
       })
     )
-    return gateWayWithdrawalsResults.map(
+
+    return gatewayWithdrawalsResults.map(
       (withdrawEventData: WithdrawalInitiated, i) => {
+        const l2TxReceipt = new L2TransactionReceipt(l2Txns[i])
         // TODO: length != 1
-        const eventDataArr = bridge.getWithdrawalsInL2Transaction(l2Txns[i])
-        const {
-          caller,
-          destination,
-          uniqueId,
-          batchNumber,
-          indexInBatch,
-          arbBlockNum,
-          ethBlockNum,
-          timestamp,
-          callvalue,
-          data
-        } = eventDataArr[0]
+        const [
+          {
+            caller,
+            destination,
+            uniqueId,
+            batchNumber,
+            indexInBatch,
+            arbBlockNum,
+            ethBlockNum,
+            timestamp,
+            callvalue,
+            data
+          }
+        ] = l2TxReceipt.getL2ToL1Events()
 
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
@@ -1251,6 +1274,7 @@ export const useArbTokenBridge = (
           symbol: symbols[i],
           decimals: decimals[i]
         }
+
         return eventDataPlus
       }
     )
