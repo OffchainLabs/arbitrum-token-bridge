@@ -1169,9 +1169,7 @@ export const useArbTokenBridge = (
       fromBlock: pivotBlock
     })
 
-    const t = new Date().getTime()
-
-    return oldTokenWithdrawals.concat(recentTokenWithdrawals)
+    return oldTokenWithdrawals.concat(recentTokenWithdrawals || [])
   }
 
   const getTokenWithdrawals = async (
