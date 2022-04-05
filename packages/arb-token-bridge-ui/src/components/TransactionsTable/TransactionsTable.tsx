@@ -97,28 +97,32 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const [isClaiming, setIsClaiming] = useState(false)
 
   const showRedeemRetryableButton = useMemo(() => {
-    if (tx.depositStatus === DepositStatus.L2_FAILURE) {
-      return true
-    }
+      /** TODO tmp for initial devnet ui */
     return false
+    // if (tx.depositStatus === DepositStatus.L2_FAILURE) {
+    //   return true
+    // }
+    // return false
   }, [tx])
 
   const redeemRetryable = useCallback(
     async (tx: MergedTransaction) => {
       if (!bridge) return
-      const l2Signer = bridge.l2Bridge.l2Signer
-      const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
-      if (!retryableCreationTxID)
-        throw new Error("Can't redeem; txid not found")
-      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
-        l2Signer,
-        retryableCreationTxID,
-        BigNumber.from(tx.seqNum)
-      )
-      const res = await l1ToL2Msg.redeem()
-      const rec = await res.wait()
-      // update in store
-      arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
+        /** TODO tmp for initial devnet ui */
+
+      // const l2Signer = bridge.l2Bridge.l2Signer
+      // const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
+      // if (!retryableCreationTxID)
+      //   throw new Error("Can't redeem; txid not found")
+      // const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
+      //   l2Signer,
+      //   retryableCreationTxID,
+      //   BigNumber.from(tx.seqNum)
+      // )
+      // const res = await l1ToL2Msg.redeem()
+      // const rec = await res.wait()
+      // // update in store
+      // arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
     },
     [arbTokenBridge, bridge]
   )

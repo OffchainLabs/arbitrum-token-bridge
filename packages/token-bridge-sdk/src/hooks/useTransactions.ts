@@ -56,7 +56,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
 export interface L1ToL2MessageData {
   status: L1ToL2MessageStatus
   retryableCreationTxID: string
-  l2TxID: string
+  l2TxID?: string
   fetchingUpdate: boolean
 }
 type TransactionBase = {
@@ -304,7 +304,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       l1ToL2MsgData: {
         status,
         retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-        l2TxID: l1ToL2Msg.l2TxHash,
+        // l2TxID: l1ToL2Msg.l2TxHash,
         fetchingUpdate: shouldFetchUpdate
       }
     })
@@ -312,7 +312,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (shouldFetchUpdate) {
       console.info('waiting for L1toL2Msg status for', txID)
 
-      l1ToL2Msg.waitForStatus().then(({ status }) => {
+      l1ToL2Msg.waitForStatus().then(({status, l2TxReceipt}) => {
         console.info(
           `1toL2Msg status arrived for ${txID}, dispatching update`,
           status
@@ -324,7 +324,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
           l1ToL2MsgData: {
             status,
             retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-            l2TxID: l1ToL2Msg.l2TxHash,
+            l2TxID:  l2TxReceipt?.transactionHash,
             fetchingUpdate: false
           }
         })
