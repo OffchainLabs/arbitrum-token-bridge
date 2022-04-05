@@ -11,6 +11,17 @@ import {
   Transaction
 } from './useTransactions'
 
+export enum TokenType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721'
+}
+
+export enum AssetType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721',
+  ETH = 'ETH'
+}
+
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 
 export enum OutgoingMessageState {
@@ -81,18 +92,6 @@ export interface BridgeToken {
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
   decimals: number
-}
-
-export enum TokenType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721'
-}
-/* eslint-enable no-shadow */
-
-export enum AssetType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ETH = 'ETH'
 }
 
 export interface L1TokenData {
