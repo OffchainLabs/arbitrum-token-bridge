@@ -112,4 +112,9 @@ const networks: Networks = {
   }
 }
 
+export const rpcURLs: { [chainId: number]: string } = {
+  1: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  4: `https://rinkeby.infura.io/v3/${INFURA_KEY}`
+}
+
 export default networks
