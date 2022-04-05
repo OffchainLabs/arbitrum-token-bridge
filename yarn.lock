@@ -27,7 +27,7 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.0"
 
-"@arbitrum/sdk@OffchainLabs/arbitrum-sdk#c-nitro":
+"@arbitrum/sdk@OffchainLabs/arbitrum-sdk#c47b3d7361f1ea5d7a7ba57b5f4c02f17e1d8ce0":
   version "1.0.1"
   resolved "https://codeload.github.com/OffchainLabs/arbitrum-sdk/tar.gz/c47b3d7361f1ea5d7a7ba57b5f4c02f17e1d8ce0"
   dependencies:
