@@ -333,6 +333,8 @@ const TransferPanel = (): JSX.Element => {
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
+    /** TODO tmp for initial devnet ui */
+    return true
     const l2AmountNum = +l2Amount
     return (
       (selectedToken &&

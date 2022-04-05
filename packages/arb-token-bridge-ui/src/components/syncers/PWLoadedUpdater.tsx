@@ -52,20 +52,21 @@ const PWLoadedUpdater = (): JSX.Element => {
         console.log(
           `Nonce is ${nonce} and bridgeUpdateBlockNumber is ${bridgeUpdateBlockNumber}`
         )
+        /** TODO tmp for initial devnet ui */
 
-        setInitialPendingWithdrawals(gatewaysToUse, {
-          fromBlock: bridgeUpdateBlockNumber
-        })
-          .then(() => {
-            console.info('Setting withdrawals to ready state')
+        // setInitialPendingWithdrawals(gatewaysToUse, {
+        //   fromBlock: bridgeUpdateBlockNumber
+        // })
+        //   .then(() => {
+        //     console.info('Setting withdrawals to ready state')
 
-            actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
-          })
-          .catch(ex => {
-            console.warn('error getting setInitialPendingWithdrawals', ex)
+        //     actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
+        //   })
+        //   .catch(ex => {
+        //     console.warn('error getting setInitialPendingWithdrawals', ex)
 
-            actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.ERROR)
-          })
+        //     actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.ERROR)
+        //   })
       }
     })
   }, [
