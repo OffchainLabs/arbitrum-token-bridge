@@ -1507,16 +1507,16 @@ export const useArbTokenBridge = (
     return await messageReader.status(proofInfo)
   }
 
-  const addToExecutedMessagesCache = useCallback(
-    (batchNumber: BigNumber, indexInBatch: BigNumber) => {
-      const _executedMessagesCache = { ...executedMessagesCache }
-      _executedMessagesCache[
-        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-      ] = true
-      setExecutedMessagesCache(_executedMessagesCache)
-    },
-    [executedMessagesCache, l1NetworkID]
-  )
+  function addToExecutedMessagesCache(
+    batchNumber: BigNumber,
+    indexInBatch: BigNumber
+  ) {
+    const _executedMessagesCache = { ...executedMessagesCache }
+    _executedMessagesCache[
+      hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
+    ] = true
+    setExecutedMessagesCache(_executedMessagesCache)
+  }
 
   const hashOutgoingMessage = (
     batchNumber: BigNumber,
