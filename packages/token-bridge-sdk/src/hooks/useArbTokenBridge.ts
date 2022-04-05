@@ -1002,6 +1002,10 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
+
     const address = await walletAddressCached()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
@@ -1021,9 +1025,18 @@ export const useArbTokenBridge = (
       pivotBlock,
       l1NetworkID
     )
-    const recentETHWithdrawalData = await bridge.getL2ToL1EventData(address, {
-      fromBlock: pivotBlock
-    })
+
+    const recentETHWithdrawalData =
+      await L2ToL1MessageReader.getL2ToL1MessageLogs(
+        l2.signer.provider,
+        {
+          fromBlock: pivotBlock, // Change to 0 for Nitro
+          toBlock: 'latest'
+        },
+        undefined,
+        address
+      )
+
     const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
       recentETHWithdrawalData
     )
@@ -1074,6 +1087,7 @@ export const useArbTokenBridge = (
     }
     return ethWithdrawalData
   }
+
   const getTokenWithdrawalsV2 = async (
     gatewayAddresses: string[],
     filter?: ethers.providers.Filter
