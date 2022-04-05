@@ -11,6 +11,7 @@
     "build": "yarn workspace token-bridge-sdk build && yarn workspace arb-token-bridge-ui build",
     "format": "yarn workspace arb-token-bridge-ui format && yarn workspace token-bridge-sdk format "
   },
+  "postinstall": "cd node_modules/@arbitrum/sdk && yarn install --production && yarn build",
   "keywords": [],
   "author": "",
   "license": "ISC",
