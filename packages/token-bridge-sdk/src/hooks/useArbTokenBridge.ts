@@ -92,6 +92,7 @@ function getDefaultTokenSymbol(address: string) {
 }
 
 export interface TokenBridgeParams {
+  walletAddress: string
   l1: {
     signer: Signer
     network: L1Network
@@ -107,9 +108,7 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
-  const { l1, l2 } = params
-
-  const [walletAddress, setWalletAddress] = useState('')
+  const { walletAddress, l1, l2 } = params
 
   const defaultBalance = {
     balance: null,
@@ -315,16 +314,6 @@ export const useArbTokenBridge = (
     )
   }
 
-  const walletAddressCached = useCallback(async () => {
-    if (walletAddress) {
-      return walletAddress
-    }
-
-    const address = await l1.signer.getAddress()
-    setWalletAddress(address)
-    return address
-  }, [walletAddress, l1.signer])
-
   const depositEth = async (amount: BigNumber) => {
     if (typeof l2.signer.provider === 'undefined') {
       throw new Error(`No provider found for L2 signer`)
@@ -345,7 +334,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: 'ETH',
       assetType: AssetType.ETH,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       l1NetworkID
     })
 
@@ -376,7 +365,7 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
-        sender: await walletAddressCached(),
+        sender: walletAddress,
         blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
         l1NetworkID
       })
@@ -438,7 +427,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       l1NetworkID
     })
 
@@ -471,7 +460,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: symbol,
       assetType: AssetType.ERC20,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       l1NetworkID
     })
 
@@ -770,10 +759,6 @@ export const useArbTokenBridge = (
         setERC20Cache(values.filter((val): val is string => !!val))
       })
     }
-
-    l1.signer.getAddress().then(_address => {
-      setWalletAddress(_address)
-    })
   }, [])
 
   async function updateEthBalances() {
@@ -824,7 +809,6 @@ export const useArbTokenBridge = (
       throw new Error(`No provider found for L2 signer`)
     }
 
-    const walletAddress = await walletAddressCached()
     const l1MultiCaller = await MultiCaller.fromProvider(l1.signer.provider)
     const l2MultiCaller = await MultiCaller.fromProvider(l2.signer.provider)
 
@@ -921,7 +905,7 @@ export const useArbTokenBridge = (
       value: utils.formatUnits(value, decimals),
       assetName: symbol,
       assetType: AssetType.ERC20,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       txID: res.hash,
       l1NetworkID
     })
@@ -984,7 +968,7 @@ export const useArbTokenBridge = (
       value: utils.formatEther(value),
       assetName: 'ETH',
       assetType: AssetType.ETH,
-      sender: await walletAddressCached(),
+      sender: walletAddress,
       txID: res.hash,
       l1NetworkID
     })
@@ -1049,8 +1033,6 @@ export const useArbTokenBridge = (
     if (typeof l2.signer.provider === 'undefined') {
       throw new Error(`No provider found for L2 signer`)
     }
-
-    const address = await walletAddressCached()
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
@@ -1064,7 +1046,7 @@ export const useArbTokenBridge = (
     )
 
     const oldEthWithdrawalEventData = await getETHWithdrawals(
-      address,
+      walletAddress,
       startBlock,
       pivotBlock,
       l1NetworkID
@@ -1078,7 +1060,7 @@ export const useArbTokenBridge = (
           toBlock: 'latest'
         },
         undefined,
-        address
+        walletAddress
       )
 
     const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
@@ -1136,8 +1118,6 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: providers.Filter
   ) => {
-    const address = await walletAddressCached()
-
     const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
       l1NetworkID
     )
@@ -1151,7 +1131,7 @@ export const useArbTokenBridge = (
     const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
     const results = await getTokenWithdrawalsGraph(
-      address,
+      walletAddress,
       startBlock,
       pivotBlock,
       l1NetworkID
@@ -1226,7 +1206,6 @@ export const useArbTokenBridge = (
       throw new Error(`No provider found for L2 signer`)
     }
 
-    const address = await walletAddressCached()
     const t = new Date().getTime()
 
     const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
@@ -1245,7 +1224,7 @@ export const useArbTokenBridge = (
           gatewayAddress,
           { fromBlock: pivotBlock, toBlock: 'latest' },
           undefined,
-          address
+          walletAddress
         )
       )
     )
