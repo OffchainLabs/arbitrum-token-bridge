@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { BigNumber, constants, ethers, utils } from 'ethers'
+import { BigNumber, constants, utils, providers } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
@@ -10,10 +10,9 @@ import {
   EthBridger,
   Erc20Bridger,
   MultiCaller,
-  L2ToL1MessageReader,
-  L2TransactionReceipt,
   L2ToL1Message,
-  L2ToL1MessageWriter
+  L2ToL1MessageReader,
+  L2TransactionReceipt
 } from '@arbitrum/sdk'
 import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
@@ -910,7 +909,7 @@ export const useArbTokenBridge = (
       outboxAddress,
       batchNumber,
       indexInBatch
-    ) as L2ToL1MessageWriter
+    )
 
     const res = await messageWriter.execute(proofInfo)
 
@@ -919,7 +918,7 @@ export const useArbTokenBridge = (
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: ethers.utils.formatUnits(value, decimals),
+      value: utils.formatUnits(value, decimals),
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
@@ -975,14 +974,14 @@ export const useArbTokenBridge = (
       outboxAddress,
       batchNumber,
       indexInBatch
-    ) as L2ToL1MessageWriter
+    )
 
     const res = await messageWriter.execute(proofInfo)
 
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: ethers.utils.formatEther(value),
+      value: utils.formatEther(value),
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: await walletAddressCached(),
@@ -1046,7 +1045,7 @@ export const useArbTokenBridge = (
     }
   }
 
-  const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
+  const getEthWithdrawalsV2 = async (filter?: providers.Filter) => {
     if (typeof l2.signer.provider === 'undefined') {
       throw new Error(`No provider found for L2 signer`)
     }
@@ -1135,7 +1134,7 @@ export const useArbTokenBridge = (
 
   const getTokenWithdrawalsV2 = async (
     gatewayAddresses: string[],
-    filter?: ethers.providers.Filter
+    filter?: providers.Filter
   ) => {
     const address = await walletAddressCached()
 
@@ -1219,9 +1218,11 @@ export const useArbTokenBridge = (
 
   const getTokenWithdrawals = async (
     gatewayAddresses: string[],
-    filter?: ethers.providers.Filter
+    filter?: providers.Filter
   ) => {
-    if (typeof l2.signer.provider === 'undefined') {
+    const l2Provider = l2.signer.provider
+
+    if (typeof l2Provider === 'undefined') {
       throw new Error(`No provider found for L2 signer`)
     }
 
@@ -1240,7 +1241,7 @@ export const useArbTokenBridge = (
     const gatewayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
         erc20Bridger.getL2WithdrawalEvents(
-          l2.signer.provider,
+          l2Provider,
           gatewayAddress,
           { fromBlock: pivotBlock, toBlock: 'latest' },
           undefined,
@@ -1269,7 +1270,7 @@ export const useArbTokenBridge = (
 
     const l2Txns = await Promise.all(
       gatewayWithdrawalsResults.map(withdrawEventData =>
-        l2.signer.provider.getTransactionReceipt(withdrawEventData.txHash)
+        l2Provider.getTransactionReceipt(withdrawEventData.txHash)
       )
     )
 
@@ -1410,7 +1411,7 @@ export const useArbTokenBridge = (
 
   const setInitialPendingWithdrawals = async (
     gatewayAddresses: string[],
-    filter?: ethers.providers.Filter
+    filter?: providers.Filter
   ) => {
     const pendingWithdrawals: PendingWithdrawalsMap = {}
     const t = new Date().getTime()
