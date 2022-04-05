@@ -11,8 +11,11 @@ import {
   Erc20Bridger,
   MultiCaller,
   L2ToL1MessageReader,
-  L2TransactionReceipt
+  L2TransactionReceipt,
+  L2ToL1Message,
+  L2ToL1MessageWriter
 } from '@arbitrum/sdk'
+import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -879,95 +882,135 @@ export const useArbTokenBridge = (
     })
   }
 
-  const triggerOutboxToken = useCallback(
-    async (id: string) => {
-      if (!pendingWithdrawalsMap[id])
-        throw new Error('Outbox message not found')
-      const { batchNumber, indexInBatch, tokenAddress, value } =
-        pendingWithdrawalsMap[id]
-      // number #1
-      const res = await bridge.triggerL2ToL1Transaction(
-        batchNumber,
-        indexInBatch,
-        true
-      )
+  async function triggerOutboxToken(id: string) {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
 
-      const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
+    if (!pendingWithdrawalsMap[id]) {
+      throw new Error('Outbox message not found')
+    }
 
-      addTransaction({
-        status: 'pending',
-        type: 'outbox',
-        value: ethers.utils.formatUnits(value, decimals),
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        sender: await walletAddressCached(),
-        txID: res.hash,
-        l1NetworkID
-      })
-      try {
-        const rec = await res.wait()
-        if (rec.status === 1) {
-          setTransactionConfirmed(rec.transactionHash)
-          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-            const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-            delete newPendingWithdrawalsMap[id]
-            return newPendingWithdrawalsMap
-          })
-          addToExecutedMessagesCache(batchNumber, indexInBatch)
-        } else {
-          setTransactionFailure(rec.transactionHash)
-        }
-        return rec
-      } catch (err) {
-        console.warn('WARNING: token outbox execute failed:', err)
+    const { batchNumber, indexInBatch, tokenAddress, value } =
+      pendingWithdrawalsMap[id]
+
+    const proofInfo = await L2ToL1MessageReader.tryGetProof(
+      l2.signer.provider,
+      batchNumber,
+      indexInBatch
+    )
+
+    if (!proofInfo) {
+      throw new Error('No proof found')
+    }
+
+    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
+    const messageWriter = L2ToL1Message.fromBatchNumber(
+      l1.signer,
+      outboxAddress,
+      batchNumber,
+      indexInBatch
+    ) as L2ToL1MessageWriter
+
+    const res = await messageWriter.execute(proofInfo)
+
+    const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
+
+    addTransaction({
+      status: 'pending',
+      type: 'outbox',
+      value: ethers.utils.formatUnits(value, decimals),
+      assetName: symbol,
+      assetType: AssetType.ERC20,
+      sender: await walletAddressCached(),
+      txID: res.hash,
+      l1NetworkID
+    })
+
+    try {
+      const rec = await res.wait()
+
+      if (rec.status === 1) {
+        setTransactionConfirmed(rec.transactionHash)
+        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
+          delete newPendingWithdrawalsMap[id]
+          return newPendingWithdrawalsMap
+        })
+        addToExecutedMessagesCache(batchNumber, indexInBatch)
+      } else {
+        setTransactionFailure(rec.transactionHash)
       }
-    },
-    [pendingWithdrawalsMap, l1NetworkID]
-  )
 
-  const triggerOutboxEth = useCallback(
-    async (id: string) => {
-      if (!pendingWithdrawalsMap[id])
-        throw new Error('Outbox message not found')
-      const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
-      const res = await bridge.triggerL2ToL1Transaction(
-        batchNumber,
-        indexInBatch,
-        true
-      )
+      return rec
+    } catch (err) {
+      console.warn('WARNING: token outbox execute failed:', err)
+    }
+  }
 
-      addTransaction({
-        status: 'pending',
-        type: 'outbox',
-        value: ethers.utils.formatEther(value),
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: await walletAddressCached(),
-        txID: res.hash,
-        l1NetworkID
-      })
+  async function triggerOutboxEth(id: string) {
+    if (typeof l2.signer.provider === 'undefined') {
+      throw new Error(`No provider found for L2 signer`)
+    }
 
-      try {
-        const rec = await res.wait()
-        if (rec.status === 1) {
-          setTransactionConfirmed(rec.transactionHash)
-          setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-            const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-            delete newPendingWithdrawalsMap[id]
-            return newPendingWithdrawalsMap
-          })
+    if (!pendingWithdrawalsMap[id]) {
+      throw new Error('Outbox message not found')
+    }
 
-          addToExecutedMessagesCache(batchNumber, indexInBatch)
-        } else {
-          setTransactionFailure(rec.transactionHash)
-        }
-        return rec
-      } catch (err) {
-        console.warn('WARNING: ETH outbox execute failed:', err)
+    const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
+
+    const proofInfo = await L2ToL1MessageReader.tryGetProof(
+      l2.signer.provider,
+      batchNumber,
+      indexInBatch
+    )
+
+    if (!proofInfo) {
+      throw new Error('No proof found')
+    }
+
+    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
+    const messageWriter = L2ToL1Message.fromBatchNumber(
+      l1.signer,
+      outboxAddress,
+      batchNumber,
+      indexInBatch
+    ) as L2ToL1MessageWriter
+
+    const res = await messageWriter.execute(proofInfo)
+
+    addTransaction({
+      status: 'pending',
+      type: 'outbox',
+      value: ethers.utils.formatEther(value),
+      assetName: 'ETH',
+      assetType: AssetType.ETH,
+      sender: await walletAddressCached(),
+      txID: res.hash,
+      l1NetworkID
+    })
+
+    try {
+      const rec = await res.wait()
+
+      if (rec.status === 1) {
+        setTransactionConfirmed(rec.transactionHash)
+        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
+          delete newPendingWithdrawalsMap[id]
+          return newPendingWithdrawalsMap
+        })
+
+        addToExecutedMessagesCache(batchNumber, indexInBatch)
+      } else {
+        setTransactionFailure(rec.transactionHash)
       }
-    },
-    [pendingWithdrawalsMap, l1NetworkID]
-  )
+
+      return rec
+    } catch (err) {
+      console.warn('WARNING: ETH outbox execute failed:', err)
+    }
+  }
 
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
