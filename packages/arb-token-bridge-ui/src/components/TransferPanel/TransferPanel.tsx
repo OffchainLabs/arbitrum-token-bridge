@@ -419,7 +419,7 @@ const TransferPanel = (): JSX.Element => {
             variant="navy"
             isLoading={transferring}
           >
-            Withdraw
+            Withdrawals are currently disabled
           </Button>
         )}
       </div>
