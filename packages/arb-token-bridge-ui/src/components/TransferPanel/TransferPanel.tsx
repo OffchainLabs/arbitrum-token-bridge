@@ -27,19 +27,6 @@ import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 
-const isAllowed = async (
-  bridge: Bridge,
-  l1TokenAddress: string,
-  amountNeeded: BigNumber
-) => {
-  const token = ERC20__factory.connect(l1TokenAddress, bridge.l1Provider)
-  const walletAddress = await bridge.l1Bridge.getWalletAddress()
-  const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
-  return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    amountNeeded
-  )
-}
-
 function useTokenFromSearchParams(): string | undefined {
   const { search } = useLocation()
 
@@ -261,14 +248,11 @@ const TransferPanel = (): JSX.Element => {
             return
           }
 
-          // Sanity check: ensure not allowed yet
-          const allowed = await isAllowed(
-            bridge,
-            selectedToken.address,
-            amountRaw
+          const { allowance } = await arbTokenBridge.token.getL1TokenData(
+            selectedToken.address
           )
 
-          if (!allowed) {
+          if (!allowance.gte(amountRaw)) {
             await latestToken.current.approve(selectedToken.address)
           }
 
