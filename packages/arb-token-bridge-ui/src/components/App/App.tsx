@@ -182,7 +182,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
       }
 
-      // setGlobalBridge(await Bridge.init(l1Signer, l2Signer))
       setTokenBridgeParams({ walletAddress: l1Address, ...params })
     },
     []

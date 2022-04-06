@@ -9,7 +9,8 @@ import {
   L2Network,
   EthBridger,
   Erc20Bridger,
-  MultiCaller
+  MultiCaller,
+  addCustomNetwork
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -49,6 +50,13 @@ import {
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
+}
+
+export function _addCustomNetwork(network: {
+  customL1Network: L1Network
+  customL2Network: L2Network
+}) {
+  addCustomNetwork(network)
 }
 
 function notNull<TValue>(value: TValue | null): value is TValue {
@@ -98,7 +106,7 @@ export interface TokenBridgeParams {
 }
 
 export const useArbTokenBridge = (
-  bridge: Bridge,
+  bridge: Bridge | undefined,
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
@@ -349,6 +357,10 @@ export const useArbTokenBridge = (
 
   const withdrawEth = useCallback(
     async (weiValue: BigNumber) => {
+      if (!bridge) {
+        return
+      }
+
       const etherVal = utils.formatUnits(weiValue, 18)
       const tx = await bridge.withdrawETH(weiValue)
       try {
@@ -478,6 +490,10 @@ export const useArbTokenBridge = (
 
   const withdrawToken = useCallback(
     async (erc20l1Address: string, amountRaw: BigNumber) => {
+      if (!bridge) {
+        return
+      }
+
       const bridgeToken = bridgeTokens[erc20l1Address]
       const { symbol, decimals } = await (async () => {
         if (bridgeToken) {
@@ -561,17 +577,8 @@ export const useArbTokenBridge = (
     arbTokenList: TokenList,
     listID?: number
   ) => {
-    const {
-      l1Bridge: {
-        network: { chainID: l1ChainIStr }
-      },
-      l2Bridge: {
-        network: { chainID: l2ChainIDStr }
-      }
-    } = bridge
-
-    const l1ChainID = +l1ChainIStr
-    const l2ChainID = +l2ChainIDStr
+    const l1ChainID = l1.network.chainID
+    const l2ChainID = l2.network.chainID
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -859,6 +866,10 @@ export const useArbTokenBridge = (
 
   const triggerOutboxToken = useCallback(
     async (id: string) => {
+      if (!bridge) {
+        return
+      }
+
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
       const { batchNumber, indexInBatch, tokenAddress, value } =
@@ -906,6 +917,11 @@ export const useArbTokenBridge = (
     async (id: string) => {
       if (!pendingWithdrawalsMap[id])
         throw new Error('Outbox message not found')
+
+      if (!bridge) {
+        return
+      }
+
       const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
       const res = await bridge.triggerL2ToL1Transaction(
         batchNumber,
@@ -947,6 +963,10 @@ export const useArbTokenBridge = (
   )
 
   const getTokenSymbol = async (_l1Address: string) => {
+    if (!bridge) {
+      return ''
+    }
+
     const l1Address = _l1Address.toLocaleLowerCase()
     if (addressToSymbol[l1Address]) {
       return addressToSymbol[l1Address]
@@ -961,7 +981,12 @@ export const useArbTokenBridge = (
       return '???'
     }
   }
+
   const getTokenDecimals = async (_l1Address: string) => {
+    if (!bridge) {
+      return 18
+    }
+
     const l1Address = _l1Address.toLocaleLowerCase()
     const dec = addressToDecimals[l1Address]
     if (dec) {
@@ -979,6 +1004,10 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: ethers.providers.Filter) => {
+    if (!bridge) {
+      return []
+    }
+
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
@@ -1141,6 +1170,10 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: ethers.providers.Filter
   ) => {
+    if (!bridge) {
+      return []
+    }
+
     const t = new Date().getTime()
 
     const gateWayWithdrawalsResultsNested = await Promise.all(
@@ -1228,6 +1261,10 @@ export const useArbTokenBridge = (
   const addNodeDeadlineToUnconfirmedWithdrawals = async (
     l2ToL1Data: L2ToL1EventResultPlus[]
   ) => {
+    if (!bridge) {
+      return
+    }
+
     if (l2ToL1Data.length === 0) return []
     if (l1NetworkID !== '1' && l1NetworkID !== '4')
       throw new Error(`Unrecognized network: ${l1NetworkID}`)
@@ -1338,6 +1375,10 @@ export const useArbTokenBridge = (
   // call after we've confirmed the outbox entry has been created
   const getOutGoingMessageStateV2 = useCallback(
     async (batchNumber: BigNumber, indexInBatch: BigNumber) => {
+      if (!bridge) {
+        return OutgoingMessageState.NOT_FOUND
+      }
+
       if (
         executedMessagesCache[
           hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1377,7 +1418,8 @@ export const useArbTokenBridge = (
       ) {
         return OutgoingMessageState.EXECUTED
       } else {
-        return bridge.getOutGoingMessageState(batchNumber, indexInBatch)
+        return OutgoingMessageState.NOT_FOUND
+        // return bridge.getOutGoingMessageState(batchNumber, indexInBatch)
       }
     },
     [executedMessagesCache, l1NetworkID]
