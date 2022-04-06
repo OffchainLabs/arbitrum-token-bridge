@@ -250,7 +250,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         console.log('Gas price:', await library?.getGasPrice())
       }
 
-      const changeNetwork = async (network: L2Network) => {
+      const changeNetwork = async (network: L1Network | L2Network) => {
         const chainId = network.chainID
         const hexChainId = hexValue(BigNumber.from(chainId))
         const metamask = library?.provider
@@ -320,10 +320,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return (
     <>
       {tokenBridgeParams && (
-        <ArbTokenBridgeStoreSync
-          bridge={globalBridge}
-          tokenBridgeParams={tokenBridgeParams}
-        />
+        <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
       <BridgeContext.Provider value={globalBridge}>
         {children}

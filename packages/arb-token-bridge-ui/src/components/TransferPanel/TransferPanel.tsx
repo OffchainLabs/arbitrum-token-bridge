@@ -146,7 +146,6 @@ const TransferPanel = (): JSX.Element => {
   const isBridgingANewStandardToken = useMemo(() => {
     return !!(
       l1NetworkDetails &&
-      l1NetworkDetails.chainID === '1' &&
       isDepositMode &&
       selectedToken &&
       !selectedToken.l2Address
@@ -168,6 +167,11 @@ const TransferPanel = (): JSX.Element => {
   }, [isBridgingANewStandardToken, selectedToken])
 
   const transfer = async () => {
+    // Should never be the case
+    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
+      return
+    }
+
     setTransferring(true)
 
     try {
@@ -192,7 +196,7 @@ const TransferPanel = (): JSX.Element => {
           )
         }
         if (isConnectedToArbitrum) {
-          await changeNetwork?.(String(l1Network.chainID))
+          await changeNetwork?.(l1Network)
 
           while (
             isConnectedToArbitrum ||
@@ -204,7 +208,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = l1Network?.chainID
+        const l1ChainID = l1Network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -250,7 +254,7 @@ const TransferPanel = (): JSX.Element => {
         }
       } else {
         if (!isConnectedToArbitrum) {
-          await changeNetwork?.(String(l2Network?.chainID))
+          await changeNetwork?.(l2Network)
 
           while (
             !isConnectedToArbitrum ||
@@ -262,7 +266,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l2ChainID = l2NetworkDetails?.chainID
+        const l2ChainID = l2Network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (

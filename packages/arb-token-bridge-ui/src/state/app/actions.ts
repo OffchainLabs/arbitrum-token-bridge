@@ -43,7 +43,7 @@ export const setSelectedToken = (
 
 export const setChangeNetwork = (
   { state }: Context,
-  func: (network: L2Network) => Promise<void>
+  func: (network: L1Network | L2Network) => Promise<void>
 ) => {
   state.app.changeNetwork = func
 }

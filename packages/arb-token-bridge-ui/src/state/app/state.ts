@@ -125,7 +125,7 @@ export type AppState = {
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
 
-  changeNetwork: ((network: L2Network) => Promise<void>) | null
+  changeNetwork: ((network: L1Network | L2Network) => Promise<void>) | null
 }
 
 export const defaultState: AppState = {
