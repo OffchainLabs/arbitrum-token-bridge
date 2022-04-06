@@ -270,7 +270,8 @@ export const defaultState: AppState = {
     return Networks[network.partnerChainID]
   }),
 
-  pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
+  // TODO: Bring back
+  pwLoadedState: PendingWithdrawalsLoadedState.READY,
   arbTokenBridgeLoaded: false,
   changeNetwork: null
 }
