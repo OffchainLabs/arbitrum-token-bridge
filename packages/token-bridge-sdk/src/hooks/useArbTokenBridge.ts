@@ -52,13 +52,6 @@ export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
-export function _addCustomNetwork(network: {
-  customL1Network: L1Network
-  customL2Network: L2Network
-}) {
-  addCustomNetwork(network)
-}
-
 function notNull<TValue>(value: TValue | null): value is TValue {
   return value !== null
 }
@@ -453,12 +446,14 @@ export const useArbTokenBridge = (
 
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
+    console.log('before deposit')
     const tx = await erc20Bridger.deposit({
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
       erc20L1Address,
       amount
     })
+    console.log('after deposit')
 
     addTransaction({
       type: 'deposit-l1',
