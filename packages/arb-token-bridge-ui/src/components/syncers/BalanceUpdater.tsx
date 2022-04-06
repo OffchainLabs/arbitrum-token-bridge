@@ -4,9 +4,11 @@ import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
+import { useSigners } from '../../hooks/useSigners'
 
 // Updates all balances periodically
 const BalanceUpdater = (): JSX.Element => {
+  const { l1Signer, l2Signer } = useSigners()
   const {
     app: { arbTokenBridge, selectedToken }
   } = useAppState()
@@ -28,9 +30,8 @@ const BalanceUpdater = (): JSX.Element => {
   }, [selectedToken])
 
   useEffect(() => {
-    // trigger an update each time the bridge object changes
     forceTriggerBalanceUpdate()
-  }, [arbTokenBridge])
+  }, [l1Signer, l2Signer])
 
   return <></>
 }
