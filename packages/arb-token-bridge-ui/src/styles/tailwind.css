@@ -13,6 +13,7 @@
 
 #root, body {
     @apply min-h-screen;
+    background-color: #E5E5E5;
 }
 
 #faucet-link{
