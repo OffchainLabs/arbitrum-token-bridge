@@ -1,27 +1,27 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
-import { Provider, TransactionReceipt } from '@ethersproject/providers'
+import { TransactionReceipt } from '@ethersproject/providers'
 import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
-import { BridgeContext } from '../App/App'
 import { useInterval } from '../common/Hooks'
+import { useSigners } from '../../hooks/useSigners'
 
-const PendingTransactionsUpdater = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
+  const { l1Signer, l2Signer } = useSigners()
+
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
-      const provider = (
-        txnTypeToLayer(tx.type) === 2 ? bridge?.l2Provider : bridge?.l1Provider
-      ) as Provider
+      const provider =
+        txnTypeToLayer(tx.type) === 2 ? l2Signer?.provider : l1Signer?.provider
       return provider?.getTransactionReceipt(tx.txID)
     },
-    [bridge?.l2Provider, bridge?.l1Provider]
+    [l1Signer, l2Signer]
   )
 
   // eslint-disable-next-line consistent-return
@@ -36,9 +36,9 @@ const PendingTransactionsUpdater = (): JSX.Element => {
       // eslint-disable-next-line consistent-return
       return Promise.all(
         pendingTransactions.map((tx: Transaction) => getTransactionReceipt(tx))
-      ).then((txReceipts: TransactionReceipt[]) => {
-        txReceipts.forEach((txReceipt: TransactionReceipt, i) => {
-          if (!txReceipt) {
+      ).then((txReceipts: (TransactionReceipt | undefined)[]) => {
+        txReceipts.forEach((txReceipt: TransactionReceipt | undefined, i) => {
+          if (typeof txReceipt === 'undefined') {
             console.info(
               'Transaction receipt not yet found:',
               pendingTransactions[i].txID
@@ -62,5 +62,3 @@ const PendingTransactionsUpdater = (): JSX.Element => {
 
   return <></>
 }
-
-export { PendingTransactionsUpdater }
