@@ -7,12 +7,14 @@ import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { useNetworks } from '../..//hooks/useNetworks'
+import useTwitter from '../..//hooks/useTwitter'
 
 const MainContent = () => {
   const {
     app: { mergedTransactionsToShow }
   } = useAppState()
   const { l1Network } = useNetworks()
+  const handleTwitterClick = useTwitter()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
@@ -22,6 +24,14 @@ const MainContent = () => {
     }
 
     return l1Network.chainID === 1
+  }, [l1Network])
+
+  const isNitro = useMemo(() => {
+    if (typeof l1Network === 'undefined') {
+      return false
+    }
+
+    return l1Network.chainID === 5
   }, [l1Network])
 
   return (
@@ -38,6 +48,18 @@ const MainContent = () => {
             >
               <u>(more info)</u>
             </a>
+          </Alert>
+        </div>
+      )}
+
+      {isNitro && (
+        <div className="mb-4 mx-auto max-w-networkBox w-full">
+          <Alert type="blue" >
+            <span id='twitter-faucet-container'>Request testnet Eth from the{' '}
+            <a id="faucet-link" target="_blank" onClick={handleTwitterClick}>
+              Nitro Devnet twitter faucet!
+            </a></span>
+ 
           </Alert>
         </div>
       )}
