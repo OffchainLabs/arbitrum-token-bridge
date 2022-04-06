@@ -314,23 +314,26 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       console.info('waiting for L1toL2Msg status for', txID)
 
       l1ToL2Msg.waitForStatus().then(result => {
-        const isSuccessful = result.status === L1ToL2MessageStatus.REDEEMED || (isEthDeposit && result.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2)
+        const newStatus = result.status
+        const isSuccessful = newStatus === L1ToL2MessageStatus.REDEEMED || (isEthDeposit && newStatus === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2)
         if (!isSuccessful) {
           return
         }
-
+        // Get the l2TxId for non-Eth-deposits
+        const l2TxID = result.status === L1ToL2MessageStatus.REDEEMED ? result.l2TxReceipt.transactionHash : undefined 
+  
         console.info(
           `1toL2Msg status arrived for ${txID}, dispatching update`,
-          status
+          newStatus
         )
 
         dispatch({
           type: 'UPDATE_L1TOL2MSG_DATA',
           txID,
           l1ToL2MsgData: {
-            status,
+            status: newStatus,
             retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-            l2TxID: result.l2TxReceipt.transactionHash,
+            l2TxID,
             fetchingUpdate: false
           }
         })
