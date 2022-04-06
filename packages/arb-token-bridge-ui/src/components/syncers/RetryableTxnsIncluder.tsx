@@ -5,6 +5,7 @@ import { useActions, useAppState } from '../../state'
 
 import { useInterval } from '../common/Hooks'
 import { useSigners } from '../../hooks/useSigners'
+import { AssetType } from 'token-bridge-sdk'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
@@ -31,6 +32,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         arbTokenBridge?.transactions?.updateL1ToL2MsgData(
           depositTx.txId,
           l1ToL2Msg,
+          depositTx.asset === 'eth',
           status
         )
       }
@@ -57,7 +59,8 @@ export function RetryableTxnsIncluder(): JSX.Element {
 
       arbTokenBridge?.transactions?.updateL1ToL2MsgData(
         depositTx.txID,
-        l1ToL2Msg
+        l1ToL2Msg,
+        depositTx.assetType === AssetType.ETH
       )
     }
   }, [arbTokenBridge?.transactions?.addTransactions, l1Signer, l2Signer])

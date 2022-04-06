@@ -168,6 +168,7 @@ export interface TransactionActions {
   updateL1ToL2MsgData: (
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
     status?: L1ToL2MessageStatus
   ) => void
 }

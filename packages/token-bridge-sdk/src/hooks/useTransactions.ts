@@ -294,6 +294,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateL1ToL2MsgData = async (
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
     _status?: L1ToL2MessageStatus
   ) => {
     const status = _status || (await l1ToL2Msg.status())
@@ -313,7 +314,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       console.info('waiting for L1toL2Msg status for', txID)
 
       l1ToL2Msg.waitForStatus().then(result => {
-        if (result.status !== L1ToL2MessageStatus.REDEEMED) {
+        const isSuccessful = result.status === L1ToL2MessageStatus.REDEEMED || (isEthDeposit && result.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2)
+        if (!isSuccessful) {
           return
         }
 
