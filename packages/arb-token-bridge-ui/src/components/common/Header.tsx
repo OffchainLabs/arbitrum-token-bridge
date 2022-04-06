@@ -6,6 +6,7 @@ import { ChevronDownIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 
 import { useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
+import { useNetworks, UseNetworksStatus } from '../../hooks/useNetworks'
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ')
@@ -112,10 +113,8 @@ const JoinCommunityButton: React.FC = () => (
 )
 
 const LoginButton: React.FC = () => {
-  const {
-    app: { networkID }
-  } = useAppState()
   const { disconnect, connect } = useWallet()
+  const { status } = useNetworks()
 
   function showConnectionModal() {
     connect(modalProviderOpts)
@@ -123,7 +122,7 @@ const LoginButton: React.FC = () => {
 
   return (
     <>
-      {networkID ? (
+      {status === UseNetworksStatus.CONNECTED ? (
         <button
           onClick={() => {
             disconnect()
@@ -131,7 +130,7 @@ const LoginButton: React.FC = () => {
             window.location.href = '/'
           }}
           type="button"
-          className="mr-4 text-white hover:text-navy hover:text-gray-200 hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
+          className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
           style={{ padding: '10px 12px' }}
         >
           Logout
@@ -140,7 +139,7 @@ const LoginButton: React.FC = () => {
         <button
           onClick={showConnectionModal}
           type="button"
-          className="mr-4 text-white hover:text-navy hover:text-gray-200 hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
+          className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
           style={{ padding: '10px 12px' }}
         >
           Login
@@ -151,35 +150,34 @@ const LoginButton: React.FC = () => {
 }
 
 const AddNetworkButton: React.FC = () => {
+  const { status, l2Network, isConnectedToArbitrum } = useNetworks()
+
   const {
-    app: { networkID, changeNetwork, l2NetworkDetails }
+    app: { changeNetwork }
   } = useAppState()
 
   const hide = useMemo(() => {
     return (
-      !networkID ||
-      !l2NetworkDetails ||
-      !changeNetwork ||
-      (l2NetworkDetails && l2NetworkDetails.chainID === networkID)
+      status !== UseNetworksStatus.CONNECTED ||
+      isConnectedToArbitrum ||
+      !changeNetwork
     )
-  }, [networkID, l2NetworkDetails])
+  }, [status, isConnectedToArbitrum, changeNetwork])
 
   return (
     <>
       {hide ? null : (
         <button
           onClick={() => {
-            const chainID: string | null =
-              l2NetworkDetails && l2NetworkDetails.chainID
-
-            if (!chainID || !changeNetwork) {
+            if (typeof l2Network === 'undefined' || !changeNetwork) {
               console.log("Can't add L2 network")
               return
             }
-            changeNetwork(chainID)
+
+            changeNetwork(l2Network)
           }}
           type="button"
-          className="mr-4 text-white hover:text-navy hover:text-gray-200 hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
+          className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
           style={{ padding: '10px 12px' }}
         >
           Add L2 Network

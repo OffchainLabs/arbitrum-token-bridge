@@ -1,4 +1,5 @@
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
+import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -18,8 +19,12 @@ export const setCurrentL1BlockNumber = (
   state.app.currentL1BlockNumber = blockNum
 }
 
-export const setNetworkID = ({ state }: Context, networkID: string) => {
-  state.app.networkID = networkID
+export const setNetworks = (
+  { state }: Context,
+  payload: { l1Network: L1Network; l2Network: L2Network }
+) => {
+  state.app.l1Network = payload.l1Network
+  state.app.l2Network = payload.l2Network
 }
 
 export const setIsDepositMode = (
@@ -38,7 +43,7 @@ export const setSelectedToken = (
 
 export const setChangeNetwork = (
   { state }: Context,
-  func: (chainID: string) => Promise<void>
+  func: (network: L1Network | L2Network) => Promise<void>
 ) => {
   state.app.changeNetwork = func
 }
@@ -57,7 +62,8 @@ export const reset = ({ state }: Context, newChainId: string) => {
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
-  state.app.pwLoadedState = PendingWithdrawalsLoadedState.LOADING
+  // TODO: Bring back
+  state.app.pwLoadedState = PendingWithdrawalsLoadedState.READY
 }
 
 export const setWarningTokens = (
