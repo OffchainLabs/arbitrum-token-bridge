@@ -138,7 +138,7 @@ const AppContent = (): JSX.Element => {
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
-  const _networks = useNetworks()
+  const networks = useNetworks()
   const signers = useSigners()
 
   const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
@@ -193,11 +193,11 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setGlobalBridge(null)
     setTokenBridgeParams(null)
 
-    if (_networks.status !== UseNetworksStatus.CONNECTED) {
+    if (networks.status !== UseNetworksStatus.CONNECTED) {
       return
     }
 
-    const { l1Network, l2Network, isConnectedToArbitrum } = _networks
+    const { l1Network, l2Network, isConnectedToArbitrum } = networks
     const network = isConnectedToArbitrum ? l2Network : l1Network
     const networkId = String(network.chainID)
 
@@ -228,7 +228,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         network: l2Network
       }
     })
-  }, [_networks, signers, initBridge])
+  }, [networks, signers, initBridge])
 
   useEffect(() => {
     axios
@@ -299,9 +299,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           )
           // TODO: show user a nice dialogue box instead of
           // eslint-disable-next-line no-alert
-          const targetTxName = _networks.isConnectedToArbitrum
-            ? 'withdraw'
-            : 'deposit'
+          const targetTxName = networks.isConnectedToArbitrum
+            ? 'deposit'
+            : 'withdraw'
 
           alert(
             `Please connect to ${network.name} to ${targetTxName}; make sure your wallet is connected to ${network.name} when you are signing your ${targetTxName} transaction.`
@@ -314,7 +314,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       logGasPrice()
       actions.app.setChangeNetwork(changeNetwork)
     }
-  }, [library, _networks.isConnectedToArbitrum])
+  }, [library, networks.isConnectedToArbitrum])
 
   return (
     <>
