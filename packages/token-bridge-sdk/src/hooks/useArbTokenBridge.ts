@@ -446,14 +446,12 @@ export const useArbTokenBridge = (
 
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
-    console.log('before deposit')
     const tx = await erc20Bridger.deposit({
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
       erc20L1Address,
       amount
     })
-    console.log('after deposit')
 
     addTransaction({
       type: 'deposit-l1',
