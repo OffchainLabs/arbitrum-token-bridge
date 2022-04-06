@@ -35,7 +35,7 @@ const customL2Network: L2Network = {
   explorerUrl: 'https://nitro-devnet-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: true,
-  name: 'ArbLocal',
+  name: 'Arbitrum Nitro Devnet',
   partnerChainID: 5,
   rpcURL: 'https://nitro-devnet.arbitrum.io/rpc',
   tokenBridge: {
