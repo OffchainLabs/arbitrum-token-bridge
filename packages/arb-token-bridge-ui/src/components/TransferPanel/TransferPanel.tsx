@@ -60,7 +60,6 @@ const TransferPanel = (): JSX.Element => {
       selectedToken,
       isDepositMode,
       l1NetworkDetails,
-      l2NetworkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
@@ -71,7 +70,8 @@ const TransferPanel = (): JSX.Element => {
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
-  const { l1Network, l2Network, isConnectedToArbitrum } = useNetworks()
+  const networks = useNetworks()
+  const latestNetworks = useLatest(networks)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -168,7 +168,10 @@ const TransferPanel = (): JSX.Element => {
 
   const transfer = async () => {
     // Should never be the case
-    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
+    if (
+      typeof latestNetworks.current.l1Network === 'undefined' ||
+      typeof latestNetworks.current.l2Network === 'undefined'
+    ) {
       return
     }
 
@@ -195,20 +198,21 @@ const TransferPanel = (): JSX.Element => {
             `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (isConnectedToArbitrum) {
-          await changeNetwork?.(l1Network)
+        if (latestNetworks.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworks.current.l1Network)
 
           while (
-            isConnectedToArbitrum ||
+            latestNetworks.current.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = l1Network.chainID
+        const l1ChainID = latestNetworks.current.l1Network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -253,20 +257,21 @@ const TransferPanel = (): JSX.Element => {
           await latestEth.current.deposit(amountRaw)
         }
       } else {
-        if (!isConnectedToArbitrum) {
-          await changeNetwork?.(l2Network)
+        if (!latestNetworks.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworks.current.l2Network)
 
           while (
-            !isConnectedToArbitrum ||
+            !networks.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l2ChainID = l2Network.chainID
+        const l2ChainID = latestNetworks.current.l2Network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
