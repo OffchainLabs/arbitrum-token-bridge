@@ -361,13 +361,17 @@ function Routes() {
 }
 
 function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
-  const { status } = useNetworks()
+  const { status, l1Network } = useNetworks()
 
   if (status === UseNetworksStatus.NOT_CONNECTED) {
     return <NoMetamaskIndicator />
   }
 
-  if (status === UseNetworksStatus.NOT_SUPPORTED) {
+  if (
+    status === UseNetworksStatus.NOT_SUPPORTED ||
+    // Only allow for Nitro
+    l1Network.chainID !== 5
+  ) {
     return (
       <div>
         <div className="mb-4">
