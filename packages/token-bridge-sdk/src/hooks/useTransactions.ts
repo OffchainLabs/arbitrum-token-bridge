@@ -312,7 +312,11 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (shouldFetchUpdate) {
       console.info('waiting for L1toL2Msg status for', txID)
 
-      l1ToL2Msg.waitForStatus().then(({status, l2TxReceipt}) => {
+      l1ToL2Msg.waitForStatus().then(result => {
+        if (result.status !== L1ToL2MessageStatus.REDEEMED) {
+          return
+        }
+
         console.info(
           `1toL2Msg status arrived for ${txID}, dispatching update`,
           status
@@ -324,7 +328,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
           l1ToL2MsgData: {
             status,
             retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-            l2TxID:  l2TxReceipt?.transactionHash,
+            l2TxID: result.l2TxReceipt.transactionHash,
             fetchingUpdate: false
           }
         })
