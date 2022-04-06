@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -15,6 +15,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
 
 import { useSigners } from '../../hooks/useSigners'
+import { useNetworks } from '../../hooks/useNetworks'
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
   overflowX?: boolean
@@ -87,12 +88,13 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       l1NetworkDetails,
       l2NetworkDetails,
       isDepositMode,
-      currentL1BlockNumber,
-      networkDetails
+      currentL1BlockNumber
     }
   } = useAppState()
   const { l2Signer } = useSigners()
   const [isClaiming, setIsClaiming] = useState(false)
+
+  const { isConnectedToArbitrum } = useNetworks()
 
   const showRedeemRetryableButton = useMemo(() => {
     /** TODO tmp for initial devnet ui */
@@ -305,12 +307,12 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
               <>
                 <Button
                   size="sm"
-                  disabled={networkDetails?.isArbitrum}
+                  disabled={isConnectedToArbitrum}
                   onClick={handleTriggerOutbox}
                 >
                   Claim
                 </Button>
-                {networkDetails?.isArbitrum && (
+                {isConnectedToArbitrum && (
                   <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
                 )}
               </>
@@ -335,7 +337,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           <div className="relative group">
             <Button
               size="sm"
-              disabled={!networkDetails?.isArbitrum}
+              disabled={!isConnectedToArbitrum}
               onClick={() => redeemRetryable(tx)}
             >
               Re-execute
