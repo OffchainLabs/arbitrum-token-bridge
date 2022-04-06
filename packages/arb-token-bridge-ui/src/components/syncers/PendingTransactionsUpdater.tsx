@@ -19,7 +19,12 @@ export function PendingTransactionsUpdater(): JSX.Element {
     (tx: Transaction) => {
       const provider =
         txnTypeToLayer(tx.type) === 2 ? l2Signer?.provider : l1Signer?.provider
-      return provider?.getTransactionReceipt(tx.txID)
+
+      if (typeof provider === 'undefined') {
+        return null
+      }
+
+      return provider.getTransactionReceipt(tx.txID)
     },
     [l1Signer, l2Signer]
   )
@@ -36,9 +41,9 @@ export function PendingTransactionsUpdater(): JSX.Element {
       // eslint-disable-next-line consistent-return
       return Promise.all(
         pendingTransactions.map((tx: Transaction) => getTransactionReceipt(tx))
-      ).then((txReceipts: (TransactionReceipt | undefined)[]) => {
-        txReceipts.forEach((txReceipt: TransactionReceipt | undefined, i) => {
-          if (typeof txReceipt === 'undefined') {
+      ).then((txReceipts: (TransactionReceipt | null)[]) => {
+        txReceipts.forEach((txReceipt: TransactionReceipt | null, i) => {
+          if (!txReceipt) {
             console.info(
               'Transaction receipt not yet found:',
               pendingTransactions[i].txID
