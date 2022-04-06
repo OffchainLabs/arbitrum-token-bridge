@@ -332,7 +332,7 @@ export const useArbTokenBridge = (
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: utils.formatUnits(amount, 'wei'),
+      value: utils.formatEther(amount),
       txID: tx.hash,
       assetName: 'ETH',
       assetType: AssetType.ETH,
