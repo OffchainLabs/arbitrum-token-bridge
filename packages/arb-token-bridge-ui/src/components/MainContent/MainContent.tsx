@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
 import { Alert } from '../common/Alert'
@@ -6,15 +6,23 @@ import { Button } from '../common/Button'
 import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
+import { useNetworks } from '../..//hooks/useNetworks'
 
 const MainContent = () => {
   const {
-    app: { mergedTransactionsToShow, networkID }
+    app: { mergedTransactionsToShow }
   } = useAppState()
+  const { l1Network } = useNetworks()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
-  const isMainnet = networkID === '1' || networkID === '42161'
+  const isMainnet = useMemo(() => {
+    if (typeof l1Network === 'undefined') {
+      return false
+    }
+
+    return l1Network.chainID === 1
+  }, [l1Network])
 
   return (
     <div className="mx-auto px-4">
