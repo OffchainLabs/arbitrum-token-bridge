@@ -14,7 +14,7 @@ const BalanceUpdater = (): JSX.Element => {
   } = useAppState()
   const latestTokenBridge = useLatest(arbTokenBridge)
 
-  const { forceTrigger: forceTriggerBalanceUpdate } = useInterval(() => {
+  useInterval(() => {
     latestTokenBridge?.current?.eth?.updateBalances()
   }, 5000)
 
@@ -30,7 +30,7 @@ const BalanceUpdater = (): JSX.Element => {
   }, [selectedToken])
 
   useEffect(() => {
-    forceTriggerBalanceUpdate()
+    latestTokenBridge?.current?.eth?.updateBalances()
   }, [l1Signer, l2Signer])
 
   return <></>
