@@ -14,7 +14,6 @@ import {
   L2ToL1MessageReader,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
-import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -58,9 +57,14 @@ export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
 
+function getOutboxAddr(network: L2Network, batchNumber: BigNumber) {
+  return Object.keys(network.ethBridge.outboxes)[0]
+}
+
 function notNull<TValue>(value: TValue | null): value is TValue {
   return value !== null
 }
+
 const { Zero } = constants
 /* eslint-disable no-shadow */
 
@@ -1129,11 +1133,12 @@ export const useArbTokenBridge = (
     )
 
     const outgoingMessageStates = await Promise.all(
-      results.map((withdrawEventData, i) => {
+      results.map(withdrawEventData => {
         const { batchNumber, indexInBatch } = withdrawEventData.l2ToL1Event
         return getOutgoingMessageState(batchNumber, indexInBatch)
       })
     )
+
     const oldTokenWithdrawals = results.map((resultsData, i) => {
       const {
         caller,
