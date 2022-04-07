@@ -2327,12 +2327,12 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.2.tgz#30aa825f11d438671d585bd44e7fd564535fc210"
   integrity sha512-82cpyJyKRoQoRi+14ibCeGPu0CwypgtBAdBhq1WfvagpCZNKqwXbKwXllYSMG91DhmG4jt9gN8eP6lGOtozuaw==
 
-"@gimmixorg/use-wallet@https://github.com/fredlacs/use-wallet#285c479707f2bc12bc6ba4237bf1cef0a403f3d9":
-  version "0.0.32"
-  resolved "https://github.com/fredlacs/use-wallet#285c479707f2bc12bc6ba4237bf1cef0a403f3d9"
+"@gimmixorg/use-wallet@https://github.com/gimmixorg/use-wallet#bf464f2daa6a3ad33eaec249f4dfaa1943d426ae":
+  version "0.0.31"
+  resolved "https://github.com/gimmixorg/use-wallet#bf464f2daa6a3ad33eaec249f4dfaa1943d426ae"
   dependencies:
     "@ethersproject/providers" "^5.4.1"
-    web3modal "1.9.5"
+    web3modal "^1.9.5"
     zustand "^3.5.5"
 
 "@graphql-typed-document-node/core@^3.0.0":
@@ -16744,10 +16744,10 @@ web3-provider-engine@16.0.1:
     xhr "^2.2.0"
     xtend "^4.0.1"
 
-web3modal@1.9.5:
-  version "1.9.5"
-  resolved "https://registry.yarnpkg.com/web3modal/-/web3modal-1.9.5.tgz#a1d6351a11358b376af5772f79f3dcdba6c38d1b"
-  integrity sha512-L5ME6zgoaCDa+T66skW9WpxGOJX6vU9v+7aLacoQJhU3AMTk784ionpX+Pg4UdhdM+UQW+odge32GkwEX11czQ==
+web3modal@^1.9.5:
+  version "1.9.6"
+  resolved "https://registry.yarnpkg.com/web3modal/-/web3modal-1.9.6.tgz#ace73e46f8a1a24ae553fd196e035ba1f5c44c8d"
+  integrity sha512-Kb05om51YTB60WEH+5HUCGDzs0S5lFJlT0uebwzA3QZhJbX9x6rj1aSWn/UnZ54H5vM9fuxdnrZMu7FcN8y3qw==
   dependencies:
     detect-browser "^5.1.0"
     prop-types "^15.7.2"
