@@ -39,7 +39,8 @@ import {
   L1TokenData,
   L2TokenData,
   OutgoingMessageState,
-  WithdrawalInitiated
+  WithdrawalInitiated,
+  L2ToL1EventResult
 } from './arbTokenBridge.types'
 
 import {
@@ -1033,6 +1034,7 @@ export const useArbTokenBridge = (
     if (typeof l2.signer.provider === 'undefined') {
       throw new Error(`No provider found for L2 signer`)
     }
+
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
@@ -1045,73 +1047,51 @@ export const useArbTokenBridge = (
       `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
     )
 
-    const oldEthWithdrawalEventData = await getETHWithdrawals(
+    const oldEthWithdrawals = await getETHWithdrawals(
       walletAddress,
       startBlock,
       pivotBlock,
       l1NetworkID
     )
 
-    const recentETHWithdrawalData =
-      await L2ToL1MessageReader.getL2ToL1MessageLogs(
-        l2.signer.provider,
-        {
-          fromBlock: pivotBlock, // Change to 0 for Nitro
-          toBlock: 'latest'
-        },
-        undefined,
-        walletAddress
-      )
-
-    const ethWithdrawalEventData = oldEthWithdrawalEventData.concat(
-      recentETHWithdrawalData
+    const recentEthWithdrawals = await L2ToL1MessageReader.getL2ToL1MessageLogs(
+      l2.signer.provider,
+      {
+        fromBlock: pivotBlock, // Change to 0 for Nitro
+        toBlock: 'latest'
+      },
+      undefined,
+      walletAddress
     )
+
+    const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
     const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
 
     console.log(
       `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
     )
 
-    const ethWithdrawalData: L2ToL1EventResultPlus[] = []
-    for (const eventData of ethWithdrawalEventData) {
-      const {
-        destination,
-        timestamp,
-        data,
-        caller,
-        uniqueId,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        callvalue
-      } = eventData
-      const batchNumberDec = batchNumber.toNumber()
+    async function toEventResultPlus(
+      event: L2ToL1EventResult
+    ): Promise<L2ToL1EventResultPlus> {
+      const { batchNumber, indexInBatch, callvalue } = event
+
       const outgoingMessageState =
-        batchNumberDec > lastOutboxEntryIndexDec
+        batchNumber.toNumber() > lastOutboxEntryIndexDec
           ? OutgoingMessageState.UNCONFIRMED
           : await getOutgoingMessageStateV2(batchNumber, indexInBatch)
 
-      const allWithdrawalData: L2ToL1EventResultPlus = {
-        caller,
-        destination,
-        uniqueId,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        timestamp,
-        callvalue,
-        data,
+      return {
+        ...event,
         type: AssetType.ETH,
         value: callvalue,
         symbol: 'ETH',
         outgoingMessageState,
         decimals: 18
       }
-      ethWithdrawalData.push(allWithdrawalData)
     }
-    return ethWithdrawalData
+
+    return await Promise.all(ethWithdrawals.map(toEventResultPlus))
   }
 
   const getTokenWithdrawalsV2 = async (
