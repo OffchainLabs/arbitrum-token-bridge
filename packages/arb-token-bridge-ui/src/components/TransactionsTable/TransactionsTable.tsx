@@ -262,14 +262,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const renderTxIDDisplay = (tx: MergedTransaction) => {
     if (tx.uniqueId) return tx.uniqueId.toString()
     if (isDeposit(tx)) {
-      const targetL2Tx = (tx => {
-        if (!tx.l1ToL2MsgData) return ''
-        if (tx.asset === 'eth') {
-          return tx.l1ToL2MsgData.retryableCreationTxID
-        } else {
-          return tx.l1ToL2MsgData.l2TxID
-        }
-      })(tx)
+      const targetL2Tx = tx.l1ToL2MsgData?.l2TxID
       return (
         <>
           L1: <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />{' '}

@@ -10,7 +10,8 @@ import {
   EthBridger,
   Erc20Bridger,
   MultiCaller,
-  addCustomNetwork
+  addCustomNetwork,
+  L1ToL2MessageStatus
 } from '@arbitrum/sdk'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -19,7 +20,7 @@ import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/
 import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
 import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
-import useTransactions from './useTransactions'
+import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   AddressToSymbol,
   AddressToDecimals,
@@ -174,7 +175,7 @@ export const useArbTokenBridge = (
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
-      updateL1ToL2MsgData
+      fetchAndUpdateL1ToL2MsgStatus
     }
   ] = useTransactions()
 
@@ -334,17 +335,16 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
-    const messages = await receipt.getL1ToL2Messages(l2.signer)
+    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
-    if (messages.length !== 1) {
-      throw new Error(
-        `Expected a single L1 to L2 message but got ${messages.length}`
-      )
+    const seqNum = l1ToL2Msg.messageNumber
+    const l1ToL2MsgData: L1ToL2MessageData = {
+      fetchingUpdate: false,
+      status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+      l2TxID: undefined
     }
-
-    const seqNum = messages.map(m => m.messageNumber)[0]
-
-    updateTransaction(receipt, tx, seqNum.toNumber())
+    updateTransaction(receipt, tx, seqNum.toNumber(), l1ToL2MsgData)
     updateEthBalances()
   }
 
@@ -465,17 +465,17 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
-    const messages = await receipt.getL1ToL2Messages(l2.signer)
+    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
-    if (messages.length !== 1) {
-      throw new Error(
-        `Expected a single L1 to L2 message but got ${messages.length}`
-      )
+    const seqNum = l1ToL2Msg.messageNumber
+    const l1ToL2MsgData: L1ToL2MessageData = {
+      fetchingUpdate: false,
+      status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+      l2TxID: undefined
     }
 
-    const seqNum = messages.map(m => m.messageNumber)[0]
-
-    updateTransaction(receipt, tx, seqNum.toNumber())
+    updateTransaction(receipt, tx, seqNum.toNumber(), l1ToL2MsgData)
     updateTokenData(erc20L1Address)
 
     return receipt
@@ -1477,7 +1477,7 @@ export const useArbTokenBridge = (
       updateTransaction,
       addTransaction,
       addTransactions,
-      updateL1ToL2MsgData
+      fetchAndUpdateL1ToL2MsgStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals

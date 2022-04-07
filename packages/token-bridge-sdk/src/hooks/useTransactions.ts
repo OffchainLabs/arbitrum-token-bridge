@@ -18,7 +18,7 @@ type Action =
   | {
       type: 'UPDATE_L1TOL2MSG_DATA'
       txID: string
-      l1ToL2MsgData: L1ToL2MessageData
+      l1ToL2MsgData: L1ToL2MessageDataForUpdate
     }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
@@ -59,6 +59,11 @@ export interface L1ToL2MessageData {
   l2TxID?: string
   fetchingUpdate: boolean
 }
+export interface L1ToL2MessageDataForUpdate {
+  status?: L1ToL2MessageStatus
+  l2TxID?: string
+  fetchingUpdate?: boolean
+}
 type TransactionBase = {
   type: TxnType
   status: TxnStatus
@@ -85,6 +90,12 @@ export interface NewTransaction extends TransactionBase {
 
 export interface FailedTransaction extends TransactionBase {
   status: 'failure'
+}
+
+// TODO: enforce this type restriction
+export interface DepositTransaction extends Transaction {
+  l1ToL2MsgData: L1ToL2MessageData
+  type: 'deposit' | 'deposit-l1'
 }
 
 function updateStatusAndSeqNum(
@@ -131,7 +142,7 @@ function updateBlockNumber(
 function updateTxnL1ToL2Msg(
   state: Transaction[],
   txID: string,
-  l1ToL2MsgData: L1ToL2MessageData
+  l1ToL2MsgData: L1ToL2MessageDataForUpdate
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -146,9 +157,14 @@ function updateTxnL1ToL2Msg(
       "Attempting to add a l1tol2msg to a tx that isn't a deposit:" + txID
     )
   }
+
+  const previousL1ToL2MsgData = newState[index].l1ToL2MsgData
+  if (!previousL1ToL2MsgData) {
+    return newState
+  }
   newState[index] = {
     ...newState[index],
-    l1ToL2MsgData
+    l1ToL2MsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
   }
   return newState
 }
@@ -291,54 +307,51 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const updateL1ToL2MsgData = async (
+  const updateTxnL1ToL2MsgData = async (
+    txID: string,
+    l1ToL2MsgData: L1ToL2MessageDataForUpdate
+  ) => {
+    dispatch({
+      type: 'UPDATE_L1TOL2MSG_DATA',
+      txID: txID,
+      l1ToL2MsgData
+    })
+  }
+
+  const fetchAndUpdateL1ToL2MsgStatus = async (
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
     _status?: L1ToL2MessageStatus
   ) => {
-    const status = _status || (await l1ToL2Msg.status())
-    const shouldFetchUpdate = status === L1ToL2MessageStatus.NOT_YET_CREATED
+    // set fetching:
+    updateTxnL1ToL2MsgData(txID,  {
+      fetchingUpdate: true
+    })
+    
+    const res = await l1ToL2Msg.waitForStatus()
+
+    const l2TxID = (() => {
+      if (res.status === L1ToL2MessageStatus.REDEEMED) {
+        return res.l2TxReceipt.transactionHash
+      } else if (
+        res.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 &&
+        isEthDeposit
+      ) {
+        return l1ToL2Msg.retryableCreationId /** for completed eth deposits, retryableCreationId is the l2txid */
+      } else {
+        return undefined
+      }
+    })()
     dispatch({
       type: 'UPDATE_L1TOL2MSG_DATA',
       txID: txID,
       l1ToL2MsgData: {
-        status,
-        retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-        // l2TxID: l1ToL2Msg.l2TxHash,
-        fetchingUpdate: shouldFetchUpdate
+        status: res.status,
+        l2TxID,
+        fetchingUpdate: false
       }
     })
-
-    if (shouldFetchUpdate) {
-      console.info('waiting for L1toL2Msg status for', txID)
-
-      l1ToL2Msg.waitForStatus().then(result => {
-        const newStatus = result.status
-        const isSuccessful = newStatus === L1ToL2MessageStatus.REDEEMED || (isEthDeposit && newStatus === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2)
-        if (!isSuccessful) {
-          return
-        }
-        // Get the l2TxId for non-Eth-deposits
-        const l2TxID = result.status === L1ToL2MessageStatus.REDEEMED ? result.l2TxReceipt.transactionHash : undefined 
-  
-        console.info(
-          `1toL2Msg status arrived for ${txID}, dispatching update`,
-          newStatus
-        )
-
-        dispatch({
-          type: 'UPDATE_L1TOL2MSG_DATA',
-          txID,
-          l1ToL2MsgData: {
-            status: newStatus,
-            retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-            l2TxID,
-            fetchingUpdate: false
-          }
-        })
-      })
-    }
   }
 
   const removeTransaction = (txID: string) => {
@@ -395,7 +408,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateTransaction = (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    seqNum?: number
+    seqNum?: number,
+    l1ToL2MsgData?: L1ToL2MessageDataForUpdate
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
@@ -422,6 +436,9 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (tx) {
       setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
     }
+    if (l1ToL2MsgData) {
+      updateTxnL1ToL2MsgData(txReceipt.transactionHash, l1ToL2MsgData)
+    }
   }
 
   return [
@@ -436,7 +453,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
-      updateL1ToL2MsgData
+      fetchAndUpdateL1ToL2MsgStatus
     }
   ]
 }

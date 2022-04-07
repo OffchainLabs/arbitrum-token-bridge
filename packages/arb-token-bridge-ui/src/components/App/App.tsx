@@ -367,9 +367,9 @@ function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
   }
 
   if (
-    status === UseNetworksStatus.NOT_SUPPORTED ||
+    status === UseNetworksStatus.NOT_SUPPORTED 
     // Only allow for Nitro
-    l1Network.chainID !== 5
+    // || l1Network.chainID !== 5
   ) {
     return (
       <div>
