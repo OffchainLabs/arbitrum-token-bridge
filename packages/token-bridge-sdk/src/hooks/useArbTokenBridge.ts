@@ -361,7 +361,7 @@ export const useArbTokenBridge = (
       addTransaction({
         type: 'withdraw',
         status: 'pending',
-        value: utils.formatUnits(amount, 'wei'),
+        value: utils.formatEther(amount),
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,
