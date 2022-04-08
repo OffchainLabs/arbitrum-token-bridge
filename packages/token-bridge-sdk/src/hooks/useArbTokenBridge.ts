@@ -1118,46 +1118,21 @@ export const useArbTokenBridge = (
       })
     )
 
-    const oldTokenWithdrawals = results.map((resultsData, i) => {
-      const {
-        caller,
-        destination,
-        uniqueId,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        timestamp,
-        callvalue,
-        data
-      } = resultsData.l2ToL1Event
-      const { value, tokenAddress, type } = resultsData.otherData
-      const eventDataPlus: L2ToL1EventResultPlus = {
-        caller,
-        destination,
-        uniqueId,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        timestamp,
-        callvalue,
-        data,
-        type,
-        value,
-        tokenAddress,
+    const oldTokenWithdrawals: L2ToL1EventResultPlus[] = results.map(
+      (resultsData, i) => ({
+        ...resultsData.l2ToL1Event,
+        ...resultsData.otherData,
         outgoingMessageState: outgoingMessageStates[i],
         symbol: symbols[i],
         decimals: decimals[i]
-      }
-      return eventDataPlus
-    })
+      })
+    )
 
     const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {
       fromBlock: pivotBlock
     })
 
-    return oldTokenWithdrawals.concat(recentTokenWithdrawals || [])
+    return [...oldTokenWithdrawals, ...recentTokenWithdrawals]
   }
 
   const getTokenWithdrawals = async (
