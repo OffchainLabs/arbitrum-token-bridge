@@ -41,7 +41,7 @@
     "prestart": "$npm_execpath run build:tailwind",
     "prebuild": "$npm_execpath run build:tailwind",
     "start": "craco start",
-    "build": "yarn cache clean && CI= craco build",
+    "build": "CI= craco build",
     "test": "craco test",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
