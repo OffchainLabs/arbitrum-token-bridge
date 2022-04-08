@@ -189,7 +189,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   useEffect(() => {
     // Any time one of those changes
     setTokenBridgeParams(null)
-
+    actions.app.setConnectionState(ConnectionState.LOADING)
     if (networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED) {
       return
     }
