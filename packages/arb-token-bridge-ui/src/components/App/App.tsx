@@ -211,7 +211,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
-    console.log('initBridge called')
     initBridge(networksAndSigners)
   }, [networksAndSigners, initBridge])
 
