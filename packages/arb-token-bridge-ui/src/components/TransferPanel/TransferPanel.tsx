@@ -259,7 +259,7 @@ const TransferPanel = (): JSX.Element => {
           await changeNetwork?.(latestNetworks.current.l2Network)
 
           while (
-            !networks.isConnectedToArbitrum ||
+            !latestNetworks.current.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
