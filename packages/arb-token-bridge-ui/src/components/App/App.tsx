@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
@@ -10,7 +10,7 @@ import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
-import { Bridge, TokenBridgeParams } from 'token-bridge-sdk'
+import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { config, useActions, useAppState } from '../../state'
@@ -30,8 +30,10 @@ import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 
-import { useNetworks, UseNetworksStatus } from '../../hooks/useNetworks'
-import { useSigners, UseSignersStatus } from '../../hooks/useSigners'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -79,8 +81,6 @@ const NoMetamaskIndicator = (): JSX.Element => {
 async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
   return (await _signer.provider.getCode(_address)).length <= 2
 }
-
-export const BridgeContext = createContext<Bridge | null>(null)
 
 const AppContent = (): JSX.Element => {
   const {
@@ -138,10 +138,8 @@ const AppContent = (): JSX.Element => {
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
-  const networks = useNetworks()
-  const signers = useSigners()
+  const networksAndSigners = useNetworksAndSigners()
 
-  const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
 
@@ -157,7 +155,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         signer: JsonRpcSigner
         network: L2Network
       }
-    }): Promise<Bridge | undefined> => {
+    }) => {
       const {
         l1: { signer: l1Signer },
         l2: { signer: l2Signer }
@@ -190,19 +188,18 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   // Listen for account and network changes
   useEffect(() => {
     // Any time one of those changes
-    setGlobalBridge(null)
     setTokenBridgeParams(null)
-
-    if (networks.status !== UseNetworksStatus.CONNECTED) {
+    actions.app.setConnectionState(ConnectionState.LOADING)
+    if (networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED) {
       return
     }
 
-    const { l1Network, l2Network, isConnectedToArbitrum } = networks
-    const network = isConnectedToArbitrum ? l2Network : l1Network
+    const { l1, l2, isConnectedToArbitrum } = networksAndSigners
+    const network = isConnectedToArbitrum ? l2.network : l1.network
     const networkId = String(network.chainID)
 
     actions.app.reset(networkId)
-    actions.app.setNetworks({ l1Network, l2Network })
+    actions.app.setNetworks({ l1Network: l1.network, l2Network: l2.network })
 
     if (!isConnectedToArbitrum) {
       console.info('Deposit mode detected:')
@@ -214,21 +211,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
-    if (signers.status !== UseSignersStatus.SUCCESS) {
-      return
-    }
-
-    initBridge({
-      l1: {
-        signer: signers.l1Signer,
-        network: l1Network
-      },
-      l2: {
-        signer: signers.l2Signer,
-        network: l2Network
-      }
-    })
-  }, [networks, signers, initBridge])
+    initBridge(networksAndSigners)
+  }, [networksAndSigners, initBridge])
 
   useEffect(() => {
     axios
@@ -299,7 +283,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           )
           // TODO: show user a nice dialogue box instead of
           // eslint-disable-next-line no-alert
-          const targetTxName = networks.isConnectedToArbitrum
+          const targetTxName = networksAndSigners.isConnectedToArbitrum
             ? 'deposit'
             : 'withdraw'
 
@@ -314,16 +298,14 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       logGasPrice()
       actions.app.setChangeNetwork(changeNetwork)
     }
-  }, [library, networks.isConnectedToArbitrum])
+  }, [library, networksAndSigners.isConnectedToArbitrum])
 
   return (
     <>
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
-      <BridgeContext.Provider value={globalBridge}>
-        {children}
-      </BridgeContext.Provider>
+      {children}
     </>
   )
 }
@@ -360,17 +342,13 @@ function Routes() {
 }
 
 function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
-  const { status, l1Network } = useNetworks()
+  const { status } = useNetworksAndSigners()
 
-  if (status === UseNetworksStatus.NOT_CONNECTED) {
+  if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
     return <NoMetamaskIndicator />
   }
 
-  if (
-    status === UseNetworksStatus.NOT_SUPPORTED ||
-    // Only allow for Nitro
-    l1Network.chainID !== 5
-  ) {
+  if (status === UseNetworksAndSignersStatus.NOT_SUPPORTED) {
     return (
       <div>
         <div className="mb-4">

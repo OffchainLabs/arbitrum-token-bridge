@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 
 import { useActions } from '../../state'
-import { useSigners } from '../../hooks/useSigners'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 // Updates the current block number which is used to calculate pending withdrawal time
 export function CurrentL1BlockNumberUpdater(): JSX.Element {
   const actions = useActions()
-  const { l1Signer } = useSigners()
+  const {
+    l1: { signer: l1Signer }
+  } = useNetworksAndSigners()
 
   const ethProvider = l1Signer?.provider
 

@@ -1,10 +1,14 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  L1ToL2MessageReader,
+  L1ToL2MessageStatus,
+  L2ToL1MessageStatus as OutgoingMessageState
+} from '@arbitrum/sdk'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
+import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
 import {
   FailedTransaction,
@@ -12,7 +16,34 @@ import {
   Transaction
 } from './useTransactions'
 
+export { OutgoingMessageState }
+
+export enum TokenType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721'
+}
+
+export enum AssetType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721',
+  ETH = 'ETH'
+}
+
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
+
+// todo: use L2ToL1TransactionEvent['args']
+export interface L2ToL1EventResult {
+  caller: string
+  destination: string
+  uniqueId: BigNumber
+  batchNumber: BigNumber
+  indexInBatch: BigNumber
+  arbBlockNum: BigNumber
+  ethBlockNum: BigNumber
+  timestamp: BigNumber | string // TODO: Clean up
+  callvalue: BigNumber
+  data: string
+}
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
@@ -23,6 +54,11 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
+
+export type WithdrawalInitiated = WithdrawalInitiatedEvent['args'] & {
+  txHash: string
+}
+
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
 }
@@ -39,18 +75,6 @@ export interface BridgeToken {
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
   decimals: number
-}
-
-export enum TokenType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721'
-}
-/* eslint-enable no-shadow */
-
-export enum AssetType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ETH = 'ETH'
 }
 
 export interface L1TokenData {

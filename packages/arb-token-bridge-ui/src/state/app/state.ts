@@ -281,8 +281,7 @@ export const defaultState: AppState = {
     }
   }),
 
-  // TODO: Bring back
-  pwLoadedState: PendingWithdrawalsLoadedState.READY,
+  pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false,
   changeNetwork: null
 }

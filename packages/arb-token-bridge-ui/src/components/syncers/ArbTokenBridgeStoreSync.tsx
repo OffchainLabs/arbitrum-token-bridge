@@ -1,10 +1,5 @@
 import { useEffect } from 'react'
-
-import {
-  useArbTokenBridge,
-  TokenBridgeParams,
-  ArbTokenBridge
-} from 'token-bridge-sdk'
+import { useArbTokenBridge, TokenBridgeParams } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
 
@@ -15,11 +10,7 @@ export function ArbTokenBridgeStoreSync({
   tokenBridgeParams: TokenBridgeParams
 }): JSX.Element {
   const actions = useActions()
-  const arbTokenBridge: ArbTokenBridge = useArbTokenBridge(
-    undefined,
-    tokenBridgeParams,
-    false
-  )
+  const arbTokenBridge = useArbTokenBridge(tokenBridgeParams, false)
 
   useEffect(() => {
     actions.app.setArbTokenBridge(arbTokenBridge)
