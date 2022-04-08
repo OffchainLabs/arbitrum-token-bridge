@@ -1252,7 +1252,6 @@ export const useArbTokenBridge = (
       withdrawal.outgoingMessageState === OutgoingMessageState.EXECUTED ||
       withdrawal.outgoingMessageState === OutgoingMessageState.CONFIRMED
     ) {
-      console.log(withdrawal)
       return withdrawal
     }
 
