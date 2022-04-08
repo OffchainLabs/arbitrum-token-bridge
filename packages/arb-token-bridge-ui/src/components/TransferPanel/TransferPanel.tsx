@@ -1,22 +1,14 @@
-import React, {
-  useContext,
-  useState,
-  useMemo,
-  useCallback,
-  useEffect
-} from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { useWallet } from '@gimmixorg/use-wallet'
-import { utils, BigNumber } from 'ethers'
+import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
-import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
@@ -26,19 +18,7 @@ import TransactionConfirmationModal, {
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
-
-const isAllowed = async (
-  bridge: Bridge,
-  l1TokenAddress: string,
-  amountNeeded: BigNumber
-) => {
-  const token = ERC20__factory.connect(l1TokenAddress, bridge.l1Provider)
-  const walletAddress = await bridge.l1Bridge.getWalletAddress()
-  const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
-  return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    amountNeeded
-  )
-}
+import { useNetworks } from '../../hooks/useNetworks'
 
 function useTokenFromSearchParams(): string | undefined {
   const { search } = useLocation()
@@ -79,9 +59,7 @@ const TransferPanel = (): JSX.Element => {
       changeNetwork,
       selectedToken,
       isDepositMode,
-      networkDetails,
       l1NetworkDetails,
-      l2NetworkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
@@ -92,11 +70,11 @@ const TransferPanel = (): JSX.Element => {
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
-  const bridge = useContext(BridgeContext)
+  const networks = useNetworks()
+  const latestNetworks = useLatest(networks)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
-  const latestNetworkDetails = useLatest(networkDetails)
 
   const [transferring, setTransferring] = useState(false)
 
@@ -168,7 +146,6 @@ const TransferPanel = (): JSX.Element => {
   const isBridgingANewStandardToken = useMemo(() => {
     return !!(
       l1NetworkDetails &&
-      l1NetworkDetails.chainID === '1' &&
       isDepositMode &&
       selectedToken &&
       !selectedToken.l2Address
@@ -190,13 +167,16 @@ const TransferPanel = (): JSX.Element => {
   }, [isBridgingANewStandardToken, selectedToken])
 
   const transfer = async () => {
-    // ** We can be assured bridge won't be null here; this is to appease typescript*/
-    if (!bridge) {
-      // eslint-disable-next-line no-alert
-      alert("Bridge null! This shouldn't happen. Let support know.")
+    // Should never be the case
+    if (
+      typeof latestNetworks.current.l1Network === 'undefined' ||
+      typeof latestNetworks.current.l2Network === 'undefined'
+    ) {
       return
     }
+
     setTransferring(true)
+
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
 
@@ -218,24 +198,25 @@ const TransferPanel = (): JSX.Element => {
             `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (networkDetails?.isArbitrum === true) {
-          await changeNetwork?.(networkDetails.partnerChainID)
+        if (latestNetworks.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworks.current.l1Network)
+
           while (
-            latestNetworkDetails.current?.isArbitrum ||
+            latestNetworks.current.isConnectedToArbitrum ||
             !latestEth.current ||
-            !arbTokenBridgeLoaded ||
-            !bridge
+            !arbTokenBridgeLoaded
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = l1NetworkDetails?.chainID
+        const l1ChainID = latestNetworks.current.l1Network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
-          !(l1ChainID && connectedChainID && +l1ChainID === connectedChainID)
+          !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
         ) {
           return alert('Network connection issue; contact support')
         }
@@ -243,32 +224,29 @@ const TransferPanel = (): JSX.Element => {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          // check that a registration is not currently in progress
-          const l2RoutedAddress = (
-            await bridge.l2Bridge.l2GatewayRouter.functions.calculateL2TokenAddress(
-              selectedToken.address
-            )
-          )[0]
+          // // check that a registration is not currently in progress
+          // const l2RoutedAddress = (
+          //   await bridge.l2Bridge.l2GatewayRouter.functions.calculateL2TokenAddress(
+          //     selectedToken.address
+          //   )
+          // )[0]
 
-          if (
-            selectedToken.l2Address &&
-            selectedToken.l2Address.toLowerCase() !==
-              l2RoutedAddress.toLowerCase()
-          ) {
-            alert(
-              'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
-            )
-            return
-          }
+          // if (
+          //   selectedToken.l2Address &&
+          //   selectedToken.l2Address.toLowerCase() !==
+          //     l2RoutedAddress.toLowerCase()
+          // ) {
+          //   alert(
+          //     'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
+          //   )
+          //   return
+          // }
 
-          // Sanity check: ensure not allowed yet
-          const allowed = await isAllowed(
-            bridge,
-            selectedToken.address,
-            amountRaw
+          const { allowance } = await arbTokenBridge.token.getL1TokenData(
+            selectedToken.address
           )
 
-          if (!allowed) {
+          if (!allowance.gte(amountRaw)) {
             await latestToken.current.approve(selectedToken.address)
           }
 
@@ -279,20 +257,21 @@ const TransferPanel = (): JSX.Element => {
           await latestEth.current.deposit(amountRaw)
         }
       } else {
-        if (networkDetails?.isArbitrum === false) {
-          await changeNetwork?.(networkDetails.partnerChainID)
+        if (!latestNetworks.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworks.current.l2Network)
+
           while (
-            !latestNetworkDetails.current?.isArbitrum ||
+            !networks.isConnectedToArbitrum ||
             !latestEth.current ||
-            !arbTokenBridgeLoaded ||
-            !bridge
+            !arbTokenBridgeLoaded
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l2ChainID = l2NetworkDetails?.chainID
+        const l2ChainID = latestNetworks.current.l2Network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -333,20 +312,22 @@ const TransferPanel = (): JSX.Element => {
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
-    const l2AmountNum = +l2Amount
-    return (
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-      transferring ||
-      (!isDepositMode &&
-        (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
-    )
+    /** TODO tmp for initial devnet ui */
+    return true
+    // const l2AmountNum = +l2Amount
+    // return (
+    //   (selectedToken &&
+    //     selectedToken.address &&
+    //     selectedToken.address.toLowerCase() ===
+    //       '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
+    //   (selectedToken &&
+    //     selectedToken.address &&
+    //     selectedToken.address.toLowerCase() ===
+    //       '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
+    //   transferring ||
+    //   (!isDepositMode &&
+    //     (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
+    // )
   }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
 
   return (
@@ -438,7 +419,7 @@ const TransferPanel = (): JSX.Element => {
             variant="navy"
             isLoading={transferring}
           >
-            Withdraw
+            Withdrawals are currently disabled
           </Button>
         )}
       </div>

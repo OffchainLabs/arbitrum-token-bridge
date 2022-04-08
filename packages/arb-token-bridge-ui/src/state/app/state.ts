@@ -14,10 +14,10 @@ import {
   NodeBlockDeadlineStatus,
   L1ToL2MessageData
 } from 'token-bridge-sdk'
+import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import Networks, { Network } from '../../util/networks'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { Network } from '../../util/networks'
 
 export enum WhiteListState {
   VERIFYING,
@@ -103,7 +103,6 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  networkID: string | null
   verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
@@ -117,21 +116,24 @@ export type AppState = {
   mergedTransactionsToShow: MergedTransaction[]
   currentL1BlockNumber: number
 
-  networkDetails: Network | null
+  l1Network: L1Network | null
+  l2Network: L2Network | null
+
   l1NetworkDetails: Network | null
   l2NetworkDetails: Network | null
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
 
-  changeNetwork: ((chainId: string) => Promise<void>) | null
+  changeNetwork: ((network: L1Network | L2Network) => Promise<void>) | null
 }
 
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
-  networkID: null,
+  l1Network: null,
+  l2Network: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
@@ -244,33 +246,43 @@ export const defaultState: AppState = {
     })
   }),
   currentL1BlockNumber: 0,
-
-  networkDetails: derived((s: AppState) => {
-    if (!s.networkID) return null
-    return Networks[s.networkID]
-  }),
   l1NetworkDetails: derived((s: AppState) => {
-    const network = s.networkDetails
-    if (!network) {
+    if (!s.l1Network || !s.l2Network) {
       return null
     }
-    if (!network.isArbitrum) {
-      return network
+
+    return {
+      ...s.l1Network,
+      chainID: String(s.l1Network.chainID),
+      isArbitrum: false,
+      url: s.l1Network.rpcURL,
+      partnerChainID: String(s.l1Network.partnerChainIDs[0]),
+      tokenBridge: {
+        l1Address: s.l2Network.tokenBridge.l1GatewayRouter,
+        l2Address: s.l2Network.tokenBridge.l2GatewayRouter
+      }
     }
-    return Networks[network.partnerChainID]
   }),
   l2NetworkDetails: derived((s: AppState) => {
-    const network = s.networkDetails
-    if (!network) {
+    if (!s.l1Network || !s.l2Network) {
       return null
     }
-    if (network.isArbitrum) {
-      return network
+
+    return {
+      ...s.l2Network,
+      chainID: String(s.l2Network.chainID),
+      isArbitrum: false,
+      url: s.l2Network.rpcURL,
+      partnerChainID: String(s.l2Network.partnerChainID),
+      tokenBridge: {
+        l1Address: s.l2Network.tokenBridge.l1GatewayRouter,
+        l2Address: s.l2Network.tokenBridge.l2GatewayRouter
+      }
     }
-    return Networks[network.partnerChainID]
   }),
 
-  pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
+  // TODO: Bring back
+  pwLoadedState: PendingWithdrawalsLoadedState.READY,
   arbTokenBridgeLoaded: false,
   changeNetwork: null
 }

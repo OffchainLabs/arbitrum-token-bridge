@@ -109,7 +109,7 @@ export interface TokenBridgeParams {
 }
 
 export const useArbTokenBridge = (
-  bridge: Bridge,
+  bridge: Bridge | undefined,
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
@@ -335,7 +335,7 @@ export const useArbTokenBridge = (
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: utils.formatUnits(amount, 'wei'),
+      value: utils.formatEther(amount),
       txID: tx.hash,
       assetName: 'ETH',
       assetType: AssetType.ETH,
@@ -574,17 +574,8 @@ export const useArbTokenBridge = (
     arbTokenList: TokenList,
     listID?: number
   ) => {
-    const {
-      l1Bridge: {
-        network: { chainID: l1ChainIStr }
-      },
-      l2Bridge: {
-        network: { chainID: l2ChainIDStr }
-      }
-    } = bridge
-
-    const l1ChainID = +l1ChainIStr
-    const l2ChainID = +l2ChainIDStr
+    const l1ChainID = l1.network.chainID
+    const l2ChainID = l2.network.chainID
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -1001,6 +992,10 @@ export const useArbTokenBridge = (
   }
 
   const getTokenSymbol = async (_l1Address: string) => {
+    if (!bridge) {
+      return ''
+    }
+
     const l1Address = _l1Address.toLocaleLowerCase()
 
     if (addressToSymbol[l1Address]) {
@@ -1018,6 +1013,10 @@ export const useArbTokenBridge = (
   }
 
   const getTokenDecimals = async (_l1Address: string) => {
+    if (!bridge) {
+      return 18
+    }
+
     const l1Address = _l1Address.toLocaleLowerCase()
 
     if (addressToDecimals[l1Address]) {
@@ -1294,6 +1293,10 @@ export const useArbTokenBridge = (
   const addNodeDeadlineToUnconfirmedWithdrawals = async (
     l2ToL1Data: L2ToL1EventResultPlus[]
   ) => {
+    if (!bridge) {
+      return
+    }
+
     if (l2ToL1Data.length === 0) return []
     if (l1NetworkID !== '1' && l1NetworkID !== '4')
       throw new Error(`Unrecognized network: ${l1NetworkID}`)

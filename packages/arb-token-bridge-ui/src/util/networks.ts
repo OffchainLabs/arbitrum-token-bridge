@@ -7,7 +7,6 @@ if (!INFURA_KEY) {
 export interface Network {
   chainID: string
   name: string
-  isArbitrum: boolean
   url: string
   explorerUrl: string
   partnerChainID: string
@@ -53,7 +52,6 @@ const networks: Networks = {
     gif: kovanGif,
     explorerUrl: 'https://kovan.etherscan.io',
     partnerChainID: '144545313136048',
-    isArbitrum: false,
     tokenBridge: kovan5Bridge,
     blockTime: 5
   },
@@ -61,7 +59,6 @@ const networks: Networks = {
     chainID: '144545313136048',
     name: 'Arbitrum-testnet-5',
     gif: '/images/l2.gif',
-    isArbitrum: true,
     url: 'https://kovan5.arbitrum.io/rpc',
     explorerUrl: 'https://explorer5.arbitrum.io/#',
     partnerChainID: '42',
@@ -73,7 +70,6 @@ const networks: Networks = {
     url: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
     gif: kovanGif,
     explorerUrl: 'https://etherscan.io',
-    isArbitrum: false,
     partnerChainID: '42161',
     tokenBridge: mainnetBridge,
     blockTime: 15
@@ -85,7 +81,6 @@ const networks: Networks = {
     gif: kovanGif,
     explorerUrl: 'https://arbiscan.io',
     partnerChainID: '1',
-    isArbitrum: true,
     tokenBridge: mainnetBridge,
     bridgeUpdateBlockNumber: 224717
   },
@@ -96,7 +91,6 @@ const networks: Networks = {
     gif: kovanGif,
     explorerUrl: 'https://testnet.arbiscan.io',
     partnerChainID: '4',
-    isArbitrum: true,
     tokenBridge: RinkebyBridge,
     bridgeUpdateBlockNumber: 2386243
   },
@@ -107,14 +101,14 @@ const networks: Networks = {
     gif: kovanGif,
     explorerUrl: 'https://rinkeby.etherscan.io',
     partnerChainID: '421611',
-    isArbitrum: false,
     tokenBridge: RinkebyBridge
   }
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
   1: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-  4: `https://rinkeby.infura.io/v3/${INFURA_KEY}`
+  4: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+  5: `https://goerli.infura.io/v3/${INFURA_KEY}`
 }
 
 export default networks

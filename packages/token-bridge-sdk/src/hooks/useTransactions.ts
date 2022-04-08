@@ -56,7 +56,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
 export interface L1ToL2MessageData {
   status: L1ToL2MessageStatus
   retryableCreationTxID: string
-  l2TxID: string
+  l2TxID?: string
   fetchingUpdate: boolean
 }
 type TransactionBase = {
@@ -294,6 +294,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateL1ToL2MsgData = async (
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
     _status?: L1ToL2MessageStatus
   ) => {
     const status = _status || (await l1ToL2Msg.status())
@@ -304,7 +305,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       l1ToL2MsgData: {
         status,
         retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-        l2TxID: l1ToL2Msg.l2TxHash,
+        // l2TxID: l1ToL2Msg.l2TxHash,
         fetchingUpdate: shouldFetchUpdate
       }
     })
@@ -312,19 +313,27 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (shouldFetchUpdate) {
       console.info('waiting for L1toL2Msg status for', txID)
 
-      l1ToL2Msg.waitForStatus().then(({ status }) => {
+      l1ToL2Msg.waitForStatus().then(result => {
+        const newStatus = result.status
+        const isSuccessful = newStatus === L1ToL2MessageStatus.REDEEMED || (isEthDeposit && newStatus === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2)
+        if (!isSuccessful) {
+          return
+        }
+        // Get the l2TxId for non-Eth-deposits
+        const l2TxID = result.status === L1ToL2MessageStatus.REDEEMED ? result.l2TxReceipt.transactionHash : undefined 
+  
         console.info(
           `1toL2Msg status arrived for ${txID}, dispatching update`,
-          status
+          newStatus
         )
 
         dispatch({
           type: 'UPDATE_L1TOL2MSG_DATA',
           txID,
           l1ToL2MsgData: {
-            status,
+            status: newStatus,
             retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-            l2TxID: l1ToL2Msg.l2TxHash,
+            l2TxID,
             fetchingUpdate: false
           }
         })

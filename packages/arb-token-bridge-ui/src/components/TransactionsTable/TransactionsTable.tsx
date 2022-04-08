@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useContext } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
@@ -9,14 +9,13 @@ import { TxnType } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
-import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
-import { L1ToL2MessageWriter } from '@arbitrum/sdk'
-import { BigNumber } from 'ethers'
 
+import { useSigners } from '../../hooks/useSigners'
+import { useNetworks } from '../../hooks/useNetworks'
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
   overflowX?: boolean
@@ -89,38 +88,45 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       l1NetworkDetails,
       l2NetworkDetails,
       isDepositMode,
-      currentL1BlockNumber,
-      networkDetails
+      currentL1BlockNumber
     }
   } = useAppState()
-  const bridge = useContext(BridgeContext)
+  const { l2Signer } = useSigners()
   const [isClaiming, setIsClaiming] = useState(false)
 
+  const { isConnectedToArbitrum } = useNetworks()
+
   const showRedeemRetryableButton = useMemo(() => {
-    if (tx.depositStatus === DepositStatus.L2_FAILURE) {
-      return true
-    }
+    /** TODO tmp for initial devnet ui */
     return false
+    // if (tx.depositStatus === DepositStatus.L2_FAILURE) {
+    //   return true
+    // }
+    // return false
   }, [tx])
 
   const redeemRetryable = useCallback(
     async (tx: MergedTransaction) => {
-      if (!bridge) return
-      const l2Signer = bridge.l2Bridge.l2Signer
-      const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
-      if (!retryableCreationTxID)
-        throw new Error("Can't redeem; txid not found")
-      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
-        l2Signer,
-        retryableCreationTxID,
-        BigNumber.from(tx.seqNum)
-      )
-      const res = await l1ToL2Msg.redeem()
-      const rec = await res.wait()
-      // update in store
-      arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
+      if (typeof l2Signer === 'undefined') {
+        return
+      }
+      /** TODO tmp for initial devnet ui */
+
+      // const l2Signer = l2Signer
+      // const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
+      // if (!retryableCreationTxID)
+      //   throw new Error("Can't redeem; txid not found")
+      // const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
+      //   l2Signer,
+      //   retryableCreationTxID,
+      //   BigNumber.from(tx.seqNum)
+      // )
+      // const res = await l1ToL2Msg.redeem()
+      // const rec = await res.wait()
+      // // update in store
+      // arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
     },
-    [arbTokenBridge, bridge]
+    [arbTokenBridge, l2Signer]
   )
 
   const { blockTime = 15 } = l1NetworkDetails as Network
@@ -301,12 +307,12 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
               <>
                 <Button
                   size="sm"
-                  disabled={networkDetails?.isArbitrum}
+                  disabled={isConnectedToArbitrum}
                   onClick={handleTriggerOutbox}
                 >
                   Claim
                 </Button>
-                {networkDetails?.isArbitrum && (
+                {isConnectedToArbitrum && (
                   <Tooltip>Must be on l1 network to claim withdrawal.</Tooltip>
                 )}
               </>
@@ -331,7 +337,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           <div className="relative group">
             <Button
               size="sm"
-              disabled={!networkDetails?.isArbitrum}
+              disabled={!isConnectedToArbitrum}
               onClick={() => redeemRetryable(tx)}
             >
               Re-execute
