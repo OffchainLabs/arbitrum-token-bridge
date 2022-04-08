@@ -373,10 +373,7 @@ export const useArbTokenBridge = (
 
         const id = l2ToL1EventResult.uniqueId.toString()
 
-        const outgoingMessageState = await getOutgoingMessageState(
-          l2ToL1EventResult.batchNumber,
-          l2ToL1EventResult.indexInBatch
-        )
+        const outgoingMessageState = OutgoingMessageState.NOT_FOUND
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
           type: AssetType.ETH,
@@ -512,10 +509,7 @@ export const useArbTokenBridge = (
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
         const id = l2ToL1EventDataResult.uniqueId.toString()
-        const outgoingMessageState = await getOutgoingMessageState(
-          l2ToL1EventDataResult.batchNumber,
-          l2ToL1EventDataResult.indexInBatch
-        )
+        const outgoingMessageState = OutgoingMessageState.NOT_FOUND
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
           type: AssetType.ERC20,
