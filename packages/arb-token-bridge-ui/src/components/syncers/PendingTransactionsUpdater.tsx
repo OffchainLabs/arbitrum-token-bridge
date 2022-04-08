@@ -5,11 +5,14 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
-import { useSigners } from '../../hooks/useSigners'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
-  const { l1Signer, l2Signer } = useSigners()
+  const {
+    l1: { signer: l1Signer },
+    l2: { signer: l2Signer }
+  } = useNetworksAndSigners()
 
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }

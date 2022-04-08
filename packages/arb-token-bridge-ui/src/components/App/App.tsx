@@ -30,8 +30,10 @@ import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 
-import { useNetworks, UseNetworksStatus } from '../../hooks/useNetworks'
-import { useSigners, UseSignersStatus } from '../../hooks/useSigners'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -136,8 +138,7 @@ const AppContent = (): JSX.Element => {
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
-  const networks = useNetworks()
-  const signers = useSigners()
+  const networksAndSigners = useNetworksAndSigners()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -189,16 +190,16 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // Any time one of those changes
     setTokenBridgeParams(null)
 
-    if (networks.status !== UseNetworksStatus.CONNECTED) {
+    if (networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED) {
       return
     }
 
-    const { l1Network, l2Network, isConnectedToArbitrum } = networks
-    const network = isConnectedToArbitrum ? l2Network : l1Network
+    const { l1, l2, isConnectedToArbitrum } = networksAndSigners
+    const network = isConnectedToArbitrum ? l2.network : l1.network
     const networkId = String(network.chainID)
 
     actions.app.reset(networkId)
-    actions.app.setNetworks({ l1Network, l2Network })
+    actions.app.setNetworks({ l1Network: l1.network, l2Network: l2.network })
 
     if (!isConnectedToArbitrum) {
       console.info('Deposit mode detected:')
@@ -210,21 +211,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     }
 
-    if (signers.status !== UseSignersStatus.SUCCESS) {
-      return
-    }
-
-    initBridge({
-      l1: {
-        signer: signers.l1Signer,
-        network: l1Network
-      },
-      l2: {
-        signer: signers.l2Signer,
-        network: l2Network
-      }
-    })
-  }, [networks, signers, initBridge])
+    console.log('initBridge called')
+    initBridge(networksAndSigners)
+  }, [networksAndSigners, initBridge])
 
   useEffect(() => {
     axios
@@ -295,7 +284,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           )
           // TODO: show user a nice dialogue box instead of
           // eslint-disable-next-line no-alert
-          const targetTxName = networks.isConnectedToArbitrum
+          const targetTxName = networksAndSigners.isConnectedToArbitrum
             ? 'deposit'
             : 'withdraw'
 
@@ -310,7 +299,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       logGasPrice()
       actions.app.setChangeNetwork(changeNetwork)
     }
-  }, [library, networks.isConnectedToArbitrum])
+  }, [library, networksAndSigners.isConnectedToArbitrum])
 
   return (
     <>
@@ -354,13 +343,13 @@ function Routes() {
 }
 
 function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
-  const { status } = useNetworks()
+  const { status } = useNetworksAndSigners()
 
-  if (status === UseNetworksStatus.NOT_CONNECTED) {
+  if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
     return <NoMetamaskIndicator />
   }
 
-  if (status === UseNetworksStatus.NOT_SUPPORTED) {
+  if (status === UseNetworksAndSignersStatus.NOT_SUPPORTED) {
     return (
       <div>
         <div className="mb-4">

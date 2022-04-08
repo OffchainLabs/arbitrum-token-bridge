@@ -2,11 +2,15 @@ import { useEffect } from 'react'
 import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
-import { useSigners } from '../../hooks/useSigners'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 // Updates all balances periodically
 const BalanceUpdater = (): JSX.Element => {
-  const { l1Signer, l2Signer } = useSigners()
+  const {
+    l1: { signer: l1Signer },
+    l2: { signer: l2Signer }
+  } = useNetworksAndSigners()
+
   const {
     app: { arbTokenBridge, selectedToken }
   } = useAppState()

@@ -18,7 +18,10 @@ import TransactionConfirmationModal, {
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
-import { useNetworks } from '../../hooks/useNetworks'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 function useTokenFromSearchParams(): string | undefined {
   const { search } = useLocation()
@@ -70,8 +73,8 @@ const TransferPanel = (): JSX.Element => {
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
-  const networks = useNetworks()
-  const latestNetworks = useLatest(networks)
+  const networksAndSigners = useNetworksAndSigners()
+  const latestNetworksAndSigners = useLatest(networksAndSigners)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -167,10 +170,9 @@ const TransferPanel = (): JSX.Element => {
   }, [isBridgingANewStandardToken, selectedToken])
 
   const transfer = async () => {
-    // Should never be the case
     if (
-      typeof latestNetworks.current.l1Network === 'undefined' ||
-      typeof latestNetworks.current.l2Network === 'undefined'
+      latestNetworksAndSigners.current.status !==
+      UseNetworksAndSignersStatus.CONNECTED
     ) {
       return
     }
@@ -198,11 +200,11 @@ const TransferPanel = (): JSX.Element => {
             `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (latestNetworks.current.isConnectedToArbitrum) {
-          await changeNetwork?.(latestNetworks.current.l1Network)
+        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
 
           while (
-            latestNetworks.current.isConnectedToArbitrum ||
+            latestNetworksAndSigners.current.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -212,7 +214,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = latestNetworks.current.l1Network.chainID
+        const l1ChainID = latestNetworksAndSigners.current.l1.network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -255,11 +257,11 @@ const TransferPanel = (): JSX.Element => {
           await latestEth.current.deposit(amountRaw)
         }
       } else {
-        if (!latestNetworks.current.isConnectedToArbitrum) {
-          await changeNetwork?.(latestNetworks.current.l2Network)
+        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
 
           while (
-            !latestNetworks.current.isConnectedToArbitrum ||
+            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -269,7 +271,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l2ChainID = latestNetworks.current.l2Network.chainID
+        const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (

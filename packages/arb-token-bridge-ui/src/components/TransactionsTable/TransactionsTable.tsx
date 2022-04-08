@@ -15,8 +15,8 @@ import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
 
-import { useSigners } from '../../hooks/useSigners'
-import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
   overflowX?: boolean
@@ -92,10 +92,11 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       currentL1BlockNumber
     }
   } = useAppState()
-  const { l2Signer } = useSigners()
+  const {
+    l2: { signer: l2Signer },
+    isConnectedToArbitrum
+  } = useNetworksAndSigners()
   const [isClaiming, setIsClaiming] = useState(false)
-
-  const { isConnectedToArbitrum } = useNetworks()
 
   const showRedeemRetryableButton = useMemo(() => {
     if (tx.depositStatus === DepositStatus.L2_FAILURE) {

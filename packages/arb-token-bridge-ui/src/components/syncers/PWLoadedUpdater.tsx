@@ -2,13 +2,14 @@ import { useEffect } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useSigners } from '../../hooks/useSigners'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 // Loads pending withdrawals on page load
 export function PWLoadedUpdater(): JSX.Element {
-  const { l1Network, l2Network } = useNetworks()
-  const { l2Signer } = useSigners()
+  const networksAndSigners = useNetworksAndSigners()
   const actions = useActions()
   const {
     app: {
@@ -20,20 +21,22 @@ export function PWLoadedUpdater(): JSX.Element {
 
   useEffect(() => {
     if (
-      typeof l1Network === 'undefined' ||
-      typeof l2Network === 'undefined' ||
+      networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED ||
       !arbTokenBridgeLoaded ||
       pwLoadedState !== PendingWithdrawalsLoadedState.LOADING
     ) {
       return
     }
+
+    const { l2 } = networksAndSigners
+
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
-      l2Network.tokenBridge
+      l2.network.tokenBridge
 
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
     console.log('**** setting initial pending withdrawals ****')
 
-    l2Signer?.getTransactionCount()?.then((nonce: number) => {
+    l2.signer.getTransactionCount()?.then((nonce: number) => {
       if (nonce === 0) {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
@@ -59,7 +62,7 @@ export function PWLoadedUpdater(): JSX.Element {
           })
       }
     })
-  }, [l1Network, l2Network, arbTokenBridgeLoaded, pwLoadedState, l2Signer])
+  }, [networksAndSigners, arbTokenBridgeLoaded, pwLoadedState])
 
   return <></>
 }

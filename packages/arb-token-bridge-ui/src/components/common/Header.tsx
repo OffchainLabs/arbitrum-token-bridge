@@ -6,7 +6,10 @@ import { ChevronDownIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 
 import { useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
-import { useNetworks, UseNetworksStatus } from '../../hooks/useNetworks'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ')
@@ -129,7 +132,7 @@ const JoinCommunityButton: React.FC = () => (
 
 const LoginButton: React.FC = () => {
   const { disconnect, connect } = useWallet()
-  const { status } = useNetworks()
+  const { status } = useNetworksAndSigners()
 
   function showConnectionModal() {
     connect(modalProviderOpts)
@@ -137,7 +140,7 @@ const LoginButton: React.FC = () => {
 
   return (
     <>
-      {status === UseNetworksStatus.CONNECTED ? (
+      {status === UseNetworksAndSignersStatus.CONNECTED ? (
         <button
           onClick={() => {
             disconnect()
@@ -165,7 +168,7 @@ const LoginButton: React.FC = () => {
 }
 
 const AddNetworkButton: React.FC = () => {
-  const { status, l2Network, isConnectedToArbitrum } = useNetworks()
+  const { status, l2, isConnectedToArbitrum } = useNetworksAndSigners()
 
   const {
     app: { changeNetwork }
@@ -173,7 +176,7 @@ const AddNetworkButton: React.FC = () => {
 
   const hide = useMemo(() => {
     return (
-      status !== UseNetworksStatus.CONNECTED ||
+      status !== UseNetworksAndSignersStatus.CONNECTED ||
       isConnectedToArbitrum ||
       !changeNetwork
     )
@@ -184,12 +187,12 @@ const AddNetworkButton: React.FC = () => {
       {hide ? null : (
         <button
           onClick={() => {
-            if (typeof l2Network === 'undefined' || !changeNetwork) {
+            if (typeof l2.network === 'undefined' || !changeNetwork) {
               console.log("Can't add L2 network")
               return
             }
 
-            changeNetwork(l2Network)
+            changeNetwork(l2.network)
           }}
           type="button"
           className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
