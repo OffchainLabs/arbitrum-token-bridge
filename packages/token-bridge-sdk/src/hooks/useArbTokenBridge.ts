@@ -1257,14 +1257,28 @@ export const useArbTokenBridge = (
       batchNumber,
       indexInBatch
     )
+    try {
+      const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
+        l2.signer.provider
+      )
 
-    const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-      l2.signer.provider
-    )
-
-    return {
-      ...withdrawal,
-      nodeBlockDeadline: firstExecutableBlock.toNumber()
+      return {
+        ...withdrawal,
+        nodeBlockDeadline: firstExecutableBlock.toNumber()
+      }
+    } catch (e) {
+      const expectedError = "batch doesn't exist"
+      const err = e as Error & { error: Error }
+      const actualError =
+        err && (err.message || (err.error && err.error.message))
+      if (actualError.includes(expectedError)) {
+        return {
+          ...withdrawal,
+          nodeBlockDeadline: 'NODE_NOT_CREATED'
+        }
+      } else {
+        throw e
+      }
     }
   }
 
