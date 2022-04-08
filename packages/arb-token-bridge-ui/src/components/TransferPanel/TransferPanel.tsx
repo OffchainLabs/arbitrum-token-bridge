@@ -224,23 +224,21 @@ const TransferPanel = (): JSX.Element => {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          // // check that a registration is not currently in progress
-          // const l2RoutedAddress = (
-          //   await bridge.l2Bridge.l2GatewayRouter.functions.calculateL2TokenAddress(
-          //     selectedToken.address
-          //   )
-          // )[0]
+          // check that a registration is not currently in progress
+          const l2RoutedAddress = await arbTokenBridge.token.getL2ERC20Address(
+            selectedToken.address
+          )
 
-          // if (
-          //   selectedToken.l2Address &&
-          //   selectedToken.l2Address.toLowerCase() !==
-          //     l2RoutedAddress.toLowerCase()
-          // ) {
-          //   alert(
-          //     'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
-          //   )
-          //   return
-          // }
+          if (
+            selectedToken.l2Address &&
+            selectedToken.l2Address.toLowerCase() !==
+              l2RoutedAddress.toLowerCase()
+          ) {
+            alert(
+              'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
+            )
+            return
+          }
 
           const { allowance } = await arbTokenBridge.token.getL1TokenData(
             selectedToken.address
@@ -312,22 +310,21 @@ const TransferPanel = (): JSX.Element => {
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
-    /** TODO tmp for initial devnet ui */
-    return true
-    // const l2AmountNum = +l2Amount
-    // return (
-    //   (selectedToken &&
-    //     selectedToken.address &&
-    //     selectedToken.address.toLowerCase() ===
-    //       '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
-    //   (selectedToken &&
-    //     selectedToken.address &&
-    //     selectedToken.address.toLowerCase() ===
-    //       '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-    //   transferring ||
-    //   (!isDepositMode &&
-    //     (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
-    // )
+    const l2AmountNum = +l2Amount
+
+    return (
+      (selectedToken &&
+        selectedToken.address &&
+        selectedToken.address.toLowerCase() ===
+          '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
+      (selectedToken &&
+        selectedToken.address &&
+        selectedToken.address.toLowerCase() ===
+          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
+      transferring ||
+      (!isDepositMode &&
+        (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
+    )
   }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
 
   return (
@@ -419,7 +416,7 @@ const TransferPanel = (): JSX.Element => {
             variant="navy"
             isLoading={transferring}
           >
-            Withdrawals are currently disabled
+            Withdraw
           </Button>
         )}
       </div>

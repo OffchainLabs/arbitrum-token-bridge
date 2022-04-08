@@ -1,11 +1,12 @@
 import { useState, useMemo, useCallback } from 'react'
-
+import { BigNumber } from 'ethers'
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { DepositStatus } from '../../state/app/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
+import { L1ToL2MessageWriter } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -97,12 +98,11 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const { isConnectedToArbitrum } = useNetworks()
 
   const showRedeemRetryableButton = useMemo(() => {
-    /** TODO tmp for initial devnet ui */
+    if (tx.depositStatus === DepositStatus.L2_FAILURE) {
+      return true
+    }
+
     return false
-    // if (tx.depositStatus === DepositStatus.L2_FAILURE) {
-    //   return true
-    // }
-    // return false
   }, [tx])
 
   const redeemRetryable = useCallback(
@@ -110,21 +110,26 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       if (typeof l2Signer === 'undefined') {
         return
       }
-      /** TODO tmp for initial devnet ui */
 
-      // const l2Signer = l2Signer
-      // const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
-      // if (!retryableCreationTxID)
-      //   throw new Error("Can't redeem; txid not found")
-      // const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
-      //   l2Signer,
-      //   retryableCreationTxID,
-      //   BigNumber.from(tx.seqNum)
-      // )
-      // const res = await l1ToL2Msg.redeem()
-      // const rec = await res.wait()
-      // // update in store
-      // arbTokenBridge.transactions.updateL1ToL2MsgData(tx.txId, l1ToL2Msg)
+      const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
+
+      if (!retryableCreationTxID)
+        throw new Error("Can't redeem; txid not found")
+
+      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
+        l2Signer,
+        retryableCreationTxID,
+        BigNumber.from(tx.seqNum)
+      )
+      const res = await l1ToL2Msg.redeem()
+      await res.wait()
+
+      // update in store
+      arbTokenBridge.transactions.updateL1ToL2MsgData(
+        tx.txId,
+        l1ToL2Msg,
+        tx.asset === 'eth'
+      )
     },
     [arbTokenBridge, l2Signer]
   )
