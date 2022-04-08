@@ -36,7 +36,8 @@ import {
   L2TokenData,
   OutgoingMessageState,
   WithdrawalInitiated,
-  L2ToL1EventResult
+  L2ToL1EventResult,
+  NodeBlockDeadlineStatus
 } from './arbTokenBridge.types'
 
 import {
@@ -1272,9 +1273,10 @@ export const useArbTokenBridge = (
       const actualError =
         err && (err.message || (err.error && err.error.message))
       if (actualError.includes(expectedError)) {
+        const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
         return {
           ...withdrawal,
-          nodeBlockDeadline: 'NODE_NOT_CREATED'
+          nodeBlockDeadline
         }
       } else {
         throw e
