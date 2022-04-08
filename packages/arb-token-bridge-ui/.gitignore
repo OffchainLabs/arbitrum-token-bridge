@@ -29,3 +29,5 @@ yarn-error.log*
 
 # Local Netlify folder
 .netlify
+
+/src/styles/tailwind.output.css
