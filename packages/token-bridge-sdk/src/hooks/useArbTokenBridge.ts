@@ -13,6 +13,7 @@ import {
   L2ToL1MessageReader,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
+import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -51,10 +52,6 @@ const { Zero } = constants
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
-}
-
-function getOutboxAddr(network: L2Network, batchNumber: BigNumber) {
-  return Object.keys(network.ethBridge.outboxes)[0]
 }
 
 const addressToSymbol: AddressToSymbol = {}
@@ -1244,43 +1241,57 @@ export const useArbTokenBridge = (
     )
   }
 
-  // mutates provided array - assigns deadlineBlockNumbers to all asserted but unconfimred l2tol1 messages
-  const addNodeDeadlineToUnconfirmedWithdrawals = async (
-    l2ToL1Data: L2ToL1EventResultPlus[]
-  ) => {
-    // ensure sorted in ascending order by timestamp (copy so provided array doesn't get mutated)
-    const sortedL2ToL1Data = [...l2ToL1Data].sort((msgA, msgB) => {
-      return +msgA.timestamp - +msgB.timestamp
-    })
+  async function attachNodeBlockDeadlineToEvent(
+    withdrawal: L2ToL1EventResultPlus
+  ) {
+    if (typeof l2.signer.provider === 'undefined') {
+      return withdrawal
+    }
 
-    const unconfirmedWithdrawals = sortedL2ToL1Data.filter(
-      l2ToL1Datum =>
-        ![
-          OutgoingMessageState.EXECUTED,
-          OutgoingMessageState.CONFIRMED
-        ].includes(l2ToL1Datum.outgoingMessageState)
+    if (
+      withdrawal.outgoingMessageState === OutgoingMessageState.EXECUTED ||
+      withdrawal.outgoingMessageState === OutgoingMessageState.CONFIRMED
+    ) {
+      console.log(withdrawal)
+      return withdrawal
+    }
+
+    const { batchNumber, indexInBatch } = withdrawal
+    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
+    const messageReader = L2ToL1MessageReader.fromBatchNumber(
+      l1.signer,
+      outboxAddress,
+      batchNumber,
+      indexInBatch
     )
 
-    unconfirmedWithdrawals.forEach(withdrawal => {
-      withdrawal.nodeBlockDeadline = 0
-    })
+    const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
+      l2.signer.provider
+    )
 
-    return l2ToL1Data
+    return {
+      ...withdrawal,
+      nodeBlockDeadline: firstExecutableBlock.toNumber()
+    }
   }
 
   const setInitialPendingWithdrawals = async (
     gatewayAddresses: string[],
     filter?: providers.Filter
   ) => {
-    const pendingWithdrawals: PendingWithdrawalsMap = {}
     const t = new Date().getTime()
+    const pendingWithdrawals: PendingWithdrawalsMap = {}
+
     console.log('*** Getting initial pending withdrawal data ***')
+
     const l2ToL1Txns = (
       await Promise.all([
         getEthWithdrawalsV2(filter),
         getTokenWithdrawalsV2(gatewayAddresses, filter)
       ])
-    ).flat()
+    )
+      .flat()
+      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
     console.log(
       `*** done getting pending withdrawals, took ${
@@ -1288,12 +1299,15 @@ export const useArbTokenBridge = (
       } seconds`
     )
 
-    await addNodeDeadlineToUnconfirmedWithdrawals(l2ToL1Txns)
-    for (const l2ToL1Thing of l2ToL1Txns) {
-      pendingWithdrawals[l2ToL1Thing.uniqueId.toString()] = l2ToL1Thing
+    const l2ToL1TxnsWithDeadlines = await Promise.all(
+      l2ToL1Txns.map(attachNodeBlockDeadlineToEvent)
+    )
+
+    for (const event of l2ToL1TxnsWithDeadlines) {
+      pendingWithdrawals[event.uniqueId.toString()] = event
     }
+
     setPendingWithdrawalMap(pendingWithdrawals)
-    return
   }
 
   // call after we've confirmed the outbox entry has been created
