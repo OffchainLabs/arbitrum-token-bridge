@@ -27,7 +27,6 @@ export type {
 export { txnTypeToLayer } from './hooks/useTransactions'
 export type { L1ToL2MessageData } from './hooks/useTransactions'
 
-export { Bridge } from 'arb-ts'
 export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export { validateTokenList } from './util/index'

@@ -3,7 +3,6 @@ import { BigNumber, constants, utils, providers } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import { Bridge } from 'arb-ts'
 import {
   L1Network,
   L2Network,
@@ -17,9 +16,6 @@ import {
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-
-import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
-import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
 import useTransactions from './useTransactions'
 import {
@@ -48,10 +44,10 @@ import {
   getETHWithdrawals,
   getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
-  getBuiltInsGraphLatestBlockNumber,
-  getNodes,
-  NodeDataResult
+  getBuiltInsGraphLatestBlockNumber
 } from '../util/graph'
+
+const { Zero } = constants
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -60,13 +56,6 @@ export const wait = (ms = 0) => {
 function getOutboxAddr(network: L2Network, batchNumber: BigNumber) {
   return Object.keys(network.ethBridge.outboxes)[0]
 }
-
-function notNull<TValue>(value: TValue | null): value is TValue {
-  return value !== null
-}
-
-const { Zero } = constants
-/* eslint-disable no-shadow */
 
 const addressToSymbol: AddressToSymbol = {}
 const addressToDecimals: AddressToDecimals = {}
@@ -109,7 +98,6 @@ export interface TokenBridgeParams {
 }
 
 export const useArbTokenBridge = (
-  bridge: Bridge | undefined,
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
@@ -992,10 +980,6 @@ export const useArbTokenBridge = (
   }
 
   const getTokenSymbol = async (_l1Address: string) => {
-    if (!bridge) {
-      return ''
-    }
-
     const l1Address = _l1Address.toLocaleLowerCase()
 
     if (addressToSymbol[l1Address]) {
@@ -1013,10 +997,6 @@ export const useArbTokenBridge = (
   }
 
   const getTokenDecimals = async (_l1Address: string) => {
-    if (!bridge) {
-      return 18
-    }
-
     const l1Address = _l1Address.toLocaleLowerCase()
 
     if (addressToDecimals[l1Address]) {
@@ -1293,23 +1273,10 @@ export const useArbTokenBridge = (
   const addNodeDeadlineToUnconfirmedWithdrawals = async (
     l2ToL1Data: L2ToL1EventResultPlus[]
   ) => {
-    if (!bridge) {
-      return
-    }
-
-    if (l2ToL1Data.length === 0) return []
-    if (l1NetworkID !== '1' && l1NetworkID !== '4')
-      throw new Error(`Unrecognized network: ${l1NetworkID}`)
-    // Transition from outbox v1 to v2 resets the batchnumber emitted in event logs back to zero; here we offset based on the v1 outbox's length:
-    const oldOutboxOffset = l1NetworkID === '1' ? 30 : 326
-
     // ensure sorted in ascending order by timestamp (copy so provided array doesn't get mutated)
     const sortedL2ToL1Data = [...l2ToL1Data].sort((msgA, msgB) => {
       return +msgA.timestamp - +msgB.timestamp
     })
-    // get smallest batch number in messages for lower bound on graph query
-    const smallestBatchNumber = sortedL2ToL1Data[0].batchNumber.toNumber()
-    const nodes = await getNodes(l1NetworkID, smallestBatchNumber)
 
     const unconfirmedWithdrawals = sortedL2ToL1Data.filter(
       l2ToL1Datum =>
@@ -1319,58 +1286,8 @@ export const useArbTokenBridge = (
         ].includes(l2ToL1Datum.outgoingMessageState)
     )
 
-    let currentNodeIndex = 0
-    let currentNode: NodeDataResult | undefined = nodes[currentNodeIndex]
-    // get node ids for messages included in a node, preserving order of unconfirmedWithdrawals array
-    const nodeIDs = unconfirmedWithdrawals
-      .map((l1ToL2Datum: L2ToL1EventResultPlus) => {
-        const batchNumberWithOffset =
-          l1ToL2Datum.batchNumber.toNumber() + oldOutboxOffset
-
-        // find first node with aftersendCount >= current messages batch number ('afterSendCount' is batchcount )
-        while (
-          currentNode &&
-          +currentNode.afterSendCount < batchNumberWithOffset
-        ) {
-          currentNodeIndex++
-          currentNode = nodes[currentNodeIndex]
-        }
-        // if we've reached the end of the node array, the message hasn't been included in a node, (so undefined)
-        return currentNode ? BigNumber.from(currentNode.id) : null
-      })
-      .filter(notNull)
-
-    const rollupAddress = l2.network.ethBridge.rollup
-    if (!rollupAddress) throw new Error('Could not get rollup address')
-    const rollupIface = Rollup__factory.createInterface()
-
-    const nodeAddresses: string[] = (
-      await bridge.l1Bridge.getMulticallAggregate(
-        nodeIDs.map(nodeID => ({
-          target: rollupAddress,
-          funcFragment: rollupIface.functions['getNode(uint256)'],
-          values: [nodeID]
-        }))
-      )
-    ).map(res => res && res[0])
-
-    const nodeIface = Node__factory.createInterface()
-
-    const deadlineBlockNumbers: BigNumber[] = (
-      await bridge.l1Bridge.getMulticallAggregate(
-        nodeAddresses.map((nodeAddress: string) => ({
-          target: nodeAddress,
-          funcFragment: nodeIface.functions['deadlineBlock()']
-        }))
-      )
-    ).map(res => res && res[0])
-
-    // use alignment of elements and their indics in unconfirmedWithdrawals / deadlineBlockNumbers arrays to set deadlineBlockNumbers
-    unconfirmedWithdrawals.forEach((withdrawalDatum, i) => {
-      withdrawalDatum.nodeBlockDeadline =
-        i < deadlineBlockNumbers.length
-          ? deadlineBlockNumbers[i].toNumber()
-          : 'NODE_NOT_CREATED'
+    unconfirmedWithdrawals.forEach(withdrawal => {
+      withdrawal.nodeBlockDeadline = 0
     })
 
     return l2ToL1Data

@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@gimmixorg/use-wallet'
@@ -10,7 +10,7 @@ import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
-import { Bridge, TokenBridgeParams } from 'token-bridge-sdk'
+import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { config, useActions, useAppState } from '../../state'
@@ -80,8 +80,6 @@ async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
   return (await _signer.provider.getCode(_address)).length <= 2
 }
 
-export const BridgeContext = createContext<Bridge | null>(null)
-
 const AppContent = (): JSX.Element => {
   const {
     app: { connectionState }
@@ -141,7 +139,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const networks = useNetworks()
   const signers = useSigners()
 
-  const [globalBridge, setGlobalBridge] = useState<Bridge | null>(null)
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
 
@@ -157,7 +154,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         signer: JsonRpcSigner
         network: L2Network
       }
-    }): Promise<Bridge | undefined> => {
+    }) => {
       const {
         l1: { signer: l1Signer },
         l2: { signer: l2Signer }
@@ -190,7 +187,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   // Listen for account and network changes
   useEffect(() => {
     // Any time one of those changes
-    setGlobalBridge(null)
     setTokenBridgeParams(null)
 
     if (networks.status !== UseNetworksStatus.CONNECTED) {
@@ -321,9 +317,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
-      <BridgeContext.Provider value={globalBridge}>
-        {children}
-      </BridgeContext.Provider>
+      {children}
     </>
   )
 }
