@@ -63,6 +63,7 @@ export interface L1ToL2MessageDataForUpdate {
   status?: L1ToL2MessageStatus
   l2TxID?: string
   fetchingUpdate?: boolean
+  retryableCreationTxID?: string
 }
 type TransactionBase = {
   type: TxnType
@@ -160,6 +161,17 @@ function updateTxnL1ToL2Msg(
 
   const previousL1ToL2MsgData = newState[index].l1ToL2MsgData
   if (!previousL1ToL2MsgData) {
+    if(!l1ToL2MsgData.retryableCreationTxID ){
+      throw new Error("need retryableCreationTxID")
+    }
+    if(!l1ToL2MsgData.status ){
+      throw new Error("need status")
+    }
+    newState[index].l1ToL2MsgData = {
+      status: l1ToL2MsgData.status,
+      retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
+      fetchingUpdate: false
+    }
     return newState
   }
   newState[index] = {
@@ -214,7 +226,7 @@ function reducer(state: Transaction[], action: Action) {
       return state.filter(txn => txn.txID !== action.txID)
     }
     case 'SET_SUCCESS': {
-      return updateStatusAndSeqNum(state, 'success', action.txID)
+      return updateStatusAndSeqNum(state, 'success', action.txID, action.seqNum)
     }
     case 'SET_FAILURE': {
       return updateStatusAndSeqNum(state, 'failure', action.txID)
@@ -345,7 +357,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })()
     dispatch({
       type: 'UPDATE_L1TOL2MSG_DATA',
-      txID: txID,
+      txID,
       l1ToL2MsgData: {
         status: res.status,
         l2TxID,
