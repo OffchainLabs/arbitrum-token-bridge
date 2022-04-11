@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { BigNumber, constants, utils, providers } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
+import { Provider } from '@ethersproject/abstract-provider'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import {
@@ -83,15 +84,31 @@ function getDefaultTokenSymbol(address: string) {
   )
 }
 
+type SignerWithProvider = Signer & { provider: Provider }
+
+type L1Params = { signer: Signer } & { network: L1Network }
+type L2Params = { signer: Signer } & { network: L2Network }
+
 export interface TokenBridgeParams {
   walletAddress: string
-  l1: {
-    signer: Signer
-    network: L1Network
+  l1: L1Params
+  l2: L2Params
+}
+
+interface TokenBridgeParamsWithProviders extends TokenBridgeParams {
+  l1: L1Params & { signer: SignerWithProvider }
+  l2: L2Params & { signer: SignerWithProvider }
+}
+
+function assertSignersHaveProviders(
+  params: TokenBridgeParams
+): asserts params is TokenBridgeParamsWithProviders {
+  if (typeof params.l1.signer === 'undefined') {
+    throw new Error(`No Provider found for L1 Signer`)
   }
-  l2: {
-    signer: Signer
-    network: L2Network
+
+  if (typeof params.l2.signer === 'undefined') {
+    throw new Error(`No Provider found for L2 Signer`)
   }
 }
 
@@ -99,6 +116,8 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
+  assertSignersHaveProviders(params)
+
   const { walletAddress, l1, l2 } = params
 
   const defaultBalance = {
@@ -182,10 +201,6 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function getL1TokenData(erc20L1Address: string): Promise<L1TokenData> {
-    if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L1 signer`)
-    }
-
     const erc20Bridger = new Erc20Bridger(l2.network)
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
@@ -227,10 +242,6 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function getL2TokenData(erc20L2Address: string): Promise<L2TokenData> {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     const contract = StandardArbERC20__factory.connect(
       erc20L2Address,
       l2.signer
@@ -259,10 +270,6 @@ export const useArbTokenBridge = (
   async function getL1ERC20Address(
     erc20L2Address: string
   ): Promise<string | null> {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     try {
       return await new Erc20Bridger(l2.network).getL1ERC20Address(
         erc20L2Address,
@@ -279,10 +286,6 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
-    if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L1 signer`)
-    }
-
     return await new Erc20Bridger(l2.network).getL2ERC20Address(
       erc20L1Address,
       l1.signer.provider
@@ -295,10 +298,6 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
-    if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L1 signer`)
-    }
-
     return new Erc20Bridger(l2.network).l1TokenIsDisabled(
       erc20L1Address,
       l1.signer.provider
@@ -306,10 +305,6 @@ export const useArbTokenBridge = (
   }
 
   const depositEth = async (amount: BigNumber) => {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     const ethBridger = new EthBridger(l2.network)
 
     const tx = await ethBridger.deposit({
@@ -426,10 +421,6 @@ export const useArbTokenBridge = (
   }
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     const erc20Bridger = new Erc20Bridger(l2.network)
 
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
@@ -777,14 +768,6 @@ export const useArbTokenBridge = (
   const updateTokenBalances = async (
     bridgeTokens: ContractStorage<BridgeToken>
   ) => {
-    if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L1 signer`)
-    }
-
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     const l1MultiCaller = await MultiCaller.fromProvider(l1.signer.provider)
     const l2MultiCaller = await MultiCaller.fromProvider(l2.signer.provider)
 
@@ -842,10 +825,6 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxToken(id: string) {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     if (!pendingWithdrawalsMap[id]) {
       throw new Error('Outbox message not found')
     }
@@ -908,10 +887,6 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxEth(id: string) {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     if (!pendingWithdrawalsMap[id]) {
       throw new Error('Outbox message not found')
     }
@@ -1006,10 +981,6 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: providers.Filter) => {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
@@ -1131,12 +1102,6 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: providers.Filter
   ) => {
-    const l2Provider = l2.signer.provider
-
-    if (typeof l2Provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     const t = new Date().getTime()
 
     const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
@@ -1151,7 +1116,7 @@ export const useArbTokenBridge = (
     const gatewayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
         erc20Bridger.getL2WithdrawalEvents(
-          l2Provider,
+          l2.signer.provider,
           gatewayAddress,
           { fromBlock: pivotBlock, toBlock: 'latest' },
           undefined,
@@ -1180,7 +1145,7 @@ export const useArbTokenBridge = (
 
     const l2Txns = await Promise.all(
       gatewayWithdrawalsResults.map(withdrawEventData =>
-        l2Provider.getTransactionReceipt(withdrawEventData.txHash)
+        l2.signer.provider.getTransactionReceipt(withdrawEventData.txHash)
       )
     )
 
@@ -1239,10 +1204,6 @@ export const useArbTokenBridge = (
   async function attachNodeBlockDeadlineToEvent(
     withdrawal: L2ToL1EventResultPlus
   ) {
-    if (typeof l2.signer.provider === 'undefined') {
-      return withdrawal
-    }
-
     if (
       withdrawal.outgoingMessageState === OutgoingMessageState.EXECUTED ||
       withdrawal.outgoingMessageState === OutgoingMessageState.CONFIRMED
@@ -1324,10 +1285,6 @@ export const useArbTokenBridge = (
     batchNumber: BigNumber,
     indexInBatch: BigNumber
   ) {
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
-    }
-
     if (
       executedMessagesCache[
         hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1368,14 +1325,6 @@ export const useArbTokenBridge = (
       ]
     ) {
       return OutgoingMessageState.EXECUTED
-    }
-
-    if (typeof l1.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L1 signer`)
-    }
-
-    if (typeof l2.signer.provider === 'undefined') {
-      throw new Error(`No provider found for L2 signer`)
     }
 
     const outboxAddress = getOutboxAddr(l2.network, batchNumber)
