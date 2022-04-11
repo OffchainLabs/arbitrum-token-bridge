@@ -126,7 +126,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       await res.wait()
 
       // update in store
-      arbTokenBridge.transactions.updateL1ToL2MsgData(
+      arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
         tx.txId,
         l1ToL2Msg,
         tx.asset === 'eth'
