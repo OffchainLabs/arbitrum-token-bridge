@@ -6,33 +6,33 @@ import { Button } from '../common/Button'
 import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { useNetworks } from '../..//hooks/useNetworks'
-import useTwitter from '../..//hooks/useTwitter'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import useTwitter from '../../hooks/useTwitter'
 
 const MainContent = () => {
   const {
     app: { mergedTransactionsToShow }
   } = useAppState()
-  const { l1Network } = useNetworks()
+  const { l1 } = useNetworksAndSigners()
   const handleTwitterClick = useTwitter()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
   const isMainnet = useMemo(() => {
-    if (typeof l1Network === 'undefined') {
+    if (typeof l1.network === 'undefined') {
       return false
     }
 
-    return l1Network.chainID === 1
-  }, [l1Network])
+    return l1.network.chainID === 1
+  }, [l1])
 
   const isNitro = useMemo(() => {
-    if (typeof l1Network === 'undefined') {
+    if (typeof l1.network === 'undefined') {
       return false
     }
 
-    return l1Network.chainID === 5
-  }, [l1Network])
+    return l1.network.chainID === 5
+  }, [l1])
 
   return (
     <div className="mx-auto px-4">
@@ -54,12 +54,13 @@ const MainContent = () => {
 
       {isNitro && (
         <div className="mb-4 mx-auto max-w-networkBox w-full">
-          <Alert type="blue" >
-            <span id='twitter-faucet-container'>Request testnet Eth from the{' '}
-            <a id="faucet-link" target="_blank" onClick={handleTwitterClick}>
-              Nitro Devnet twitter faucet!
-            </a></span>
- 
+          <Alert type="blue">
+            <span id="twitter-faucet-container">
+              Request testnet Eth from the{' '}
+              <a id="faucet-link" target="_blank" onClick={handleTwitterClick}>
+                Nitro Devnet twitter faucet!
+              </a>
+            </span>
           </Alert>
         </div>
       )}

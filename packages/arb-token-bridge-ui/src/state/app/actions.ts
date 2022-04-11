@@ -62,8 +62,7 @@ export const reset = ({ state }: Context, newChainId: string) => {
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
-  // TODO: Bring back
-  state.app.pwLoadedState = PendingWithdrawalsLoadedState.READY
+  state.app.pwLoadedState = PendingWithdrawalsLoadedState.LOADING
 }
 
 export const setWarningTokens = (

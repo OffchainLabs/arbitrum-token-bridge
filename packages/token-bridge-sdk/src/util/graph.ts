@@ -1,7 +1,6 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
-import { L2ToL1EventResult } from 'arb-ts'
-import { AssetType } from '../hooks/arbTokenBridge.types'
+import { AssetType, L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
 import axios from 'axios'
 import { utils } from 'ethers'
 
@@ -71,10 +70,10 @@ export const getNodes = async (
   const res = await client.query({
     query: gql`
     {
-      nodes( 
+      nodes(
         orderBy: afterSendCount
         orderDirection: asc
-        where:{ afterSendCount_gte: ${minAfterSendCount}} 
+        where:{ afterSendCount_gte: ${minAfterSendCount}}
         first: 1000,
         skip: ${offset}
 

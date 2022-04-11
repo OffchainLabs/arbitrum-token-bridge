@@ -1,15 +1,18 @@
 import { useCallback, useEffect } from 'react'
 import { L1TransactionReceipt, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { AssetType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
-
 import { useInterval } from '../common/Hooks'
-import { useSigners } from '../../hooks/useSigners'
-import { AssetType } from 'token-bridge-sdk'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
-  const { l1Signer, l2Signer } = useSigners()
+  const {
+    l1: { signer: l1Signer },
+    l2: { signer: l2Signer }
+  } = useNetworksAndSigners()
+
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()

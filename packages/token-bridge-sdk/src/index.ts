@@ -11,7 +11,11 @@ export type {
   L1TokenData,
   L2TokenData
 } from './hooks/arbTokenBridge.types'
-export { TokenType, AssetType } from './hooks/arbTokenBridge.types'
+export {
+  TokenType,
+  AssetType,
+  OutgoingMessageState
+} from './hooks/arbTokenBridge.types'
 
 export type {
   Transaction,
@@ -23,7 +27,6 @@ export type {
 export { txnTypeToLayer } from './hooks/useTransactions'
 export type { L1ToL2MessageData } from './hooks/useTransactions'
 
-export { OutgoingMessageState, Bridge } from 'arb-ts'
 export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export { validateTokenList } from './util/index'

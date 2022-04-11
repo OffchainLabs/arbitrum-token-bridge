@@ -18,7 +18,10 @@ import TransactionConfirmationModal, {
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
-import { useNetworks } from '../../hooks/useNetworks'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 function useTokenFromSearchParams(): string | undefined {
   const { search } = useLocation()
@@ -70,8 +73,8 @@ const TransferPanel = (): JSX.Element => {
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
-  const networks = useNetworks()
-  const latestNetworks = useLatest(networks)
+  const networksAndSigners = useNetworksAndSigners()
+  const latestNetworksAndSigners = useLatest(networksAndSigners)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -167,10 +170,9 @@ const TransferPanel = (): JSX.Element => {
   }, [isBridgingANewStandardToken, selectedToken])
 
   const transfer = async () => {
-    // Should never be the case
     if (
-      typeof latestNetworks.current.l1Network === 'undefined' ||
-      typeof latestNetworks.current.l2Network === 'undefined'
+      latestNetworksAndSigners.current.status !==
+      UseNetworksAndSignersStatus.CONNECTED
     ) {
       return
     }
@@ -198,11 +200,11 @@ const TransferPanel = (): JSX.Element => {
             `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (latestNetworks.current.isConnectedToArbitrum) {
-          await changeNetwork?.(latestNetworks.current.l1Network)
+        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
 
           while (
-            latestNetworks.current.isConnectedToArbitrum ||
+            latestNetworksAndSigners.current.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -212,7 +214,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = latestNetworks.current.l1Network.chainID
+        const l1ChainID = latestNetworksAndSigners.current.l1.network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -224,23 +226,21 @@ const TransferPanel = (): JSX.Element => {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          // // check that a registration is not currently in progress
-          // const l2RoutedAddress = (
-          //   await bridge.l2Bridge.l2GatewayRouter.functions.calculateL2TokenAddress(
-          //     selectedToken.address
-          //   )
-          // )[0]
+          // check that a registration is not currently in progress
+          const l2RoutedAddress = await arbTokenBridge.token.getL2ERC20Address(
+            selectedToken.address
+          )
 
-          // if (
-          //   selectedToken.l2Address &&
-          //   selectedToken.l2Address.toLowerCase() !==
-          //     l2RoutedAddress.toLowerCase()
-          // ) {
-          //   alert(
-          //     'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
-          //   )
-          //   return
-          // }
+          if (
+            selectedToken.l2Address &&
+            selectedToken.l2Address.toLowerCase() !==
+              l2RoutedAddress.toLowerCase()
+          ) {
+            alert(
+              'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
+            )
+            return
+          }
 
           const { allowance } = await arbTokenBridge.token.getL1TokenData(
             selectedToken.address
@@ -257,11 +257,11 @@ const TransferPanel = (): JSX.Element => {
           await latestEth.current.deposit(amountRaw)
         }
       } else {
-        if (!latestNetworks.current.isConnectedToArbitrum) {
-          await changeNetwork?.(latestNetworks.current.l2Network)
+        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
 
           while (
-            !networks.isConnectedToArbitrum ||
+            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -271,7 +271,7 @@ const TransferPanel = (): JSX.Element => {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l2ChainID = latestNetworks.current.l2Network.chainID
+        const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -312,22 +312,21 @@ const TransferPanel = (): JSX.Element => {
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
-    /** TODO tmp for initial devnet ui */
-    return true
-    // const l2AmountNum = +l2Amount
-    // return (
-    //   (selectedToken &&
-    //     selectedToken.address &&
-    //     selectedToken.address.toLowerCase() ===
-    //       '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
-    //   (selectedToken &&
-    //     selectedToken.address &&
-    //     selectedToken.address.toLowerCase() ===
-    //       '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-    //   transferring ||
-    //   (!isDepositMode &&
-    //     (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
-    // )
+    const l2AmountNum = +l2Amount
+
+    return (
+      (selectedToken &&
+        selectedToken.address &&
+        selectedToken.address.toLowerCase() ===
+          '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
+      (selectedToken &&
+        selectedToken.address &&
+        selectedToken.address.toLowerCase() ===
+          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
+      transferring ||
+      (!isDepositMode &&
+        (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
+    )
   }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
 
   return (
@@ -419,7 +418,7 @@ const TransferPanel = (): JSX.Element => {
             variant="navy"
             isLoading={transferring}
           >
-            Withdrawals are currently disabled
+            Withdraw
           </Button>
         )}
       </div>
