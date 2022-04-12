@@ -6,7 +6,7 @@ import { useAppState } from 'src/state'
 import { DepositStatus } from '../../state/app/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
-import { L1ToL2MessageWriter } from '@arbitrum/sdk'
+import { L1ToL2MessageWriter, L1TransactionReceipt } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -94,7 +94,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   } = useAppState()
   const {
     l2: { signer: l2Signer },
-    isConnectedToArbitrum
+    isConnectedToArbitrum,
+    l1: { signer: l1Signer }
   } = useNetworksAndSigners()
   const [isClaiming, setIsClaiming] = useState(false)
 
@@ -111,17 +112,13 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       if (typeof l2Signer === 'undefined') {
         return
       }
+      if (typeof l1Signer === 'undefined') {
+        return
+      }
+      const l1TxRec = new L1TransactionReceipt(await l1Signer.provider.getTransactionReceipt(tx.txId))
 
-      const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
+      const l1ToL2Msg = await l1TxRec.getL1ToL2Message(l2Signer)
 
-      if (!retryableCreationTxID)
-        throw new Error("Can't redeem; txid not found")
-
-      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
-        l2Signer,
-        retryableCreationTxID,
-        BigNumber.from(tx.seqNum)
-      )
       const res = await l1ToL2Msg.redeem()
       await res.wait()
 
@@ -132,7 +129,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         tx.asset === 'eth'
       )
     },
-    [arbTokenBridge, l2Signer]
+    [arbTokenBridge, l2Signer, l1Signer]
   )
 
   const { blockTime = 15 } = l1NetworkDetails as Network
