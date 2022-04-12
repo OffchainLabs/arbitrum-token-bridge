@@ -830,35 +830,22 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
-    const { batchNumber, indexInBatch, tokenAddress, value } =
-      pendingWithdrawalsMap[id]
+    const event = pendingWithdrawalsMap[id]
 
-    const proofInfo = await L2ToL1MessageReader.tryGetProof(
-      l2.signer.provider,
-      batchNumber,
-      indexInBatch
-    )
-
-    if (!proofInfo) {
-      throw new Error('No proof found')
-    }
-
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageWriter = L2ToL1Message.fromBatchNumber(
+    const outboxAddress = getOutboxAddr(l2.network, BigNumber.from(0))
+    const messageWriter = L2ToL1MessageWriter.fromEvent(
       l1.signer,
       outboxAddress,
-      batchNumber,
-      indexInBatch
+      event
     )
 
-    const res = await messageWriter.execute(proofInfo)
-
-    const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
+    const res = await messageWriter.execute(l2.signer.provider)
+    const { symbol, decimals } = await getL1TokenData(event.tokenAddress!)
 
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: utils.formatUnits(value, decimals),
+      value: utils.formatUnits(event.value, decimals),
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
@@ -876,7 +863,7 @@ export const useArbTokenBridge = (
           delete newPendingWithdrawalsMap[id]
           return newPendingWithdrawalsMap
         })
-        addToExecutedMessagesCache(batchNumber, indexInBatch)
+        addToExecutedMessagesCache(event.position)
       } else {
         setTransactionFailure(rec.transactionHash)
       }
@@ -892,32 +879,21 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
-    const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
+    const event = pendingWithdrawalsMap[id]
 
-    const proofInfo = await L2ToL1MessageReader.tryGetProof(
-      l2.signer.provider,
-      batchNumber,
-      indexInBatch
-    )
-
-    if (!proofInfo) {
-      throw new Error('No proof found')
-    }
-
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageWriter = L2ToL1Message.fromBatchNumber(
+    const outboxAddress = getOutboxAddr(l2.network, BigNumber.from(0))
+    const messageWriter = L2ToL1MessageWriter.fromEvent(
       l1.signer,
       outboxAddress,
-      batchNumber,
-      indexInBatch
+      event
     )
 
-    const res = await messageWriter.execute(proofInfo)
+    const res = await messageWriter.execute(l2.signer.provider)
 
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: utils.formatEther(value),
+      value: utils.formatEther(event.value),
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
@@ -935,8 +911,7 @@ export const useArbTokenBridge = (
           delete newPendingWithdrawalsMap[id]
           return newPendingWithdrawalsMap
         })
-
-        addToExecutedMessagesCache(batchNumber, indexInBatch)
+        addToExecutedMessagesCache(event.position)
       } else {
         setTransactionFailure(rec.transactionHash)
       }
