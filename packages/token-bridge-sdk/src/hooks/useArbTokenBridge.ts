@@ -1219,7 +1219,7 @@ export const useArbTokenBridge = (
     )
 
     for (const event of l2ToL1TxnsWithDeadlines) {
-      pendingWithdrawals[event.position.toString()] = event
+      pendingWithdrawals[event.position.toHexString()] = event
     }
 
     setPendingWithdrawalMap(pendingWithdrawals)
