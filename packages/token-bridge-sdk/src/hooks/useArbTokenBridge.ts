@@ -10,8 +10,8 @@ import {
   EthBridger,
   Erc20Bridger,
   MultiCaller,
-  L2ToL1Message,
   L2ToL1MessageReader,
+  L2ToL1MessageWriter,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
 import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
@@ -30,6 +30,7 @@ import {
   ContractStorage,
   ERC20BridgeToken,
   ERC721Balance,
+  L2ToL1EventResult,
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
   TokenType,
@@ -37,7 +38,6 @@ import {
   L2TokenData,
   OutgoingMessageState,
   WithdrawalInitiated,
-  L2ToL1EventResult,
   NodeBlockDeadlineStatus
 } from './arbTokenBridge.types'
 
@@ -1219,88 +1219,60 @@ export const useArbTokenBridge = (
     )
 
     for (const event of l2ToL1TxnsWithDeadlines) {
-      pendingWithdrawals[event.uniqueId.toString()] = event
+      pendingWithdrawals[event.position.toString()] = event
     }
 
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
   // call after we've confirmed the outbox entry has been created
-  async function getOutgoingMessageStateV2(
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber
-  ) {
-    if (
-      executedMessagesCache[
-        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-      ]
-    ) {
+  async function getOutgoingMessageStateV2(event: L2ToL1EventResult) {
+    if (executedMessagesCache[hashOutgoingMessage(event.position)]) {
       return OutgoingMessageState.EXECUTED
     }
 
-    const proofData = await L2ToL1MessageReader.tryGetProof(
-      l2.signer.provider,
-      batchNumber,
-      indexInBatch
+    const outboxAddress = getOutboxAddr(l2.network, BigNumber.from(0))
+    const messageReader = L2ToL1MessageReader.fromEvent(
+      l1.signer.provider,
+      outboxAddress,
+      event
     )
 
-    // this should never occur
-    if (!proofData) {
-      return OutgoingMessageState.UNCONFIRMED
-    }
+    await messageReader.getOutboxProof(l2.signer.provider)
+    const outgoingMessageState = await messageReader.status(l2.signer.provider)
 
-    const { path } = proofData
-    const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
-
-    if (res) {
-      addToExecutedMessagesCache(batchNumber, indexInBatch)
+    if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
+      addToExecutedMessagesCache(event.position)
       return OutgoingMessageState.EXECUTED
     } else {
       return OutgoingMessageState.CONFIRMED
     }
   }
 
-  async function getOutgoingMessageState(
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber
-  ) {
-    if (
-      executedMessagesCache[
-        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-      ]
-    ) {
+  async function getOutgoingMessageState(event: L2ToL1EventResult) {
+    if (executedMessagesCache[hashOutgoingMessage(event.position)]) {
       return OutgoingMessageState.EXECUTED
     }
 
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageReader = new L2ToL1MessageReader(
+    const outboxAddress = getOutboxAddr(l2.network, BigNumber.from(0))
+    const messageReader = L2ToL1MessageReader.fromEvent(
       l1.signer.provider,
       outboxAddress,
-      batchNumber,
-      indexInBatch
+      event
     )
 
-    const proofInfo = await messageReader.tryGetProof(l2.signer.provider)
-    return await messageReader.status(proofInfo)
+    return await messageReader.status(l2.signer.provider)
   }
 
-  function addToExecutedMessagesCache(
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber
-  ) {
-    const _executedMessagesCache = { ...executedMessagesCache }
-    _executedMessagesCache[
-      hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-    ] = true
-    setExecutedMessagesCache(_executedMessagesCache)
+  function addToExecutedMessagesCache(position: BigNumber) {
+    setExecutedMessagesCache({
+      ...executedMessagesCache,
+      [hashOutgoingMessage(position)]: true
+    })
   }
 
-  const hashOutgoingMessage = (
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber,
-    _l1NetworkID: string
-  ) => {
-    return `${batchNumber.toString()},${indexInBatch.toString()},${_l1NetworkID}`
+  function hashOutgoingMessage(position: BigNumber) {
+    return `${position.toString()},${l1.network.chainID}`
   }
 
   return {
