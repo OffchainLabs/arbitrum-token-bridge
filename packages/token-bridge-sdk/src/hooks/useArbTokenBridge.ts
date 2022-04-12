@@ -957,56 +957,54 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: providers.Filter) => {
-    const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    // const startBlock =
+    //   (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
-    const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
-      l1NetworkID
-    )
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+    // const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
+    //   l1NetworkID
+    // )
+    // const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
-    console.log(
-      `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
-    )
+    // console.log(
+    //   `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
+    // )
 
-    const oldEthWithdrawals = await getETHWithdrawals(
-      walletAddress,
-      startBlock,
-      pivotBlock,
-      l1NetworkID
-    )
+    // const oldEthWithdrawals = await getETHWithdrawals(
+    //   walletAddress,
+    //   startBlock,
+    //   pivotBlock,
+    //   l1NetworkID
+    // )
 
-    const recentEthWithdrawals = await L2ToL1MessageReader.getL2ToL1MessageLogs(
+    return []
+
+    // TODO: Incompatible with `L2ToL1Event`
+    // https://github.com/OffchainLabs/arbitrum-sdk/pull/29
+    const ethWithdrawals = await L2ToL1MessageReader.getL2ToL1MessageLogs(
       l2.signer.provider,
       {
-        fromBlock: pivotBlock, // Change to 0 for Nitro
+        fromBlock: 0,
         toBlock: 'latest'
       },
       undefined,
       walletAddress
     )
 
-    const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
+    // const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
 
-    console.log(
-      `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
-    )
+    // console.log(
+    //   `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
+    // )
 
     async function toEventResultPlus(
       event: L2ToL1EventResult
     ): Promise<L2ToL1EventResultPlus> {
-      const { batchNumber, indexInBatch, callvalue } = event
-
-      const outgoingMessageState =
-        batchNumber.toNumber() > lastOutboxEntryIndexDec
-          ? OutgoingMessageState.UNCONFIRMED
-          : await getOutgoingMessageStateV2(batchNumber, indexInBatch)
+      const outgoingMessageState = await getOutgoingMessageStateV2(event)
 
       return {
         ...event,
         type: AssetType.ETH,
-        value: callvalue,
+        value: event.callvalue,
         symbol: 'ETH',
         outgoingMessageState,
         decimals: 18
@@ -1020,58 +1018,57 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: providers.Filter
   ) => {
-    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
-      l1NetworkID
-    )
-    console.log(
-      `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
-    )
+    // const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
+    //   l1NetworkID
+    // )
+    // console.log(
+    //   `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
+    // )
 
-    const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    // const startBlock =
+    //   (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+    // const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
-    const results = await getTokenWithdrawalsGraph(
-      walletAddress,
-      startBlock,
-      pivotBlock,
-      l1NetworkID
-    )
+    // const results = await getTokenWithdrawalsGraph(
+    //   walletAddress,
+    //   startBlock,
+    //   pivotBlock,
+    //   l1NetworkID
+    // )
 
-    const symbols = await Promise.all(
-      results.map(resultData =>
-        getTokenSymbol(resultData.otherData.tokenAddress)
-      )
-    )
-    const decimals = await Promise.all(
-      results.map(resultData =>
-        getTokenDecimals(resultData.otherData.tokenAddress)
-      )
-    )
+    // const symbols = await Promise.all(
+    //   results.map(resultData =>
+    //     getTokenSymbol(resultData.otherData.tokenAddress)
+    //   )
+    // )
+    // const decimals = await Promise.all(
+    //   results.map(resultData =>
+    //     getTokenDecimals(resultData.otherData.tokenAddress)
+    //   )
+    // )
 
-    const outgoingMessageStates = await Promise.all(
-      results.map(withdrawEventData => {
-        const { batchNumber, indexInBatch } = withdrawEventData.l2ToL1Event
-        return getOutgoingMessageState(batchNumber, indexInBatch)
-      })
-    )
+    // const outgoingMessageStates = await Promise.all(
+    //   results.map(event => {
+    //     return getOutgoingMessageState(event)
+    //   })
+    // )
 
-    const oldTokenWithdrawals: L2ToL1EventResultPlus[] = results.map(
-      (resultsData, i) => ({
-        ...resultsData.l2ToL1Event,
-        ...resultsData.otherData,
-        outgoingMessageState: outgoingMessageStates[i],
-        symbol: symbols[i],
-        decimals: decimals[i]
-      })
-    )
+    // const oldTokenWithdrawals: L2ToL1EventResultPlus[] = results.map(
+    //   (resultsData, i) => ({
+    //     ...resultsData.l2ToL1Event,
+    //     ...resultsData.otherData,
+    //     outgoingMessageState: outgoingMessageStates[i],
+    //     symbol: symbols[i],
+    //     decimals: decimals[i]
+    //   })
+    // )
 
     const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {
-      fromBlock: pivotBlock
+      fromBlock: 0
     })
 
-    return [...oldTokenWithdrawals, ...recentTokenWithdrawals]
+    return recentTokenWithdrawals
   }
 
   const getTokenWithdrawals = async (
@@ -1080,12 +1077,12 @@ export const useArbTokenBridge = (
   ) => {
     const t = new Date().getTime()
 
-    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
-      l1NetworkID
-    )
-    const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+    // const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
+    //   l1NetworkID
+    // )
+    // const startBlock =
+    //   (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    // const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
     const erc20Bridger = new Erc20Bridger(l2.network)
 
@@ -1094,7 +1091,7 @@ export const useArbTokenBridge = (
         erc20Bridger.getL2WithdrawalEvents(
           l2.signer.provider,
           gatewayAddress,
-          { fromBlock: pivotBlock, toBlock: 'latest' },
+          { fromBlock: 0, toBlock: 'latest' },
           undefined,
           walletAddress
         )
@@ -1129,8 +1126,8 @@ export const useArbTokenBridge = (
       l2Txns.map(txReceipt => {
         const l2TxReceipt = new L2TransactionReceipt(txReceipt)
         // TODO: length != 1
-        const [{ batchNumber, indexInBatch }] = l2TxReceipt.getL2ToL1Events()
-        return getOutgoingMessageState(batchNumber, indexInBatch)
+        const [event] = l2TxReceipt.getL2ToL1Events()
+        return getOutgoingMessageState(event)
       })
     )
 
@@ -1138,32 +1135,10 @@ export const useArbTokenBridge = (
       (withdrawEventData: WithdrawalInitiated, i) => {
         const l2TxReceipt = new L2TransactionReceipt(l2Txns[i])
         // TODO: length != 1
-        const [
-          {
-            caller,
-            destination,
-            uniqueId,
-            batchNumber,
-            indexInBatch,
-            arbBlockNum,
-            ethBlockNum,
-            timestamp,
-            callvalue,
-            data
-          }
-        ] = l2TxReceipt.getL2ToL1Events()
+        const [event] = l2TxReceipt.getL2ToL1Events()
 
         const eventDataPlus: L2ToL1EventResultPlus = {
-          caller,
-          destination,
-          uniqueId,
-          batchNumber,
-          indexInBatch,
-          arbBlockNum,
-          ethBlockNum,
-          timestamp,
-          callvalue,
-          data,
+          ...event,
           type: AssetType.ERC20,
           value: withdrawEventData._amount,
           tokenAddress: withdrawEventData.l1Token,
