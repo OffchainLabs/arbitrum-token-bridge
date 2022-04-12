@@ -1152,33 +1152,27 @@ export const useArbTokenBridge = (
     )
   }
 
-  async function attachNodeBlockDeadlineToEvent(
-    withdrawal: L2ToL1EventResultPlus
-  ) {
+  async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
     if (
-      withdrawal.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-      withdrawal.outgoingMessageState === OutgoingMessageState.CONFIRMED
+      event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
+      event.outgoingMessageState === OutgoingMessageState.CONFIRMED
     ) {
-      return withdrawal
+      return event
     }
 
-    const { batchNumber, indexInBatch } = withdrawal
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageReader = L2ToL1MessageReader.fromBatchNumber(
+    const outboxAddress = getOutboxAddr(l2.network, BigNumber.from(0))
+    const messageReader = L2ToL1MessageReader.fromEvent(
       l1.signer,
       outboxAddress,
-      batchNumber,
-      indexInBatch
+      event
     )
+
     try {
       const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
         l2.signer.provider
       )
 
-      return {
-        ...withdrawal,
-        nodeBlockDeadline: firstExecutableBlock.toNumber()
-      }
+      return { ...event, nodeBlockDeadline: firstExecutableBlock.toNumber() }
     } catch (e) {
       const expectedError = "batch doesn't exist"
       const err = e as Error & { error: Error }
@@ -1187,7 +1181,7 @@ export const useArbTokenBridge = (
       if (actualError.includes(expectedError)) {
         const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
         return {
-          ...withdrawal,
+          ...event,
           nodeBlockDeadline
         }
       } else {
