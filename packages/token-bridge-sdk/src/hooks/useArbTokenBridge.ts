@@ -364,10 +364,10 @@ export const useArbTokenBridge = (
       const l2ToL1Events = receipt.getL2ToL1Events()
 
       if (l2ToL1Events.length === 1) {
-        const l2ToL1EventResult = l2ToL1Events[0]
-        console.info('withdraw event data:', l2ToL1EventResult)
+        const [l2ToL1EventResult] = l2ToL1Events
+        const id = l2ToL1EventResult.position.toHexString()
 
-        const id = l2ToL1EventResult.uniqueId.toString()
+        console.info('withdraw event data:', l2ToL1EventResult)
 
         const outgoingMessageState = OutgoingMessageState.NOT_FOUND
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
@@ -379,6 +379,7 @@ export const useArbTokenBridge = (
           decimals: 18,
           nodeBlockDeadline: 'NODE_NOT_CREATED'
         }
+
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           return {
             ...oldPendingWithdrawalsMap,
@@ -499,15 +500,15 @@ export const useArbTokenBridge = (
       const l2ToL1Events = receipt.getL2ToL1Events()
 
       if (l2ToL1Events.length === 1) {
-        const l2ToL1EventDataResult = l2ToL1Events[0]
-        const id = l2ToL1EventDataResult.uniqueId.toString()
-        const outgoingMessageState = OutgoingMessageState.NOT_FOUND
+        const [l2ToL1EventDataResult] = l2ToL1Events
+        const id = l2ToL1EventDataResult.position.toHexString()
+
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
           type: AssetType.ERC20,
           tokenAddress: erc20l1Address,
           value: amount,
-          outgoingMessageState,
+          outgoingMessageState: OutgoingMessageState.NOT_FOUND,
           symbol: symbol,
           decimals: decimals,
           nodeBlockDeadline: 'NODE_NOT_CREATED'

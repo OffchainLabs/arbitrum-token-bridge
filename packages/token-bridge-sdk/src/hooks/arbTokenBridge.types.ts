@@ -6,6 +6,7 @@ import {
   L1ToL2MessageStatus,
   L2ToL1MessageStatus as OutgoingMessageState
 } from '@arbitrum/sdk'
+import { L2ToL1Event } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
@@ -31,19 +32,7 @@ export enum AssetType {
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 
-// todo: use L2ToL1TransactionEvent['args']
-export interface L2ToL1EventResult {
-  caller: string
-  destination: string
-  uniqueId: BigNumber
-  batchNumber: BigNumber
-  indexInBatch: BigNumber
-  arbBlockNum: BigNumber
-  ethBlockNum: BigNumber
-  timestamp: BigNumber | string // TODO: Clean up
-  callvalue: BigNumber
-  data: string
-}
+export type L2ToL1EventResult = L2ToL1Event
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
@@ -62,6 +51,7 @@ export type WithdrawalInitiated = WithdrawalInitiatedEvent['args'] & {
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
 }
+
 export interface BridgeToken {
   type: TokenType
   name: string
@@ -94,6 +84,7 @@ export interface L2TokenData {
 export interface ContractStorage<T> {
   [contractAddress: string]: T | undefined
 }
+
 export interface BridgeBalance {
   balance: BigNumber | null
 
@@ -131,9 +122,11 @@ export interface ERC721Balance {
 export interface AddressToSymbol {
   [tokenAddress: string]: string
 }
+
 export interface AddressToDecimals {
   [tokenAddress: string]: number
 }
+
 export interface ArbTokenBridgeBalances {
   eth: BridgeBalance
   erc20: ContractStorage<BridgeBalance>
