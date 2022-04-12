@@ -44,8 +44,8 @@ import {
 import {
   getLatestOutboxEntryIndex,
   messageHasExecuted,
-  getETHWithdrawals,
-  getTokenWithdrawals as getTokenWithdrawalsGraph,
+  // getETHWithdrawals,
+  // getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
   getBuiltInsGraphLatestBlockNumber
 } from '../util/graph'
