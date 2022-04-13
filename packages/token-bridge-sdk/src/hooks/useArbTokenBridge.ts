@@ -1164,9 +1164,12 @@ export const useArbTokenBridge = (
     )
 
     try {
-      const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-        l2.signer.provider
-      )
+      const firstExecutableBlock = BigNumber.from(0)
+      // TODO: Uncomment after `getFirstExecutableBlock` is implemented for Nitro
+      //
+      // const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
+      //   l2.signer.provider
+      // )
 
       return { ...event, nodeBlockDeadline: firstExecutableBlock.toNumber() }
     } catch (e) {
