@@ -1234,7 +1234,12 @@ export const useArbTokenBridge = (
       event
     )
 
-    await messageReader.getOutboxProof(l2.signer.provider)
+    try {
+      await messageReader.getOutboxProof(l2.signer.provider)
+    } catch (error) {
+      return OutgoingMessageState.NOT_FOUND
+    }
+
     const outgoingMessageState = await messageReader.status(l2.signer.provider)
 
     if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
