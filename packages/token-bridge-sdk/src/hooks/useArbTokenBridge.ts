@@ -1172,7 +1172,7 @@ export const useArbTokenBridge = (
         l2.signer.provider
       )
 
-      return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
+      return { ...event, nodeBlockDeadline: firstExecutableBlock.toNumber() }
     } catch (e) {
       const expectedError = "batch doesn't exist"
       const err = e as Error & { error: Error }
