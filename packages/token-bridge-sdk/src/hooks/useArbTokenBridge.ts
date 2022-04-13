@@ -1149,13 +1149,6 @@ export const useArbTokenBridge = (
   }
 
   async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
-    if (
-      event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-      event.outgoingMessageState === OutgoingMessageState.CONFIRMED
-    ) {
-      return event
-    }
-
     const outboxAddress = getOutboxAddr(l2.network, BigNumber.from(0))
     const messageReader = L2ToL1MessageReader.fromEvent(
       l1.signer,
@@ -1164,12 +1157,13 @@ export const useArbTokenBridge = (
     )
 
     try {
-      const firstExecutableBlock = BigNumber.from(0)
-      // TODO: Uncomment after `getFirstExecutableBlock` is implemented for Nitro
-      //
-      // const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-      //   l2.signer.provider
-      // )
+      const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
+        l2.signer.provider
+      )
+
+      if (!firstExecutableBlock) {
+        return event
+      }
 
       return { ...event, nodeBlockDeadline: firstExecutableBlock.toNumber() }
     } catch (e) {
