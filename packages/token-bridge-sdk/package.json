@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.10",
-    "@arbitrum/sdk": "OffchainLabs/arbitrum-sdk#deadline-nitro",
+    "@arbitrum/sdk": "OffchainLabs/arbitrum-sdk#fe3c3ee90a2d713955988dcb6a9f87732b7dbedc",
     "@rehooks/local-storage": "^2.3.0",
     "@types/lodash.isempty": "^4.4.6",
     "@uniswap/token-lists": "^1.0.0-beta.27",
