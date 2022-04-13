@@ -14,7 +14,8 @@ import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumG
 import {
   FailedTransaction,
   NewTransaction,
-  Transaction
+  Transaction,
+  L1ToL2MessageData
 } from './useTransactions'
 
 export { OutgoingMessageState }
@@ -180,9 +181,10 @@ export interface TransactionActions {
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    seqNum?: number
+    seqNum?: number,
+    l1ToL2MsgData?: L1ToL2MessageData
   ) => void
-  updateL1ToL2MsgData: (
+  fetchAndUpdateL1ToL2MsgStatus: (
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
@@ -199,7 +201,7 @@ export type ArbTokenBridgeTransactions = {
   | 'setTransactionConfirmed'
   | 'updateTransaction'
   | 'addTransactions'
-  | 'updateL1ToL2MsgData'
+  | 'fetchAndUpdateL1ToL2MsgStatus'
 >
 
 export interface ArbTokenBridge {

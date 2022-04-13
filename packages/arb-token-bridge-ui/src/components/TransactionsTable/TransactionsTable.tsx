@@ -124,7 +124,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       await res.wait()
 
       // update in store
-      arbTokenBridge.transactions.updateL1ToL2MsgData(
+      arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
         tx.txId,
         l1ToL2Msg,
         tx.asset === 'eth'
@@ -158,7 +158,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     }
 
     // Don't show any alert in case user denies the signature
-    if (err.code === 4001) {
+    if (err?.code === 4001) {
       return
     }
 
@@ -266,14 +266,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const renderTxIDDisplay = (tx: MergedTransaction) => {
     if (tx.uniqueId) return tx.uniqueId.toString()
     if (isDeposit(tx)) {
-      const targetL2Tx = (tx => {
-        if (!tx.l1ToL2MsgData) return ''
-        if (tx.asset === 'eth') {
-          return tx.l1ToL2MsgData.retryableCreationTxID
-        } else {
-          return tx.l1ToL2MsgData.l2TxID
-        }
-      })(tx)
+      const targetL2Tx = tx.l1ToL2MsgData?.l2TxID
       return (
         <>
           L1: <ExplorerLink hash={tx.txId} type={tx.direction as TxnType} />{' '}

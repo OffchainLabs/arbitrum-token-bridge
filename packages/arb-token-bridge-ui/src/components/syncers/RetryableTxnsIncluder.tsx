@@ -32,7 +32,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer)
       const status = await l1ToL2Msg.status()
       if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
-        arbTokenBridge?.transactions?.updateL1ToL2MsgData(
+        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
           depositTx.txId,
           l1ToL2Msg,
           depositTx.asset === 'eth',
@@ -60,7 +60,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       ) //**TODO: not found, i.e., reorg */
       const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer)
 
-      arbTokenBridge?.transactions?.updateL1ToL2MsgData(
+      arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
         depositTx.txID,
         l1ToL2Msg,
         depositTx.assetType === AssetType.ETH
