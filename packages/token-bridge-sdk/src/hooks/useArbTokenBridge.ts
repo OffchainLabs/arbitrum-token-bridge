@@ -976,11 +976,7 @@ export const useArbTokenBridge = (
     //   l1NetworkID
     // )
 
-    return []
-
-    // TODO: Incompatible with `L2ToL1Event`
-    // https://github.com/OffchainLabs/arbitrum-sdk/pull/29
-    const ethWithdrawals = await L2ToL1MessageReader.getL2ToL1MessageLogs(
+    const ethWithdrawals = await L2ToL1MessageReader.getL2ToL1Events(
       l2.signer.provider,
       {
         fromBlock: 0,
