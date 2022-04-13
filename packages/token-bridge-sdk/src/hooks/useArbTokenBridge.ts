@@ -44,8 +44,8 @@ import {
 import {
   getLatestOutboxEntryIndex,
   messageHasExecuted,
-  getETHWithdrawals,
-  getTokenWithdrawals as getTokenWithdrawalsGraph,
+  // getETHWithdrawals,
+  // getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
   getBuiltInsGraphLatestBlockNumber
 } from '../util/graph'
@@ -365,7 +365,7 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const [l2ToL1EventResult] = l2ToL1Events
-        const id = l2ToL1EventResult.position.toHexString()
+        const id = l2ToL1EventResult.position.toString()
 
         console.info('withdraw event data:', l2ToL1EventResult)
 
@@ -501,7 +501,7 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const [l2ToL1EventDataResult] = l2ToL1Events
-        const id = l2ToL1EventDataResult.position.toHexString()
+        const id = l2ToL1EventDataResult.position.toString()
 
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
@@ -1219,7 +1219,7 @@ export const useArbTokenBridge = (
     )
 
     for (const event of l2ToL1TxnsWithDeadlines) {
-      pendingWithdrawals[event.position.toHexString()] = event
+      pendingWithdrawals[event.position.toString()] = event
     }
 
     setPendingWithdrawalMap(pendingWithdrawals)
