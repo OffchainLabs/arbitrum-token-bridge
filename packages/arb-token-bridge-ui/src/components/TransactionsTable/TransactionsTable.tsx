@@ -160,7 +160,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     }
 
     // Don't show any alert in case user denies the signature
-    if (err.code === 4001) {
+    if (err?.code === 4001) {
       return
     }
 
