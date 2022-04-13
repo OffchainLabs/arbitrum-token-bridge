@@ -115,7 +115,9 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       if (typeof l1Signer === 'undefined') {
         return
       }
-      const l1TxRec = new L1TransactionReceipt(await l1Signer.provider.getTransactionReceipt(tx.txId))
+      const l1TxRec = new L1TransactionReceipt(
+        await l1Signer.provider.getTransactionReceipt(tx.txId)
+      )
 
       const l1ToL2Msg = await l1TxRec.getL1ToL2Message(l2Signer)
 

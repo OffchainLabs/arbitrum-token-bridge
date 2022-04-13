@@ -205,8 +205,7 @@ export const defaultState: AppState = {
         createdAt: dayjs(
           new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
         ).format('HH:mm:ss MM/DD/YYYY'),
-        createdAtTime:
-          BigNumber.from(tx.timestamp).toNumber() * 1000, // adding 60s for the sort function so that it comes before l2 action
+        createdAtTime: BigNumber.from(tx.timestamp).toNumber() * 1000, // adding 60s for the sort function so that it comes before l2 action
         resolvedAt: null,
         txId: tx.position.toString(),
         asset: tx.symbol?.toLocaleLowerCase(),
