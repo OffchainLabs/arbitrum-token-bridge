@@ -113,61 +113,62 @@ export const getLatestOutboxEntryIndex = async (networkID: string) => {
   return res.data.outboxEntries?.[0]?.outboxEntryIndex as number
 }
 
-export const getETHWithdrawals = async (
-  callerAddress: string,
-  fromBlock: number,
-  toBlock: number,
-  networkID: string
-): Promise<L2ToL1EventResult[]> => {
-  const client = networkIDAndLayerToClient(networkID, 2)
-  const res = await client.query({
-    query: gql`{
-      l2ToL1Transactions(
-        where: {caller:"${callerAddress}", data: "0x", arbBlockNum_gte: ${fromBlock}, arbBlockNum_lt:${toBlock}}
-        orderBy: timestamp
-        orderDirection: desc
-        ) {
-        destination,
-        timestamp,
-        data,
-        caller,
-        id,
-        uniqueId,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        callvalue,
-      }
-    }`
-  })
-  return res.data.l2ToL1Transactions.map((eventData: any) => {
-    const {
-      destination,
-      timestamp,
-      data,
-      caller,
-      uniqueId,
-      batchNumber,
-      indexInBatch,
-      arbBlockNum,
-      ethBlockNum,
-      callvalue
-    } = eventData
-    return {
-      destination,
-      timestamp,
-      data,
-      caller,
-      uniqueId: BigNumber.from(uniqueId),
-      batchNumber: BigNumber.from(batchNumber),
-      indexInBatch: BigNumber.from(indexInBatch),
-      arbBlockNum: BigNumber.from(arbBlockNum),
-      ethBlockNum: BigNumber.from(ethBlockNum),
-      callvalue: BigNumber.from(callvalue)
-    } as L2ToL1EventResult
-  })
-}
+// export const getETHWithdrawals = async (
+//   callerAddress: string,
+//   fromBlock: number,
+//   toBlock: number,
+//   networkID: string
+// ): Promise<L2ToL1EventResult[]> => {
+//   const client = networkIDAndLayerToClient(networkID, 2)
+//   const res = await client.query({
+//     query: gql`{
+//       l2ToL1Transactions(
+//         where: {caller:"${callerAddress}", data: "0x", arbBlockNum_gte: ${fromBlock}, arbBlockNum_lt:${toBlock}}
+//         orderBy: timestamp
+//         orderDirection: desc
+//         ) {
+//         destination,
+//         timestamp,
+//         data,
+//         caller,
+//         id,
+//         uniqueId,
+//         batchNumber,
+//         indexInBatch,
+//         arbBlockNum,
+//         ethBlockNum,
+//         callvalue,
+//       }
+//     }`
+//   })
+//   return res.data.l2ToL1Transactions.map((eventData: any) => {
+//     const {
+//       destination,
+//       timestamp,
+//       data,
+//       caller,
+//       uniqueId,
+//       batchNumber,
+//       indexInBatch,
+//       arbBlockNum,
+//       ethBlockNum,
+//       callvalue
+//     } = eventData
+//     // TODO:
+//     return {
+//       destination,
+//       timestamp,
+//       data,
+//       caller,
+//       uniqueId: BigNumber.from(uniqueId),
+//       batchNumber: BigNumber.from(batchNumber),
+//       indexInBatch: BigNumber.from(indexInBatch),
+//       arbBlockNum: BigNumber.from(arbBlockNum),
+//       ethBlockNum: BigNumber.from(ethBlockNum),
+//       callvalue: BigNumber.from(callvalue)
+//     } as L2ToL1EventResult
+//   })
+// }
 
 export const messageHasExecuted = async (
   path: BigNumber,
@@ -186,86 +187,86 @@ export const messageHasExecuted = async (
   return res.data.outboxOutputs.length > 0
 }
 
-export const getTokenWithdrawals = async (
-  sender: string,
-  fromBlock: number,
-  toBlock: number,
-  l1NetworkID: string
-): Promise<GetTokenWithdrawalsResult[]> => {
-  const client = ((l1NetworkID: string) => {
-    switch (l1NetworkID) {
-      case '1':
-        return apolloL2GatewaysClient
-      case '4':
-        return apolloL2GatewaysRinkebyClient
-      default:
-        throw new Error('Unsupported network')
-    }
-  })(l1NetworkID)
+// export const getTokenWithdrawals = async (
+//   sender: string,
+//   fromBlock: number,
+//   toBlock: number,
+//   l1NetworkID: string
+// ): Promise<GetTokenWithdrawalsResult[]> => {
+//   const client = ((l1NetworkID: string) => {
+//     switch (l1NetworkID) {
+//       case '1':
+//         return apolloL2GatewaysClient
+//       case '4':
+//         return apolloL2GatewaysRinkebyClient
+//       default:
+//         throw new Error('Unsupported network')
+//     }
+//   })(l1NetworkID)
 
-  const res = await client.query({
-    query: gql`{
-      withdrawals(
-        where: { from:"${sender}", l2BlockNum_gte: ${fromBlock}, l2BlockNum_lt: ${toBlock}}
-        orderBy: l2BlockNum
-        orderDirection: desc
-      ) {
-        l2ToL1Event {
-          id,
-          caller,
-          destination,
-          batchNumber,
-          indexInBatch,
-          arbBlockNum,
-          ethBlockNum,
-          timestamp,
-          callvalue,
-          data
-        },
-        amount
-      }
-    }
-    `
-  })
-  return res.data.withdrawals.map((eventData: any) => {
-    const {
-      amount: value,
-      l2ToL1Event: {
-        id,
-        caller,
-        destination,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        timestamp,
-        callvalue,
-        data
-      }
-    } = eventData
-    const l2ToL1Event = {
-      destination,
-      timestamp,
-      data,
-      caller,
-      uniqueId: BigNumber.from(id),
-      batchNumber: BigNumber.from(batchNumber),
-      indexInBatch: BigNumber.from(indexInBatch),
-      arbBlockNum: BigNumber.from(arbBlockNum),
-      ethBlockNum: BigNumber.from(ethBlockNum),
-      callvalue: BigNumber.from(callvalue)
-    } as L2ToL1EventResult
-    const tokenAddress = utils.hexDataSlice(data, 16, 36)
-    return {
-      l2ToL1Event,
-      otherData: {
-        value: BigNumber.from(value),
-        tokenAddress,
-        type: AssetType.ERC20
-      }
-    }
-  })
-}
+//   const res = await client.query({
+//     query: gql`{
+//       withdrawals(
+//         where: { from:"${sender}", l2BlockNum_gte: ${fromBlock}, l2BlockNum_lt: ${toBlock}}
+//         orderBy: l2BlockNum
+//         orderDirection: desc
+//       ) {
+//         l2ToL1Event {
+//           id,
+//           caller,
+//           destination,
+//           batchNumber,
+//           indexInBatch,
+//           arbBlockNum,
+//           ethBlockNum,
+//           timestamp,
+//           callvalue,
+//           data
+//         },
+//         amount
+//       }
+//     }
+//     `
+//   })
+//   return res.data.withdrawals.map((eventData: any) => {
+//     const {
+//       amount: value,
+//       l2ToL1Event: {
+//         id,
+//         caller,
+//         destination,
+//         batchNumber,
+//         indexInBatch,
+//         arbBlockNum,
+//         ethBlockNum,
+//         timestamp,
+//         callvalue,
+//         data
+//       }
+//     } = eventData
+//     const l2ToL1Event = {
+//       destination,
+//       timestamp,
+//       data,
+//       caller,
+//       uniqueId: BigNumber.from(id),
+//       batchNumber: BigNumber.from(batchNumber),
+//       indexInBatch: BigNumber.from(indexInBatch),
+//       arbBlockNum: BigNumber.from(arbBlockNum),
+//       ethBlockNum: BigNumber.from(ethBlockNum),
+//       callvalue: BigNumber.from(callvalue)
+//     } as L2ToL1EventResult
+//     const tokenAddress = utils.hexDataSlice(data, 16, 36)
+//     return {
+//       l2ToL1Event,
+//       otherData: {
+//         value: BigNumber.from(value),
+//         tokenAddress,
+//         type: AssetType.ERC20
+//       }
+//     }
+//   })
+// }
 
 const getLatestIndexedBlockNumber = async (subgraphName: string) => {
   try {
