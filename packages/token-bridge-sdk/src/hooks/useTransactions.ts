@@ -164,7 +164,7 @@ function updateTxnL1ToL2Msg(
   const previousL1ToL2MsgData = newState[index].l1ToL2MsgData
   if (!previousL1ToL2MsgData) {
     newState[index].l1ToL2MsgData = {
-      status: l1ToL2MsgData.status,
+      status: l1ToL2MsgData.status || L1ToL2MessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
       fetchingUpdate: false
     }
