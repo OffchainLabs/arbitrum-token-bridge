@@ -1,12 +1,11 @@
 import { useState, useMemo, useCallback } from 'react'
-import { BigNumber } from 'ethers'
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { DepositStatus } from '../../state/app/state'
 import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
-import { L1ToL2MessageWriter, L1TransactionReceipt } from '@arbitrum/sdk'
+import { L1TransactionReceipt } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
