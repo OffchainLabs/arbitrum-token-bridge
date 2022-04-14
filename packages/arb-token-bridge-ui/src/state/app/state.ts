@@ -17,7 +17,6 @@ import {
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { Network } from '../../util/networks'
 
 export enum WhiteListState {
   VERIFYING,
@@ -116,11 +115,8 @@ export type AppState = {
   mergedTransactionsToShow: MergedTransaction[]
   currentL1BlockNumber: number
 
-  l1Network: L1Network | null
-  l2Network: L2Network | null
-
-  l1NetworkDetails: Network | null
-  l2NetworkDetails: Network | null
+  l1NetworkChainId: number | null
+  l2NetworkChainId: number | null
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
@@ -132,8 +128,8 @@ export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
-  l1Network: null,
-  l2Network: null,
+  l1NetworkChainId: null,
+  l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
@@ -142,7 +138,7 @@ export const defaultState: AppState = {
     return [...transactions]
       .filter(tx => tx.sender === s.arbTokenBridge.walletAddress)
       .filter(
-        tx => !tx.l1NetworkID || tx.l1NetworkID === s.l1NetworkDetails?.chainID
+        tx => !tx.l1NetworkID || tx.l1NetworkID === String(s.l1NetworkChainId)
       )
       .reverse()
   }),
@@ -246,41 +242,6 @@ export const defaultState: AppState = {
     })
   }),
   currentL1BlockNumber: 0,
-  l1NetworkDetails: derived((s: AppState) => {
-    if (!s.l1Network || !s.l2Network) {
-      return null
-    }
-
-    return {
-      ...s.l1Network,
-      chainID: String(s.l1Network.chainID),
-      isArbitrum: false,
-      url: s.l1Network.rpcURL,
-      partnerChainID: String(s.l1Network.partnerChainIDs[0]),
-      tokenBridge: {
-        l1Address: s.l2Network.tokenBridge.l1GatewayRouter,
-        l2Address: s.l2Network.tokenBridge.l2GatewayRouter
-      }
-    }
-  }),
-  l2NetworkDetails: derived((s: AppState) => {
-    if (!s.l1Network || !s.l2Network) {
-      return null
-    }
-
-    return {
-      ...s.l2Network,
-      chainID: String(s.l2Network.chainID),
-      isArbitrum: false,
-      url: s.l2Network.rpcURL,
-      partnerChainID: String(s.l2Network.partnerChainID),
-      tokenBridge: {
-        l1Address: s.l2Network.tokenBridge.l1GatewayRouter,
-        l2Address: s.l2Network.tokenBridge.l2GatewayRouter
-      }
-    }
-  }),
-
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false,
   changeNetwork: null

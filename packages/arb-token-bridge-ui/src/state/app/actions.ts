@@ -19,12 +19,12 @@ export const setCurrentL1BlockNumber = (
   state.app.currentL1BlockNumber = blockNum
 }
 
-export const setNetworks = (
+export const setChainIds = (
   { state }: Context,
-  payload: { l1Network: L1Network; l2Network: L2Network }
+  payload: { l1NetworkChainId: number; l2NetworkChainId: number }
 ) => {
-  state.app.l1Network = payload.l1Network
-  state.app.l2Network = payload.l2Network
+  state.app.l1NetworkChainId = payload.l1NetworkChainId
+  state.app.l2NetworkChainId = payload.l2NetworkChainId
 }
 
 export const setIsDepositMode = (
@@ -48,16 +48,17 @@ export const setChangeNetwork = (
   state.app.changeNetwork = func
 }
 
-export const reset = ({ state }: Context, newChainId: string) => {
+export const reset = ({ state }: Context, newChainId: number) => {
   if (
-    state.app.l1NetworkDetails?.chainID !== newChainId &&
-    state.app.l2NetworkDetails?.chainID !== newChainId
+    state.app.l1NetworkChainId !== newChainId &&
+    state.app.l2NetworkChainId !== newChainId
   ) {
     // only reset the selected token if we are not switching between the pair of l1-l2 networks.
     // we dont want to reset the token if we are switching from Rinkeby to Rinkarby for example
     // because we are maybe in the process of auto switching the network and triggering deposit or withdraw
     state.app.selectedToken = null
   }
+
   state.app.arbTokenBridge = {} as ArbTokenBridge
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
