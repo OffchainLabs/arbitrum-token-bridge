@@ -23,6 +23,7 @@ import {
   useTokensFromUser,
   toERC20BridgeToken
 } from './TokenModalUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 enum Panel {
   TOKENS,
@@ -53,11 +54,13 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const {
     app: {
       arbTokenBridge: { bridgeTokens, balances },
-      l1NetworkDetails,
-      l2NetworkDetails,
       isDepositMode
     }
   } = useAppState()
+  const {
+    l1: { network: l1Network },
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
@@ -164,7 +167,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${l1NetworkDetails?.explorerUrl}/token/${token.address}`}
+                  href={`${l1Network?.explorerUrl}/token/${token.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs underline text-dark-blue"
@@ -176,7 +179,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${l2NetworkDetails?.explorerUrl}/token/${token.l2Address}`}
+                      href={`${l2Network?.explorerUrl}/token/${token.l2Address}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs underline text-dark-blue"
@@ -230,17 +233,22 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
 export const TokenListBody = () => {
   const {
-    app: { l2NetworkDetails, arbTokenBridge }
+    app: { arbTokenBridge }
   } = useAppState()
+  const {
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
   const { bridgeTokens, token } = arbTokenBridge
 
-  const listsToShow: BridgeTokenList[] = BRIDGE_TOKEN_LISTS.filter(
-    tokenList => {
-      return !!(
-        l2NetworkDetails && tokenList.originChainID === l2NetworkDetails.chainID
-      )
+  const listsToShow: BridgeTokenList[] = useMemo(() => {
+    if (typeof l2Network === 'undefined') {
+      return []
     }
-  )
+
+    return BRIDGE_TOKEN_LISTS.filter(
+      tokenList => tokenList.originChainID === String(l2Network.chainID)
+    )
+  }, [l2Network])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
