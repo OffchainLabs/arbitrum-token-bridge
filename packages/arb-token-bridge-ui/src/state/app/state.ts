@@ -1,8 +1,10 @@
 import dayjs from 'dayjs'
 import { ethers, BigNumber } from 'ethers'
-import _isEmpty from 'lodash/isEmpty'
-import _reverse from 'lodash/reverse'
-import _sortBy from 'lodash/sortBy'
+import {
+  isEmpty as _isEmpty,
+  reverse as _reverse,
+  sortBy as _sortBy
+} from 'lodash-es'
 import { derived } from 'overmind'
 import {
   ArbTokenBridge,
