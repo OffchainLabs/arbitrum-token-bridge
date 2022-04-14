@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { useAppState } from '../../state'
 import {
@@ -6,27 +6,33 @@ import {
   addBridgeTokenListToBridge,
   fetchTokenLists
 } from '../../tokenLists'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
 const TokenListSyncer = (): JSX.Element => {
   const {
-    app: { arbTokenBridge, l2NetworkDetails }
+    app: { arbTokenBridge }
   } = useAppState()
+  const {
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
 
   useEffect(() => {
-    if (!arbTokenBridge?.walletAddress || !l2NetworkDetails) {
+    if (typeof l2Network === 'undefined') {
       return
     }
 
-    const { chainID } = l2NetworkDetails
+    if (!arbTokenBridge?.walletAddress) {
+      return
+    }
 
     fetchTokenLists()
       // Add tokens to bridge only after prefetching the token lists
       .then(() => {
         const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
           bridgeTokenList =>
-            bridgeTokenList.originChainID === chainID &&
+            bridgeTokenList.originChainID === String(l2Network.chainID) &&
             bridgeTokenList.isDefault
         )
 
@@ -34,7 +40,7 @@ const TokenListSyncer = (): JSX.Element => {
           addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
         })
       })
-  }, [arbTokenBridge?.walletAddress, l2NetworkDetails])
+  }, [arbTokenBridge?.walletAddress, l2Network])
 
   return <></>
 }

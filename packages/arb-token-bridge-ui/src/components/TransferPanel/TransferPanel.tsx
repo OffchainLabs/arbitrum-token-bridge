@@ -62,7 +62,6 @@ const TransferPanel = (): JSX.Element => {
       changeNetwork,
       selectedToken,
       isDepositMode,
-      l1NetworkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens },
@@ -75,6 +74,9 @@ const TransferPanel = (): JSX.Element => {
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
+  const {
+    l1: { network: l1Network }
+  } = networksAndSigners
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -147,13 +149,12 @@ const TransferPanel = (): JSX.Element => {
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const isBridgingANewStandardToken = useMemo(() => {
-    return !!(
-      l1NetworkDetails &&
-      isDepositMode &&
-      selectedToken &&
-      !selectedToken.l2Address
-    )
-  }, [l1NetworkDetails, isDepositMode, selectedToken])
+    const isConnected = typeof l1Network !== 'undefined'
+    const isUnbridgedToken =
+      selectedToken !== null && typeof selectedToken.l2Address !== 'undefined'
+
+    return isConnected && isDepositMode && isUnbridgedToken
+  }, [l1Network, isDepositMode, selectedToken])
 
   const showModalOnDeposit = useCallback(() => {
     if (isBridgingANewStandardToken) {
