@@ -151,7 +151,7 @@ const TransferPanel = (): JSX.Element => {
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
     const isUnbridgedToken =
-      selectedToken !== null && typeof selectedToken.l2Address !== 'undefined'
+      selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
     return isConnected && isDepositMode && isUnbridgedToken
   }, [l1Network, isDepositMode, selectedToken])
