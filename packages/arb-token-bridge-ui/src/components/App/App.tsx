@@ -196,10 +196,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const { l1, l2, isConnectedToArbitrum } = networksAndSigners
     const network = isConnectedToArbitrum ? l2.network : l1.network
-    const networkId = String(network.chainID)
 
-    actions.app.reset(networkId)
-    actions.app.setNetworks({ l1Network: l1.network, l2Network: l2.network })
+    const l1NetworkChainId = l1.network.chainID
+    const l2NetworkChainId = l2.network.chainID
+
+    actions.app.reset(network.chainID)
+    actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
     if (!isConnectedToArbitrum) {
       console.info('Deposit mode detected:')

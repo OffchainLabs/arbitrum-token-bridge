@@ -4,7 +4,6 @@ import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { DepositStatus } from '../../state/app/state'
-import { Network } from 'src/util/networks'
 import { TxnType } from 'token-bridge-sdk'
 import { L1ToL2MessageWriter } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
@@ -84,16 +83,11 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
 const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const {
-    app: {
-      arbTokenBridge,
-      l1NetworkDetails,
-      l2NetworkDetails,
-      isDepositMode,
-      currentL1BlockNumber
-    }
+    app: { arbTokenBridge, isDepositMode, currentL1BlockNumber }
   } = useAppState()
   const {
-    l2: { signer: l2Signer },
+    l1: { network: l1Network },
+    l2: { network: l2Network, signer: l2Signer },
     isConnectedToArbitrum
   } = useNetworksAndSigners()
   const [isClaiming, setIsClaiming] = useState(false)
@@ -135,7 +129,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     [arbTokenBridge, l2Signer]
   )
 
-  const { blockTime = 15 } = l1NetworkDetails as Network
+  const blockTime = l1Network?.blockTime || 15
 
   const handleTriggerOutbox = async () => {
     if (tx.uniqueId === null) {
@@ -172,11 +166,16 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
   const calcEtaDisplay = () => {
     const { nodeBlockDeadline } = tx
-    if (nodeBlockDeadline === undefined || !l2NetworkDetails) {
+
+    if (
+      typeof nodeBlockDeadline === 'undefined' ||
+      typeof l2Network === 'undefined'
+    ) {
       return 'calculating...'
     }
+
     if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
-      return l2NetworkDetails.chainID === '42161' ? '~ 1 week' : '~1 day'
+      return l2Network.chainID === 42161 ? '~ 1 week' : '~1 day'
     }
 
     // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice

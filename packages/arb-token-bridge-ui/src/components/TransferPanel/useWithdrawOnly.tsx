@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { constants } from 'ethers'
 
 import { useAppState } from '../../state'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const withdrawOnlyTokens = [
   {
@@ -40,7 +41,10 @@ const withdrawOnlyTokensL1Address = withdrawOnlyTokens.map(t => t.l1Address)
 
 const useWithdrawOnly = () => {
   const {
-    app: { selectedToken, arbTokenBridge, l1NetworkDetails }
+    l1: { network: l1Network }
+  } = useNetworksAndSigners()
+  const {
+    app: { selectedToken, arbTokenBridge }
   } = useAppState()
   const [doneAddingTokens, setDoneAddingTokens] = useState(false)
 
@@ -66,18 +70,26 @@ const useWithdrawOnly = () => {
   }, [arbTokenBridge])
 
   useEffect(() => {
+    if (typeof l1Network === 'undefined') {
+      return
+    }
+
+    const isMainnet = l1Network.chainID === 1
+
     if (
+      !isMainnet ||
       !arbTokenBridge ||
       !arbTokenBridge.token ||
       arbTokenBridge.walletAddress === '' ||
-      doneAddingTokens ||
-      !(l1NetworkDetails && l1NetworkDetails.chainID === '1')
-    )
+      doneAddingTokens
+    ) {
       return
+    }
+
     // when ready/ on load, add tokens
     addTokens()
     setDoneAddingTokens(true)
-  }, [doneAddingTokens, arbTokenBridge])
+  }, [doneAddingTokens, arbTokenBridge, l1Network])
 
   const shouldDisableDeposit = useMemo(() => {
     if (!selectedToken) return false

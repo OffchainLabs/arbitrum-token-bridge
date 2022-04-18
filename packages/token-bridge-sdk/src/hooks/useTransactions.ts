@@ -161,11 +161,11 @@ function updateTxnL1ToL2Msg(
 
   const previousL1ToL2MsgData = newState[index].l1ToL2MsgData
   if (!previousL1ToL2MsgData) {
-    if(!l1ToL2MsgData.retryableCreationTxID ){
-      throw new Error("need retryableCreationTxID")
+    if (!l1ToL2MsgData.retryableCreationTxID) {
+      throw new Error('need retryableCreationTxID')
     }
-    if(!l1ToL2MsgData.status ){
-      throw new Error("need status")
+    if (!l1ToL2MsgData.status) {
+      throw new Error('need status')
     }
     newState[index].l1ToL2MsgData = {
       status: l1ToL2MsgData.status,
@@ -337,10 +337,10 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     _status?: L1ToL2MessageStatus
   ) => {
     // set fetching:
-    updateTxnL1ToL2MsgData(txID,  {
+    updateTxnL1ToL2MsgData(txID, {
       fetchingUpdate: true
     })
-    
+
     const res = await l1ToL2Msg.waitForStatus()
 
     const l2TxID = (() => {

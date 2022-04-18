@@ -1,9 +1,8 @@
-import React, { useMemo } from 'react'
-
-import { useAppState } from 'src/state'
+import { useMemo } from 'react'
 import { TxnType } from 'token-bridge-sdk'
 
 import { Tooltip } from './Tooltip'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 interface ExplorerLinkProps {
   hash?: string
@@ -13,12 +12,18 @@ interface ExplorerLinkProps {
 
 const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
   const {
-    app: { l1NetworkDetails, l2NetworkDetails }
-  } = useAppState()
-  const l1Prefix = l1NetworkDetails?.explorerUrl
-  const l2Prefix = l2NetworkDetails?.explorerUrl
+    l1: { network: l1Network },
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
+
+  const l1Prefix = l1Network?.explorerUrl
+  const l2Prefix = l2Network?.explorerUrl
 
   const url = useMemo(() => {
+    if (typeof l1Prefix === 'undefined' || typeof l2Prefix === 'undefined') {
+      return '#'
+    }
+
     switch (type) {
       case 'deposit':
       case 'deposit-l1':
@@ -30,7 +35,6 @@ const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
       case 'deposit-l2-auto-redeem':
       case 'deposit-l2-ticket-created':
         return `${l2Prefix}/tx/${hash}`
-
       case 'chain':
         return `${l2Prefix}/chain/${hash}`
       case 'address':
@@ -41,7 +45,7 @@ const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
       default:
         return '#'
     }
-  }, [hash, type, layer])
+  }, [hash, type, layer, l1Prefix, l2Prefix])
 
   if (!hash) {
     return null
@@ -55,7 +59,7 @@ const ExplorerLink = ({ hash, type, layer }: ExplorerLinkProps) => {
       className="w-24 relative group"
     >
       <span className="truncate">
-        {hash.substr(0, 10)}...{hash.substr(hash.length - 4)}
+        {hash.substring(0, 10)}...{hash.substring(hash.length - 4)}
         <Tooltip>{hash}</Tooltip>
       </span>
     </a>
