@@ -200,13 +200,15 @@ export const useArbTokenBridge = (
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
 
+  const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
+  const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
+
   /**
    * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
    * @param erc20L1Address
    * @returns
    */
   async function getL1TokenData(erc20L1Address: string): Promise<L1TokenData> {
-    const erc20Bridger = new Erc20Bridger(l2.network)
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1.signer.provider
@@ -276,7 +278,7 @@ export const useArbTokenBridge = (
     erc20L2Address: string
   ): Promise<string | null> {
     try {
-      return await new Erc20Bridger(l2.network).getL1ERC20Address(
+      return await erc20Bridger.getL1ERC20Address(
         erc20L2Address,
         l2.signer.provider
       )
@@ -291,7 +293,7 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
-    return await new Erc20Bridger(l2.network).getL2ERC20Address(
+    return await erc20Bridger.getL2ERC20Address(
       erc20L1Address,
       l1.signer.provider
     )
@@ -303,15 +305,10 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
-    return new Erc20Bridger(l2.network).l1TokenIsDisabled(
-      erc20L1Address,
-      l1.signer.provider
-    )
+    return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.signer.provider)
   }
 
   const depositEth = async (amount: BigNumber) => {
-    const ethBridger = new EthBridger(l2.network)
-
     const tx = await ethBridger.deposit({
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
@@ -344,7 +341,6 @@ export const useArbTokenBridge = (
   }
 
   async function withdrawEth(amount: BigNumber) {
-    const ethBridger = new EthBridger(l2.network)
     const tx = await ethBridger.withdraw({ l2Signer: l2.signer, amount })
 
     try {
@@ -398,8 +394,6 @@ export const useArbTokenBridge = (
   }
 
   const approveToken = async (erc20L1Address: string) => {
-    const erc20Bridger = new Erc20Bridger(l2.network)
-
     const tx = await erc20Bridger.approveToken({
       l1Signer: l1.signer,
       erc20L1Address
@@ -425,8 +419,6 @@ export const useArbTokenBridge = (
   }
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
-    const erc20Bridger = new Erc20Bridger(l2.network)
-
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
     const tx = await erc20Bridger.deposit({
@@ -477,7 +469,6 @@ export const useArbTokenBridge = (
       return { symbol, decimals }
     })()
 
-    const erc20Bridger = new Erc20Bridger(l2.network)
     const tx = await erc20Bridger.withdraw({
       l2Signer: l2.signer,
       erc20l1Address,
@@ -1114,8 +1105,6 @@ export const useArbTokenBridge = (
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
     const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
-
-    const erc20Bridger = new Erc20Bridger(l2.network)
 
     const gatewayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
