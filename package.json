@@ -15,7 +15,6 @@
   "author": "",
   "license": "ISC",
   "workspaces": [
-    "packages/token-bridge-sdk",
-    "packages/arb-token-bridge-ui"
+    "packages/*"
   ]
 }
