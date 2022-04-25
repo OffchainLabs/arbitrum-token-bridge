@@ -326,8 +326,7 @@ const TransferPanel = (): JSX.Element => {
             )
             if (!allowed) {
               await latestToken.current.approveL2(
-                selectedToken.address,
-                selectedToken.l2Address
+                selectedToken.address
               )
             }
           }

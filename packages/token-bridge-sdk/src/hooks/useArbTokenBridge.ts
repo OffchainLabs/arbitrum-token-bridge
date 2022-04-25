@@ -256,18 +256,16 @@ export const useArbTokenBridge = (
 
   const approveTokenL2 = async (
     erc20L1Address: string,
-    erc20L2Address: string
   ) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
-    if (l2Address.toLowerCase() !== erc20L2Address.toLowerCase()) throw new Error('L2 Token mismatch')
     const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(
       erc20L1Address
     )
     const contract = await ERC20__factory.connect(
-      erc20L2Address,
+      l2Address,
       bridge.l2Bridge.l2Signer
     )
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
