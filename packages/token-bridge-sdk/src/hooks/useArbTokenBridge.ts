@@ -269,7 +269,7 @@ export const useArbTokenBridge = (
     )
     const contract = await ERC20__factory.connect(
       erc20L2Address,
-      bridge.l2Bridge.l2Provider
+      bridge.l2Bridge.l2Signer
     )
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const tokenData = await bridge.l1Bridge.getL1TokenData(erc20L1Address)
