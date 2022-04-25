@@ -318,10 +318,10 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          if (shouldRequireApprove) {
+          if (shouldRequireApprove && selectedToken.l2Address) {
             const allowed = await isAllowedL2(
               bridge,
-              selectedToken.address,
+              selectedToken.l2Address,
               amountRaw
             )
             if (!allowed) {
