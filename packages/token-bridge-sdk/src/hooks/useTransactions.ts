@@ -18,7 +18,7 @@ type Action =
   | {
       type: 'UPDATE_L1TOL2MSG_DATA'
       txID: string
-      l1ToL2MsgData: L1ToL2MessageDataForUpdate
+      l1ToL2MsgData: L1ToL2MessageData
     }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
@@ -58,12 +58,6 @@ export interface L1ToL2MessageData {
   retryableCreationTxID: string
   l2TxID?: string
   fetchingUpdate: boolean
-}
-export interface L1ToL2MessageDataForUpdate {
-  status?: L1ToL2MessageStatus
-  l2TxID?: string
-  fetchingUpdate?: boolean
-  retryableCreationTxID?: string
 }
 type TransactionBase = {
   type: TxnType
@@ -143,7 +137,7 @@ function updateBlockNumber(
 function updateTxnL1ToL2Msg(
   state: Transaction[],
   txID: string,
-  l1ToL2MsgData: L1ToL2MessageDataForUpdate
+  l1ToL2MsgData: L1ToL2MessageData
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -363,7 +357,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       l1ToL2MsgData: {
         status: res.status,
         l2TxID,
-        fetchingUpdate: false
+        fetchingUpdate: false,
+        retryableCreationTxID: l1ToL2Msg.retryableCreationId
       }
     })
   }
