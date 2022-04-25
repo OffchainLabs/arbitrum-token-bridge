@@ -15,6 +15,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
@@ -123,7 +124,8 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
         tx.txId,
         l1ToL2Msg,
-        tx.asset === 'eth'
+        tx.asset === 'eth',
+        L1ToL2MessageStatus.REDEEMED
       )
     },
     [arbTokenBridge, l2Signer]

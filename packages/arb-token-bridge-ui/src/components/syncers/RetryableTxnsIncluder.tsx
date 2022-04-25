@@ -59,11 +59,13 @@ export function RetryableTxnsIncluder(): JSX.Element {
         await l1Signer.provider.getTransactionReceipt(depositTx.txID)
       ) //**TODO: not found, i.e., reorg */
       const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer)
+      const status = await l1ToL2Msg.status()
 
       arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
         depositTx.txID,
         l1ToL2Msg,
-        depositTx.assetType === AssetType.ETH
+        depositTx.assetType === AssetType.ETH,
+        status
       )
     }
   }, [arbTokenBridge?.transactions?.addTransactions, l1Signer, l2Signer])

@@ -321,7 +321,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const updateTxnL1ToL2MsgData = async (
     txID: string,
-    l1ToL2MsgData: L1ToL2MessageDataForUpdate
+    l1ToL2MsgData: L1ToL2MessageData
   ) => {
     dispatch({
       type: 'UPDATE_L1TOL2MSG_DATA',
@@ -334,11 +334,13 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
-    _status?: L1ToL2MessageStatus
+    currentStatus: L1ToL2MessageStatus
   ) => {
     // set fetching:
     updateTxnL1ToL2MsgData(txID, {
-      fetchingUpdate: true
+      fetchingUpdate: true,
+      status: currentStatus,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
     })
 
     const res = await l1ToL2Msg.waitForStatus()
@@ -421,7 +423,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
     seqNum?: number,
-    l1ToL2MsgData?: L1ToL2MessageDataForUpdate
+    l1ToL2MsgData?: L1ToL2MessageData
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
