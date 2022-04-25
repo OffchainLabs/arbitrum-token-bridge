@@ -265,7 +265,7 @@ export const useArbTokenBridge = (
     const { l2Address } = bridgeToken
     if (l2Address?.toLowerCase() !== erc20L2Address.toLowerCase()) throw new Error('L2 Token mismatch')
     const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(
-      erc20L2Address
+      erc20L1Address
     )
     const contract = await ERC20__factory.connect(
       erc20L2Address,
