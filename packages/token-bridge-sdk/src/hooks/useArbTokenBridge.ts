@@ -259,11 +259,10 @@ export const useArbTokenBridge = (
     erc20L2Address: string
   ) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
-    if (!bridgeToken) {
-      throw new Error('Bridge token not found')
-    }
+    if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
-    if (l2Address?.toLowerCase() !== erc20L2Address.toLowerCase()) throw new Error('L2 Token mismatch')
+    if (!l2Address) throw new Error('L2 address not found')
+    if (l2Address.toLowerCase() !== erc20L2Address.toLowerCase()) throw new Error('L2 Token mismatch')
     const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(
       erc20L1Address
     )
