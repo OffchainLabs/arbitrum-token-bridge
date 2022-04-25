@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
+import { MaxUint256 } from '@ethersproject/constants'
 import {
   Bridge,
   OutgoingMessageState,
@@ -245,6 +246,42 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: await walletAddressCached(),
+      l1NetworkID: await l1NetworkIDCached()
+    })
+
+    const receipt = await tx.wait()
+    updateTransaction(receipt, tx)
+    updateTokenData(erc20L1Address)
+  }
+
+  const approveTokenL2 = async (
+    erc20L1Address: string,
+    erc20L2Address: string
+  ) => {
+    const bridgeToken = bridgeTokens[erc20L1Address]
+    if (!bridgeToken) {
+      throw new Error('Bridge token not found')
+    }
+    const { l2Address } = bridgeToken
+    if (l2Address !== erc20L2Address) throw new Error('L2 Token mismatch')
+    const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(
+      erc20L2Address
+    )
+    const contract = await ERC20__factory.connect(
+      erc20L2Address,
+      bridge.l2Bridge.l2Provider
+    )
+    const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
+    const tokenData = await bridge.l1Bridge.getL1TokenData(erc20L1Address)
+    addTransaction({
+      type: 'approve-l2',
+      status: 'pending',
+      value: null,
+      txID: tx.hash,
+      assetName: tokenData.symbol,
+      assetType: AssetType.ERC20,
+      sender: await walletAddressCached(),
+      blockNumber: tx.blockNumber || 0,
       l1NetworkID: await l1NetworkIDCached()
     })
 
@@ -1256,6 +1293,7 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       approve: approveToken,
+      approveL2: approveTokenL2,
       deposit: depositToken,
       withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken

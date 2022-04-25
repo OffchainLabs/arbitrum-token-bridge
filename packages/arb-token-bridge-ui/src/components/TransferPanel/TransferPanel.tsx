@@ -325,7 +325,10 @@ const TransferPanel = (): JSX.Element => {
               amountRaw
             )
             if (!allowed) {
-              await latestToken.current.approve(selectedToken.address)
+              await latestToken.current.approveL2(
+                selectedToken.address,
+                selectedToken.l2Address
+              )
             }
           }
           latestToken.current.withdraw(selectedToken.address, amountRaw)
