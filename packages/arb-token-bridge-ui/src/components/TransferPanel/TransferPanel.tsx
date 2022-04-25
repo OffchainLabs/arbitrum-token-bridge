@@ -43,12 +43,13 @@ const isAllowed = async (
 
 const isAllowedL2 = async (
   bridge: Bridge,
+  l1TokenAddress: string,
   l2TokenAddress: string,
   amountNeeded: BigNumber
 ) => {
   const token = ERC20__factory.connect(l2TokenAddress, bridge.l2Provider)
   const walletAddress = await bridge.l2Bridge.getWalletAddress()
-  const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(l2TokenAddress)
+  const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(l1TokenAddress)
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -321,6 +322,7 @@ const TransferPanel = (): JSX.Element => {
           if (shouldRequireApprove && selectedToken.l2Address) {
             const allowed = await isAllowedL2(
               bridge,
+              selectedToken.address,
               selectedToken.l2Address,
               amountRaw
             )
