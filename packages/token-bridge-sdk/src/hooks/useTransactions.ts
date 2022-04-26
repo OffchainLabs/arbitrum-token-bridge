@@ -33,6 +33,7 @@ export type TxnType =
   | 'connext-withdraw'
   | 'deposit-l2-auto-redeem'
   | 'deposit-l2-ticket-created'
+  | 'approve-l2'
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
@@ -47,6 +48,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
     case 'connext-withdraw':
     case 'deposit-l2-auto-redeem':
     case 'deposit-l2-ticket-created':
+    case 'approve-l2':
       return 2
   }
 }

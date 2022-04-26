@@ -26,6 +26,7 @@ import TransactionConfirmationModal, {
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
+import useL2Approve from './useL2Approve'
 
 const isAllowed = async (
   bridge: Bridge,
@@ -35,6 +36,20 @@ const isAllowed = async (
   const token = ERC20__factory.connect(l1TokenAddress, bridge.l1Provider)
   const walletAddress = await bridge.l1Bridge.getWalletAddress()
   const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
+  return (await token.allowance(walletAddress, gatewayAddress)).gte(
+    amountNeeded
+  )
+}
+
+const isAllowedL2 = async (
+  bridge: Bridge,
+  l1TokenAddress: string,
+  l2TokenAddress: string,
+  amountNeeded: BigNumber
+) => {
+  const token = ERC20__factory.connect(l2TokenAddress, bridge.l2Provider)
+  const walletAddress = await bridge.l2Bridge.getWalletAddress()
+  const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(l1TokenAddress)
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -104,6 +119,7 @@ const TransferPanel = (): JSX.Element => {
   const [l2Amount, setL2AmountState] = useState<string>('')
 
   const { shouldDisableDeposit } = useWithdrawOnly()
+  const { shouldRequireApprove } = useL2Approve()
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -303,6 +319,19 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
+          if (shouldRequireApprove && selectedToken.l2Address) {
+            const allowed = await isAllowedL2(
+              bridge,
+              selectedToken.address,
+              selectedToken.l2Address,
+              amountRaw
+            )
+            if (!allowed) {
+              await latestToken.current.approveL2(
+                selectedToken.address
+              )
+            }
+          }
           latestToken.current.withdraw(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
