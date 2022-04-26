@@ -26,15 +26,17 @@ import useL2Approve from './useL2Approve'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
   l1TokenAddress: string,
   l2TokenAddress: string,
   walletAddress: string,
-  amountNeeded: BigNumber
+  amountNeeded: BigNumber,
+  l2Provider: JsonRpcProvider
 ) => {
-  const token = ERC20__factory.connect(l2TokenAddress, bridge.l2Provider)
+  const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
   const gatewayAddress = await arbTokenBridge.token.getL2GatewayAddress(
     l1TokenAddress
   )
@@ -96,6 +98,8 @@ const TransferPanel = (): JSX.Element => {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network },
+    l2: { signer: l2Signer },
+
   } = networksAndSigners
 
   const latestEth = useLatest(eth)
@@ -304,13 +308,14 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          if (shouldRequireApprove && selectedToken.l2Address) {
+          if (shouldRequireApprove && selectedToken.l2Address && l2Signer?.provider) {
             const allowed = await isAllowedL2(
               arbTokenBridge,
               selectedToken.address,
               selectedToken.l2Address,
               walletAddress,
-              amountRaw
+              amountRaw,
+              l2Signer.provider
             )
             if (!allowed) {
               await latestToken.current.approveL2(selectedToken.address)

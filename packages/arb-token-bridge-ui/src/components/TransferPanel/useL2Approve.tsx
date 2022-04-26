@@ -49,7 +49,7 @@ const useL2Approve = () => {
     } catch (err) {
       console.warn(err)
     }
-  }, [ arbTokenBridge])
+  }, [arbTokenBridge])
 
   useEffect(() => {
     if (
@@ -62,7 +62,7 @@ const useL2Approve = () => {
     // when ready/ on load, add tokens
     addTokens()
     setDoneAddingTokens(true)
-  }, [bridge, doneAddingTokens, arbTokenBridge])
+  }, [ doneAddingTokens, arbTokenBridge])
 
   const shouldRequireApprove = useMemo(() => {
     if (!selectedToken) return false
