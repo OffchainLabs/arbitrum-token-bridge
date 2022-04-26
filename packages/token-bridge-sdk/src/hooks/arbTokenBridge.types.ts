@@ -174,7 +174,7 @@ export interface ArbTokenBridgeToken {
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
-  getL2GatewayAddress: (erc20L1Address: string)=> Promise<string>
+  getL2GatewayAddress: (erc20L1Address: string) => Promise<string>
 }
 
 export interface TransactionActions {
@@ -198,7 +198,7 @@ export interface TransactionActions {
     l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
-  ) => void,
+  ) => void
 }
 
 export type ArbTokenBridgeTransactions = {

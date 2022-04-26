@@ -271,7 +271,7 @@ export const useArbTokenBridge = (
     }
   }
 
-   async function getL2GatewayAddress (erc20L1Address: string): Promise<string>{
+  async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
     return erc20Bridger.getL2GatewayAddress(erc20L1Address, l1.signer.provider)
   }
 
@@ -424,19 +424,13 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-
-  const approveTokenL2 = async (
-    erc20L1Address: string,
-  ) => {
+  const approveTokenL2 = async (erc20L1Address: string) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
-    const contract = await ERC20__factory.connect(
-      l2Address,
-      l2.signer
-    )
+    const contract = await ERC20__factory.connect(l2Address, l2.signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const tokenData = await getL1TokenData(erc20L1Address)
     addTransaction({
