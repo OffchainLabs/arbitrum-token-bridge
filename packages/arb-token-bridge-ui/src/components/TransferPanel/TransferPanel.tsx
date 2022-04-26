@@ -22,6 +22,27 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
+import useL2Approve from './useL2Approve'
+import {
+  JsonRpcProvider,
+} from '@ethersproject/providers'
+import { BigNumber } from 'ethers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { ArbTokenBridge } from 'token-bridge-sdk'
+
+const isAllowedL2 = async (
+  arbTokenBridge: ArbTokenBridge,
+  l1TokenAddress: string,
+  l2TokenAddress: string,
+  walletAddress: string,
+  amountNeeded: BigNumber
+) => {
+  const token = ERC20__factory.connect(l2TokenAddress, bridge.l2Provider)
+  const gatewayAddress = await arbTokenBridge.token.getL2GatewayAddress(l1TokenAddress)
+  return (await token.allowance(walletAddress, gatewayAddress)).gte(
+    amountNeeded
+  )
+}
 
 function useTokenFromSearchParams(): string | undefined {
   const { search } = useLocation()
@@ -64,7 +85,7 @@ const TransferPanel = (): JSX.Element => {
       isDepositMode,
       pendingTransactions,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token, bridgeTokens },
+      arbTokenBridge: { eth, token, bridgeTokens, walletAddress },
       arbTokenBridge,
       warningTokens
     }
@@ -75,7 +96,9 @@ const TransferPanel = (): JSX.Element => {
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
-    l1: { network: l1Network }
+    l1: { network: l1Network, signer: l1Signer },
+    l2: { network: l1Network, signer: l2Signer }
+
   } = networksAndSigners
 
   const latestEth = useLatest(eth)
@@ -87,6 +110,7 @@ const TransferPanel = (): JSX.Element => {
   const [l2Amount, setL2AmountState] = useState<string>('')
 
   const { shouldDisableDeposit } = useWithdrawOnly()
+  const { shouldRequireApprove } = useL2Approve()
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -283,6 +307,20 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
+          if (shouldRequireApprove && selectedToken.l2Address) {
+            const allowed = await isAllowedL2(
+              arbTokenBridge,
+              selectedToken.address,
+              selectedToken.l2Address,
+              walletAddress,
+              amountRaw
+            )
+            if (!allowed) {
+              await latestToken.current.approveL2(
+                selectedToken.address
+              )
+            }
+          }
           latestToken.current.withdraw(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)

@@ -4,6 +4,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
+import { MaxUint256 } from '@ethersproject/constants'
 import {
   L1Network,
   L2Network,
@@ -270,6 +271,10 @@ export const useArbTokenBridge = (
     }
   }
 
+   async function getL2GatewayAddress (erc20L1Address: string): Promise<string>{
+    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l1.signer.provider)
+  }
+
   /**
    * Retrieves the L1 address of an ERC-20 token using its L2 address.
    * @param erc20L2Address
@@ -419,9 +424,40 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
+
+  const approveTokenL2 = async (
+    erc20L1Address: string,
+  ) => {
+    const bridgeToken = bridgeTokens[erc20L1Address]
+    if (!bridgeToken) throw new Error('Bridge token not found')
+    const { l2Address } = bridgeToken
+    if (!l2Address) throw new Error('L2 address not found')
+    const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
+    const contract = await ERC20__factory.connect(
+      l2Address,
+      l2.signer
+    )
+    const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
+    const tokenData = await getL1TokenData(erc20L1Address)
+    addTransaction({
+      type: 'approve-l2',
+      status: 'pending',
+      value: null,
+      txID: tx.hash,
+      assetName: tokenData.symbol,
+      assetType: AssetType.ERC20,
+      sender: walletAddress,
+      blockNumber: tx.blockNumber || 0,
+      l1NetworkID: l1.network.chainID.toString()
+    })
+
+    const receipt = await tx.wait()
+    updateTransaction(receipt, tx)
+    updateTokenData(erc20L1Address)
+  }
+
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
-
     const tx = await erc20Bridger.deposit({
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
@@ -1377,13 +1413,15 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       approve: approveToken,
+      approveL2: approveTokenL2,
       deposit: depositToken,
       withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken,
       getL1TokenData,
       getL2TokenData,
       getL1ERC20Address,
-      getL2ERC20Address
+      getL2ERC20Address,
+      getL2GatewayAddress
     },
     transactions: {
       transactions,

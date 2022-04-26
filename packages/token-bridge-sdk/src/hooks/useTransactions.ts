@@ -37,6 +37,8 @@ export type TxnType =
   | 'approve'
   | 'deposit-l2-auto-redeem' // unused; keeping for cache backwrads compatability
   | 'deposit-l2-ticket-created' // unused; keeping for cache backwrads compatability
+  | 'approve-l2'
+
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
@@ -49,6 +51,7 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
     case 'withdraw':
     case 'deposit-l2-auto-redeem':
     case 'deposit-l2-ticket-created':
+    case 'approve-l2':
       return 2
   }
 }
