@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
