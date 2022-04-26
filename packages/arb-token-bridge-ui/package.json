@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@ethersproject/providers": "^5.4.4",
-    "@gimmixorg/use-wallet": "https://github.com/gimmixorg/use-wallet#bf464f2daa6a3ad33eaec249f4dfaa1943d426ae",
     "@headlessui/react": "^1.4.0",
     "@heroicons/react": "^1.0.3",
     "@tailwindcss/forms": "^0.3.3",

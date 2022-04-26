@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from '@arbitrum/use-wallet'
 import {
   JsonRpcSigner,
   JsonRpcProvider,

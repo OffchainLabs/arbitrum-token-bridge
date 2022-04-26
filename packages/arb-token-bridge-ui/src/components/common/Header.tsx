@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo } from 'react'
 
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from '@arbitrum/use-wallet'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
 
