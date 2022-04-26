@@ -21,7 +21,6 @@
     "watch": "tsc --watch",
     "lint": "tsc --noEmit && eslint src/**/*.ts --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint",
-    "prepare": "install-peers",
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs",
     "test": "env TS_NODE_PROJECT=\"tsconfig.testing.json\" mocha --require ts-node/register 'test/**/*.ts'"
   },
@@ -53,7 +52,6 @@
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.19.0",
-    "install-peers-cli": "^2.2.0",
     "jsdoc-to-markdown": "^6.0.1",
     "prettier": "^2.0.2",
     "ts-node": "^10.4.0",
