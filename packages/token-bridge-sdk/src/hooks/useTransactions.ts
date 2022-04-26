@@ -18,7 +18,7 @@ type Action =
   | {
       type: 'UPDATE_L1TOL2MSG_DATA'
       txID: string
-      l1ToL2MsgData: L1ToL2MessageDataForUpdate
+      l1ToL2MsgData: L1ToL2MessageData
     }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
@@ -58,12 +58,6 @@ export interface L1ToL2MessageData {
   retryableCreationTxID: string
   l2TxID?: string
   fetchingUpdate: boolean
-}
-export interface L1ToL2MessageDataForUpdate {
-  status?: L1ToL2MessageStatus
-  l2TxID?: string
-  fetchingUpdate?: boolean
-  retryableCreationTxID?: string
 }
 type TransactionBase = {
   type: TxnType
@@ -143,7 +137,7 @@ function updateBlockNumber(
 function updateTxnL1ToL2Msg(
   state: Transaction[],
   txID: string,
-  l1ToL2MsgData: L1ToL2MessageDataForUpdate
+  l1ToL2MsgData: L1ToL2MessageData
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
@@ -321,7 +315,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const updateTxnL1ToL2MsgData = async (
     txID: string,
-    l1ToL2MsgData: L1ToL2MessageDataForUpdate
+    l1ToL2MsgData: L1ToL2MessageData
   ) => {
     dispatch({
       type: 'UPDATE_L1TOL2MSG_DATA',
@@ -334,11 +328,13 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     txID: string,
     l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
-    _status?: L1ToL2MessageStatus
+    currentStatus: L1ToL2MessageStatus
   ) => {
     // set fetching:
     updateTxnL1ToL2MsgData(txID, {
-      fetchingUpdate: true
+      fetchingUpdate: true,
+      status: currentStatus,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
     })
 
     const res = await l1ToL2Msg.waitForStatus()
@@ -361,7 +357,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       l1ToL2MsgData: {
         status: res.status,
         l2TxID,
-        fetchingUpdate: false
+        fetchingUpdate: false,
+        retryableCreationTxID: l1ToL2Msg.retryableCreationId
       }
     })
   }
@@ -421,7 +418,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
     seqNum?: number,
-    l1ToL2MsgData?: L1ToL2MessageDataForUpdate
+    l1ToL2MsgData?: L1ToL2MessageData
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
