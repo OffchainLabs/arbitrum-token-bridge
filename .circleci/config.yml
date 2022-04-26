@@ -16,6 +16,12 @@ jobs:
       - save_cache:
           paths:
             - node_modules
+            # Wildcard paths are currently not supported.
+            #
+            # https://circleci.com/docs/2.0/configuration-reference/#save_cache
+            - packages/arb-token-bridge-ui/node_modules
+            - packages/token-bridge-sdk/node_modules
+            - packages/use-wallet/node_modules
           key: v1-yarn-{{ checksum "yarn.lock" }}
       - persist_to_workspace:
           root: .
