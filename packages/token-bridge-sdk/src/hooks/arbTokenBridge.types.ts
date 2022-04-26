@@ -160,6 +160,7 @@ export interface ArbTokenBridgeToken {
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
+  approveL2: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,
     amount: BigNumber
@@ -173,6 +174,7 @@ export interface ArbTokenBridgeToken {
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
+  getL2GatewayAddress: (erc20L1Address: string) => Promise<string>
 }
 
 export interface TransactionActions {
