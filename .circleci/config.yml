@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/node:12.22.12-browsers
+      - image: cimg/node:16.14.2-browsers
     steps:
       - checkout
       - run:
@@ -16,7 +16,7 @@ jobs:
 
   test-sdk:
     docker:
-      - image: cimg/node:12.22.12-browsers
+      - image: cimg/node:16.14.2-browsers
     working_directory: ./packages/token-bridge-sdk
     steps:
       - attach_workspace:
