@@ -191,6 +191,7 @@ export const useArbTokenBridge = (
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
+      setTransactionSuccess,
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
@@ -864,7 +865,7 @@ export const useArbTokenBridge = (
       const rec = await res.wait()
 
       if (rec.status === 1) {
-        setTransactionConfirmed(rec.transactionHash)
+        setTransactionSuccess(rec.transactionHash)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
@@ -923,7 +924,7 @@ export const useArbTokenBridge = (
       const rec = await res.wait()
 
       if (rec.status === 1) {
-        setTransactionConfirmed(rec.transactionHash)
+        setTransactionSuccess(rec.transactionHash)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
