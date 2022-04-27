@@ -4,16 +4,20 @@ import { useAppState } from '../../state'
 import { resolveTokenImg } from '../../util'
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { TokenModal } from '../TokenModal/TokenModal'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
       selectedToken,
-      networkID,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
+  const { status } = useNetworksAndSigners()
 
   const [tokenModalOpen, setTokenModalOpen] = useState(false)
   const [tokenImportModalOpen, setTokenImportModalOpen] = useState(false)
@@ -24,7 +28,10 @@ export function TokenButton(): JSX.Element {
     if (!selectedAddress) {
       return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
     }
-    if (networkID === null || !arbTokenBridgeLoaded) {
+    if (
+      status !== UseNetworksAndSignersStatus.CONNECTED ||
+      !arbTokenBridgeLoaded
+    ) {
       return undefined
     }
     const logo = bridgeTokens[selectedAddress]?.logoURI
@@ -32,7 +39,7 @@ export function TokenButton(): JSX.Element {
       return resolveTokenImg(logo)
     }
     return undefined
-  }, [selectedToken?.address, networkID])
+  }, [selectedToken?.address, status, arbTokenBridgeLoaded])
 
   // Reset the token back to undefined every time the modal closes
   useEffect(() => {

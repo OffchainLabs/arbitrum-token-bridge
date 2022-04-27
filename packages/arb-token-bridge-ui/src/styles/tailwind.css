@@ -16,6 +16,26 @@
     background-color: #E5E5E5;
 }
 
+#faucet-link{
+  position: relative;
+  box-sizing: border-box;
+  padding: 8px;
+  background-color: #def0ff;
+  color: #1b95e0;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: Helvetica;
+  border-radius: 8px;
+  margin-left: 5px;
+  font-size: 15px;
+  display: flex;
+}
+#twitter-faucet-container{
+  display: flex;
+  align-items: center;
+}
+
 /*** HIDE NUMBER INPUT STEPS BUTTONS ****/
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,

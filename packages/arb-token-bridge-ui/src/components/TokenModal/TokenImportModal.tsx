@@ -1,30 +1,22 @@
-import { L1TokenData } from 'arb-ts'
 import {
   useState,
   useEffect,
   useMemo,
   MouseEventHandler,
-  useContext,
   useCallback
 } from 'react'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
-import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
+import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
-import { BridgeContext } from '../App/App'
 import { Modal } from '../common/Modal'
-import { useTokensFromLists, useTokensFromUser } from './TokenModalUtils'
-
-function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.contract.address,
-    decimals: data.decimals
-  }
-}
+import {
+  useTokensFromLists,
+  useTokensFromUser,
+  toERC20BridgeToken
+} from './TokenModalUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 function ModalFooter({
   hideCancel = false,
@@ -91,13 +83,14 @@ export function TokenImportModal({
 }): JSX.Element {
   const {
     app: {
-      l1NetworkDetails,
       arbTokenBridge: { bridgeTokens, token },
       selectedToken
     }
   } = useAppState()
+  const {
+    l1: { network: l1Network }
+  } = useNetworksAndSigners()
   const actions = useActions()
-  const bridge = useContext(BridgeContext)
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -138,19 +131,19 @@ export function TokenImportModal({
 
   const getL1TokenData = useCallback(
     async (eitherL1OrL2Address: string) => {
-      if (!bridge) {
+      if (typeof token === 'undefined') {
         return
       }
 
-      const addressOnL1 = await bridge.getERC20L1Address(eitherL1OrL2Address)
+      const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return bridge.l1Bridge.getL1TokenData(addressOnL1)
+        return token.getL1TokenData(addressOnL1)
       } else {
-        return bridge.l1Bridge.getL1TokenData(eitherL1OrL2Address)
+        return token.getL1TokenData(eitherL1OrL2Address)
       }
     },
-    [bridge]
+    [token]
   )
 
   const searchForTokenInLists = useCallback(
@@ -391,7 +384,7 @@ export function TokenImportModal({
           <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
           <span className="mt-0 mb-4">{tokenToImport?.name}</span>
           <a
-            href={`${l1NetworkDetails?.explorerUrl}/token/${tokenToImport?.address}`}
+            href={`${l1Network?.explorerUrl}/token/${tokenToImport?.address}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}

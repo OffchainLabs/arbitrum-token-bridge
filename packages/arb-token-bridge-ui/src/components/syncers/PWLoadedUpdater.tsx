@@ -1,54 +1,55 @@
-import { useContext, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
-import networks from '../../util/networks'
-import { BridgeContext } from '../App/App'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
+import { l2DaiGatewayAddresses } from '../../util/networks'
 
 // Loads pending withdrawals on page load
-const PWLoadedUpdater = (): JSX.Element => {
-  const bridge = useContext(BridgeContext)
+export function PWLoadedUpdater(): JSX.Element {
+  const networksAndSigners = useNetworksAndSigners()
   const actions = useActions()
   const {
     app: {
-      networkID,
       arbTokenBridgeLoaded,
       pwLoadedState,
-      arbTokenBridge: { setInitialPendingWithdrawals },
-      l1NetworkDetails,
-      l2NetworkDetails
+      arbTokenBridge: { setInitialPendingWithdrawals }
     }
   } = useAppState()
 
   useEffect(() => {
     if (
+      networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED ||
       !arbTokenBridgeLoaded ||
-      !l1NetworkDetails?.chainID ||
-      !bridge ||
       pwLoadedState !== PendingWithdrawalsLoadedState.LOADING
     ) {
       return
     }
-    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway, l2DaiGateway } =
-      bridge.l2Bridge.network.tokenBridge
-    const gatewaysToUse = [
-      l2ERC20Gateway,
-      l2CustomGateway,
-      l2WethGateway,
-      l2DaiGateway
-    ]
+
+    const { l2 } = networksAndSigners
+
+    const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
+      l2.network.tokenBridge
+
+    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
+
+    const l2DaiGateway = l2DaiGatewayAddresses[l2.network.chainID]
+    if (l2DaiGateway) {
+      gatewaysToUse.push(l2DaiGateway)
+    }
+
     console.log('**** setting initial pending withdrawals ****')
 
-    bridge?.l2Signer?.getTransactionCount()?.then((nonce: number) => {
+    l2.signer.getTransactionCount()?.then((nonce: number) => {
       if (nonce === 0) {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
       } else {
-        const bridgeUpdateBlockNumber =
-          (networks[l2NetworkDetails?.chainID || ''] &&
-            networks[l2NetworkDetails?.chainID || '']
-              .bridgeUpdateBlockNumber) ||
-          0
+        const bridgeUpdateBlockNumber = 0
+
         console.log(
           `Nonce is ${nonce} and bridgeUpdateBlockNumber is ${bridgeUpdateBlockNumber}`
         )
@@ -68,15 +69,7 @@ const PWLoadedUpdater = (): JSX.Element => {
           })
       }
     })
-  }, [
-    l1NetworkDetails?.chainID,
-    bridge,
-    arbTokenBridgeLoaded,
-    networkID,
-    pwLoadedState
-  ])
+  }, [networksAndSigners, arbTokenBridgeLoaded, pwLoadedState])
 
   return <></>
 }
-
-export { PWLoadedUpdater }

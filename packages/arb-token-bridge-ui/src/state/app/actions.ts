@@ -1,4 +1,5 @@
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
+import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -11,15 +12,12 @@ export const setConnectionState = (
   state.app.connectionState = connectionState
 }
 
-export const setCurrentL1BlockNumber = (
+export const setChainIds = (
   { state }: Context,
-  blockNum: number
+  payload: { l1NetworkChainId: number; l2NetworkChainId: number }
 ) => {
-  state.app.currentL1BlockNumber = blockNum
-}
-
-export const setNetworkID = ({ state }: Context, networkID: string) => {
-  state.app.networkID = networkID
+  state.app.l1NetworkChainId = payload.l1NetworkChainId
+  state.app.l2NetworkChainId = payload.l2NetworkChainId
 }
 
 export const setIsDepositMode = (
@@ -38,21 +36,22 @@ export const setSelectedToken = (
 
 export const setChangeNetwork = (
   { state }: Context,
-  func: (chainID: string) => Promise<void>
+  func: (network: L1Network | L2Network) => Promise<void>
 ) => {
   state.app.changeNetwork = func
 }
 
-export const reset = ({ state }: Context, newChainId: string) => {
+export const reset = ({ state }: Context, newChainId: number) => {
   if (
-    state.app.l1NetworkDetails?.chainID !== newChainId &&
-    state.app.l2NetworkDetails?.chainID !== newChainId
+    state.app.l1NetworkChainId !== newChainId &&
+    state.app.l2NetworkChainId !== newChainId
   ) {
     // only reset the selected token if we are not switching between the pair of l1-l2 networks.
     // we dont want to reset the token if we are switching from Rinkeby to Rinkarby for example
     // because we are maybe in the process of auto switching the network and triggering deposit or withdraw
     state.app.selectedToken = null
   }
+
   state.app.arbTokenBridge = {} as ArbTokenBridge
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
@@ -102,10 +101,14 @@ export const getPendingTransactions = ({ state }: Context) => {
   return state.app.pendingTransactions
 }
 
-export const getSuccessfulL1Deposits = ({ state }: Context) => {
-  return state.app.successfulL1Deposits
+export const l1DepositsWithUntrackedL2Messages = ({ state }: Context) => {
+  return state.app.l1DepositsWithUntrackedL2Messages
 }
 
 export const getSortedTransactions = ({ state }: Context) => {
   return state.app.sortedTransactions
+}
+
+export const getFailedRetryablesToRedeem = ({ state }: Context) => {
+  return state.app.failedRetryablesToRedeem
 }

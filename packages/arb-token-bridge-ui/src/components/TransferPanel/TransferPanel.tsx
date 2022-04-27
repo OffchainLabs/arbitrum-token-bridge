@@ -1,22 +1,14 @@
-import React, {
-  useContext,
-  useState,
-  useMemo,
-  useCallback,
-  useEffect
-} from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import { useWallet } from '@gimmixorg/use-wallet'
-import { utils, BigNumber } from 'ethers'
+import { useWallet } from '@arbitrum/use-wallet'
+import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
-import { ERC20__factory, Bridge } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { BridgeContext } from '../App/App'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
@@ -26,30 +18,28 @@ import TransactionConfirmationModal, {
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
+import {
+  useNetworksAndSigners,
+  UseNetworksAndSignersStatus
+} from '../../hooks/useNetworksAndSigners'
 import useL2Approve from './useL2Approve'
-
-const isAllowed = async (
-  bridge: Bridge,
-  l1TokenAddress: string,
-  amountNeeded: BigNumber
-) => {
-  const token = ERC20__factory.connect(l1TokenAddress, bridge.l1Provider)
-  const walletAddress = await bridge.l1Bridge.getWalletAddress()
-  const gatewayAddress = await bridge.l1Bridge.getGatewayAddress(l1TokenAddress)
-  return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    amountNeeded
-  )
-}
+import { BigNumber } from 'ethers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { ArbTokenBridge } from 'token-bridge-sdk'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 const isAllowedL2 = async (
-  bridge: Bridge,
+  arbTokenBridge: ArbTokenBridge,
   l1TokenAddress: string,
   l2TokenAddress: string,
-  amountNeeded: BigNumber
+  walletAddress: string,
+  amountNeeded: BigNumber,
+  l2Provider: JsonRpcProvider
 ) => {
-  const token = ERC20__factory.connect(l2TokenAddress, bridge.l2Provider)
-  const walletAddress = await bridge.l2Bridge.getWalletAddress()
-  const gatewayAddress = await bridge.l2Bridge.getGatewayAddress(l1TokenAddress)
+  const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
+  const gatewayAddress = await arbTokenBridge.token.getL2GatewayAddress(
+    l1TokenAddress
+  )
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -94,12 +84,9 @@ const TransferPanel = (): JSX.Element => {
       changeNetwork,
       selectedToken,
       isDepositMode,
-      networkDetails,
-      l1NetworkDetails,
-      l2NetworkDetails,
       pendingTransactions,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token, bridgeTokens },
+      arbTokenBridge: { eth, token, bridgeTokens, walletAddress },
       arbTokenBridge,
       warningTokens
     }
@@ -107,11 +94,16 @@ const TransferPanel = (): JSX.Element => {
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
-  const bridge = useContext(BridgeContext)
+  const networksAndSigners = useNetworksAndSigners()
+  const latestNetworksAndSigners = useLatest(networksAndSigners)
+  const {
+    l1: { network: l1Network },
+    l2: { signer: l2Signer },
+
+  } = networksAndSigners
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
-  const latestNetworkDetails = useLatest(networkDetails)
 
   const [transferring, setTransferring] = useState(false)
 
@@ -182,14 +174,12 @@ const TransferPanel = (): JSX.Element => {
   }, [selectedToken, arbTokenBridge, bridgeTokens])
 
   const isBridgingANewStandardToken = useMemo(() => {
-    return !!(
-      l1NetworkDetails &&
-      l1NetworkDetails.chainID === '1' &&
-      isDepositMode &&
-      selectedToken &&
-      !selectedToken.l2Address
-    )
-  }, [l1NetworkDetails, isDepositMode, selectedToken])
+    const isConnected = typeof l1Network !== 'undefined'
+    const isUnbridgedToken =
+      selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
+
+    return isConnected && isDepositMode && isUnbridgedToken
+  }, [l1Network, isDepositMode, selectedToken])
 
   const showModalOnDeposit = useCallback(() => {
     if (isBridgingANewStandardToken) {
@@ -206,13 +196,15 @@ const TransferPanel = (): JSX.Element => {
   }, [isBridgingANewStandardToken, selectedToken])
 
   const transfer = async () => {
-    // ** We can be assured bridge won't be null here; this is to appease typescript*/
-    if (!bridge) {
-      // eslint-disable-next-line no-alert
-      alert("Bridge null! This shouldn't happen. Let support know.")
+    if (
+      latestNetworksAndSigners.current.status !==
+      UseNetworksAndSignersStatus.CONNECTED
+    ) {
       return
     }
+
     setTransferring(true)
+
     try {
       const amount = isDepositMode ? l1Amount : l2Amount
 
@@ -234,24 +226,25 @@ const TransferPanel = (): JSX.Element => {
             `${selectedToken.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (networkDetails?.isArbitrum === true) {
-          await changeNetwork?.(networkDetails.partnerChainID)
+        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
+
           while (
-            latestNetworkDetails.current?.isArbitrum ||
+            latestNetworksAndSigners.current.isConnectedToArbitrum ||
             !latestEth.current ||
-            !arbTokenBridgeLoaded ||
-            !bridge
+            !arbTokenBridgeLoaded
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = l1NetworkDetails?.chainID
+        const l1ChainID = latestNetworksAndSigners.current.l1.network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
-          !(l1ChainID && connectedChainID && +l1ChainID === connectedChainID)
+          !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
         ) {
           return alert('Network connection issue; contact support')
         }
@@ -260,11 +253,9 @@ const TransferPanel = (): JSX.Element => {
           const amountRaw = utils.parseUnits(amount, decimals)
 
           // check that a registration is not currently in progress
-          const l2RoutedAddress = (
-            await bridge.l2Bridge.l2GatewayRouter.functions.calculateL2TokenAddress(
-              selectedToken.address
-            )
-          )[0]
+          const l2RoutedAddress = await arbTokenBridge.token.getL2ERC20Address(
+            selectedToken.address
+          )
 
           if (
             selectedToken.l2Address &&
@@ -277,14 +268,11 @@ const TransferPanel = (): JSX.Element => {
             return
           }
 
-          // Sanity check: ensure not allowed yet
-          const allowed = await isAllowed(
-            bridge,
-            selectedToken.address,
-            amountRaw
+          const { allowance } = await arbTokenBridge.token.getL1TokenData(
+            selectedToken.address
           )
 
-          if (!allowed) {
+          if (!allowance.gte(amountRaw)) {
             await latestToken.current.approve(selectedToken.address)
           }
 
@@ -295,20 +283,21 @@ const TransferPanel = (): JSX.Element => {
           await latestEth.current.deposit(amountRaw)
         }
       } else {
-        if (networkDetails?.isArbitrum === false) {
-          await changeNetwork?.(networkDetails.partnerChainID)
+        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
+
           while (
-            !latestNetworkDetails.current?.isArbitrum ||
+            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
             !latestEth.current ||
-            !arbTokenBridgeLoaded ||
-            !bridge
+            !arbTokenBridgeLoaded
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
+
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l2ChainID = l2NetworkDetails?.chainID
+        const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -319,17 +308,17 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          if (shouldRequireApprove && selectedToken.l2Address) {
+          if (shouldRequireApprove && selectedToken.l2Address && l2Signer?.provider) {
             const allowed = await isAllowedL2(
-              bridge,
+              arbTokenBridge,
               selectedToken.address,
               selectedToken.l2Address,
-              amountRaw
+              walletAddress,
+              amountRaw,
+              l2Signer.provider
             )
             if (!allowed) {
-              await latestToken.current.approveL2(
-                selectedToken.address
-              )
+              await latestToken.current.approveL2(selectedToken.address)
             }
           }
           latestToken.current.withdraw(selectedToken.address, amountRaw)
@@ -363,6 +352,7 @@ const TransferPanel = (): JSX.Element => {
 
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
+
     return (
       (selectedToken &&
         selectedToken.address &&

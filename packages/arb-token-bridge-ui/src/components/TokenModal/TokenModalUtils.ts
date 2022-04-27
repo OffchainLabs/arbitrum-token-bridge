@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { ERC20BridgeToken, TokenType } from 'token-bridge-sdk'
+import { ERC20BridgeToken, L1TokenData, TokenType } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { TokenListWithId, useTokenLists } from '../../tokenLists'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export interface SearchableToken extends ERC20BridgeToken {
   tokenLists: number[]
@@ -12,22 +13,25 @@ export type SearchableTokenStorage = { [l1Address: string]: SearchableToken }
 
 export function useTokensFromLists(): SearchableTokenStorage {
   const {
-    app: { l1NetworkDetails, l2NetworkDetails }
-  } = useAppState()
+    l1: { network: l1Network },
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
 
-  const tokenLists = useTokenLists(l2NetworkDetails?.chainID)
+  const tokenLists = useTokenLists(
+    l2Network ? String(l2Network.chainID) : undefined
+  )
 
   return useMemo(() => {
-    if (!l1NetworkDetails?.chainID || !l2NetworkDetails?.chainID) {
+    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
       return {}
     }
 
     return tokenListsToSearchableTokenStorage(
       tokenLists,
-      l1NetworkDetails.chainID,
-      l2NetworkDetails.chainID
+      String(l1Network.chainID),
+      String(l2Network.chainID)
     )
-  }, [tokenLists, l1NetworkDetails, l2NetworkDetails])
+  }, [tokenLists, l1Network, l2Network])
 }
 
 export function useTokensFromUser(): SearchableTokenStorage {
@@ -144,4 +148,14 @@ function tokenListsToSearchableTokenStorage(
         return acc
       }, {})
   )
+}
+
+export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.contract.address,
+    decimals: data.decimals
+  }
 }
