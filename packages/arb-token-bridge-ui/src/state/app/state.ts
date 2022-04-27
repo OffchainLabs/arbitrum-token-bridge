@@ -49,14 +49,15 @@ const getDepositStatus = (tx: Transaction) => {
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
   }
-
   switch (l1ToL2MsgData.status) {
     case L1ToL2MessageStatus.NOT_YET_CREATED:
       return DepositStatus.L2_PENDING
     case L1ToL2MessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
     case L1ToL2MessageStatus.EXPIRED:
-      return DepositStatus.EXPIRED
+      return tx.assetType === 'ETH'
+        ? DepositStatus.L2_SUCCESS
+        : DepositStatus.EXPIRED
     case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
       return tx.assetType === 'ETH'
         ? DepositStatus.L2_SUCCESS
