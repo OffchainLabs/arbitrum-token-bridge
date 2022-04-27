@@ -21,7 +21,6 @@ import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
-
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   AddressToSymbol,
