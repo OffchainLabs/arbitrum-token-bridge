@@ -359,15 +359,12 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         return undefined
       }
     })()
-    dispatch({
-      type: 'UPDATE_L1TOL2MSG_DATA',
-      txID,
-      l1ToL2MsgData: {
-        status: res.status,
-        l2TxID,
-        fetchingUpdate: false,
-        retryableCreationTxID: l1ToL2Msg.retryableCreationId
-      }
+
+    updateTxnL1ToL2MsgData(txID, {
+      status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
     })
   }
 
