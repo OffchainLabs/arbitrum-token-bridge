@@ -11,7 +11,7 @@ import useTwitter from '../../hooks/useTwitter'
 
 const MainContent = () => {
   const {
-    app: { mergedTransactionsToShow }
+    app: { mergedTransactions }
   } = useAppState()
   const { l1 } = useNetworksAndSigners()
   const handleTwitterClick = useTwitter()
@@ -80,15 +80,13 @@ const MainContent = () => {
 
       <TransferPanel />
 
-      {mergedTransactionsToShow?.length > 0 && (
+      {mergedTransactions?.length > 0 && (
         <>
-          <TransactionsTable
-            transactions={mergedTransactionsToShow?.slice(0, 5)}
-          />
+          <TransactionsTable transactions={mergedTransactions?.slice(0, 5)} />
 
           <div className="h-6" />
 
-          {mergedTransactionsToShow?.length > 5 && (
+          {mergedTransactions?.length > 5 && (
             <div className="max-w-networkBox mx-auto mb-4">
               <Button
                 onClick={() => setTransactionModalOpen(true)}

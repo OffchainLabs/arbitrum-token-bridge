@@ -114,7 +114,6 @@ export type AppState = {
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
-  mergedTransactionsToShow: MergedTransaction[]
 
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
@@ -227,20 +226,6 @@ export const defaultState: AppState = {
         return item.createdAtTime
       })
     )
-  }),
-  mergedTransactionsToShow: derived((s: AppState) => {
-    return s.mergedTransactions.filter((txn: MergedTransaction) => {
-      switch (txn.direction) {
-        // TODO: remove from cache
-        case 'deposit-l2-ticket-created':
-        case 'deposit-l2-auto-redeem':
-        case 'deposit-l2':
-          return false
-        default:
-          break
-      }
-      return true
-    })
   }),
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false,
