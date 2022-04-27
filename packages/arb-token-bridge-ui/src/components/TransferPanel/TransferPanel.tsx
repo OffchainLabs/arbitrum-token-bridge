@@ -98,8 +98,7 @@ const TransferPanel = (): JSX.Element => {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network },
-    l2: { signer: l2Signer },
-
+    l2: { signer: l2Signer }
   } = networksAndSigners
 
   const latestEth = useLatest(eth)
@@ -308,7 +307,11 @@ const TransferPanel = (): JSX.Element => {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          if (shouldRequireApprove && selectedToken.l2Address && l2Signer?.provider) {
+          if (
+            shouldRequireApprove &&
+            selectedToken.l2Address &&
+            l2Signer?.provider
+          ) {
             const allowed = await isAllowedL2(
               arbTokenBridge,
               selectedToken.address,
