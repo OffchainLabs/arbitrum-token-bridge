@@ -23,7 +23,6 @@ import { DisclaimerModal } from '../DisclaimerModal/DisclaimerModal'
 import MainContent from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
-import { CurrentL1BlockNumberUpdater } from '../syncers/CurrentL1BlockNumberUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
@@ -34,6 +33,7 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
+import { useBlockNumber } from '../../hooks/useBlockNumber'
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -123,7 +123,6 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
-      <CurrentL1BlockNumberUpdater />
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
       <TokenListSyncer />
@@ -139,6 +138,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
   const networksAndSigners = useNetworksAndSigners()
+  const currentL1BlockNumber = useBlockNumber(
+    networksAndSigners.l1.signer?.provider
+  )
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -184,6 +186,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     },
     []
   )
+
+  useEffect(() => {
+    if (currentL1BlockNumber > 0) {
+      console.log('Current block number on L1:', currentL1BlockNumber)
+    }
+  }, [currentL1BlockNumber])
 
   // Listen for account and network changes
   useEffect(() => {
