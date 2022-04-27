@@ -6,6 +6,7 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
+import { l2DaiGatewayAddresses } from '../../util/networks'
 
 // Loads pending withdrawals on page load
 export function PWLoadedUpdater(): JSX.Element {
@@ -34,6 +35,12 @@ export function PWLoadedUpdater(): JSX.Element {
       l2.network.tokenBridge
 
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
+
+    const l2DaiGateway = l2DaiGatewayAddresses[l2.network.chainID]
+    if (l2DaiGateway) {
+      gatewaysToUse.push(l2DaiGateway)
+    }
+
     console.log('**** setting initial pending withdrawals ****')
 
     l2.signer.getTransactionCount()?.then((nonce: number) => {

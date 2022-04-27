@@ -11,3 +11,8 @@ export const rpcURLs: { [chainId: number]: string } = {
   42161: 'https://arb1.arbitrum.io/rpc',
   421611: 'https://rinkeby.arbitrum.io/rpc'
 }
+
+export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
+  42161: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
+  421611: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
+}
