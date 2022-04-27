@@ -1,4 +1,4 @@
-import { useReducer, useEffect } from 'react'
+import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
@@ -39,6 +39,11 @@ export type TxnType =
   | 'deposit-l2-ticket-created' // unused; keeping for cache backwrads compatability
   | 'approve-l2'
 
+const deprecatedTxTypes: Set<TxnType> = new Set([
+  'deposit-l2-auto-redeem',
+  'deposit-l2-ticket-created',
+  'deposit-l2'
+])
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
@@ -453,8 +458,12 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
+  const transactions = useMemo(() => {
+    return state.filter(tx => !deprecatedTxTypes.has(tx.type))
+  }, [state])
+
   return [
-    state,
+    transactions,
     {
       addTransaction,
       addTransactions,

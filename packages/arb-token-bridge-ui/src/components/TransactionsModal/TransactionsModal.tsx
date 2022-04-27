@@ -6,14 +6,14 @@ import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 
 export const TransactionsModalBody = (): JSX.Element => {
   const {
-    app: { mergedTransactionsToShow }
+    app: { mergedTransactions }
   } = useAppState()
 
   return (
     <div className="flex w-full justify-center ">
       <div className="max-h-transactionsList overflow-auto w-full ">
         <TransactionsTable
-          transactions={mergedTransactionsToShow}
+          transactions={mergedTransactions}
           overflowX={false}
         />
       </div>
