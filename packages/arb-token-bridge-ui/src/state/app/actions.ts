@@ -12,13 +12,6 @@ export const setConnectionState = (
   state.app.connectionState = connectionState
 }
 
-export const setCurrentL1BlockNumber = (
-  { state }: Context,
-  blockNum: number
-) => {
-  state.app.currentL1BlockNumber = blockNum
-}
-
 export const setChainIds = (
   { state }: Context,
   payload: { l1NetworkChainId: number; l2NetworkChainId: number }

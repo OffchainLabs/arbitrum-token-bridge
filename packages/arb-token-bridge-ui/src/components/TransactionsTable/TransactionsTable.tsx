@@ -5,7 +5,7 @@ import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { DepositStatus } from '../../state/app/state'
 import { TxnType } from 'token-bridge-sdk'
-import { L1ToL2MessageWriter } from '@arbitrum/sdk'
+import { L1ToL2MessageWriter, L1ToL2MessageStatus } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -15,7 +15,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { useBlockNumber } from '../../hooks/useBlockNumber'
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
@@ -84,13 +84,15 @@ const PendingCountdown = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
 const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
   const {
-    app: { arbTokenBridge, isDepositMode, currentL1BlockNumber }
+    app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const {
-    l1: { network: l1Network },
+    l1: { network: l1Network, signer: l1Signer },
     l2: { network: l2Network, signer: l2Signer },
     isConnectedToArbitrum
   } = useNetworksAndSigners()
+  const currentL1BlockNumber = useBlockNumber(l1Signer?.provider)
+
   const [isClaiming, setIsClaiming] = useState(false)
 
   const showRedeemRetryableButton = useMemo(() => {

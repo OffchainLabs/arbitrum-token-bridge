@@ -115,7 +115,6 @@ export type AppState = {
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
   mergedTransactionsToShow: MergedTransaction[]
-  currentL1BlockNumber: number
 
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
@@ -243,7 +242,6 @@ export const defaultState: AppState = {
       return true
     })
   }),
-  currentL1BlockNumber: 0,
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false,
   changeNetwork: null
