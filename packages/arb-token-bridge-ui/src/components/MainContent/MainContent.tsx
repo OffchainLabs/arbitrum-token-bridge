@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
 import { Alert } from '../common/Alert'
@@ -6,15 +6,33 @@ import { Button } from '../common/Button'
 import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import useTwitter from '../../hooks/useTwitter'
 
 const MainContent = () => {
   const {
-    app: { mergedTransactionsToShow, networkID }
+    app: { mergedTransactions }
   } = useAppState()
+  const { l1 } = useNetworksAndSigners()
+  const handleTwitterClick = useTwitter()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
-  const isMainnet = networkID === '1' || networkID === '42161'
+  const isMainnet = useMemo(() => {
+    if (typeof l1.network === 'undefined') {
+      return false
+    }
+
+    return l1.network.chainID === 1
+  }, [l1])
+
+  const isNitro = useMemo(() => {
+    if (typeof l1.network === 'undefined') {
+      return false
+    }
+
+    return l1.network.chainID === 5
+  }, [l1])
 
   return (
     <div className="mx-auto px-4">
@@ -34,6 +52,19 @@ const MainContent = () => {
         </div>
       )}
 
+      {isNitro && (
+        <div className="mb-4 mx-auto max-w-networkBox w-full">
+          <Alert type="blue">
+            <span id="twitter-faucet-container">
+              Request testnet Eth from the{' '}
+              <a id="faucet-link" target="_blank" onClick={handleTwitterClick}>
+                Nitro Devnet twitter faucet!
+              </a>
+            </span>
+          </Alert>
+        </div>
+      )}
+
       <div className="mb-4 mx-auto max-w-networkBox w-full">
         <Alert type="ramps">
           Looking for fast bridges and direct fiat on-ramps for Arbitrum?&nbsp;
@@ -49,15 +80,13 @@ const MainContent = () => {
 
       <TransferPanel />
 
-      {mergedTransactionsToShow?.length > 0 && (
+      {mergedTransactions?.length > 0 && (
         <>
-          <TransactionsTable
-            transactions={mergedTransactionsToShow?.slice(0, 5)}
-          />
+          <TransactionsTable transactions={mergedTransactions?.slice(0, 5)} />
 
           <div className="h-6" />
 
-          {mergedTransactionsToShow?.length > 5 && (
+          {mergedTransactions?.length > 5 && (
             <div className="max-w-networkBox mx-auto mb-4">
               <Button
                 onClick={() => setTransactionModalOpen(true)}

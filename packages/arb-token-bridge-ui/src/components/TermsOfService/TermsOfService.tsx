@@ -1,10 +1,12 @@
+export const TOS_VERSION = 1
+
 const TermsOfService = () => {
   return (
     <div>
       <h2 className="font-bold mb-2">ARBITRUM</h2>
       <h3 className="font-semibold mb-2"> TERMS OF SERVICE</h3>
       <h5>
-        <i>Date of Last Revision: August 31, 2021 </i>
+        <i>Date of Last Revision: March 7, 2022 </i>
       </h5>
       <br />
       <h3 className="font-semibold mb-2">
@@ -82,7 +84,21 @@ const TermsOfService = () => {
         <b>Legal Compliance:</b> You represent that your access and use of the
         Service will fully comply with all applicable laws and regulations, and
         that you will not access or use the Service to conduct, promote, or
-        otherwise facilitate any illegal activity.
+        otherwise facilitate any illegal activity. You will comply with all
+        applicable sanctions laws, regulations and rules, including but not
+        limited to, those administered by the U.S. Department of the Treasury’s
+        Office of Foreign Assets Control (“OFAC”), and any other applicable
+        jurisdictions. The Interface may not be used: (i) in the Crimea region
+        of Ukraine, Cuba, Iran, North Korea, or Syria; (ii) by or for the
+        specific benefit of any individual or entity on the Specially Designated
+        Nationals and Blocked Persons (“SDN”) List maintained by OFAC, (iii) any
+        entity 50% or more owned in the aggregate by any such SDN(s); or (v) for
+        any other use requiring a license or other governmental approval. If
+        Offchain Labs determines that you have breached your obligation under
+        this section, we shall block your access to the Service and any
+        interests in property as required by law, if continued Service could
+        result in Offchain Labs being in violation, or subject to negative
+        consequences, under the Sanctions Rules.
       </p>
       <p className="mb-4">
         <b> Credentials:</b> You are responsible for maintaining the

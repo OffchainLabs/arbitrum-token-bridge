@@ -8,13 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start_ui": "yarn workspace arb-token-bridge-ui start",
     "start_sdk": "yarn workspace token-bridge-sdk watch",
-    "build": "yarn workspace token-bridge-sdk build && yarn workspace arb-token-bridge-ui build"
+    "build": "yarn workspace @arbitrum/use-wallet build && yarn workspace token-bridge-sdk build && yarn workspace arb-token-bridge-ui build",
+    "format": "yarn workspace arb-token-bridge-ui format && yarn workspace token-bridge-sdk format",
+    "test:sdk": "yarn workspace token-bridge-sdk test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "workspaces": [
-    "packages/token-bridge-sdk",
-    "packages/arb-token-bridge-ui"
+    "packages/*"
   ]
 }

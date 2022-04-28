@@ -1,13 +1,50 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { L2ToL1EventResult, OutgoingMessageState } from 'arb-ts'
-import { BigNumber, ContractReceipt, ethers, Signer } from 'ethers'
+import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
+import {
+  L1ToL2MessageReader,
+  L1ToL2MessageStatus,
+  L2ToL1MessageStatus as OutgoingMessageState
+} from '@arbitrum/sdk'
+import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
+import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
+import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
 import {
   FailedTransaction,
   NewTransaction,
-  Transaction
+  Transaction,
+  L1ToL2MessageData
 } from './useTransactions'
+
+export { OutgoingMessageState }
+
+export enum TokenType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721'
+}
+
+export enum AssetType {
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721',
+  ETH = 'ETH'
+}
+
+export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
+
+// todo: use L2ToL1TransactionEvent['args']
+export interface L2ToL1EventResult {
+  caller: string
+  destination: string
+  uniqueId: BigNumber
+  batchNumber: BigNumber
+  indexInBatch: BigNumber
+  arbBlockNum: BigNumber
+  ethBlockNum: BigNumber
+  timestamp: BigNumber | string // TODO: Clean up
+  callvalue: BigNumber
+  data: string
+}
 
 export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   type: AssetType
@@ -16,7 +53,13 @@ export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
   outgoingMessageState: OutgoingMessageState
   symbol: string
   decimals: number
+  nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
+
+export type WithdrawalInitiated = WithdrawalInitiatedEvent['args'] & {
+  txHash: string
+}
+
 export interface PendingWithdrawalsMap {
   [id: string]: L2ToL1EventResultPlus
 }
@@ -24,7 +67,6 @@ export interface BridgeToken {
   type: TokenType
   name: string
   symbol: string
-  allowed: boolean
   address: string
   l2Address?: string
   logoURI?: string
@@ -36,16 +78,18 @@ export interface ERC20BridgeToken extends BridgeToken {
   decimals: number
 }
 
-export enum TokenType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721'
+export interface L1TokenData {
+  name: string
+  symbol: string
+  balance: BigNumber
+  allowance: BigNumber
+  decimals: number
+  contract: ERC20
 }
-/* eslint-enable no-shadow */
 
-export enum AssetType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ETH = 'ETH'
+export interface L2TokenData {
+  balance: BigNumber
+  contract: StandardArbERC20
 }
 
 export interface ContractStorage<T> {
@@ -113,9 +157,10 @@ export interface ArbTokenBridgeCache {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<string>
   addTokensFromList: (tokenList: TokenList, listID?: number) => void
-  removeTokensFromList: (listID: number) => void 
+  removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
+  approveL2: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,
     amount: BigNumber
@@ -125,6 +170,11 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber
   ) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
+  getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
+  getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
+  getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
+  getL2ERC20Address: (erc20L1Address: string) => Promise<string>
+  getL2GatewayAddress: (erc20L1Address: string) => Promise<string>
 }
 
 export interface TransactionActions {
@@ -140,7 +190,14 @@ export interface TransactionActions {
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    seqNum?: number
+    seqNum?: number,
+    l1ToL2MsgData?: L1ToL2MessageData
+  ) => void
+  fetchAndUpdateL1ToL2MsgStatus: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
   ) => void
 }
 
@@ -153,6 +210,7 @@ export type ArbTokenBridgeTransactions = {
   | 'setTransactionConfirmed'
   | 'updateTransaction'
   | 'addTransactions'
+  | 'fetchAndUpdateL1ToL2MsgStatus'
 >
 
 export interface ArbTokenBridge {
@@ -162,7 +220,6 @@ export interface ArbTokenBridge {
   cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
-  arbSigner: Signer
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
   setInitialPendingWithdrawals: (

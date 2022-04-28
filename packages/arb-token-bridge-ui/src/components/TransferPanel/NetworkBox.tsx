@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 
-import { useWallet } from '@gimmixorg/use-wallet'
+import { useWallet } from '@arbitrum/use-wallet'
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
@@ -102,11 +102,11 @@ const NetworkBox = ({
       <div className="flex flex-col">
         <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row">
           <div className="flex flex-col">
-            <p className="text-sm leading-5 font-medium text-gray-700 mb-1">
+            <div className="text-sm leading-5 font-medium text-gray-700 mb-1">
               Layer {isL1 ? '1' : '2'}
               {' Balance: '}
               <span>{canIEnterAmount && balanceMemo}</span>
-            </p>
+            </div>
             {!canIEnterAmount && (
               <div className="flex items-center text-lg leading-8 font-semibold text-gray-700 mb-1">
                 {balanceMemo}

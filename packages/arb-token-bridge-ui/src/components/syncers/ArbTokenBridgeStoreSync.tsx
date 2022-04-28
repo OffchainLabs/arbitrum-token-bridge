@@ -1,23 +1,20 @@
-import React, { useEffect } from 'react'
-
-import { ArbTokenBridge, useArbTokenBridge, Bridge } from 'token-bridge-sdk'
+import { useEffect } from 'react'
+import { useArbTokenBridge, TokenBridgeParams } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
 
 // Syncs the arbTokenBridge data with the global store, so we dont have to drill with props but use store hooks to get data
-const ArbTokenBridgeStoreSync = ({
-  bridge
+export function ArbTokenBridgeStoreSync({
+  tokenBridgeParams
 }: {
-  bridge: Bridge
-}): JSX.Element => {
+  tokenBridgeParams: TokenBridgeParams
+}): JSX.Element {
   const actions = useActions()
-  const arbTokenBridge: ArbTokenBridge = useArbTokenBridge(bridge, false)
+  const arbTokenBridge = useArbTokenBridge(tokenBridgeParams, false)
 
   useEffect(() => {
     actions.app.setArbTokenBridge(arbTokenBridge)
-  }, [bridge, arbTokenBridge])
+  }, [arbTokenBridge])
 
   return <></>
 }
-
-export { ArbTokenBridgeStoreSync }

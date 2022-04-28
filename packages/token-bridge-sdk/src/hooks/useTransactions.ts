@@ -1,7 +1,8 @@
-import { useReducer, useEffect, useCallback } from 'react'
+import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
+import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -14,6 +15,11 @@ type Action =
   | { type: 'SET_BLOCK_NUMBER'; txID: string; blockNumber?: number }
   | { type: 'SET_RESOLVED_TIMESTAMP'; txID: string; timestamp?: string }
   | { type: 'ADD_TRANSACTIONS'; transactions: Transaction[] }
+  | {
+      type: 'UPDATE_L1TOL2MSG_DATA'
+      txID: string
+      l1ToL2MsgData: L1ToL2MessageData
+    }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -25,14 +31,19 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 export type TxnType =
   | 'deposit'
   | 'deposit-l1'
-  | 'deposit-l2'
+  | 'deposit-l2' // unused; keeping for cache backwrads compatability
   | 'withdraw'
   | 'outbox'
   | 'approve'
-  | 'connext-deposit'
-  | 'connext-withdraw'
-  | 'deposit-l2-auto-redeem'
-  | 'deposit-l2-ticket-created'
+  | 'deposit-l2-auto-redeem' // unused; keeping for cache backwrads compatability
+  | 'deposit-l2-ticket-created' // unused; keeping for cache backwrads compatability
+  | 'approve-l2'
+
+const deprecatedTxTypes: Set<TxnType> = new Set([
+  'deposit-l2-auto-redeem',
+  'deposit-l2-ticket-created',
+  'deposit-l2'
+])
 
 export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
   switch (txnType) {
@@ -40,15 +51,21 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
     case 'deposit-l1':
     case 'outbox':
     case 'approve':
-    case 'connext-deposit':
       return 1
     case 'deposit-l2':
     case 'withdraw':
-    case 'connext-withdraw':
     case 'deposit-l2-auto-redeem':
     case 'deposit-l2-ticket-created':
+    case 'approve-l2':
       return 2
   }
+}
+
+export interface L1ToL2MessageData {
+  status: L1ToL2MessageStatus
+  retryableCreationTxID: string
+  l2TxID?: string
+  fetchingUpdate: boolean
 }
 type TransactionBase = {
   type: TxnType
@@ -63,6 +80,7 @@ type TransactionBase = {
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   seqNum?: number // for l1-initiati
+  l1ToL2MsgData?: L1ToL2MessageData
 }
 
 export interface Transaction extends TransactionBase {
@@ -75,6 +93,12 @@ export interface NewTransaction extends TransactionBase {
 
 export interface FailedTransaction extends TransactionBase {
   status: 'failure'
+}
+
+// TODO: enforce this type restriction
+export interface DepositTransaction extends Transaction {
+  l1ToL2MsgData: L1ToL2MessageData
+  type: 'deposit' | 'deposit-l1'
 }
 
 function updateStatusAndSeqNum(
@@ -118,6 +142,41 @@ function updateBlockNumber(
   return newState
 }
 
+function updateTxnL1ToL2Msg(
+  state: Transaction[],
+  txID: string,
+  l1ToL2MsgData: L1ToL2MessageData
+) {
+  const newState = [...state]
+  const index = newState.findIndex(txn => txn.txID === txID)
+  if (index === -1) {
+    console.warn('transaction not found', txID)
+    return state
+  }
+  const tx = newState[index]
+
+  if (!(tx.type === 'deposit' || tx.type === 'deposit-l1')) {
+    throw new Error(
+      "Attempting to add a l1tol2msg to a tx that isn't a deposit:" + txID
+    )
+  }
+
+  const previousL1ToL2MsgData = newState[index].l1ToL2MsgData
+  if (!previousL1ToL2MsgData) {
+    newState[index].l1ToL2MsgData = {
+      status: l1ToL2MsgData.status,
+      retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
+      fetchingUpdate: false
+    }
+    return newState
+  }
+  newState[index] = {
+    ...newState[index],
+    l1ToL2MsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
+  }
+  return newState
+}
+
 function updateResolvedTimestamp(
   state: Transaction[],
   txID: string,
@@ -138,6 +197,7 @@ function updateResolvedTimestamp(
 function reducer(state: Transaction[], action: Action) {
   switch (action.type) {
     case 'SET_INITIAL_TRANSACTIONS': {
+      // Add l1 to L2 stuff with pending status
       return [...action.transactions]
     }
     case 'ADD_TRANSACTIONS': {
@@ -162,7 +222,7 @@ function reducer(state: Transaction[], action: Action) {
       return state.filter(txn => txn.txID !== action.txID)
     }
     case 'SET_SUCCESS': {
-      return updateStatusAndSeqNum(state, 'success', action.txID)
+      return updateStatusAndSeqNum(state, 'success', action.txID, action.seqNum)
     }
     case 'SET_FAILURE': {
       return updateStatusAndSeqNum(state, 'failure', action.txID)
@@ -179,6 +239,9 @@ function reducer(state: Transaction[], action: Action) {
     case 'SET_RESOLVED_TIMESTAMP': {
       return updateResolvedTimestamp(state, action.txID, action.timestamp)
     }
+    case 'UPDATE_L1TOL2MSG_DATA': {
+      return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
+    }
     default:
       return state
   }
@@ -186,7 +249,20 @@ function reducer(state: Transaction[], action: Action) {
 
 const localStorageReducer = (state: Transaction[], action: Action) => {
   const newState = reducer(state, action)
-  window.localStorage.setItem('arbTransactions', JSON.stringify(newState))
+  // don't cache fetchingUpdate state
+  const stateForCache = newState.map(tx => {
+    if (tx.l1ToL2MsgData && tx.l1ToL2MsgData.fetchingUpdate) {
+      return {
+        ...tx,
+        l1ToL2MsgData: {
+          ...tx.l1ToL2MsgData,
+          fetchingUpdate: false
+        }
+      }
+    }
+    return tx
+  })
+  window.localStorage.setItem('arbTransactions', JSON.stringify(stateForCache))
   return newState
 }
 
@@ -236,6 +312,53 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     return dispatch({
       type: 'ADD_TRANSACTION',
       transaction: tx
+    })
+  }
+
+  const updateTxnL1ToL2MsgData = async (
+    txID: string,
+    l1ToL2MsgData: L1ToL2MessageData
+  ) => {
+    dispatch({
+      type: 'UPDATE_L1TOL2MSG_DATA',
+      txID: txID,
+      l1ToL2MsgData
+    })
+  }
+
+  const fetchAndUpdateL1ToL2MsgStatus = async (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
+    currentStatus: L1ToL2MessageStatus
+  ) => {
+    // set fetching:
+    updateTxnL1ToL2MsgData(txID, {
+      fetchingUpdate: true,
+      status: currentStatus,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
+    })
+
+    const res = await l1ToL2Msg.waitForStatus()
+
+    const l2TxID = (() => {
+      if (res.status === L1ToL2MessageStatus.REDEEMED) {
+        return res.l2TxReceipt.transactionHash
+      } else if (
+        res.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 &&
+        isEthDeposit
+      ) {
+        return l1ToL2Msg.retryableCreationId /** for completed eth deposits, retryableCreationId is the l2txid */
+      } else {
+        return undefined
+      }
+    })()
+
+    updateTxnL1ToL2MsgData(txID, {
+      status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
     })
   }
 
@@ -293,7 +416,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateTransaction = (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    seqNum?: number
+    seqNum?: number,
+    l1ToL2MsgData?: L1ToL2MessageData
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
@@ -320,10 +444,17 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (tx) {
       setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
     }
+    if (l1ToL2MsgData) {
+      updateTxnL1ToL2MsgData(txReceipt.transactionHash, l1ToL2MsgData)
+    }
   }
 
+  const transactions = useMemo(() => {
+    return state.filter(tx => !deprecatedTxTypes.has(tx.type))
+  }, [state])
+
   return [
-    state,
+    transactions,
     {
       addTransaction,
       addTransactions,
@@ -333,7 +464,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       setTransactionConfirmed,
       updateTransaction,
       removeTransaction,
-      addFailedTransaction
+      addFailedTransaction,
+      fetchAndUpdateL1ToL2MsgStatus
     }
   ]
 }

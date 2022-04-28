@@ -1,9 +1,10 @@
-import React from 'react'
-
 import ReactDOM from 'react-dom'
 
 import App from './components/App/App'
 import reportWebVitals from './reportWebVitals'
+
+import 'tippy.js/dist/tippy.css'
+import 'tippy.js/themes/light.css'
 
 import './styles/tailwind.css'
 

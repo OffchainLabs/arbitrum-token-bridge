@@ -1,8 +1,10 @@
 import dayjs from 'dayjs'
 import { ethers, BigNumber } from 'ethers'
-import _isEmpty from 'lodash/isEmpty'
-import _reverse from 'lodash/reverse'
-import _sortBy from 'lodash/sortBy'
+import {
+  isEmpty as _isEmpty,
+  reverse as _reverse,
+  sortBy as _sortBy
+} from 'lodash-es'
 import { derived } from 'overmind'
 import {
   ArbTokenBridge,
@@ -10,20 +12,62 @@ import {
   L2ToL1EventResultPlus,
   Transaction,
   TxnType,
-  OutgoingMessageState
+  OutgoingMessageState,
+  NodeBlockDeadlineStatus,
+  L1ToL2MessageData
 } from 'token-bridge-sdk'
+import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import Networks, { Network } from '../../util/networks'
 
 export enum WhiteListState {
   VERIFYING,
   ALLOWED,
   DISALLOWED
 }
-interface SeqNumToTxn {
-  [seqNum: number]: MergedTransaction
+
+export enum DepositStatus {
+  L1_PENDING = 1,
+  L1_FAILURE = 2,
+  L2_PENDING = 3,
+  L2_SUCCESS = 4,
+  L2_FAILURE = 5,
+  CREATION_FAILED = 6,
+  EXPIRED = 7
 }
+
+const getDepositStatus = (tx: Transaction) => {
+  if (tx.type !== 'deposit' && tx.type !== 'deposit-l1') return undefined
+  if (tx.status === 'failure') {
+    return DepositStatus.L1_FAILURE
+  }
+  if (tx.status === 'pending') {
+    return DepositStatus.L1_PENDING
+  }
+  // l1 succeeded...
+  const { l1ToL2MsgData } = tx
+  if (!l1ToL2MsgData) {
+    return DepositStatus.L2_PENDING
+  }
+  switch (l1ToL2MsgData.status) {
+    case L1ToL2MessageStatus.NOT_YET_CREATED:
+      return DepositStatus.L2_PENDING
+    case L1ToL2MessageStatus.CREATION_FAILED:
+      return DepositStatus.CREATION_FAILED
+    case L1ToL2MessageStatus.EXPIRED:
+      return tx.assetType === 'ETH'
+        ? DepositStatus.L2_SUCCESS
+        : DepositStatus.EXPIRED
+    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
+      return tx.assetType === 'ETH'
+        ? DepositStatus.L2_SUCCESS
+        : DepositStatus.L2_FAILURE
+    }
+    case L1ToL2MessageStatus.REDEEMED:
+      return DepositStatus.L2_SUCCESS
+  }
+}
+
 export interface MergedTransaction {
   direction: TxnType
   status: string
@@ -38,6 +82,9 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   seqNum?: number
+  nodeBlockDeadline?: NodeBlockDeadlineStatus
+  l1ToL2MsgData?: L1ToL2MessageData
+  depositStatus?: DepositStatus
 }
 
 export interface WarningTokens {
@@ -58,35 +105,32 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  networkID: string | null
   verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
-  successfulL1Deposits: Transaction[]
+  l1DepositsWithUntrackedL2Messages: Transaction[]
+  failedRetryablesToRedeem: MergedTransaction[]
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
-  mergedTransactionsToShow: MergedTransaction[]
-  seqNumToAutoRedeems: SeqNumToTxn
-  currentL1BlockNumber: number
 
-  networkDetails: Network | null
-  l1NetworkDetails: Network | null
-  l2NetworkDetails: Network | null
+  l1NetworkChainId: number | null
+  l2NetworkChainId: number | null
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
 
-  changeNetwork: ((chainId: string) => Promise<void>) | null
+  changeNetwork: ((network: L1Network | L2Network) => Promise<void>) | null
 }
 
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
-  networkID: null,
+  l1NetworkChainId: null,
+  l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
@@ -95,19 +139,27 @@ export const defaultState: AppState = {
     return [...transactions]
       .filter(tx => tx.sender === s.arbTokenBridge.walletAddress)
       .filter(
-        tx => !tx.l1NetworkID || tx.l1NetworkID === s.l1NetworkDetails?.chainID
+        tx => !tx.l1NetworkID || tx.l1NetworkID === String(s.l1NetworkChainId)
       )
       .reverse()
   }),
   pendingTransactions: derived((s: AppState) => {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')
   }),
-  successfulL1Deposits: derived((s: AppState) => {
+  l1DepositsWithUntrackedL2Messages: derived((s: AppState) => {
     // check 'deposit' and 'deposit-l1' for backwards compatibility with old client side cache
     return s.sortedTransactions.filter(
       (txn: Transaction) =>
         (txn.type === 'deposit' || txn.type === 'deposit-l1') &&
-        txn.status === 'success'
+        txn.status === 'success' &&
+        (!txn.l1ToL2MsgData ||
+          (txn.l1ToL2MsgData.status === L1ToL2MessageStatus.NOT_YET_CREATED &&
+            !txn.l1ToL2MsgData.fetchingUpdate))
+    )
+  }),
+  failedRetryablesToRedeem: derived((s: AppState) => {
+    return s.depositsTransformed.filter(
+      tx => tx.depositStatus === DepositStatus.L2_FAILURE
     )
   }),
   depositsTransformed: derived((s: AppState) => {
@@ -131,7 +183,9 @@ export const defaultState: AppState = {
         isWithdrawal: false,
         blockNum: tx.blockNumber || null,
         tokenAddress: null, // not needed
-        seqNum: tx.seqNum
+        seqNum: tx.seqNum,
+        l1ToL2MsgData: tx.l1ToL2MsgData,
+        depositStatus: getDepositStatus(tx)
       }
     })
     return deposits
@@ -158,7 +212,8 @@ export const defaultState: AppState = {
         uniqueId: tx.uniqueId,
         isWithdrawal: true,
         blockNum: tx.ethBlockNum.toNumber(),
-        tokenAddress: tx.tokenAddress || null
+        tokenAddress: tx.tokenAddress || null,
+        nodeBlockDeadline: tx.nodeBlockDeadline
       }
     })
     return withdrawals
@@ -173,80 +228,6 @@ export const defaultState: AppState = {
       })
     )
   }),
-  mergedTransactionsToShow: derived((s: AppState) => {
-    // group ticket-created by seqNum so we can match thyarnem with deposit-l2 txns later
-    const seqNumToTicketCreation: SeqNumToTxn = {}
-
-    s.mergedTransactions.forEach(txn => {
-      const { seqNum, direction } = txn
-      if (direction === 'deposit-l2-ticket-created' && seqNum) {
-        seqNumToTicketCreation[seqNum as number] = txn
-      }
-    })
-    return s.mergedTransactions.filter((txn: MergedTransaction) => {
-      const { status, seqNum } = txn
-      // I don't like having to string check here; I'd like to bring over the AssetType enum into mergedtransaction
-      if (txn.asset !== 'eth') {
-        switch (txn.direction) {
-          case 'deposit-l2-ticket-created': {
-            // show only if it fails
-            return status === 'failure'
-          }
-          case 'deposit-l2-auto-redeem': {
-            // show only if it fails
-            return status === 'failure'
-          }
-          case 'deposit-l2': {
-            // show unless the ticket creation failed
-            const ticketCreatedTxn = seqNumToTicketCreation[seqNum as number]
-            return !(ticketCreatedTxn && ticketCreatedTxn.status === 'failure')
-          }
-
-          default:
-            break
-        }
-      }
-      return true
-    })
-  }),
-  seqNumToAutoRedeems: derived((s: AppState) => {
-    const seqNumToTicketCreation: SeqNumToTxn = {}
-
-    s.mergedTransactions.forEach(txn => {
-      const { seqNum, direction } = txn
-      if (direction === 'deposit-l2-auto-redeem' && seqNum) {
-        seqNumToTicketCreation[seqNum as number] = txn
-      }
-    })
-    return seqNumToTicketCreation
-  }),
-  currentL1BlockNumber: 0,
-
-  networkDetails: derived((s: AppState) => {
-    if (!s.networkID) return null
-    return Networks[s.networkID]
-  }),
-  l1NetworkDetails: derived((s: AppState) => {
-    const network = s.networkDetails
-    if (!network) {
-      return null
-    }
-    if (!network.isArbitrum) {
-      return network
-    }
-    return Networks[network.partnerChainID]
-  }),
-  l2NetworkDetails: derived((s: AppState) => {
-    const network = s.networkDetails
-    if (!network) {
-      return null
-    }
-    if (network.isArbitrum) {
-      return network
-    }
-    return Networks[network.partnerChainID]
-  }),
-
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false,
   changeNetwork: null

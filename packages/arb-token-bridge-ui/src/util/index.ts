@@ -1,11 +1,10 @@
 export enum ConnectionState {
   LOADING,
-  NO_METAMASK,
-  WRONG_NETWORK,
-  DEPOSIT_MODE,
-  WITHDRAW_MODE,
+  L1_CONNECTED,
+  L2_CONNECTED,
   SEQUENCER_UPDATE,
-  NOT_EOA
+  NOT_EOA,
+  NETWORK_ERROR
 }
 
 export enum PendingWithdrawalsLoadedState {

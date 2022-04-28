@@ -1,10 +1,8 @@
-import { useEffect, useState, useContext, useCallback, useMemo } from 'react'
-
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { constants } from 'ethers'
-import { ERC20__factory } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
-import { BridgeContext } from '../App/App'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const withdrawOnlyTokens = [
   {
@@ -14,6 +12,34 @@ const withdrawOnlyTokens = [
   {
     l1Address: '0xB4A3B0Faf0Ab53df58001804DdA5Bfc6a3D59008',
     l2Address: '0xe5a5Efe7ec8cdFA5F031D5159839A3b5E11B2e0F'
+  },
+  {
+    l1Address: '0x0e192d382a36de7011f795acc4391cd302003606',
+    l2Address: '0x488cc08935458403a0458e45E20c0159c8AB2c92'
+  },
+  {
+    l1Address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+    l2Address: ''
+  },
+  {
+    l1Address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+    l2Address: ''
+  },
+  {
+    l1Address: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
+    l2Address: ''
+  },
+  {
+    l1Address: '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D',
+    l2Address: '0x3E06AF0fBB92D1f6e5c6008fcec81130D0cC65a3'
+  },
+  {
+    l1Address: '0xaf5191b0de278c7286d6c7cc6ab6bb8a73ba2cd6',
+    l2Address: '0xe018c7a3d175fb0fe15d70da2c874d3ca16313ec'
+  },
+  {
+    l1Address: '0x10010078a54396F62c96dF8532dc2B4847d47ED3',
+    l2Address: '0x626195b5a8b5f865E3516201D6ac30ee1B46A6e9'
   }
 ].map(token => {
   const { l1Address, l2Address } = token
@@ -27,43 +53,55 @@ const withdrawOnlyTokensL1Address = withdrawOnlyTokens.map(t => t.l1Address)
 
 const useWithdrawOnly = () => {
   const {
-    app: { selectedToken, arbTokenBridge, l1NetworkDetails }
+    l1: { network: l1Network }
+  } = useNetworksAndSigners()
+  const {
+    app: { selectedToken, arbTokenBridge }
   } = useAppState()
   const [doneAddingTokens, setDoneAddingTokens] = useState(false)
-  const bridge = useContext(BridgeContext)
 
   const addTokens = useCallback(async () => {
-    if (!bridge) return
-    const userAddress = await bridge.l2Signer.getAddress()
     try {
       for (let i = 0; i < withdrawOnlyTokens.length; i += 1) {
         const { l1Address, l2Address } = withdrawOnlyTokens[i]
-        const token = ERC20__factory.connect(l2Address, bridge.l2Provider)
-        const l2Bal = await token.balanceOf(userAddress)
-        if (!l2Bal.eq(constants.Zero)) {
-          // add it if user has an L2 balance
 
+        if (!l2Address) {
+          continue
+        }
+
+        const { balance } = await arbTokenBridge.token.getL2TokenData(l2Address)
+
+        // add it if user has an L2 balance
+        if (!balance.eq(constants.Zero)) {
           await arbTokenBridge.token.add(l1Address)
         }
       }
     } catch (err) {
       console.warn(err)
     }
-  }, [bridge, arbTokenBridge])
+  }, [arbTokenBridge])
 
   useEffect(() => {
+    if (typeof l1Network === 'undefined') {
+      return
+    }
+
+    const isMainnet = l1Network.chainID === 1
+
     if (
-      !bridge ||
+      !isMainnet ||
       !arbTokenBridge ||
       !arbTokenBridge.token ||
-      doneAddingTokens ||
-      !(l1NetworkDetails && l1NetworkDetails.chainID === '1')
-    )
+      arbTokenBridge.walletAddress === '' ||
+      doneAddingTokens
+    ) {
       return
+    }
+
     // when ready/ on load, add tokens
     addTokens()
     setDoneAddingTokens(true)
-  }, [bridge, doneAddingTokens, arbTokenBridge])
+  }, [doneAddingTokens, arbTokenBridge, l1Network])
 
   const shouldDisableDeposit = useMemo(() => {
     if (!selectedToken) return false

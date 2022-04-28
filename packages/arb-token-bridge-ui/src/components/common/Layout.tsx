@@ -1,28 +1,31 @@
 import React, { useMemo } from 'react'
 
-import { useAppState } from 'src/state'
-
 import Footer from './Footer'
 import { Header } from './Header'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const Layout: React.FC = ({ children }) => {
   const {
-    app: { l1NetworkDetails }
-  } = useAppState()
+    l1: { network: l1Network }
+  } = useNetworksAndSigners()
 
   const headerText = useMemo(() => {
-    const l1NetworkId = l1NetworkDetails && l1NetworkDetails.chainID
-    switch (l1NetworkId) {
-      case null:
-        return 'Arbitrum'
-      case '1':
+    if (typeof l1Network === 'undefined') {
+      return 'Arbitrum'
+    }
+
+    switch (l1Network.chainID) {
+      case 1:
         return 'Arbitrum One Bridge'
-      case '4':
+      case 4:
         return 'RinkArby Testnet Bridge'
+      case 5:
+        return 'Arbitrum Nitro Devnet Bridge'
       default:
         return 'Arbitrum Mainnet Bridge'
     }
-  }, [l1NetworkDetails])
+  }, [l1Network])
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="bg-gray-800">
