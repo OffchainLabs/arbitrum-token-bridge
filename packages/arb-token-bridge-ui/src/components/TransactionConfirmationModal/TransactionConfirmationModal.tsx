@@ -39,6 +39,7 @@ export default function TransactionConfirmationModal({
             <a
               href="https://portal.arbitrum.one/#bridgesandonramps"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <u>fast bridge</u>
             </a>
@@ -74,6 +75,7 @@ export default function TransactionConfirmationModal({
                 <a
                   href="https://developer.offchainlabs.com/docs/bridging_assets#the-arbitrum-generic-custom-gateway"
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <u>Check the docs</u>
                 </a>
@@ -81,7 +83,11 @@ export default function TransactionConfirmationModal({
               <li>
                 {' '}
                 •{' '}
-                <a href="https://discord.gg/ZpZuw7p" target="_blank">
+                <a
+                  href="https://discord.gg/ZpZuw7p"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <u>Join Discord and ask</u>
                 </a>
               </li>
@@ -114,6 +120,7 @@ export default function TransactionConfirmationModal({
                 <a
                   href="https://developer.offchainlabs.com/docs/bridging_assets#the-arbitrum-generic-custom-gateway"
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <u>Check the docs</u>
                 </a>
@@ -121,7 +128,11 @@ export default function TransactionConfirmationModal({
               <li>
                 {' '}
                 •{' '}
-                <a href="https://discord.gg/ZpZuw7p" target="_blank">
+                <a
+                  href="https://discord.gg/ZpZuw7p"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <u>Join Discord and ask</u>
                 </a>
               </li>

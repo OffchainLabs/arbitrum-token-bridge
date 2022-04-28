@@ -62,7 +62,7 @@ const useL2Approve = () => {
     // when ready/ on load, add tokens
     addTokens()
     setDoneAddingTokens(true)
-  }, [ doneAddingTokens, arbTokenBridge])
+  }, [doneAddingTokens, arbTokenBridge])
 
   const shouldRequireApprove = useMemo(() => {
     if (!selectedToken) return false

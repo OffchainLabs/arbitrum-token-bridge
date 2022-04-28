@@ -11,7 +11,6 @@ import {
   EthBridger,
   Erc20Bridger,
   MultiCaller,
-  addCustomNetwork,
   L1ToL2MessageStatus,
   L2ToL1Message,
   L2ToL1MessageReader,
@@ -21,9 +20,6 @@ import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-
-import { Node__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Node__factory'
-import { Rollup__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Rollup__factory'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
