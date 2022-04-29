@@ -1,6 +1,6 @@
-### Arbitrum Token Bridge Web UI
+# Arbitrum Token Bridge Web UI
 
-#### Local Dev Start
+### Local Dev Start
 
 1. `git clone https://github.com/OffchainLabs/arb-token-bridge`
 
@@ -22,7 +22,7 @@
 
 1. Visit `http://localhost:3000/`
 
-#### Deposit Lifecycle
+### Deposit Lifecycle
 
 A Deposit is tracked via a single `Transaction` entry (in the `useTransactions` hook) which represents its initiated L1 transaction; its L2 status is tracked via the `L1ToL2MessageData` field.
 
