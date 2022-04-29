@@ -7,6 +7,7 @@ import {
 } from 'react'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
+import { useLatest } from 'react-use'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
@@ -93,7 +94,12 @@ export function TokenImportModal({
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
+  const latestTokensFromUser = useLatest(tokensFromUser)
+
   const tokensFromLists = useTokensFromLists()
+  const latestTokensFromLists = useLatest(tokensFromLists)
+
+  const latestBridgeTokens = useLatest(bridgeTokens)
 
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
@@ -149,15 +155,18 @@ export function TokenImportModal({
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
       // We found the token in an imported list
-      if (typeof bridgeTokens[erc20L1Address] !== 'undefined') {
+      if (typeof latestBridgeTokens.current[erc20L1Address] !== 'undefined') {
         return {
           found: true,
-          token: bridgeTokens[erc20L1Address]!,
+          token: latestBridgeTokens.current[erc20L1Address]!,
           status: ImportStatus.KNOWN
         }
       }
 
-      const tokens = { ...tokensFromLists, ...tokensFromUser }
+      const tokens = {
+        ...latestTokensFromLists.current,
+        ...latestTokensFromUser.current
+      }
 
       // We found the token in an unimported list
       if (typeof tokens[erc20L1Address] !== 'undefined') {
@@ -170,7 +179,7 @@ export function TokenImportModal({
 
       return { found: false }
     },
-    [bridgeTokens, tokensFromLists, tokensFromUser]
+    [latestBridgeTokens, latestTokensFromLists, latestTokensFromUser]
   )
 
   const selectToken = useCallback(
