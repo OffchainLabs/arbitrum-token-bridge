@@ -452,10 +452,7 @@ export const useArbTokenBridge = (
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
       erc20L1Address,
-      amount,
-      retryableGasOverrides: {
-        maxGas: { percentIncrease: BigNumber.from(50) }
-      }
+      amount
     })
 
     addTransaction({
