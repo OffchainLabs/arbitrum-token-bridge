@@ -13,6 +13,7 @@ import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 
+import { AppContext } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
@@ -311,12 +312,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   }, [library, networksAndSigners.isConnectedToArbitrum])
 
   return (
-    <>
+    <AppContext.Provider value={{ currentL1BlockNumber }}>
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
       {children}
-    </>
+    </AppContext.Provider>
   )
 }
 

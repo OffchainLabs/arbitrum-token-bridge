@@ -14,8 +14,8 @@ import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
 
+import { useAppContext } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBlockNumber } from '../../hooks/useBlockNumber'
 
 interface TransactionsTableProps {
   transactions: MergedTransaction[]
@@ -91,11 +91,11 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const {
-    l1: { network: l1Network, signer: l1Signer },
+    l1: { network: l1Network },
     l2: { network: l2Network, signer: l2Signer },
     isConnectedToArbitrum
   } = useNetworksAndSigners()
-  const currentL1BlockNumber = useBlockNumber(l1Signer?.provider)
+  const { currentL1BlockNumber } = useAppContext()
 
   const [isClaiming, setIsClaiming] = useState(false)
 
