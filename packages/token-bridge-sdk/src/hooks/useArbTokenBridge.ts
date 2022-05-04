@@ -268,7 +268,7 @@ export const useArbTokenBridge = (
   }
 
   async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
-    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l1.signer.provider)
+    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.signer.provider)
   }
 
   /**
