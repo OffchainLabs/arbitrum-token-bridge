@@ -2,10 +2,10 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import {
-  L1ToL2MessageReader,
   L1ToL2MessageStatus,
   L2ToL1MessageStatus as OutgoingMessageState
 } from '@arbitrum/sdk'
+import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
@@ -32,16 +32,16 @@ export enum AssetType {
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 
-// todo: use L2ToL1TransactionEvent['args']
+// TODO: Derive from L2ToL1TransactionEvent
 export interface L2ToL1EventResult {
   caller: string
   destination: string
-  uniqueId: BigNumber
-  batchNumber: BigNumber
+  hash: BigNumber
+  position: BigNumber
   indexInBatch: BigNumber
   arbBlockNum: BigNumber
   ethBlockNum: BigNumber
-  timestamp: BigNumber | string // TODO: Clean up
+  timestamp: BigNumber
   callvalue: BigNumber
   data: string
 }
@@ -190,12 +190,11 @@ export interface TransactionActions {
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    seqNum?: number,
     l1ToL2MsgData?: L1ToL2MessageData
   ) => void
   fetchAndUpdateL1ToL2MsgStatus: (
     txID: string,
-    l1ToL2Msg: L1ToL2MessageReader,
+    l1ToL2Msg: IL1ToL2MessageReader,
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
   ) => void

@@ -81,7 +81,6 @@ export interface MergedTransaction {
   isWithdrawal: boolean
   blockNum: number | null
   tokenAddress: string | null
-  seqNum?: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   depositStatus?: DepositStatus
@@ -95,7 +94,6 @@ export interface WarningTokens {
 }
 
 const outgoungStateToString = {
-  [OutgoingMessageState.NOT_FOUND]: 'Unconfirmed',
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
   [OutgoingMessageState.EXECUTED]: 'Executed'
@@ -183,7 +181,6 @@ export const defaultState: AppState = {
         isWithdrawal: false,
         blockNum: tx.blockNumber || null,
         tokenAddress: null, // not needed
-        seqNum: tx.seqNum,
         l1ToL2MsgData: tx.l1ToL2MsgData,
         depositStatus: getDepositStatus(tx)
       }
@@ -197,19 +194,18 @@ export const defaultState: AppState = {
       ) as L2ToL1EventResultPlus[]
     ).map(tx => {
       return {
-        direction: tx.uniqueId ? 'outbox' : 'withdraw',
+        direction: 'outbox',
         status: outgoungStateToString[tx.outgoingMessageState],
         createdAt: dayjs(
           new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
         ).format('HH:mm:ss MM/DD/YYYY'),
         createdAtTime:
-          BigNumber.from(tx.timestamp).toNumber() * 1000 +
-          (tx.uniqueId ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
+          BigNumber.from(tx.timestamp).toNumber() * 1000 + (tx.hash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
         resolvedAt: null,
-        txId: tx.uniqueId?.toString(),
+        txId: tx.hash.toString(),
         asset: tx.symbol?.toLocaleLowerCase(),
         value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
-        uniqueId: tx.uniqueId,
+        uniqueId: tx.hash,
         isWithdrawal: true,
         blockNum: tx.ethBlockNum.toNumber(),
         tokenAddress: tx.tokenAddress || null,

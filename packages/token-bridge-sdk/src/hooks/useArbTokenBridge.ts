@@ -16,10 +16,10 @@ import {
   L2ToL1MessageReader,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
-import { getOutboxAddr } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
+import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -45,7 +45,6 @@ import {
 
 import {
   getLatestOutboxEntryIndex,
-  messageHasExecuted,
   getETHWithdrawals,
   getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
@@ -331,14 +330,14 @@ export const useArbTokenBridge = (
     const receipt = await tx.wait()
     const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
-    const seqNum = l1ToL2Msg.messageNumber
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
       retryableCreationTxID: l1ToL2Msg.retryableCreationId,
       l2TxID: undefined
     }
-    updateTransaction(receipt, tx, seqNum.toNumber(), l1ToL2MsgData)
+
+    updateTransaction(receipt, tx, l1ToL2MsgData)
     updateEthBalances()
   }
 
@@ -369,9 +368,9 @@ export const useArbTokenBridge = (
         const l2ToL1EventResult = l2ToL1Events[0]
         console.info('withdraw event data:', l2ToL1EventResult)
 
-        const id = l2ToL1EventResult.uniqueId.toString()
+        const id = l2ToL1EventResult.hash.toString()
 
-        const outgoingMessageState = OutgoingMessageState.NOT_FOUND
+        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
           type: AssetType.ETH,
@@ -469,7 +468,6 @@ export const useArbTokenBridge = (
     const receipt = await tx.wait()
     const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
-    const seqNum = l1ToL2Msg.messageNumber
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
@@ -477,7 +475,7 @@ export const useArbTokenBridge = (
       l2TxID: undefined
     }
 
-    updateTransaction(receipt, tx, seqNum.toNumber(), l1ToL2MsgData)
+    updateTransaction(receipt, tx, l1ToL2MsgData)
     updateTokenData(erc20L1Address)
 
     return receipt
@@ -522,8 +520,8 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
-        const id = l2ToL1EventDataResult.uniqueId.toString()
-        const outgoingMessageState = OutgoingMessageState.NOT_FOUND
+        const id = l2ToL1EventDataResult.hash.toString()
+        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
           type: AssetType.ERC20,
@@ -847,32 +845,23 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxToken(id: string) {
+    const event = pendingWithdrawalsMap[id]
+
     if (!pendingWithdrawalsMap[id]) {
       throw new Error('Outbox message not found')
     }
 
-    const { batchNumber, indexInBatch, tokenAddress, value } =
-      pendingWithdrawalsMap[id]
+    const { position: batchNumber, indexInBatch, tokenAddress, value } = event
 
-    const proofInfo = await L2ToL1MessageReader.tryGetProof(
-      l2.signer.provider,
-      batchNumber,
-      indexInBatch
-    )
-
-    if (!proofInfo) {
-      throw new Error('No proof found')
-    }
-
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageWriter = L2ToL1Message.fromBatchNumber(
+    const messageWriter = L2ToL1Message.fromEvent(
       l1.signer,
-      outboxAddress,
+      event as unknown as L2ToL1TransactionEvent['args'],
+      l2.network.ethBridge.outbox,
       batchNumber,
       indexInBatch
     )
 
-    const res = await messageWriter.execute(proofInfo)
+    const res = await messageWriter.execute(l2.signer.provider)
 
     const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
 
@@ -909,31 +898,23 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxEth(id: string) {
-    if (!pendingWithdrawalsMap[id]) {
+    const event = pendingWithdrawalsMap[id]
+
+    if (!event) {
       throw new Error('Outbox message not found')
     }
 
-    const { batchNumber, indexInBatch, value } = pendingWithdrawalsMap[id]
+    const { position: batchNumber, indexInBatch, value } = event
 
-    const proofInfo = await L2ToL1MessageReader.tryGetProof(
-      l2.signer.provider,
-      batchNumber,
-      indexInBatch
-    )
-
-    if (!proofInfo) {
-      throw new Error('No proof found')
-    }
-
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageWriter = L2ToL1Message.fromBatchNumber(
+    const messageWriter = L2ToL1Message.fromEvent(
       l1.signer,
-      outboxAddress,
+      event as unknown as L2ToL1TransactionEvent['args'],
+      l2.network.ethBridge.outbox,
       batchNumber,
       indexInBatch
     )
 
-    const res = await messageWriter.execute(proofInfo)
+    const res = await messageWriter.execute(l2.signer.provider)
 
     addTransaction({
       status: 'pending',
@@ -1042,12 +1023,12 @@ export const useArbTokenBridge = (
     async function toEventResultPlus(
       event: L2ToL1EventResult
     ): Promise<L2ToL1EventResultPlus> {
-      const { batchNumber, indexInBatch, callvalue } = event
+      const { position: batchNumber, callvalue } = event
 
       const outgoingMessageState =
         batchNumber.toNumber() > lastOutboxEntryIndexDec
           ? OutgoingMessageState.UNCONFIRMED
-          : await getOutgoingMessageStateV2(batchNumber, indexInBatch)
+          : await getOutgoingMessageState(event)
 
       return {
         ...event,
@@ -1097,10 +1078,9 @@ export const useArbTokenBridge = (
     )
 
     const outgoingMessageStates = await Promise.all(
-      results.map(withdrawEventData => {
-        const { batchNumber, indexInBatch } = withdrawEventData.l2ToL1Event
-        return getOutgoingMessageState(batchNumber, indexInBatch)
-      })
+      results.map(withdrawEventData =>
+        getOutgoingMessageState(withdrawEventData.l2ToL1Event)
+      )
     )
 
     const oldTokenWithdrawals: L2ToL1EventResultPlus[] = results.map(
@@ -1173,8 +1153,8 @@ export const useArbTokenBridge = (
       l2Txns.map(txReceipt => {
         const l2TxReceipt = new L2TransactionReceipt(txReceipt)
         // TODO: length != 1
-        const [{ batchNumber, indexInBatch }] = l2TxReceipt.getL2ToL1Events()
-        return getOutgoingMessageState(batchNumber, indexInBatch)
+        const [event] = l2TxReceipt.getL2ToL1Events()
+        return getOutgoingMessageState(event)
       })
     )
 
@@ -1186,8 +1166,8 @@ export const useArbTokenBridge = (
           {
             caller,
             destination,
-            uniqueId,
-            batchNumber,
+            hash: uniqueId,
+            position: batchNumber,
             indexInBatch,
             arbBlockNum,
             ethBlockNum,
@@ -1200,8 +1180,8 @@ export const useArbTokenBridge = (
         const eventDataPlus: L2ToL1EventResultPlus = {
           caller,
           destination,
-          uniqueId,
-          batchNumber,
+          hash: uniqueId,
+          position: batchNumber,
           indexInBatch,
           arbBlockNum,
           ethBlockNum,
@@ -1221,21 +1201,20 @@ export const useArbTokenBridge = (
     )
   }
 
-  async function attachNodeBlockDeadlineToEvent(
-    withdrawal: L2ToL1EventResultPlus
-  ) {
+  async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
     if (
-      withdrawal.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-      withdrawal.outgoingMessageState === OutgoingMessageState.CONFIRMED
+      event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
+      event.outgoingMessageState === OutgoingMessageState.CONFIRMED
     ) {
-      return withdrawal
+      return event
     }
 
-    const { batchNumber, indexInBatch } = withdrawal
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
-    const messageReader = L2ToL1MessageReader.fromBatchNumber(
+    const { position: batchNumber, indexInBatch } = event
+
+    const messageReader = L2ToL1MessageReader.fromEvent(
       l1.signer,
-      outboxAddress,
+      event as unknown as L2ToL1TransactionEvent['args'],
+      l2.network.ethBridge.outbox,
       batchNumber,
       indexInBatch
     )
@@ -1244,10 +1223,7 @@ export const useArbTokenBridge = (
         l2.signer.provider
       )
 
-      return {
-        ...withdrawal,
-        nodeBlockDeadline: firstExecutableBlock.toNumber()
-      }
+      return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
     } catch (e) {
       const expectedError = "batch doesn't exist"
       const err = e as Error & { error: Error }
@@ -1256,7 +1232,7 @@ export const useArbTokenBridge = (
       if (actualError.includes(expectedError)) {
         const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
         return {
-          ...withdrawal,
+          ...event,
           nodeBlockDeadline
         }
       } else {
@@ -1294,17 +1270,15 @@ export const useArbTokenBridge = (
     )
 
     for (const event of l2ToL1TxnsWithDeadlines) {
-      pendingWithdrawals[event.uniqueId.toString()] = event
+      pendingWithdrawals[event.hash.toString()] = event
     }
 
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
-  // call after we've confirmed the outbox entry has been created
-  async function getOutgoingMessageStateV2(
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber
-  ) {
+  async function getOutgoingMessageState(event: L2ToL1EventResult) {
+    const { position: batchNumber, indexInBatch } = event
+
     if (
       executedMessagesCache[
         hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
@@ -1313,50 +1287,21 @@ export const useArbTokenBridge = (
       return OutgoingMessageState.EXECUTED
     }
 
-    const proofData = await L2ToL1MessageReader.tryGetProof(
-      l2.signer.provider,
-      batchNumber,
-      indexInBatch
-    )
-
-    // this should never occur
-    if (!proofData) {
-      return OutgoingMessageState.UNCONFIRMED
-    }
-
-    const { path } = proofData
-    const res = await messageHasExecuted(path, batchNumber, l1NetworkID)
-
-    if (res) {
-      addToExecutedMessagesCache(batchNumber, indexInBatch)
-      return OutgoingMessageState.EXECUTED
-    } else {
-      return OutgoingMessageState.CONFIRMED
-    }
-  }
-
-  async function getOutgoingMessageState(
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber
-  ) {
-    if (
-      executedMessagesCache[
-        hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-      ]
-    ) {
-      return OutgoingMessageState.EXECUTED
-    }
-
-    const outboxAddress = getOutboxAddr(l2.network, batchNumber)
     const messageReader = new L2ToL1MessageReader(
       l1.signer.provider,
-      outboxAddress,
+      event as unknown as L2ToL1TransactionEvent['args'],
+      l2.network.ethBridge.outbox,
       batchNumber,
       indexInBatch
     )
 
-    const proofInfo = await messageReader.tryGetProof(l2.signer.provider)
-    return await messageReader.status(proofInfo)
+    const status = await messageReader.status(l2.signer.provider)
+
+    if (status === OutgoingMessageState.EXECUTED) {
+      addToExecutedMessagesCache(batchNumber, indexInBatch)
+    }
+
+    return status
   }
 
   function addToExecutedMessagesCache(

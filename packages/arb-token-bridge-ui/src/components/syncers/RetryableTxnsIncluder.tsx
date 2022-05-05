@@ -29,7 +29,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const depositTxRec = new L1TransactionReceipt(
         await l1Signer.provider.getTransactionReceipt(depositTx.txId)
       ) //**TODO: not found, i.e., reorg */
-      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer)
+      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer.provider)
       const status = await l1ToL2Msg.status()
       if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
