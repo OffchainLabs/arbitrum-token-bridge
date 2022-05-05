@@ -101,11 +101,7 @@ export interface DepositTransaction extends Transaction {
   type: 'deposit' | 'deposit-l1'
 }
 
-function updateStatusAndSeqNum(
-  state: Transaction[],
-  status: TxnStatus,
-  txID: string
-) {
+function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
   if (index === -1) {
@@ -218,16 +214,16 @@ function reducer(state: Transaction[], action: Action) {
       return state.filter(txn => txn.txID !== action.txID)
     }
     case 'SET_SUCCESS': {
-      return updateStatusAndSeqNum(state, 'success', action.txID)
+      return updateStatus(state, 'success', action.txID)
     }
     case 'SET_FAILURE': {
-      return updateStatusAndSeqNum(state, 'failure', action.txID)
+      return updateStatus(state, 'failure', action.txID)
     }
     case 'CLEAR_PENDING': {
       return state.filter(txn => txn.status !== 'pending')
     }
     case 'CONFIRM_TRANSACTION': {
-      return updateStatusAndSeqNum(state, 'confirmed', action.txID)
+      return updateStatus(state, 'confirmed', action.txID)
     }
     case 'SET_BLOCK_NUMBER': {
       return updateBlockNumber(state, action.txID, action.blockNumber)
