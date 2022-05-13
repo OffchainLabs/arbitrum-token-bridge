@@ -37,13 +37,9 @@ export function PendingTransactionsUpdater(): JSX.Element {
         // We need to get the seqNum for deposit tx if its missing
         return provider
           .getTransactionReceipt(tx.txID)
-          .then(async (txr: TransactionReceiptWithSeqNum) => {
-            const l1ToL2Msg = await new L1TransactionReceipt(
-              txr
-            ).getL1ToL2Message(provider)
-            const seqNum = l1ToL2Msg.messageNumber
-            txr.seqNum = seqNum.toNumber()
-            return txr
+          .then(async (txr: TransactionReceipt) => {
+            const l1ToL2Msg = await new L1TransactionReceipt(txr).getL1ToL2Message(provider)
+            return { ...txr, seqNum: l1ToL2Msg.messageNumber.toNumber()}
           })
       } else {
         return provider.getTransactionReceipt(tx.txID)
