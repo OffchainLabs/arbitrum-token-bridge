@@ -33,7 +33,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
         return null
       }
 
-      if (tx.type == 'deposit-l1' && !tx.seqNum) {
+      if (tx.type == 'deposit-l1') {
         // We need to get the seqNum for deposit tx if its missing
         return provider
           .getTransactionReceipt(tx.txID)
