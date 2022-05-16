@@ -44,6 +44,12 @@ export type UseNetworksAndSignersResult =
       status: UseNetworksAndSignersStatus.CONNECTED
     } & UseNetworksAndSignersData)
 
+const L1ChainIds = [1, 4]
+const L2ChainIds = [42161, 421611]
+
+const L1NetworkCache: { [chainId: number]: L1Network } = {}
+const L2NetworkCache: { [chainId: number]: L2Network } = {}
+
 export function useNetworksAndSigners(): UseNetworksAndSignersResult {
   const { provider, account, network: networkInfo } = useWallet()
 
@@ -53,66 +59,69 @@ export function useNetworksAndSigners(): UseNetworksAndSignersResult {
   })
 
   const update = useCallback(
-    (web3Provider: Web3Provider, address: string, networkId: number) => {
-      // Check if the network is an L1 network
-      getL1Network(networkId)
-        // The network is an L1 network
-        .then(async l1Network => {
-          // TODO: Handle multiple partner networks
-          const [l2NetworkChainId] = l1Network.partnerChainIDs
-          const l2Network = await getL2Network(l2NetworkChainId)
+    async (web3Provider: Web3Provider, address: string, networkId: number) => {
+      if (L1ChainIds.includes(networkId)) {
+        let l1Network: L1Network
 
-          const l2Provider = new JsonRpcProvider(
-            l2Network.rpcURL || rpcURLs[l2Network.chainID]
-          )
+        if (L1NetworkCache[networkId]) {
+          l1Network = L1NetworkCache[networkId]
+        } else {
+          l1Network = await getL1Network(web3Provider)
+          L1NetworkCache[networkId] = l1Network
+        }
 
-          setResult({
-            status: UseNetworksAndSignersStatus.CONNECTED,
-            l1: {
-              network: l1Network,
-              signer: web3Provider.getSigner(0)
-            },
-            l2: {
-              network: l2Network,
-              signer: l2Provider.getSigner(address!)
-            },
-            isConnectedToArbitrum: false
-          })
+        const [l2NetworkChainId] = l1Network.partnerChainIDs
+        const l2Provider = new JsonRpcProvider(rpcURLs[l2NetworkChainId])
+
+        let l2Network: L2Network
+
+        if (L2NetworkCache[networkId]) {
+          l2Network = L2NetworkCache[networkId]
+        } else {
+          l2Network = await getL2Network(l2Provider)
+          L2NetworkCache[networkId] = l2Network
+        }
+
+        setResult({
+          status: UseNetworksAndSignersStatus.CONNECTED,
+          l1: { network: l1Network, signer: web3Provider.getSigner(0) },
+          l2: { network: l2Network, signer: l2Provider.getSigner(address!) },
+          isConnectedToArbitrum: false
         })
-        // The network is not an L1 network
-        .catch(() => {
-          // Check if the network is an L2 network
-          getL2Network(networkId)
-            // The network is an L2 network
-            .then(async l2Network => {
-              const l1NetworkChainId = l2Network.partnerChainID
-              const l1Network = await getL1Network(l1NetworkChainId)
+      } else if (L2ChainIds.includes(networkId)) {
+        let l2Network: L2Network
 
-              const l1Provider = new JsonRpcProvider(
-                l1Network.rpcURL || rpcURLs[l1Network.chainID]
-              )
+        if (L2NetworkCache[networkId]) {
+          l2Network = L2NetworkCache[networkId]
+        } else {
+          l2Network = await getL2Network(web3Provider)
+          L2NetworkCache[networkId] = l2Network
+        }
 
-              setResult({
-                status: UseNetworksAndSignersStatus.CONNECTED,
-                l1: {
-                  network: l1Network,
-                  signer: l1Provider.getSigner(address)
-                },
-                l2: {
-                  network: l2Network,
-                  signer: web3Provider.getSigner(0)
-                },
-                isConnectedToArbitrum: true
-              })
-            })
-            // The network is not supported
-            .catch(() =>
-              setResult({
-                status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-                ...defaults
-              })
-            )
+        const l1NetworkChainId = l2Network.partnerChainID
+        const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
+
+        let l1Network: L1Network
+
+        if (L1NetworkCache[networkId]) {
+          l1Network = L1NetworkCache[networkId]
+        } else {
+          l1Network = await getL1Network(l1Provider)
+          L1NetworkCache[networkId] = l1Network
+        }
+
+        setResult({
+          status: UseNetworksAndSignersStatus.CONNECTED,
+          l1: { network: l1Network, signer: l1Provider.getSigner(address!) },
+          l2: { network: l2Network, signer: web3Provider.getSigner(0) },
+          isConnectedToArbitrum: false
         })
+      } else {
+        setResult({
+          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+          ...defaults
+        })
+      }
     },
     []
   )

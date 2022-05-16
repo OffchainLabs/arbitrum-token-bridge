@@ -9,6 +9,7 @@ import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_typ
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
+import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 
 import {
   FailedTransaction,
@@ -32,21 +33,9 @@ export enum AssetType {
 
 export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 
-// TODO: Derive from L2ToL1TransactionEvent
-export interface L2ToL1EventResult {
-  caller: string
-  destination: string
-  hash: BigNumber
-  position: BigNumber
-  indexInBatch: BigNumber
-  arbBlockNum: BigNumber
-  ethBlockNum: BigNumber
-  timestamp: BigNumber
-  callvalue: BigNumber
-  data: string
-}
+export type L2ToL1EventResult = L2ToL1TransactionEvent
 
-export interface L2ToL1EventResultPlus extends L2ToL1EventResult {
+export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   type: AssetType
   value: BigNumber
   tokenAddress?: string
