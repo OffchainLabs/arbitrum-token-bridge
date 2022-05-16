@@ -10,7 +10,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { L1TransactionReceipt } from '@arbitrum/sdk'
 
 interface TransactionReceiptWithSeqNum extends TransactionReceipt {
-  seqNum?: number // for l1-initiati
+  seqNum?: number
 }
 
 export function PendingTransactionsUpdater(): JSX.Element {
@@ -33,13 +33,21 @@ export function PendingTransactionsUpdater(): JSX.Element {
         return null
       }
 
-      if (tx.type == 'deposit-l1') {
+      if (tx.type === 'deposit-l1') {
         // We need to get the seqNum for deposit tx if its missing
         return provider
           .getTransactionReceipt(tx.txID)
-          .then(async (txr: TransactionReceipt) => {
-            const l1ToL2Msg = await new L1TransactionReceipt(txr).getL1ToL2Message(provider)
-            return { ...txr, seqNum: l1ToL2Msg.messageNumber.toNumber()}
+          .then(txr => {
+            return Promise.all([
+              txr,
+              new L1TransactionReceipt(txr).getL1ToL2Message(provider)
+            ])
+          })
+          .then(([txr, l1ToL2Msg]) => {
+            return Promise.resolve({
+              ...txr,
+              seqNum: l1ToL2Msg.messageNumber.toNumber()
+            })
           })
       } else {
         return provider.getTransactionReceipt(tx.txID)
