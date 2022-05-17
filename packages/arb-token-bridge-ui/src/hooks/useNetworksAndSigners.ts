@@ -44,70 +44,73 @@ export type UseNetworksAndSignersResult =
       status: UseNetworksAndSignersStatus.CONNECTED
     } & UseNetworksAndSignersData)
 
-const L1ChainIds = [1, 4]
-const L2ChainIds = [42161, 421611]
-
 export function useNetworksAndSigners(): UseNetworksAndSignersResult {
-  const { provider, account, network: networkInfo } = useWallet()
+  const { provider, account } = useWallet()
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: UseNetworksAndSignersStatus.NOT_CONNECTED,
     ...defaults
   })
 
-  const update = useCallback(
-    async (web3Provider: Web3Provider, address: string, networkId: number) => {
-      if (L1ChainIds.includes(networkId)) {
-        // Connected to an L1 network
-        const l1Network = await getL1Network(web3Provider)
-
-        // Figure out the partner L2 network
+  // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
+  const update = useCallback((web3Provider: Web3Provider, address: string) => {
+    getL1Network(web3Provider)
+      .then(async l1Network => {
+        // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
         const [l2NetworkChainId] = l1Network.partnerChainIDs
         const l2Provider = new JsonRpcProvider(rpcURLs[l2NetworkChainId])
         const l2Network = await getL2Network(l2Provider)
 
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
-          l1: { network: l1Network, signer: web3Provider.getSigner(0) },
-          l2: { network: l2Network, signer: l2Provider.getSigner(address!) },
+          l1: {
+            network: l1Network,
+            signer: web3Provider.getSigner(0)
+          },
+          l2: {
+            network: l2Network,
+            signer: l2Provider.getSigner(address!)
+          },
           isConnectedToArbitrum: false
         })
-      } else if (L2ChainIds.includes(networkId)) {
-        // Connected to an L2 network
-        const l2Network = await getL2Network(web3Provider)
+      })
+      .catch(() => {
+        getL2Network(web3Provider)
+          .then(async l2Network => {
+            // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
+            const l1NetworkChainId = l2Network.partnerChainID
+            const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
+            const l1Network = await getL1Network(l1Provider)
 
-        // Figure out the partner L1 network
-        const l1NetworkChainId = l2Network.partnerChainID
-        const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
-        const l1Network = await getL1Network(l1Provider)
-
-        setResult({
-          status: UseNetworksAndSignersStatus.CONNECTED,
-          l1: { network: l1Network, signer: l1Provider.getSigner(address!) },
-          l2: { network: l2Network, signer: web3Provider.getSigner(0) },
-          isConnectedToArbitrum: true
-        })
-      } else {
-        setResult({
-          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-          ...defaults
-        })
-      }
-    },
-    []
-  )
+            setResult({
+              status: UseNetworksAndSignersStatus.CONNECTED,
+              l1: {
+                network: l1Network,
+                signer: l1Provider.getSigner(address!)
+              },
+              l2: {
+                network: l2Network,
+                signer: web3Provider.getSigner(0)
+              },
+              isConnectedToArbitrum: true
+            })
+          })
+          .catch(() => {
+            setResult({
+              status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+              ...defaults
+            })
+          })
+      })
+  }, [])
 
   useEffect(() => {
-    if (
-      typeof provider === 'undefined' ||
-      typeof account === 'undefined' ||
-      typeof networkInfo === 'undefined'
-    ) {
+    if (typeof provider === 'undefined' || typeof account === 'undefined') {
       return
     }
 
-    update(provider, account, networkInfo.chainId)
-  }, [provider, account, networkInfo, update])
+    update(provider, account)
+  }, [provider, account, update])
 
   return result
 }
