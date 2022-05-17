@@ -51,6 +51,8 @@ import {
   getBuiltInsGraphLatestBlockNumber
 } from '../util/graph'
 
+import { getUniqueIdOrHashFromEvent } from '../util/migration'
+
 const { Zero } = constants
 
 export const wait = (ms = 0) => {
@@ -111,16 +113,6 @@ function assertSignersHaveProviders(
   if (typeof params.l2.signer === 'undefined') {
     throw new Error(`No Provider found for L2 Signer`)
   }
-}
-
-function getIdFromEvent(event: L2ToL1EventResult): string {
-  const anyEvent = event as any
-
-  if (anyEvent.hash) {
-    return anyEvent.hash.toString() as string
-  }
-
-  return anyEvent.uniqueId.toString() as string
 }
 
 export const useArbTokenBridge = (
@@ -378,7 +370,7 @@ export const useArbTokenBridge = (
         const l2ToL1EventResult = l2ToL1Events[0]
         console.info('withdraw event data:', l2ToL1EventResult)
 
-        const id = getIdFromEvent(l2ToL1EventResult)
+        const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
 
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
@@ -530,7 +522,7 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
-        const id = getIdFromEvent(l2ToL1EventDataResult)
+        const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
@@ -1253,7 +1245,7 @@ export const useArbTokenBridge = (
     )
 
     for (const event of l2ToL1TxnsWithDeadlines) {
-      pendingWithdrawals[getIdFromEvent(event)] = event
+      pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event
     }
 
     setPendingWithdrawalMap(pendingWithdrawals)
@@ -1274,13 +1266,17 @@ export const useArbTokenBridge = (
       l2.network.ethBridge.outbox
     )
 
-    const status = await messageReader.status(l2.signer.provider)
+    try {
+      return await messageReader.status(l2.signer.provider)
+    } catch (error) {
+      return OutgoingMessageState.UNCONFIRMED
+    }
 
     // if (status === OutgoingMessageState.EXECUTED) {
     //   addToExecutedMessagesCache(batchNumber, indexInBatch)
     // }
 
-    return status
+    // return status
   }
 
   // function addToExecutedMessagesCache(

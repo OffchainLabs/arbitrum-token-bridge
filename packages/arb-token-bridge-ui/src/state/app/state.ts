@@ -14,7 +14,8 @@ import {
   TxnType,
   OutgoingMessageState,
   NodeBlockDeadlineStatus,
-  L1ToL2MessageData
+  L1ToL2MessageData,
+  getUniqueIdOrHashFromEvent
 } from 'token-bridge-sdk'
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
@@ -193,6 +194,8 @@ export const defaultState: AppState = {
         s.arbTokenBridge?.pendingWithdrawalsMap || []
       ) as L2ToL1EventResultPlus[]
     ).map(tx => {
+      const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
+
       return {
         direction: 'outbox',
         status: outgoungStateToString[tx.outgoingMessageState],
@@ -200,12 +203,13 @@ export const defaultState: AppState = {
           new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
         ).format('HH:mm:ss MM/DD/YYYY'),
         createdAtTime:
-          BigNumber.from(tx.timestamp).toNumber() * 1000 + (tx.hash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
+          BigNumber.from(tx.timestamp).toNumber() * 1000 +
+          (uniqueIdOrHash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
         resolvedAt: null,
-        txId: tx.hash.toString(),
+        txId: uniqueIdOrHash.toString(),
         asset: tx.symbol?.toLocaleLowerCase(),
         value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
-        uniqueId: tx.hash,
+        uniqueId: uniqueIdOrHash,
         isWithdrawal: true,
         blockNum: tx.ethBlockNum.toNumber(),
         tokenAddress: tx.tokenAddress || null,
