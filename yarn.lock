@@ -27,7 +27,16 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.0"
 
-"@arbitrum/nitro-contracts@1.0.0-beta.2", "@arbitrum/nitro-contracts@^1.0.0-beta.2":
+"@arbitrum/nitro-contracts@1.0.0-beta.5":
+  version "1.0.0-beta.5"
+  resolved "https://registry.yarnpkg.com/@arbitrum/nitro-contracts/-/nitro-contracts-1.0.0-beta.5.tgz#b4ca2a8d99b8a108e7dc412f6c2cb74818d5099a"
+  integrity sha512-hEpRXIL8S6AfTt6dqJsKCa84JufhuXuRgm2BnximdRrhJ8ukqR6Pt/mndYMa4nWRRTBMYkIxy6EA5iYxDwxWAQ==
+  dependencies:
+    "@openzeppelin/contracts" "4.5.0"
+    "@openzeppelin/contracts-upgradeable" "4.5.2"
+    hardhat "^2.6.6"
+
+"@arbitrum/nitro-contracts@^1.0.0-beta.2":
   version "1.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/@arbitrum/nitro-contracts/-/nitro-contracts-1.0.0-beta.2.tgz#70c1d114f087959b56ccbda3caadc805e34fda73"
   integrity sha512-IdwJUtjZ8+bIZpzKVUpqE0hGqnRW/tkKtCUbQgfXgveiJ2NYacqUL+xlpM2WyVsBdP1vS/cgINBtPNXdBPKSPQ==
@@ -55,12 +64,12 @@
     ts-node "^10.2.1"
     typechain "7.0.0"
 
-"@arbitrum/sdk-nitro@npm:@arbitrum/sdk@1.1.4-nitro-beta.1":
-  version "1.1.4-nitro-beta.1"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-1.1.4-nitro-beta.1.tgz#3522297d39ea7ee6ca64a2e68be8a6cbe67deb09"
-  integrity sha512-4s0Pohvi/cQ7sZan3OkeO9VDFSWozQqjuh072pTiGqce1qQeTGNbCnbEACXh+nHZn0CZ/Q3hk2RfWZIAnHMzTQ==
+"@arbitrum/sdk-nitro@npm:@arbitrum/sdk@3.0.0-beta.0":
+  version "3.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.0.0-beta.0.tgz#3d991616105fcbacda2d63f55969d8494156fbbb"
+  integrity sha512-sHlQNCgweTgOe+8Nf7KoWIGjGSehLNCuME9xbkJoc/bG3Raw1P3S7uGsYO0GNBGB9KjimbfnfIBjb4Torhe+Bw==
   dependencies:
-    "@arbitrum/nitro-contracts" "1.0.0-beta.2"
+    "@arbitrum/nitro-contracts" "1.0.0-beta.5"
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
@@ -73,14 +82,14 @@
     ts-node "^10.2.1"
     typechain "7.0.0"
 
-"@arbitrum/sdk@1.1.4-migration-beta.0":
-  version "1.1.4-migration-beta.0"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-1.1.4-migration-beta.0.tgz#b6e49e0cc5033286b8da7a86a749779bb66bffdd"
-  integrity sha512-mh6J1AlBqWwY70qjJpnOLSZOXFxB3NRSVWbHRaobcl3jUX9jqk8YrOmeQx4lXX0NmC/NT/TYgOHI2X+0k1h7qA==
+"@arbitrum/sdk@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-2.0.0.tgz#56de52e47c4a300e848b951249905f454a204e55"
+  integrity sha512-AX7VsFx+neUmCT1AQBirI3Jlc+Ope553KiEtqdCT+mnk3do1M9C6ixZSZAxrGm4gS+HZjrNFSvEIFQOcJV5Ylw==
   dependencies:
     "@arbitrum/nitro-contracts" "^1.0.0-beta.2"
     "@arbitrum/sdk-classic" "npm:@arbitrum/sdk@1.1.4"
-    "@arbitrum/sdk-nitro" "npm:@arbitrum/sdk@1.1.4-nitro-beta.1"
+    "@arbitrum/sdk-nitro" "npm:@arbitrum/sdk@3.0.0-beta.0"
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
