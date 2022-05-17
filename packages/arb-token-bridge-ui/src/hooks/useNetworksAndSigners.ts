@@ -114,7 +114,7 @@ export function useNetworksAndSigners(): UseNetworksAndSignersResult {
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: { network: l1Network, signer: l1Provider.getSigner(address!) },
           l2: { network: l2Network, signer: web3Provider.getSigner(0) },
-          isConnectedToArbitrum: false
+          isConnectedToArbitrum: true
         })
       } else {
         setResult({
