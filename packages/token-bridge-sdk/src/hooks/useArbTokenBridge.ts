@@ -881,12 +881,12 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         setTransactionSuccess(rec.transactionHash)
+        addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
           return newPendingWithdrawalsMap
         })
-        // addToExecutedMessagesCache(batchNumber, indexInBatch)
       } else {
         setTransactionFailure(rec.transactionHash)
       }
@@ -930,13 +930,12 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         setTransactionSuccess(rec.transactionHash)
+        addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
           return newPendingWithdrawalsMap
         })
-
-        // addToExecutedMessagesCache(batchNumber, indexInBatch)
       } else {
         setTransactionFailure(rec.transactionHash)
       }
@@ -1252,13 +1251,9 @@ export const useArbTokenBridge = (
   }
 
   async function getOutgoingMessageState(event: L2ToL1EventResult) {
-    // if (
-    //   executedMessagesCache[
-    //     hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-    //   ]
-    // ) {
-    //   return OutgoingMessageState.EXECUTED
-    // }
+    if (executedMessagesCache[getExecutedMessagesCacheKey(event)]) {
+      return OutgoingMessageState.EXECUTED
+    }
 
     const messageReader = new L2ToL1MessageReader(
       l1.signer.provider,
@@ -1267,35 +1262,40 @@ export const useArbTokenBridge = (
     )
 
     try {
-      return await messageReader.status(l2.signer.provider)
+      const status = await messageReader.status(l2.signer.provider)
+
+      if (status === OutgoingMessageState.EXECUTED) {
+        addToExecutedMessagesCache(event)
+      }
+
+      return status
     } catch (error) {
       return OutgoingMessageState.UNCONFIRMED
     }
-
-    // if (status === OutgoingMessageState.EXECUTED) {
-    //   addToExecutedMessagesCache(batchNumber, indexInBatch)
-    // }
-
-    // return status
   }
 
-  // function addToExecutedMessagesCache(
-  //   batchNumber: BigNumber,
-  //   indexInBatch: BigNumber
-  // ) {
-  //   const _executedMessagesCache = { ...executedMessagesCache }
-  //   _executedMessagesCache[
-  //     hashOutgoingMessage(batchNumber, indexInBatch, l1NetworkID)
-  //   ] = true
-  //   setExecutedMessagesCache(_executedMessagesCache)
-  // }
+  function getExecutedMessagesCacheKey(event: L2ToL1EventResult) {
+    const anyEvent = event as any
 
-  const hashOutgoingMessage = (
-    batchNumber: BigNumber,
-    indexInBatch: BigNumber,
-    _l1NetworkID: string
-  ) => {
-    return `${batchNumber.toString()},${indexInBatch.toString()},${_l1NetworkID}`
+    // Nitro
+    if (anyEvent.hash) {
+      // Classic
+      const position = anyEvent.position as BigNumber
+      const hash = anyEvent.hash as BigNumber
+
+      return `${position.toString()},${hash.toString()},${l1NetworkID}`
+    }
+
+    // Classic
+    const batchNumber = anyEvent.batchNumber as BigNumber
+    const indexInBatch = anyEvent.indexInBatch as BigNumber
+
+    return `${batchNumber.toString()},${indexInBatch.toString()},${l1NetworkID}`
+  }
+
+  function addToExecutedMessagesCache(event: L2ToL1EventResult) {
+    const cacheKey = getExecutedMessagesCacheKey(event)
+    setExecutedMessagesCache({ ...executedMessagesCache, [cacheKey]: true })
   }
 
   return {
