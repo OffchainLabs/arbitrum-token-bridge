@@ -198,6 +198,7 @@ export const useArbTokenBridge = (
   ] = useTransactions()
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
+  const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
 
   const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
   const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
@@ -1278,12 +1279,10 @@ export const useArbTokenBridge = (
     const anyEvent = event as any
 
     // Nitro
-    if (anyEvent.hash) {
-      // Classic
+    if (anyEvent.position) {
       const position = anyEvent.position as BigNumber
-      const hash = anyEvent.hash as BigNumber
 
-      return `${position.toString()},${hash.toString()},${l1NetworkID}`
+      return `${position.toString()},${l2NetworkID}`
     }
 
     // Classic
