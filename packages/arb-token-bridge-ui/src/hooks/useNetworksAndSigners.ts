@@ -45,7 +45,7 @@ export type UseNetworksAndSignersResult =
     } & UseNetworksAndSignersData)
 
 export function useNetworksAndSigners(): UseNetworksAndSignersResult {
-  const { provider, account } = useWallet()
+  const { provider, account, network } = useWallet()
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: UseNetworksAndSignersStatus.NOT_CONNECTED,
@@ -105,12 +105,11 @@ export function useNetworksAndSigners(): UseNetworksAndSignersResult {
   }, [])
 
   useEffect(() => {
-    if (typeof provider === 'undefined' || typeof account === 'undefined') {
-      return
+    if (provider && account && network) {
+      update(provider, account)
     }
-
-    update(provider, account)
-  }, [provider, account, update])
+    // The `network` object has to be in the list of dependencies for switching between L1-L2 pairs.
+  }, [provider, account, network, update])
 
   return result
 }
