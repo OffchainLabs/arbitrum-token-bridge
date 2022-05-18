@@ -8,6 +8,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const L2ApproveTokens = [
   {
+    symbol: 'LPT',
     l1Address: '0x58b6A8A3302369DAEc383334672404Ee733aB239',
     l2Address: '0x289ba1701C2F088cf0faf8B3705246331cB8A839'
   }
