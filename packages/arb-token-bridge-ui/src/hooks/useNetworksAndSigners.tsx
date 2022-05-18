@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useWallet } from '@arbitrum/use-wallet'
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useContext,
+  createContext
+} from 'react'
 import {
   JsonRpcSigner,
   JsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
+import { useWallet } from '@arbitrum/use-wallet'
 
 import { rpcURLs } from '../util/networks'
 
@@ -44,7 +50,36 @@ export type UseNetworksAndSignersResult =
       status: UseNetworksAndSignersStatus.CONNECTED
     } & UseNetworksAndSignersData)
 
-export function useNetworksAndSigners(): UseNetworksAndSignersResult {
+export const NetworksAndSignersContext =
+  createContext<UseNetworksAndSignersResult>({
+    status: UseNetworksAndSignersStatus.NOT_CONNECTED,
+    ...defaults
+  })
+
+export function useNetworksAndSigners() {
+  return useContext(NetworksAndSignersContext)
+}
+
+export type NetworksAndSignersProviderProps = {
+  /**
+   * Render prop that gets called with the current status in case of an unsuccessful connection or connection to an unsupported network.
+   *
+   * @see https://reactjs.org/docs/render-props.html
+   */
+  fallback: (
+    status:
+      | UseNetworksAndSignersStatus.NOT_CONNECTED
+      | UseNetworksAndSignersStatus.NOT_SUPPORTED
+  ) => JSX.Element
+  /**
+   * Renders on successful connection.
+   */
+  children: React.ReactNode
+}
+
+export function NetworksAndSignersProvider(
+  props: NetworksAndSignersProviderProps
+): JSX.Element {
   const { provider, account, network } = useWallet()
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
@@ -111,5 +146,13 @@ export function useNetworksAndSigners(): UseNetworksAndSignersResult {
     // The `network` object has to be in the list of dependencies for switching between L1-L2 pairs.
   }, [provider, account, network, update])
 
-  return result
+  if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
+    return props.fallback(result.status)
+  }
+
+  return (
+    <NetworksAndSignersContext.Provider value={result}>
+      {props.children}
+    </NetworksAndSignersContext.Provider>
+  )
 }
