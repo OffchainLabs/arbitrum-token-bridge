@@ -39,14 +39,14 @@ const MainContent = () => {
       {isMainnet && (
         <div className="mb-4 mx-auto max-w-networkBox w-full">
           <Alert type="blue">
-            NOTICE: Arbitrum One is in mainnet Beta, which currently includes
-            administrative controls.{' '}
+            Arbitrum is in beta.{' '}
             <a
               target="_blank"
               rel="noreferrer"
               href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
+              className="underline"
             >
-              <u>(more info)</u>
+              Learn more.
             </a>
           </Alert>
         </div>
@@ -65,19 +65,6 @@ const MainContent = () => {
         </div>
       )}
 
-      <div className="mb-4 mx-auto max-w-networkBox w-full">
-        <Alert type="ramps">
-          Looking for fast bridges and direct fiat on-ramps for Arbitrum?&nbsp;
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://portal.arbitrum.one/#bridgesandonramps"
-          >
-            <u>Click here!</u>
-          </a>
-        </Alert>
-      </div>
-
       <TransferPanel />
 
       {mergedTransactions?.length > 0 && (
@@ -91,7 +78,6 @@ const MainContent = () => {
               <Button
                 onClick={() => setTransactionModalOpen(true)}
                 variant="white"
-                size="md"
                 className="w-full"
               >
                 View all

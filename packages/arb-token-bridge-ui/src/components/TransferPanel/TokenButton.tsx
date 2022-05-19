@@ -54,7 +54,7 @@ export function TokenButton(): JSX.Element {
   }
 
   return (
-    <div>
+    <>
       <TokenModal
         isOpen={tokenModalOpen}
         setIsOpen={setTokenModalOpen}
@@ -70,20 +70,21 @@ export function TokenButton(): JSX.Element {
       <button
         type="button"
         onClick={() => setTokenModalOpen(true)}
-        className="bg-white border border-gray-300 shadow-md active:shadow-sm rounded-md py-2 px-4"
+        className="px-3 bg-white hover:bg-v3-gray-2 rounded-tl-xl rounded-bl-xl h-full"
       >
-        <div className="flex items-center whitespace-nowrap flex-nowrap ">
-          <div>Token:</div>
+        <div className="flex items-center space-x-2">
           {tokenLogo && (
             <img
               src={tokenLogo}
               alt="Token logo"
-              className="rounded-full w-5 h-5 mx-1"
+              className="rounded-full w-5 lg:w-8 h-5 lg:h-8"
             />
           )}
-          <div>{selectedToken ? selectedToken.symbol : 'Eth'}</div>
+          <span className="font-light text-lg lg:text-3xl">
+            {selectedToken ? selectedToken.symbol : 'ETH'}
+          </span>
         </div>
       </button>
-    </div>
+    </>
   )
 }

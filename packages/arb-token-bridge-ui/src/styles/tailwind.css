@@ -1,22 +1,28 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+* {
+  box-sizing: border-box;
+  letter-spacing: -0.5px;
+}
+
 @layer base {
-    body {
-        @apply font-serif;
-        @apply bg-main-bg;
-    }
+  body {
+    @apply font-serif;
+    @apply bg-main-bg;
+  }
 }
 
-#root, body {
-    @apply min-h-screen;
-    background-color: #E5E5E5;
+#root,
+body {
+  @apply min-h-screen;
+  background-color: #f4f4f4;
 }
 
-#faucet-link{
+#faucet-link {
   position: relative;
   box-sizing: border-box;
   padding: 8px;
@@ -31,7 +37,7 @@
   font-size: 15px;
   display: flex;
 }
-#twitter-faucet-container{
+#twitter-faucet-container {
   display: flex;
   align-items: center;
 }
@@ -40,32 +46,30 @@
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 /* Firefox */
-input[type=number] {
-    -moz-appearance: textfield;
+input[type='number'] {
+  -moz-appearance: textfield;
 }
-
 
 .Toastify__toast-container {
-    padding:0 30px!important;
+  padding: 0 30px !important;
 }
 .Toastify__toast {
-    @apply bg-gray-200 text-gray-800 text-center
+  @apply bg-gray-200 text-gray-800 text-center;
 }
 
-button, input {
-  outline: none!important;
+button,
+input {
+  outline: none !important;
 }
 
 /*react error overlay hidden in dev mode while testing network switches which trow errors*/
 body > iframe {
-    display: none!important;
+  display: none !important;
 }
-
-
 
 /* The switch - the box around the slider */
 .switch {
@@ -91,28 +95,28 @@ body > iframe {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
 }
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 10px;
   width: 10px;
   left: 3px;
   bottom: 3px;
   background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
 }
 
 input:checked + .slider {
-  background-color: #1A1C1D;
+  background-color: #1a1c1d;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #1A1C1D;
+  box-shadow: 0 0 1px #1a1c1d;
 }
 
 input:checked + .slider:before {
@@ -128,4 +132,14 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.box-shadow-network-switch-button {
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
+}
+
+@media (min-width: 1024px) {
+  .transfer-panel-network-box-wrapper {
+    min-width: 540px;
+  }
 }

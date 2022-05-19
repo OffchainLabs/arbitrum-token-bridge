@@ -50,7 +50,7 @@ const Layout: React.FC = ({ children }) => {
         </div>
       </div>
 
-      <main className="mt-12 flex-grow">
+      <main className="bg-v3-gray-2 mt-12 flex-grow">
         <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
           {children}
         </div>

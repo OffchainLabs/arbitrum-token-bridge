@@ -7,9 +7,53 @@ import Loader from 'react-loader-spinner'
 import { BridgeBalance } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
-import ExplorerLink from '../common/ExplorerLink'
+
 import { AmountBox } from './AmountBox'
 import { TokenButton } from './TokenButton'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
+const NetworkStyleProps: {
+  L1: { style: React.CSSProperties; className: string }
+  L2: { style: React.CSSProperties; className: string }
+} = {
+  L1: {
+    style: { backgroundImage: `url(/images/NetworkBoxEth.png)` },
+    className: 'bg-contain bg-no-repeat bg-v3-ethereum-dark-purple'
+  },
+  L2: {
+    style: { backgroundImage: `url(/images/NetworkBoxArb.png)` },
+    className: 'bg-contain bg-no-repeat bg-v3-arbitrum-dark-blue'
+  }
+}
+
+function NetworkInfo({ isL1 }: { isL1: boolean }): JSX.Element | null {
+  const {
+    app: { isDepositMode }
+  } = useAppState()
+  const {
+    l1: { network: l1Network },
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
+
+  const fromOrTo = useMemo(() => {
+    if (isDepositMode) {
+      return isL1 ? 'From' : 'To'
+    }
+
+    return isL1 ? 'To' : 'From'
+  }, [isL1, isDepositMode])
+
+  if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
+    return null
+  }
+
+  return (
+    <span className="text-white text-xl lg:text-2xl font-regular">
+      <span className="hidden sm:inline">{fromOrTo}: </span>
+      <span>{isL1 ? l1Network.name : l2Network.name}</span>
+    </span>
+  )
+}
 
 const NetworkBox = ({
   isL1,
@@ -66,26 +110,24 @@ const NetworkBox = ({
   }
 
   const balanceMemo = useMemo(() => {
+    function formatBalance(balance: BigNumber, decimals: number | undefined) {
+      return parseFloat(formatUnits(balance, decimals || 18)).toFixed(6)
+    }
+
     return (
       <div className="inline-flex items-center">
         {balance ? (
-          <span className="mr-1 font-semibold">
-            {/* @ts-ignore */}
-            {formatUnits(balance, selectedToken?.decimals || 18)}
+          <span className="mr-1 text-white text-lg lg:text-xl font-light">
+            {formatBalance(balance, selectedToken?.decimals)}
           </span>
         ) : (
-          <div className="mx-2">
-            <Loader
-              type="Oval"
-              color="rgb(40, 160, 240)"
-              height={14}
-              width={14}
-            />
+          <div className="ml-1">
+            <Loader type="Oval" color="white" height={12} width={12} />
           </div>
         )}
         {balance !== null && balance !== undefined && (
-          <span className="mr-1 font-semibold">
-            {selectedToken ? selectedToken.symbol : 'Eth '}
+          <span className="mr-1 text-white text-lg lg:text-xl font-light">
+            {selectedToken ? selectedToken.symbol : 'ETH '}
           </span>
         )}
       </div>
@@ -93,52 +135,42 @@ const NetworkBox = ({
   }, [balance, selectedToken])
   const shouldShowMaxButton = !!selectedToken && !!balance && !balance.isZero()
 
+  const networkStyleProps = isL1 ? NetworkStyleProps.L1 : NetworkStyleProps.L2
+
   return (
     <div
-      className={`max-w-networkBox w-full mx-auto shadow-networkBox bg-white p-6 rounded-lg ${
-        className || ''
-      }`}
+      className={`w-full p-2 rounded-xl ${className} ${networkStyleProps.className}`}
     >
-      <div className="flex flex-col">
-        <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row">
-          <div className="flex flex-col">
-            <div className="text-sm leading-5 font-medium text-gray-700 mb-1">
-              Layer {isL1 ? '1' : '2'}
-              {' Balance: '}
-              <span>{canIEnterAmount && balanceMemo}</span>
+      <div
+        className={`p-4 ${networkStyleProps.className}`}
+        style={networkStyleProps.style}
+      >
+        <div className="flex flex-col">
+          <div className="flex flex-row justify-between items-center">
+            <NetworkInfo isL1={isL1} />
+            <div>
+              <span className="text-white text-lg lg:text-xl font-light">
+                Balance:{' '}
+              </span>
+              {balanceMemo}
             </div>
-            {!canIEnterAmount && (
-              <div className="flex items-center text-lg leading-8 font-semibold text-gray-700 mb-1">
-                {balanceMemo}
-              </div>
-            )}
-            {selectedToken && (
-              <p className="text-sm leading-5 font-medium text-gray-500">
-                Token address:
-                <ExplorerLink
-                  hash={isL1 ? selectedToken.address : selectedToken.l2Address}
-                  type="address"
-                  layer={isL1 ? 1 : 2}
-                />
-              </p>
-            )}
           </div>
           {canIEnterAmount && (
-            <div className="self-center sm:self-end mt-4 sm:mt-0">
-              <TokenButton />
-            </div>
+            <>
+              <div className="h-4" />
+              <div className="flex flex-row items-center rounded-lg h-16 bg-white border border-v3-gray-9">
+                <TokenButton />
+                <div className="h-full border-r border-v3-gray-4" />
+                <AmountBox
+                  amount={amount}
+                  setAmount={setAmount}
+                  setMaxAmount={setMaxAmount}
+                  showMaxButton={shouldShowMaxButton}
+                />
+              </div>
+            </>
           )}
         </div>
-        {canIEnterAmount && (
-          <div className="flex self-center mt-5">
-            <AmountBox
-              amount={amount}
-              setAmount={setAmount}
-              setMaxAmount={setMaxAmount}
-              showMaxButton={shouldShowMaxButton}
-            />
-          </div>
-        )}
       </div>
     </div>
   )

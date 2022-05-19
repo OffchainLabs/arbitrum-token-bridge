@@ -27,6 +27,7 @@ import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { useETHPrice } from '../../hooks/useETHPrice'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -98,7 +99,7 @@ const TransferPanel = (): JSX.Element => {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network },
-    l2: { signer: l2Signer }
+    l2: { network: l2Network, signer: l2Signer }
   } = networksAndSigners
 
   const latestEth = useLatest(eth)
@@ -111,6 +112,68 @@ const TransferPanel = (): JSX.Element => {
 
   const { shouldDisableDeposit } = useWithdrawOnly()
   const { shouldRequireApprove } = useL2Approve()
+
+  const ethPrice = useETHPrice()
+
+  const toUSD = useCallback(
+    (etherValue: number) => {
+      const safeETHPrice = typeof ethPrice === 'number' ? ethPrice : 0
+      return (etherValue * safeETHPrice).toLocaleString()
+    },
+    [ethPrice]
+  )
+
+  // TODO: Switch to a value provided by @arbitrum/sdk
+  const [estimatedL1Gas, setEstimatedL1Gas] = useState(BigNumber.from(100000))
+  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+  const [estimatedL1GasFees, setEstimatedL1GasFees] = useState(0)
+
+  // TODO: Switch to a value provided by @arbitrum/sdk
+  const [estimatedL2Gas, setEstimatedL2Gas] = useState(BigNumber.from(1000000))
+  // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
+  const [estimatedL2GasFees, setEstimatedL2GasFees] = useState(0)
+
+  // Estimated total gas fees, denominated in Ether, represented as a floating point number
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
+  )
+
+  // The amount of funds to bridge over, represented as a floating point number
+  const amount = useMemo(() => {
+    if (isDepositMode) {
+      return parseFloat(l1Amount || '0')
+    }
+
+    return parseFloat(l2Amount || '0')
+  }, [isDepositMode, l1Amount, l2Amount])
+
+  useEffect(() => {
+    async function fetchGasPrices() {
+      const {
+        l1: { signer: l1Signer },
+        l2: { signer: l2Signer }
+      } = networksAndSigners
+
+      if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
+        return
+      }
+
+      const [l1GasPrice, l2GasPrice] = await Promise.all([
+        l1Signer.getGasPrice(),
+        l2Signer.getGasPrice()
+      ])
+
+      setEstimatedL1GasFees(
+        parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
+      )
+      setEstimatedL2GasFees(
+        parseFloat(utils.formatEther(estimatedL2Gas.mul(l2GasPrice)))
+      )
+    }
+
+    fetchGasPrices()
+  }, [networksAndSigners, estimatedL1Gas, estimatedL2Gas])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -371,6 +434,10 @@ const TransferPanel = (): JSX.Element => {
     )
   }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
 
+  const isSummaryVisible = useMemo(() => {
+    return !(isDepositMode ? disableDeposit : disableWithdrawal)
+  }, [isDepositMode, disableDeposit, disableWithdrawal])
+
   return (
     <>
       <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto mb-4 min-h-10">
@@ -402,15 +469,16 @@ const TransferPanel = (): JSX.Element => {
           <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
         )}
       </div>
-      <div className="flex flex-col w-full max-w-networkBox mx-auto mb-8">
-        <div className="flex flex-col">
+
+      <div className="flex flex-col lg:flex-row bg-transparent lg:bg-white max-w-screen-lg mx-auto rounded-xl p-0 lg:p-6 space-y-6 lg:space-y-0 lg:space-x-6">
+        <div className="transfer-panel-network-box-wrapper flex flex-col">
           <NetworkBox
             isL1
             amount={l1Amount}
             setAmount={setl1Amount}
             className={isDepositMode ? 'order-1' : 'order-3'}
           />
-          <div className="h-2 relative flex justify-center order-2 w-full">
+          <div className="h-10 lg:h-12 relative flex justify-center order-2 w-full">
             <div className="flex items-center justify-end relative w-full">
               <div className="absolute left-0 right-0 mx-auto flex items-center justify-center">
                 <NetworkSwitchButton />
@@ -425,7 +493,145 @@ const TransferPanel = (): JSX.Element => {
           />
         </div>
 
-        <div className="h-6" />
+        <div className="border-r border-v3-gray-3" />
+
+        <div
+          style={
+            isSummaryVisible
+              ? {}
+              : {
+                  background: `url(/images/ArbitrumFaded.png)`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center'
+                }
+          }
+          className="flex flex-col justify-between w-full"
+        >
+          <div className="hidden lg:block">
+            <span className="text-2xl">Summary</span>
+            <div className="h-2" />
+          </div>
+
+          {isSummaryVisible ? (
+            <>
+              <div className="block lg:hidden">
+                <span className="text-2xl">Summary</span>
+                <div className="h-2" />
+              </div>
+
+              <div className="text-lg flex flex-col space-y-1">
+                <div className="flex flex-row justify-between">
+                  <span className="text-v3-gray-10 font-light w-2/5">
+                    Amount
+                  </span>
+                  <div className="flex flex-row justify-between w-3/5">
+                    <span className="text-v3-gray-10 font-light">
+                      {selectedToken ? amount : amount.toFixed(4)}{' '}
+                      {selectedToken ? selectedToken.symbol : 'ETH'}
+                    </span>
+                    {/* Only show USD price for ETH. */}
+                    {selectedToken === null && (
+                      <span className="text-v3-gray-10 font-light">
+                        (${toUSD(amount)})
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-row justify-between">
+                  <span className="text-v3-gray-10 font-light w-2/5">
+                    Total gas
+                  </span>
+                  <div className="flex flex justify-between w-3/5">
+                    <span className="text-v3-gray-10 font-light">
+                      {estimatedTotalGasFees.toLocaleString()} ETH
+                    </span>
+                    <span className="text-v3-gray-10 font-light">
+                      (${toUSD(estimatedTotalGasFees)})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row justify-between">
+                  <span className="text-v3-gray-6 font-light w-2/5 pl-4">
+                    L1 gas
+                  </span>
+                  <div className="flex flex-row justify-between w-3/5">
+                    <span className="text-v3-gray-6 font-light">
+                      {estimatedL1GasFees.toLocaleString()} ETH
+                    </span>
+                    <span className="text-v3-gray-6 font-light">
+                      (${toUSD(estimatedL1GasFees)})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row justify-between">
+                  <span className="text-v3-gray-6 font-light w-2/5 pl-4">
+                    L2 gas
+                  </span>
+                  <div className="flex flex-row justify-between w-3/5">
+                    <span className="text-v3-gray-6 font-light">
+                      {estimatedL2GasFees.toLocaleString()} ETH
+                    </span>
+                    <span className="text-v3-gray-6 font-light">
+                      (${toUSD(estimatedL2GasFees)})
+                    </span>
+                  </div>
+                </div>
+
+                {/* Only show totals for ETH. */}
+                {selectedToken === null && (
+                  <>
+                    <div className="h-1" />
+                    <div className="border-b border-v3-gray-5 lg:border-v3-gray-3" />
+                    <div className="h-1" />
+                    <div className="flex flex-row justify-between">
+                      <span className="w-2/5">Total</span>
+                      <div className="flex flex-row justify-between w-3/5">
+                        <span>
+                          {(amount + estimatedTotalGasFees).toLocaleString()}{' '}
+                          ETH
+                        </span>
+                        <span>(${toUSD(amount + estimatedTotalGasFees)})</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="h-12" />
+            </>
+          ) : (
+            <>
+              <div className="hidden lg:block min-h-56 text-v3-gray-7 text-lg">
+                <span className="text-xl">
+                  Bridging summary will appear here.
+                </span>
+              </div>
+              <div style={{ height: '1px' }} />
+            </>
+          )}
+
+          {isDepositMode ? (
+            <Button
+              onClick={showModalOnDeposit}
+              disabled={disableDeposit}
+              isLoading={transferring}
+              className="h-16 rounded-2xl lg:rounded-xl text-2xl bg-v3-arbitrum-dark-blue font-normal text-white"
+            >
+              Move funds to {l2Network?.name}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setConfirmationModalStatus(ModalStatus.WITHDRAW)}
+              disabled={disableWithdrawal}
+              variant="navy"
+              isLoading={transferring}
+              className="h-16 rounded-2xl lg:rounded-xl text-2xl bg-v3-ethereum-dark-purple font-normal text-white"
+            >
+              Move funds to {l1Network?.name}
+            </Button>
+          )}
+        </div>
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportModal
@@ -445,25 +651,9 @@ const TransferPanel = (): JSX.Element => {
           symbol={selectedToken ? selectedToken.symbol : 'Eth'}
           amount={isDepositMode ? l1Amount : l2Amount}
         />
-        {isDepositMode ? (
-          <Button
-            onClick={showModalOnDeposit}
-            disabled={disableDeposit}
-            isLoading={transferring}
-          >
-            {isBridgingANewStandardToken ? 'Deploy/Deposit' : 'Deposit'}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => setConfirmationModalStatus(ModalStatus.WITHDRAW)}
-            disabled={disableWithdrawal}
-            variant="navy"
-            isLoading={transferring}
-          >
-            Withdraw
-          </Button>
-        )}
       </div>
+
+      <div className="h-8" />
     </>
   )
 }

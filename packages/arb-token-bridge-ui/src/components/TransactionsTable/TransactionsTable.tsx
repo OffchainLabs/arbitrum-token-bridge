@@ -312,7 +312,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
             ) : (
               <>
                 <Button
-                  size="sm"
                   disabled={isConnectedToArbitrum}
                   onClick={handleTriggerOutbox}
                 >
@@ -328,9 +327,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
         {tx.isWithdrawal && tx.status === 'Unconfirmed' && (
           <div className="relative group">
-            <Button variant="white" size="sm">
-              Claim
-            </Button>
+            <Button variant="white">Claim</Button>
             <Tooltip>
               Transaction must be confirmed: ETA: {calcEtaDisplay()}
             </Tooltip>
@@ -342,7 +339,6 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         {showRedeemRetryableButton && (
           <div className="relative group">
             <Button
-              size="sm"
               disabled={!isConnectedToArbitrum}
               onClick={() => redeemRetryable(tx)}
             >

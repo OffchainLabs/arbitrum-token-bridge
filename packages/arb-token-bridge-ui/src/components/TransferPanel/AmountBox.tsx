@@ -12,24 +12,24 @@ const AmountBox = ({
   showMaxButton: boolean
 }): JSX.Element => {
   return (
-    <div className="flex flex-col items-center text-center bg-white rounded-md">
+    <div className="px-3 flex-grow flex flex-row items-center justify-center h-full">
+      <input
+        type="number"
+        autoFocus
+        className="h-full w-full text-lg lg:text-3xl placeholder:text-v3-gray-9 font-light bg-transparent"
+        placeholder="Enter amount"
+        value={amount}
+        onChange={e => setAmount(e.target.value)}
+      />
       {showMaxButton && (
         <button
           type="button"
           onClick={setMaxAmount}
-          className="border border-1 rounded-sm  px-2 text-xs mb-1 hover:bg-gray-200"
+          className="text-sm p-2 text-v3-gray-9 font-light"
         >
-          max amount
+          MAX
         </button>
       )}
-      <input
-        type="number"
-        autoFocus
-        className="text-xl leading-8 font-semibold mb-2 placeholder-gray3 text-gray1 focus:ring-0 focus:outline-none text-center max-w-96 w-full"
-        placeholder="Enter amount here"
-        value={amount}
-        onChange={e => setAmount(e.target.value)}
-      />
     </div>
   )
 }
