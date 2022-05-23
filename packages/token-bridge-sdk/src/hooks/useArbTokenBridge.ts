@@ -19,7 +19,6 @@ import {
 
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -909,7 +908,7 @@ export const useArbTokenBridge = (
 
     const messageWriter = L2ToL1Message.fromEvent(
       l1.signer,
-      event as L2ToL1TransactionEvent,
+      event,
       l2.network.ethBridge.outbox
     )
 
