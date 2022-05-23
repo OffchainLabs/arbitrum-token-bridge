@@ -7,6 +7,12 @@ import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
+import { L1TransactionReceipt } from '@arbitrum/sdk'
+
+interface TransactionReceiptWithSeqNum extends TransactionReceipt {
+  seqNum?: number
+}
+
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
   const {
@@ -27,7 +33,25 @@ export function PendingTransactionsUpdater(): JSX.Element {
         return null
       }
 
-      return provider.getTransactionReceipt(tx.txID)
+      if (tx.type === 'deposit-l1') {
+        // We need to get the seqNum for deposit tx if its missing
+        return provider
+          .getTransactionReceipt(tx.txID)
+          .then(txr => {
+            return Promise.all([
+              txr,
+              new L1TransactionReceipt(txr).getL1ToL2Message(provider)
+            ])
+          })
+          .then(([txr, l1ToL2Msg]) => {
+            return Promise.resolve({
+              ...txr,
+              seqNum: l1ToL2Msg.messageNumber.toNumber()
+            })
+          })
+      } else {
+        return provider.getTransactionReceipt(tx.txID)
+      }
     },
     [l1Signer, l2Signer]
   )
@@ -44,17 +68,23 @@ export function PendingTransactionsUpdater(): JSX.Element {
       // eslint-disable-next-line consistent-return
       return Promise.all(
         pendingTransactions.map((tx: Transaction) => getTransactionReceipt(tx))
-      ).then((txReceipts: (TransactionReceipt | null)[]) => {
-        txReceipts.forEach((txReceipt: TransactionReceipt | null, i) => {
-          if (!txReceipt) {
-            console.info(
-              'Transaction receipt not yet found:',
-              pendingTransactions[i].txID
-            )
-          } else {
-            arbTokenBridge?.transactions?.updateTransaction(txReceipt)
+      ).then((txReceipts: (TransactionReceiptWithSeqNum | null)[]) => {
+        txReceipts.forEach(
+          (txReceipt: TransactionReceiptWithSeqNum | null, i) => {
+            if (!txReceipt) {
+              console.info(
+                'Transaction receipt not yet found:',
+                pendingTransactions[i].txID
+              )
+            } else {
+              arbTokenBridge?.transactions?.updateTransaction(
+                txReceipt,
+                undefined,
+                txReceipt.seqNum
+              )
+            }
           }
-        })
+        )
       })
     }
   }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
