@@ -1022,12 +1022,11 @@ export const useArbTokenBridge = (
     ): Promise<L2ToL1EventResultPlus> {
       const { callvalue } = event
 
-      // const outgoingMessageState =
-      //   batchNumber.toNumber() > lastOutboxEntryIndexDec
-      //     ? OutgoingMessageState.UNCONFIRMED
-      //     : await getOutgoingMessageState(event)
-
-      const outgoingMessageState = await getOutgoingMessageState(event)
+      const batchNumber = (event as any).batchNumber as BigNumber
+      const outgoingMessageState =
+        batchNumber.toNumber() > lastOutboxEntryIndexDec
+          ? OutgoingMessageState.UNCONFIRMED
+          : await getOutgoingMessageState(event)
 
       return {
         ...event,
