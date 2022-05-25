@@ -48,7 +48,7 @@ function NetworkInfo({ isL1 }: { isL1: boolean }): JSX.Element | null {
   }
 
   return (
-    <span className="text-white text-xl lg:text-2xl font-regular">
+    <span className="text-white text-lg lg:text-2xl font-regular">
       <span className="hidden sm:inline">{fromOrTo}: </span>
       <span>{isL1 ? l1Network.name : l2Network.name}</span>
     </span>
@@ -111,13 +111,17 @@ const NetworkBox = ({
 
   const balanceMemo = useMemo(() => {
     function formatBalance(balance: BigNumber, decimals: number | undefined) {
+      if (balance.isZero()) {
+        return '0'
+      }
+
       return parseFloat(formatUnits(balance, decimals || 18)).toFixed(6)
     }
 
     return (
       <div className="inline-flex items-center">
         {balance ? (
-          <span className="mr-1 text-white text-lg lg:text-xl font-light">
+          <span className="mr-1 text-white lg:text-xl font-light">
             {formatBalance(balance, selectedToken?.decimals)}
           </span>
         ) : (
@@ -126,7 +130,7 @@ const NetworkBox = ({
           </div>
         )}
         {balance !== null && balance !== undefined && (
-          <span className="mr-1 text-white text-lg lg:text-xl font-light">
+          <span className="mr-1 text-white lg:text-xl font-light">
             {selectedToken ? selectedToken.symbol : 'ETH '}
           </span>
         )}
@@ -149,7 +153,7 @@ const NetworkBox = ({
           <div className="flex flex-row justify-between items-center">
             <NetworkInfo isL1={isL1} />
             <div>
-              <span className="text-white text-lg lg:text-xl font-light">
+              <span className="text-white lg:text-xl font-light">
                 Balance:{' '}
               </span>
               {balanceMemo}

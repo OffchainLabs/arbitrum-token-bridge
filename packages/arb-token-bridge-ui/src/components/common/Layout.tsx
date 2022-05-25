@@ -1,64 +1,124 @@
 import React, { useMemo } from 'react'
+import { InformationCircleIcon } from '@heroicons/react/solid'
 
-import Footer from './Footer'
 import { Header } from './Header'
+import { Footer } from './Footer'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import useTwitter from '../../hooks/useTwitter'
 
-const Layout: React.FC = ({ children }) => {
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
-
-  const headerText = useMemo(() => {
-    if (typeof l1Network === 'undefined') {
-      return 'Arbitrum'
-    }
-
-    switch (l1Network.chainID) {
-      case 1:
-        return 'Arbitrum One Bridge'
-      case 4:
-        return 'RinkArby Testnet Bridge'
-      case 5:
-        return 'Arbitrum Nitro Devnet Bridge'
-      default:
-        return 'Arbitrum Mainnet Bridge'
-    }
-  }, [l1Network])
-
+function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="bg-gray-800">
-        <Header />
+    <div className="w-full flex justify-center bg-black">
+      <div className="w-full lg:px-8 max-w-1440px">
+        <div className="w-full flex">{children}</div>
       </div>
-
-      <div className="bg-gray-800 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative min-h-heading">
-          <div className="block">
-            <div className="pt-10 pb-5 relative z-10">
-              <h1 className="text-3xl font-bold text-white">{headerText}</h1>
-            </div>
-          </div>
-
-          <div className="absolute z-1 right-8 md:right-32 -bottom-24 w-64">
-            <img
-              className="w-full"
-              src="/images/Arbitrum_Symbol_-_Full_color_-_White_background_inner.svg"
-              alt="Arbitrum logo"
-            />
-          </div>
-        </div>
-      </div>
-
-      <main className="bg-v3-gray-2 mt-12 flex-grow">
-        <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
-      </main>
-
-      <Footer />
     </div>
   )
 }
 
-export { Layout }
+function Notification({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full flex flex-row items-center space-x-2 lg:w-auto py-2 px-3 lg:rounded-bl-lg lg:rounded-br-lg bg-v3-cyan lg:text-sm text-v3-cyan-dark">
+      <InformationCircleIcon className="h-4 w-4" />
+      {children}
+    </div>
+  )
+}
+
+function ArbitrumBetaNotification() {
+  return (
+    <Notification>
+      <span>
+        Arbitrum is in beta.{' '}
+        <a
+          target="_blank"
+          rel="noreferrer"
+          href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
+          className=" underline"
+        >
+          Learn more.
+        </a>
+      </span>
+    </Notification>
+  )
+}
+
+function RinkebyTestnetNotification() {
+  return (
+    <Notification>
+      <a
+        target="_blank"
+        rel="noreferrer"
+        href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
+        className=" underline"
+      >
+        What is Rinkeby Testnet?
+      </a>
+    </Notification>
+  )
+}
+
+function NitroDevnetNotification() {
+  const handleTwitterClick = useTwitter()
+
+  return (
+    <Notification>
+      <button onClick={handleTwitterClick} className="underline">
+        Request testnet ETH from the Nitro Devnet Twitter faucet!
+      </button>
+    </Notification>
+  )
+}
+
+type LayoutProps = {
+  children: React.ReactNode
+}
+
+export function Layout(props: LayoutProps) {
+  const { l1 } = useNetworksAndSigners()
+
+  const isMainnet = useMemo(() => {
+    if (typeof l1.network === 'undefined') {
+      return false
+    }
+
+    return l1.network.chainID === 1
+  }, [l1])
+
+  const isRinkeby = useMemo(() => {
+    if (typeof l1.network === 'undefined') {
+      return false
+    }
+
+    return l1.network.chainID === 4
+  }, [l1])
+
+  const isNitro = useMemo(() => {
+    if (typeof l1.network === 'undefined') {
+      return false
+    }
+
+    return l1.network.chainID === 5
+  }, [l1])
+
+  return (
+    <div
+      style={{ backgroundImage: 'url(/images/space.jpg)' }}
+      className="flex flex-col justify-between min-h-screen bg-cover bg-no-repeat"
+    >
+      <div>
+        <Header />
+        <NotificationContainer>
+          {isMainnet && <ArbitrumBetaNotification />}
+          {isRinkeby && <RinkebyTestnetNotification />}
+          {isNitro && <NitroDevnetNotification />}
+        </NotificationContainer>
+      </div>
+
+      <main className="main-overlay lg:py-8">{props.children}</main>
+
+      <div className="h-64" />
+      <Footer />
+    </div>
+  )
+}

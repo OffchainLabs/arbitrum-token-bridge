@@ -15,9 +15,20 @@ module.exports = {
         'main-bg': '#E5E5E5',
         tokenPill: '#EDF4FF',
         v3: {
-          'arbitrum-dark-blue': '#2D374B',
-          'ethereum-dark-purple': '#454A75',
           dark: '#1A1C1D',
+          // Brick
+          brick: '#FFDDD6',
+          'brick-dark': '#762716',
+          // Cyan
+          cyan: '#DDEAFA',
+          'cyan-dark': '#11365E',
+          // Lime
+          lime: '#E8FFE4',
+          'lime-dark': '#31572A',
+          // Orange
+          orange: '#FFEED3',
+          'orange-dark': '#60461F',
+          // Gray
           'gray-1': '#FAFAFA',
           'gray-2': '#F4F4F4',
           'gray-3': '#EEEEEE',
@@ -28,7 +39,10 @@ module.exports = {
           'gray-8': '#AEAEAE',
           'gray-9': '#999999',
           'gray-10': '#6D6D6D',
-          'gray-11': '#212121'
+          'gray-11': '#212121',
+          // Networks
+          'arbitrum-dark-blue': '#2D374B',
+          'ethereum-dark-purple': '#454A75'
         }
       },
       fontFamily: {

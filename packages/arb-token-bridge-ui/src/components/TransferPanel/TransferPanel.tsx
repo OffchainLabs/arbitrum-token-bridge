@@ -440,10 +440,10 @@ const TransferPanel = (): JSX.Element => {
 
   return (
     <>
-      <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto mb-4 min-h-10">
+      <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto">
         <div>
           {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-            <div>
+            <div className="py-2">
               <StatusBadge showDot={false}>
                 <div className="mr-2">
                   <Loader
@@ -458,7 +458,7 @@ const TransferPanel = (): JSX.Element => {
             </div>
           )}
           {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
-            <div>
+            <div className="py-2">
               <StatusBadge variant="red">
                 Loading pending withdrawals failed
               </StatusBadge>
@@ -470,8 +470,8 @@ const TransferPanel = (): JSX.Element => {
         )}
       </div>
 
-      <div className="flex flex-col lg:flex-row bg-transparent lg:bg-white max-w-screen-lg mx-auto rounded-xl p-0 lg:p-6 space-y-6 lg:space-y-0 lg:space-x-6">
-        <div className="transfer-panel-network-box-wrapper flex flex-col">
+      <div className="flex flex-col lg:flex-row bg-white max-w-screen-lg mx-auto lg:rounded-xl space-y-6 lg:space-y-0 lg:space-x-6 transfer-panel-drop-shadow">
+        <div className="transfer-panel-network-box-wrapper flex flex-col px-8 lg:px-0 lg:pl-8 pt-6">
           <NetworkBox
             isL1
             amount={l1Amount}
@@ -506,7 +506,7 @@ const TransferPanel = (): JSX.Element => {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex flex-col justify-between w-full"
+          className="flex flex-col justify-between w-full bg-v3-gray-3 lg:bg-white px-8 lg:px-0 lg:pr-8 py-6"
         >
           <div className="hidden lg:block">
             <span className="text-2xl">Summary</span>
@@ -616,7 +616,7 @@ const TransferPanel = (): JSX.Element => {
               onClick={showModalOnDeposit}
               disabled={disableDeposit}
               isLoading={transferring}
-              className="h-16 rounded-2xl lg:rounded-xl text-2xl bg-v3-arbitrum-dark-blue font-normal text-white"
+              className="h-16 rounded-xl text-xl bg-v3-arbitrum-dark-blue font-normal text-white"
             >
               Move funds to {l2Network?.name}
             </Button>
@@ -626,7 +626,7 @@ const TransferPanel = (): JSX.Element => {
               disabled={disableWithdrawal}
               variant="navy"
               isLoading={transferring}
-              className="h-16 rounded-2xl lg:rounded-xl text-2xl bg-v3-ethereum-dark-purple font-normal text-white"
+              className="h-16 rounded-xl text-xl bg-v3-ethereum-dark-purple font-normal text-white"
             >
               Move funds to {l1Network?.name}
             </Button>
