@@ -1,11 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
-import { BigNumber } from 'ethers'
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
 import { useAppState } from 'src/state'
 import { DepositStatus } from '../../state/app/state'
 import { TxnType } from 'token-bridge-sdk'
-import { L1ToL2MessageWriter, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus, L1TransactionReceipt } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -91,7 +90,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const {
-    l1: { network: l1Network },
+    l1: { network: l1Network, signer: l1Signer },
     l2: { network: l2Network, signer: l2Signer },
     isConnectedToArbitrum
   } = useNetworksAndSigners()
@@ -109,20 +108,29 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
   const redeemRetryable = useCallback(
     async (tx: MergedTransaction) => {
-      if (typeof l2Signer === 'undefined') {
+      if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
         return
       }
 
       const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
 
-      if (!retryableCreationTxID)
+      if (!retryableCreationTxID) {
         throw new Error("Can't redeem; txid not found")
+      }
 
-      const l1ToL2Msg = L1ToL2MessageWriter.fromRetryableCreationId(
-        l2Signer,
-        retryableCreationTxID,
-        BigNumber.from(tx.seqNum)
+      const l1TxReceipt = new L1TransactionReceipt(
+        await l1Signer.provider.getTransactionReceipt(tx.txId)
       )
+
+      const messages = await l1TxReceipt.getL1ToL2Messages(l2Signer)
+      const l1ToL2Msg = messages.find(
+        m => m.retryableCreationId === retryableCreationTxID
+      )
+
+      if (!l1ToL2Msg) {
+        throw new Error("Can't redeem; message not found")
+      }
+
       const res = await l1ToL2Msg.redeem()
       await res.wait()
 

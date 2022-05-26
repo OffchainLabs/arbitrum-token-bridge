@@ -32,7 +32,8 @@ import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 
 import {
   useNetworksAndSigners,
-  UseNetworksAndSignersStatus
+  UseNetworksAndSignersStatus,
+  NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { ExternalProvider } from '@ethersproject/providers'
@@ -360,31 +361,31 @@ function Routes() {
   )
 }
 
-function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
-  const { status } = useNetworksAndSigners()
-
+function ConnectionFallback({
+  status
+}: {
+  status:
+    | UseNetworksAndSignersStatus.NOT_SUPPORTED
+    | UseNetworksAndSignersStatus.NOT_CONNECTED
+}): JSX.Element {
   if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
     return <NoMetamaskIndicator />
   }
 
-  if (status === UseNetworksAndSignersStatus.NOT_SUPPORTED) {
-    return (
-      <div>
-        <div className="mb-4">
-          You are on the wrong network. Read our tutorial below on how to switch
-          networks.
-        </div>
-        <iframe
-          title="Bridge Tutorial"
-          src="https://arbitrum.io/bridge-tutorial/"
-          width="100%"
-          height={500}
-        />
+  return (
+    <div>
+      <div className="mb-4">
+        You are on the wrong network. Read our tutorial below on how to switch
+        networks.
       </div>
-    )
-  }
-
-  return children
+      <iframe
+        title="Bridge Tutorial"
+        src="https://arbitrum.io/bridge-tutorial/"
+        width="100%"
+        height={500}
+      />
+    </div>
+  )
 }
 
 const App = (): JSX.Element => {
@@ -392,13 +393,19 @@ const App = (): JSX.Element => {
 
   return (
     <Provider value={overmind}>
-      <Layout>
-        <NetworkReady>
+      <NetworksAndSignersProvider
+        fallback={status => (
+          <Layout>
+            <ConnectionFallback status={status} />
+          </Layout>
+        )}
+      >
+        <Layout>
           <Injector>
             <Routes />
           </Injector>
-        </NetworkReady>
-      </Layout>
+        </Layout>
+      </NetworksAndSignersProvider>
     </Provider>
   )
 }

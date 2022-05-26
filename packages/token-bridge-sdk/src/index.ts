@@ -2,6 +2,7 @@ export * from './hooks/useArbTokenBridge'
 export type {
   ArbTokenBridge,
   BridgeBalance,
+  L2ToL1EventResult,
   L2ToL1EventResultPlus,
   BridgeToken,
   ERC20BridgeToken,
@@ -30,3 +31,4 @@ export type { L1ToL2MessageData } from './hooks/useTransactions'
 export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export { validateTokenList } from './util/index'
+export { getUniqueIdOrHashFromEvent } from './util/migration'
