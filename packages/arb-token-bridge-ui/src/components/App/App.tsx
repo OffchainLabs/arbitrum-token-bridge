@@ -32,9 +32,18 @@ import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 
 import {
   useNetworksAndSigners,
-  UseNetworksAndSignersStatus
+  UseNetworksAndSignersStatus,
+  NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
+import { ExternalProvider } from '@ethersproject/providers'
+
+type Web3Provider = ExternalProvider & {
+  isMetaMask?: boolean
+  isImToken?: boolean
+}
+const isSwitchChainSupported = (provider: Web3Provider) =>
+  provider && (provider.isMetaMask || provider.isImToken)
 
 const NoMetamaskIndicator = (): JSX.Element => {
   const { connect } = useWallet()
@@ -247,13 +256,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const changeNetwork = async (network: L1Network | L2Network) => {
         const chainId = network.chainID
         const hexChainId = hexValue(BigNumber.from(chainId))
-        const metamask = library?.provider
+        const provider = library?.provider
 
-        if (metamask && metamask.isMetaMask) {
+        if (isSwitchChainSupported(provider)) {
           console.log('Attempting to switch to chain', chainId)
           try {
             // @ts-ignore
-            await metamask.request({
+            await provider.request({
               method: 'wallet_switchEthereumChain',
               params: [
                 {
@@ -264,10 +273,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           } catch (err: any) {
             if (err.code === 4902) {
               console.log(
-                `Network ${chainId} not yet added to metamask; adding now:`
+                `Network ${chainId} not yet added to wallet; adding now:`
               )
               // @ts-ignore
-              await metamask.request({
+              await provider.request({
                 method: 'wallet_addEthereumChain',
                 params: [
                   {
@@ -288,7 +297,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
             }
           }
         } else {
-          // provider is not metamask, so no `wallet_switchEthereumChain` support
+          // if no `wallet_switchEthereumChain` support
           console.log(
             'Not sure if current provider supports wallet_switchEthereumChain'
           )
@@ -352,31 +361,31 @@ function Routes() {
   )
 }
 
-function NetworkReady({ children }: { children: JSX.Element }): JSX.Element {
-  const { status } = useNetworksAndSigners()
-
+function ConnectionFallback({
+  status
+}: {
+  status:
+    | UseNetworksAndSignersStatus.NOT_SUPPORTED
+    | UseNetworksAndSignersStatus.NOT_CONNECTED
+}): JSX.Element {
   if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
     return <NoMetamaskIndicator />
   }
 
-  if (status === UseNetworksAndSignersStatus.NOT_SUPPORTED) {
-    return (
-      <div>
-        <div className="mb-4">
-          You are on the wrong network. Read our tutorial below on how to switch
-          networks.
-        </div>
-        <iframe
-          title="Bridge Tutorial"
-          src="https://arbitrum.io/bridge-tutorial/"
-          width="100%"
-          height={500}
-        />
+  return (
+    <div>
+      <div className="mb-4">
+        You are on the wrong network. Read our tutorial below on how to switch
+        networks.
       </div>
-    )
-  }
-
-  return children
+      <iframe
+        title="Bridge Tutorial"
+        src="https://arbitrum.io/bridge-tutorial/"
+        width="100%"
+        height={500}
+      />
+    </div>
+  )
 }
 
 const App = (): JSX.Element => {
@@ -384,13 +393,19 @@ const App = (): JSX.Element => {
 
   return (
     <Provider value={overmind}>
-      <Layout>
-        <NetworkReady>
+      <NetworksAndSignersProvider
+        fallback={status => (
+          <Layout>
+            <ConnectionFallback status={status} />
+          </Layout>
+        )}
+      >
+        <Layout>
           <Injector>
             <Routes />
           </Injector>
-        </NetworkReady>
-      </Layout>
+        </Layout>
+      </NetworksAndSignersProvider>
     </Provider>
   )
 }

@@ -2,11 +2,12 @@ import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
-import { L1ToL2MessageReader, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
-  | { type: 'SET_SUCCESS'; txID: string; seqNum?: number }
+  | { type: 'SET_SUCCESS'; txID: string }
   | { type: 'SET_FAILURE'; txID: string }
   | { type: 'SET_INITIAL_TRANSACTIONS'; transactions: Transaction[] }
   | { type: 'CLEAR_PENDING' }
@@ -79,7 +80,6 @@ type TransactionBase = {
   l1NetworkID: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
-  seqNum?: number // for l1-initiati
   l1ToL2MsgData?: L1ToL2MessageData
 }
 
@@ -101,12 +101,7 @@ export interface DepositTransaction extends Transaction {
   type: 'deposit' | 'deposit-l1'
 }
 
-function updateStatusAndSeqNum(
-  state: Transaction[],
-  status: TxnStatus,
-  txID: string,
-  seqNum?: number
-) {
+function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
   if (index === -1) {
@@ -116,9 +111,6 @@ function updateStatusAndSeqNum(
   const newTxn = {
     ...newState[index],
     status
-  }
-  if (seqNum) {
-    newTxn.seqNum = seqNum
   }
   newState[index] = newTxn
   return newState
@@ -222,16 +214,16 @@ function reducer(state: Transaction[], action: Action) {
       return state.filter(txn => txn.txID !== action.txID)
     }
     case 'SET_SUCCESS': {
-      return updateStatusAndSeqNum(state, 'success', action.txID, action.seqNum)
+      return updateStatus(state, 'success', action.txID)
     }
     case 'SET_FAILURE': {
-      return updateStatusAndSeqNum(state, 'failure', action.txID)
+      return updateStatus(state, 'failure', action.txID)
     }
     case 'CLEAR_PENDING': {
       return state.filter(txn => txn.status !== 'pending')
     }
     case 'CONFIRM_TRANSACTION': {
-      return updateStatusAndSeqNum(state, 'confirmed', action.txID)
+      return updateStatus(state, 'confirmed', action.txID)
     }
     case 'SET_BLOCK_NUMBER': {
       return updateBlockNumber(state, action.txID, action.blockNumber)
@@ -328,7 +320,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const fetchAndUpdateL1ToL2MsgStatus = async (
     txID: string,
-    l1ToL2Msg: L1ToL2MessageReader,
+    l1ToL2Msg: IL1ToL2MessageReader,
     isEthDeposit: boolean,
     currentStatus: L1ToL2MessageStatus
   ) => {
@@ -369,11 +361,10 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const setTransactionSuccess = (txID: string, seqNum?: number) => {
+  const setTransactionSuccess = (txID: string) => {
     return dispatch({
       type: 'SET_SUCCESS',
-      txID: txID,
-      seqNum: seqNum
+      txID: txID
     })
   }
   const setTransactionBlock = (txID: string, blockNumber?: number) => {
@@ -416,7 +407,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateTransaction = (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    seqNum?: number,
     l1ToL2MsgData?: L1ToL2MessageData
   ) => {
     if (!txReceipt.transactionHash) {
@@ -430,7 +420,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         break
       }
       case 1: {
-        setTransactionSuccess(txReceipt.transactionHash, seqNum)
+        setTransactionSuccess(txReceipt.transactionHash)
         break
       }
       default:
