@@ -161,8 +161,16 @@ input:checked + .slider:before {
     min-width: 540px;
   }
 
+  .account-popover-drop-shadow {
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
   .lg\:max-width-448px {
     max-width: 448px;
+  }
+
+  .lg\:min-w-896px {
+    min-width: 896px;
   }
 }
 
@@ -171,5 +179,5 @@ input:checked + .slider:before {
 }
 
 .arb-hover {
-  @apply hover:opacity-75 transition duration-200;
+  @apply focus:opacity-75 hover:opacity-75 transition duration-200;
 }

@@ -104,7 +104,7 @@ export function Layout(props: LayoutProps) {
   return (
     <div
       style={{ backgroundImage: 'url(/images/space.jpg)' }}
-      className="flex flex-col justify-between min-h-screen bg-cover bg-no-repeat"
+      className="flex flex-col min-h-screen bg-cover bg-no-repeat"
     >
       <div>
         <Header />
@@ -115,7 +115,7 @@ export function Layout(props: LayoutProps) {
         </NotificationContainer>
       </div>
 
-      <main className="main-overlay lg:py-8">{props.children}</main>
+      <main className="flex-grow main-overlay lg:py-8">{props.children}</main>
 
       <div className="h-64" />
       <Footer />

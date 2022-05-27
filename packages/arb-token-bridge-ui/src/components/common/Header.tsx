@@ -3,7 +3,7 @@ import { Disclosure } from '@headlessui/react'
 
 import { ExternalLink } from './ExternalLink'
 import { HeaderMenuDesktop, HeaderMenuMobile } from './HeaderMenu'
-import { HeaderAccountButton } from './HeaderAccountButton'
+import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderNetworkInformation } from './HeaderNetworkInformation'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
@@ -118,7 +118,7 @@ export function Header() {
         <div className="flex items-center lg:space-x-6 xl:space-x-12">
           <a href="/" className="flex flex-col items-center arb-hover">
             <img
-              src="/images/ArbitrumHorizontalLogoWhiteText.png"
+              src={`/images/ArbitrumHorizontal${l1Network?.chainID || 1}.png`}
               alt="Arbitrum"
               className="w-56 lg:w-60 -ml-2 lg:ml-0"
             />
@@ -170,7 +170,7 @@ export function Header() {
         </Disclosure>
         <div className="hidden lg:flex items-center lg:space-x-4">
           <HeaderNetworkInformation />
-          <HeaderAccountButton />
+          <HeaderAccountPopover />
           <div className="flex flex-row space-x-4">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"
@@ -214,7 +214,7 @@ function HeaderMobile() {
         </Disclosure.Button>
       </div>
       <div className="flex flex-col items-center space-y-3 bg-v3-arbitrum-dark-blue pt-4 min-h-screen">
-        <HeaderAccountButton />
+        <HeaderAccountPopover />
         <HeaderNetworkInformation />
         <HeaderMenuMobile
           items={explorersLinks.map(explorer => ({

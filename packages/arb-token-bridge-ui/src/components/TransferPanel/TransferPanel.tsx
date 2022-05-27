@@ -443,17 +443,17 @@ const TransferPanel = (): JSX.Element => {
       <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto">
         <div>
           {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-            <div className="py-2">
-              <StatusBadge showDot={false}>
-                <div className="mr-2">
+            <div className="flex flex-row py-2">
+              <StatusBadge>
+                <div className="flex space-x-2 items-center">
                   <Loader
                     type="Oval"
                     color="rgb(45, 55, 75)"
                     height={14}
                     width={14}
                   />
+                  <span>Loading pending withdrawals</span>
                 </div>
-                Loading pending withdrawals
               </StatusBadge>
             </div>
           )}

@@ -44,32 +44,30 @@ export function HeaderNetworkInformation() {
 
     default:
       return (
-        <div className="py-1 lg:py-0">
-          <div className="flex flex-row space-x-3 items-center px-4 py-2 lg:bg-v3-dark rounded-full">
-            {isConnectedToArbitrum ? (
-              <>
-                <img
-                  src="/images/Arbitrum_Symbol_-_Full_color_-_White_background.svg"
-                  alt={network?.name}
-                  className="h-8"
-                />
-                <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
-                  {network?.name}
-                </span>
-              </>
-            ) : (
-              <>
-                <img
-                  src="/icons/ethereum.png"
-                  alt={network?.name}
-                  className="h-8"
-                />
-                <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
-                  {network?.name}
-                </span>
-              </>
-            )}
-          </div>
+        <div className="w-full flex flex-row space-x-3 items-center justify-center px-3 py-3 lg:py-2 lg:bg-v3-dark rounded-full">
+          {isConnectedToArbitrum ? (
+            <>
+              <img
+                src="/images/Arbitrum_Symbol_-_Full_color_-_White_background.svg"
+                alt={network?.name}
+                className="h-8"
+              />
+              <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
+                {network?.name}
+              </span>
+            </>
+          ) : (
+            <>
+              <img
+                src="/icons/ethereum.png"
+                alt={network?.name}
+                className="h-8"
+              />
+              <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
+                {network?.name}
+              </span>
+            </>
+          )}
         </div>
       )
   }

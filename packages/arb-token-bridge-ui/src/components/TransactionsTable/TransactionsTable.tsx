@@ -1,18 +1,17 @@
 import { useState, useMemo, useCallback } from 'react'
 import dayjs from 'dayjs'
 import Countdown from 'react-countdown'
-import { useAppState } from 'src/state'
-import { DepositStatus } from '../../state/app/state'
 import { TxnType } from 'token-bridge-sdk'
 import { L1ToL2MessageStatus, L1TransactionReceipt } from '@arbitrum/sdk'
 import Loader from 'react-loader-spinner'
 
+import { useAppState } from '../../state'
+import { DepositStatus } from '../../state/app/state'
 import { MergedTransaction } from '../../state/app/state'
 import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
-
 import { useAppContext } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
@@ -30,7 +29,7 @@ const depositStatusDisplayText = (depositStatus: DepositStatus) => {
     case DepositStatus.L2_PENDING:
       return 'l1 confirmed, waiting on l2...'
     case DepositStatus.L2_SUCCESS:
-      return 'success'
+      return 'Success'
     case DepositStatus.L2_FAILURE:
       return 'l2 txn failed; try re-executing'
     case DepositStatus.CREATION_FAILED:
@@ -305,11 +304,35 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
         {actionDisplayText(tx.direction)}
       </td>
+
       <td className="px-4 py-6  whitespace-nowrap text-sm ">
         <StatusBadge variant={getStatusVariantColor(tx)}>
           {statusDisplayText(tx)}
         </StatusBadge>
       </td>
+
+      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
+        {!tx.isWithdrawal && (
+          <>
+            {(tx.createdAt && tx.status === 'pending') ||
+            tx.depositStatus === DepositStatus.L2_PENDING ? (
+              <PendingCountdown tx={tx} />
+            ) : (
+              <span>{tx.resolvedAt ?? tx.createdAt ?? 'N/A'}</span>
+            )}
+          </>
+        )}
+        {tx.isWithdrawal && tx.status === 'Unconfirmed' && (
+          <>
+            <span>Unconfirmed: ETA: {calcEtaDisplay()}</span>
+          </>
+        )}
+      </td>
+
+      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-black">
+        {tx.value} {tx.asset.toUpperCase()}
+      </td>
+
       <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
         {tx.isWithdrawal && tx.status === 'Confirmed' && (
           <div className="relative group">
@@ -361,105 +384,65 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
           </div>
         )}
       </td>
-      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
-        {!tx.isWithdrawal && (
-          <>
-            {(tx.createdAt && tx.status === 'pending') ||
-            tx.depositStatus === DepositStatus.L2_PENDING ? (
-              <PendingCountdown tx={tx} />
-            ) : (
-              <span>{tx.resolvedAt ?? tx.createdAt ?? 'N/A'}</span>
-            )}
-          </>
-        )}
-        {tx.isWithdrawal && tx.status === 'Unconfirmed' && (
-          <>
-            <span>Unconfirmed: ETA: {calcEtaDisplay()}</span>
-          </>
-        )}
-      </td>
+
       <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
         {renderTxIDDisplay(tx)}
-      </td>
-      <td className="px-4 py-6 whitespace-nowrap text-xs leading-4 font-medium text-navy">
-        <span className="bg-tokenPill rounded-lg py-1 px-3">{tx.asset}</span>
-      </td>
-      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
-        {tx.value}
       </td>
     </tr>
   )
 }
 
-const TransactionsTable = ({
+export const TransactionsTable = ({
   transactions,
   overflowX = true
 }: TransactionsTableProps): JSX.Element => {
   return (
-    <div>
-      <div className="flex flex-col shadow-sm">
-        <div className={`-my-2 ${overflowX ? 'overflow-x-auto' : ''}`}>
-          <div className="py-2 align-middle inline-block min-w-full ">
-            <div className="overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Action
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Redeem
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Estimated Arrival Time
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Txid
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Asset
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Value
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {transactions.map(tx => (
-                    <TableRow tx={tx} key={tx.txId} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <table className="w-full bg-gray-200">
+      <thead>
+        <tr>
+          <th
+            scope="col"
+            className="px-6 py-3 text-left text-sm font-light text-v3-gray-10"
+          >
+            Action
+          </th>
+          <th
+            scope="col"
+            className="px-4 py-3 text-left text-sm font-light text-v3-gray-10"
+          >
+            Status
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 text-left text-sm font-light text-v3-gray-10"
+          >
+            Time
+          </th>
+          <th
+            scope="col"
+            className="px-4 py-3 text-left text-sm font-light text-v3-gray-10"
+          >
+            Amount
+          </th>
+          <th
+            scope="col"
+            className="px-2 py-3 text-left text-sm font-light text-v3-gray-10"
+          >
+            Redeem
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 text-left text-sm font-light text-v3-gray-10"
+          >
+            TxID
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {transactions.map(tx => (
+          <TableRow key={tx.txId} tx={tx} />
+        ))}
+      </tbody>
+    </table>
   )
 }
-
-export { TransactionsTable }
