@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
@@ -18,14 +18,45 @@ import {
 import { useAppState } from '../../state'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 
+type ENSInfo = { name: string | null; avatar: string | null }
+const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
+
+function Avatar({ src, className }: { src: string | null; className: string }) {
+  const commonClassName = 'rounded-full border border-white'
+
+  if (!src) {
+    return <div className={`bg-v3-orange ${commonClassName} ${className}`} />
+  }
+
+  return (
+    <img alt="Avatar" src={src} className={`${commonClassName} ${className}`} />
+  )
+}
+
 export function HeaderAccountPopover() {
   const { connect, disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const [, copyToClipboard] = useCopyToClipboard()
-
   const {
     app: { depositsTransformed, withdrawalsTransformed }
   } = useAppState()
+
+  const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
+
+  useEffect(() => {
+    async function resolveENSInfo() {
+      if (account && l1.signer) {
+        const [name, avatar] = await Promise.all([
+          l1.signer.provider.lookupAddress(account),
+          l1.signer.provider.getAvatar(account)
+        ])
+
+        setENSInfo({ name, avatar })
+      }
+    }
+
+    resolveENSInfo()
+  }, [account, l1.signer])
 
   const currentNetwork = useMemo(() => {
     if (status !== UseNetworksAndSignersStatus.CONNECTED) {
@@ -64,31 +95,29 @@ export function HeaderAccountPopover() {
   }
 
   return (
-    <Popover className="w-full relative z-50">
-      <div className="w-full flex justify-center">
-        <Popover.Button className="arb-hover">
-          <div className="py-3 lg:py-0">
-            <div className="flex flex-row space-x-3 items-center lg:px-3 lg:py-2 lg:bg-v3-dark rounded-full">
-              <div className="h-8 w-8 bg-v3-orange rounded-full border border-white" />
-              <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
-                {accountShort}
-              </span>
-            </div>
+    <Popover className="relative z-50 max-w-full">
+      <Popover.Button className="flex w-full justify-center lg:w-max arb-hover">
+        <div className="py-3 lg:py-0">
+          <div className="flex flex-row space-x-3 items-center lg:px-3 lg:py-2 lg:bg-v3-dark rounded-full">
+            <Avatar src={ensInfo.avatar} className="h-8 w-8" />
+            <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
+              {ensInfo.name || accountShort}
+            </span>
           </div>
-        </Popover.Button>
-      </div>
+        </div>
+      </Popover.Button>
       <Transition>
-        <Popover.Panel className="flex flex-col relative lg:absolute right-0 h-96 lg:min-w-896px lg:mt-4 bg-white account-popover-drop-shadow rounded-md">
+        <Popover.Panel className="flex flex-col relative lg:absolute right-0 h-96 lg:min-w-896px lg:mt-4 bg-white account-popover-drop-shadow lg:rounded-md">
           <div className="h-24 bg-v3-arbitrum-dark-blue p-4">
             <div className="flex flex-row justify-between">
               <button
                 className="hidden lg:flex flex-row space-x-4 items-center arb-hover"
-                onClick={() => copyToClipboard(account || '')}
+                onClick={() => copyToClipboard(ensInfo.name || account || '')}
               >
-                <div className="h-14 w-14 bg-v3-orange rounded-full" />
+                <Avatar src={ensInfo.avatar} className="h-14 w-14" />
                 <div className="flex flex-row items-center space-x-3">
                   <span className="text-white text-2xl font-normal">
-                    {accountShort}
+                    {ensInfo.name || accountShort}
                   </span>
                   <ClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
