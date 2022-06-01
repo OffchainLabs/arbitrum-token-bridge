@@ -1,8 +1,8 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
-import { useMedia } from 'react-use'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
+import { XIcon } from '@heroicons/react/outline'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -13,7 +13,6 @@ import {
 } from '../../tokenLists'
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
-import { Modal } from '../common/Modal'
 import { SafeImage } from '../common/SafeImage'
 import TokenBlacklistedDialog from './TokenBlacklistedDialog'
 import TokenConfirmationDialog from './TokenConfirmationDialog'
@@ -38,10 +37,15 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex rounded-full w-4 sm:w-8 h-4 sm:h-8 bg-navy items-center justify-center text-white text-sm font-medium">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-sm font-medium text-white">
       ?
     </div>
   )
+}
+
+function shortenAddress(address: string) {
+  const len = address.length
+  return `${address.substring(0, 5)}...${address.substring(len - 4, len)}`
 }
 
 interface TokenRowProps {
@@ -100,14 +104,17 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return 'Added by User'
     }
 
-    if (tokenLists.length < 3) {
+    if (tokenLists.length < 2) {
       return tokenListIdsToNames(tokenLists)
     }
 
-    const firstTwoLists = tokenLists.slice(0, 2)
-    const more = tokenLists.length - 2
+    const firstList = tokenLists.slice(0, 1)
+    const more = tokenLists.length - 1
 
-    return tokenListIdsToNames(firstTwoLists) + ` and ${more} more`
+    return (
+      tokenListIdsToNames(firstList) +
+      ` and ${more} more list${more > 1 ? 's' : ''}`
+    )
   }, [token])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
@@ -145,35 +152,35 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
-      className="w-full flex flex-col items-center sm:flex-row justify-center sm:justify-between p-2 sm:px-6 sm:py-3 bg-white hover:bg-gray-100"
+      className="flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100"
     >
-      <div className="w-full flex flex-row items-center justify-start space-x-2 sm:space-x-4">
+      <div className="flex w-full flex-row items-center justify-start space-x-4">
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="rounded-full w-4 sm:w-8 h-4 sm:h-8 flex-grow-0"
+          className="h-8 w-8 flex-grow-0 rounded-full"
           fallback={<TokenLogoFallback />}
         />
 
         <div className="flex flex-col items-start truncate">
           <div className="flex items-center space-x-2">
-            <span className="font-medium text-xs sm:text-base text-gray-900">
+            <span className="text-base font-medium text-gray-900">
               {tokenSymbol}
             </span>
             <span className="text-xs text-gray-500">{tokenName}</span>
           </div>
           {token && (
-            <div className="flex flex-col items-start sm:space-y-1">
+            <div className="flex flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
                   href={`${l1Network?.explorerUrl}/token/${token.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs underline text-dark-blue"
+                  className="text-xs text-dark-blue underline"
                   onClick={e => e.stopPropagation()}
                 >
-                  {token.address.toLowerCase()}
+                  {shortenAddress(token.address).toLowerCase()}
                 </a>
               ) : (
                 <>
@@ -182,10 +189,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                       href={`${l2Network?.explorerUrl}/token/${token.l2Address}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs underline text-dark-blue"
+                      className="text-xs text-dark-blue underline"
                       onClick={e => e.stopPropagation()}
                     >
-                      {token.l2Address?.toLowerCase()}
+                      {token.l2Address
+                        ? shortenAddress(token.l2Address).toLowerCase()
+                        : ''}
                     </a>
                   ) : (
                     <span className="text-xs text-gray-900">
@@ -194,7 +203,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                   )}
                 </>
               )}
-              <span className="text-xs text-gray-500 font-normal">
+              <span className="text-xs font-normal text-gray-500">
                 {tokenListInfo}
               </span>
             </div>
@@ -205,7 +214,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       {tokenIsBridgeable && (
         <>
           {tokenIsAddedToTheBridge ? (
-            <span className="flex items-center text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+            <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
               {tokenBalance ? (
                 formatUnits(tokenBalance, token ? token.decimals : 18)
               ) : (
@@ -221,9 +230,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {tokenSymbol}
             </span>
           ) : (
-            <span className="text-xs sm:text-sm text-dark-blue font-medium">
-              Import
-            </span>
+            <span className="text-sm font-medium text-dark-blue">Import</span>
           )}
         </>
       )}
@@ -231,7 +238,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   )
 }
 
-export const TokenListBody = () => {
+function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -267,7 +274,7 @@ export const TokenListBody = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6 border border-gray-300 rounded-md p-6">
+    <div className="flex flex-col gap-6 rounded-md border border-gray-300 p-6">
       {listsToShow.map(tokenList => {
         const isActive = Object.keys(bridgeTokens).some(address => {
           const token = bridgeTokens[address]
@@ -290,7 +297,7 @@ export const TokenListBody = () => {
               <img
                 src={tokenList.logoURI}
                 alt={`${tokenList.name} Logo`}
-                className="rounded-full w-6 h-6"
+                className="h-6 w-6 rounded-full"
               />
               <span className="text-sm text-gray-900">{tokenList.name}</span>
             </div>
@@ -303,7 +310,7 @@ export const TokenListBody = () => {
 
 const ETH_IDENTIFIER = 'eth.address'
 
-export function TokenModalBody({
+function TokensPanel({
   onTokenSelected
 }: {
   onTokenSelected: (token: SearchableToken | null) => void
@@ -314,8 +321,6 @@ export function TokenModalBody({
       isDepositMode
     }
   } = useAppState()
-
-  const isDesktop = useMedia('(min-width: 640px)')
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -437,7 +442,7 @@ export function TokenModalBody({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col space-y-3">
       <TokenConfirmationDialog
         onAdd={storeNewToken}
         open={confirmationOpen}
@@ -454,13 +459,14 @@ export function TokenModalBody({
             value={newToken}
             onChange={e => setNewToken(e.target.value)}
             placeholder="Search by token name, symbol, L1 or L2 address"
-            className="text-sm text-dark-blue shadow-sm border border-gray-300 rounded-md px-2 w-full h-10"
+            className="h-10 w-full rounded-md border border-v3-gray-4 px-2 text-sm text-v3-dark"
           />
 
           <Button
             variant="white"
             type="submit"
             disabled={newToken === '' || !isAddress(newToken)}
+            className="h-10 w-auto border-v3-gray-4 text-v3-gray-9"
           >
             {isAddingToken ? (
               <Loader
@@ -475,12 +481,13 @@ export function TokenModalBody({
           </Button>
         </div>
       </form>
-      <div className="flex flex-col overflow-auto max-h-tokenList border border-gray-300 rounded-md">
+      <div className="shadow-select-token-list flex flex-grow flex-col overflow-auto rounded-md border border-v3-gray-4">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List
               width={width - 2}
-              height={isDesktop ? 380 : 200}
+              // Make height equal to 6 rows
+              height={6 * 84}
               rowCount={tokensToShow.length}
               rowHeight={84}
               rowRenderer={virtualizedProps => {
@@ -516,15 +523,13 @@ export function TokenModalBody({
   )
 }
 
-const TokenModal = ({
-  isOpen,
-  setIsOpen,
+export function TokenModal({
+  close,
   onImportToken
 }: {
-  isOpen: boolean
-  setIsOpen: (open: boolean) => void
+  close: () => void
   onImportToken: (address: string) => void
-}): JSX.Element => {
+}) {
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens }
@@ -536,13 +541,8 @@ const TokenModal = ({
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
-  const modalTitle = useMemo(
-    () => (currentPanel === Panel.TOKENS ? 'Select Token' : 'Token Lists'),
-    [currentPanel]
-  )
-
   async function selectToken(_token: SearchableToken | null) {
-    setIsOpen(false)
+    close()
 
     if (_token === null) {
       setSelectedToken(null)
@@ -578,49 +578,59 @@ const TokenModal = ({
     }
   }
 
+  if (currentPanel === Panel.TOKENS) {
+    return (
+      <>
+        <div className="flex flex-row items-center justify-between pb-4">
+          <span className="text-xl font-medium">Select Token</span>
+          <button className="arb-hover" onClick={close}>
+            <XIcon className="h-6 w-6 text-v3-gray-7" />
+          </button>
+        </div>
+        <TokensPanel onTokenSelected={selectToken} />
+        <div className="flex justify-end pt-6">
+          <button
+            className="text-sm font-medium text-dark-blue"
+            onClick={() => setCurrentPanel(Panel.LISTS)}
+          >
+            Manage token lists
+          </button>
+        </div>
+      </>
+    )
+  }
+
   return (
-    <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
-      {currentPanel === Panel.TOKENS ? (
-        <>
-          <TokenModalBody onTokenSelected={selectToken} />
-          <div className="flex justify-end pt-6">
-            <button
-              className="text-sm text-dark-blue font-medium"
-              onClick={() => setCurrentPanel(Panel.LISTS)}
-            >
-              Manage token lists
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="flex justify-start pb-6">
-            <button
-              className="flex items-center space-x-2 text-sm text-dark-blue font-medium"
-              onClick={() => setCurrentPanel(Panel.TOKENS)}
-            >
-              <svg
-                width="12"
-                height="10"
-                viewBox="0 0 12 10"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M5.80473 0.528514C6.06508 0.788864 6.06508 1.21097 5.80473 1.47132L2.9428 4.33325H10.6667C11.0348 4.33325 11.3333 4.63173 11.3333 4.99992C11.3333 5.36811 11.0348 5.66658 10.6667 5.66658H2.9428L5.80473 8.52851C6.06508 8.78886 6.06508 9.21097 5.80473 9.47132C5.54438 9.73167 5.12227 9.73167 4.86192 9.47132L0.861919 5.47132C0.736894 5.3463 0.666656 5.17673 0.666656 4.99992C0.666656 4.82311 0.736894 4.65354 0.861919 4.52851L4.86192 0.528514C5.12227 0.268165 5.54438 0.268165 5.80473 0.528514Z"
-                  fill="#2D49A7"
-                />
-              </svg>
-              <span>Back to Select Token</span>
-            </button>
-          </div>
-          <TokenListBody />
-        </>
-      )}
-    </Modal>
+    <>
+      <div className="flex flex-row items-center justify-between pb-4">
+        <span className="text-xl font-medium">Token Lists</span>
+        <button className="arb-hover" onClick={close}>
+          <XIcon className="h-6 w-6 text-v3-gray-7" />
+        </button>
+      </div>
+      <div className="flex justify-start pb-6">
+        <button
+          className="flex items-center space-x-2 text-sm font-medium text-dark-blue"
+          onClick={() => setCurrentPanel(Panel.TOKENS)}
+        >
+          <svg
+            width="12"
+            height="10"
+            viewBox="0 0 12 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M5.80473 0.528514C6.06508 0.788864 6.06508 1.21097 5.80473 1.47132L2.9428 4.33325H10.6667C11.0348 4.33325 11.3333 4.63173 11.3333 4.99992C11.3333 5.36811 11.0348 5.66658 10.6667 5.66658H2.9428L5.80473 8.52851C6.06508 8.78886 6.06508 9.21097 5.80473 9.47132C5.54438 9.73167 5.12227 9.73167 4.86192 9.47132L0.861919 5.47132C0.736894 5.3463 0.666656 5.17673 0.666656 4.99992C0.666656 4.82311 0.736894 4.65354 0.861919 4.52851L4.86192 0.528514C5.12227 0.268165 5.54438 0.268165 5.80473 0.528514Z"
+              fill="#2D49A7"
+            />
+          </svg>
+          <span>Back to Select Token</span>
+        </button>
+      </div>
+      <TokenListsPanel />
+    </>
   )
 }
-
-export { TokenModal }

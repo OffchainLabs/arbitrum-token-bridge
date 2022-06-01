@@ -40,7 +40,7 @@ input[type='number'] {
   padding: 0 30px !important;
 }
 .Toastify__toast {
-  @apply bg-gray-200 text-gray-800 text-center;
+  @apply bg-gray-200 text-center text-gray-800;
 }
 
 button,
@@ -169,8 +169,32 @@ input:checked + .slider:before {
     max-width: 448px;
   }
 
+  .lg\:width-458px {
+    width: 458px;
+  }
+
+  .lg\:max-width-490px {
+    max-width: 490px;
+  }
+
   .lg\:min-w-896px {
     min-width: 896px;
+  }
+
+  .shadow-select-token-popover {
+    box-shadow: 0px 4px 12px #9e9e9e;
+  }
+
+  .shadow-select-token-list {
+    box-shadow: 0px 4px 10px rgba(120, 120, 120, 0.25);
+  }
+
+  .shadow-dialog {
+    box-shadow: 0px 4px 12px #acacac;
+  }
+
+  .lg\:bg-dialog {
+    background: rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -179,5 +203,9 @@ input:checked + .slider:before {
 }
 
 .arb-hover {
-  @apply focus:opacity-75 hover:opacity-75 transition duration-200;
+  @apply transition duration-200 hover:opacity-75 focus:opacity-75 disabled:opacity-100;
+}
+
+.top-100px {
+  top: 100px;
 }

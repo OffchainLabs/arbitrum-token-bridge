@@ -149,6 +149,7 @@ export interface ArbTokenBridgeToken {
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (erc20L1Address: string) => Promise<void>
+  approveEstimateGas: (erc20L1Address: string) => Promise<BigNumber>
   approveL2: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,

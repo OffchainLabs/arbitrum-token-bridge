@@ -421,6 +421,19 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
+  const approveTokenEstimateGas = async (erc20L1Address: string) => {
+    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+      erc20L1Address,
+      l1.signer.provider
+    )
+
+    const contract = ERC20__factory.connect(erc20L1Address, l1.signer.provider)
+
+    return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
+      from: walletAddress
+    })
+  }
+
   const approveTokenL2 = async (erc20L1Address: string) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
@@ -1320,6 +1333,7 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       approve: approveToken,
+      approveEstimateGas: approveTokenEstimateGas,
       approveL2: approveTokenL2,
       deposit: depositToken,
       withdraw: withdrawToken,

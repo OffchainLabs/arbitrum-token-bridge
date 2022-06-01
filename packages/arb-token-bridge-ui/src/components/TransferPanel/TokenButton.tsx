@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Popover, Transition } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
 import { resolveTokenImg } from '../../util'
@@ -19,7 +21,6 @@ export function TokenButton(): JSX.Element {
   } = useAppState()
   const { status } = useNetworksAndSigners()
 
-  const [tokenModalOpen, setTokenModalOpen] = useState(false)
   const [tokenImportModalOpen, setTokenImportModalOpen] = useState(false)
   const [tokenToImport, setTokenToImport] = useState<string>()
 
@@ -55,11 +56,6 @@ export function TokenButton(): JSX.Element {
 
   return (
     <>
-      <TokenModal
-        isOpen={tokenModalOpen}
-        setIsOpen={setTokenModalOpen}
-        onImportToken={handleImportToken}
-      />
       {typeof tokenToImport !== 'undefined' && (
         <TokenImportModal
           isOpen={tokenImportModalOpen}
@@ -67,24 +63,30 @@ export function TokenButton(): JSX.Element {
           address={tokenToImport}
         />
       )}
-      <button
-        type="button"
-        onClick={() => setTokenModalOpen(true)}
-        className="px-3 bg-white hover:bg-v3-gray-2 rounded-tl-xl rounded-bl-xl h-full"
-      >
-        <div className="flex items-center space-x-2">
-          {tokenLogo && (
-            <img
-              src={tokenLogo}
-              alt="Token logo"
-              className="rounded-full w-5 lg:w-8 h-5 lg:h-8"
-            />
-          )}
-          <span className="font-light text-lg lg:text-3xl">
-            {selectedToken ? selectedToken.symbol : 'ETH'}
-          </span>
-        </div>
-      </button>
+      <Popover className="h-full">
+        <Popover.Button className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-v3-gray-2">
+          <div className="flex items-center space-x-2">
+            {tokenLogo && (
+              <img
+                src={tokenLogo}
+                alt="Token logo"
+                className="h-5 w-5 rounded-full lg:h-8 lg:w-8"
+              />
+            )}
+            <span className="text-lg font-light lg:text-3xl">
+              {selectedToken ? selectedToken.symbol : 'ETH'}
+            </span>
+            <ChevronDownIcon className="h-4 w-4 text-v3-gray-9" />
+          </div>
+        </Popover.Button>
+        <Transition>
+          <Popover.Panel className="top-100px shadow-select-token-popover lg:width-458px absolute left-0 z-50 w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:rounded-lg lg:p-6">
+            {({ close }) => (
+              <TokenModal close={close} onImportToken={handleImportToken} />
+            )}
+          </Popover.Panel>
+        </Transition>
+      </Popover>
     </>
   )
 }

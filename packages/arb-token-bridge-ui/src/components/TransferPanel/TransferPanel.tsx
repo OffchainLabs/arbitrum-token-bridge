@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
@@ -28,6 +27,9 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useETHPrice } from '../../hooks/useETHPrice'
+import { useGasPrice } from '../../hooks/useGasPrice'
+import { useDialog } from '../common/DialogV3'
+import { TokenApprovalDialog } from './TokenApprovalDialog'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -113,15 +115,10 @@ const TransferPanel = (): JSX.Element => {
   const { shouldDisableDeposit } = useWithdrawOnly()
   const { shouldRequireApprove } = useL2Approve()
 
-  const ethPrice = useETHPrice()
+  const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
 
-  const toUSD = useCallback(
-    (etherValue: number) => {
-      const safeETHPrice = typeof ethPrice === 'number' ? ethPrice : 0
-      return (etherValue * safeETHPrice).toLocaleString()
-    },
-    [ethPrice]
-  )
+  const { toUSD } = useETHPrice()
+  const { l1GasPrice, l2GasPrice } = useGasPrice()
 
   // TODO: Switch to a value provided by @arbitrum/sdk
   const [estimatedL1Gas, setEstimatedL1Gas] = useState(BigNumber.from(100000))
@@ -149,31 +146,13 @@ const TransferPanel = (): JSX.Element => {
   }, [isDepositMode, l1Amount, l2Amount])
 
   useEffect(() => {
-    async function fetchGasPrices() {
-      const {
-        l1: { signer: l1Signer },
-        l2: { signer: l2Signer }
-      } = networksAndSigners
-
-      if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
-        return
-      }
-
-      const [l1GasPrice, l2GasPrice] = await Promise.all([
-        l1Signer.getGasPrice(),
-        l2Signer.getGasPrice()
-      ])
-
-      setEstimatedL1GasFees(
-        parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
-      )
-      setEstimatedL2GasFees(
-        parseFloat(utils.formatEther(estimatedL2Gas.mul(l2GasPrice)))
-      )
-    }
-
-    fetchGasPrices()
-  }, [networksAndSigners, estimatedL1Gas, estimatedL2Gas])
+    setEstimatedL1GasFees(
+      parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
+    )
+    setEstimatedL2GasFees(
+      parseFloat(utils.formatEther(estimatedL2Gas.mul(l2GasPrice)))
+    )
+  }, [estimatedL1Gas, l1GasPrice, estimatedL2Gas, l2GasPrice])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -335,6 +314,13 @@ const TransferPanel = (): JSX.Element => {
           )
 
           if (!allowance.gte(amountRaw)) {
+            const waitForInput = openTokenApprovalDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+
             await latestToken.current.approve(selectedToken.address)
           }
 
@@ -440,46 +426,21 @@ const TransferPanel = (): JSX.Element => {
 
   return (
     <>
-      <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto">
-        <div>
-          {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-            <div className="flex flex-row py-2">
-              <StatusBadge>
-                <div className="flex space-x-2 items-center">
-                  <Loader
-                    type="Oval"
-                    color="rgb(45, 55, 75)"
-                    height={14}
-                    width={14}
-                  />
-                  <span>Loading pending withdrawals</span>
-                </div>
-              </StatusBadge>
-            </div>
-          )}
-          {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
-            <div className="py-2">
-              <StatusBadge variant="red">
-                Loading pending withdrawals failed
-              </StatusBadge>
-            </div>
-          )}
-        </div>
-        {pendingTransactions?.length > 0 && (
-          <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
-        )}
-      </div>
+      <TokenApprovalDialog
+        {...tokenApprovalDialogProps}
+        erc20L1Address={selectedToken?.address}
+      />
 
-      <div className="flex flex-col lg:flex-row bg-white max-w-screen-lg mx-auto lg:rounded-xl space-y-6 lg:space-y-0 lg:space-x-6 transfer-panel-drop-shadow">
-        <div className="transfer-panel-network-box-wrapper flex flex-col px-8 lg:px-0 lg:pl-8 pt-6">
+      <div className="transfer-panel-drop-shadow mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
+        <div className="transfer-panel-network-box-wrapper flex flex-col px-8 pt-6 lg:px-0 lg:pl-8">
           <NetworkBox
             isL1
             amount={l1Amount}
             setAmount={setl1Amount}
             className={isDepositMode ? 'order-1' : 'order-3'}
           />
-          <div className="h-10 lg:h-12 relative flex justify-center order-2 w-full">
-            <div className="flex items-center justify-end relative w-full">
+          <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
+            <div className="relative flex w-full items-center justify-end">
               <div className="absolute left-0 right-0 mx-auto flex items-center justify-center">
                 <NetworkSwitchButton />
               </div>
@@ -506,7 +467,7 @@ const TransferPanel = (): JSX.Element => {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex flex-col justify-between w-full bg-v3-gray-3 lg:bg-white px-8 lg:px-0 lg:pr-8 py-6"
+          className="flex w-full flex-col justify-between bg-v3-gray-3 px-8 py-6 lg:bg-white lg:px-0 lg:pr-8"
         >
           <div className="hidden lg:block">
             <span className="text-2xl">Summary</span>
@@ -520,60 +481,60 @@ const TransferPanel = (): JSX.Element => {
                 <div className="h-2" />
               </div>
 
-              <div className="text-lg flex flex-col space-y-1">
+              <div className="flex flex-col space-y-1 text-lg">
                 <div className="flex flex-row justify-between">
-                  <span className="text-v3-gray-10 font-light w-2/5">
+                  <span className="w-2/5 font-light text-v3-gray-10">
                     Amount
                   </span>
-                  <div className="flex flex-row justify-between w-3/5">
-                    <span className="text-v3-gray-10 font-light">
+                  <div className="flex w-3/5 flex-row justify-between">
+                    <span className="font-light text-v3-gray-10">
                       {selectedToken ? amount : amount.toFixed(4)}{' '}
                       {selectedToken ? selectedToken.symbol : 'ETH'}
                     </span>
                     {/* Only show USD price for ETH. */}
                     {selectedToken === null && (
-                      <span className="text-v3-gray-10 font-light">
-                        (${toUSD(amount)})
+                      <span className="font-light text-v3-gray-10">
+                        (${toUSD(amount).toLocaleString()})
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <span className="text-v3-gray-10 font-light w-2/5">
+                  <span className="w-2/5 font-light text-v3-gray-10">
                     Total gas
                   </span>
-                  <div className="flex flex justify-between w-3/5">
-                    <span className="text-v3-gray-10 font-light">
+                  <div className="flex flex w-3/5 justify-between">
+                    <span className="font-light text-v3-gray-10">
                       {estimatedTotalGasFees.toLocaleString()} ETH
                     </span>
-                    <span className="text-v3-gray-10 font-light">
-                      (${toUSD(estimatedTotalGasFees)})
+                    <span className="font-light text-v3-gray-10">
+                      (${toUSD(estimatedTotalGasFees).toLocaleString()})
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <span className="text-v3-gray-6 font-light w-2/5 pl-4">
+                  <span className="w-2/5 pl-4 font-light text-v3-gray-6">
                     L1 gas
                   </span>
-                  <div className="flex flex-row justify-between w-3/5">
-                    <span className="text-v3-gray-6 font-light">
+                  <div className="flex w-3/5 flex-row justify-between">
+                    <span className="font-light text-v3-gray-6">
                       {estimatedL1GasFees.toLocaleString()} ETH
                     </span>
-                    <span className="text-v3-gray-6 font-light">
-                      (${toUSD(estimatedL1GasFees)})
+                    <span className="font-light text-v3-gray-6">
+                      (${toUSD(estimatedL1GasFees).toLocaleString()})
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <span className="text-v3-gray-6 font-light w-2/5 pl-4">
+                  <span className="w-2/5 pl-4 font-light text-v3-gray-6">
                     L2 gas
                   </span>
-                  <div className="flex flex-row justify-between w-3/5">
-                    <span className="text-v3-gray-6 font-light">
+                  <div className="flex w-3/5 flex-row justify-between">
+                    <span className="font-light text-v3-gray-6">
                       {estimatedL2GasFees.toLocaleString()} ETH
                     </span>
-                    <span className="text-v3-gray-6 font-light">
-                      (${toUSD(estimatedL2GasFees)})
+                    <span className="font-light text-v3-gray-6">
+                      (${toUSD(estimatedL2GasFees).toLocaleString()})
                     </span>
                   </div>
                 </div>
@@ -586,12 +547,18 @@ const TransferPanel = (): JSX.Element => {
                     <div className="h-1" />
                     <div className="flex flex-row justify-between">
                       <span className="w-2/5">Total</span>
-                      <div className="flex flex-row justify-between w-3/5">
+                      <div className="flex w-3/5 flex-row justify-between">
                         <span>
                           {(amount + estimatedTotalGasFees).toLocaleString()}{' '}
                           ETH
                         </span>
-                        <span>(${toUSD(amount + estimatedTotalGasFees)})</span>
+                        <span>
+                          ($
+                          {toUSD(
+                            amount + estimatedTotalGasFees
+                          ).toLocaleString()}
+                          )
+                        </span>
                       </div>
                     </div>
                   </>
@@ -602,7 +569,7 @@ const TransferPanel = (): JSX.Element => {
             </>
           ) : (
             <>
-              <div className="hidden lg:block min-h-56 text-v3-gray-7 text-lg">
+              <div className="hidden min-h-56 text-lg text-v3-gray-7 lg:block">
                 <span className="text-xl">
                   Bridging summary will appear here.
                 </span>
@@ -613,10 +580,10 @@ const TransferPanel = (): JSX.Element => {
 
           {isDepositMode ? (
             <Button
-              onClick={showModalOnDeposit}
+              onClick={transfer}
               disabled={disableDeposit}
               isLoading={transferring}
-              className="h-16 rounded-xl text-xl bg-v3-arbitrum-dark-blue font-normal text-white"
+              className="h-16 rounded-xl bg-v3-arbitrum-dark-blue text-xl font-normal text-white"
             >
               Move funds to {l2Network?.name}
             </Button>
@@ -626,7 +593,7 @@ const TransferPanel = (): JSX.Element => {
               disabled={disableWithdrawal}
               variant="navy"
               isLoading={transferring}
-              className="h-16 rounded-xl text-xl bg-v3-ethereum-dark-purple font-normal text-white"
+              className="h-16 rounded-xl bg-v3-ethereum-dark-purple text-xl font-normal text-white"
             >
               Move funds to {l1Network?.name}
             </Button>
@@ -653,7 +620,35 @@ const TransferPanel = (): JSX.Element => {
         />
       </div>
 
-      <div className="h-8" />
+      <div className="mx-auto flex w-full max-w-screen-lg flex-wrap items-end justify-between gap-4">
+        <div>
+          {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
+            <div className="flex flex-row py-2">
+              <StatusBadge>
+                <div className="flex items-center space-x-2">
+                  <Loader
+                    type="Oval"
+                    color="rgb(45, 55, 75)"
+                    height={14}
+                    width={14}
+                  />
+                  <span>Loading pending withdrawals</span>
+                </div>
+              </StatusBadge>
+            </div>
+          )}
+          {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
+            <div className="py-2">
+              <StatusBadge variant="red">
+                Loading pending withdrawals failed
+              </StatusBadge>
+            </div>
+          )}
+        </div>
+        {pendingTransactions?.length > 0 && (
+          <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
+        )}
+      </div>
     </>
   )
 }

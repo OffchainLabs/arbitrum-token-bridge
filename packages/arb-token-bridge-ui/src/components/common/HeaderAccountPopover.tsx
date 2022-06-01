@@ -87,7 +87,7 @@ export function HeaderAccountPopover() {
       <button
         onClick={() => connect(modalProviderOpts)}
         type="button"
-        className="lg:bg-v3-lime-dark lg:px-6 py-3 rounded-full text-2xl lg:text-base text-white font-medium lg:font-normal arb-hover"
+        className="arb-hover rounded-full py-3 text-2xl font-medium text-white lg:bg-v3-lime-dark lg:px-6 lg:text-base lg:font-normal"
       >
         Connect Wallet
       </button>
@@ -96,42 +96,42 @@ export function HeaderAccountPopover() {
 
   return (
     <Popover className="relative z-50 max-w-full">
-      <Popover.Button className="flex w-full justify-center lg:w-max arb-hover">
+      <Popover.Button className="arb-hover flex w-full justify-center lg:w-max">
         <div className="py-3 lg:py-0">
-          <div className="flex flex-row space-x-3 items-center lg:px-3 lg:py-2 lg:bg-v3-dark rounded-full">
+          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-v3-dark lg:px-3 lg:py-2">
             <Avatar src={ensInfo.avatar} className="h-8 w-8" />
-            <span className="text-white text-2xl lg:text-base font-medium lg:font-normal">
+            <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
               {ensInfo.name || accountShort}
             </span>
           </div>
         </div>
       </Popover.Button>
       <Transition>
-        <Popover.Panel className="flex flex-col relative lg:absolute right-0 h-96 lg:min-w-896px lg:mt-4 bg-white account-popover-drop-shadow lg:rounded-md">
-          <div className="h-24 bg-v3-arbitrum-dark-blue p-4">
+        <Popover.Panel className="lg:min-w-896px account-popover-drop-shadow relative right-0 flex h-96 flex-col lg:absolute lg:mt-4">
+          <div className="h-24 bg-v3-arbitrum-dark-blue p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
               <button
-                className="hidden lg:flex flex-row space-x-4 items-center arb-hover"
+                className="arb-hover hidden flex-row items-center space-x-4 lg:flex"
                 onClick={() => copyToClipboard(ensInfo.name || account || '')}
               >
                 <Avatar src={ensInfo.avatar} className="h-14 w-14" />
                 <div className="flex flex-row items-center space-x-3">
-                  <span className="text-white text-2xl font-normal">
+                  <span className="text-2xl font-normal text-white">
                     {ensInfo.name || accountShort}
                   </span>
                   <ClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
               </button>
-              <div className="w-full flex flex-row lg:flex-col justify-between lg:items-end px-6 lg:px-0">
+              <div className="flex w-full flex-row justify-between px-6 lg:flex-col lg:items-end lg:px-0">
                 <ExternalLink
                   href={`${currentNetwork?.explorerUrl}/address/${account}`}
-                  className="flex flex-row items-center space-x-1 text-white font-light arb-hover hover:underline"
+                  className="arb-hover flex flex-row items-center space-x-1 font-light text-white hover:underline"
                 >
                   <ExternalLinkIcon className="h-4 w-4 text-white" />
                   <span>View on explorer</span>
                 </ExternalLink>
                 <button
-                  className="flex flex-row items-center space-x-1 text-white font-light arb-hover"
+                  className="arb-hover flex flex-row items-center space-x-1 font-light text-white"
                   onClick={disconnectWallet}
                 >
                   <LogoutIcon className="h-4 w-4 text-white" />
@@ -140,7 +140,7 @@ export function HeaderAccountPopover() {
               </div>
             </div>
           </div>
-          <div className="flex-grow overflow-y-scroll lg:p-4">
+          <div className="flex-grow overflow-y-scroll bg-white lg:rounded-bl-md lg:rounded-br-md lg:p-4">
             <div className="px-4 py-2 lg:px-0 lg:py-0 lg:pb-2">
               <span>Transaction History</span>
             </div>
@@ -149,7 +149,7 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`px-4 py-2 rounded-tl-lg rounded-tr-lg ${
+                      className={`rounded-tl-lg rounded-tr-lg px-4 py-2 ${
                         selected && `bg-gray-200`
                       }`}
                     >
@@ -160,7 +160,7 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`px-4 py-2 rounded-tl-lg rounded-tr-lg ${
+                      className={`rounded-tl-lg rounded-tr-lg px-4 py-2 ${
                         selected && `bg-gray-200`
                       }`}
                     >

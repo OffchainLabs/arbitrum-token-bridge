@@ -86,9 +86,9 @@ module.exports = {
   variants: {
     extend: {
       display: ['group-hover'],
-      backgroundColor: ['active'],
+      backgroundColor: ['active', 'disabled'],
       boxShadow: ['active'],
-      opacity: ['active'],
+      opacity: ['active', 'disabled'],
       margin: ['active']
     }
   },
