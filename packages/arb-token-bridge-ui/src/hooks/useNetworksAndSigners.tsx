@@ -146,13 +146,11 @@ export function NetworksAndSignersProvider(
     // The `network` object has to be in the list of dependencies for switching between L1-L2 pairs.
   }, [provider, account, network, update])
 
-  if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
-    return props.fallback(result.status)
-  }
-
   return (
     <NetworksAndSignersContext.Provider value={result}>
-      {props.children}
+      {result.status === UseNetworksAndSignersStatus.CONNECTED
+        ? props.children
+        : props.fallback(result.status)}
     </NetworksAndSignersContext.Provider>
   )
 }

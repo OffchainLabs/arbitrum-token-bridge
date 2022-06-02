@@ -12,6 +12,7 @@ import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
+import { ExternalProvider } from '@ethersproject/providers'
 
 import { AppContext } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
@@ -29,6 +30,7 @@ import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
+import { ExternalLink } from '../common/ExternalLink'
 
 import {
   useNetworksAndSigners,
@@ -36,7 +38,6 @@ import {
   NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
-import { ExternalProvider } from '@ethersproject/providers'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -58,11 +59,11 @@ const NoMetamaskIndicator = (): JSX.Element => {
 
   return (
     <div className="container mx-auto px-4">
-      <div className="flex justify-center mb-4">
+      <div className="mb-4 flex justify-center">
         <Alert type="blue">Ethereum provider not detected, please login.</Alert>
       </div>
 
-      <div className="flex justify-center mb-4">
+      <div className="mb-4 flex justify-center">
         <a
           href="https://metamask.io/download.html"
           target="_blank"
@@ -373,17 +374,17 @@ function ConnectionFallback({
   }
 
   return (
-    <div>
-      <div className="mb-4">
-        You are on the wrong network. Read our tutorial below on how to switch
-        networks.
-      </div>
-      <iframe
-        title="Bridge Tutorial"
-        src="https://arbitrum.io/bridge-tutorial/"
-        width="100%"
-        height={500}
-      />
+    <div className="flex w-full justify-center">
+      <span className="text-v3-blue-link py-24 text-2xl font-light text-white">
+        You are on the wrong network.{' '}
+        <ExternalLink
+          href="https://arbitrum.io/bridge-tutorial"
+          className="arb-hover underline"
+        >
+          Read our tutorial
+        </ExternalLink>{' '}
+        on how to switch networks.
+      </span>
     </div>
   )
 }
