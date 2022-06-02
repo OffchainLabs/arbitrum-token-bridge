@@ -64,6 +64,12 @@ const withdrawOnlyTokens = [
     l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
     l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
     l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
+  },
+  {
+    symbol: 'gOHM',
+    l2CustomAddr: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
+    l1Address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
+    l2Address: '0x0D5f2b781A13722bA19e35857Fb6676594824960'
   }
 ].map(token => {
   const { l1Address, l2Address } = token
