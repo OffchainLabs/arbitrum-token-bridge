@@ -284,6 +284,22 @@ const getLatestIndexedBlockNumber = async (subgraphName: string) => {
   }
 }
 
+const getLatestIndexedBlockNumberUsingMeta = async (subgraphName: string) => {
+  try {
+    const res = await axios.post(
+      'https://api.thegraph.com/subgraphs/name/' + subgraphName,
+      {
+        query: `{ _meta { block { number } } }`
+      }
+    )
+    return res.data.data._meta.block.number
+  } catch (err) {
+    console.warn('Error getting graph status:', err)
+
+    return 0
+  }
+}
+
 export const getBuiltInsGraphLatestBlockNumber = (l1NetworkID: string) => {
   const subgraphName = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
@@ -296,7 +312,7 @@ export const getBuiltInsGraphLatestBlockNumber = (l1NetworkID: string) => {
     }
   })(l1NetworkID)
 
-  return getLatestIndexedBlockNumber(subgraphName)
+  return getLatestIndexedBlockNumberUsingMeta(subgraphName)
 }
 
 export const getL2GatewayGraphLatestBlockNumber = (l1NetworkID: string) => {
@@ -311,5 +327,5 @@ export const getL2GatewayGraphLatestBlockNumber = (l1NetworkID: string) => {
     }
   })(l1NetworkID)
 
-  return getLatestIndexedBlockNumber(subgraphName)
+  return getLatestIndexedBlockNumberUsingMeta(subgraphName)
 }
