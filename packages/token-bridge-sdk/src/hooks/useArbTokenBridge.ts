@@ -207,7 +207,10 @@ export const useArbTokenBridge = (
    * @param erc20L1Address
    * @returns
    */
-  async function getL1TokenData(erc20L1Address: string): Promise<L1TokenData> {
+  async function getL1TokenData(
+    erc20L1Address: string,
+    throwOnMissingValue = false
+  ): Promise<L1TokenData> {
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1.signer.provider
@@ -225,18 +228,18 @@ export const useArbTokenBridge = (
     })
 
     if (typeof tokenData.balance === 'undefined') {
-      throw new Error(`No balance method available`)
+      if (throwOnMissingValue) throw new Error(`No balance method available`)
     }
 
     if (typeof tokenData.allowance === 'undefined') {
-      throw new Error(`No allowance method available`)
+      if (throwOnMissingValue) throw new Error(`No allowance method available`)
     }
 
     return {
       name: tokenData.name || getDefaultTokenName(erc20L1Address),
       symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
-      balance: tokenData.balance,
-      allowance: tokenData.allowance,
+      balance: tokenData.balance || BigNumber.from(0),
+      allowance: tokenData.allowance || BigNumber.from(0),
       decimals: tokenData.decimals || 0,
       contract
     }
@@ -954,7 +957,7 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { symbol } = await getL1TokenData(l1Address)
+      const { symbol } = await getL1TokenData(l1Address, false)
       addressToSymbol[l1Address] = symbol
       return symbol
     } catch (err) {
@@ -971,7 +974,7 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { decimals } = await getL1TokenData(l1Address)
+      const { decimals } = await getL1TokenData(l1Address, false)
       addressToDecimals[l1Address] = decimals
       return decimals
     } catch (err) {
