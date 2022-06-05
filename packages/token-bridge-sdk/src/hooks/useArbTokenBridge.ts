@@ -1202,11 +1202,21 @@ export const useArbTokenBridge = (
       return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
     } catch (e) {
       const expectedError = "batch doesn't exist"
+      const expectedError2 = 'CALL_EXCEPTION'
       const err = e as Error & { error: Error }
       const actualError =
         err && (err.message || (err.error && err.error.message))
       if (actualError.includes(expectedError)) {
         const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
+        return {
+          ...event,
+          nodeBlockDeadline
+        }
+      } else if (actualError.includes(expectedError2)) {
+        // in classic we simulate `executeTransaction` in `hasExecuted`
+        // which might revert if the L2 to L1 call fail
+        const nodeBlockDeadline: NodeBlockDeadlineStatus =
+          'EXECUTE_CALL_EXCEPTION'
         return {
           ...event,
           nodeBlockDeadline
