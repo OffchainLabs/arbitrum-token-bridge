@@ -274,6 +274,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         case 'success':
           return 'green'
         case 'failure':
+        case 'Failure':
           return 'red'
         case 'pending':
           return 'blue'
@@ -347,6 +348,11 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
             </Tooltip>
           </div>
         )}
+
+        {tx.isWithdrawal &&
+          tx.status === 'Failure' &&
+          tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION' &&
+          'Outbox call exception'}
 
         {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
 
