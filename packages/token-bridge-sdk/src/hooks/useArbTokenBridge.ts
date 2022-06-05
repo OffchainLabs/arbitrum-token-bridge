@@ -209,7 +209,7 @@ export const useArbTokenBridge = (
    */
   async function getL1TokenData(
     erc20L1Address: string,
-    throwOnMissingValue = false
+    throwOnMissingValue = true
   ): Promise<L1TokenData> {
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
