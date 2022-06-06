@@ -31,7 +31,10 @@ export enum AssetType {
   ETH = 'ETH'
 }
 
-export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
+export type NodeBlockDeadlineStatus =
+  | number
+  | 'NODE_NOT_CREATED'
+  | 'EXECUTE_CALL_EXCEPTION'
 
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 
