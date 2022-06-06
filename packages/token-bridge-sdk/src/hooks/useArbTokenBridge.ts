@@ -209,7 +209,7 @@ export const useArbTokenBridge = (
    */
   async function getL1TokenData(
     erc20L1Address: string,
-    throwOnMissingValue = true
+    throwOnInvalidERC20 = true
   ): Promise<L1TokenData> {
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
@@ -228,11 +228,11 @@ export const useArbTokenBridge = (
     })
 
     if (typeof tokenData.balance === 'undefined') {
-      if (throwOnMissingValue) throw new Error(`No balance method available`)
+      if (throwOnInvalidERC20) throw new Error(`No balance method available`)
     }
 
     if (typeof tokenData.allowance === 'undefined') {
-      if (throwOnMissingValue) throw new Error(`No allowance method available`)
+      if (throwOnInvalidERC20) throw new Error(`No allowance method available`)
     }
 
     return {
