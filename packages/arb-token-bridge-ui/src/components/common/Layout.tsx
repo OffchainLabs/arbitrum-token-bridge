@@ -103,8 +103,8 @@ export function Layout(props: LayoutProps) {
 
   return (
     <div
-      style={{ backgroundImage: 'url(/images/space.jpg)' }}
-      className="flex flex-col min-h-screen bg-cover bg-no-repeat"
+      style={{ backgroundImage: 'url(/images/space.jpeg)' }}
+      className="flex min-h-screen flex-col bg-repeat"
     >
       <div>
         <Header />
