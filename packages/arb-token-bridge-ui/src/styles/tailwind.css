@@ -145,8 +145,8 @@ input:checked + .slider:before {
   background: linear-gradient(
     179.53deg,
     #000000 19.46%,
-    rgba(0, 0, 0, 0.650795) 57.69%,
-    rgba(0, 0, 0, 0.462631) 73.18%,
+    rgba(0, 0, 0, 0.650795) 40.76%,
+    rgba(0, 0, 0, 0.462631) 60.09%,
     rgba(255, 255, 255, 0) 99.6%
   );
 }
