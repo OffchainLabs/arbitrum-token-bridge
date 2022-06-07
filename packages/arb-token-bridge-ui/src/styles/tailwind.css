@@ -209,3 +209,7 @@ input:checked + .slider:before {
 .top-100px {
   top: 100px;
 }
+
+.bg-network-loading {
+  background: rgba(26, 28, 29, 0.75);
+}

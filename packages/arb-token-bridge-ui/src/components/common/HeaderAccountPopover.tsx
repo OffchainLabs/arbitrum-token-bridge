@@ -82,6 +82,10 @@ export function HeaderAccountPopover() {
     window.location.reload()
   }
 
+  if (status === UseNetworksAndSignersStatus.LOADING) {
+    return null
+  }
+
   if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
     return (
       <button

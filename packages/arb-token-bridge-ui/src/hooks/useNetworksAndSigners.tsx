@@ -14,8 +14,10 @@ import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 
 import { rpcURLs } from '../util/networks'
+import { modalProviderOpts } from '../util/modelProviderOpts'
 
 export enum UseNetworksAndSignersStatus {
+  LOADING = 'loading',
   NOT_CONNECTED = 'network_not_connected',
   NOT_SUPPORTED = 'network_not_supported',
   CONNECTED = 'network_connected'
@@ -39,12 +41,17 @@ const defaults: UseNetworksAndSignersDataUnknown = {
   isConnectedToArbitrum: undefined
 }
 
+const defaultStatus =
+  typeof window.web3 === 'undefined'
+    ? UseNetworksAndSignersStatus.NOT_CONNECTED
+    : UseNetworksAndSignersStatus.LOADING
+
 export type UseNetworksAndSignersResult =
   | ({
-      status: UseNetworksAndSignersStatus.NOT_CONNECTED
-    } & UseNetworksAndSignersDataUnknown)
-  | ({
-      status: UseNetworksAndSignersStatus.NOT_SUPPORTED
+      status:
+        | UseNetworksAndSignersStatus.LOADING
+        | UseNetworksAndSignersStatus.NOT_CONNECTED
+        | UseNetworksAndSignersStatus.NOT_SUPPORTED
     } & UseNetworksAndSignersDataUnknown)
   | ({
       status: UseNetworksAndSignersStatus.CONNECTED
@@ -52,8 +59,8 @@ export type UseNetworksAndSignersResult =
 
 export const NetworksAndSignersContext =
   createContext<UseNetworksAndSignersResult>({
-    status: UseNetworksAndSignersStatus.NOT_CONNECTED,
-    ...defaults
+    ...defaults,
+    status: defaultStatus
   })
 
 export function useNetworksAndSigners() {
@@ -62,12 +69,13 @@ export function useNetworksAndSigners() {
 
 export type NetworksAndSignersProviderProps = {
   /**
-   * Render prop that gets called with the current status in case of an unsuccessful connection or connection to an unsupported network.
+   * Render prop that gets called with the current status in case of anything other than a successful connection.
    *
    * @see https://reactjs.org/docs/render-props.html
    */
   fallback: (
     status:
+      | UseNetworksAndSignersStatus.LOADING
       | UseNetworksAndSignersStatus.NOT_CONNECTED
       | UseNetworksAndSignersStatus.NOT_SUPPORTED
   ) => JSX.Element
@@ -80,15 +88,32 @@ export type NetworksAndSignersProviderProps = {
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
-  const { provider, account, network } = useWallet()
+  const { provider, account, network, connect } = useWallet()
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
-    status: UseNetworksAndSignersStatus.NOT_CONNECTED,
-    ...defaults
+    ...defaults,
+    status: defaultStatus
   })
+
+  useEffect(() => {
+    async function tryConnect() {
+      try {
+        await connect(modalProviderOpts)
+      } catch (error) {
+        setResult({
+          ...defaults,
+          status: UseNetworksAndSignersStatus.NOT_CONNECTED
+        })
+      }
+    }
+
+    tryConnect()
+  }, [connect])
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback((web3Provider: Web3Provider, address: string) => {
+    setResult({ ...defaults, status: UseNetworksAndSignersStatus.LOADING })
+
     getL1Network(web3Provider)
       .then(async l1Network => {
         // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.

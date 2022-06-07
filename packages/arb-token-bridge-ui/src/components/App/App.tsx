@@ -13,6 +13,7 @@ import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider } from '@ethersproject/providers'
+import Loader from 'react-loader-spinner'
 
 import { AppContext } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
@@ -20,7 +21,6 @@ import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { Layout } from '../common/Layout'
-import MessageOverlay from '../common/MessageOverlay'
 import { DisclaimerModal } from '../DisclaimerModal/DisclaimerModal'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
@@ -53,10 +53,6 @@ const NoMetamaskIndicator = (): JSX.Element => {
     connect(modalProviderOpts)
   }
 
-  useEffect(() => {
-    showConnectionModal()
-  }, [])
-
   return (
     <div className="container mx-auto px-4">
       <div className="mb-4 flex justify-center">
@@ -84,6 +80,16 @@ const NoMetamaskIndicator = (): JSX.Element => {
         >
           Login
         </Button>
+      </div>
+    </div>
+  )
+}
+
+function NetworkLoading() {
+  return (
+    <div className="bg-network-loading absolute top-0 left-0 flex h-screen w-full items-center justify-center">
+      <div className="opacity-100">
+        <Loader type="Oval" color="white" height={96} width={96} />
       </div>
     </div>
   )
@@ -139,7 +145,6 @@ const AppContent = (): JSX.Element => {
       <TokenListSyncer />
       <BalanceUpdater />
       <PWLoadedUpdater />
-      <MessageOverlay />
       <MainContent />
     </>
   )
@@ -366,27 +371,33 @@ function ConnectionFallback({
   status
 }: {
   status:
+    | UseNetworksAndSignersStatus.LOADING
     | UseNetworksAndSignersStatus.NOT_SUPPORTED
     | UseNetworksAndSignersStatus.NOT_CONNECTED
 }): JSX.Element {
-  if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
-    return <NoMetamaskIndicator />
-  }
+  switch (status) {
+    case UseNetworksAndSignersStatus.NOT_CONNECTED:
+      return <NoMetamaskIndicator />
 
-  return (
-    <div className="flex w-full justify-center">
-      <span className="text-v3-blue-link py-24 text-2xl font-light text-white">
-        You are on the wrong network.{' '}
-        <ExternalLink
-          href="https://arbitrum.io/bridge-tutorial"
-          className="arb-hover underline"
-        >
-          Read our tutorial
-        </ExternalLink>{' '}
-        on how to switch networks.
-      </span>
-    </div>
-  )
+    case UseNetworksAndSignersStatus.NOT_SUPPORTED:
+      return (
+        <div className="flex w-full justify-center">
+          <span className="text-v3-blue-link py-24 text-2xl font-light text-white">
+            You are on the wrong network.{' '}
+            <ExternalLink
+              href="https://arbitrum.io/bridge-tutorial"
+              className="arb-hover underline"
+            >
+              Read our tutorial
+            </ExternalLink>{' '}
+            on how to switch networks.
+          </span>
+        </div>
+      )
+
+    default:
+      return <NetworkLoading />
+  }
 }
 
 const App = (): JSX.Element => {
