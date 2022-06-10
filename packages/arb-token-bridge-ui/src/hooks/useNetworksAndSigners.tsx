@@ -62,6 +62,10 @@ export function useNetworksAndSigners() {
 
 export type NetworksAndSignersProviderProps = {
   /**
+   * Chooses a specific L2 chain in a situation where multiple L2 chains are connected to a single L1 chain.
+   */
+  selectedL2ChainId?: number
+  /**
    * Render prop that gets called with the current status in case of an unsuccessful connection or connection to an unsupported network.
    *
    * @see https://reactjs.org/docs/render-props.html
@@ -91,8 +95,26 @@ export function NetworksAndSignersProvider(
   const update = useCallback((web3Provider: Web3Provider, address: string) => {
     getL1Network(web3Provider)
       .then(async l1Network => {
+        function getL2NetworkChainId(): number {
+          const { selectedL2ChainId } = props
+          // Use the first chain id from `partnerChainIDs` as default
+          const defaultL2NetworkChainId = l1Network.partnerChainIDs[0]
+
+          // Return the default if no preference for L2 chain
+          if (!selectedL2ChainId) {
+            return defaultL2NetworkChainId
+          }
+
+          // Return the default if the preffered L2 chain id doesn't match the L1 network
+          if (!l1Network.partnerChainIDs.includes(selectedL2ChainId)) {
+            return defaultL2NetworkChainId
+          }
+
+          return selectedL2ChainId
+        }
+
         // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-        const [l2NetworkChainId] = l1Network.partnerChainIDs
+        const l2NetworkChainId = getL2NetworkChainId()
         const l2Provider = new JsonRpcProvider(rpcURLs[l2NetworkChainId])
         const l2Network = await getL2Network(l2Provider)
 
