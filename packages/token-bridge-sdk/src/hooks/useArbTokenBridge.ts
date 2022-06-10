@@ -17,6 +17,7 @@ import {
   L2TransactionReceipt
 } from '@arbitrum/sdk'
 
+import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
@@ -315,11 +316,17 @@ export const useArbTokenBridge = (
   }
 
   const depositEth = async (amount: BigNumber) => {
-    const tx = await ethBridger.deposit({
-      l1Signer: l1.signer,
-      l2Provider: l2.signer.provider,
-      amount
-    })
+    let tx: L1EthDepositTransaction
+
+    try {
+      tx = await ethBridger.deposit({
+        l1Signer: l1.signer,
+        l2Provider: l2.signer.provider,
+        amount
+      })
+    } catch (error: any) {
+      return alert(error.message)
+    }
 
     addTransaction({
       type: 'deposit-l1',
