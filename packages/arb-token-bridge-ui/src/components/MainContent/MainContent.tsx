@@ -13,30 +13,30 @@ const MainContent = () => {
   const {
     app: { mergedTransactions }
   } = useAppState()
-  const { l1 } = useNetworksAndSigners()
+  const { l2 } = useNetworksAndSigners()
   const handleTwitterClick = useTwitter()
 
   const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
 
-  const isMainnet = useMemo(() => {
-    if (typeof l1.network === 'undefined') {
+  const isArbitrumOne = useMemo(() => {
+    if (typeof l2.network === 'undefined') {
       return false
     }
 
-    return l1.network.chainID === 1
-  }, [l1])
+    return l2.network.chainID === 42161
+  }, [l2])
 
-  const isNitro = useMemo(() => {
-    if (typeof l1.network === 'undefined') {
+  const isNitroDevnet = useMemo(() => {
+    if (typeof l2.network === 'undefined') {
       return false
     }
 
-    return l1.network.chainID === 5
-  }, [l1])
+    return l2.network.chainID === 421612
+  }, [l2])
 
   return (
     <div className="mx-auto px-4">
-      {isMainnet && (
+      {isArbitrumOne && (
         <div className="mb-4 mx-auto max-w-networkBox w-full">
           <Alert type="blue">
             NOTICE: Arbitrum One is in mainnet Beta, which currently includes
@@ -52,7 +52,7 @@ const MainContent = () => {
         </div>
       )}
 
-      {isNitro && (
+      {isNitroDevnet && (
         <div className="mb-4 mx-auto max-w-networkBox w-full">
           <Alert type="blue">
             <span id="twitter-faucet-container">

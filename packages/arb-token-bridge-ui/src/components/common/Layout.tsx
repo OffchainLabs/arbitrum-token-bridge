@@ -5,26 +5,27 @@ import { Header } from './Header'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const Layout: React.FC = ({ children }) => {
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
+  const { l2 } = useNetworksAndSigners()
+  const { network: l2Network } = l2
 
   const headerText = useMemo(() => {
-    if (typeof l1Network === 'undefined') {
-      return 'Arbitrum'
+    if (typeof l2Network === 'undefined') {
+      return 'Arbitrum Bridge'
     }
 
-    switch (l1Network.chainID) {
-      case 1:
+    switch (l2Network.chainID) {
+      case 42161:
         return 'Arbitrum One Bridge'
-      case 4:
+      case 421611:
         return 'RinkArby Testnet Bridge'
-      case 5:
+      case 421612:
         return 'Arbitrum Nitro Devnet Bridge'
+      case 421702:
+        return 'Arbitrum AnyTrust Devnet Bridge'
       default:
-        return 'Arbitrum Mainnet Bridge'
+        return 'Arbitrum Bridge'
     }
-  }, [l1Network])
+  }, [l2Network])
 
   return (
     <div className="flex flex-col min-h-screen">
