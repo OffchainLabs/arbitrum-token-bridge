@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@arbitrum/use-wallet'
@@ -7,7 +7,12 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
+import {
+  Route,
+  BrowserRouter as Router,
+  Switch,
+  useLocation
+} from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -340,8 +345,9 @@ function Routes() {
 
   const isTosAccepted = tosAccepted !== undefined
   const isPrevTosAccepted = prevTosAccepted !== undefined
+
   return (
-    <Router>
+    <>
       <DisclaimerModal
         setTosAccepted={setTosAccepted}
         tosAccepted={isTosAccepted}
@@ -357,7 +363,7 @@ function Routes() {
           </Route>
         )}
       </Switch>
-    </Router>
+    </>
   )
 }
 
@@ -388,25 +394,49 @@ function ConnectionFallback({
   )
 }
 
+function NetworkReady({ children }: { children: React.ReactNode }) {
+  const { search } = useLocation()
+
+  const selectedL2ChainId = useMemo(() => {
+    const searchParams = new URLSearchParams(search)
+    const selectedL2ChainIdSearchParam = searchParams.get('l2ChainId')
+
+    if (!selectedL2ChainIdSearchParam) {
+      return undefined
+    }
+
+    return parseInt(selectedL2ChainIdSearchParam) || undefined
+  }, [search])
+
+  return (
+    <NetworksAndSignersProvider
+      selectedL2ChainId={selectedL2ChainId}
+      fallback={status => (
+        <Layout>
+          <ConnectionFallback status={status} />
+        </Layout>
+      )}
+    >
+      {children}
+    </NetworksAndSignersProvider>
+  )
+}
+
 const App = (): JSX.Element => {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
-    <Provider value={overmind}>
-      <NetworksAndSignersProvider
-        fallback={status => (
+    <Router>
+      <Provider value={overmind}>
+        <NetworkReady>
           <Layout>
-            <ConnectionFallback status={status} />
+            <Injector>
+              <Routes />
+            </Injector>
           </Layout>
-        )}
-      >
-        <Layout>
-          <Injector>
-            <Routes />
-          </Injector>
-        </Layout>
-      </NetworksAndSignersProvider>
-    </Provider>
+        </NetworkReady>
+      </Provider>
+    </Router>
   )
 }
 
