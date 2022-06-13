@@ -201,7 +201,10 @@ export const defaultState: AppState = {
 
       return {
         direction: 'outbox',
-        status: outgoungStateToString[tx.outgoingMessageState],
+        status:
+          tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
+            ? 'Failure'
+            : outgoungStateToString[tx.outgoingMessageState],
         createdAt: dayjs(
           new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
         ).format('HH:mm:ss MM/DD/YYYY'),
