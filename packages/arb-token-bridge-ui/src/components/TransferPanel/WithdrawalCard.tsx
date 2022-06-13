@@ -1,0 +1,134 @@
+import React, { useMemo } from 'react'
+import { BigNumber } from 'ethers'
+
+import { ExternalLink } from '../common/ExternalLink'
+import { useAppState } from '../../state'
+import { MergedTransaction } from '../../state/app/state'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
+import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
+import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
+import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
+
+export function shortenTxHash(txHash?: string) {
+  if (!txHash) {
+    return null
+  }
+
+  const txHashLength = txHash.length
+
+  return `${txHash.substring(0, 7)}...${txHash.substring(
+    txHashLength - 4,
+    txHashLength
+  )}`
+}
+
+export function WithdrawalL2TxStatus({
+  tx
+}: {
+  tx: MergedTransaction
+}): JSX.Element {
+  const { l2 } = useNetworksAndSigners()
+  const { network: l2Network } = l2
+
+  if (typeof l2Network === 'undefined') {
+    return <span>Not found</span>
+  }
+
+  if (tx.txId === 'l2-tx-hash-not-found') {
+    return <span>Not found</span>
+  }
+
+  return (
+    <ExternalLink
+      href={`${l2Network.explorerUrl}/tx/${tx.txId}`}
+      className="arb-hover text-v3-blue-link"
+    >
+      {shortenTxHash(tx.txId)}
+    </ExternalLink>
+  )
+}
+
+export function WithdrawalL1TxStatus({
+  tx
+}: {
+  tx: MergedTransaction
+}): JSX.Element {
+  const { l1 } = useNetworksAndSigners()
+  const { network: l1Network } = l1
+  const {
+    app: { mergedTransactions }
+  } = useAppState()
+
+  // Try to find the L1 transaction that matches the L2ToL1 message
+  const l1Tx = mergedTransactions.find(_tx => {
+    let l2ToL1MsgData = _tx.l2ToL1MsgData
+
+    if (typeof l2ToL1MsgData === 'undefined') {
+      return false
+    }
+
+    // To get rid of Proxy
+    const txUniqueId = BigNumber.from(tx.uniqueId)
+    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
+
+    return txUniqueId.toString() === _txUniqueId.toString()
+  })
+
+  if (typeof l1Network === 'undefined') {
+    return <span>Not found</span>
+  }
+
+  if (typeof l1Tx === 'undefined') {
+    return <span>Not found</span>
+  }
+
+  return (
+    <ExternalLink
+      href={`${l1Network.explorerUrl}/tx/${l1Tx.txId}`}
+      className="arb-hover text-v3-blue-link"
+    >
+      {shortenTxHash(l1Tx.txId)}
+    </ExternalLink>
+  )
+}
+
+export function WithdrawalCardContainer({
+  tx,
+  children
+}: {
+  tx: MergedTransaction
+  children: React.ReactNode
+}) {
+  const bgClassName = useMemo(() => {
+    switch (tx.status) {
+      case 'Executed':
+        return 'bg-v3-lime'
+
+      default:
+        return 'bg-white'
+    }
+  }, [tx])
+
+  return (
+    <div className={`w-full p-8 lg:rounded-xl ${bgClassName}`}>
+      <div className="flex flex-col space-y-5">{children}</div>
+    </div>
+  )
+}
+
+export function WithdrawalCard({ tx }: { tx: MergedTransaction }) {
+  switch (tx.status) {
+    case 'Unconfirmed':
+      return <WithdrawalCardUnconfirmed tx={tx} />
+
+    case 'Confirmed':
+      return <WithdrawalCardConfirmed tx={tx} />
+
+    case 'Executed':
+      return <WithdrawalCardExecuted tx={tx} />
+
+    default:
+      return null
+  }
+}

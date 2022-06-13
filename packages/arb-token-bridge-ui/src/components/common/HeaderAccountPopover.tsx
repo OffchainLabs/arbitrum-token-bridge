@@ -16,6 +16,7 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
+import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 
 type ENSInfo = { name: string | null; avatar: string | null }
@@ -33,12 +34,16 @@ function Avatar({ src, className }: { src: string | null; className: string }) {
   )
 }
 
+function isDeposit(tx: MergedTransaction) {
+  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
+}
+
 export function HeaderAccountPopover() {
   const { connect, disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const [, copyToClipboard] = useCopyToClipboard()
   const {
-    app: { depositsTransformed, withdrawalsTransformed }
+    app: { mergedTransactions }
   } = useAppState()
 
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
@@ -57,6 +62,21 @@ export function HeaderAccountPopover() {
 
     resolveENSInfo()
   }, [account, l1.signer])
+
+  const [deposits, withdrawals] = useMemo(() => {
+    const _deposits: MergedTransaction[] = []
+    const _withdrawals: MergedTransaction[] = []
+
+    mergedTransactions.forEach(tx => {
+      if (isDeposit(tx)) {
+        _deposits.push(tx)
+      } else {
+        _withdrawals.push(tx)
+      }
+    })
+
+    return [_deposits, _withdrawals]
+  }, [mergedTransactions])
 
   const currentNetwork = useMemo(() => {
     if (status !== UseNetworksAndSignersStatus.CONNECTED) {
@@ -100,7 +120,7 @@ export function HeaderAccountPopover() {
 
   return (
     <Popover className="relative z-50 max-w-full">
-      <Popover.Button className="arb-hover flex w-full justify-center lg:w-max">
+      <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
         <div className="py-3 lg:py-0">
           <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-v3-dark lg:px-3 lg:py-2">
             <Avatar src={ensInfo.avatar} className="h-8 w-8" />
@@ -115,7 +135,7 @@ export function HeaderAccountPopover() {
           <div className="h-24 bg-v3-arbitrum-dark-blue p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
               <button
-                className="arb-hover hidden flex-row items-center space-x-4 lg:flex"
+                className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
                 onClick={() => copyToClipboard(ensInfo.name || account || '')}
               >
                 <Avatar src={ensInfo.avatar} className="h-14 w-14" />
@@ -174,14 +194,11 @@ export function HeaderAccountPopover() {
                 </Tab>
               </Tab.List>
               <Tab.Panel>
-                <TransactionsTable
-                  transactions={depositsTransformed}
-                  overflowX={true}
-                />
+                <TransactionsTable transactions={deposits} overflowX={true} />
               </Tab.Panel>
               <Tab.Panel>
                 <TransactionsTable
-                  transactions={withdrawalsTransformed}
+                  transactions={withdrawals}
                   overflowX={true}
                 />
               </Tab.Panel>

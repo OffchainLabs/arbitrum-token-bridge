@@ -22,7 +22,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { toUSD } = useETHPrice()
   const { l1GasPrice } = useGasPrice()
 
-  const [checked, setChecked] = useState(true)
+  const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(BigNumber.from(0))
 
   // Estimated gas fees, denominated in Ether, represented as a floating point number
@@ -49,9 +49,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     getEstimatedGas()
   }, [erc20L1Address])
 
+  function closeWithReset(confirmed: boolean) {
+    props.onClose(confirmed)
+
+    setChecked(false)
+  }
+
   return (
     <DialogV3
       {...props}
+      onClose={closeWithReset}
       title="Acknowledge approval and deposit fees"
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}

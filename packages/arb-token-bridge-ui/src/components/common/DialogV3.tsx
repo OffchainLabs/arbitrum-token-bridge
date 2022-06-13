@@ -82,7 +82,7 @@ export function DialogV3(props: DialogV3Props) {
             <h3 className="text-2xl font-medium">{props.title}</h3>
           </div>
           <div className="flex-grow px-8 py-4">{props.children}</div>
-          <div className="flex flex-row justify-end px-8 py-3 lg:rounded-bl-xl lg:rounded-br-xl lg:bg-v3-gray-2">
+          <div className="flex flex-row justify-end space-x-2 px-8 py-3 lg:rounded-bl-xl lg:rounded-br-xl lg:bg-v3-gray-2">
             <button
               ref={cancelButtonRef}
               onClick={() => props.onClose(false)}

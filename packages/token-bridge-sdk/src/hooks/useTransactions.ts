@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
@@ -68,6 +68,11 @@ export interface L1ToL2MessageData {
   l2TxID?: string
   fetchingUpdate: boolean
 }
+
+export type L2ToL1MessageData = {
+  uniqueId: BigNumber
+}
+
 type TransactionBase = {
   type: TxnType
   status: TxnStatus
@@ -75,12 +80,14 @@ type TransactionBase = {
   txID?: string
   assetName: string
   assetType: AssetType
+  tokenAddress?: string
   sender: string
   blockNumber?: number
   l1NetworkID: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
+  l2ToL1MsgData?: L2ToL1MessageData
 }
 
 export interface Transaction extends TransactionBase {

@@ -12,7 +12,7 @@ import { Button } from '../common/Button'
 import ExplorerLink from '../common/ExplorerLink'
 import { StatusBadge } from '../common/StatusBadge'
 import { Tooltip } from '../common/Tooltip'
-import { useAppContext } from '../App/AppContext'
+import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 interface TransactionsTableProps {
@@ -93,7 +93,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
     l2: { network: l2Network, signer: l2Signer },
     isConnectedToArbitrum
   } = useNetworksAndSigners()
-  const { currentL1BlockNumber } = useAppContext()
+  const { currentL1BlockNumber } = useAppContextState()
 
   const [isClaiming, setIsClaiming] = useState(false)
 
@@ -301,17 +301,13 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
 
   return (
     <tr>
-      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
-        {actionDisplayText(tx.direction)}
-      </td>
-
-      <td className="px-4 py-6  whitespace-nowrap text-sm ">
+      <td className="whitespace-nowrap px-4  py-6 text-sm ">
         <StatusBadge variant={getStatusVariantColor(tx)}>
           {statusDisplayText(tx)}
         </StatusBadge>
       </td>
 
-      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-gray-500">
+      <td className="whitespace-nowrap px-6 py-6 text-sm font-normal leading-5 text-gray-500">
         {!tx.isWithdrawal && (
           <>
             {(tx.createdAt && tx.status === 'pending') ||
@@ -329,13 +325,13 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         )}
       </td>
 
-      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-black">
+      <td className="whitespace-nowrap px-6 py-6 text-sm font-normal leading-5 text-black">
         {tx.value} {tx.asset.toUpperCase()}
       </td>
 
-      <td className="px-2 py-6 whitespace-nowrap leading-5 font-normal text-gray-500">
+      <td className="whitespace-nowrap px-2 py-6 font-normal leading-5 text-gray-500">
         {tx.isWithdrawal && tx.status === 'Confirmed' && (
-          <div className="relative group">
+          <div className="group relative">
             {isClaiming ? (
               <div className="flex justify-center py-1">
                 <Loader type="Oval" color="#28A0F0" height={24} width={24} />
@@ -357,7 +353,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         )}
 
         {tx.isWithdrawal && tx.status === 'Unconfirmed' && (
-          <div className="relative group">
+          <div className="group relative">
             <Button variant="white">Claim</Button>
             <Tooltip>
               Transaction must be confirmed: ETA: {calcEtaDisplay()}
@@ -368,7 +364,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         {tx.isWithdrawal && tx.status === 'Executed' && 'Already claimed'}
 
         {showRedeemRetryableButton && (
-          <div className="relative group">
+          <div className="group relative">
             <Button
               disabled={!isConnectedToArbitrum}
               onClick={() => redeemRetryable(tx)}
@@ -385,7 +381,7 @@ const TableRow = ({ tx }: { tx: MergedTransaction }): JSX.Element => {
         )}
       </td>
 
-      <td className="px-6 py-6 whitespace-nowrap text-sm leading-5 font-normal text-dark-blue">
+      <td className="whitespace-nowrap px-6 py-6 text-sm font-normal leading-5 text-dark-blue">
         {renderTxIDDisplay(tx)}
       </td>
     </tr>
@@ -400,12 +396,6 @@ export const TransactionsTable = ({
     <table className="w-full bg-gray-200">
       <thead>
         <tr>
-          <th
-            scope="col"
-            className="px-6 py-3 text-left text-sm font-light text-v3-gray-10"
-          >
-            Action
-          </th>
           <th
             scope="col"
             className="px-4 py-3 text-left text-sm font-light text-v3-gray-10"
@@ -440,7 +430,7 @@ export const TransactionsTable = ({
       </thead>
       <tbody>
         {transactions.map(tx => (
-          <TableRow key={tx.txId} tx={tx} />
+          <TableRow key={`${tx.txId}-${tx.direction}`} tx={tx} />
         ))}
       </tbody>
     </table>

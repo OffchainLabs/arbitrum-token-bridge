@@ -30,6 +30,7 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { useDialog } from '../common/DialogV3'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
+import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -116,6 +117,8 @@ const TransferPanel = (): JSX.Element => {
   const { shouldRequireApprove } = useL2Approve()
 
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
+  const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
+    useDialog()
 
   const { toUSD } = useETHPrice()
   const { l1GasPrice, l2GasPrice } = useGasPrice()
@@ -353,6 +356,14 @@ const TransferPanel = (): JSX.Element => {
         ) {
           return alert('Network connection issue; contact support')
         }
+
+        const waitForInput = openWithdrawalConfirmationDialog()
+        const confirmed = await waitForInput()
+
+        if (!confirmed) {
+          return
+        }
+
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
@@ -431,6 +442,8 @@ const TransferPanel = (): JSX.Element => {
         erc20L1Address={selectedToken?.address}
       />
 
+      <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
+
       <div className="transfer-panel-drop-shadow mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <div className="transfer-panel-network-box-wrapper flex flex-col px-8 pt-6 lg:px-0 lg:pl-8">
           <NetworkBox
@@ -467,7 +480,7 @@ const TransferPanel = (): JSX.Element => {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex w-full flex-col justify-between bg-v3-gray-3 px-8 py-6 lg:bg-white lg:px-0 lg:pr-8"
+          className="flex w-full flex-col justify-between bg-v3-gray-3 px-8 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-8"
         >
           <div className="hidden lg:block">
             <span className="text-2xl">Summary</span>
@@ -589,7 +602,7 @@ const TransferPanel = (): JSX.Element => {
             </Button>
           ) : (
             <Button
-              onClick={() => setConfirmationModalStatus(ModalStatus.WITHDRAW)}
+              onClick={transfer}
               disabled={disableWithdrawal}
               variant="navy"
               isLoading={transferring}
@@ -645,9 +658,6 @@ const TransferPanel = (): JSX.Element => {
             </div>
           )}
         </div>
-        {pendingTransactions?.length > 0 && (
-          <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
-        )}
       </div>
     </>
   )

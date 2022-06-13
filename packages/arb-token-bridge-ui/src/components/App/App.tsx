@@ -15,7 +15,7 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
-import { AppContext } from './AppContext'
+import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
@@ -37,7 +37,6 @@ import {
   UseNetworksAndSignersStatus,
   NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
-import { useBlockNumber } from '../../hooks/useBlockNumber'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -154,9 +153,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
   const networksAndSigners = useNetworksAndSigners()
-  const currentL1BlockNumber = useBlockNumber(
-    networksAndSigners.l1.signer?.provider
-  )
+  const { currentL1BlockNumber } = useAppContextState()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -327,12 +324,12 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   }, [library, networksAndSigners.isConnectedToArbitrum])
 
   return (
-    <AppContext.Provider value={{ currentL1BlockNumber }}>
+    <>
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
       {children}
-    </AppContext.Provider>
+    </>
   )
 }
 
@@ -382,7 +379,7 @@ function ConnectionFallback({
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
       return (
         <div className="flex w-full justify-center">
-          <span className="text-v3-blue-link py-24 text-2xl font-light text-white">
+          <span className="py-24 text-2xl font-light text-v3-blue-link text-white">
             You are on the wrong network.{' '}
             <ExternalLink
               href="https://arbitrum.io/bridge-tutorial"
@@ -412,11 +409,13 @@ const App = (): JSX.Element => {
           </Layout>
         )}
       >
-        <Layout>
-          <Injector>
-            <Routes />
-          </Injector>
-        </Layout>
+        <AppContextProvider>
+          <Layout>
+            <Injector>
+              <Routes />
+            </Injector>
+          </Layout>
+        </AppContextProvider>
       </NetworksAndSignersProvider>
     </Provider>
   )

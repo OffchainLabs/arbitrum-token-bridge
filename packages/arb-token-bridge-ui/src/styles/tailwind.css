@@ -177,6 +177,10 @@ input:checked + .slider:before {
     max-width: 490px;
   }
 
+  .lg\:max-width-725px {
+    max-width: 725px;
+  }
+
   .lg\:min-w-896px {
     min-width: 896px;
   }

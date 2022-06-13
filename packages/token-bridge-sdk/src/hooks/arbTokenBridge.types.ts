@@ -36,6 +36,7 @@ export type NodeBlockDeadlineStatus = number | 'NODE_NOT_CREATED'
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 
 export type L2ToL1EventResultPlus = L2ToL1EventResult & {
+  l2TxHash?: string
   type: AssetType
   value: BigNumber
   tokenAddress?: string

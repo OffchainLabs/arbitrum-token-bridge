@@ -28,6 +28,8 @@ module.exports = {
           // Orange
           orange: '#FFEED3',
           'orange-dark': '#60461F',
+          // Blue
+          'blue-link': '#1366C1',
           // Gray
           'gray-1': '#FAFAFA',
           'gray-2': '#F4F4F4',

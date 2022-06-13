@@ -12,7 +12,7 @@ export interface NodeDataResult {
 }
 
 interface GetTokenWithdrawalsResult {
-  l2ToL1Event: L2ToL1EventResult
+  l2ToL1Event: L2ToL1EventResult & { l2TxHash: string }
   otherData: {
     value: BigNumber
     tokenAddress: string
@@ -118,7 +118,7 @@ export const getETHWithdrawals = async (
   fromBlock: number,
   toBlock: number,
   networkID: string
-): Promise<L2ToL1EventResult[]> => {
+): Promise<(L2ToL1EventResult & { l2TxHash: string })[]> => {
   const client = networkIDAndLayerToClient(networkID, 2)
   const res = await client.query({
     query: gql`{
@@ -143,6 +143,7 @@ export const getETHWithdrawals = async (
   })
   return res.data.l2ToL1Transactions.map((eventData: any) => {
     const {
+      id,
       destination,
       timestamp,
       data,
@@ -154,7 +155,8 @@ export const getETHWithdrawals = async (
       ethBlockNum,
       callvalue
     } = eventData
-    return {
+
+    const l2ToL1Event = {
       destination,
       timestamp,
       data,
@@ -166,6 +168,8 @@ export const getETHWithdrawals = async (
       ethBlockNum: BigNumber.from(ethBlockNum),
       callvalue: BigNumber.from(callvalue)
     } as L2ToL1EventResult
+
+    return { ...l2ToL1Event, l2TxHash: id.split('-')[0] }
   })
 }
 
@@ -211,6 +215,7 @@ export const getTokenWithdrawals = async (
         orderDirection: desc
       ) {
         l2ToL1Event {
+          l2TxHash,
           id,
           caller,
           destination,
@@ -231,6 +236,7 @@ export const getTokenWithdrawals = async (
     const {
       amount: value,
       l2ToL1Event: {
+        l2TxHash,
         id,
         caller,
         destination,
@@ -257,7 +263,7 @@ export const getTokenWithdrawals = async (
     } as L2ToL1EventResult
     const tokenAddress = utils.hexDataSlice(data, 16, 36)
     return {
-      l2ToL1Event,
+      l2ToL1Event: { ...l2ToL1Event, l2TxHash },
       otherData: {
         value: BigNumber.from(value),
         tokenAddress,

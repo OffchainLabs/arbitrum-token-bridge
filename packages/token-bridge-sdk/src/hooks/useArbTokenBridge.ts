@@ -380,8 +380,10 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: 'ETH',
           decimals: 18,
-          nodeBlockDeadline: 'NODE_NOT_CREATED'
+          nodeBlockDeadline: 'NODE_NOT_CREATED',
+          l2TxHash: tx.hash
         }
+
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           return {
             ...oldPendingWithdrawalsMap,
@@ -462,6 +464,7 @@ export const useArbTokenBridge = (
 
   async function depositToken(erc20L1Address: string, amount: BigNumber) {
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+
     const tx = await erc20Bridger.deposit({
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
@@ -476,6 +479,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: symbol,
       assetType: AssetType.ERC20,
+      tokenAddress: erc20L1Address,
       sender: walletAddress,
       l1NetworkID
     })
@@ -545,7 +549,8 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: symbol,
           decimals: decimals,
-          nodeBlockDeadline: 'NODE_NOT_CREATED'
+          nodeBlockDeadline: 'NODE_NOT_CREATED',
+          l2TxHash: tx.hash
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -886,7 +891,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ERC20,
       sender: walletAddress,
       txID: res.hash,
-      l1NetworkID
+      l1NetworkID,
+      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
     })
 
     try {
@@ -935,7 +941,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ETH,
       sender: walletAddress,
       txID: res.hash,
-      l1NetworkID
+      l1NetworkID,
+      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
     })
 
     try {
