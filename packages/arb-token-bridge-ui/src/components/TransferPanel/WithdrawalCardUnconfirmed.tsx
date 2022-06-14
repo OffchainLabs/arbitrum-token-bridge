@@ -24,6 +24,10 @@ function WithdrawalCountdown({ tx }: { tx: MergedTransaction }): JSX.Element {
     return <span>{l2Network.chainID === 42161 ? '~ 1 week' : '~1 day'}</span>
   }
 
+  if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
+    return <span>Failure</span>
+  }
+
   // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
   const confirmationBufferBlocks = 120
   const blocksRemaining = Math.max(
