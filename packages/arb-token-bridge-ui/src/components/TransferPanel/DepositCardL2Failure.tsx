@@ -1,37 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { L1TransactionReceipt, L1ToL2MessageStatus } from '@arbitrum/sdk'
-import Tippy from '@tippyjs/react'
+import { useMemo, useState } from 'react'
+import { L1ToL2MessageStatus, IL1ToL2MessageWriter } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getRetryableTicket } from '../../util/RetryableUtils'
 import { DepositCardContainer, DepositL1TxStatus } from './DepositCard'
-
-type ButtonTooltipProps = {
-  show: boolean
-  children: React.ReactNode
-}
-
-function Tooltip(props: ButtonTooltipProps): JSX.Element {
-  const { show, children } = props
-
-  if (!show) {
-    return <>{children}</>
-  }
-
-  return (
-    <Tippy
-      theme="light"
-      content={
-        <span>
-          Please connect to the L2 network to re-execute your deposit.
-        </span>
-      }
-    >
-      <div className="w-max">{children}</div>
-    </Tippy>
-  )
-}
+import { Tooltip } from '../common/Tooltip'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
@@ -49,51 +24,42 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
     [isConnectedToArbitrum]
   )
 
-  const redeemRetryable = useCallback(
-    async (tx: MergedTransaction) => {
-      setIsRedeemingRetryable(true)
+  async function redeemRetryable() {
+    setIsRedeemingRetryable(true)
 
-      const l1Signer = l1.signer
-      const l2Signer = l2.signer
+    const l1Signer = l1.signer
+    const l2Signer = l2.signer
 
-      if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
-        return
-      }
+    if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
+      return
+    }
 
-      const retryableCreationTxID = tx.l1ToL2MsgData?.retryableCreationTxID
+    let retryableTicket: IL1ToL2MessageWriter
 
-      if (!retryableCreationTxID) {
-        throw new Error("Can't redeem; txid not found")
-      }
+    try {
+      retryableTicket = await getRetryableTicket({
+        l1TxHash: tx.txId,
+        retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
+        l1Provider: l1Signer.provider,
+        l2Signer
+      })
+    } catch (error: any) {
+      return alert(error.message)
+    }
 
-      const l1TxReceipt = new L1TransactionReceipt(
-        await l1Signer.provider.getTransactionReceipt(tx.txId)
-      )
+    const res = await retryableTicket.redeem()
+    await res.wait()
 
-      const messages = await l1TxReceipt.getL1ToL2Messages(l2Signer)
-      const l1ToL2Msg = messages.find(
-        m => m.retryableCreationId === retryableCreationTxID
-      )
+    // update in store
+    arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
+      tx.txId,
+      retryableTicket,
+      tx.asset === 'eth',
+      L1ToL2MessageStatus.REDEEMED
+    )
 
-      if (!l1ToL2Msg) {
-        throw new Error("Can't redeem; message not found")
-      }
-
-      const res = await l1ToL2Msg.redeem()
-      await res.wait()
-
-      // update in store
-      arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
-        tx.txId,
-        l1ToL2Msg,
-        tx.asset === 'eth',
-        L1ToL2MessageStatus.REDEEMED
-      )
-
-      setIsRedeemingRetryable(false)
-    },
-    [arbTokenBridge, l1.signer, l2.signer]
-  )
+    setIsRedeemingRetryable(false)
+  }
 
   return (
     <DepositCardContainer tx={tx}>
@@ -109,11 +75,18 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
           <span className="text-4xl font-semibold text-v3-orange-dark">
             L2 transaction failed
           </span>
-          <Tooltip show={isRedeemButtonDisabled}>
+          <Tooltip
+            show={isRedeemButtonDisabled}
+            content={
+              <span>
+                Please connect to the L2 network to re-execute your deposit.
+              </span>
+            }
+          >
             <button
               className="arb-hover w-max rounded-lg bg-v3-dark px-4 py-3 text-2xl text-white disabled:bg-v3-gray-5"
               disabled={isRedeemButtonDisabled}
-              onClick={() => redeemRetryable(tx)}
+              onClick={redeemRetryable}
             >
               Re-execute
             </button>

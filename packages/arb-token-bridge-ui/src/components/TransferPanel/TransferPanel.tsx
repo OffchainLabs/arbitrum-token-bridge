@@ -3,14 +3,12 @@ import { useLocation } from 'react-router-dom'
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
-import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import { ConnectionState } from '../../util'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
-import { StatusBadge } from '../common/StatusBadge'
 import TransactionConfirmationModal, {
   ModalStatus
 } from '../TransactionConfirmationModal/TransactionConfirmationModal'
@@ -84,11 +82,9 @@ const TransferPanel = (): JSX.Element => {
   const {
     app: {
       connectionState,
-      pwLoadedState,
       changeNetwork,
       selectedToken,
       isDepositMode,
-      pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens, walletAddress },
       arbTokenBridge,
@@ -631,33 +627,6 @@ const TransferPanel = (): JSX.Element => {
           symbol={selectedToken ? selectedToken.symbol : 'Eth'}
           amount={isDepositMode ? l1Amount : l2Amount}
         />
-      </div>
-
-      <div className="mx-auto flex w-full max-w-screen-lg flex-wrap items-end justify-between gap-4">
-        <div>
-          {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-            <div className="flex flex-row py-2">
-              <StatusBadge>
-                <div className="flex items-center space-x-2">
-                  <Loader
-                    type="Oval"
-                    color="rgb(45, 55, 75)"
-                    height={14}
-                    width={14}
-                  />
-                  <span>Loading pending withdrawals</span>
-                </div>
-              </StatusBadge>
-            </div>
-          )}
-          {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
-            <div className="py-2">
-              <StatusBadge variant="red">
-                Loading pending withdrawals failed
-              </StatusBadge>
-            </div>
-          )}
-        </div>
       </div>
     </>
   )

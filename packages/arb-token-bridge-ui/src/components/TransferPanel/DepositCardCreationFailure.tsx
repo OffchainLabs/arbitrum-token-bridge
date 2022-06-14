@@ -4,8 +4,9 @@ import { ClipboardCopyIcon } from '@heroicons/react/outline'
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { DepositCardContainer, shortenTxHash } from './DepositCard'
+import { DepositCardContainer } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
+import { shortenTxHash } from '../../util/CommonUtils'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
@@ -54,7 +55,7 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
           <span className="text-lg text-v3-brick-dark">
             L2 transaction:{' '}
             <span className="text-v3-blue-link">
-              {shortenTxHash(tx.l1ToL2MsgData?.retryableCreationTxID)}
+              {shortenTxHash(tx.l1ToL2MsgData?.retryableCreationTxID || '')}
             </span>
           </span>
         </div>

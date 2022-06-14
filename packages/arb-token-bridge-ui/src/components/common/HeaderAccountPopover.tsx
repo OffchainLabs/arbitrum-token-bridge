@@ -7,6 +7,7 @@ import {
   ExternalLinkIcon,
   LogoutIcon
 } from '@heroicons/react/outline'
+import Loader from 'react-loader-spinner'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
@@ -18,9 +19,38 @@ import {
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
+import { StatusBadge } from './StatusBadge'
+import { PendingWithdrawalsLoadedState } from '../../util'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
+
+function PendingWithdrawalsIndicator() {
+  const {
+    app: { pwLoadedState }
+  } = useAppState()
+
+  if (pwLoadedState === PendingWithdrawalsLoadedState.LOADING) {
+    return (
+      <StatusBadge>
+        <div className="flex items-center space-x-2">
+          <Loader type="Oval" color="#11365E" height={14} width={14} />
+          <span>Loading pending withdrawals</span>
+        </div>
+      </StatusBadge>
+    )
+  }
+
+  if (pwLoadedState === PendingWithdrawalsLoadedState.ERROR) {
+    return (
+      <StatusBadge variant="red">
+        Loading pending withdrawals failed
+      </StatusBadge>
+    )
+  }
+
+  return null
+}
 
 function Avatar({ src, className }: { src: string | null; className: string }) {
   const commonClassName = 'rounded-full border border-white'
@@ -131,7 +161,7 @@ export function HeaderAccountPopover() {
         </div>
       </Popover.Button>
       <Transition>
-        <Popover.Panel className="lg:min-w-896px account-popover-drop-shadow relative right-0 flex h-96 flex-col lg:absolute lg:mt-4">
+        <Popover.Panel className="lg:min-w-896px account-popover-drop-shadow relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4">
           <div className="h-24 bg-v3-arbitrum-dark-blue p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
               <button
@@ -174,7 +204,7 @@ export function HeaderAccountPopover() {
                   {({ selected }) => (
                     <button
                       className={`rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-gray-200`
+                        selected && `bg-v3-gray-1`
                       }`}
                     >
                       Deposits
@@ -185,7 +215,7 @@ export function HeaderAccountPopover() {
                   {({ selected }) => (
                     <button
                       className={`rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-gray-200`
+                        selected && `bg-v3-gray-1`
                       }`}
                     >
                       Withdrawals
@@ -194,13 +224,15 @@ export function HeaderAccountPopover() {
                 </Tab>
               </Tab.List>
               <Tab.Panel>
-                <TransactionsTable transactions={deposits} overflowX={true} />
+                <TransactionsTable transactions={deposits} />
               </Tab.Panel>
               <Tab.Panel>
                 <TransactionsTable
                   transactions={withdrawals}
-                  overflowX={true}
+                  className="rounded-tl-lg"
                 />
+                <div className="h-2" />
+                <PendingWithdrawalsIndicator />
               </Tab.Panel>
             </Tab.Group>
           </div>

@@ -3,25 +3,13 @@ import React, { useMemo } from 'react'
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { shortenTxHash } from '../../util/CommonUtils'
 
 import { DepositCardPending } from './DepositCardPending'
 import { DepositCardL1Failure } from './DepositCardL1Failure'
 import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
-
-export function shortenTxHash(txHash?: string) {
-  if (!txHash) {
-    return null
-  }
-
-  const txHashLength = txHash.length
-
-  return `${txHash.substring(0, 7)}...${txHash.substring(
-    txHashLength - 4,
-    txHashLength
-  )}`
-}
 
 export function DepositL1TxStatus({
   tx
@@ -71,7 +59,7 @@ export function DepositL2TxStatus({
           href={`${l2.network?.explorerUrl}/tx/${tx.l1ToL2MsgData?.l2TxID}`}
           className="arb-hover text-v3-blue-link"
         >
-          {shortenTxHash(tx.l1ToL2MsgData?.l2TxID)}
+          {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}
         </ExternalLink>
       )
 

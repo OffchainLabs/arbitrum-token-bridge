@@ -15,7 +15,6 @@
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
     "react": "^17.0.2",
-    "react-countdown": "^2.3.2",
     "react-dom": "^17.0.2",
     "react-loader-spinner": "^4.0.0",
     "react-router-dom": "^5.2.0",

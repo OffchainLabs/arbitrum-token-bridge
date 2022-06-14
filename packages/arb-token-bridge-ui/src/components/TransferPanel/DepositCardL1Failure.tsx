@@ -4,7 +4,8 @@ import { ClipboardCopyIcon } from '@heroicons/react/outline'
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { DepositCardContainer, shortenTxHash } from './DepositCard'
+import { shortenTxHash } from '../../util/CommonUtils'
+import { DepositCardContainer } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {

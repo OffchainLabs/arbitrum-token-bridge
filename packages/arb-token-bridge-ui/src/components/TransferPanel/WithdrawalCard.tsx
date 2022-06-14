@@ -5,23 +5,11 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { shortenTxHash } from '../../util/CommonUtils'
 
 import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
-
-export function shortenTxHash(txHash?: string) {
-  if (!txHash) {
-    return null
-  }
-
-  const txHashLength = txHash.length
-
-  return `${txHash.substring(0, 7)}...${txHash.substring(
-    txHashLength - 4,
-    txHashLength
-  )}`
-}
 
 export function WithdrawalL2TxStatus({
   tx
