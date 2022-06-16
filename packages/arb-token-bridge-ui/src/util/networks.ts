@@ -110,3 +110,30 @@ export function registerAnyTrustDevnet() {
   addCustomNetwork({ customL2Network: AnyTrustDevnet })
 }
 
+export function registerLocalNetwork() {
+  let localNetwork: {
+    l1Network: L1Network
+    l2Network: L2Network
+  }
+
+  try {
+    // Generate the "localNetwork.json" file by running "yarn gen:network" in @arbitrum/sdk and then copy it over.
+    localNetwork = require('./localNetwork.json')
+  } catch (error) {
+    return console.warn(
+      `Skipping local network registration as no "localNetwork.json" file was found.`
+    )
+  }
+
+  try {
+    const customL1Network = localNetwork.l1Network
+    const customL2Network = localNetwork.l2Network
+
+    rpcURLs[customL1Network.chainID] = customL1Network.rpcURL
+    rpcURLs[customL2Network.chainID] = customL2Network.rpcURL
+
+    addCustomNetwork({ customL1Network, customL2Network })
+  } catch (error: any) {
+    console.error(`Failed to register local network: ${error.message}`)
+  }
+}
