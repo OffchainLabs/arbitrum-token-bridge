@@ -40,7 +40,9 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated,
   L2ToL1EventResult,
-  NodeBlockDeadlineStatus
+  NodeBlockDeadlineStatus,
+  L1EthDepositTransactionLifecycle,
+  L1ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 
 import {
@@ -315,7 +317,10 @@ export const useArbTokenBridge = (
     return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.signer.provider)
   }
 
-  const depositEth = async (amount: BigNumber) => {
+  const depositEth = async (
+    amount: BigNumber,
+    txLifecycle?: L1EthDepositTransactionLifecycle
+  ) => {
     let tx: L1EthDepositTransaction
 
     try {
@@ -324,6 +329,10 @@ export const useArbTokenBridge = (
         l2Provider: l2.signer.provider,
         amount
       })
+
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx)
+      }
     } catch (error: any) {
       return alert(error.message)
     }
@@ -340,6 +349,11 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
+
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(receipt)
+    }
+
     const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
@@ -472,7 +486,11 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-  async function depositToken(erc20L1Address: string, amount: BigNumber) {
+  async function depositToken(
+    erc20L1Address: string,
+    amount: BigNumber,
+    txLifecycle?: L1ContractCallTransactionLifecycle
+  ) {
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
     const tx = await erc20Bridger.deposit({
@@ -481,6 +499,10 @@ export const useArbTokenBridge = (
       erc20L1Address,
       amount
     })
+
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx)
+    }
 
     addTransaction({
       type: 'deposit-l1',
@@ -495,6 +517,11 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
+
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(receipt)
+    }
+
     const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
     const l1ToL2MsgData: L1ToL2MessageData = {

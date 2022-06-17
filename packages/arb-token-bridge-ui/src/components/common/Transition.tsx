@@ -1,19 +1,53 @@
 import React, { Fragment } from 'react'
 import { Transition as HeadlessUITransition } from '@headlessui/react'
 
-export const transitionDefaultProps = {
-  enter: 'transition ease-out duration-100',
-  enterFrom: 'transform opacity-0',
-  enterTo: 'transform opacity-100',
-  leave: 'transition ease-in duration-75',
-  leaveFrom: 'transform opacity-100',
-  leaveTo: 'transform opacity-0'
+type TransitionDuration = 'fast' | 'normal'
+
+function getDurationNumbers(
+  duration: TransitionDuration
+): [enterDuration: number, leaveDuration: number] {
+  switch (duration) {
+    case 'fast':
+      return [150, 100]
+
+    case 'normal':
+      return [300, 200]
+  }
 }
 
-export function Transition({ children }: { children: React.ReactNode }) {
+export function getTransitionProps(duration: TransitionDuration = 'fast') {
+  const [enterDuration, leaveDuration] = getDurationNumbers(duration)
+
+  return {
+    enter: `transition ease-out duration-${enterDuration}`,
+    enterFrom: 'opacity-0',
+    enterTo: 'opacity-100',
+    leave: `transition ease-out duration-${leaveDuration}`,
+    leaveFrom: 'opacity-100',
+    leaveTo: 'opacity-0'
+  }
+}
+
+export type TransitionProps = {
+  duration?: TransitionDuration
+  show?: boolean
+  appear?: boolean
+  children: React.ReactNode
+}
+
+export function Transition({
+  duration = 'fast',
+  show,
+  children
+}: TransitionProps) {
   return (
-    <HeadlessUITransition as={Fragment} {...transitionDefaultProps}>
-      {children}
+    <HeadlessUITransition
+      appear
+      as={Fragment}
+      show={show}
+      {...getTransitionProps(duration)}
+    >
+      <div>{children}</div>
     </HeadlessUITransition>
   )
 }

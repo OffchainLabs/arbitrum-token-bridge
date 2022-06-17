@@ -12,7 +12,6 @@
 @layer base {
   body {
     @apply font-serif;
-    @apply bg-main-bg;
   }
 }
 
@@ -34,13 +33,6 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type='number'] {
   -moz-appearance: textfield;
-}
-
-.Toastify__toast-container {
-  padding: 0 30px !important;
-}
-.Toastify__toast {
-  @apply bg-gray-200 text-center text-gray-800;
 }
 
 button,
@@ -121,14 +113,33 @@ input:checked + .slider:before {
 
   Once we upgrade to Tailwind CSS v3, change to https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values
 */
-.h-100px {
-  height: 100px;
+
+/* top */
+.top-100px {
+  top: 100px;
 }
 
+/* left */
+.left-89px {
+  left: 89px;
+}
+
+/* max-w */
 .max-w-1440px {
   max-width: 1440px;
 }
 
+/* h */
+.h-100px {
+  height: 100px;
+}
+
+/* min-h */
+.min-h-screen-minus-100px {
+  min-height: calc(100vh - 100px);
+}
+
+/* bg */
 .bg-9f9f9f {
   background-color: #9f9f9f;
 }
@@ -137,11 +148,79 @@ input:checked + .slider:before {
   background-color: #383433;
 }
 
+/* border */
 .border-575251 {
   border-color: #575251;
 }
 
-.main-overlay {
+/* lg: */
+@media (min-width: 1024px) {
+  /* lg:w */
+  .lg\:w-466px {
+    width: 466px;
+  }
+
+  /* lg:min-w */
+  .lg\:min-w-540px {
+    min-width: 540px;
+  }
+
+  .lg\:min-w-896px {
+    min-width: 896px;
+  }
+
+  /* lg:max-w */
+  .lg\:max-w-448px {
+    max-width: 448px;
+  }
+
+  .lg\:max-w-490px {
+    max-width: 490px;
+  }
+
+  .lg\:max-w-628px {
+    max-width: 628px;
+  }
+
+  .lg\:max-w-725px {
+    max-width: 725px;
+  }
+
+  /* lg:max-h */
+  .lg\:max-h-screen-minus-100px {
+    max-height: calc(100vh - 100px);
+  }
+
+  /* lg:bg */
+  .lg\:bg-dialog {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  /* lg:shadow */
+  .lg\:shadow-dialog {
+    box-shadow: 0px 4px 12px #acacac;
+  }
+
+  .lg\:shadow-account-popover {
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .lg\:shadow-select-token-popover {
+    box-shadow: 0px 4px 12px #9e9e9e;
+  }
+
+  .lg\:shadow-select-token-list {
+    box-shadow: 0px 4px 10px rgba(120, 120, 120, 0.25);
+  }
+}
+
+/* Custom */
+
+.arb-hover {
+  @apply transition duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-v3-gray-6 active:opacity-90 disabled:border-0 disabled:opacity-100;
+}
+
+.bg-gradient-overlay {
   background: linear-gradient(
     179.53deg,
     #000000 19.46%,
@@ -151,69 +230,11 @@ input:checked + .slider:before {
   );
 }
 
-.box-shadow-network-switch-button {
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
-}
-
-/* lg: */
-@media (min-width: 1024px) {
-  .transfer-panel-network-box-wrapper {
-    min-width: 540px;
-  }
-
-  .account-popover-drop-shadow {
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-  }
-
-  .lg\:max-width-448px {
-    max-width: 448px;
-  }
-
-  .lg\:width-458px {
-    width: 458px;
-  }
-
-  .lg\:max-width-490px {
-    max-width: 490px;
-  }
-
-  .lg\:max-width-725px {
-    max-width: 725px;
-  }
-
-  .lg\:min-w-896px {
-    min-width: 896px;
-  }
-
-  .shadow-select-token-popover {
-    box-shadow: 0px 4px 12px #9e9e9e;
-  }
-
-  .shadow-select-token-list {
-    box-shadow: 0px 4px 10px rgba(120, 120, 120, 0.25);
-  }
-
-  .shadow-dialog {
-    box-shadow: 0px 4px 12px #acacac;
-  }
-
-  .lg\:bg-dialog {
-    background: rgba(0, 0, 0, 0.6);
-  }
-}
-
-.transfer-panel-drop-shadow {
+/* shadow */
+.shadow-transfer-panel {
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.arb-hover {
-  @apply transition duration-200 hover:opacity-75 focus:opacity-75 disabled:opacity-100;
-}
-
-.top-100px {
-  top: 100px;
-}
-
-.bg-network-loading {
-  background: rgba(26, 28, 29, 0.75);
+.shadow-network-switch-button {
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
 }

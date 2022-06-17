@@ -8,6 +8,7 @@ import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
+import { Transition } from '../common/Transition'
 
 const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
@@ -19,7 +20,8 @@ export function MainContent() {
   const {
     app: { mergedTransactions, pwLoadedState }
   } = useAppState()
-  const { seenTransactions } = useAppContextState()
+  const { seenTransactions, layout } = useAppContextState()
+  const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
 
   const unseenTransactions = mergedTransactions.filter(
@@ -73,7 +75,10 @@ export function MainContent() {
               <WithdrawalCard key={`${tx.txId}-${tx.direction}`} tx={tx} />
             )
           )}
-        <TransferPanel />
+
+        <Transition show={isTransferPanelVisible} appear>
+          <TransferPanel />
+        </Transition>
       </div>
     </div>
   )

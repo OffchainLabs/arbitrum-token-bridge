@@ -8,9 +8,9 @@ import useTwitter from '../../hooks/useTwitter'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full flex justify-center bg-black">
-      <div className="w-full lg:px-8 max-w-1440px">
-        <div className="w-full flex">{children}</div>
+    <div className="flex w-full justify-center bg-black">
+      <div className="max-w-1440px w-full lg:px-8">
+        <div className="flex w-full">{children}</div>
       </div>
     </div>
   )
@@ -18,7 +18,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
 function Notification({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full flex flex-row items-center space-x-2 lg:w-auto py-2 px-3 lg:rounded-bl-lg lg:rounded-br-lg bg-v3-cyan lg:text-sm text-v3-cyan-dark">
+    <div className="flex w-full flex-row items-center space-x-2 bg-v3-cyan py-2 px-3 text-v3-cyan-dark lg:w-auto lg:rounded-bl-lg lg:rounded-br-lg lg:text-sm">
       <InformationCircleIcon className="h-4 w-4" />
       {children}
     </div>
@@ -34,7 +34,7 @@ function ArbitrumBetaNotification() {
           target="_blank"
           rel="noreferrer"
           href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
-          className=" underline"
+          className="arb-hover underline"
         >
           Learn more.
         </a>
@@ -50,7 +50,7 @@ function RinkebyTestnetNotification() {
         target="_blank"
         rel="noreferrer"
         href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
-        className=" underline"
+        className="arb-hover underline"
       >
         What is Rinkeby Testnet?
       </a>
@@ -106,18 +106,18 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.jpeg)' }}
       className="flex min-h-screen flex-col bg-repeat"
     >
-      <div>
-        <Header />
+      <Header />
+
+      <div className="min-h-screen-minus-100px bg-gradient-overlay flex flex-col lg:space-y-8">
         <NotificationContainer>
           {isMainnet && <ArbitrumBetaNotification />}
           {isRinkeby && <RinkebyTestnetNotification />}
           {isNitro && <NitroDevnetNotification />}
         </NotificationContainer>
+
+        <main>{props.children}</main>
       </div>
 
-      <main className="flex-grow main-overlay lg:py-8">{props.children}</main>
-
-      <div className="h-64" />
       <Footer />
     </div>
   )

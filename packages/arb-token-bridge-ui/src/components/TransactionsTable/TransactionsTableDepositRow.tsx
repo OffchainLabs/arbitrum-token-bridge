@@ -1,14 +1,13 @@
 import { useMemo } from 'react'
-import { L1ToL2MessageStatus, IL1ToL2MessageWriter } from '@arbitrum/sdk'
 
-import { useAppState } from '../../state'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { StatusBadge } from '../common/StatusBadge'
+import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getRetryableTicket } from '../../util/RetryableUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { ExternalLink } from '../common/ExternalLink'
+import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
@@ -118,52 +117,31 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
-  const {
-    l1: { signer: l1Signer },
-    l2: { signer: l2Signer },
-    isConnectedToArbitrum
-  } = useNetworksAndSigners()
+  const { isConnectedToArbitrum } = useNetworksAndSigners()
+  const { redeem, isRedeeming } = useRedeemRetryable()
+
+  const isError = useMemo(() => {
+    if (tx.depositStatus === DepositStatus.L1_FAILURE) {
+      return true
+    }
+
+    if (tx.depositStatus === DepositStatus.CREATION_FAILED) {
+      // In case of a retryable ticket creation failure, mark only the token deposits as errors
+      return tx.asset !== 'eth'
+    }
+
+    return false
+  }, [tx])
 
   const showRedeemRetryableButton = useMemo(
     () => tx.depositStatus === DepositStatus.L2_FAILURE,
     [tx]
   )
 
-  async function redeemRetryable() {
-    if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
-      return
-    }
-
-    let retryableTicket: IL1ToL2MessageWriter
-
-    try {
-      retryableTicket = await getRetryableTicket({
-        l1TxHash: tx.txId,
-        retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: l1Signer.provider,
-        l2Signer
-      })
-    } catch (error: any) {
-      return alert(error.message)
-    }
-
-    const res = await retryableTicket.redeem()
-    await res.wait()
-
-    // update in store
-    arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
-      tx.txId,
-      retryableTicket,
-      tx.asset === 'eth',
-      L1ToL2MessageStatus.REDEEMED
-    )
-  }
+  const bgClassName = isError ? 'bg-v3-brick' : ''
 
   return (
-    <tr className={`text-sm text-v3-dark ${className}`}>
+    <tr className={`text-sm text-v3-dark ${bgClassName} ${className}`}>
       <td className="w-1/5 py-3 pl-6 pr-3">
         <DepositRowStatus tx={tx} />
       </td>
@@ -190,13 +168,14 @@ export function TransactionsTableDepositRow({
               </span>
             }
           >
-            <button
-              onClick={redeemRetryable}
+            <Button
+              variant="primary"
+              loading={isRedeeming}
               disabled={!isConnectedToArbitrum}
-              className="arb-hover w-max rounded-lg bg-v3-dark px-2 py-1 text-sm text-white disabled:bg-v3-gray-5"
+              onClick={() => redeem(tx)}
             >
               Re-execute
-            </button>
+            </Button>
           </Tooltip>
         )}
       </td>

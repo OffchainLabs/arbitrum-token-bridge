@@ -4,11 +4,12 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
+import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { isConnectedToArbitrum } = useNetworksAndSigners()
-  const { claim } = useClaimWithdrawal()
+  const { claim, isClaiming } = useClaimWithdrawal()
 
   const isClaimButtonDisabled = useMemo(
     () =>
@@ -32,13 +33,15 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
           </span>
         }
       >
-        <button
-          className="arb-hover w-max rounded-lg bg-v3-dark px-4 py-3 text-2xl text-white disabled:bg-v3-gray-5"
+        <Button
+          variant="primary"
+          loading={isClaiming}
           disabled={isClaimButtonDisabled}
           onClick={() => claim(tx)}
+          className="text-2xl"
         >
           Claim {tx.value} {tx.asset.toUpperCase()}
-        </button>
+        </Button>
       </Tooltip>
 
       <div className="flex flex-col font-light">

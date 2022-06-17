@@ -8,6 +8,7 @@ import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { ExternalLink } from '../common/ExternalLink'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 
 function findMatchingL1Tx(
@@ -153,7 +154,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
 
 function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
   const { isConnectedToArbitrum } = useNetworksAndSigners()
-  const { claim } = useClaimWithdrawal()
+  const { claim, isClaiming } = useClaimWithdrawal()
 
   if (tx.status === 'Confirmed') {
     return (
@@ -165,13 +166,14 @@ function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
           </span>
         }
       >
-        <button
+        <Button
+          variant="primary"
+          loading={isClaiming}
           disabled={isConnectedToArbitrum}
           onClick={() => claim(tx)}
-          className="arb-hover w-max rounded-lg bg-v3-dark px-2 py-1 text-sm text-white disabled:bg-v3-gray-5"
         >
           Claim
-        </button>
+        </Button>
       </Tooltip>
     )
   }

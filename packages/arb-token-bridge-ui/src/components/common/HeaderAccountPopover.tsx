@@ -7,10 +7,10 @@ import {
   ExternalLinkIcon,
   LogoutIcon
 } from '@heroicons/react/outline'
-import Loader from 'react-loader-spinner'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
+import { PendingWithdrawalsLoadedState } from '../../util'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import {
   useNetworksAndSigners,
@@ -18,38 +18,27 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
-import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
-import { StatusBadge } from './StatusBadge'
-import { PendingWithdrawalsLoadedState } from '../../util'
+import {
+  TransactionsTable,
+  TransactionsDataStatus
+} from '../TransactionsTable/TransactionsTable'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
 
-function PendingWithdrawalsIndicator() {
-  const {
-    app: { pwLoadedState }
-  } = useAppState()
+function getTransactionsDataStatus(
+  pwLoadedState: PendingWithdrawalsLoadedState
+): TransactionsDataStatus {
+  switch (pwLoadedState) {
+    case PendingWithdrawalsLoadedState.LOADING:
+      return 'loading'
 
-  if (pwLoadedState === PendingWithdrawalsLoadedState.LOADING) {
-    return (
-      <StatusBadge>
-        <div className="flex items-center space-x-2">
-          <Loader type="Oval" color="#11365E" height={14} width={14} />
-          <span>Loading pending withdrawals</span>
-        </div>
-      </StatusBadge>
-    )
+    case PendingWithdrawalsLoadedState.ERROR:
+      return 'error'
+
+    case PendingWithdrawalsLoadedState.READY:
+      return 'success'
   }
-
-  if (pwLoadedState === PendingWithdrawalsLoadedState.ERROR) {
-    return (
-      <StatusBadge variant="red">
-        Loading pending withdrawals failed
-      </StatusBadge>
-    )
-  }
-
-  return null
 }
 
 function Avatar({ src, className }: { src: string | null; className: string }) {
@@ -73,9 +62,10 @@ export function HeaderAccountPopover() {
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const [, copyToClipboard] = useCopyToClipboard()
   const {
-    app: { mergedTransactions }
+    app: { mergedTransactions, pwLoadedState }
   } = useAppState()
 
+  const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
 
   useEffect(() => {
@@ -126,6 +116,12 @@ export function HeaderAccountPopover() {
     return `${account.substring(0, 5)}...${account.substring(len - 4, len)}`
   }, [account])
 
+  function copy(value: string) {
+    setShowCopied(true)
+    copyToClipboard(value)
+    setTimeout(() => setShowCopied(false), 1000)
+  }
+
   function disconnectWallet() {
     disconnect()
     web3Modal?.clearCachedProvider()
@@ -149,7 +145,7 @@ export function HeaderAccountPopover() {
   }
 
   return (
-    <Popover className="relative z-50 max-w-full">
+    <Popover className="relative z-50 w-full">
       <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
         <div className="py-3 lg:py-0">
           <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-v3-dark lg:px-3 lg:py-2">
@@ -161,12 +157,17 @@ export function HeaderAccountPopover() {
         </div>
       </Popover.Button>
       <Transition>
-        <Popover.Panel className="lg:min-w-896px account-popover-drop-shadow relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4">
-          <div className="h-24 bg-v3-arbitrum-dark-blue p-4 lg:rounded-tl-md lg:rounded-tr-md">
+        <Popover.Panel className="lg:min-w-896px lg:shadow-account-popover relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4">
+          <div className="bg-v3-arbitrum-dark-blue p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
+              <Transition show={showCopied}>
+                <span className="left-89px absolute top-4 text-xs font-light text-white">
+                  Copied to clipboard!
+                </span>
+              </Transition>
               <button
                 className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
-                onClick={() => copyToClipboard(ensInfo.name || account || '')}
+                onClick={() => copy(ensInfo.name || account || '')}
               >
                 <Avatar src={ensInfo.avatar} className="h-14 w-14" />
                 <div className="flex flex-row items-center space-x-3">
@@ -203,7 +204,7 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`rounded-tl-lg rounded-tr-lg px-4 py-2 ${
+                      className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
                         selected && `bg-v3-gray-1`
                       }`}
                     >
@@ -214,7 +215,7 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`rounded-tl-lg rounded-tr-lg px-4 py-2 ${
+                      className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
                         selected && `bg-v3-gray-1`
                       }`}
                     >
@@ -224,15 +225,18 @@ export function HeaderAccountPopover() {
                 </Tab>
               </Tab.List>
               <Tab.Panel>
-                <TransactionsTable transactions={deposits} />
+                <TransactionsTable
+                  // Currently we load deposit history from local cache, so it's always a success
+                  status="success"
+                  transactions={deposits}
+                />
               </Tab.Panel>
               <Tab.Panel>
                 <TransactionsTable
+                  status={getTransactionsDataStatus(pwLoadedState)}
                   transactions={withdrawals}
                   className="rounded-tl-lg"
                 />
-                <div className="h-2" />
-                <PendingWithdrawalsIndicator />
               </Tab.Panel>
             </Tab.Group>
           </div>

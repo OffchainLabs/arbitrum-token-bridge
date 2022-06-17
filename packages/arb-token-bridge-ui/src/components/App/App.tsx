@@ -65,19 +65,15 @@ const NoMetamaskIndicator = (): JSX.Element => {
           rel="noopener noreferrer"
         >
           <img
-            className="w-full max-w-96"
+            className="w-96"
             src="/images/impact_transparent.png"
             alt="Wallet"
           />
         </a>
       </div>
       <div className="flex justify-center">
-        <Button
-          onClick={() => showConnectionModal()}
-          type="button"
-          className="px-12"
-        >
-          Login
+        <Button variant="primary" onClick={showConnectionModal}>
+          Connect Wallet
         </Button>
       </div>
     </div>
@@ -86,9 +82,9 @@ const NoMetamaskIndicator = (): JSX.Element => {
 
 function NetworkLoading() {
   return (
-    <div className="bg-network-loading absolute top-0 left-0 flex h-screen w-full items-center justify-center">
+    <div className="absolute top-0 left-0 flex h-screen w-full items-center justify-center">
       <div className="opacity-100">
-        <Loader type="Oval" color="white" height={96} width={96} />
+        <Loader type="TailSpin" color="white" height={64} width={64} />
       </div>
     </div>
   )

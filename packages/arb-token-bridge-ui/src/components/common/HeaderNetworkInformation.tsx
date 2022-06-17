@@ -27,7 +27,7 @@ export function HeaderNetworkInformation() {
     case UseNetworksAndSignersStatus.LOADING:
       return (
         <div className="rounded-full p-3 lg:bg-v3-dark lg:p-2">
-          <Loader type="Oval" height={32} width={32} color="white" />
+          <Loader type="TailSpin" height={32} width={32} color="white" />
         </div>
       )
 

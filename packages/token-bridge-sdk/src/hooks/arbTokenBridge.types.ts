@@ -12,6 +12,13 @@ import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumG
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 
 import {
+  L1EthDepositTransaction,
+  L1EthDepositTransactionReceipt,
+  L1ContractCallTransaction,
+  L1ContractCallTransactionReceipt
+} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+
+import {
   FailedTransaction,
   NewTransaction,
   Transaction,
@@ -30,6 +37,21 @@ export enum AssetType {
   ERC721 = 'ERC721',
   ETH = 'ETH'
 }
+
+export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
+  onTxSubmit: (tx: Tx) => void
+  onTxConfirm: (txReceipt: TxReceipt) => void
+}>
+
+export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
+  L1EthDepositTransaction,
+  L1EthDepositTransactionReceipt
+>
+
+export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
+  L1ContractCallTransaction,
+  L1ContractCallTransactionReceipt
+>
 
 export type NodeBlockDeadlineStatus =
   | number
@@ -135,7 +157,10 @@ export interface ArbTokenBridgeBalances {
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: (weiValue: BigNumber) => Promise<void | ContractReceipt>
+  deposit: (
+    weiValue: BigNumber,
+    txLifecycle?: L1EthDepositTransactionLifecycle
+  ) => Promise<void | ContractReceipt>
   withdraw: (weiValue: BigNumber) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
@@ -157,7 +182,8 @@ export interface ArbTokenBridgeToken {
   approveL2: (erc20L1Address: string) => Promise<void>
   deposit: (
     erc20Address: string,
-    amount: BigNumber
+    amount: BigNumber,
+    txLifecycle?: L1ContractCallTransactionLifecycle
   ) => Promise<void | ContractReceipt>
   withdraw: (
     erc20l1Address: string,

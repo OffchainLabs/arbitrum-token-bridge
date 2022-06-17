@@ -2213,7 +2213,7 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.5.tgz#db5a11bf66bdab39569719555b0f76e138d7bd64"
   integrity sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==
 
-"@rehooks/local-storage@^2.3.0":
+"@rehooks/local-storage@2.4.0", "@rehooks/local-storage@^2.3.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.0.tgz#fb884b2b657cad5f77aa6ab60bb3532f0e0725d2"
   integrity sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg==
@@ -8161,6 +8161,11 @@ hash.js@1.1.7, hash.js@^1.0.0, hash.js@^1.0.3, hash.js@^1.1.7:
   dependencies:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
+
+hashlru@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/hashlru/-/hashlru-2.3.0.tgz#5dc15928b3f6961a2056416bb3a4910216fdfb51"
+  integrity sha512-0cMsjjIC8I+D3M44pOQdsy0OHXGLVz6Z0beRuufhKa0KfaD2wGwAev6jILzXsd3/vpnNQJmWyZtIILqM1N+n5A==
 
 he@^1.1.0, he@^1.2.0:
   version "1.2.0"
@@ -15393,6 +15398,13 @@ taffydb@2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/taffydb/-/taffydb-2.6.2.tgz#7cbcb64b5a141b6a2efc2c5d2c67b4e150b2a268"
   integrity sha1-fLy2S1oUG2ou/CxdLGe04VCyomg=
+
+tailwind-merge@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-0.9.0.tgz#3c7df4983515d291cc1136dd9269c7e8d8d37c7e"
+  integrity sha512-nHI0CoAAais8+0lwIiDposkhmdr4ejRVZxJH8bzZFbB7d6/jkciyl9lgHmkNpCJ0MMYi4Xg8JjHXZX7/67g3Tw==
+  dependencies:
+    hashlru "^2.3.0"
 
 "tailwindcss@npm:@tailwindcss/postcss7-compat@2.1.2":
   version "2.1.2"

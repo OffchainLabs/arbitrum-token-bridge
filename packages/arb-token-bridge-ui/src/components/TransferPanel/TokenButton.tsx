@@ -80,7 +80,7 @@ export function TokenButton(): JSX.Element {
           </div>
         </Popover.Button>
         <Transition>
-          <Popover.Panel className="top-100px shadow-select-token-popover lg:width-458px absolute left-0 z-50 w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:rounded-lg lg:p-6">
+          <Popover.Panel className="top-100px lg:shadow-select-token-popover lg:w-466px absolute left-0 z-50 w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:rounded-lg lg:p-6">
             {({ close }) => (
               <TokenModal close={close} onImportToken={handleImportToken} />
             )}

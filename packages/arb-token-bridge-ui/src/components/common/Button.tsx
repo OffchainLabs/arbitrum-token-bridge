@@ -1,50 +1,74 @@
-import React from 'react'
-
+import React, { forwardRef } from 'react'
 import Loader from 'react-loader-spinner'
+import { twMerge } from 'tailwind-merge'
 
-type ButtonVariant = 'blue' | 'navy' | 'white'
+type ButtonVariant = 'primary' | 'secondary'
 
-const variants: Record<string, string> = {
-  blue: 'bg-bright-blue text-white',
-  navy: 'bg-navy text-white',
-  white: 'bg-white border border-gray-300 text-gray-700'
+function getClassNameForVariant(variant: ButtonVariant) {
+  switch (variant) {
+    case 'primary':
+      return 'bg-v3-dark text-white'
+
+    case 'secondary':
+      return 'bg-transparent text-v3-dark'
+  }
 }
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant
-  children: React.ReactNode
-  isLoading?: boolean
-  className?: string
+const defaultClassName = 'arb-hover w-max rounded-lg px-4 py-3 text-sm'
+const disabledClassName = 'disabled:bg-v3-gray-5 disabled:text-white'
+
+type ButtonLoadingProps = Partial<{
+  loaderColor: string
+  loaderWidth: string
+  loaderHeight: string
+}>
+
+export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant: ButtonVariant
+  loading?: boolean
+  loadingProps?: ButtonLoadingProps
 }
 
-const Button = ({
-  children,
-  variant = 'blue',
-  className,
-  disabled,
-  isLoading,
-  ...props
-}: ButtonProps): JSX.Element => {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={`flex items-center justify-center rounded-md px-5 py-2.5 focus:outline-none
-        ${variants[variant]} ${className}
-        ${
-          disabled
-            ? 'bg-v3-gray-6 cursor-not-allowed'
-            : 'hover:opacity-90 active:opacity-80 opacity-100 '
-        }`}
-      {...props}
-    >
-      {isLoading ? (
-        <Loader type="Oval" color="rgb(45, 55, 75)" height={14} width={14} />
-      ) : (
-        children
-      )}
-    </button>
-  )
-}
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      variant,
+      loading,
+      loadingProps,
+      disabled,
+      className: customClassName,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const showLoader = loading || false
 
-export { Button }
+    return (
+      <button
+        ref={ref}
+        type="button"
+        disabled={disabled}
+        className={twMerge(
+          defaultClassName,
+          disabledClassName,
+          getClassNameForVariant(variant),
+          customClassName
+        )}
+        {...props}
+      >
+        <div className="flex flex-row items-center justify-center space-x-3">
+          {showLoader && (
+            <Loader
+              type="TailSpin"
+              color={loadingProps?.loaderColor || 'white'}
+              width={loadingProps?.loaderWidth || 16}
+              height={loadingProps?.loaderHeight || 16}
+            />
+          )}
+          <span>{children}</span>
+        </div>
+      </button>
+    )
+  }
+)

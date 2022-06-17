@@ -26,9 +26,11 @@ import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { useDialog } from '../common/DialogV3'
+import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
+import { LowBalanceDialog } from './LowBalanceDialog'
+import { useAppContextDispatch } from '../App/AppContext'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -93,6 +95,7 @@ const TransferPanel = (): JSX.Element => {
   } = useAppState()
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
+  const dispatch = useAppContextDispatch()
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
@@ -112,6 +115,11 @@ const TransferPanel = (): JSX.Element => {
   const { shouldDisableDeposit } = useWithdrawOnly()
   const { shouldRequireApprove } = useL2Approve()
 
+  const [
+    lowBalanceDialogProps,
+    openLowBalanceDialog,
+    { didOpen: didOpenLowBalanceDialog }
+  ] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
@@ -178,6 +186,32 @@ const TransferPanel = (): JSX.Element => {
       Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
     )
   }
+
+  useEffect(() => {
+    // This effect runs every time the balance updates, but we want to show the dialog only once
+    if (didOpenLowBalanceDialog) {
+      return
+    }
+
+    if (typeof arbTokenBridge.balances !== 'undefined') {
+      const ethBalance = arbTokenBridge.balances.eth.balance
+
+      if (ethBalance) {
+        const isMainnet = l1Network?.chainID === 1
+        const isLowBalance = ethBalance.lte(utils.parseEther('0.05'))
+
+        if (isMainnet && isDepositMode && isLowBalance) {
+          openLowBalanceDialog()
+        }
+      }
+    }
+  }, [
+    l1Network,
+    isDepositMode,
+    arbTokenBridge.balances,
+    didOpenLowBalanceDialog,
+    openLowBalanceDialog
+  ])
 
   const l1Balance = useMemo(() => {
     if (selectedToken) {
@@ -380,10 +414,11 @@ const TransferPanel = (): JSX.Element => {
               await latestToken.current.approveL2(selectedToken.address)
             }
           }
-          latestToken.current.withdraw(selectedToken.address, amountRaw)
+
+          await latestToken.current.withdraw(selectedToken.address, amountRaw)
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          latestEth.current.withdraw(amountRaw)
+          await latestEth.current.withdraw(amountRaw)
         }
       }
     } catch (ex) {
@@ -440,8 +475,10 @@ const TransferPanel = (): JSX.Element => {
 
       <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
 
-      <div className="transfer-panel-drop-shadow mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
-        <div className="transfer-panel-network-box-wrapper flex flex-col px-8 pt-6 lg:px-0 lg:pl-8">
+      <LowBalanceDialog {...lowBalanceDialogProps} />
+
+      <div className="shadow-transfer-panel mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
+        <div className="lg:min-w-540px flex flex-col px-6 py-6 lg:px-0 lg:pl-6">
           <NetworkBox
             isL1
             amount={l1Amount}
@@ -476,7 +513,7 @@ const TransferPanel = (): JSX.Element => {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex w-full flex-col justify-between bg-v3-gray-3 px-8 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-8"
+          className="flex w-full flex-col justify-between bg-v3-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
         >
           <div className="hidden lg:block">
             <span className="text-2xl">Summary</span>
@@ -578,7 +615,7 @@ const TransferPanel = (): JSX.Element => {
             </>
           ) : (
             <>
-              <div className="hidden min-h-56 text-lg text-v3-gray-7 lg:block">
+              <div className="min-h-56 hidden text-lg text-v3-gray-7 lg:block">
                 <span className="text-xl">
                   Bridging summary will appear here.
                 </span>
@@ -589,20 +626,21 @@ const TransferPanel = (): JSX.Element => {
 
           {isDepositMode ? (
             <Button
-              onClick={transfer}
+              variant="primary"
+              loading={transferring}
               disabled={disableDeposit}
-              isLoading={transferring}
-              className="h-16 rounded-xl bg-v3-arbitrum-dark-blue text-xl font-normal text-white"
+              onClick={transfer}
+              className="w-full bg-v3-arbitrum-dark-blue py-4 text-lg lg:text-2xl"
             >
               Move funds to {l2Network?.name}
             </Button>
           ) : (
             <Button
-              onClick={transfer}
+              variant="primary"
+              loading={transferring}
               disabled={disableWithdrawal}
-              variant="navy"
-              isLoading={transferring}
-              className="h-16 rounded-xl bg-v3-ethereum-dark-purple text-xl font-normal text-white"
+              onClick={transfer}
+              className="w-full bg-v3-ethereum-dark-purple py-4 text-lg lg:text-2xl"
             >
               Move funds to {l1Network?.name}
             </Button>

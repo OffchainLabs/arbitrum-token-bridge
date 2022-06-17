@@ -463,25 +463,18 @@ function TokensPanel({
           />
 
           <Button
-            variant="white"
             type="submit"
+            variant="secondary"
+            loading={isAddingToken}
+            loadingProps={{ loaderColor: '#999999' /** text-v3-gray-9 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
-            className="h-10 w-auto border-v3-gray-4 text-v3-gray-9"
+            className="border border-v3-gray-4 py-1 text-v3-gray-9"
           >
-            {isAddingToken ? (
-              <Loader
-                type="Oval"
-                color="rgb(45, 55, 75)"
-                height={16}
-                width={16}
-              />
-            ) : (
-              <span className="text-sm font-normal">Add</span>
-            )}
+            Add
           </Button>
         </div>
       </form>
-      <div className="shadow-select-token-list flex flex-grow flex-col overflow-auto rounded-md border border-v3-gray-4">
+      <div className="lg:shadow-select-token-list flex flex-grow flex-col overflow-auto rounded-md border border-v3-gray-4">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List

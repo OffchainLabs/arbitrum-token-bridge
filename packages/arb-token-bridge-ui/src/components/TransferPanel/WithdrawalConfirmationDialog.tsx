@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CheckIcon } from '@heroicons/react/outline'
 
-import { DialogV3, UseDialogProps } from '../common/DialogV3'
+import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -35,14 +35,14 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
   }
 
   return (
-    <DialogV3
+    <Dialog
       {...props}
       onClose={closeWithReset}
       title={`Move funds to ${l1.network?.name}`}
       actionButtonTitle="Continue"
       actionButtonProps={{ disabled: !bothCheckboxesChecked }}
     >
-      <div className="lg:max-width-725px flex flex-col space-y-6">
+      <div className="lg:max-w-725px flex flex-col space-y-6">
         <div className="flex flex-col space-y-2">
           <span className="font-light">
             Get your funds in {confirmationPeriod} and pay a small fee twice.{' '}
@@ -76,6 +76,6 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
           </span>
         </div>
       </div>
-    </DialogV3>
+    </Dialog>
   )
 }

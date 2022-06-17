@@ -55,8 +55,8 @@ export function Footer() {
 
   return (
     <footer className="flex justify-center pt-16" style={footerBackgroundStyle}>
-      <div className="flex flex-col w-full max-w-1440px lg:px-8 space-y-12 py-20 lg:py-8 text-white">
-        <div className="flex flex-col items-center lg:items-start text-center px-8 lg:px-0 space-y-4">
+      <div className="max-w-1440px flex w-full flex-col space-y-12 py-20 text-white lg:px-8 lg:py-8">
+        <div className="flex flex-col items-center space-y-4 px-8 text-center lg:items-start lg:px-0">
           <span className="text-4xl">The most secure L2</span>
           <span className="text-3xl font-light">
             Ask us about our fraud proofs
@@ -64,23 +64,25 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col space-y-8">
-          <ul className="grid lg:grid-rows-2 lg:grid-cols-3 text-center lg:text-left font-light lg:font-normal lg:max-width-448px">
+          <ul className="lg:max-w-448px grid text-center font-light lg:grid-cols-3 lg:grid-rows-2 lg:text-left lg:font-normal">
             {footerLinks.map(link => (
               <li key={link.href} className={`lg:order-${link.lgOrder}`}>
-                <ExternalLink href={link.href}>{link.title}</ExternalLink>
+                <ExternalLink href={link.href} className="arb-hover">
+                  {link.title}
+                </ExternalLink>
               </li>
             ))}
           </ul>
-          <div className="flex lg:hidden flex-row justify-center space-x-6">
+          <div className="flex flex-row justify-center space-x-6 lg:hidden">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"
-              className="h-8 w-8"
+              className="arb-hover h-8 w-8"
             >
               <img src="/icons/discord.png" alt="Discord" />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
-              className="h-8 w-8"
+              className="arb-hover h-8 w-8"
             >
               <img src="/icons/twitter.png" alt="Twitter" />
             </ExternalLink>

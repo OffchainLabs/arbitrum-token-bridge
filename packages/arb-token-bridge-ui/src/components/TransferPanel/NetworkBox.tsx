@@ -1,16 +1,14 @@
 import React, { useMemo } from 'react'
-
 import { useWallet } from '@arbitrum/use-wallet'
-import { BigNumber } from 'ethers'
-import { formatUnits } from 'ethers/lib/utils'
-import Loader from 'react-loader-spinner'
+import { BigNumber, utils } from 'ethers'
 import { BridgeBalance } from 'token-bridge-sdk'
-
-import { useAppState } from '../../state'
+import Loader from 'react-loader-spinner'
 
 import { AmountBox } from './AmountBox'
 import { TokenButton } from './TokenButton'
+import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { formatBigNumber } from '../../util/NumberUtils'
 
 const NetworkStyleProps: {
   L1: { style: React.CSSProperties; className: string }
@@ -48,7 +46,7 @@ function NetworkInfo({ isL1 }: { isL1: boolean }): JSX.Element | null {
   }
 
   return (
-    <span className="text-white text-lg lg:text-2xl font-regular">
+    <span className="font-regular text-lg text-white lg:text-2xl">
       <span className="hidden sm:inline">{fromOrTo}: </span>
       <span>{isL1 ? l1Network.name : l2Network.name}</span>
     </span>
@@ -91,15 +89,15 @@ const NetworkBox = ({
     }
     if (selectedToken) {
       // @ts-ignore
-      setAmount(formatUnits(balance, selectedToken?.decimals || 18))
+      setAmount(utils.formatUnits(balance, selectedToken?.decimals || 18))
       return
     }
     const gasPrice: BigNumber | undefined = await provider?.getGasPrice()
     if (!gasPrice) {
       return
     }
-    console.log('Gas price', formatUnits(gasPrice.toString(), 18))
-    const balanceMinusGas = formatUnits(
+    console.log('Gas price', utils.formatUnits(gasPrice.toString(), 18))
+    const balanceMinusGas = utils.formatUnits(
       balance.sub(gasPrice).toString(),
       // @ts-ignore
       selectedToken?.decimals || 18
@@ -110,27 +108,17 @@ const NetworkBox = ({
   }
 
   const balanceMemo = useMemo(() => {
-    function formatBalance(balance: BigNumber, decimals: number | undefined) {
-      if (balance.isZero()) {
-        return '0'
-      }
-
-      return parseFloat(formatUnits(balance, decimals || 18)).toFixed(6)
-    }
-
     return (
-      <div className="inline-flex items-center">
+      <div className="flex items-center">
         {balance ? (
-          <span className="mr-1 text-white lg:text-xl font-light">
-            {formatBalance(balance, selectedToken?.decimals)}
+          <span className="mr-1 font-light text-white lg:text-xl">
+            Balance: {formatBigNumber(balance, selectedToken?.decimals)}
           </span>
         ) : (
-          <div className="ml-1">
-            <Loader type="Oval" color="white" height={12} width={12} />
-          </div>
+          <Loader type="TailSpin" color="white" height={16} width={16} />
         )}
         {balance !== null && balance !== undefined && (
-          <span className="mr-1 text-white lg:text-xl font-light">
+          <span className="mr-1 font-light text-white lg:text-xl">
             {selectedToken ? selectedToken.symbol : 'ETH '}
           </span>
         )}
@@ -143,26 +131,21 @@ const NetworkBox = ({
 
   return (
     <div
-      className={`w-full p-2 rounded-xl ${className} ${networkStyleProps.className}`}
+      className={`w-full rounded-xl p-2 ${className} ${networkStyleProps.className}`}
     >
       <div
         className={`p-4 ${networkStyleProps.className}`}
         style={networkStyleProps.style}
       >
         <div className="flex flex-col">
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-row items-center justify-between">
             <NetworkInfo isL1={isL1} />
-            <div>
-              <span className="text-white lg:text-xl font-light">
-                Balance:{' '}
-              </span>
-              {balanceMemo}
-            </div>
+            <div>{balanceMemo}</div>
           </div>
           {canIEnterAmount && (
             <>
               <div className="h-4" />
-              <div className="flex flex-row items-center rounded-lg h-16 bg-white border border-v3-gray-9">
+              <div className="flex h-16 flex-row items-center rounded-lg border border-v3-gray-9 bg-white">
                 <TokenButton />
                 <div className="h-full border-r border-v3-gray-4" />
                 <AmountBox

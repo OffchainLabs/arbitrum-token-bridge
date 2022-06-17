@@ -3,7 +3,7 @@ import { InformationCircleIcon } from '@heroicons/react/outline'
 import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
-import { DialogV3, UseDialogProps } from '../common/DialogV3'
+import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
@@ -56,14 +56,14 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }
 
   return (
-    <DialogV3
+    <Dialog
       {...props}
       onClose={closeWithReset}
       title="Acknowledge approval and deposit fees"
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}
     >
-      <div className="lg:max-width-490px flex flex-col space-y-6">
+      <div className="lg:max-w-490px flex flex-col space-y-6">
         <div className="flex flex-row items-center space-x-2">
           <Checkbox checked={checked} onChange={setChecked} />
           <span className="text-sm font-light">
@@ -85,6 +85,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           </span>
         </div>
       </div>
-    </DialogV3>
+    </Dialog>
   )
 }

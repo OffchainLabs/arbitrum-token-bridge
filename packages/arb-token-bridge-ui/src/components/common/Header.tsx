@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { Disclosure } from '@headlessui/react'
 
+import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { HeaderMenuDesktop, HeaderMenuMobile } from './HeaderMenu'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
@@ -87,7 +88,7 @@ function DesktopExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="hidden lg:block text-white text-base arb-hover"
+      className="arb-hover hidden text-base text-white lg:block"
       {...props}
     >
       {children}
@@ -113,17 +114,17 @@ export function Header() {
   }, [isMainnet])
 
   return (
-    <header className={`flex justify-center h-100px z-50 ${headerBgClassName}`}>
-      <div className="flex justify-between w-full max-w-1440px px-8">
+    <header className={`h-100px z-50 flex justify-center ${headerBgClassName}`}>
+      <div className="max-w-1440px flex w-full justify-between px-8">
         <div className="flex items-center lg:space-x-6 xl:space-x-12">
-          <a href="/" className="flex flex-col items-center arb-hover">
+          <a href="/" className="arb-hover flex flex-col items-center">
             <img
               src={`/images/ArbitrumHorizontal${l1Network?.chainID || 1}.png`}
               alt="Arbitrum"
-              className="w-56 lg:w-60 -ml-2 lg:ml-0"
+              className="-ml-2 w-56 lg:ml-0 lg:w-60"
             />
           </a>
-          <div className="hidden lg:flex items-center lg:space-x-4 xl:space-x-8">
+          <div className="hidden items-center lg:flex lg:space-x-4 xl:space-x-8">
             <HeaderMenuDesktop
               items={learnLinks.map(learn => ({
                 title: learn.title,
@@ -163,24 +164,26 @@ export function Header() {
                 </Disclosure.Button>
               )}
               <Disclosure.Panel>
-                <HeaderMobile />
+                <Transition>
+                  <HeaderMobile />
+                </Transition>
               </Disclosure.Panel>
             </div>
           )}
         </Disclosure>
-        <div className="hidden lg:flex items-center lg:space-x-4">
+        <div className="hidden items-center lg:flex lg:space-x-4">
           <HeaderNetworkInformation />
           <HeaderAccountPopover />
           <div className="flex flex-row space-x-4">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"
-              className="h-8 w-8 arb-hover"
+              className="arb-hover h-8 w-8"
             >
               <img src="/icons/discord.png" alt="Discord" />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
-              className="h-8 w-8 arb-hover"
+              className="arb-hover h-8 w-8"
             >
               <img src="/icons/twitter.png" alt="Twitter" />
             </ExternalLink>
@@ -197,7 +200,7 @@ function MobileExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="text-white text-2xl font-medium py-3 arb-hover"
+      className="arb-hover py-3 text-2xl font-medium text-white"
       {...props}
     >
       {children}
@@ -207,13 +210,13 @@ function MobileExternalLink({
 
 function HeaderMobile() {
   return (
-    <div className="lg:hidden w-full absolute left-0 top-0 min-h-screen z-50">
-      <div className="flex items-center justify-end h-100px px-8">
-        <Disclosure.Button className="lg:hidden text-white">
+    <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
+      <div className="h-100px flex items-center justify-end px-8">
+        <Disclosure.Button className="text-white lg:hidden">
           <MenuIcon.Close />
         </Disclosure.Button>
       </div>
-      <div className="flex flex-col items-center space-y-3 bg-v3-arbitrum-dark-blue pt-4 min-h-screen">
+      <div className="flex min-h-screen flex-col items-center space-y-3 bg-v3-arbitrum-dark-blue pt-4">
         <HeaderAccountPopover />
         <HeaderNetworkInformation />
         <HeaderMenuMobile

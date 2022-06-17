@@ -10,7 +10,7 @@ export function NetworkSwitchButton() {
     <button
       onClick={() => actions.app.setIsDepositMode(!isDepositMode)}
       type="button"
-      className="bg-white hover:bg-v3-gray-2 active:bg-v3-gray-2 active:mt-1 rounded-full w-14 lg:w-16 h-14 lg:h-16 min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 box-shadow-network-switch-button flex items-center justify-center p-3"
+      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 shadow-network-switch-button flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 transition duration-200 hover:bg-v3-gray-2 active:mt-1 active:bg-v3-gray-2 lg:h-16 lg:w-16"
     >
       <svg
         width="44"
