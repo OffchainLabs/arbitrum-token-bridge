@@ -2,15 +2,15 @@ export const TOS_VERSION = 1
 
 export function TermsOfService() {
   return (
-    <div className="w-full flex justify-center">
-      <div className="text-white px-8 lg:px-32 max-w-1440px py-8">
-        <h2 className="font-bold mb-2">ARBITRUM</h2>
-        <h3 className="font-semibold mb-2"> TERMS OF SERVICE</h3>
+    <div className="flex w-full justify-center">
+      <div className="max-w-1440px px-8 py-8 text-white lg:px-32">
+        <h2 className="mb-2 font-bold">ARBITRUM</h2>
+        <h3 className="mb-2 font-semibold"> TERMS OF SERVICE</h3>
         <h5>
           <i>Date of Last Revision: March 7, 2022 </i>
         </h5>
         <br />
-        <h3 className="font-semibold mb-2">
+        <h3 className="mb-2 font-semibold">
           Acceptance of These Terms of Service
         </h3>
         <p className="mb-4">
@@ -81,7 +81,7 @@ export function TermsOfService() {
           Service from time to time. All such terms are hereby incorporated by
           reference into these Terms of Service.
         </p>
-        <h3 className="font-semibold mb-2">Access and Use of the Service</h3>
+        <h3 className="mb-2 font-semibold">Access and Use of the Service</h3>
         <p className="mb-4">
           <b>Legal Compliance:</b> You represent that your access and use of the
           Service will fully comply with all applicable laws and regulations,
@@ -121,7 +121,7 @@ export function TermsOfService() {
           their development, operation, maintenance and all related content and
           materials.
         </p>
-        <h3 className="font-semibold mb-2"> Conditions of Access and Use</h3>
+        <h3 className="mb-2 font-semibold"> Conditions of Access and Use</h3>
         <p className="mb-4">
           <b>User Conduct:</b> You are solely responsible for all code, video,
           images, information, data, text, software, music, sound, photographs,
@@ -224,7 +224,7 @@ export function TermsOfService() {
           You further agree that the only duties and obligations that we owe you
           are those set out expressly in these Terms of Service.
         </p>
-        <h3 className="font-semibold mb-2"> Intellectual Property Rights </h3>
+        <h3 className="mb-2 font-semibold"> Intellectual Property Rights </h3>
         <p className="mb-4">
           <b>Service Content</b>: You acknowledge and agree that the Service may
           contain content or features (“Service Content”) that are protected by
@@ -312,7 +312,7 @@ export function TermsOfService() {
           (ii) changes to conform and adapt to technical requirements of
           connecting networks or devices.
         </p>
-        <h3 className="font-semibold mb-2">Third-Party Services</h3>
+        <h3 className="mb-2 font-semibold">Third-Party Services</h3>
         <p className="mb-4">
           The Service provides access to services, sites, technology,
           applications and resources that are provided or otherwise made
@@ -335,7 +335,7 @@ export function TermsOfService() {
           by or in connection with use of or reliance on any Third-Party
           Services.
         </p>
-        <h3 className="font-semibold mb-2">Indemnification and Release</h3>
+        <h3 className="mb-2 font-semibold">Indemnification and Release</h3>
         <p className="mb-4">
           You agree to defend, indemnify, and hold harmless Offchain Labs, its
           affiliates, and its and their respective officers, employees,
@@ -369,7 +369,7 @@ export function TermsOfService() {
           party.” If you are a resident of another jurisdiction, you waive any
           comparable statute or doctrine.
         </p>
-        <h3 className="font-semibold mb-2">
+        <h3 className="mb-2 font-semibold">
           Disclaimer of Warranties; Assumption of Risk
         </h3>
         <p className="mb-4">
@@ -417,7 +417,7 @@ export function TermsOfService() {
           USING THE SERVICE, INCLUDING THE INTERFACE TO INTERACT WITH THE
           PROTOCOL.
         </p>
-        <h3 className="font-semibold mb-2">Limitation of Liability</h3>
+        <h3 className="mb-2 font-semibold">Limitation of Liability</h3>
         <p className="mb-4">
           YOU EXPRESSLY UNDERSTAND AND AGREE THAT THE OFFCHAIN LABS PARTIES WILL
           NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL,
@@ -459,10 +459,10 @@ export function TermsOfService() {
           INVALIDITY OF SUCH PORTION WILL NOT AFFECT THE VALIDITY OF THE
           REMAINING PORTIONS OF THE APPLICABLE SECTIONS.
         </p>
-        <h3 className="font-semibold mb-2">
+        <h3 className="mb-2 font-semibold">
           Dispute Resolution By Binding Arbitration
         </h3>
-        <h3 className="font-semibold mb-2">
+        <h3 className="mb-2 font-semibold">
           PLEASE READ THIS SECTION CAREFULLY AS IT AFFECTS YOUR RIGHTS.
         </h3>
         <h5>a. Agreement to Arbitrate </h5>
@@ -622,7 +622,7 @@ export function TermsOfService() {
           Agreement as of the date you first accepted these Terms of Service (or
           accepted any subsequent changes to these Terms of Service).
         </p>
-        <h3 className="font-semibold mb-2">User Disputes</h3>
+        <h3 className="mb-2 font-semibold">User Disputes</h3>
         <p className="mb-4">
           You agree that you are solely responsible for your interactions with
           any other user in connection with the Service, and Offchain Labs will
@@ -630,7 +630,7 @@ export function TermsOfService() {
           Labs reserves the right, but has no obligation, to become involved in
           any way with disputes between you and any other user of the Service.
         </p>
-        <h3 className="font-semibold mb-2">General</h3>
+        <h3 className="mb-2 font-semibold">General</h3>
         <p className="mb-4">
           These Terms of Service (together with the terms incorporated by
           reference herein) constitute the entire agreement between you and
@@ -680,7 +680,7 @@ export function TermsOfService() {
           any other circumstances or causes beyond Offchain Labs’ reasonable
           control.
         </p>
-        <h3 className="font-semibold mb-2">
+        <h3 className="mb-2 font-semibold">
           U.S. Government Restricted Rights
         </h3>
         <p className="mb-4">
@@ -692,7 +692,7 @@ export function TermsOfService() {
           acknowledgement of our proprietary rights in the Service (including
           the Software).
         </p>
-        <h3 className="font-semibold mb-2">
+        <h3 className="mb-2 font-semibold">
           Questions? Concerns? Suggestions?
         </h3>
         <p className="mb-4">

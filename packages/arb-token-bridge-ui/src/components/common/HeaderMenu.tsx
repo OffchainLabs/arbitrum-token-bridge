@@ -19,13 +19,13 @@ export function HeaderMenuDesktop(props: HeaderMenuProps) {
   return (
     <Popover as="div" className="relative inline-block text-left">
       <div>
-        <Popover.Button className="hidden lg:inline-flex text-white text-base rounded-md arb-hover">
+        <Popover.Button className="arb-hover hidden rounded-md text-base text-white lg:inline-flex">
           {props.children}
         </Popover.Button>
       </div>
 
       <Transition>
-        <Popover.Panel className="z-50 origin-top-right absolute right-0 mt-2 w-72 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Popover.Panel className="focus:outline-none absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
           <div className="px-6 py-4">
             {props.items.map((item, index) => {
               if (typeof item.anchorProps !== 'undefined') {
@@ -35,7 +35,7 @@ export function HeaderMenuDesktop(props: HeaderMenuProps) {
                     {...item.anchorProps}
                     target="_blank"
                     rel="noreferrer"
-                    className="block -mx-6 px-6 py-1 hover:bg-v3-arbitrum-dark-blue hover:text-white cursor-pointer"
+                    className="-mx-6 block cursor-pointer px-6 py-1 hover:bg-v3-arbitrum-dark-blue hover:text-white"
                   >
                     {item.title}
                   </a>
@@ -56,7 +56,7 @@ export function HeaderMenuDesktop(props: HeaderMenuProps) {
                         href={subitem.anchorProps?.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="block -mx-6 pl-10 pr-6 py-1 font-light hover:bg-v3-arbitrum-dark-blue hover:text-white"
+                        className="-mx-6 block py-1 pl-10 pr-6 font-light hover:bg-v3-arbitrum-dark-blue hover:text-white"
                       >
                         {subitem.title}
                       </a>
@@ -78,10 +78,10 @@ export function HeaderMenuMobile(props: HeaderMenuProps) {
       {({ open }) => (
         <div className="w-full">
           <Disclosure.Button
-            className={`w-full py-3 arb-hover ${open && `bg-white`}`}
+            className={`arb-hover w-full py-3 ${open && `bg-white`}`}
           >
             <span
-              className={`font-medium text-white text-2xl ${
+              className={`text-2xl font-medium text-white ${
                 open && `text-v3-arbitrum-dark-blue`
               }`}
             >
@@ -93,7 +93,7 @@ export function HeaderMenuMobile(props: HeaderMenuProps) {
               {props.items.map((item, index) => (
                 <li
                   key={index}
-                  className="text-white text-2xl font-light text-center"
+                  className="text-center text-2xl font-light text-white"
                 >
                   <ExternalLink
                     href={item.anchorProps?.href}

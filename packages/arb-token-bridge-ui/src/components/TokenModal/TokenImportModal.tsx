@@ -32,12 +32,12 @@ function ModalFooter({
 }) {
   return (
     <div
-      className="flex justify-end space-x-2 -mx-6 py-4 pr-6"
+      className="-mx-6 flex justify-end space-x-2 py-4 pr-6"
       style={{ backgroundColor: '#F4F4F4' }}
     >
       {!hideCancel && (
         <button
-          className="w-1/2 sm:w-auto inline-flex items-center justify-center rounded-xl px-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:text-sm hover:opacity-75 transition duration-200"
+          className="focus:outline-none inline-flex w-1/2 items-center justify-center rounded-xl px-4 text-base font-medium transition duration-200 hover:opacity-75 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
           style={{ color: '#11365E' }}
           onClick={onCancel}
         >
@@ -45,7 +45,7 @@ function ModalFooter({
         </button>
       )}
       <button
-        className="w-1/2 sm:w-auto inline-flex justify-center rounded-xl border border-transparent px-4 py-3 bg-dark-cyan text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm hover:opacity-75 transition duration-200"
+        className="bg-dark-cyan focus:outline-none inline-flex w-1/2 justify-center rounded-xl border border-transparent px-4 py-3 text-base font-medium text-white transition duration-200 hover:opacity-75 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto sm:text-sm"
         style={{ backgroundColor: '#11365E' }}
         onClick={onAction}
       >
@@ -293,7 +293,7 @@ export function TokenImportModal({
         title={modalTitle}
         hideButton
       >
-        <div className="flex items-center justify-center h-32">
+        <div className="flex h-32 items-center justify-center">
           <Loader type="Oval" color="#000" height={32} width={32} />
         </div>
       </Modal>
@@ -308,7 +308,7 @@ export function TokenImportModal({
         title={modalTitle}
         hideButton
       >
-        <div className="flex flex-col space-y-2 -mb-6">
+        <div className="-mb-6 flex flex-col space-y-2">
           <div>
             <div className="flex flex-col">
               <span>
@@ -317,7 +317,7 @@ export function TokenImportModal({
                 Try asking the token team to update their link.
               </span>
             </div>
-            <div className="w-full flex justify-center py-4">
+            <div className="flex w-full justify-center py-4">
               <img src="/images/grumpy-cat.jpg" alt="Grumpy cat" />
             </div>
           </div>
@@ -334,7 +334,7 @@ export function TokenImportModal({
 
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
-      <div className="flex flex-col space-y-2 -mb-6">
+      <div className="-mb-6 flex flex-col space-y-2">
         {status === ImportStatus.KNOWN && (
           <span>This token is on an imported token list as:</span>
         )}
@@ -346,7 +346,7 @@ export function TokenImportModal({
         )}
 
         {status === ImportStatus.UNKNOWN && (
-          <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-3 items-center">
+          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3">
             <svg
               width="20"
               height="20"
@@ -385,7 +385,7 @@ export function TokenImportModal({
           {tokenToImport?.logoURI && (
             <img
               style={{ width: '25px', height: '25px' }}
-              className="rounded-full mb-2"
+              className="mb-2 rounded-full"
               src={tokenToImport?.logoURI}
               alt={`${tokenToImport?.name} logo`}
             />
@@ -397,13 +397,13 @@ export function TokenImportModal({
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}
-            className="underline break-all"
+            className="break-all underline"
           >
             {tokenToImport?.address}
           </a>
 
           {status === ImportStatus.UNKNOWN && (
-            <div className="w-full flex justify-start pt-4">
+            <div className="flex w-full justify-start pt-4">
               <Tippy
                 theme="light"
                 content={
@@ -421,7 +421,7 @@ export function TokenImportModal({
                   </div>
                 }
               >
-                <span className="underline cursor-pointer">I'm confused</span>
+                <span className="cursor-pointer underline">I'm confused</span>
               </Tippy>
             </div>
           )}
