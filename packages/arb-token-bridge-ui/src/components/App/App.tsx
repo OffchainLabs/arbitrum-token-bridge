@@ -375,7 +375,7 @@ function ConnectionFallback({
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
       return (
         <div className="flex w-full justify-center">
-          <span className="py-24 text-2xl font-light text-v3-blue-link text-white">
+          <span className="py-24 text-2xl font-light text-blue-link text-white">
             You are on the wrong network.{' '}
             <ExternalLink
               href="https://arbitrum.io/bridge-tutorial"

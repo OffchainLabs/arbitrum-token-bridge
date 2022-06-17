@@ -71,10 +71,10 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
 
   return (
     <DepositCardContainer tx={tx}>
-      <span className="text-4xl font-semibold text-v3-arbitrum-dark-blue">
+      <span className="text-4xl font-semibold text-blue-arbitrum">
         Success!
       </span>
-      <span className="text-2xl font-light text-v3-arbitrum-dark-blue">
+      <span className="text-2xl font-light text-blue-arbitrum">
         {tx.value} {tx.asset.toUpperCase()} has been moved to your wallet.
         <br />
         <div className="flex flex-row items-center space-x-2">
@@ -89,10 +89,10 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
         </div>
       </span>
       <div className="flex flex-col font-light">
-        <span className="text-lg text-v3-lime-dark">
+        <span className="text-lg text-lime-dark">
           L1 transaction: <DepositL1TxStatus tx={tx} />
         </span>
-        <span className="text-lg text-v3-lime-dark">
+        <span className="text-lg text-lime-dark">
           L2 transaction: <DepositL2TxStatus tx={tx} />
         </span>
       </div>

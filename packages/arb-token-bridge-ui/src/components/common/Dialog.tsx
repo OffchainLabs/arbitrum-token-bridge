@@ -103,7 +103,7 @@ export function Dialog(props: DialogProps) {
 
               <div className="flex-grow px-8 py-4">{props.children}</div>
 
-              <div className="flex flex-row justify-end space-x-2 px-8 py-3 lg:rounded-bl-xl lg:rounded-br-xl lg:bg-v3-gray-2">
+              <div className="flex flex-row justify-end space-x-2 px-8 py-3 lg:rounded-bl-xl lg:rounded-br-xl lg:bg-gray-2">
                 <Button
                   ref={cancelButtonRef}
                   variant="secondary"

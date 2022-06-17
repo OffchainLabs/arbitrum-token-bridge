@@ -88,7 +88,7 @@ const DisclaimerModal = ({
                       <a
                         href="/tos"
                         target="_blank"
-                        className="text-bright-blue hover:underline"
+                        className="hover:underline"
                       >
                         {tosText}
                       </a>

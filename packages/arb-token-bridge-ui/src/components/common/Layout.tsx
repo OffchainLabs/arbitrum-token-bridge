@@ -18,7 +18,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
 function Notification({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex w-full flex-row items-center space-x-2 bg-v3-cyan py-2 px-3 text-v3-cyan-dark lg:w-auto lg:rounded-bl-lg lg:rounded-br-lg lg:text-sm">
+    <div className="flex w-full flex-row items-center space-x-2 bg-cyan py-2 px-3 text-cyan-dark lg:w-auto lg:rounded-bl-lg lg:rounded-br-lg lg:text-sm">
       <InformationCircleIcon className="h-4 w-4" />
       {children}
     </div>

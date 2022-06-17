@@ -37,7 +37,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-navy text-sm font-medium text-white">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
       ?
     </div>
   )
@@ -177,7 +177,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                   href={`${l1Network?.explorerUrl}/token/${token.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-dark-blue underline"
+                  className="text-xs text-blue-link underline"
                   onClick={e => e.stopPropagation()}
                 >
                   {shortenAddress(token.address).toLowerCase()}
@@ -189,7 +189,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                       href={`${l2Network?.explorerUrl}/token/${token.l2Address}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-dark-blue underline"
+                      className="text-xs text-blue-link underline"
                       onClick={e => e.stopPropagation()}
                     >
                       {token.l2Address
@@ -230,7 +230,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {tokenSymbol}
             </span>
           ) : (
-            <span className="text-sm font-medium text-dark-blue">Import</span>
+            <span className="text-sm font-medium text-blue-link">Import</span>
           )}
         </>
       )}
@@ -459,22 +459,22 @@ function TokensPanel({
             value={newToken}
             onChange={e => setNewToken(e.target.value)}
             placeholder="Search by token name, symbol, L1 or L2 address"
-            className="h-10 w-full rounded-md border border-v3-gray-4 px-2 text-sm text-v3-dark"
+            className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
 
           <Button
             type="submit"
             variant="secondary"
             loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-v3-gray-9 */ }}
+            loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-v3-gray-4 py-1 text-v3-gray-9"
+            className="border border-gray-4 py-1 text-gray-9"
           >
             Add
           </Button>
         </div>
       </form>
-      <div className="lg:shadow-select-token-list flex flex-grow flex-col overflow-auto rounded-md border border-v3-gray-4">
+      <div className="lg:shadow-select-token-list flex flex-grow flex-col overflow-auto rounded-md border border-gray-4">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List
@@ -577,13 +577,13 @@ export function TokenModal({
         <div className="flex flex-row items-center justify-between pb-4">
           <span className="text-xl font-medium">Select Token</span>
           <button className="arb-hover" onClick={close}>
-            <XIcon className="h-6 w-6 text-v3-gray-7" />
+            <XIcon className="h-6 w-6 text-gray-7" />
           </button>
         </div>
         <TokensPanel onTokenSelected={selectToken} />
         <div className="flex justify-end pt-6">
           <button
-            className="text-sm font-medium text-dark-blue"
+            className="text-sm font-medium text-blue-link"
             onClick={() => setCurrentPanel(Panel.LISTS)}
           >
             Manage token lists
@@ -598,12 +598,12 @@ export function TokenModal({
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">Token Lists</span>
         <button className="arb-hover" onClick={close}>
-          <XIcon className="h-6 w-6 text-v3-gray-7" />
+          <XIcon className="h-6 w-6 text-gray-7" />
         </button>
       </div>
       <div className="flex justify-start pb-6">
         <button
-          className="flex items-center space-x-2 text-sm font-medium text-dark-blue"
+          className="flex items-center space-x-2 text-sm font-medium text-blue-link"
           onClick={() => setCurrentPanel(Panel.TOKENS)}
         >
           <svg

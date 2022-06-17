@@ -16,7 +16,7 @@ const AmountBox = ({
       <input
         type="number"
         autoFocus
-        className="h-full w-full bg-transparent text-lg font-light placeholder:text-v3-gray-9 lg:text-3xl"
+        className="h-full w-full bg-transparent text-lg font-light placeholder:text-gray-9 lg:text-3xl"
         placeholder="Enter amount"
         value={amount}
         onChange={e => setAmount(e.target.value)}
@@ -25,7 +25,7 @@ const AmountBox = ({
         <button
           type="button"
           onClick={setMaxAmount}
-          className="p-2 text-sm font-light text-v3-gray-9"
+          className="p-2 text-sm font-light text-gray-9"
         >
           MAX
         </button>

@@ -91,7 +91,7 @@ const Modal: React.FC<ModalProps> = ({
                     {buttonAction && (
                       <button
                         type="button"
-                        className="focus:outline-none mb-1 inline-flex justify-center rounded-md border border-transparent bg-bright-blue px-4 py-2 text-base font-medium text-white shadow-sm  hover:bg-faded-blue focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
+                        className="focus:outline-none mb-1 inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm  focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
                         onClick={e => {
                           buttonAction()
                         }}
@@ -102,7 +102,7 @@ const Modal: React.FC<ModalProps> = ({
                     {buttonHref && (
                       <Link
                         to={buttonHref}
-                        className="focus:outline-none inline-flex w-full justify-center rounded-md border border-transparent bg-bright-blue px-4 py-2 text-base font-medium text-white shadow-sm  hover:bg-faded-blue focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
+                        className="focus:outline-none inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm  focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
                       >
                         {buttonText}
                       </Link>

@@ -74,9 +74,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             for each new token I add to my wallet.
           </span>
         </div>
-        <div className="flex flex-row items-center space-x-2 rounded-lg bg-v3-cyan py-3 px-2">
-          <InformationCircleIcon className="h-6 w-6 text-v3-cyan-dark" />
-          <span className="text-sm font-light text-v3-cyan-dark">
+        <div className="flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2">
+          <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
+          <span className="text-sm font-light text-cyan-dark">
             After approval, you’ll see a second prompt in your wallet for the
             standard L2 deposit fee.{' '}
             <ExternalLink href="#" className="underline">

@@ -26,7 +26,7 @@ export function HeaderNetworkInformation() {
   switch (status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
-        <div className="rounded-full p-3 lg:bg-v3-dark lg:p-2">
+        <div className="rounded-full p-3 lg:bg-dark lg:p-2">
           <Loader type="TailSpin" height={32} width={32} color="white" />
         </div>
       )
@@ -37,13 +37,13 @@ export function HeaderNetworkInformation() {
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
       return (
         <div className="flex flex-col">
-          <div className="flex flex-row items-center space-x-3 rounded-full px-4 py-3 lg:bg-v3-brick-dark">
-            <InformationCircleIcon className="h-6 w-6 text-v3-brick lg:text-white" />
-            <span className="text-2xl text-v3-brick lg:text-base lg:text-white">
+          <div className="flex flex-row items-center space-x-3 rounded-full px-4 py-3 lg:bg-brick-dark">
+            <InformationCircleIcon className="h-6 w-6 text-brick lg:text-white" />
+            <span className="text-2xl text-brick lg:text-base lg:text-white">
               Wrong network
             </span>
           </div>
-          <span className="max-w-64 text-center text-sm text-v3-brick lg:hidden">
+          <span className="max-w-64 text-center text-sm text-brick lg:hidden">
             Please change your network in your wallet to either Mainnet or
             Arbitrum
           </span>
@@ -52,7 +52,7 @@ export function HeaderNetworkInformation() {
 
     default:
       return (
-        <div className="flex w-full flex-row items-center justify-center space-x-3 rounded-full px-3 py-3 lg:bg-v3-dark lg:py-2">
+        <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2">
           {isConnectedToArbitrum ? (
             <>
               <img

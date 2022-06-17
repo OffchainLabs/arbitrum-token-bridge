@@ -500,7 +500,7 @@ const TransferPanel = (): JSX.Element => {
           />
         </div>
 
-        <div className="border-r border-v3-gray-3" />
+        <div className="border-r border-gray-3" />
 
         <div
           style={
@@ -513,7 +513,7 @@ const TransferPanel = (): JSX.Element => {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex w-full flex-col justify-between bg-v3-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
+          className="flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
         >
           <div className="hidden lg:block">
             <span className="text-2xl">Summary</span>
@@ -529,57 +529,55 @@ const TransferPanel = (): JSX.Element => {
 
               <div className="flex flex-col space-y-1 text-lg">
                 <div className="flex flex-row justify-between">
-                  <span className="w-2/5 font-light text-v3-gray-10">
-                    Amount
-                  </span>
+                  <span className="w-2/5 font-light text-gray-10">Amount</span>
                   <div className="flex w-3/5 flex-row justify-between">
-                    <span className="font-light text-v3-gray-10">
+                    <span className="font-light text-gray-10">
                       {selectedToken ? amount : amount.toFixed(4)}{' '}
                       {selectedToken ? selectedToken.symbol : 'ETH'}
                     </span>
                     {/* Only show USD price for ETH. */}
                     {selectedToken === null && (
-                      <span className="font-light text-v3-gray-10">
+                      <span className="font-light text-gray-10">
                         (${toUSD(amount).toLocaleString()})
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <span className="w-2/5 font-light text-v3-gray-10">
+                  <span className="w-2/5 font-light text-gray-10">
                     Total gas
                   </span>
                   <div className="flex flex w-3/5 justify-between">
-                    <span className="font-light text-v3-gray-10">
+                    <span className="font-light text-gray-10">
                       {estimatedTotalGasFees.toLocaleString()} ETH
                     </span>
-                    <span className="font-light text-v3-gray-10">
+                    <span className="font-light text-gray-10">
                       (${toUSD(estimatedTotalGasFees).toLocaleString()})
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <span className="w-2/5 pl-4 font-light text-v3-gray-6">
+                  <span className="w-2/5 pl-4 font-light text-gray-6">
                     L1 gas
                   </span>
                   <div className="flex w-3/5 flex-row justify-between">
-                    <span className="font-light text-v3-gray-6">
+                    <span className="font-light text-gray-6">
                       {estimatedL1GasFees.toLocaleString()} ETH
                     </span>
-                    <span className="font-light text-v3-gray-6">
+                    <span className="font-light text-gray-6">
                       (${toUSD(estimatedL1GasFees).toLocaleString()})
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">
-                  <span className="w-2/5 pl-4 font-light text-v3-gray-6">
+                  <span className="w-2/5 pl-4 font-light text-gray-6">
                     L2 gas
                   </span>
                   <div className="flex w-3/5 flex-row justify-between">
-                    <span className="font-light text-v3-gray-6">
+                    <span className="font-light text-gray-6">
                       {estimatedL2GasFees.toLocaleString()} ETH
                     </span>
-                    <span className="font-light text-v3-gray-6">
+                    <span className="font-light text-gray-6">
                       (${toUSD(estimatedL2GasFees).toLocaleString()})
                     </span>
                   </div>
@@ -589,7 +587,7 @@ const TransferPanel = (): JSX.Element => {
                 {selectedToken === null && (
                   <>
                     <div className="h-1" />
-                    <div className="border-b border-v3-gray-5 lg:border-v3-gray-3" />
+                    <div className="border-b border-gray-5 lg:border-gray-3" />
                     <div className="h-1" />
                     <div className="flex flex-row justify-between">
                       <span className="w-2/5">Total</span>
@@ -615,7 +613,7 @@ const TransferPanel = (): JSX.Element => {
             </>
           ) : (
             <>
-              <div className="min-h-56 hidden text-lg text-v3-gray-7 lg:block">
+              <div className="min-h-56 hidden text-lg text-gray-7 lg:block">
                 <span className="text-xl">
                   Bridging summary will appear here.
                 </span>
@@ -630,7 +628,7 @@ const TransferPanel = (): JSX.Element => {
               loading={transferring}
               disabled={disableDeposit}
               onClick={transfer}
-              className="w-full bg-v3-arbitrum-dark-blue py-4 text-lg lg:text-2xl"
+              className="w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl"
             >
               Move funds to {l2Network?.name}
             </Button>
@@ -640,7 +638,7 @@ const TransferPanel = (): JSX.Element => {
               loading={transferring}
               disabled={disableWithdrawal}
               onClick={transfer}
-              className="w-full bg-v3-ethereum-dark-purple py-4 text-lg lg:text-2xl"
+              className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
               Move funds to {l1Network?.name}
             </Button>

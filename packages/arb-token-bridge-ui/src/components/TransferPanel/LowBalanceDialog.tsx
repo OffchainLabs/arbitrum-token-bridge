@@ -20,7 +20,7 @@ type ExternalLinkCardProps = {
 function ExternalLinkCard({ href, title, imageSrc }: ExternalLinkCardProps) {
   return (
     <ExternalLink href={href} className="arb-hover">
-      <div className="flex flex-col space-y-1 rounded-lg border border-v3-gray-6 bg-white p-1">
+      <div className="flex flex-col space-y-1 rounded-lg border border-gray-6 bg-white p-1">
         <div className="flex w-full justify-between">
           <div className="w-4" />
           <img
@@ -28,7 +28,7 @@ function ExternalLinkCard({ href, title, imageSrc }: ExternalLinkCardProps) {
             alt={title}
             className="mt-2 h-10 w-10 rounded-full"
           />
-          <ExternalLinkIcon className="h-4 w-4 text-v3-gray-6" />
+          <ExternalLinkIcon className="h-4 w-4 text-gray-6" />
         </div>
         <div className="flex w-full justify-center">
           <span className="text-xs sm:text-base">{title}</span>
@@ -69,11 +69,11 @@ export function LowBalanceDialog(props: UseDialogProps) {
               alt="Ethereum"
               className="h-8 opacity-50"
             />
-            <span className="text-2xl text-v3-ethereum-dark-purple">
+            <span className="text-2xl text-purple-ethereum">
               {l1.network?.name} Balance
             </span>
           </div>
-          <span className="text-center text-3xl font-light text-v3-ethereum-dark-purple">
+          <span className="text-center text-3xl font-light text-purple-ethereum">
             {formatNumber(balanceNumber)} ETH{' '}
             <span className="font-medium">
               (${formatNumber(toUSD(balanceNumber), 2)})
@@ -83,18 +83,16 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="h-4" />
         <div className="flex flex-col space-y-4">
           <button
-            className="arb-hover flex w-full items-center justify-between rounded-lg bg-v3-gray-3 p-4 text-left text-xl text-v3-arbitrum-dark-blue"
+            className="arb-hover flex w-full items-center justify-between rounded-lg bg-gray-3 p-4 text-left text-xl text-blue-arbitrum"
             onClick={() => props.onClose(false)}
           >
             <span>Go to bridge</span>
-            <ArrowRightIcon className="h-8 w-8 text-v3-arbitrum-dark-blue" />
+            <ArrowRightIcon className="h-8 w-8 text-blue-arbitrum" />
           </button>
-          <div className="rounded-lg bg-v3-gray-3 p-4">
-            <span className="text-xl text-v3-arbitrum-dark-blue">
-              Skip the bridge
-            </span>
+          <div className="rounded-lg bg-gray-3 p-4">
+            <span className="text-xl text-blue-arbitrum">Skip the bridge</span>
             <div className="h-2" />
-            <p className="pb-1 font-light text-v3-dark">
+            <p className="pb-1 font-light text-dark">
               Given your wallet balance, bridging gas fees (~$20-$40) might not
               be worth it. You can skip bridging and move funds directly to
               Arbitrum from a CEX or fiat on-ramp.

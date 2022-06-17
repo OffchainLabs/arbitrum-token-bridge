@@ -35,7 +35,7 @@ export function HeaderMenuDesktop(props: HeaderMenuProps) {
                     {...item.anchorProps}
                     target="_blank"
                     rel="noreferrer"
-                    className="-mx-6 block cursor-pointer px-6 py-1 hover:bg-v3-arbitrum-dark-blue hover:text-white"
+                    className="-mx-6 block cursor-pointer px-6 py-1 hover:bg-blue-arbitrum hover:text-white"
                   >
                     {item.title}
                   </a>
@@ -56,7 +56,7 @@ export function HeaderMenuDesktop(props: HeaderMenuProps) {
                         href={subitem.anchorProps?.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="-mx-6 block py-1 pl-10 pr-6 font-light hover:bg-v3-arbitrum-dark-blue hover:text-white"
+                        className="-mx-6 block py-1 pl-10 pr-6 font-light hover:bg-blue-arbitrum hover:text-white"
                       >
                         {subitem.title}
                       </a>
@@ -82,7 +82,7 @@ export function HeaderMenuMobile(props: HeaderMenuProps) {
           >
             <span
               className={`text-2xl font-medium text-white ${
-                open && `text-v3-arbitrum-dark-blue`
+                open && `text-blue-arbitrum`
               }`}
             >
               {props.children}

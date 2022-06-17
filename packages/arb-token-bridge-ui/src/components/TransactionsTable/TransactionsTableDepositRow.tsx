@@ -85,22 +85,22 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex flex-col flex-col space-y-1">
-      <span className="text-v3-dark">
+      <span className="text-dark">
         L1:{' '}
         <ExternalLink
           href={`${l1.network?.explorerUrl}/tx/${tx.txId}`}
-          className="arb-hover text-v3-blue-link"
+          className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
         </ExternalLink>
       </span>
 
       {l2TxHash && (
-        <span className="text-v3-dark">
+        <span className="text-dark">
           L2:{' '}
           <ExternalLink
             href={`${l2.network?.explorerUrl}/tx/${l2TxHash}`}
-            className="arb-hover text-v3-blue-link"
+            className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
           </ExternalLink>
@@ -138,10 +138,10 @@ export function TransactionsTableDepositRow({
     [tx]
   )
 
-  const bgClassName = isError ? 'bg-v3-brick' : ''
+  const bgClassName = isError ? 'bg-brick' : ''
 
   return (
-    <tr className={`text-sm text-v3-dark ${bgClassName} ${className}`}>
+    <tr className={`text-sm text-dark ${bgClassName} ${className}`}>
       <td className="w-1/5 py-3 pl-6 pr-3">
         <DepositRowStatus tx={tx} />
       </td>

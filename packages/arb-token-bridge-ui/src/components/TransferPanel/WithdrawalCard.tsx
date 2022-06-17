@@ -30,7 +30,7 @@ export function WithdrawalL2TxStatus({
   return (
     <ExternalLink
       href={`${l2Network.explorerUrl}/tx/${tx.txId}`}
-      className="arb-hover text-v3-blue-link"
+      className="arb-hover text-blue-link"
     >
       {shortenTxHash(tx.txId)}
     </ExternalLink>
@@ -74,7 +74,7 @@ export function WithdrawalL1TxStatus({
   return (
     <ExternalLink
       href={`${l1Network.explorerUrl}/tx/${l1Tx.txId}`}
-      className="arb-hover text-v3-blue-link"
+      className="arb-hover text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}
     </ExternalLink>
@@ -91,7 +91,7 @@ export function WithdrawalCardContainer({
   const bgClassName = useMemo(() => {
     switch (tx.status) {
       case 'Executed':
-        return 'bg-v3-lime'
+        return 'bg-lime'
 
       default:
         return 'bg-white'

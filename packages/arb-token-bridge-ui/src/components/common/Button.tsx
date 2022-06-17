@@ -7,15 +7,15 @@ type ButtonVariant = 'primary' | 'secondary'
 function getClassNameForVariant(variant: ButtonVariant) {
   switch (variant) {
     case 'primary':
-      return 'bg-v3-dark text-white'
+      return 'bg-dark text-white'
 
     case 'secondary':
-      return 'bg-transparent text-v3-dark'
+      return 'bg-transparent text-dark'
   }
 }
 
 const defaultClassName = 'arb-hover w-max rounded-lg px-4 py-3 text-sm'
-const disabledClassName = 'disabled:bg-v3-gray-5 disabled:text-white'
+const disabledClassName = 'disabled:bg-gray-5 disabled:text-white'
 
 type ButtonLoadingProps = Partial<{
   loaderColor: string

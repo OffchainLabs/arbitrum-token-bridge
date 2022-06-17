@@ -8,21 +8,21 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
   return (
     <WithdrawalCardContainer tx={tx}>
-      <span className="animate-pulse text-2xl text-v3-arbitrum-dark-blue">
+      <span className="animate-pulse text-2xl text-blue-arbitrum">
         Moving {tx.value} {tx.asset.toUpperCase()} to {l1.network?.name}...
       </span>
 
-      <span className="animate-pulse text-4xl font-semibold text-v3-arbitrum-dark-blue">
+      <span className="animate-pulse text-4xl font-semibold text-blue-arbitrum">
         {tx.nodeBlockDeadline && (
           <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
         )}
       </span>
 
       <div className="flex flex-col font-light">
-        <span className="text-v3-arbitrum-dark-blue">
+        <span className="text-blue-arbitrum">
           L2 transaction: <WithdrawalL2TxStatus tx={tx} />
         </span>
-        <span className="text-v3-arbitrum-dark-blue">
+        <span className="text-blue-arbitrum">
           L1 transaction: Will show after claiming
         </span>
       </div>

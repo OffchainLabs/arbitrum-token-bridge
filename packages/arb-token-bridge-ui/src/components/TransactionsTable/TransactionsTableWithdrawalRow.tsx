@@ -119,15 +119,15 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
     const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
 
     if (typeof matchingL1Tx === 'undefined') {
-      return <span className="text-v3-dark">L1: Not found</span>
+      return <span className="text-dark">L1: Not found</span>
     }
 
     return (
-      <span className="text-v3-dark">
+      <span className="text-dark">
         L1:{' '}
         <ExternalLink
           href={`${l1.network?.explorerUrl}/tx/${matchingL1Tx.txId}`}
-          className="arb-hover text-v3-blue-link"
+          className="arb-hover text-blue-link"
         >
           {shortenTxHash(matchingL1Tx.txId)}
         </ExternalLink>
@@ -137,11 +137,11 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex flex-col flex-col space-y-1">
-      <span className="text-v3-dark">
+      <span className="text-dark">
         L2:{' '}
         <ExternalLink
           href={`${l2.network?.explorerUrl}/tx/${tx.txId}`}
-          className="arb-hover text-v3-blue-link"
+          className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
         </ExternalLink>
@@ -199,7 +199,7 @@ export function TransactionsTableWithdrawalRow({
   }
 
   return (
-    <tr className={`text-sm text-v3-dark ${className}`}>
+    <tr className={`text-sm text-dark ${className}`}>
       <td className="w-1/5 py-3 pl-6 pr-3">
         <WithdrawalRowStatus tx={tx} />
       </td>

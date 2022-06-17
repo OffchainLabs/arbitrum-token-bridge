@@ -21,7 +21,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
   return (
     <WithdrawalCardContainer tx={tx}>
-      <span className="text-2xl text-v3-arbitrum-dark-blue">
+      <span className="text-2xl text-blue-arbitrum">
         Funds are ready to claim!
       </span>
 
@@ -45,10 +45,10 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
       </Tooltip>
 
       <div className="flex flex-col font-light">
-        <span className="text-v3-arbitrum-dark-blue">
+        <span className="text-blue-arbitrum">
           L2 transaction: <WithdrawalL2TxStatus tx={tx} />
         </span>
-        <span className="text-v3-arbitrum-dark-blue">
+        <span className="text-blue-arbitrum">
           L1 transaction: Will show after claiming
         </span>
       </div>

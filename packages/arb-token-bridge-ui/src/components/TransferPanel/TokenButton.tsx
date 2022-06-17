@@ -64,7 +64,7 @@ export function TokenButton(): JSX.Element {
         />
       )}
       <Popover className="h-full">
-        <Popover.Button className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-v3-gray-2">
+        <Popover.Button className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-gray-2">
           <div className="flex items-center space-x-2">
             {tokenLogo && (
               <img
@@ -76,7 +76,7 @@ export function TokenButton(): JSX.Element {
             <span className="text-lg font-light lg:text-3xl">
               {selectedToken ? selectedToken.symbol : 'ETH'}
             </span>
-            <ChevronDownIcon className="h-4 w-4 text-v3-gray-9" />
+            <ChevronDownIcon className="h-4 w-4 text-gray-9" />
           </div>
         </Popover.Button>
         <Transition>

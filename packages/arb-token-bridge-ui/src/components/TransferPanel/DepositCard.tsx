@@ -30,7 +30,7 @@ export function DepositL1TxStatus({
       return (
         <ExternalLink
           href={`${l1.network?.explorerUrl}/tx/${tx.txId}`}
-          className="arb-hover text-v3-blue-link"
+          className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
         </ExternalLink>
@@ -57,7 +57,7 @@ export function DepositL2TxStatus({
       return (
         <ExternalLink
           href={`${l2.network?.explorerUrl}/tx/${tx.l1ToL2MsgData?.l2TxID}`}
-          className="arb-hover text-v3-blue-link"
+          className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}
         </ExternalLink>
@@ -79,13 +79,13 @@ export function DepositCardContainer({
     switch (tx.depositStatus) {
       case DepositStatus.L1_FAILURE:
       case DepositStatus.CREATION_FAILED:
-        return 'bg-v3-brick'
+        return 'bg-brick'
 
       case DepositStatus.L2_SUCCESS:
-        return 'bg-v3-lime'
+        return 'bg-lime'
 
       case DepositStatus.L2_FAILURE:
-        return 'bg-v3-orange'
+        return 'bg-orange'
 
       default:
         return 'bg-white'

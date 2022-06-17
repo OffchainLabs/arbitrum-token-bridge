@@ -16,11 +16,11 @@ const NetworkStyleProps: {
 } = {
   L1: {
     style: { backgroundImage: `url(/images/NetworkBoxEth.png)` },
-    className: 'bg-contain bg-no-repeat bg-v3-ethereum-dark-purple'
+    className: 'bg-contain bg-no-repeat bg-purple-ethereum'
   },
   L2: {
     style: { backgroundImage: `url(/images/NetworkBoxArb.png)` },
-    className: 'bg-contain bg-no-repeat bg-v3-arbitrum-dark-blue'
+    className: 'bg-contain bg-no-repeat bg-blue-arbitrum'
   }
 }
 
@@ -145,9 +145,9 @@ const NetworkBox = ({
           {canIEnterAmount && (
             <>
               <div className="h-4" />
-              <div className="flex h-16 flex-row items-center rounded-lg border border-v3-gray-9 bg-white">
+              <div className="flex h-16 flex-row items-center rounded-lg border border-gray-9 bg-white">
                 <TokenButton />
-                <div className="h-full border-r border-v3-gray-4" />
+                <div className="h-full border-r border-gray-4" />
                 <AmountBox
                   amount={amount}
                   setAmount={setAmount}

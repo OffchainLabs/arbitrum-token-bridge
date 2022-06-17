@@ -44,9 +44,9 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   return (
     <table
-      className={`w-full rounded-tr-lg rounded-br-lg rounded-bl-lg bg-v3-gray-1 ${className}`}
+      className={`w-full rounded-tr-lg rounded-br-lg rounded-bl-lg bg-gray-1 ${className}`}
     >
-      <thead className="border-b border-v3-gray-10 text-left text-sm text-v3-gray-10">
+      <thead className="border-b border-gray-10 text-left text-sm text-gray-10">
         <tr>
           <th className="py-3 pl-6 pr-3 font-normal">Status</th>
           <th className="px-3 py-3 font-normal">Time</th>
@@ -70,7 +70,7 @@ export function TransactionsTable({
 
         {status === 'error' && (
           <EmptyTableRow>
-            <span className="text-sm font-medium text-v3-brick-dark">
+            <span className="text-sm font-medium text-brick-dark">
               Failed to load transactions
             </span>
           </EmptyTableRow>
@@ -86,13 +86,13 @@ export function TransactionsTable({
                   <TransactionsTableDepositRow
                     key={`${tx.txId}-${tx.direction}`}
                     tx={tx}
-                    className={!isFinalRow ? 'border-b border-v3-gray-10' : ''}
+                    className={!isFinalRow ? 'border-b border-gray-10' : ''}
                   />
                 ) : (
                   <TransactionsTableWithdrawalRow
                     key={`${tx.txId}-${tx.direction}`}
                     tx={tx}
-                    className={!isFinalRow ? 'border-b border-v3-gray-10' : ''}
+                    className={!isFinalRow ? 'border-b border-gray-10' : ''}
                   />
                 )
               })

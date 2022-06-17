@@ -110,7 +110,7 @@ export function Header() {
   }, [l1Network])
 
   const headerBgClassName = useMemo(() => {
-    return isMainnet ? 'lg:bg-black' : 'lg:bg-v3-arbitrum-dark-blue'
+    return isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
   }, [isMainnet])
 
   return (
@@ -171,7 +171,7 @@ export function Header() {
             </div>
           )}
         </Disclosure>
-        <div className="hidden items-center lg:flex lg:space-x-4">
+        <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-4">
           <HeaderNetworkInformation />
           <HeaderAccountPopover />
           <div className="flex flex-row space-x-4">
@@ -216,7 +216,7 @@ function HeaderMobile() {
           <MenuIcon.Close />
         </Disclosure.Button>
       </div>
-      <div className="flex min-h-screen flex-col items-center space-y-3 bg-v3-arbitrum-dark-blue pt-4">
+      <div className="flex min-h-screen flex-col items-center space-y-3 bg-blue-arbitrum pt-4">
         <HeaderAccountPopover />
         <HeaderNetworkInformation />
         <HeaderMenuMobile

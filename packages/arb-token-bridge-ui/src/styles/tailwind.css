@@ -217,7 +217,7 @@ input:checked + .slider:before {
 /* Custom */
 
 .arb-hover {
-  @apply transition duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-v3-gray-6 active:opacity-90 disabled:border-0 disabled:opacity-100;
+  @apply transition duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-gray-6 active:opacity-90 disabled:border-0 disabled:opacity-100;
 }
 
 .bg-gradient-overlay {

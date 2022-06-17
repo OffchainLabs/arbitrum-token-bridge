@@ -20,25 +20,22 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
   return (
     <DepositCardContainer tx={tx}>
       <div className="flex flex-row items-start justify-between">
-        <span className="text-4xl font-semibold text-v3-brick-dark">
+        <span className="text-4xl font-semibold text-brick-dark">
           Something went wrong
         </span>
-        <button
-          className="arb-hover text-v3-brick-dark underline"
-          onClick={hide}
-        >
+        <button className="arb-hover text-brick-dark underline" onClick={hide}>
           Hide
         </button>
       </div>
 
-      <p className="text-2xl font-light text-v3-brick-dark">
+      <p className="text-2xl font-light text-brick-dark">
         No worries, we got you.
         <br />
         Just paste the following information into a help request:
       </p>
 
       <button
-        className="arb-hover flex max-w-md flex-row items-center justify-between rounded-xl border border-v3-brick-dark px-6 py-4"
+        className="arb-hover flex max-w-md flex-row items-center justify-between rounded-xl border border-brick-dark px-6 py-4"
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
@@ -46,16 +43,16 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
           )
         }}
       >
-        <span className="text-lg text-v3-brick-dark">
+        <span className="text-lg text-brick-dark">
           L1 transaction:{' '}
-          <span className="text-v3-blue-link">{shortenTxHash(tx.txId)}</span>
+          <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
         </span>
-        <ClipboardCopyIcon className="h-6 w-6 text-v3-brick-dark" />
+        <ClipboardCopyIcon className="h-6 w-6 text-brick-dark" />
       </button>
 
       <ExternalLink
         href="https://support.arbitrum.io/hc/en-us/requests/new"
-        className="arb-hover w-max rounded-lg bg-v3-dark px-4 py-3 text-2xl text-white"
+        className="arb-hover w-max rounded-lg bg-dark px-4 py-3 text-2xl text-white"
       >
         Get Help
       </ExternalLink>

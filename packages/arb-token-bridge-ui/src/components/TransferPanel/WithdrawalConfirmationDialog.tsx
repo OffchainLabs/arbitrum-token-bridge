@@ -52,8 +52,8 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
           </span>
 
           <div className="flex flex-row items-center space-x-1">
-            <CheckIcon className="h-5 w-5 text-v3-lime-dark" />
-            <span className="font-medium text-v3-lime-dark">
+            <CheckIcon className="h-5 w-5 text-lime-dark" />
+            <span className="font-medium text-lime-dark">
               Security guaranteed by Ethereum
             </span>
           </div>

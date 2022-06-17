@@ -42,15 +42,11 @@ function getTransactionsDataStatus(
 }
 
 function Avatar({ src, className }: { src: string | null; className: string }) {
-  const commonClassName = 'rounded-full border border-white'
-
   if (!src) {
-    return <div className={`bg-v3-orange ${commonClassName} ${className}`} />
+    return <div className={`rounded-full bg-orange ${className}`} />
   }
 
-  return (
-    <img alt="Avatar" src={src} className={`${commonClassName} ${className}`} />
-  )
+  return <img alt="Avatar" src={src} className={`rounded-full ${className}`} />
 }
 
 function isDeposit(tx: MergedTransaction) {
@@ -137,7 +133,7 @@ export function HeaderAccountPopover() {
       <button
         onClick={() => connect(modalProviderOpts)}
         type="button"
-        className="arb-hover rounded-full py-3 text-2xl font-medium text-white lg:bg-v3-lime-dark lg:px-6 lg:text-base lg:font-normal"
+        className="arb-hover rounded-full py-3 text-2xl font-medium text-white lg:bg-lime-dark lg:px-6 lg:text-base lg:font-normal"
       >
         Connect Wallet
       </button>
@@ -145,10 +141,10 @@ export function HeaderAccountPopover() {
   }
 
   return (
-    <Popover className="relative z-50 w-full">
+    <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
         <div className="py-3 lg:py-0">
-          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-v3-dark lg:px-3 lg:py-2">
+          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
             <Avatar src={ensInfo.avatar} className="h-8 w-8" />
             <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
               {ensInfo.name || accountShort}
@@ -158,7 +154,7 @@ export function HeaderAccountPopover() {
       </Popover.Button>
       <Transition>
         <Popover.Panel className="lg:min-w-896px lg:shadow-account-popover relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4">
-          <div className="bg-v3-arbitrum-dark-blue p-4 lg:rounded-tl-md lg:rounded-tr-md">
+          <div className="bg-blue-arbitrum p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
               <Transition show={showCopied}>
                 <span className="left-89px absolute top-4 text-xs font-light text-white">
@@ -205,7 +201,7 @@ export function HeaderAccountPopover() {
                   {({ selected }) => (
                     <button
                       className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-v3-gray-1`
+                        selected && `bg-gray-1`
                       }`}
                     >
                       Deposits
@@ -216,7 +212,7 @@ export function HeaderAccountPopover() {
                   {({ selected }) => (
                     <button
                       className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-v3-gray-1`
+                        selected && `bg-gray-1`
                       }`}
                     >
                       Withdrawals

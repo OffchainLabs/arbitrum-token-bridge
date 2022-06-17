@@ -21,7 +21,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
 
   return (
     <DepositCardContainer tx={tx}>
-      <span className="text-4xl font-semibold text-v3-orange-dark">
+      <span className="text-4xl font-semibold text-orange-dark">
         {isRedeeming ? 'Re-executing...' : 'L2 transaction failed'}
       </span>
       <Tooltip
@@ -44,10 +44,10 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
       </Tooltip>
 
       <div className="flex flex-col font-light">
-        <span className="text-lg text-v3-orange-dark">
+        <span className="text-lg text-orange-dark">
           L1 transaction: <DepositL1TxStatus tx={tx} />
         </span>
-        <span className="text-lg text-v3-orange-dark">
+        <span className="text-lg text-orange-dark">
           L2 transaction:{' '}
           {isRedeeming ? 'Pending...' : 'Failed. Try re-executing.'}
         </span>
