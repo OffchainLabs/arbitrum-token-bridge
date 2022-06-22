@@ -194,7 +194,7 @@ export function TransferPanel() {
     }
 
     // Don't open when the token import dialog should open
-    if (tokenFromSearchParams !== 'undefined') {
+    if (typeof tokenFromSearchParams !== 'undefined') {
       return
     }
 
