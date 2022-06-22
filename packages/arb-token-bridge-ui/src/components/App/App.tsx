@@ -15,13 +15,13 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
+import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { Layout } from '../common/Layout'
-import { DisclaimerModal } from '../DisclaimerModal/DisclaimerModal'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -31,7 +31,7 @@ import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
-
+import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
@@ -330,22 +330,29 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 }
 
 function Routes() {
-  const [prevTosAccepted] = useLocalStorage<string>(
-    'arbitrum:bridge:tos' + (TOS_VERSION === 1 ? '' : `-v${TOS_VERSION - 1}`)
-  )
-  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(
-    'arbitrum:bridge:tos-v' + TOS_VERSION
-  )
+  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
+  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
 
   const isTosAccepted = tosAccepted !== undefined
-  const isPrevTosAccepted = prevTosAccepted !== undefined
+
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  function onClose(confirmed: boolean) {
+    // Only close after confirming (agreeing to terms)
+    if (confirmed) {
+      setTosAccepted('true')
+      welcomeDialogProps.onClose(confirmed)
+    }
+  }
+
   return (
     <Router>
-      <DisclaimerModal
-        setTosAccepted={setTosAccepted}
-        tosAccepted={isTosAccepted}
-        prevTosAccepted={isPrevTosAccepted}
-      />
+      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
       <Switch>
         <Route path="/tos">
           <TermsOfService />

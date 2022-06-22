@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Popover, Transition } from '@headlessui/react'
+import { useMemo, useState } from 'react'
+import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
 import { resolveTokenImg } from '../../util'
-import { TokenImportModal } from '../TokenModal/TokenImportModal'
-import { TokenModal } from '../TokenModal/TokenModal'
+import { TokenImportDialog } from './TokenImportDialog'
+import { TokenSearch } from '../TransferPanel/TokenSearch'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
+import { useDialog } from '../common/Dialog'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -21,8 +22,8 @@ export function TokenButton(): JSX.Element {
   } = useAppState()
   const { status } = useNetworksAndSigners()
 
-  const [tokenImportModalOpen, setTokenImportModalOpen] = useState(false)
   const [tokenToImport, setTokenToImport] = useState<string>()
+  const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
@@ -42,27 +43,26 @@ export function TokenButton(): JSX.Element {
     return undefined
   }, [selectedToken?.address, status, arbTokenBridgeLoaded])
 
-  // Reset the token back to undefined every time the modal closes
-  useEffect(() => {
-    if (!tokenImportModalOpen) {
-      setTokenToImport(undefined)
-    }
-  }, [tokenImportModalOpen])
+  function closeWithReset() {
+    setTokenToImport(undefined)
+    tokenImportDialogProps.onClose(false)
+  }
 
-  function handleImportToken(address: string) {
+  function importToken(address: string) {
     setTokenToImport(address)
-    setTokenImportModalOpen(true)
+    openTokenImportDialog()
   }
 
   return (
     <>
       {typeof tokenToImport !== 'undefined' && (
-        <TokenImportModal
-          isOpen={tokenImportModalOpen}
-          setIsOpen={setTokenImportModalOpen}
+        <TokenImportDialog
+          {...tokenImportDialogProps}
+          onClose={closeWithReset}
           address={tokenToImport}
         />
       )}
+
       <Popover className="h-full">
         <Popover.Button className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-gray-2">
           <div className="flex items-center space-x-2">
@@ -79,13 +79,11 @@ export function TokenButton(): JSX.Element {
             <ChevronDownIcon className="h-4 w-4 text-gray-9" />
           </div>
         </Popover.Button>
-        <Transition>
-          <Popover.Panel className="top-100px lg:shadow-select-token-popover lg:w-466px absolute left-0 z-50 w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:rounded-lg lg:p-6">
-            {({ close }) => (
-              <TokenModal close={close} onImportToken={handleImportToken} />
-            )}
-          </Popover.Panel>
-        </Transition>
+        <Popover.Panel className="top-100px lg:shadow-select-token-popover lg:w-466px absolute left-0 z-50 w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:rounded-lg lg:p-6">
+          {({ close }) => (
+            <TokenSearch close={close} onImportToken={importToken} />
+          )}
+        </Popover.Panel>
       </Popover>
     </>
   )

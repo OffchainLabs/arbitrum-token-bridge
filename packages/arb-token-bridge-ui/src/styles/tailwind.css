@@ -165,6 +165,18 @@ input:checked + .slider:before {
     min-width: 540px;
   }
 
+  .lg\:min-w-628px {
+    min-width: 628px;
+  }
+
+  .lg\:min-w-692px {
+    min-width: 692px;
+  }
+
+  .lg\:min-w-725px {
+    min-width: 725px;
+  }
+
   .lg\:min-w-896px {
     min-width: 896px;
   }
@@ -184,6 +196,11 @@ input:checked + .slider:before {
 
   .lg\:max-w-725px {
     max-width: 725px;
+  }
+
+  /* lg:h */
+  .lg\:h-290px {
+    height: 290px;
   }
 
   /* lg:max-h */

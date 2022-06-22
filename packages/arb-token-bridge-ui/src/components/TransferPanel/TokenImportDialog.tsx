@@ -1,59 +1,18 @@
-import {
-  useState,
-  useEffect,
-  useMemo,
-  MouseEventHandler,
-  useCallback
-} from 'react'
-import Loader from 'react-loader-spinner'
-import Tippy from '@tippyjs/react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { ExclamationCircleIcon } from '@heroicons/react/outline'
+import Loader from 'react-loader-spinner'
+import Tippy from '@tippyjs/react'
 
 import { useActions, useAppState } from '../../state'
-import { Modal } from '../common/Modal'
 import {
   useTokensFromLists,
   useTokensFromUser,
   toERC20BridgeToken
-} from './TokenModalUtils'
+} from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-
-function ModalFooter({
-  hideCancel = false,
-  actionButtonContent,
-  onCancel,
-  onAction
-}: {
-  actionButtonContent: JSX.Element | string | null
-  hideCancel: boolean
-  onCancel: MouseEventHandler<HTMLButtonElement>
-  onAction: MouseEventHandler<HTMLButtonElement>
-}) {
-  return (
-    <div
-      className="-mx-6 flex justify-end space-x-2 py-4 pr-6"
-      style={{ backgroundColor: '#F4F4F4' }}
-    >
-      {!hideCancel && (
-        <button
-          className="focus:outline-none inline-flex w-1/2 items-center justify-center rounded-xl px-4 text-base font-medium transition duration-200 hover:opacity-75 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
-          style={{ color: '#11365E' }}
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
-      )}
-      <button
-        className="bg-dark-cyan focus:outline-none inline-flex w-1/2 justify-center rounded-xl border border-transparent px-4 py-3 text-base font-medium text-white transition duration-200 hover:opacity-75 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto sm:text-sm"
-        style={{ backgroundColor: '#11365E' }}
-        onClick={onAction}
-      >
-        {actionButtonContent}
-      </button>
-    </div>
-  )
-}
+import { Dialog, UseDialogProps } from '../common/Dialog'
 
 enum ImportStatus {
   LOADING,
@@ -73,15 +32,13 @@ type TokenListSearchResult =
       status: ImportStatus
     }
 
-export function TokenImportModal({
+export type TokenImportDialogProps = UseDialogProps & { address: string }
+
+export function TokenImportDialog({
   isOpen,
-  setIsOpen,
+  onClose,
   address
-}: {
-  isOpen: boolean
-  setIsOpen: (open: boolean) => void
-  address: string
-}): JSX.Element {
+}: TokenImportDialogProps): JSX.Element {
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token },
@@ -251,10 +208,10 @@ export function TokenImportModal({
 
     // Listen for the token to be added to the bridge so we can automatically select it
     if (foundToken.address !== selectedToken?.address) {
-      setIsOpen(false)
+      onClose(true)
       selectToken(foundToken)
     }
-  }, [isOpen, tokensFromUser, address, selectedToken, selectToken, setIsOpen])
+  }, [isOpen, tokensFromUser, address, selectedToken, selectToken, onClose])
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
@@ -275,7 +232,7 @@ export function TokenImportModal({
 
     if (typeof bridgeTokens[address] !== 'undefined') {
       // Token is already added to the bridge
-      setIsOpen(false)
+      onClose(true)
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
@@ -287,28 +244,23 @@ export function TokenImportModal({
 
   if (status === ImportStatus.LOADING) {
     return (
-      <Modal
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        title={modalTitle}
-        hideButton
-      >
-        <div className="flex h-32 items-center justify-center">
+      <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
+        <div className="lg:min-w-692px flex h-48 items-center justify-center">
           <Loader type="Oval" color="#000" height={32} width={32} />
         </div>
-      </Modal>
+      </Dialog>
     )
   }
 
   if (status === ImportStatus.ERROR) {
     return (
-      <Modal
+      <Dialog
         isOpen={isOpen}
-        setIsOpen={setIsOpen}
+        onClose={onClose}
         title={modalTitle}
-        hideButton
+        actionButtonProps={{ className: 'hidden' }}
       >
-        <div className="-mb-6 flex flex-col space-y-2">
+        <div className="lg:min-w-628px flex flex-col space-y-2">
           <div>
             <div className="flex flex-col">
               <span>
@@ -321,23 +273,27 @@ export function TokenImportModal({
               <img src="/images/grumpy-cat.jpg" alt="Grumpy cat" />
             </div>
           </div>
-          <ModalFooter
-            hideCancel={true}
-            actionButtonContent="Close"
-            onCancel={() => setIsOpen(false)}
-            onAction={() => setIsOpen(false)}
-          />
         </div>
-      </Modal>
+      </Dialog>
     )
   }
 
   return (
-    <Modal isOpen={isOpen} setIsOpen={setIsOpen} title={modalTitle} hideButton>
-      <div className="-mb-6 flex flex-col space-y-2">
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={modalTitle}
+      actionButtonProps={{
+        loading: isImportingToken,
+        onClick: handleTokenImport
+      }}
+      actionButtonTitle="Import token"
+    >
+      <div className="lg:min-w-628px lg:max-w-628px flex flex-col space-y-2">
         {status === ImportStatus.KNOWN && (
           <span>This token is on an imported token list as:</span>
         )}
+
         {status === ImportStatus.KNOWN_UNIMPORTED && (
           <span>
             This token hasn't been imported yet but appears on a token list. Are
@@ -346,31 +302,11 @@ export function TokenImportModal({
         )}
 
         {status === ImportStatus.UNKNOWN && (
-          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2ZM0 10C0 4.47715 4.47715 0 10 0C15.5228 0 20 4.47715 20 10C20 15.5228 15.5228 20 10 20C4.47715 20 0 15.5228 0 10Z"
-                fill="#CD0000"
-              />
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M10 12C9.44771 12 9 11.5523 9 11L9 5C9 4.44772 9.44772 4 10 4C10.5523 4 11 4.44772 11 5L11 11C11 11.5523 10.5523 12 10 12Z"
-                fill="#CD0000"
-              />
-              <path
-                d="M8.5 14.5C8.5 13.6716 9.17157 13 10 13C10.8284 13 11.5 13.6716 11.5 14.5C11.5 15.3284 10.8284 16 10 16C9.17157 16 8.5 15.3284 8.5 14.5Z"
-                fill="#CD0000"
-              />
-            </svg>
+          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+            <ExclamationCircleIcon
+              style={{ color: '#CD0000' }}
+              className="h-6 w-6"
+            />
             <div className="flex flex-col">
               <span>
                 This token isn't found on an active token list.
@@ -426,19 +362,7 @@ export function TokenImportModal({
             </div>
           )}
         </div>
-        <ModalFooter
-          hideCancel={isImportingToken}
-          actionButtonContent={
-            isImportingToken ? (
-              <Loader type="Oval" color="#fff" height={20} width={20} />
-            ) : (
-              <span>Import token</span>
-            )
-          }
-          onCancel={() => setIsOpen(false)}
-          onAction={handleTokenImport}
-        />
       </div>
-    </Modal>
+    </Dialog>
   )
 }

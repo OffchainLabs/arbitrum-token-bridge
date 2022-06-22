@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
@@ -9,10 +9,11 @@ import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
-import TransactionConfirmationModal, {
-  ModalStatus
-} from '../TransactionConfirmationModal/TransactionConfirmationModal'
-import { TokenImportModal } from '../TokenModal/TokenImportModal'
+import {
+  TokenDepositCheckDialog,
+  TokenDepositCheckDialogType
+} from './TokenDepositCheckDialog'
+import { TokenImportDialog } from './TokenImportDialog'
 import { NetworkBox } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 import {
@@ -30,7 +31,6 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
-import { useAppContextDispatch } from '../App/AppContext'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -73,11 +73,11 @@ enum ImportTokenModalStatus {
   CLOSED
 }
 
-const TransferPanel = (): JSX.Element => {
+export function TransferPanel() {
   const tokenFromSearchParams = useTokenFromSearchParams()
 
-  const [confimationModalStatus, setConfirmationModalStatus] =
-    useState<ModalStatus>(ModalStatus.CLOSED)
+  const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
+    useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
 
@@ -95,7 +95,6 @@ const TransferPanel = (): JSX.Element => {
   } = useAppState()
   const { provider } = useWallet()
   const latestConnectedProvider = useLatest(provider)
-  const dispatch = useAppContextDispatch()
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
@@ -120,6 +119,7 @@ const TransferPanel = (): JSX.Element => {
     openLowBalanceDialog,
     { didOpen: didOpenLowBalanceDialog }
   ] = useDialog()
+  const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
@@ -193,6 +193,11 @@ const TransferPanel = (): JSX.Element => {
       return
     }
 
+    // Don't open when the token import dialog should open
+    if (tokenFromSearchParams !== 'undefined') {
+      return
+    }
+
     if (typeof arbTokenBridge.balances !== 'undefined') {
       const ethBalance = arbTokenBridge.balances.eth.balance
 
@@ -209,6 +214,7 @@ const TransferPanel = (): JSX.Element => {
     l1Network,
     isDepositMode,
     arbTokenBridge.balances,
+    tokenFromSearchParams,
     didOpenLowBalanceDialog,
     openLowBalanceDialog
   ])
@@ -255,19 +261,46 @@ const TransferPanel = (): JSX.Element => {
     return isConnected && isDepositMode && isUnbridgedToken
   }, [l1Network, isDepositMode, selectedToken])
 
-  const showModalOnDeposit = useCallback(() => {
-    if (isBridgingANewStandardToken) {
-      if (!selectedToken)
-        throw new Error('Invalid app state: no selected token')
-      setConfirmationModalStatus(ModalStatus.NEW_TOKEN_DEPOSITING)
-    } else {
-      const isAUserAddedToken =
-        selectedToken && selectedToken.listID === undefined
-      setConfirmationModalStatus(
-        isAUserAddedToken ? ModalStatus.USER_ADDED_DEPOSIT : ModalStatus.DEPOSIT
-      )
+  async function depositToken() {
+    if (!selectedToken) {
+      throw new Error('Invalid app state: no selected token')
     }
-  }, [isBridgingANewStandardToken, selectedToken])
+
+    function getDialogType(): TokenDepositCheckDialogType | null {
+      let type: TokenDepositCheckDialogType | null = null
+
+      if (isBridgingANewStandardToken) {
+        type = 'new-token'
+      } else {
+        const isUserAddedToken =
+          selectedToken &&
+          typeof selectedToken.listID === 'undefined' &&
+          typeof selectedToken.l2Address === 'undefined'
+
+        if (isUserAddedToken) {
+          type = 'user-added-token'
+        }
+      }
+
+      return type
+    }
+
+    // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
+    const dialogType = getDialogType()
+
+    if (dialogType) {
+      setTokenDepositCheckDialogType(dialogType)
+
+      const waitForInput = openTokenCheckDialog()
+      const confirmed = await waitForInput()
+
+      if (confirmed) {
+        transfer()
+      }
+    } else {
+      transfer()
+    }
+  }
 
   const transfer = async () => {
     if (
@@ -627,7 +660,13 @@ const TransferPanel = (): JSX.Element => {
               variant="primary"
               loading={transferring}
               disabled={disableDeposit}
-              onClick={transfer}
+              onClick={() => {
+                if (selectedToken) {
+                  depositToken()
+                } else {
+                  transfer()
+                }
+              }}
               className="w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl"
             >
               Move funds to {l2Network?.name}
@@ -646,26 +685,21 @@ const TransferPanel = (): JSX.Element => {
         </div>
 
         {typeof tokenFromSearchParams !== 'undefined' && (
-          <TokenImportModal
+          <TokenImportDialog
             isOpen={importTokenModalStatus === ImportTokenModalStatus.OPEN}
-            setIsOpen={() =>
+            onClose={() =>
               setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
             }
             address={tokenFromSearchParams}
           />
         )}
 
-        <TransactionConfirmationModal
-          onConfirm={transfer}
-          status={confimationModalStatus}
-          closeModal={() => setConfirmationModalStatus(ModalStatus.CLOSED)}
-          isDepositing={isDepositMode}
-          symbol={selectedToken ? selectedToken.symbol : 'Eth'}
-          amount={isDepositMode ? l1Amount : l2Amount}
+        <TokenDepositCheckDialog
+          {...tokenCheckDialogProps}
+          type={tokenDepositCheckDialogType}
+          symbol={selectedToken ? selectedToken.symbol : 'ETH'}
         />
       </div>
     </>
   )
 }
-
-export { TransferPanel }

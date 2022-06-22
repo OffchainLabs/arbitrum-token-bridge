@@ -2,7 +2,7 @@ import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress, formatUnits } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
-import { XIcon } from '@heroicons/react/outline'
+import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -14,14 +14,12 @@ import {
 import { resolveTokenImg } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
-import TokenBlacklistedDialog from './TokenBlacklistedDialog'
-import TokenConfirmationDialog from './TokenConfirmationDialog'
 import {
   SearchableToken,
   useTokensFromLists,
   useTokensFromUser,
   toERC20BridgeToken
-} from './TokenModalUtils'
+} from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 enum Panel {
@@ -325,9 +323,6 @@ function TokensPanel({
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
-  const [confirmationOpen, setConfirmationOpen] = useState(false)
-  const [blacklistedOpen, setBlacklistedOpen] = useState(false)
-
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
@@ -443,15 +438,6 @@ function TokensPanel({
 
   return (
     <div className="flex flex-col space-y-3">
-      <TokenConfirmationDialog
-        onAdd={storeNewToken}
-        open={confirmationOpen}
-        setOpen={setConfirmationOpen}
-      />
-      <TokenBlacklistedDialog
-        open={blacklistedOpen}
-        setOpen={setBlacklistedOpen}
-      />
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <input
@@ -516,7 +502,7 @@ function TokensPanel({
   )
 }
 
-export function TokenModal({
+export function TokenSearch({
   close,
   onImportToken
 }: {
@@ -583,7 +569,7 @@ export function TokenModal({
         <TokensPanel onTokenSelected={selectToken} />
         <div className="flex justify-end pt-6">
           <button
-            className="text-sm font-medium text-blue-link"
+            className="arb-hover text-sm font-medium text-blue-link"
             onClick={() => setCurrentPanel(Panel.LISTS)}
           >
             Manage token lists
@@ -603,23 +589,10 @@ export function TokenModal({
       </div>
       <div className="flex justify-start pb-6">
         <button
-          className="flex items-center space-x-2 text-sm font-medium text-blue-link"
+          className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
           onClick={() => setCurrentPanel(Panel.TOKENS)}
         >
-          <svg
-            width="12"
-            height="10"
-            viewBox="0 0 12 10"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M5.80473 0.528514C6.06508 0.788864 6.06508 1.21097 5.80473 1.47132L2.9428 4.33325H10.6667C11.0348 4.33325 11.3333 4.63173 11.3333 4.99992C11.3333 5.36811 11.0348 5.66658 10.6667 5.66658H2.9428L5.80473 8.52851C6.06508 8.78886 6.06508 9.21097 5.80473 9.47132C5.54438 9.73167 5.12227 9.73167 4.86192 9.47132L0.861919 5.47132C0.736894 5.3463 0.666656 5.17673 0.666656 4.99992C0.666656 4.82311 0.736894 4.65354 0.861919 4.52851L4.86192 0.528514C5.12227 0.268165 5.54438 0.268165 5.80473 0.528514Z"
-              fill="#2D49A7"
-            />
-          </svg>
+          <ArrowSmLeftIcon className="h-6 w-6" />
           <span>Back to Select Token</span>
         </button>
       </div>

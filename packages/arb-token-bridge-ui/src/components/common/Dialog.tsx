@@ -1,7 +1,7 @@
 import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
 
-import { Button } from './Button'
+import { Button, ButtonProps } from './Button'
 import { getTransitionProps } from './Transition'
 
 /**
@@ -66,8 +66,8 @@ export function useDialog(): UseDialogResult {
 export type DialogProps = {
   isOpen: boolean
   isCustom?: boolean
-  title?: string
-  actionButtonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>
+  title?: string | JSX.Element
+  actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
   onClose: (confirmed: boolean) => void
   children?: React.ReactNode
@@ -92,13 +92,15 @@ export function Dialog(props: DialogProps) {
         onClose={() => props.onClose(false)}
         className="bg-v4-dark lg:bg-dialog fixed inset-0 z-50 flex lg:items-center lg:justify-center"
       >
-        <div className="lg:shadow-dialog lg:max-h-screen-minus-100px z-10 max-h-screen w-full overflow-y-scroll bg-white lg:w-auto lg:rounded-xl">
+        <div className="lg:shadow-dialog lg:max-h-screen-minus-100px z-10 max-h-screen w-full overflow-y-auto bg-white lg:w-auto lg:rounded-xl">
           {isCustom ? (
             props.children
           ) : (
             <>
               <div className="px-8 py-4">
-                <h3 className="text-2xl font-medium">{props.title}</h3>
+                <HeadlessUIDialog.Title className="text-2xl font-medium">
+                  {props.title}
+                </HeadlessUIDialog.Title>
               </div>
 
               <div className="flex-grow px-8 py-4">{props.children}</div>
