@@ -17,6 +17,10 @@ import {
   L1ContractCallTransaction,
   L1ContractCallTransactionReceipt
 } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import {
+  L2ContractTransaction,
+  L2TransactionReceipt
+} from '@arbitrum/sdk/dist/lib/message/L2Transaction'
 
 import {
   FailedTransaction,
@@ -51,6 +55,11 @@ export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
 export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
   L1ContractCallTransaction,
   L1ContractCallTransactionReceipt
+>
+
+export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
+  L2ContractTransaction,
+  L2TransactionReceipt
 >
 
 export type NodeBlockDeadlineStatus =
@@ -161,7 +170,10 @@ export interface ArbTokenBridgeEth {
     weiValue: BigNumber,
     txLifecycle?: L1EthDepositTransactionLifecycle
   ) => Promise<void | ContractReceipt>
-  withdraw: (weiValue: BigNumber) => Promise<void | ContractReceipt>
+  withdraw: (
+    weiValue: BigNumber,
+    txLifecycle?: L2ContractCallTransactionLifecycle
+  ) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }
@@ -187,7 +199,8 @@ export interface ArbTokenBridgeToken {
   ) => Promise<void | ContractReceipt>
   withdraw: (
     erc20l1Address: string,
-    amount: BigNumber
+    amount: BigNumber,
+    txLifecycle?: L2ContractCallTransactionLifecycle
   ) => Promise<void | ContractReceipt>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>

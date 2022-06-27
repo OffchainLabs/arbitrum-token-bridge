@@ -31,6 +31,7 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
+import { useAppContextDispatch } from '../App/AppContext'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -102,6 +103,7 @@ export function TransferPanel() {
     l1: { network: l1Network },
     l2: { network: l2Network, signer: l2Signer }
   } = networksAndSigners
+  const dispatch = useAppContextDispatch()
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -390,11 +392,25 @@ export function TransferPanel() {
             await latestToken.current.approve(selectedToken.address)
           }
 
-          await latestToken.current.deposit(selectedToken.address, amountRaw)
+          await latestToken.current.deposit(selectedToken.address, amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
-          await latestEth.current.deposit(amountRaw)
+          await latestEth.current.deposit(amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         }
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
@@ -448,10 +464,24 @@ export function TransferPanel() {
             }
           }
 
-          await latestToken.current.withdraw(selectedToken.address, amountRaw)
+          await latestToken.current.withdraw(selectedToken.address, amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          await latestEth.current.withdraw(amountRaw)
+          await latestEth.current.withdraw(amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         }
       }
     } catch (ex) {

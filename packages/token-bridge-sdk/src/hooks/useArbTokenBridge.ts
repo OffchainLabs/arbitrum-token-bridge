@@ -42,7 +42,8 @@ import {
   L2ToL1EventResult,
   NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
-  L1ContractCallTransactionLifecycle
+  L1ContractCallTransactionLifecycle,
+  L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 
 import {
@@ -367,8 +368,15 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function withdrawEth(amount: BigNumber) {
+  async function withdrawEth(
+    amount: BigNumber,
+    txLifecycle?: L2ContractCallTransactionLifecycle
+  ) {
     const tx = await ethBridger.withdraw({ l2Signer: l2.signer, amount })
+
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx)
+    }
 
     try {
       addTransaction({
@@ -384,6 +392,10 @@ export const useArbTokenBridge = (
       })
 
       const receipt = await tx.wait()
+
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
+      }
 
       updateTransaction(receipt, tx)
       updateEthBalances()
@@ -537,7 +549,11 @@ export const useArbTokenBridge = (
     return receipt
   }
 
-  async function withdrawToken(erc20l1Address: string, amount: BigNumber) {
+  async function withdrawToken(
+    erc20l1Address: string,
+    amount: BigNumber,
+    txLifecycle?: L2ContractCallTransactionLifecycle
+  ) {
     const bridgeToken = bridgeTokens[erc20l1Address]
 
     const { symbol, decimals } = await (async () => {
@@ -556,6 +572,10 @@ export const useArbTokenBridge = (
       amount
     })
 
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx)
+    }
+
     addTransaction({
       type: 'withdraw',
       status: 'pending',
@@ -570,6 +590,11 @@ export const useArbTokenBridge = (
 
     try {
       const receipt = await tx.wait()
+
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
+      }
+
       updateTransaction(receipt, tx)
 
       const l2ToL1Events = receipt.getL2ToL1Events()

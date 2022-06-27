@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { usePrevious } from 'react-use'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
 import { useAppState } from '../../state'
@@ -8,7 +9,7 @@ import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { Transition } from '../common/Transition'
+import { ExploreArbitrum } from './ExploreArbitrum'
 
 const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
@@ -27,11 +28,22 @@ export function MainContent() {
   const unseenTransactions = mergedTransactions.filter(
     tx => !seenTransactions.includes(tx.txId)
   )
+  const prevUnseenTransactions = usePrevious(unseenTransactions)
 
   const didLoadPendingWithdrawals = useMemo(
     () => pwLoadedState === PendingWithdrawalsLoadedState.READY,
     [pwLoadedState]
   )
+
+  useEffect(() => {
+    const prevUnseenTransactionsLength = prevUnseenTransactions?.length || 0
+
+    // The last visible card was hidden, so bring back the transfer panel
+    if (prevUnseenTransactionsLength > 0 && unseenTransactions.length === 0) {
+      dispatch({ type: 'layout.set_is_transfer_panel_visible', payload: true })
+    }
+    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
+  }, [unseenTransactions, prevUnseenTransactions])
 
   useEffect(() => {
     if (didLoadPendingWithdrawals) {
@@ -76,9 +88,7 @@ export function MainContent() {
             )
           )}
 
-        <Transition show={isTransferPanelVisible} appear>
-          <TransferPanel />
-        </Transition>
+        {isTransferPanelVisible ? <TransferPanel /> : <ExploreArbitrum />}
       </div>
     </div>
   )

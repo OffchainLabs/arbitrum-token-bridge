@@ -10,6 +10,7 @@ import { shortenTxHash } from '../../util/CommonUtils'
 import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
+import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -88,6 +89,9 @@ export function WithdrawalCardContainer({
   tx: MergedTransaction
   children: React.ReactNode
 }) {
+  const state = useAppContextState()
+  const dispatch = useAppContextDispatch()
+
   const bgClassName = useMemo(() => {
     switch (tx.status) {
       case 'Executed':
@@ -101,6 +105,21 @@ export function WithdrawalCardContainer({
   return (
     <div className={`w-full p-8 lg:rounded-xl ${bgClassName}`}>
       <div className="flex flex-col space-y-5">{children}</div>
+      {!state.layout.isTransferPanelVisible && (
+        <div className="flex justify-end">
+          <button
+            className="arb-hover font-light text-blue-arbitrum underline"
+            onClick={() =>
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: true
+              })
+            }
+          >
+            Move more funds
+          </button>
+        </div>
+      )}
     </div>
   )
 }
