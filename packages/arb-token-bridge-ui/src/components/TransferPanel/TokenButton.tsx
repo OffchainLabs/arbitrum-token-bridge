@@ -3,7 +3,7 @@ import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
-import { resolveTokenImg } from '../../util'
+import { sanitizeImageSrc } from '../../util'
 import { TokenImportDialog } from './TokenImportDialog'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import {
@@ -38,7 +38,7 @@ export function TokenButton(): JSX.Element {
     }
     const logo = bridgeTokens[selectedAddress]?.logoURI
     if (logo) {
-      return resolveTokenImg(logo)
+      return sanitizeImageSrc(logo)
     }
     return undefined
   }, [selectedToken?.address, status, arbTokenBridgeLoaded])

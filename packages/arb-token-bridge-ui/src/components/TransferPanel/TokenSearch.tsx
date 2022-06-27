@@ -11,7 +11,7 @@ import {
   listIdsToNames,
   addBridgeTokenListToBridge
 } from '../../tokenLists'
-import { resolveTokenImg } from '../../util'
+import { sanitizeImageSrc } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -76,7 +76,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return undefined
     }
 
-    return resolveTokenImg(token.logoURI)
+    return sanitizeImageSrc(token.logoURI)
   }, [token])
 
   const tokenBalance = useMemo(() => {

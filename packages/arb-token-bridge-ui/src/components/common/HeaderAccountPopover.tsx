@@ -7,6 +7,7 @@ import {
   ExternalLinkIcon,
   LogoutIcon
 } from '@heroicons/react/outline'
+import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
@@ -22,6 +23,7 @@ import {
   TransactionsTable,
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
+import { SafeImage } from './SafeImage'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -41,12 +43,15 @@ function getTransactionsDataStatus(
   }
 }
 
-function Avatar({ src, className }: { src: string | null; className: string }) {
-  if (!src) {
-    return <div className={`rounded-full bg-orange ${className}`} />
-  }
-
-  return <img alt="Avatar" src={src} className={`rounded-full ${className}`} />
+function CustomBoringAvatar({ size, name }: { size: number; name?: string }) {
+  return (
+    <BoringAvatar
+      size={size}
+      name={name?.toLowerCase()}
+      variant="beam"
+      colors={['#11365E', '#EDD75A', '#73B06F', '#0C8F8F', '#405059']}
+    />
+  )
 }
 
 function isDeposit(tx: MergedTransaction) {
@@ -145,7 +150,11 @@ export function HeaderAccountPopover() {
       <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
         <div className="py-3 lg:py-0">
           <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
-            <Avatar src={ensInfo.avatar} className="h-8 w-8" />
+            <SafeImage
+              src={ensInfo.avatar || undefined}
+              className="h-8 w-8 rounded-full"
+              fallback={<CustomBoringAvatar size={32} name={account} />}
+            />
             <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
               {ensInfo.name || accountShort}
             </span>
@@ -165,7 +174,11 @@ export function HeaderAccountPopover() {
                 className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
                 onClick={() => copy(ensInfo.name || account || '')}
               >
-                <Avatar src={ensInfo.avatar} className="h-14 w-14" />
+                <SafeImage
+                  src={ensInfo.avatar || undefined}
+                  className="h-14 w-14 rounded-full"
+                  fallback={<CustomBoringAvatar size={56} name={account} />}
+                />
                 <div className="flex flex-row items-center space-x-3">
                   <span className="text-2xl font-normal text-white">
                     {ensInfo.name || accountShort}

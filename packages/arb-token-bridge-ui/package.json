@@ -10,6 +10,7 @@
     "@tippyjs/react": "^4.2.6",
     "@walletconnect/web3-provider": "^1.6.5",
     "axios": "^0.21.4",
+    "boring-avatars": "^1.7.0",
     "dayjs": "^1.10.6",
     "lodash-es": "^4.17.21",
     "overmind": "^28.0.1",
