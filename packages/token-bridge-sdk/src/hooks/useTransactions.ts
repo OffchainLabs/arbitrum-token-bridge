@@ -3,7 +3,10 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_types'
+import {
+  EthDepositMessage,
+  IL1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -318,6 +321,37 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
+  const fetchAndUpdateEthDepositMessageStatus = async (
+    txID: string,
+    ethDepositMessage: EthDepositMessage
+  ) => {
+    // Set `fetchingUpdate` to true
+    updateTxnL1ToL2MsgData(txID, {
+      fetchingUpdate: true,
+      status: L1ToL2MessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: ethDepositMessage.l2DepositTxHash
+    })
+
+    // It's ok to bail after 1 second, as the RetryableTxnsIncluder will pick it up
+    const res = await ethDepositMessage.wait(undefined, 1000)
+
+    if (!res) {
+      // Set `fetchingUpdate` back to false
+      updateTxnL1ToL2MsgData(txID, {
+        fetchingUpdate: false,
+        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        retryableCreationTxID: ethDepositMessage.l2DepositTxHash
+      })
+    } else {
+      updateTxnL1ToL2MsgData(txID, {
+        fetchingUpdate: false,
+        status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2,
+        retryableCreationTxID: res.transactionHash,
+        l2TxID: res.transactionHash
+      })
+    }
+  }
+
   const fetchAndUpdateL1ToL2MsgStatus = async (
     txID: string,
     l1ToL2Msg: IL1ToL2MessageReader,
@@ -455,7 +489,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateEthDepositMessageStatus
     }
   ]
 }
