@@ -325,31 +325,31 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     txID: string,
     ethDepositMessage: EthDepositMessage
   ) => {
-    // Set `fetchingUpdate` to true
     updateTxnL1ToL2MsgData(txID, {
       fetchingUpdate: true,
       status: L1ToL2MessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: ethDepositMessage.l2DepositTxHash
     })
 
-    // It's ok to bail after 1 second, as the RetryableTxnsIncluder will pick it up
-    const res = await ethDepositMessage.wait(undefined, 1000)
+    // It's ok to bail here, as the RetryableTxnsIncluder will pick it up
+    const res = await ethDepositMessage.wait(undefined, 500)
 
-    if (!res) {
-      // Set `fetchingUpdate` back to false
-      updateTxnL1ToL2MsgData(txID, {
-        fetchingUpdate: false,
-        status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        retryableCreationTxID: ethDepositMessage.l2DepositTxHash
-      })
-    } else {
-      updateTxnL1ToL2MsgData(txID, {
-        fetchingUpdate: false,
-        status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2,
-        retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-        l2TxID: ethDepositMessage.l2DepositTxHash
-      })
+    function getStatus(): L1ToL2MessageStatus {
+      if (!res) {
+        return L1ToL2MessageStatus.NOT_YET_CREATED
+      }
+
+      return res.status === 0
+        ? L1ToL2MessageStatus.CREATION_FAILED
+        : L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
     }
+
+    updateTxnL1ToL2MsgData(txID, {
+      fetchingUpdate: false,
+      status: getStatus(),
+      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
+      l2TxID: ethDepositMessage.l2DepositTxHash
+    })
   }
 
   const fetchAndUpdateL1ToL2MsgStatus = async (
