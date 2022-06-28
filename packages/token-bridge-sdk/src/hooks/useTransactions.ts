@@ -346,8 +346,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       updateTxnL1ToL2MsgData(txID, {
         fetchingUpdate: false,
         status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2,
-        retryableCreationTxID: res.transactionHash,
-        l2TxID: res.transactionHash
+        retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
+        l2TxID: ethDepositMessage.l2DepositTxHash
       })
     }
   }
