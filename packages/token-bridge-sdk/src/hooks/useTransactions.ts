@@ -348,7 +348,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       fetchingUpdate: false,
       status: getStatus(),
       retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      l2TxID: ethDepositMessage.l2DepositTxHash
+      // Only show `l2TxID` after we have the tx receipt
+      l2TxID: res !== null ? ethDepositMessage.l2DepositTxHash : undefined
     })
   }
 
