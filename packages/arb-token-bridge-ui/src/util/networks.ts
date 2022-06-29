@@ -14,12 +14,47 @@ export const rpcURLs: { [chainId: number]: string } = {
   42161: 'https://arb1.arbitrum.io/rpc',
   421611: 'https://rinkeby.arbitrum.io/rpc',
   421612: 'https://nitro-devnet.arbitrum.io/rpc',
-  421702: 'https://anytrust-devnet.arbitrum.io/rpc'
+  42170: 'https://a4ba.arbitrum.io/rpc'
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   42161: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
   421611: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
+}
+
+const AnyTrust: L2Network = {
+  chainID: 42170,
+  confirmPeriodBlocks: 20,
+  ethBridge: {
+    bridge: '0xc1ebd02f738644983b6c4b2d440b8e77dde276bd',
+    inbox: '0xc4448b71118c9071bcb9734a0eac55d18a153949',
+    outbox: '0xD4B80C3D7240325D18E645B49e6535A3Bf95cc58',
+    rollup: '0xfb209827c58283535b744575e11953dcc4bead88',
+    sequencerInbox: '0x211e1c4c7f1bf5351ac850ed10fd68cffcf6c21b'
+  },
+  explorerUrl: 'https://a4ba-explorer.arbitrum.io',
+  isArbitrum: true,
+  isCustom: true,
+  name: 'AnyTrust',
+  partnerChainID: 1,
+  retryableLifetimeSeconds: SEVEN_DAYS_IN_SECONDS,
+  rpcURL: 'https://a4ba.arbitrum.io/rpc',
+  tokenBridge: {
+    l1CustomGateway: '0x23122da8C581AA7E0d07A36Ff1f16F799650232f',
+    l1ERC20Gateway: '0xB2535b988dcE19f9D71dfB22dB6da744aCac21bf',
+    l1GatewayRouter: '0xC840838Bc438d73C16c2f8b22D2Ce3669963cD48',
+    l1MultiCall: '0x8896d23afea159a5e9b72c9eb3dc4e2684a38ea3',
+    l1ProxyAdmin: '0xa8f7DdEd54a726eB873E98bFF2C95ABF2d03e560',
+    l1Weth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    l1WethGateway: '0xE4E2121b479017955Be0b175305B35f312330BaE',
+    l2CustomGateway: '0xbf544970E6BD77b21C6492C281AB60d0770451F4',
+    l2ERC20Gateway: '0xcF9bAb7e53DDe48A6DC4f286CB14e05298799257',
+    l2GatewayRouter: '0x21903d3F8176b1a0c17E953Cd896610Be9fFDFa8',
+    l2Multicall: '0x5e1eE626420A354BbC9a95FeA1BAd4492e3bcB86',
+    l2ProxyAdmin: '0xada790b026097BfB36a5ed696859b97a96CEd92C',
+    l2Weth: '0x722E8BdD2ce80A4422E880164f2079488e115365',
+    l2WethGateway: '0x7626841cB6113412F9c88D3ADC720C9FAC88D9eD'
+  }
 }
 
 const Goerli: L1Network = {
@@ -67,47 +102,12 @@ const NitroDevnet: L2Network = {
   }
 }
 
-const AnyTrustDevnet: L2Network = {
-  chainID: 421702,
-  confirmPeriodBlocks: 20,
-  ethBridge: {
-    bridge: '0xd1fed339fb57b317dbf3d765310159bf9f614b8c',
-    inbox: '0xa329b51eac558310cc2d6d245c02bfaa85284af0',
-    outbox: '0x0Af29F346fA2cEB503e70ae31337eb6558bBe4cC',
-    rollup: '0xd8998fa65d21a64dc8fe9db47205ccd61928d923',
-    sequencerInbox: '0xd5cbd94954d2a694c7ab797d87bf0fb1d49192bf'
-  },
-  explorerUrl: 'https://anytrust-devnet-blockscout.arbitrum.io',
-  isArbitrum: true,
-  isCustom: true,
-  name: 'ArbLocal',
-  partnerChainID: 5,
-  rpcURL: 'https://anytrust-devnet.arbitrum.io/rpc',
-  retryableLifetimeSeconds: SEVEN_DAYS_IN_SECONDS,
-  tokenBridge: {
-    l1CustomGateway: '0xCdE6566fBB0a981F83d67eBda82819F387764126',
-    l1ERC20Gateway: '0x92255842D6d86CCe9371D0f8d5BdBa25C1938745',
-    l1GatewayRouter: '0xbA5B9bf6E1DA69a3A37dD54AC4F265A366625f79',
-    l1MultiCall: '0x99CDB49640776c67674dCf43575118a88C8752A0',
-    l1ProxyAdmin: '0xB16D95476DF99dd91bD328b5A3B46931bd516dDc',
-    l1Weth: '0xd2211A5Ec4C9bfF1529f68DEa54Bb3eacD45F65C',
-    l1WethGateway: '0xAc07eBe985F2AfebF89c5A363A51972fAF79d0FB',
-    l2CustomGateway: '0x175f1F35fC65D73dCF610923359CabCFf238A5fC',
-    l2ERC20Gateway: '0x4bB8bC6af517427f6EbF5fc50616bB515f373f88',
-    l2GatewayRouter: '0xb5a1b13744f5aDBef8c5eB74Eeb04327c6df8b13',
-    l2Multicall: '0x9b77C9a47f47D218C3A080E46CAd2f2ABDD57b68',
-    l2ProxyAdmin: '0x10cd09DE264C424dE3e1BB298fBf8cE0e81b155e',
-    l2Weth: '0x99CDB49640776c67674dCf43575118a88C8752A0',
-    l2WethGateway: '0x8244ae591CCD089D4a5eD93D61E4205A5a33B97b'
-  }
+export function registerAnyTrust() {
+  addCustomNetwork({ customL2Network: AnyTrust })
 }
 
 export function registerNitroDevnet() {
   addCustomNetwork({ customL1Network: Goerli, customL2Network: NitroDevnet })
-}
-
-export function registerAnyTrustDevnet() {
-  addCustomNetwork({ customL2Network: AnyTrustDevnet })
 }
 
 export function registerLocalNetwork() {
