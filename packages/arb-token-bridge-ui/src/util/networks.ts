@@ -1,4 +1,5 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import { l1Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 
 const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
@@ -16,6 +17,9 @@ export const rpcURLs: { [chainId: number]: string } = {
   421612: 'https://nitro-devnet.arbitrum.io/rpc',
   42170: 'https://a4ba.arbitrum.io/rpc'
 }
+
+l1Networks[1].rpcURL = rpcURLs[1]
+l1Networks[4].rpcURL = rpcURLs[4]
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   42161: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
