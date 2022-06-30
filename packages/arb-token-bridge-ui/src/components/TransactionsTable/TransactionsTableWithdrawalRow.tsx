@@ -119,7 +119,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
     const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
 
     if (typeof matchingL1Tx === 'undefined') {
-      return <span className="text-dark">L1: Not found</span>
+      return <span className="text-dark">L1: Not available</span>
     }
 
     return (

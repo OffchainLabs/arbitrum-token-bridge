@@ -24,18 +24,11 @@ export function DepositCountdown({
   const now = dayjs()
   const whenCreated = dayjs(createdAt)
 
-  if (depositStatus === DepositStatus.L1_PENDING) {
-    // TODO: Double-check these values:
-    //
-    // We expect the L1 tx to be confirmed within 3 minutes in most cases, so we subtract the diff from 3 minutes.
-    const minutesRemaining = 3 - now.diff(whenCreated, 'minutes')
-    return <span>{getMinutesRemainingText(minutesRemaining)}</span>
-  }
-
-  if (depositStatus === DepositStatus.L2_PENDING) {
-    // TODO: Double-check these values:
-    //
-    // We expect the L2 tx to be confirmed within 10 minutes in most cases, so we subtract the diff from 10 minutes.
+  if (
+    depositStatus === DepositStatus.L1_PENDING ||
+    depositStatus === DepositStatus.L2_PENDING
+  ) {
+    // We expect the deposit to be completed within 10 minutes in most cases, so we subtract the diff from 10 minutes
     const minutesRemaining = 10 - now.diff(whenCreated, 'minutes')
     return <span>{getMinutesRemainingText(minutesRemaining)}</span>
   }

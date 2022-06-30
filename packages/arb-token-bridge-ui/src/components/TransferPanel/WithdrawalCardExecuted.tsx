@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { BigNumber, utils } from 'ethers'
 import Loader from 'react-loader-spinner'
 
@@ -31,8 +31,6 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   } = useAppState()
   const dispatch = useAppContextDispatch()
 
-  const [isVisible, setIsVisible] = useState(true)
-
   useEffect(() => {
     // Add token to bridge just in case
     if (tx.tokenAddress && !arbTokenBridge.bridgeTokens[tx.tokenAddress]) {
@@ -54,7 +52,6 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setIsVisible(false)
       dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
       // Disappears after 10 seconds
     }, 10 * 1000)
@@ -64,10 +61,6 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     }
     // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
   }, [tx.txId])
-
-  if (!isVisible) {
-    return null
-  }
 
   return (
     <WithdrawalCardContainer tx={tx}>

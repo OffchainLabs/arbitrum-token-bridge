@@ -10,7 +10,7 @@ import { DepositCardL1Failure } from './DepositCardL1Failure'
 import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextDispatch } from '../App/AppContext'
 
 export function DepositL1TxStatus({
   tx
@@ -76,7 +76,6 @@ export function DepositCardContainer({
   tx: MergedTransaction
   children: React.ReactNode
 }) {
-  const state = useAppContextState()
   const dispatch = useAppContextDispatch()
 
   const bgClassName = useMemo(() => {
@@ -99,21 +98,19 @@ export function DepositCardContainer({
   return (
     <div className={`w-full p-8 lg:rounded-xl ${bgClassName}`}>
       <div className="flex flex-col space-y-5">{children}</div>
-      {!state.layout.isTransferPanelVisible && (
-        <div className="flex justify-end">
-          <button
-            className="arb-hover font-light text-blue-arbitrum underline"
-            onClick={() =>
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: true
-              })
-            }
-          >
-            Move more funds
-          </button>
-        </div>
-      )}
+      <div className="flex justify-end">
+        <button
+          className="arb-hover font-light text-blue-arbitrum underline"
+          onClick={() =>
+            dispatch({
+              type: 'layout.set_is_transfer_panel_visible',
+              payload: true
+            })
+          }
+        >
+          Move more funds
+        </button>
+      </div>
     </div>
   )
 }

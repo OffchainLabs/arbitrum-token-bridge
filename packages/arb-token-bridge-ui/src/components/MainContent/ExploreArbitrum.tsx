@@ -40,7 +40,7 @@ function ProjectCard({
   return (
     <ExternalLink
       href={href}
-      className="arb-hover flex h-72 flex-col justify-between rounded-xl bg-gray-4 bg-cover bg-center"
+      className="transition-explore-arbitrum-project-image arb-hover flex h-72 flex-col justify-between rounded-xl bg-gray-4 bg-cover bg-center"
       style={{ backgroundImage: `url(${imageSrc}` }}
     >
       <div className="flex flex-grow items-center justify-between">

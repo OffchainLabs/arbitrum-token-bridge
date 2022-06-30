@@ -202,74 +202,79 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
-            <p>Get your funds in under 30 min with a fast exit bridge.</p>
+            <div className="flex flex-col space-y-2">
+              <p className="font-light">
+                Get your funds in under 30 min with a fast exit bridge.
+              </p>
 
-            <div className="flex flex-row items-center space-x-1">
-              <ExclamationCircleIcon className="h-6 w-6 text-orange-dark" />
-              <span className="font-medium text-orange-dark">
-                Security not guaranteed by Arbitrum
-              </span>
+              <div className="flex flex-row items-center space-x-1">
+                <ExclamationCircleIcon className="h-6 w-6 text-orange-dark" />
+                <span className="font-medium text-orange-dark">
+                  Security not guaranteed by Arbitrum
+                </span>
+              </div>
             </div>
 
             <FastBridgesTable />
           </Tab.Panel>
-          <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
-            <div className="flex flex-col space-y-2">
-              <span className="font-light">
-                Get your funds in {confirmationPeriod} and pay a small fee
-                twice.{' '}
-                <ExternalLink href="#" className="underline">
-                  Learn more.
-                </ExternalLink>
-              </span>
+          <Tab.Panel className="lg:min-h-422px flex flex-col justify-between px-8 py-4">
+            <div className="flex flex-col space-y-6">
+              <div className="flex flex-col space-y-3">
+                <p className="font-light">
+                  Get your funds in {confirmationPeriod} and pay a small fee
+                  twice.{' '}
+                  <ExternalLink href="#" className="underline">
+                    Learn more.
+                  </ExternalLink>
+                </p>
 
-              <div className="flex flex-row items-center space-x-1">
-                <CheckIcon className="h-6 w-6 text-lime-dark" />
-                <span className="font-medium text-lime-dark">
-                  Security guaranteed by Ethereum
-                </span>
+                <div className="flex flex-row items-center space-x-1">
+                  <CheckIcon className="h-6 w-6 text-lime-dark" />
+                  <span className="font-medium text-lime-dark">
+                    Security guaranteed by Ethereum
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-6">
+                <div className="flex flex-row items-center space-x-3">
+                  <Checkbox
+                    checked={checkbox1Checked}
+                    onChange={setCheckbox1Checked}
+                  />
+                  <span className="font-light">
+                    I understand that it will take {confirmationPeriod} before I
+                    can claim my funds on Ethereum {l1.network?.name}
+                  </span>
+                </div>
+
+                <div className="flex flex-row items-center space-x-3">
+                  <Checkbox
+                    checked={checkbox2Checked}
+                    onChange={setCheckbox2Checked}
+                  />
+                  <span className="font-light">
+                    I understand that after claiming my funds, I’ll have to send{' '}
+                    <span className="font-medium">
+                      another transaction on L1
+                    </span>{' '}
+                    and pay another L1 fee
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col space-y-6">
-              <div className="flex flex-row items-center space-x-2">
-                <Checkbox
-                  checked={checkbox1Checked}
-                  onChange={setCheckbox1Checked}
-                />
-                <span className="font-light">
-                  I understand that it will take {confirmationPeriod} before I
-                  can claim my funds on Ethereum {l1.network?.name}
-                </span>
-              </div>
-
-              <div className="flex flex-row items-center space-x-2">
-                <Checkbox
-                  checked={checkbox2Checked}
-                  onChange={setCheckbox2Checked}
-                />
-                <span className="font-light">
-                  I understand that after claiming my funds, I’ll have to send{' '}
-                  <span className="font-medium">another transaction on L1</span>{' '}
-                  and pay another L1 fee
-                </span>
-              </div>
-
-              <div className="flex flex-row justify-end space-x-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => props.onClose(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={!bothCheckboxesChecked}
-                  onClick={() => props.onClose(true)}
-                >
-                  Continue
-                </Button>
-              </div>
+            <div className="flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!bothCheckboxesChecked}
+                onClick={() => props.onClose(true)}
+              >
+                Continue
+              </Button>
             </div>
           </Tab.Panel>
         </Tab.Group>

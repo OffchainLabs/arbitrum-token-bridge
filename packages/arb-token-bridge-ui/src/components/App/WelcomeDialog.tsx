@@ -22,12 +22,12 @@ export function WelcomeDialog(props: UseDialogProps) {
         <div className="flex flex-col items-center space-y-8 lg:flex-row lg:space-y-0 lg:space-x-8">
           <div>
             <img
-              src="/images/WelcomeAstronaut.png"
+              src="/images/arbinaut-flying.png"
               alt="An Astronaut in an Arbitrum space suit"
-              className="w-48"
+              className="w-64"
             />
           </div>
-          <div className="lg:h-290px flex flex-col justify-between lg:w-64">
+          <div className="lg:h-384px flex flex-col justify-between lg:w-64">
             <div className="flex flex-col space-y-4">
               <p className="font-light">
                 We will NEVER ask you for seed phrase or private keys.

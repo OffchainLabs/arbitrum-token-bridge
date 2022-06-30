@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { usePrevious } from 'react-use'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
 import { useAppState } from '../../state'
@@ -10,6 +11,22 @@ import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
+
+const motionDivProps = {
+  layout: true,
+  initial: {
+    opacity: 0,
+    scale: 0.9
+  },
+  animate: {
+    opacity: 1,
+    scale: 1
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9
+  }
+}
 
 const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
@@ -79,16 +96,39 @@ export function MainContent() {
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
-        {didLoadPendingWithdrawals &&
-          unseenTransactions.map(tx =>
-            isDeposit(tx) ? (
-              <DepositCard key={tx.txId} tx={tx} />
-            ) : (
-              <WithdrawalCard key={`${tx.txId}-${tx.direction}`} tx={tx} />
-            )
+        <AnimatePresence>
+          {didLoadPendingWithdrawals && (
+            <>
+              {unseenTransactions.map(tx => (
+                <motion.div
+                  key={`${tx.txId}-${tx.direction}`}
+                  {...motionDivProps}
+                >
+                  {isDeposit(tx) ? (
+                    <DepositCard key={`${tx.txId}-${tx.direction}`} tx={tx} />
+                  ) : (
+                    <WithdrawalCard
+                      key={`${tx.txId}-${tx.direction}`}
+                      tx={tx}
+                    />
+                  )}
+                </motion.div>
+              ))}
+            </>
           )}
+        </AnimatePresence>
 
-        {isTransferPanelVisible ? <TransferPanel /> : <ExploreArbitrum />}
+        <AnimatePresence exitBeforeEnter>
+          {isTransferPanelVisible ? (
+            <motion.div key="transfer-panel" {...motionDivProps}>
+              <TransferPanel />
+            </motion.div>
+          ) : (
+            <motion.div key="explore-arbitrum" {...motionDivProps}>
+              <ExploreArbitrum />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

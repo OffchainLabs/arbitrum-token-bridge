@@ -2,11 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
-import {
-  ClipboardCopyIcon,
-  ExternalLinkIcon,
-  LogoutIcon
-} from '@heroicons/react/outline'
+import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
 import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
@@ -24,6 +20,7 @@ import {
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
+import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -183,7 +180,7 @@ export function HeaderAccountPopover() {
                   <span className="text-2xl font-normal text-white">
                     {ensInfo.name || accountShort}
                   </span>
-                  <ClipboardCopyIcon className="h-6 w-6 text-white" />
+                  <CustomClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
               </button>
               <div className="flex w-full flex-row justify-between px-6 lg:flex-col lg:items-end lg:px-0">

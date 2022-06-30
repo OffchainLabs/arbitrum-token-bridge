@@ -199,13 +199,17 @@ input:checked + .slider:before {
   }
 
   /* lg:h */
-  .lg\:h-290px {
-    height: 290px;
+  .lg\:h-384px {
+    height: 384px;
   }
 
   /* lg:min-h */
   .lg\:min-h-64px {
     min-height: 64px;
+  }
+
+  .lg\:min-h-422px {
+    min-height: 422px;
   }
 
   /* lg:max-h */
@@ -270,4 +274,9 @@ input:checked + .slider:before {
 .bg-explore-arbitrum-project-description {
   background: rgba(0, 0, 0, 0.29);
   backdrop-filter: blur(4px);
+}
+
+.transition-explore-arbitrum-project-image {
+  -webkit-transition: background-image 0.15s ease-in-out;
+  transition: background-image 0.15s ease-in-out;
 }
