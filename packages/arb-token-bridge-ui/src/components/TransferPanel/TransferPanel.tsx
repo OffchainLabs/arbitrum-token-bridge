@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
@@ -25,12 +25,11 @@ import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { useETHPrice } from '../../hooks/useETHPrice'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
+import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextDispatch } from '../App/AppContext'
 
 const isAllowedL2 = async (
@@ -65,6 +64,10 @@ function useTokenFromSearchParams(): string | undefined {
   }
 
   return tokenFromSearchParams
+}
+
+function isEnoughFunds(amount: number, balance: number, gasCosts: number = 0) {
+  return amount + gasCosts <= balance
 }
 
 enum ImportTokenModalStatus {
@@ -126,25 +129,6 @@ export function TransferPanel() {
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
 
-  const { toUSD } = useETHPrice()
-  const { l1GasPrice, l2GasPrice } = useGasPrice()
-
-  // TODO: Switch to a value provided by @arbitrum/sdk
-  const [estimatedL1Gas, setEstimatedL1Gas] = useState(BigNumber.from(100000))
-  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const [estimatedL1GasFees, setEstimatedL1GasFees] = useState(0)
-
-  // TODO: Switch to a value provided by @arbitrum/sdk
-  const [estimatedL2Gas, setEstimatedL2Gas] = useState(BigNumber.from(1000000))
-  // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
-  const [estimatedL2GasFees, setEstimatedL2GasFees] = useState(0)
-
-  // Estimated total gas fees, denominated in Ether, represented as a floating point number
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
-  )
-
   // The amount of funds to bridge over, represented as a floating point number
   const amount = useMemo(() => {
     if (isDepositMode) {
@@ -153,15 +137,6 @@ export function TransferPanel() {
 
     return parseFloat(l2Amount || '0')
   }, [isDepositMode, l1Amount, l2Amount])
-
-  useEffect(() => {
-    setEstimatedL1GasFees(
-      parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
-    )
-    setEstimatedL2GasFees(
-      parseFloat(utils.formatEther(estimatedL2Gas.mul(l2GasPrice)))
-    )
-  }, [estimatedL1Gas, l1GasPrice, estimatedL2Gas, l2GasPrice])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -491,6 +466,65 @@ export function TransferPanel() {
     }
   }
 
+  const amountBigNumber = useMemo(
+    () =>
+      utils.parseUnits(
+        isDepositMode ? l1Amount || '0' : l2Amount || '0',
+        selectedToken?.decimals || 18
+      ),
+    [isDepositMode, l1Amount, l2Amount, selectedToken]
+  )
+
+  // Only run gas estimation when it makes sense, i.e. when there is enough funds
+  const shouldRunGasEstimation = useMemo(
+    () =>
+      isDepositMode
+        ? isEnoughFunds(Number(l1Amount), Number(l1Balance))
+        : isEnoughFunds(Number(l2Amount), Number(l2Balance)),
+    [isDepositMode, l1Amount, l1Balance, l2Amount, l2Balance]
+  )
+
+  const gasSummary = useGasSummary(
+    amountBigNumber,
+    selectedToken,
+    shouldRunGasEstimation
+  )
+
+  const isInsufficientFunds = useCallback(
+    (_amountEntered: string, _balance: string | null) => {
+      // No error while loading balance
+      if (_balance === null) {
+        return false
+      }
+
+      const amountEntered = Number(_amountEntered)
+      const balance = Number(_balance)
+
+      if (!isEnoughFunds(amountEntered, balance)) {
+        return true
+      }
+
+      // The amount entered is enough funds, but now let's include gas costs
+      switch (gasSummary.status) {
+        // No error while loading gas costs
+        case 'idle':
+        case 'loading':
+          return false
+
+        case 'error':
+          return true
+
+        case 'success':
+          return !isEnoughFunds(
+            amountEntered,
+            balance,
+            gasSummary.estimatedTotalGasFees
+          )
+      }
+    },
+    [gasSummary]
+  )
+
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
     return (
@@ -506,6 +540,20 @@ export function TransferPanel() {
         (l1Balance === null || l1AmountNum > +l1Balance))
     )
   }, [transferring, isDepositMode, l1Amount, l1Balance])
+
+  // TODO: Refactor this and the property above
+  const disableDepositV2 = useMemo(() => {
+    // Keep the button disabled while loading gas summary
+    if (disableDeposit || gasSummary.status !== 'success') {
+      return true
+    }
+
+    return !isEnoughFunds(
+      Number(l1Amount),
+      Number(l1Balance),
+      gasSummary.estimatedTotalGasFees
+    )
+  }, [disableDeposit, gasSummary, l1Amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
@@ -525,9 +573,27 @@ export function TransferPanel() {
     )
   }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
 
+  // TODO: Refactor this and the property above
+  const disableWithdrawalV2 = useMemo(() => {
+    // Keep the button disabled while loading gas summary
+    if (disableWithdrawal || gasSummary.status !== 'success') {
+      return true
+    }
+
+    return !isEnoughFunds(
+      Number(l2Amount),
+      Number(l2Balance),
+      gasSummary.estimatedTotalGasFees
+    )
+  }, [disableWithdrawal, gasSummary, l2Amount, l2Balance])
+
   const isSummaryVisible = useMemo(() => {
+    if (transferring) {
+      return true
+    }
+
     return !(isDepositMode ? disableDeposit : disableWithdrawal)
-  }, [isDepositMode, disableDeposit, disableWithdrawal])
+  }, [transferring, isDepositMode, disableDeposit, disableWithdrawal])
 
   return (
     <>
@@ -547,6 +613,7 @@ export function TransferPanel() {
             amount={l1Amount}
             setAmount={setl1Amount}
             className={isDepositMode ? 'order-1' : 'order-3'}
+            insufficientFunds={isInsufficientFunds(l1Amount, l1Balance)}
           />
           <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
             <div className="relative flex w-full items-center justify-end">
@@ -560,6 +627,7 @@ export function TransferPanel() {
             amount={l2Amount}
             setAmount={setl2Amount}
             className={isDepositMode ? 'order-3' : 'order-1'}
+            insufficientFunds={isInsufficientFunds(l2Amount, l2Balance)}
           />
         </div>
 
@@ -584,112 +652,24 @@ export function TransferPanel() {
           </div>
 
           {isSummaryVisible ? (
-            <>
-              <div className="block lg:hidden">
-                <span className="text-2xl">Summary</span>
-                <div className="h-2" />
-              </div>
-
-              <div className="flex flex-col space-y-1 text-lg">
-                <div className="flex flex-row justify-between">
-                  <span className="w-2/5 font-light text-gray-10">Amount</span>
-                  <div className="flex w-3/5 flex-row justify-between">
-                    <span className="font-light text-gray-10">
-                      {selectedToken ? amount : amount.toFixed(4)}{' '}
-                      {selectedToken ? selectedToken.symbol : 'ETH'}
-                    </span>
-                    {/* Only show USD price for ETH. */}
-                    {selectedToken === null && (
-                      <span className="font-light text-gray-10">
-                        (${toUSD(amount).toLocaleString()})
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-row justify-between">
-                  <span className="w-2/5 font-light text-gray-10">
-                    Total gas
-                  </span>
-                  <div className="flex flex w-3/5 justify-between">
-                    <span className="font-light text-gray-10">
-                      {estimatedTotalGasFees.toLocaleString()} ETH
-                    </span>
-                    <span className="font-light text-gray-10">
-                      (${toUSD(estimatedTotalGasFees).toLocaleString()})
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-row justify-between">
-                  <span className="w-2/5 pl-4 font-light text-gray-6">
-                    L1 gas
-                  </span>
-                  <div className="flex w-3/5 flex-row justify-between">
-                    <span className="font-light text-gray-6">
-                      {estimatedL1GasFees.toLocaleString()} ETH
-                    </span>
-                    <span className="font-light text-gray-6">
-                      (${toUSD(estimatedL1GasFees).toLocaleString()})
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-row justify-between">
-                  <span className="w-2/5 pl-4 font-light text-gray-6">
-                    L2 gas
-                  </span>
-                  <div className="flex w-3/5 flex-row justify-between">
-                    <span className="font-light text-gray-6">
-                      {estimatedL2GasFees.toLocaleString()} ETH
-                    </span>
-                    <span className="font-light text-gray-6">
-                      (${toUSD(estimatedL2GasFees).toLocaleString()})
-                    </span>
-                  </div>
-                </div>
-
-                {/* Only show totals for ETH. */}
-                {selectedToken === null && (
-                  <>
-                    <div className="h-1" />
-                    <div className="border-b border-gray-5 lg:border-gray-3" />
-                    <div className="h-1" />
-                    <div className="flex flex-row justify-between">
-                      <span className="w-2/5">Total</span>
-                      <div className="flex w-3/5 flex-row justify-between">
-                        <span>
-                          {(amount + estimatedTotalGasFees).toLocaleString()}{' '}
-                          ETH
-                        </span>
-                        <span>
-                          ($
-                          {toUSD(
-                            amount + estimatedTotalGasFees
-                          ).toLocaleString()}
-                          )
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="h-12" />
-            </>
+            <TransferPanelSummary
+              amount={amount}
+              token={selectedToken}
+              gasSummary={gasSummary}
+            />
           ) : (
-            <>
-              <div className="min-h-56 hidden text-lg text-gray-7 lg:block">
-                <span className="text-xl">
-                  Bridging summary will appear here.
-                </span>
-              </div>
-              <div style={{ height: '1px' }} />
-            </>
+            <div className="lg:min-h-225px hidden text-lg text-gray-7 lg:block">
+              <span className="text-xl">
+                Bridging summary will appear here.
+              </span>
+            </div>
           )}
 
           {isDepositMode ? (
             <Button
               variant="primary"
               loading={transferring}
-              disabled={disableDeposit}
+              disabled={disableDepositV2}
               onClick={() => {
                 if (selectedToken) {
                   depositToken()
@@ -705,7 +685,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={transferring}
-              disabled={disableWithdrawal}
+              disabled={disableWithdrawalV2}
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >

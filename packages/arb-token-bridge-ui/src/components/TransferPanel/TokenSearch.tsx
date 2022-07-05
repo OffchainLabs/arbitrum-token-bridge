@@ -1,5 +1,5 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
-import { isAddress, formatUnits } from 'ethers/lib/utils'
+import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
@@ -11,6 +11,7 @@ import {
   listIdsToNames,
   addBridgeTokenListToBridge
 } from '../../tokenLists'
+import { formatBigNumber } from '../../util/NumberUtils'
 import { sanitizeImageSrc } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
@@ -214,7 +215,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
           {tokenIsAddedToTheBridge ? (
             <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
               {tokenBalance ? (
-                formatUnits(tokenBalance, token ? token.decimals : 18)
+                formatBigNumber(tokenBalance, token ? token.decimals : 18)
               ) : (
                 <div className="mr-2">
                   <Loader

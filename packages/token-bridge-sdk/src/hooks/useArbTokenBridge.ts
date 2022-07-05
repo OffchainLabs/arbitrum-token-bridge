@@ -18,6 +18,7 @@ import {
 } from '@arbitrum/sdk'
 
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import { DepositWithdrawEstimator } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
@@ -206,6 +207,11 @@ export const useArbTokenBridge = (
   const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
   const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
 
+  const gasEstimator = useMemo(
+    () => new DepositWithdrawEstimator(l2.network),
+    [l2.network]
+  )
+
   /**
    * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
    * @param erc20L1Address
@@ -368,6 +374,21 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
+  async function depositEthEstimateGas(amount: BigNumber) {
+    const estimatedL1Gas = await gasEstimator.ethDepositL1Gas({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      amount
+    })
+
+    const {
+      maxGas: estimatedL2Gas,
+      maxSubmissionCost: estimatedL2SubmissionCost
+    } = await gasEstimator.ethDepositL2Gas(l2.signer.provider)
+
+    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+  }
+
   async function withdrawEth(
     amount: BigNumber,
     txLifecycle?: L2ContractCallTransactionLifecycle
@@ -432,6 +453,18 @@ export const useArbTokenBridge = (
     } catch (e) {
       console.error('withdrawEth err', e)
     }
+  }
+
+  async function withdrawEthEstimateGas(amount: BigNumber) {
+    const estimatedL1Gas = await gasEstimator.ethWithdrawalL1Gas(
+      l2.signer.provider
+    )
+    const estimatedL2Gas = await gasEstimator.ethWithdrawalL2Gas({
+      l2Signer: l2.signer,
+      amount
+    })
+
+    return { estimatedL1Gas, estimatedL2Gas }
   }
 
   const approveToken = async (erc20L1Address: string) => {
@@ -549,6 +582,29 @@ export const useArbTokenBridge = (
     return receipt
   }
 
+  async function depositTokenEstimateGas(
+    erc20L1Address: string,
+    amount: BigNumber
+  ) {
+    const estimatedL1Gas = await gasEstimator.erc20Deposit20L1Gas({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      erc20L1Address,
+      amount
+    })
+    const {
+      maxGas: estimatedL2Gas,
+      maxSubmissionCost: estimatedL2SubmissionCost
+    } = await gasEstimator.erc20DepositL2Gas({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      erc20L1Address,
+      amount
+    })
+
+    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+  }
+
   async function withdrawToken(
     erc20l1Address: string,
     amount: BigNumber,
@@ -627,6 +683,22 @@ export const useArbTokenBridge = (
     } catch (err) {
       console.warn('withdraw token err', err)
     }
+  }
+
+  async function withdrawTokenEstimateGas(
+    erc20l1Address: string,
+    amount: BigNumber
+  ) {
+    const estimatedL1Gas = await gasEstimator.erc20WithdrawalL1Gas(
+      l2.signer.provider
+    )
+    const estimatedL2Gas = await gasEstimator.erc20WithdrawalL2Gas({
+      l2Signer: l2.signer,
+      erc20l1Address,
+      amount
+    })
+
+    return { estimatedL1Gas, estimatedL2Gas }
   }
 
   const removeTokensFromList = (listID: number) => {
@@ -1402,7 +1474,9 @@ export const useArbTokenBridge = (
     },
     eth: {
       deposit: depositEth,
+      depositEstimateGas: depositEthEstimateGas,
       withdraw: withdrawEth,
+      withdrawEstimateGas: withdrawEthEstimateGas,
       triggerOutbox: triggerOutboxEth,
       updateBalances: updateEthBalances
     },
@@ -1415,7 +1489,9 @@ export const useArbTokenBridge = (
       approveEstimateGas: approveTokenEstimateGas,
       approveL2: approveTokenL2,
       deposit: depositToken,
+      depositEstimateGas: depositTokenEstimateGas,
       withdraw: withdrawToken,
+      withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken,
       getL1TokenData,
       getL2TokenData,

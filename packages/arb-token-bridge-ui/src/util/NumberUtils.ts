@@ -1,16 +1,24 @@
 import { BigNumber, utils } from 'ethers'
 
-export function formatNumber(
-  etherValue: number,
-  maximumFractionDigits: number = 6
-) {
-  return etherValue.toLocaleString(undefined, { maximumFractionDigits })
+export function formatUSD(value: number) {
+  const formattedValue = value.toLocaleString(undefined, {
+    minimumFractionDigits: Number.isInteger(value) ? undefined : 2,
+    maximumFractionDigits: 2
+  })
+
+  return `$${formattedValue}`
 }
 
-export function formatBigNumber(weiValue: BigNumber, decimals?: number) {
-  if (weiValue.isZero()) {
+export function formatNumber(value: number, maximumFractionDigits: number = 6) {
+  return value.toLocaleString(undefined, {
+    maximumFractionDigits
+  })
+}
+
+export function formatBigNumber(value: BigNumber, decimals?: number) {
+  if (value.isZero()) {
     return '0'
   }
 
-  return formatNumber(parseFloat(utils.formatUnits(weiValue, decimals || 18)))
+  return formatNumber(parseFloat(utils.formatUnits(value, decimals || 18)))
 }

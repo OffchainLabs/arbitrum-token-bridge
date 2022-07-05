@@ -165,15 +165,26 @@ export interface ArbTokenBridgeBalances {
   erc721: ContractStorage<ERC721Balance>
 }
 
+export type GasEstimates = {
+  estimatedL1Gas: BigNumber
+  estimatedL2Gas: BigNumber
+}
+
+export type DepositGasEstimates = GasEstimates & {
+  estimatedL2SubmissionCost: BigNumber
+}
+
 export interface ArbTokenBridgeEth {
   deposit: (
     weiValue: BigNumber,
     txLifecycle?: L1EthDepositTransactionLifecycle
   ) => Promise<void | ContractReceipt>
+  depositEstimateGas: (weiValue: BigNumber) => Promise<DepositGasEstimates>
   withdraw: (
     weiValue: BigNumber,
     txLifecycle?: L2ContractCallTransactionLifecycle
   ) => Promise<void | ContractReceipt>
+  withdrawEstimateGas: (weiValue: BigNumber) => Promise<GasEstimates>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }
@@ -197,11 +208,19 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber,
     txLifecycle?: L1ContractCallTransactionLifecycle
   ) => Promise<void | ContractReceipt>
+  depositEstimateGas: (
+    erc20Address: string,
+    amount: BigNumber
+  ) => Promise<DepositGasEstimates>
   withdraw: (
     erc20l1Address: string,
     amount: BigNumber,
     txLifecycle?: L2ContractCallTransactionLifecycle
   ) => Promise<void | ContractReceipt>
+  withdrawEstimateGas: (
+    erc20l1Address: string,
+    amount: BigNumber
+  ) => Promise<GasEstimates>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>

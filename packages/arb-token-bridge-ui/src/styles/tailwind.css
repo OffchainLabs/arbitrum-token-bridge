@@ -139,8 +139,17 @@ input:checked + .slider:before {
 }
 
 /* h */
+.h-28px {
+  height: 28px;
+}
+
 .h-100px {
   height: 100px;
+}
+
+/* border */
+.border-\[\#cd0000\] {
+  border-color: #cd0000;
 }
 
 /* min-h */
@@ -229,6 +238,14 @@ input:checked + .slider:before {
   /* lg:min-h */
   .lg\:min-h-64px {
     min-height: 64px;
+  }
+
+  .lg\:min-h-177px {
+    min-height: 177px;
+  }
+
+  .lg\:min-h-225px {
+    min-height: 225px;
   }
 
   .lg\:min-h-422px {

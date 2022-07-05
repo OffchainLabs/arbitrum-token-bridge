@@ -3,7 +3,7 @@ import { BigNumber, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
-import { formatNumber } from '../../util/NumberUtils'
+import { formatNumber, formatUSD } from '../../util/NumberUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -76,7 +76,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
           <span className="text-center text-3xl font-light text-purple-ethereum">
             {formatNumber(balanceNumber)} ETH{' '}
             <span className="font-medium">
-              (${formatNumber(toUSD(balanceNumber), 2)})
+              ({formatUSD(toUSD(balanceNumber))})
             </span>
           </span>
         </div>

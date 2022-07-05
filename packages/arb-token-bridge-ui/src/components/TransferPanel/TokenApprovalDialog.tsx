@@ -8,6 +8,7 @@ import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { formatNumber, formatUSD } from '../../util/NumberUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   erc20L1Address?: string
@@ -32,9 +33,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   )
 
   const approvalFeeText = useMemo(() => {
-    const eth = estimatedGasFees.toFixed(8)
-    const usd = toUSD(estimatedGasFees).toLocaleString()
-    return `${eth} ETH ($${usd})`
+    const eth = formatNumber(estimatedGasFees)
+    const usd = formatUSD(toUSD(estimatedGasFees))
+    return `${eth} ETH (${usd})`
   }, [estimatedGasFees, toUSD])
 
   useEffect(() => {

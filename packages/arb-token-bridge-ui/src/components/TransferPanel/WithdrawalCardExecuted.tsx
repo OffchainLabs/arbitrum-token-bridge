@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react'
-import { BigNumber, utils } from 'ethers'
 import Loader from 'react-loader-spinner'
 
 import { useAppState } from '../../state'
@@ -10,20 +9,7 @@ import {
   WithdrawalL1TxStatus,
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
-
-function formatForDisplay(value: number) {
-  return value.toLocaleString(undefined, { maximumFractionDigits: 6 })
-}
-
-function formatBalance(balance: BigNumber, decimals?: number) {
-  if (balance.isZero()) {
-    return '0'
-  }
-
-  return formatForDisplay(
-    parseFloat(utils.formatUnits(balance, decimals || 18))
-  )
-}
+import { formatBigNumber } from '../../util/NumberUtils'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
@@ -74,7 +60,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
           <span className="font-medium">New balance:</span>
           {balance ? (
             <span className="font-medium">
-              {formatBalance(balance)} {tx.asset.toUpperCase()}
+              {formatBigNumber(balance)} {tx.asset.toUpperCase()}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />

@@ -9,6 +9,7 @@ import { TokenButton } from './TokenButton'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatBigNumber } from '../../util/NumberUtils'
+import { ExternalLink } from '../common/ExternalLink'
 
 const NetworkStyleProps: {
   L1: { style: React.CSSProperties; className: string }
@@ -53,17 +54,21 @@ function NetworkInfo({ isL1 }: { isL1: boolean }): JSX.Element | null {
   )
 }
 
-const NetworkBox = ({
-  isL1,
-  amount,
-  className,
-  setAmount
-}: {
+export type NetworkBoxProps = {
   isL1: boolean
   amount: string
   className?: string
   setAmount: (amount: string) => void
-}) => {
+  insufficientFunds?: boolean
+}
+
+const NetworkBox = ({
+  isL1,
+  amount,
+  className,
+  setAmount,
+  insufficientFunds = false
+}: NetworkBoxProps) => {
   const { provider } = useWallet()
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge }
@@ -128,6 +133,9 @@ const NetworkBox = ({
   const shouldShowMaxButton = !!selectedToken && !!balance && !balance.isZero()
 
   const networkStyleProps = isL1 ? NetworkStyleProps.L1 : NetworkStyleProps.L2
+  const borderClassName = insufficientFunds
+    ? 'border border-[#cd0000]'
+    : 'border border-gray-9'
 
   return (
     <div
@@ -145,7 +153,9 @@ const NetworkBox = ({
           {canIEnterAmount && (
             <>
               <div className="h-4" />
-              <div className="flex h-16 flex-row items-center rounded-lg border border-gray-9 bg-white">
+              <div
+                className={`flex h-16 flex-row items-center rounded-lg bg-white ${borderClassName}`}
+              >
                 <TokenButton />
                 <div className="h-full border-r border-gray-4" />
                 <AmountBox
@@ -155,7 +165,26 @@ const NetworkBox = ({
                   showMaxButton={shouldShowMaxButton}
                 />
               </div>
+              {insufficientFunds && (
+                <>
+                  <div className="h-1" />
+                  <span className="text-sm text-brick">
+                    Insufficient balance, please add more to{' '}
+                    {isL1 ? 'L1' : 'L2'}.
+                  </span>
+                </>
+              )}
             </>
+          )}
+          {isL1 && isDepositMode && selectedToken && (
+            <p className="mt-1 text-xs font-light text-white">
+              Make sure you have ETH in your L2 wallet, you’ll need it to power
+              transactions.
+              <br />
+              <ExternalLink href="#" className="arb-hover underline">
+                Learn more.
+              </ExternalLink>
+            </p>
           )}
         </div>
       </div>
