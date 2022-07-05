@@ -29,10 +29,10 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
         />
       </span>
       <div className="flex flex-col font-light">
-        <span className="text-blue-arbitrum">
+        <span className="text-lg text-blue-arbitrum">
           L1 transaction: <DepositL1TxStatus tx={tx} />
         </span>
-        <span className="text-blue-arbitrum">
+        <span className="text-lg text-blue-arbitrum">
           L2 transaction: <DepositL2TxStatus tx={tx} />
         </span>
       </div>

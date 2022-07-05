@@ -67,6 +67,7 @@ export type DialogProps = {
   isOpen: boolean
   isCustom?: boolean
   title?: string | JSX.Element
+  initialFocus?: React.MutableRefObject<HTMLElement | null>
   actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
   onClose: (confirmed: boolean) => void
@@ -88,7 +89,7 @@ export function Dialog(props: DialogProps) {
         static
         as="div"
         open={props.isOpen}
-        initialFocus={cancelButtonRef}
+        initialFocus={props.initialFocus || cancelButtonRef}
         onClose={() => props.onClose(false)}
         className="bg-v4-dark lg:bg-dialog fixed inset-0 z-50 flex lg:items-center lg:justify-center"
       >

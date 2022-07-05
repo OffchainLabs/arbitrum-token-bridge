@@ -21,11 +21,11 @@ export function WithdrawalL2TxStatus({
   const { network: l2Network } = l2
 
   if (typeof l2Network === 'undefined') {
-    return <span>Not found</span>
+    return <span>Not available</span>
   }
 
   if (tx.txId === 'l2-tx-hash-not-found') {
-    return <span>Not found</span>
+    return <span>Not available</span>
   }
 
   return (
@@ -65,11 +65,11 @@ export function WithdrawalL1TxStatus({
   })
 
   if (typeof l1Network === 'undefined') {
-    return <span>Not found</span>
+    return <span>Not available</span>
   }
 
   if (typeof l1Tx === 'undefined') {
-    return <span>Not found</span>
+    return <span>Not available</span>
   }
 
   return (

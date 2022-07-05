@@ -85,6 +85,10 @@ body > iframe {
   transition: 0.4s;
 }
 
+.web3modal-modal-lightbox {
+  @apply z-50;
+}
+
 input:checked + .slider {
   background-color: #1a1c1d;
 }
@@ -119,6 +123,11 @@ input:checked + .slider:before {
   top: 100px;
 }
 
+/* bottom */
+.bottom-\[-10\%\] {
+  bottom: -10%;
+}
+
 /* left */
 .left-89px {
   left: 89px;
@@ -135,7 +144,7 @@ input:checked + .slider:before {
 }
 
 /* min-h */
-.min-h-screen-minus-100px {
+.min-h-\[calc\(100vh\-100px\)\] {
   min-height: calc(100vh - 100px);
 }
 
@@ -155,6 +164,16 @@ input:checked + .slider:before {
 
 /* lg: */
 @media (min-width: 1024px) {
+  /* lg:bottom */
+  .lg\:bottom-\[-45\%\] {
+    bottom: -45%;
+  }
+
+  /* lg:right */
+  .lg\:right-\[10\%\] {
+    right: 10%;
+  }
+
   /* lg:w */
   .lg\:w-466px {
     width: 466px;
@@ -196,6 +215,10 @@ input:checked + .slider:before {
 
   .lg\:max-w-725px {
     max-width: 725px;
+  }
+
+  .lg\:max-w-\[75vw\] {
+    max-width: 75vw;
   }
 
   /* lg:h */

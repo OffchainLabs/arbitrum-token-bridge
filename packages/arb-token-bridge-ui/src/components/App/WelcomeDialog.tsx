@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { useRouteMatch } from 'react-router-dom'
 
@@ -6,6 +7,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 
 export function WelcomeDialog(props: UseDialogProps) {
+  const confirmButtonRef = useRef(null)
   const isTosRoute = useRouteMatch('/tos')
 
   if (isTosRoute) {
@@ -13,7 +15,7 @@ export function WelcomeDialog(props: UseDialogProps) {
   }
 
   return (
-    <Dialog {...props} isCustom>
+    <Dialog {...props} initialFocus={confirmButtonRef} isCustom>
       <div className="px-8 py-4">
         <HeadlessUIDialog.Title className="text-2xl font-medium">
           Welcome
@@ -30,7 +32,7 @@ export function WelcomeDialog(props: UseDialogProps) {
           <div className="lg:h-384px flex flex-col justify-between lg:w-64">
             <div className="flex flex-col space-y-4">
               <p className="font-light">
-                We will NEVER ask you for seed phrase or private keys.
+                We will NEVER ask you for your seed phrase or private keys.
               </p>
 
               <p className="font-light">
@@ -53,6 +55,7 @@ export function WelcomeDialog(props: UseDialogProps) {
               </p>
 
               <Button
+                ref={confirmButtonRef}
                 variant="primary"
                 className="w-full"
                 onClick={() => props.onClose(true)}

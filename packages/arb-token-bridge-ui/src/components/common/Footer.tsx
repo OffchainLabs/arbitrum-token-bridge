@@ -1,6 +1,3 @@
-import { useMemo } from 'react'
-import { useWindowSize } from 'react-use'
-
 import { ExternalLink } from './ExternalLink'
 
 type FooterLink = {
@@ -38,23 +35,8 @@ const footerLinks: FooterLink[] = [
 ]
 
 export function Footer() {
-  const { width } = useWindowSize()
-
-  const footerBackgroundStyle: React.CSSProperties = useMemo(() => {
-    const isLarge = width >= 1024
-
-    // These values came to me in my dream.
-    return {
-      background: 'url(/images/moon.png)',
-      backgroundSize: isLarge ? width / 1.2 : width * 1.2,
-      backgroundRepeat: 'no-repeat',
-      backgroundPositionX: isLarge ? width / 3.625 : 'center',
-      backgroundPositionY: isLarge ? -(width / 12) : 428 - width * 0.2
-    }
-  }, [width])
-
   return (
-    <footer className="flex justify-center pt-16" style={footerBackgroundStyle}>
+    <footer className="z-10 flex justify-center">
       <div className="max-w-1440px flex w-full flex-col space-y-12 py-20 text-white lg:px-8 lg:py-8">
         <div className="flex flex-col items-center space-y-4 px-8 text-center lg:items-start lg:px-0">
           <span className="text-4xl">The most secure L2</span>

@@ -89,13 +89,24 @@ export type NetworksAndSignersProviderProps = {
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
-  const { provider, account, network, connect } = useWallet()
+  const { provider, account, network, connect, web3Modal } = useWallet()
+  const cachedProvider = web3Modal?.cachedProvider
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     ...defaults,
     status: defaultStatus
   })
   const latestResult = useLatest(result)
+
+  // In case the user manually disconnects, reset to `NOT_CONNECTED` state
+  useEffect(() => {
+    if (cachedProvider === '') {
+      setResult({
+        ...defaults,
+        status: UseNetworksAndSignersStatus.NOT_CONNECTED
+      })
+    }
+  }, [cachedProvider])
 
   useEffect(() => {
     async function tryConnect() {

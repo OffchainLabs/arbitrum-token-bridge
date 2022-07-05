@@ -3,7 +3,14 @@ import { ExternalLinkIcon } from '@heroicons/react/outline'
 
 import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
+import { preloadImages } from '../../util'
+
 import ExploreArbitrumContent from './ExploreArbitrumContent.json'
+
+preloadImages([
+  ...ExploreArbitrumContent.defi.map(p => p.imageSrc),
+  ...ExploreArbitrumContent.nfts.map(p => p.imageSrc)
+])
 
 function getRandomInt({
   from,
