@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment, useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
   CheckIcon,
   XIcon,
@@ -14,6 +14,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
+import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const FastBridges = [
@@ -122,28 +123,6 @@ function FastBridgesTable() {
     </table>
   )
 }
-
-export type TabButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  selected: boolean
-}
-
-const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
-  (props, ref) => {
-    const selectedClassName = props.selected
-      ? 'rounded-tl-lg rounded-tr-lg bg-white'
-      : 'bg-blue-arbitrum text-white'
-
-    return (
-      <button
-        ref={ref}
-        className={`arb-hover px-8 py-3 ${selectedClassName}`}
-        {...props}
-      >
-        {props.children}
-      </button>
-    )
-  }
-)
 
 export function WithdrawalConfirmationDialog(props: UseDialogProps) {
   const { l1 } = useNetworksAndSigners()

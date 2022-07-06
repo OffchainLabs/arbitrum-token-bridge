@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
+import { useWindowSize } from 'react-use'
 import { ExternalLinkIcon } from '@heroicons/react/outline'
+import { Tab } from '@headlessui/react'
 
 import { Button } from '../common/Button'
+import { TabButton } from '../common/Tab'
 import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 
@@ -71,16 +74,34 @@ function ProjectCard({
   )
 }
 
+const playImageIndex = getRandomInt({ from: 1, to: 4 })
+
 const defiMaxIndex = ExploreArbitrumContent.defi.length - 1
 const nftMaxIndex = ExploreArbitrumContent.nfts.length - 1
 
 export function ExploreArbitrum() {
+  const { width } = useWindowSize()
+
   const [defiProjectIndex, setDefiProjectIndex] = useState(
     getRandomInt({ from: 0, to: defiMaxIndex })
   )
   const [nftProjectIndex, setNFTProjectIndex] = useState(
     getRandomInt({ from: 0, to: nftMaxIndex })
   )
+
+  const iframeDimensions = useMemo(() => {
+    if (width < 640) {
+      return { width: 311, height: 438 }
+    }
+
+    // sm:
+    if (width < 1024) {
+      return { width: 576, height: 814 }
+    }
+
+    // lg:
+    return { width: 960, height: 1358 }
+  }, [width])
 
   function randomize() {
     setDefiProjectIndex(
@@ -97,35 +118,62 @@ export function ExploreArbitrum() {
   return (
     <div className="w-full bg-white lg:rounded-xl">
       <div className="bg-blue-arbitrum p-6 lg:rounded-tl-xl lg:rounded-tr-xl">
-        <p className="text-2xl text-white">
-          While your transaction executes, check out what’s poppin’ in the
-          Arbitrum ecosystem
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-8 pt-6 sm:grid-cols-2 sm:gap-0">
-        <div className="flex flex-col space-y-4 px-6">
-          <p className="text-xl font-medium text-blue-arbitrum">
-            Invest your crypto in DeFi
-          </p>
-          <ProjectCard {...defiProject} />
-        </div>
-        <div className="flex flex-col space-y-4 px-6">
-          <p className="text-xl font-medium text-blue-arbitrum">
-            Get some dope NFTs
-          </p>
-          <ProjectCard {...nftProject} />
-        </div>
+        <p className="text-2xl text-white">For your enjoyment</p>
       </div>
 
-      <div className="flex w-full justify-center py-6">
-        <Button
-          variant="primary"
-          onClick={randomize}
-          className="bg-blue-arbitrum px-8 text-2xl"
-        >
-          Randomize ✨
-        </Button>
-      </div>
+      <Tab.Group>
+        <Tab.List className="bg-blue-arbitrum">
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <TabButton selected={selected}>Explore</TabButton>
+            )}
+          </Tab>
+          <Tab as={Fragment}>
+            {({ selected }) => <TabButton selected={selected}>Play</TabButton>}
+          </Tab>
+        </Tab.List>
+
+        <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
+          <div className="grid grid-cols-1 gap-8 pt-6 sm:grid-cols-2">
+            <div className="flex flex-col space-y-4">
+              <p className="text-xl font-light text-dark">
+                Invest your crypto in DeFi
+              </p>
+              <ProjectCard {...defiProject} />
+            </div>
+            <div className="flex flex-col space-y-4">
+              <p className="text-xl font-light text-dark">Get some dope NFTs</p>
+              <ProjectCard {...nftProject} />
+            </div>
+          </div>
+
+          <div className="flex w-full justify-center py-6">
+            <Button
+              variant="primary"
+              onClick={randomize}
+              className="bg-blue-arbitrum px-8 text-2xl"
+            >
+              Randomize ✨
+            </Button>
+          </div>
+        </Tab.Panel>
+        <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
+          <div className="h-3" />
+          <p className="text-xl font-light text-dark">
+            Drag the picture around and allow all million thoughts in your mind
+            to settle
+          </p>
+          <div className="flex w-full justify-center">
+            <iframe
+              title="Arbitrum Play"
+              src={`https://dapper-centaur-5629df.netlify.app/?image=${playImageIndex}&width=${iframeDimensions.width}`}
+              width={`${iframeDimensions.width}px`}
+              height={`${iframeDimensions.height}px`}
+              className="rounded-xl"
+            />
+          </div>
+        </Tab.Panel>
+      </Tab.Group>
     </div>
   )
 }
