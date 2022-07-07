@@ -175,6 +175,10 @@ input:checked + .slider:before {
   }
 
   /* lg:w */
+  .lg\:w-\[420px\] {
+    width: 420px;
+  }
+
   .lg\:w-\[466px\] {
     width: 466px;
   }

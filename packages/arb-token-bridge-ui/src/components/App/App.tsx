@@ -53,29 +53,17 @@ const NoMetamaskIndicator = (): JSX.Element => {
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <div className="mb-4 flex justify-center">
-        <Alert type="blue">Ethereum provider not detected, please login.</Alert>
-      </div>
-
-      <div className="mb-4 flex justify-center">
-        <a
-          href="https://metamask.io/download.html"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            className="w-96"
-            src="/images/impact_transparent.png"
-            alt="Wallet"
-          />
-        </a>
-      </div>
-      <div className="flex justify-center">
-        <Button variant="primary" onClick={showConnectionModal}>
-          Connect Wallet
-        </Button>
-      </div>
+    <div className="flex min-h-[calc(100vh-100px)] flex-col items-center justify-center px-8">
+      <ExternalLink href="https://metamask.io/download">
+        <img
+          className="lg:w-[420px]"
+          src="/images/arbinaut-playing-cards.png"
+          alt="Illustration of an Alien and an Arbinaut playing cards"
+        />
+      </ExternalLink>
+      <Button variant="primary" onClick={showConnectionModal}>
+        Connect Wallet
+      </Button>
     </div>
   )
 }

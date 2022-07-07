@@ -30,7 +30,11 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 }
 
 function Notification({ children }: { children: React.ReactNode }) {
-  return <div className="px-3 text-cyan lg:w-auto lg:text-sm">{children}</div>
+  return (
+    <div className="py-3 px-3 text-cyan lg:mb-8 lg:w-auto lg:py-0 lg:text-sm">
+      {children}
+    </div>
+  )
 }
 
 function ArbitrumBetaNotification() {
@@ -133,7 +137,7 @@ export function Layout(props: LayoutProps) {
     >
       <Header />
 
-      <div className="bg-gradient-overlay z-10 flex min-h-[calc(100vh-100px)] flex-col lg:space-y-8">
+      <div className="bg-gradient-overlay z-10 flex min-h-[calc(100vh-100px)] flex-col">
         <NotificationContainer>
           {isMainnet && <ArbitrumBetaNotification />}
           {isRinkeby && <RinkebyTestnetNotification />}
