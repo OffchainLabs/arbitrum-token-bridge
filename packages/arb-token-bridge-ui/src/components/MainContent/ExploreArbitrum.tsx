@@ -74,7 +74,15 @@ function ProjectCard({
   )
 }
 
-const playImageIndex = getRandomInt({ from: 1, to: 4 })
+const playImageNumber = getRandomInt({ from: 1, to: 4 })
+const playImageHeights: {
+  [playImageNumber: number]: number
+} = {
+  1: 820,
+  2: 905,
+  3: 695,
+  4: 695
+}
 
 const defiMaxIndex = ExploreArbitrumContent.defi.length - 1
 const nftMaxIndex = ExploreArbitrumContent.nfts.length - 1
@@ -90,17 +98,21 @@ export function ExploreArbitrum() {
   )
 
   const iframeDimensions = useMemo(() => {
+    const height = playImageHeights[playImageNumber]
+
     if (width < 640) {
-      return { width: 311, height: 438 }
+      const scale = 218 / 640
+      return { width: 218, height: height * scale }
     }
 
     // sm:
     if (width < 1024) {
-      return { width: 576, height: 814 }
+      const scale = 400 / 640
+      return { width: 400, height: height * scale }
     }
 
     // lg:
-    return { width: 960, height: 1358 }
+    return { width: 640, height }
   }, [width])
 
   function randomize() {
@@ -160,13 +172,12 @@ export function ExploreArbitrum() {
         <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
           <div className="h-3" />
           <p className="text-xl font-light text-dark">
-            Drag the picture around and allow all million thoughts in your mind
-            to settle
+            Allow your racing mind to settle by dragging your mouse around
           </p>
           <div className="flex w-full justify-center">
             <iframe
               title="Arbitrum Play"
-              src={`https://dapper-centaur-5629df.netlify.app/?image=${playImageIndex}&width=${iframeDimensions.width}`}
+              src={`https://dapper-centaur-5629df.netlify.app/?image=${playImageNumber}&width=${iframeDimensions.width}`}
               width={`${iframeDimensions.width}px`}
               height={`${iframeDimensions.height}px`}
               className="rounded-xl"
