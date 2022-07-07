@@ -137,7 +137,7 @@ export function Layout(props: LayoutProps) {
     >
       <Header />
 
-      <div className="bg-gradient-overlay z-10 flex min-h-[calc(100vh-100px)] flex-col">
+      <div className="bg-gradient-overlay z-10 flex min-h-[calc(100vh-80px)] flex-col">
         <NotificationContainer>
           {isMainnet && <ArbitrumBetaNotification />}
           {isRinkeby && <RinkebyTestnetNotification />}

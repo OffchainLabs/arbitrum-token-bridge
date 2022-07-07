@@ -115,7 +115,7 @@ export function Header() {
 
   return (
     <header
-      className={`z-50 flex h-[100px] justify-center ${headerBgClassName}`}
+      className={`z-50 flex h-[80px] justify-center ${headerBgClassName}`}
     >
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-6 xl:space-x-12">
@@ -213,7 +213,7 @@ function MobileExternalLink({
 function HeaderMobile() {
   return (
     <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
-      <div className="flex h-[100px] items-center justify-end px-8">
+      <div className="flex h-[80px] items-center justify-end px-8">
         <Disclosure.Button className="text-white lg:hidden">
           <MenuIcon.Close />
         </Disclosure.Button>
