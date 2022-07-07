@@ -22,7 +22,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`flex w-full justify-center ${bgClassName}`}>
-      <div className="max-w-1440px w-full lg:px-8">
+      <div className="w-full max-w-[1440px] lg:px-8">
         <div className="flex w-full">{children}</div>
       </div>
     </div>

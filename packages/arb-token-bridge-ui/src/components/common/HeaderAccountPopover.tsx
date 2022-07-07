@@ -159,11 +159,11 @@ export function HeaderAccountPopover() {
         </div>
       </Popover.Button>
       <Transition>
-        <Popover.Panel className="lg:min-w-896px lg:shadow-account-popover relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4">
+        <Popover.Panel className="relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4 lg:min-w-[896px] lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           <div className="bg-blue-arbitrum p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
               <Transition show={showCopied}>
-                <span className="left-89px absolute top-4 text-xs font-light text-white">
+                <span className="absolute left-[89px] top-4 text-xs font-light text-white">
                   Copied to clipboard!
                 </span>
               </Transition>

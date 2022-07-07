@@ -37,7 +37,7 @@ const footerLinks: FooterLink[] = [
 export function Footer() {
   return (
     <footer className="z-10 flex justify-center">
-      <div className="max-w-1440px flex w-full flex-col space-y-12 py-20 text-white lg:px-8 lg:py-8">
+      <div className="flex w-full max-w-[1440px] flex-col space-y-12 py-20 text-white lg:px-8 lg:py-8">
         <div className="flex flex-col items-center space-y-4 px-8 text-center lg:items-start lg:px-0">
           <span className="text-4xl">The most secure L2</span>
           <span className="text-3xl font-light">
@@ -46,7 +46,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col space-y-8">
-          <ul className="lg:max-w-448px grid text-center font-light lg:grid-cols-3 lg:grid-rows-2 lg:text-left lg:font-normal">
+          <ul className="grid text-center font-light lg:max-w-[448px] lg:grid-cols-3 lg:grid-rows-2 lg:text-left lg:font-normal">
             {footerLinks.map(link => (
               <li key={link.href} className={`lg:order-${link.lgOrder}`}>
                 <ExternalLink href={link.href} className="arb-hover">

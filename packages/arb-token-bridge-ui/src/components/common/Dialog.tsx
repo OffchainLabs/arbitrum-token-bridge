@@ -91,9 +91,9 @@ export function Dialog(props: DialogProps) {
         open={props.isOpen}
         initialFocus={props.initialFocus || cancelButtonRef}
         onClose={() => props.onClose(false)}
-        className="bg-v4-dark lg:bg-dialog fixed inset-0 z-50 flex lg:items-center lg:justify-center"
+        className="bg-v4-dark fixed inset-0 z-50 flex lg:items-center lg:justify-center lg:bg-[rgba(0,0,0,0.6)]"
       >
-        <div className="lg:shadow-dialog lg:max-h-screen-minus-100px z-10 max-h-screen w-full overflow-y-auto bg-white lg:w-auto lg:rounded-xl">
+        <div className="z-10 max-h-screen w-full overflow-y-auto bg-white lg:max-h-[calc(100vh-100px)] lg:w-auto lg:rounded-xl lg:shadow-[0px_4px_12px_#acacac]">
           {isCustom ? (
             props.children
           ) : (

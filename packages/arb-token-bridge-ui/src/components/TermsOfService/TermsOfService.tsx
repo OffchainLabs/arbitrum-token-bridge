@@ -3,7 +3,7 @@ export const TOS_VERSION = 1
 export function TermsOfService() {
   return (
     <div className="flex w-full justify-center">
-      <div className="max-w-1440px px-8 py-8 text-white lg:px-32">
+      <div className="max-w-[1440px] px-8 py-8 text-white lg:px-32">
         <h2 className="mb-2 font-bold">ARBITRUM</h2>
         <h3 className="mb-2 font-semibold"> TERMS OF SERVICE</h3>
         <h5>

@@ -245,7 +245,7 @@ export function TokenImportDialog({
   if (status === ImportStatus.LOADING) {
     return (
       <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
-        <div className="lg:min-w-692px flex h-48 items-center justify-center">
+        <div className="flex h-48 items-center justify-center lg:min-w-[692px]">
           <Loader type="Oval" color="#000" height={32} width={32} />
         </div>
       </Dialog>
@@ -260,7 +260,7 @@ export function TokenImportDialog({
         title={modalTitle}
         actionButtonProps={{ className: 'hidden' }}
       >
-        <div className="lg:min-w-628px flex flex-col space-y-2">
+        <div className="flex flex-col space-y-2 lg:min-w-[628px]">
           <div>
             <div className="flex flex-col">
               <span>
@@ -289,7 +289,7 @@ export function TokenImportDialog({
       }}
       actionButtonTitle="Import token"
     >
-      <div className="lg:min-w-628px lg:max-w-628px flex flex-col space-y-2">
+      <div className="flex flex-col space-y-2 lg:min-w-[628px] lg:max-w-[628px]">
         {status === ImportStatus.KNOWN && (
           <span>This token is on an imported token list as:</span>
         )}

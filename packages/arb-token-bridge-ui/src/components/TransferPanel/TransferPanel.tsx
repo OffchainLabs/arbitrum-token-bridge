@@ -606,8 +606,8 @@ export function TransferPanel() {
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
-      <div className="shadow-transfer-panel mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
-        <div className="lg:min-w-540px flex flex-col px-6 py-6 lg:px-0 lg:pl-6">
+      <div className="mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
+        <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
           <NetworkBox
             isL1
             amount={l1Amount}
@@ -658,7 +658,7 @@ export function TransferPanel() {
               gasSummary={gasSummary}
             />
           ) : (
-            <div className="lg:min-h-225px hidden text-lg text-gray-7 lg:block">
+            <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[225px]">
               <span className="text-xl">
                 Bridging summary will appear here.
               </span>

@@ -64,7 +64,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}
     >
-      <div className="lg:max-w-490px flex flex-col space-y-6">
+      <div className="flex flex-col space-y-6 lg:max-w-[490px]">
         <div className="flex flex-row items-center space-x-2">
           <Checkbox checked={checked} onChange={setChecked} />
           <span className="text-sm font-light">

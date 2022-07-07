@@ -114,8 +114,10 @@ export function Header() {
   }, [isMainnet])
 
   return (
-    <header className={`h-100px z-50 flex justify-center ${headerBgClassName}`}>
-      <div className="max-w-1440px flex w-full justify-between px-8">
+    <header
+      className={`z-50 flex h-[100px] justify-center ${headerBgClassName}`}
+    >
+      <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-6 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
             <img
@@ -211,7 +213,7 @@ function MobileExternalLink({
 function HeaderMobile() {
   return (
     <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
-      <div className="h-100px flex items-center justify-end px-8">
+      <div className="flex h-[100px] items-center justify-end px-8">
         <Disclosure.Button className="text-white lg:hidden">
           <MenuIcon.Close />
         </Disclosure.Button>

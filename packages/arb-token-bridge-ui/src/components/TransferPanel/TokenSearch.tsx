@@ -461,7 +461,7 @@ function TokensPanel({
           </Button>
         </div>
       </form>
-      <div className="lg:shadow-select-token-list flex flex-grow flex-col overflow-auto rounded-md border border-gray-4">
+      <div className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List

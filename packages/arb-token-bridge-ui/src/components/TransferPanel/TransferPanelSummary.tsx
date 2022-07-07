@@ -177,7 +177,7 @@ function TransferPanelSummaryContainer({
       </div>
 
       <div
-        className={`lg:min-h-177px flex flex-col space-y-1 text-lg ${className}`}
+        className={`flex flex-col space-y-1 text-lg lg:min-h-[177px] ${className}`}
       >
         {children}
       </div>
@@ -210,13 +210,13 @@ export function TransferPanelSummary({
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
-        <div className={`h-28px w-full opacity-10 ${bgClassName}`} />
-        <div className={`h-28px w-full opacity-10 ${bgClassName}`} />
+        <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
+        <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         <div className="pl-4">
-          <div className={`h-28px w-full opacity-10 ${bgClassName}`} />
+          <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
         <div className="pl-4">
-          <div className={`h-28px w-full opacity-10 ${bgClassName}`} />
+          <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
         {isETH && (
@@ -224,7 +224,7 @@ export function TransferPanelSummary({
             <div className="h-1" />
             <div className="lg:border-b lg:border-gray-3" />
             <div className="h-1" />
-            <div className={`h-28px w-full opacity-10 ${bgClassName}`} />
+            <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
           </>
         )}
       </TransferPanelSummaryContainer>
