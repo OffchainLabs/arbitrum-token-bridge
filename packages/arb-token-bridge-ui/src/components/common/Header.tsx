@@ -222,9 +222,9 @@ function HeaderMobile() {
         <HeaderAccountPopover />
         <HeaderNetworkInformation />
         <HeaderMenuMobile
-          items={explorersLinks.map(explorer => ({
-            title: explorer.title,
-            anchorProps: { href: explorer.link }
+          items={learnLinks.map(learn => ({
+            title: learn.title,
+            anchorProps: { href: learn.link }
           }))}
         >
           Learn
@@ -241,7 +241,7 @@ function HeaderMobile() {
         </HeaderMenuMobile>
         <HeaderMenuMobile
           items={explorersLinks.map(explorer => ({
-            title: explorer.link,
+            title: explorer.title,
             anchorProps: { href: explorer.link }
           }))}
         >
