@@ -143,6 +143,10 @@ input:checked + .slider:before {
   height: 80px;
 }
 
+.h-\[25vh\] {
+  height: 25vh;
+}
+
 /* min-h */
 .min-h-\[calc\(100vh\-80px\)\] {
   min-height: calc(100vh - 80px);

@@ -46,6 +46,17 @@ export function MainContent() {
     .filter(tx => !seenTransactions.includes(tx.txId))
     // These will be included in the withdrawal cards which are based on L2-to-L1 messages
     .filter(tx => tx.direction !== 'withdraw')
+    .filter(tx => {
+      if (
+        tx.direction === 'outbox' &&
+        !L2ToL1MessageStatuses.includes(tx.status)
+      ) {
+        return false
+      }
+
+      return true
+    })
+
   const prevUnseenTransactions = usePrevious(unseenTransactions)
 
   const didLoadPendingWithdrawals = useMemo(
@@ -130,6 +141,9 @@ export function MainContent() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Some additional spacing before footer */}
+        {unseenTransactions.length > 0 && <div className="h-[25vh]" />}
       </div>
     </div>
   )
