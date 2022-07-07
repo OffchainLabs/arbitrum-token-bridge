@@ -8,20 +8,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
-  const { l1 } = useNetworksAndSigners()
-
-  const isMainnet = useMemo(() => {
-    if (typeof l1.network === 'undefined') {
-      return true
-    }
-
-    return l1.network.chainID === 1
-  }, [l1])
-
-  const bgClassName = isMainnet ? 'bg-black' : 'bg-blue-arbitrum'
-
   return (
-    <div className={`flex w-full justify-center ${bgClassName} lg:mb-6`}>
+    <div className="flex w-full justify-center bg-black lg:mb-6">
       <div className="w-full max-w-[1440px] lg:px-8">
         <div className="flex w-full">{children}</div>
       </div>
@@ -31,7 +19,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
 function Notification({ children }: { children: React.ReactNode }) {
   return (
-    <div className="py-3 px-3 text-cyan lg:w-auto lg:py-0 lg:pb-3 lg:text-sm">
+    <div className="py-3 px-3 text-cyan lg:w-auto lg:py-1 lg:text-sm">
       {children}
     </div>
   )
