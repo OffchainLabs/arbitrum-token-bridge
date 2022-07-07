@@ -21,7 +21,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
   const bgClassName = isMainnet ? 'bg-black' : 'bg-blue-arbitrum'
 
   return (
-    <div className={`flex w-full justify-center ${bgClassName}`}>
+    <div className={`flex w-full justify-center ${bgClassName} lg:mb-6`}>
       <div className="w-full max-w-[1440px] lg:px-8">
         <div className="flex w-full">{children}</div>
       </div>
@@ -31,7 +31,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
 function Notification({ children }: { children: React.ReactNode }) {
   return (
-    <div className="py-3 px-3 text-cyan lg:mb-8 lg:w-auto lg:py-0 lg:text-sm">
+    <div className="py-3 px-3 text-cyan lg:w-auto lg:py-0 lg:pb-3 lg:text-sm">
       {children}
     </div>
   )

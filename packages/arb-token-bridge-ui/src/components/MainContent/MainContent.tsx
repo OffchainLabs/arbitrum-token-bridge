@@ -42,9 +42,10 @@ export function MainContent() {
   const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
 
-  const unseenTransactions = mergedTransactions.filter(
-    tx => !seenTransactions.includes(tx.txId)
-  )
+  const unseenTransactions = mergedTransactions
+    .filter(tx => !seenTransactions.includes(tx.txId))
+    // These will be included in the withdrawal cards which are based on L2-to-L1 messages
+    .filter(tx => tx.direction !== 'withdraw')
   const prevUnseenTransactions = usePrevious(unseenTransactions)
 
   const didLoadPendingWithdrawals = useMemo(
