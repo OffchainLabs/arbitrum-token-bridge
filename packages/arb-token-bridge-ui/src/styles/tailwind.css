@@ -171,6 +171,60 @@ input:checked + .slider:before {
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
 }
 
+/* md: */
+@media (min-width: 768px) {
+  /* md:min-w */
+  .md\:min-w-\[628px\] {
+    min-width: 628px;
+  }
+
+  .md\:min-w-\[692px\] {
+    min-width: 692px;
+  }
+
+  .md\:min-w-\[725px\] {
+    min-width: 725px;
+  }
+
+  /* md:max-w */
+  .md\:max-w-\[490px\] {
+    max-width: 490px;
+  }
+
+  .md\:max-w-\[628px\] {
+    max-width: 628px;
+  }
+
+  .md\:max-w-\[725px\] {
+    max-width: 725px;
+  }
+
+  /* md:h */
+  .md\:h-\[384px\] {
+    height: 384px;
+  }
+
+  /* md:min-h */
+  .md\:min-h-\[422px\] {
+    min-height: 422px;
+  }
+
+  /* md:max-h */
+  .md\:max-h-\[calc\(100vh-80px\)\] {
+    max-height: calc(100vh - 80px);
+  }
+
+  /* md:bg */
+  .md\:bg-\[rgba\(0\2c 0\2c 0\2c 0\.6\)\] {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  /* md:shadow */
+  .md\:shadow-\[0px_4px_12px_\#acacac\] {
+    box-shadow: 0px 4px 12px #acacac;
+  }
+}
+
 /* lg: */
 @media (min-width: 1024px) {
   /* lg:bottom */
@@ -192,18 +246,6 @@ input:checked + .slider:before {
     min-width: 540px;
   }
 
-  .lg\:min-w-\[628px\] {
-    min-width: 628px;
-  }
-
-  .lg\:min-w-\[692px\] {
-    min-width: 692px;
-  }
-
-  .lg\:min-w-\[725px\] {
-    min-width: 725px;
-  }
-
   .lg\:min-w-\[896px\] {
     min-width: 896px;
   }
@@ -213,25 +255,8 @@ input:checked + .slider:before {
     max-width: 448px;
   }
 
-  .lg\:max-w-\[490px\] {
-    max-width: 490px;
-  }
-
-  .lg\:max-w-\[628px\] {
-    max-width: 628px;
-  }
-
-  .lg\:max-w-\[725px\] {
-    max-width: 725px;
-  }
-
   .lg\:max-w-\[75vw\] {
     max-width: 75vw;
-  }
-
-  /* lg:h */
-  .lg\:h-\[384px\] {
-    height: 384px;
   }
 
   /* lg:min-h */
@@ -243,25 +268,7 @@ input:checked + .slider:before {
     min-height: 225px;
   }
 
-  .lg\:min-h-\[422px\] {
-    min-height: 422px;
-  }
-
-  /* lg:max-h */
-  .lg\:max-h-\[calc\(100vh-80px\)\] {
-    max-height: calc(100vh - 80px);
-  }
-
-  /* lg:bg */
-  .lg\:bg-\[rgba\(0\2c 0\2c 0\2c 0\.6\)\] {
-    background-color: rgba(0, 0, 0, 0.6);
-  }
-
   /* lg:shadow */
-  .lg\:shadow-\[0px_4px_12px_\#acacac\] {
-    box-shadow: 0px 4px 12px #acacac;
-  }
-
   .lg\:shadow-\[0px_4px_20px_rgba\(0\,0\,0\,0\.2\)\] {
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
   }

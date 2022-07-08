@@ -91,9 +91,9 @@ export function Dialog(props: DialogProps) {
         open={props.isOpen}
         initialFocus={props.initialFocus || cancelButtonRef}
         onClose={() => props.onClose(false)}
-        className="bg-v4-dark fixed inset-0 z-50 flex lg:items-center lg:justify-center lg:bg-[rgba(0,0,0,0.6)]"
+        className="fixed inset-0 z-50 flex md:items-center md:justify-center md:bg-[rgba(0,0,0,0.6)]"
       >
-        <div className="z-10 max-h-screen w-full overflow-y-auto bg-white lg:max-h-[calc(100vh-80px)] lg:w-auto lg:rounded-xl lg:shadow-[0px_4px_12px_#acacac]">
+        <div className="z-10 max-h-screen w-full overflow-y-auto bg-white md:max-h-[calc(100vh-80px)] md:w-auto md:rounded-xl md:shadow-[0px_4px_12px_#acacac]">
           {isCustom ? (
             props.children
           ) : (
@@ -106,7 +106,7 @@ export function Dialog(props: DialogProps) {
 
               <div className="flex-grow px-8 py-4">{props.children}</div>
 
-              <div className="flex flex-row justify-end space-x-2 px-8 py-3 lg:rounded-bl-xl lg:rounded-br-xl lg:bg-gray-2">
+              <div className="flex flex-row justify-end space-x-2 px-8 py-3 md:rounded-bl-xl md:rounded-br-xl md:bg-gray-2">
                 <Button
                   ref={cancelButtonRef}
                   variant="secondary"

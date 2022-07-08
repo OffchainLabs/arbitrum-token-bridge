@@ -154,7 +154,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
 
   return (
     <Dialog {...props} onClose={closeWithReset} isCustom>
-      <div className="flex flex-col lg:min-w-[725px] lg:max-w-[725px]">
+      <div className="flex flex-col md:min-w-[725px] md:max-w-[725px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-blue-arbitrum px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
@@ -196,7 +196,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
 
             <FastBridgesTable />
           </Tab.Panel>
-          <Tab.Panel className="flex flex-col justify-between px-8 py-4 lg:min-h-[422px]">
+          <Tab.Panel className="flex flex-col justify-between px-8 py-4 md:min-h-[422px]">
             <div className="flex flex-col space-y-6">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">

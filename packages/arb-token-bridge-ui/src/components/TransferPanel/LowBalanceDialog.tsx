@@ -61,7 +61,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col px-8 py-4 lg:max-w-[628px]">
+      <div className="flex flex-col px-8 py-4 md:max-w-[628px]">
         <div className="flex w-full flex-col items-center space-y-2">
           <div className="flex flex-row space-x-2">
             <img

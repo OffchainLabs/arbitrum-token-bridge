@@ -21,7 +21,7 @@ export function WelcomeDialog(props: UseDialogProps) {
           Welcome
         </HeadlessUIDialog.Title>
 
-        <div className="flex flex-col items-center space-y-8 lg:flex-row lg:space-y-0 lg:space-x-8">
+        <div className="flex flex-col items-center space-y-8 md:flex-row md:space-y-0 md:space-x-8">
           <div>
             <img
               src="/images/arbinaut-flying.png"
@@ -29,7 +29,7 @@ export function WelcomeDialog(props: UseDialogProps) {
               className="w-64"
             />
           </div>
-          <div className="flex flex-col justify-between lg:h-[384px] lg:w-64">
+          <div className="flex flex-col justify-between md:h-[384px] md:w-64">
             <div className="flex flex-col space-y-4">
               <p className="font-light">
                 We will NEVER ask you for your seed phrase or private keys.
