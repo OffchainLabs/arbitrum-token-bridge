@@ -54,6 +54,9 @@ const NoMetamaskIndicator = (): JSX.Element => {
 
   return (
     <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
+      <Button variant="primary" onClick={showConnectionModal}>
+        Connect Wallet
+      </Button>
       <ExternalLink href="https://metamask.io/download">
         <img
           className="lg:w-[420px]"
@@ -61,9 +64,6 @@ const NoMetamaskIndicator = (): JSX.Element => {
           alt="Illustration of an Alien and an Arbinaut playing cards"
         />
       </ExternalLink>
-      <Button variant="primary" onClick={showConnectionModal}>
-        Connect Wallet
-      </Button>
     </div>
   )
 }
