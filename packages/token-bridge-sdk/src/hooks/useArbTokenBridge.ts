@@ -197,7 +197,8 @@ export const useArbTokenBridge = (
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
 
@@ -361,12 +362,12 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
+    const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.signer)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+      status: L1ToL2MessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
       l2TxID: undefined
     }
 
@@ -1506,7 +1507,8 @@ export const useArbTokenBridge = (
       updateTransaction,
       addTransaction,
       addTransactions,
-      fetchAndUpdateL1ToL2MsgStatus
+      fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals
