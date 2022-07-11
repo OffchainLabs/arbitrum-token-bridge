@@ -66,10 +66,6 @@ function useTokenFromSearchParams(): string | undefined {
   return tokenFromSearchParams
 }
 
-function isEnoughFunds(amount: number, balance: number, gasCosts: number = 0) {
-  return amount + gasCosts <= balance
-}
-
 enum ImportTokenModalStatus {
   // "IDLE" is here to distinguish between the modal never being opened, and being closed after a user interaction
   IDLE,
@@ -137,6 +133,16 @@ export function TransferPanel() {
 
     return parseFloat(l2Amount || '0')
   }, [isDepositMode, l1Amount, l2Amount])
+
+  const ethBalance = useMemo(() => {
+    if (!arbTokenBridge || !arbTokenBridge.balances) {
+      return null
+    }
+
+    return isDepositMode
+      ? arbTokenBridge.balances.eth.balance
+      : arbTokenBridge.balances.eth.arbChainBalance
+  }, [isDepositMode, arbTokenBridge])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -479,8 +485,8 @@ export function TransferPanel() {
   const shouldRunGasEstimation = useMemo(
     () =>
       isDepositMode
-        ? isEnoughFunds(Number(l1Amount), Number(l1Balance))
-        : isEnoughFunds(Number(l2Amount), Number(l2Balance)),
+        ? Number(l1Amount) <= Number(l1Balance)
+        : Number(l2Amount) <= Number(l2Balance),
     [isDepositMode, l1Amount, l1Balance, l2Amount, l2Balance]
   )
 
@@ -493,14 +499,14 @@ export function TransferPanel() {
   const isInsufficientFunds = useCallback(
     (_amountEntered: string, _balance: string | null) => {
       // No error while loading balance
-      if (_balance === null) {
+      if (_balance === null || ethBalance === null) {
         return false
       }
 
       const amountEntered = Number(_amountEntered)
       const balance = Number(_balance)
 
-      if (!isEnoughFunds(amountEntered, balance)) {
+      if (amountEntered > balance) {
         return true
       }
 
@@ -514,15 +520,18 @@ export function TransferPanel() {
         case 'error':
           return true
 
-        case 'success':
-          return !isEnoughFunds(
-            amountEntered,
-            balance,
-            gasSummary.estimatedTotalGasFees
-          )
+        case 'success': {
+          if (selectedToken) {
+            // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
+            const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+            return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+          }
+
+          return amountEntered + gasSummary.estimatedTotalGasFees > balance
+        }
       }
     },
-    [gasSummary]
+    [gasSummary, ethBalance, selectedToken]
   )
 
   const disableDeposit = useMemo(() => {
@@ -544,16 +553,27 @@ export function TransferPanel() {
   // TODO: Refactor this and the property above
   const disableDepositV2 = useMemo(() => {
     // Keep the button disabled while loading gas summary
-    if (disableDeposit || gasSummary.status !== 'success') {
+    if (!ethBalance || disableDeposit || gasSummary.status !== 'success') {
       return true
     }
 
-    return !isEnoughFunds(
-      Number(l1Amount),
-      Number(l1Balance),
-      gasSummary.estimatedTotalGasFees
+    if (selectedToken) {
+      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+    }
+
+    return (
+      Number(l1Amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
     )
-  }, [disableDeposit, gasSummary, l1Amount, l1Balance])
+  }, [
+    ethBalance,
+    disableDeposit,
+    selectedToken,
+    gasSummary,
+    l1Amount,
+    l1Balance
+  ])
 
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
@@ -576,16 +596,27 @@ export function TransferPanel() {
   // TODO: Refactor this and the property above
   const disableWithdrawalV2 = useMemo(() => {
     // Keep the button disabled while loading gas summary
-    if (disableWithdrawal || gasSummary.status !== 'success') {
+    if (!ethBalance || disableWithdrawal || gasSummary.status !== 'success') {
       return true
     }
 
-    return !isEnoughFunds(
-      Number(l2Amount),
-      Number(l2Balance),
-      gasSummary.estimatedTotalGasFees
+    if (selectedToken) {
+      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+    }
+
+    return (
+      Number(l2Amount) + gasSummary.estimatedTotalGasFees > Number(l2Balance)
     )
-  }, [disableWithdrawal, gasSummary, l2Amount, l2Balance])
+  }, [
+    ethBalance,
+    disableWithdrawal,
+    selectedToken,
+    gasSummary,
+    l2Amount,
+    l2Balance
+  ])
 
   const isSummaryVisible = useMemo(() => {
     if (transferring) {

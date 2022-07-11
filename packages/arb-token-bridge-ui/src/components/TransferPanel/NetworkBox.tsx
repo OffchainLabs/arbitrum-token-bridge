@@ -1,15 +1,14 @@
-import React, { useMemo } from 'react'
-import { useWallet } from '@arbitrum/use-wallet'
-import { BigNumber, utils } from 'ethers'
+import React, { useMemo, useState } from 'react'
+import { utils, BigNumber } from 'ethers'
 import { BridgeBalance } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
-import { AmountBox } from './AmountBox'
 import { TokenButton } from './TokenButton'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
+import { useGasPrice } from '../../hooks/useGasPrice'
 
 const NetworkStyleProps: {
   L1: { style: React.CSSProperties; className: string }
@@ -54,6 +53,51 @@ function NetworkInfo({ isL1 }: { isL1: boolean }): JSX.Element | null {
   )
 }
 
+function calculateEstimatedL1GasFees(
+  estimatedL1Gas: BigNumber,
+  l1GasPrice: BigNumber
+) {
+  return parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
+}
+
+function calculateEstimatedL2GasFees(
+  estimatedL2Gas: BigNumber,
+  l2GasPrice: BigNumber,
+  estimatedL2SubmissionCost: BigNumber
+) {
+  return parseFloat(
+    utils.formatEther(
+      estimatedL2Gas.mul(l2GasPrice).add(estimatedL2SubmissionCost)
+    )
+  )
+}
+
+function MaxButton({
+  loading,
+  onClick
+}: {
+  loading: boolean
+  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+}) {
+  if (loading) {
+    return (
+      <div className="px-3">
+        <Loader type="TailSpin" color="#999999" height={16} width={16} />
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="p-2 text-sm font-light text-gray-9"
+    >
+      MAX
+    </button>
+  )
+}
+
 export type NetworkBoxProps = {
   isL1: boolean
   amount: string
@@ -69,68 +113,120 @@ const NetworkBox = ({
   setAmount,
   insufficientFunds = false
 }: NetworkBoxProps) => {
-  const { provider } = useWallet()
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge }
   } = useAppState()
-  const balance = useMemo(() => {
+  const { l1GasPrice, l2GasPrice } = useGasPrice()
+
+  const [calculatingMaxAmount, setCalculatingMaxAmount] = useState(false)
+
+  const ethBalance = useMemo(() => {
     let b: BridgeBalance | undefined = arbTokenBridge?.balances?.eth
-    if (selectedToken) {
-      b = arbTokenBridge?.balances?.erc20[selectedToken.address]
+    return isL1 ? b?.balance : b?.arbChainBalance
+  }, [isL1, arbTokenBridge])
+
+  const tokenBalance = useMemo(() => {
+    if (!selectedToken) {
+      return null
     }
-    if (isL1) {
-      return b?.balance
-    }
-    return b?.arbChainBalance
+
+    let b: BridgeBalance | undefined =
+      arbTokenBridge?.balances?.erc20[selectedToken.address]
+
+    return isL1 ? b?.balance : b?.arbChainBalance
   }, [isL1, selectedToken, arbTokenBridge])
 
   const canIEnterAmount = useMemo(() => {
     return (isL1 && isDepositMode) || (!isL1 && !isDepositMode)
   }, [isDepositMode, isL1])
 
-  async function setMaxAmount() {
-    if (!balance) {
-      return
+  async function estimateGas(weiValue: BigNumber): Promise<{
+    estimatedL1Gas: BigNumber
+    estimatedL2Gas: BigNumber
+    estimatedL2SubmissionCost: BigNumber
+  }> {
+    if (isDepositMode) {
+      const result = await arbTokenBridge.eth.depositEstimateGas(weiValue)
+      return result
     }
-    if (selectedToken) {
-      // @ts-ignore
-      setAmount(utils.formatUnits(balance, selectedToken?.decimals || 18))
-      return
-    }
-    const gasPrice: BigNumber | undefined = await provider?.getGasPrice()
-    if (!gasPrice) {
-      return
-    }
-    console.log('Gas price', utils.formatUnits(gasPrice.toString(), 18))
-    const balanceMinusGas = utils.formatUnits(
-      balance.sub(gasPrice).toString(),
-      // @ts-ignore
-      selectedToken?.decimals || 18
-    )
-    console.log('Price - gas price', balanceMinusGas)
 
-    setAmount(balanceMinusGas)
+    const result = await arbTokenBridge.eth.withdrawEstimateGas(weiValue)
+    return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
+  }
+
+  async function setMaxAmount() {
+    if (selectedToken) {
+      if (!tokenBalance) {
+        return
+      }
+
+      // For tokens, we can set the max amount, and have the gas summary component handle the rest
+      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals || 18))
+      return
+    }
+
+    if (!ethBalance) {
+      return
+    }
+
+    try {
+      setCalculatingMaxAmount(true)
+      const result = await estimateGas(ethBalance)
+
+      const estimatedL1GasFees = calculateEstimatedL1GasFees(
+        result.estimatedL1Gas,
+        l1GasPrice
+      )
+      const estimatedL2GasFees = calculateEstimatedL2GasFees(
+        result.estimatedL2Gas,
+        l2GasPrice,
+        result.estimatedL2SubmissionCost
+      )
+
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
+
+      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setCalculatingMaxAmount(false)
+    }
   }
 
   const balanceMemo = useMemo(() => {
     return (
-      <div className="flex items-center">
-        {balance ? (
-          <span className="mr-1 font-light text-white lg:text-xl">
-            Balance: {formatBigNumber(balance, selectedToken?.decimals)}
+      <div className="flex flex-col items-end">
+        {selectedToken && (
+          <>
+            {tokenBalance ? (
+              <span className="font-light text-white lg:text-xl">
+                Balance: {formatBigNumber(tokenBalance)} {selectedToken?.symbol}
+              </span>
+            ) : (
+              <Loader type="TailSpin" color="white" height={16} width={16} />
+            )}
+          </>
+        )}
+        {ethBalance ? (
+          <span className="font-light text-white lg:text-xl">
+            {selectedToken === null && <span>Balance: </span>}
+            {formatBigNumber(ethBalance)} ETH
           </span>
         ) : (
           <Loader type="TailSpin" color="white" height={16} width={16} />
         )}
-        {balance !== null && balance !== undefined && (
-          <span className="mr-1 font-light text-white lg:text-xl">
-            {selectedToken ? selectedToken.symbol : 'ETH '}
-          </span>
-        )}
       </div>
     )
-  }, [balance, selectedToken])
-  const shouldShowMaxButton = !!selectedToken && !!balance && !balance.isZero()
+  }, [ethBalance, tokenBalance, selectedToken])
+
+  const shouldShowMaxButton = useMemo(() => {
+    if (selectedToken) {
+      return tokenBalance && !tokenBalance.isZero()
+    }
+
+    return ethBalance && !ethBalance.isZero()
+  }, [ethBalance, selectedToken, tokenBalance])
 
   const networkStyleProps = isL1 ? NetworkStyleProps.L1 : NetworkStyleProps.L2
   const borderClassName = insufficientFunds
@@ -146,7 +242,7 @@ const NetworkBox = ({
         style={networkStyleProps.style}
       >
         <div className="flex flex-col">
-          <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-row justify-between">
             <NetworkInfo isL1={isL1} />
             <div>{balanceMemo}</div>
           </div>
@@ -158,12 +254,22 @@ const NetworkBox = ({
               >
                 <TokenButton />
                 <div className="h-full border-r border-gray-4" />
-                <AmountBox
-                  amount={amount}
-                  setAmount={setAmount}
-                  setMaxAmount={setMaxAmount}
-                  showMaxButton={shouldShowMaxButton}
-                />
+                <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
+                  <input
+                    autoFocus
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    className="h-full w-full bg-transparent text-lg font-light placeholder:text-gray-9 lg:text-3xl"
+                  />
+                  {shouldShowMaxButton && (
+                    <MaxButton
+                      loading={calculatingMaxAmount}
+                      onClick={setMaxAmount}
+                    />
+                  )}
+                </div>
               </div>
               {insufficientFunds && (
                 <>
