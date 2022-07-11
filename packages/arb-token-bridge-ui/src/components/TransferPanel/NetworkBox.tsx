@@ -201,7 +201,8 @@ const NetworkBox = ({
           <>
             {tokenBalance ? (
               <span className="font-light text-white lg:text-xl">
-                Balance: {formatBigNumber(tokenBalance)} {selectedToken?.symbol}
+                Balance: {formatBigNumber(tokenBalance, selectedToken.decimals)}{' '}
+                {selectedToken?.symbol}
               </span>
             ) : (
               <Loader type="TailSpin" color="white" height={16} width={16} />

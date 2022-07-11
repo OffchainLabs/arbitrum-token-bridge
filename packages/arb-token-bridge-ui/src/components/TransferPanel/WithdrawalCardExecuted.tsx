@@ -13,7 +13,7 @@ import { formatBigNumber } from '../../util/NumberUtils'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, selectedToken }
   } = useAppState()
   const dispatch = useAppContextDispatch()
 
@@ -60,7 +60,8 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
           <span className="font-medium">New balance:</span>
           {balance ? (
             <span className="font-medium">
-              {formatBigNumber(balance)} {tx.asset.toUpperCase()}
+              {formatBigNumber(balance, selectedToken?.decimals || 18)}{' '}
+              {tx.asset.toUpperCase()}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />
