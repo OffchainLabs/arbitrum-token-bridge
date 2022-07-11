@@ -50,7 +50,7 @@ function ProjectCard({
   return (
     <ExternalLink
       href={href}
-      className="transition-explore-arbitrum-project-image arb-hover flex h-72 flex-col justify-between rounded-xl bg-gray-4 bg-cover bg-center"
+      className="arb-hover animate__animated animate__flipInX flex h-72 flex-col justify-between rounded-xl bg-gray-4 bg-cover bg-center"
       style={{ backgroundImage: `url(${imageSrc}` }}
     >
       <div className="flex flex-grow items-center justify-between">
@@ -151,11 +151,11 @@ export function ExploreArbitrum() {
               <p className="text-xl font-light text-dark">
                 Invest your crypto in DeFi
               </p>
-              <ProjectCard {...defiProject} />
+              <ProjectCard key={defiProject.name} {...defiProject} />
             </div>
             <div className="flex flex-col space-y-4">
               <p className="text-xl font-light text-dark">Get some dope NFTs</p>
-              <ProjectCard {...nftProject} />
+              <ProjectCard key={nftProject.name} {...nftProject} />
             </div>
           </div>
 
