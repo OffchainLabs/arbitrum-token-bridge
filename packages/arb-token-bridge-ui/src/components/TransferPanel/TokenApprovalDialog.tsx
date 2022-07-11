@@ -1,27 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { BigNumber, utils } from 'ethers'
+import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
+import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
-  erc20L1Address?: string
+  token: ERC20BridgeToken | null
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { erc20L1Address } = props
+  const { token } = props
   const {
     app: { arbTokenBridge }
   } = useAppState()
 
   const { toUSD } = useETHPrice()
   const { l1GasPrice } = useGasPrice()
+  const { l1 } = useNetworksAndSigners()
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(BigNumber.from(0))
@@ -40,15 +44,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   useEffect(() => {
     async function getEstimatedGas() {
-      if (typeof erc20L1Address !== 'undefined') {
+      if (token?.address) {
         setEstimatedGas(
-          await arbTokenBridge.token.approveEstimateGas(erc20L1Address)
+          await arbTokenBridge.token.approveEstimateGas(token.address)
         )
       }
     }
 
     getEstimatedGas()
-  }, [erc20L1Address])
+  }, [token?.address])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -65,6 +69,32 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       actionButtonProps={{ disabled: !checked }}
     >
       <div className="flex flex-col space-y-6 md:max-w-[490px]">
+        <div className="flex flex-row items-center space-x-4">
+          <SafeImage
+            src={token?.logoURI}
+            alt={`${token?.name} logo`}
+            className="h-8 w-8 flex-grow-0 rounded-full"
+            fallback={
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
+                ?
+              </div>
+            }
+          />
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-2">
+              <span className="text-base font-medium text-gray-900">
+                {token?.symbol}
+              </span>
+              <span className="text-xs text-gray-500">{token?.name}</span>
+            </div>
+            <ExternalLink
+              href={`${l1.network?.explorerUrl}/token/${token?.address}`}
+              className="text-xs text-blue-link underline"
+            >
+              {token?.address.toLowerCase()}
+            </ExternalLink>
+          </div>
+        </div>
         <div className="flex flex-row items-center space-x-2">
           <Checkbox checked={checked} onChange={setChecked} />
           <span className="text-sm font-light">

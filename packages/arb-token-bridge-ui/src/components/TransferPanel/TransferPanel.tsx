@@ -599,7 +599,7 @@ export function TransferPanel() {
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
-        erc20L1Address={selectedToken?.address}
+        token={selectedToken}
       />
 
       <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
