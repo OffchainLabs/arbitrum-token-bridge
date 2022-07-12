@@ -14,7 +14,7 @@ import {
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
-import { NetworkBox } from './NetworkBox'
+import { NetworkBox, NetworkBoxErrorMessage } from './NetworkBox'
 import useWithdrawOnly from './useWithdrawOnly'
 import {
   useNetworksAndSigners,
@@ -496,18 +496,21 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  const isInsufficientFunds = useCallback(
-    (_amountEntered: string, _balance: string | null) => {
+  const getNetworkBoxErrorMessage = useCallback(
+    (
+      _amountEntered: string,
+      _balance: string | null
+    ): NetworkBoxErrorMessage | undefined => {
       // No error while loading balance
       if (_balance === null || ethBalance === null) {
-        return false
+        return undefined
       }
 
       const amountEntered = Number(_amountEntered)
       const balance = Number(_balance)
 
       if (amountEntered > balance) {
-        return true
+        return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
       }
 
       // The amount entered is enough funds, but now let's include gas costs
@@ -515,19 +518,28 @@ export function TransferPanel() {
         // No error while loading gas costs
         case 'idle':
         case 'loading':
-          return false
+          return undefined
 
         case 'error':
-          return true
+          return NetworkBoxErrorMessage.AMOUNT_TOO_LOW
 
         case 'success': {
           if (selectedToken) {
             // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
             const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-            return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+
+            if (gasSummary.estimatedTotalGasFees > ethBalanceFloat) {
+              return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+            }
+
+            return undefined
           }
 
-          return amountEntered + gasSummary.estimatedTotalGasFees > balance
+          if (amountEntered + gasSummary.estimatedTotalGasFees > balance) {
+            return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+          }
+
+          return undefined
         }
       }
     },
@@ -644,7 +656,7 @@ export function TransferPanel() {
             amount={l1Amount}
             setAmount={setl1Amount}
             className={isDepositMode ? 'order-1' : 'order-3'}
-            insufficientFunds={isInsufficientFunds(l1Amount, l1Balance)}
+            errorMessage={getNetworkBoxErrorMessage(l1Amount, l1Balance)}
           />
           <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
             <div className="relative flex w-full items-center justify-end">
@@ -658,7 +670,7 @@ export function TransferPanel() {
             amount={l2Amount}
             setAmount={setl2Amount}
             className={isDepositMode ? 'order-3' : 'order-1'}
-            insufficientFunds={isInsufficientFunds(l2Amount, l2Balance)}
+            errorMessage={getNetworkBoxErrorMessage(l2Amount, l2Balance)}
           />
         </div>
 

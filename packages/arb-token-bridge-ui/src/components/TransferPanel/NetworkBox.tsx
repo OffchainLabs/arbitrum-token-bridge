@@ -98,12 +98,17 @@ function MaxButton({
   )
 }
 
+export enum NetworkBoxErrorMessage {
+  INSUFFICIENT_FUNDS,
+  AMOUNT_TOO_LOW
+}
+
 export type NetworkBoxProps = {
   isL1: boolean
   amount: string
   className?: string
   setAmount: (amount: string) => void
-  insufficientFunds?: boolean
+  errorMessage?: NetworkBoxErrorMessage
 }
 
 const NetworkBox = ({
@@ -111,7 +116,7 @@ const NetworkBox = ({
   amount,
   className,
   setAmount,
-  insufficientFunds = false
+  errorMessage
 }: NetworkBoxProps) => {
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge }
@@ -139,6 +144,18 @@ const NetworkBox = ({
   const canIEnterAmount = useMemo(() => {
     return (isL1 && isDepositMode) || (!isL1 && !isDepositMode)
   }, [isDepositMode, isL1])
+
+  const errorMessageText = useMemo(() => {
+    if (typeof errorMessage === 'undefined') {
+      return null
+    }
+
+    if (errorMessage === NetworkBoxErrorMessage.AMOUNT_TOO_LOW) {
+      return 'Sending ~$0 just to pay gas fees seems like a questionable life choice'
+    }
+
+    return `Insufficient balance, please add more to ${isL1 ? 'L1' : 'L2'}.`
+  }, [errorMessage, isL1])
 
   async function estimateGas(weiValue: BigNumber): Promise<{
     estimatedL1Gas: BigNumber
@@ -230,9 +247,10 @@ const NetworkBox = ({
   }, [ethBalance, selectedToken, tokenBalance])
 
   const networkStyleProps = isL1 ? NetworkStyleProps.L1 : NetworkStyleProps.L2
-  const borderClassName = insufficientFunds
-    ? 'border border-[#cd0000]'
-    : 'border border-gray-9'
+  const borderClassName =
+    typeof errorMessage !== 'undefined'
+      ? 'border border-[#cd0000]'
+      : 'border border-gray-9'
 
   return (
     <div
@@ -272,13 +290,10 @@ const NetworkBox = ({
                   )}
                 </div>
               </div>
-              {insufficientFunds && (
+              {errorMessageText && (
                 <>
                   <div className="h-1" />
-                  <span className="text-sm text-brick">
-                    Insufficient balance, please add more to{' '}
-                    {isL1 ? 'L1' : 'L2'}.
-                  </span>
+                  <span className="text-sm text-brick">{errorMessageText}</span>
                 </>
               )}
             </>
