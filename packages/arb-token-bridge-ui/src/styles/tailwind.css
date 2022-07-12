@@ -259,13 +259,18 @@ input:checked + .slider:before {
     max-width: 75vw;
   }
 
-  /* lg:min-h */
-  .lg\:min-h-\[177px\] {
-    min-height: 177px;
+  /* lg:h */
+  .lg\:h-\[56px\] {
+    height: 56px;
   }
 
-  .lg\:min-h-\[225px\] {
-    min-height: 225px;
+  /* lg:min-h */
+  .lg\:min-h-\[221px\] {
+    min-height: 221px;
+  }
+
+  .lg\:min-h-\[269px\] {
+    min-height: 269px;
   }
 
   /* lg:shadow */

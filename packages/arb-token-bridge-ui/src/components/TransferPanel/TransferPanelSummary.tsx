@@ -177,7 +177,7 @@ function TransferPanelSummaryContainer({
       </div>
 
       <div
-        className={`flex flex-col space-y-1 text-lg lg:min-h-[177px] ${className}`}
+        className={`flex flex-col space-y-1 text-lg lg:min-h-[221px] ${className}`}
       >
         {children}
       </div>
@@ -211,7 +211,9 @@ export function TransferPanelSummary({
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
         <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-        <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
+        <div
+          className={`h-[28px] w-full opacity-10 lg:h-[56px] ${bgClassName}`}
+        />
         <div className="pl-4">
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
@@ -221,9 +223,9 @@ export function TransferPanelSummary({
 
         {isETH && (
           <>
-            <div className="h-1" />
+            <div className="h-2" />
             <div className="lg:border-b lg:border-gray-3" />
-            <div className="h-1" />
+            <div className="h-4" />
             <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
           </>
         )}
@@ -234,27 +236,29 @@ export function TransferPanelSummary({
   return (
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between">
-        <span className="w-2/5 font-light text-gray-10">Amount</span>
+        <span className="w-2/5 font-light text-dark">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
-          <span className="font-light text-gray-10">
+          <span className="text-dark">
             {formatNumber(amount, 4)} {token?.symbol || 'ETH'}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && (
-            <span className="font-light text-gray-10">
-              ({formatUSD(toUSD(amount))})
+            <span className="font-medium text-dark">
+              {formatUSD(toUSD(amount))}
             </span>
           )}
         </div>
       </div>
       <div className="flex flex-row justify-between">
-        <span className="w-2/5 font-light text-gray-10">Total gas</span>
+        <span className="w-2/5 font-light text-dark">
+          You’ll pay in gas fees
+        </span>
         <div className="flex flex w-3/5 justify-between">
-          <span className="font-light text-gray-10">
+          <span className="text-dark">
             {formatNumber(estimatedTotalGasFees, 4)} ETH
           </span>
-          <span className="font-light text-gray-10">
-            ({formatUSD(toUSD(estimatedTotalGasFees))})
+          <span className="font-medium text-dark">
+            {formatUSD(toUSD(estimatedTotalGasFees))}
           </span>
         </div>
       </div>
@@ -294,14 +298,18 @@ export function TransferPanelSummary({
       {/* Only show totals for ETH */}
       {isETH && (
         <>
-          <div className="h-1" />
+          <div className="h-2" />
           <div className="lg:border-b lg:border-gray-3" />
-          <div className="h-1" />
+          <div className="h-4" />
           <div className="flex flex-row justify-between">
-            <span className="w-2/5">Total</span>
+            <span className="w-2/5 font-light text-dark">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">
-              <span>{formatNumber(amount + estimatedTotalGasFees, 4)} ETH</span>
-              <span>({formatUSD(toUSD(amount + estimatedTotalGasFees))})</span>
+              <span className="text-dark">
+                {formatNumber(amount + estimatedTotalGasFees, 4)} ETH
+              </span>
+              <span className="font-medium text-dark">
+                {formatUSD(toUSD(amount + estimatedTotalGasFees))}
+              </span>
             </div>
           </div>
         </>
