@@ -95,7 +95,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             <p className="pb-1 font-light text-dark">
               Given your wallet balance, bridging gas fees (~$20-$40) might not
               be worth it. You can skip bridging and move funds directly to
-              Arbitrum from a CEX or fiat on-ramp.
+              Arbitrum from a Centralized Exchange or fiat on-ramp.
             </p>
 
             <ExternalLink href="#" className="arb-hover font-light underline">
@@ -119,7 +119,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
         </div>
         <div className="h-4" />
         <p className="text-sm font-light">
-          Want to see another protocol?{' '}
+          Is this list missing something?{' '}
           <ExternalLink className="underline">Let us know.</ExternalLink>
         </p>
       </div>
