@@ -24,7 +24,11 @@ export function WithdrawalCountdown({
   }
 
   if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
-    return <span>{l2Network.chainID === 42161 ? '~1 week' : '~1 day'}</span>
+    return (
+      <span>
+        {l2Network.chainID === 42161 ? '~1 week' : '~1 day'} remaining
+      </span>
+    )
   }
 
   if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
@@ -44,17 +48,23 @@ export function WithdrawalCountdown({
 
   if (daysLeft > 0) {
     return (
-      <span>{`~${blocksRemaining} blocks (~${daysLeft} day${
-        daysLeft === 1 ? '' : 's'
-      })`}</span>
+      <span>
+        {`~${blocksRemaining} blocks (~${daysLeft} day${
+          daysLeft === 1 ? '' : 's'
+        })`}{' '}
+        remaining
+      </span>
     )
   }
 
   if (hoursLeft > 0) {
     return (
-      <span>{`~${blocksRemaining} blocks (~${hoursLeft} hour${
-        hoursLeft === 1 ? '' : 's'
-      })`}</span>
+      <span>
+        {`~${blocksRemaining} blocks (~${hoursLeft} hour${
+          hoursLeft === 1 ? '' : 's'
+        })`}{' '}
+        remaining
+      </span>
     )
   }
 
@@ -63,8 +73,11 @@ export function WithdrawalCountdown({
   }
 
   return (
-    <span>{`~${blocksRemaining} blocks (~${minutesLeft} minute${
-      minutesLeft === 1 ? '' : 's'
-    })`}</span>
+    <span>
+      {`~${blocksRemaining} blocks (~${minutesLeft} minute${
+        minutesLeft === 1 ? '' : 's'
+      })`}{' '}
+      remaining
+    </span>
   )
 }
