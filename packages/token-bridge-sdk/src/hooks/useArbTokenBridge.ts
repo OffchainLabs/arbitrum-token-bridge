@@ -587,12 +587,8 @@ export const useArbTokenBridge = (
     erc20L1Address: string,
     amount: BigNumber
   ) {
-    const estimatedL1Gas = await gasEstimator.erc20Deposit20L1Gas({
-      l1Signer: l1.signer,
-      l2Provider: l2.signer.provider,
-      erc20L1Address,
-      amount
-    })
+    // We're hardcoding the L1 gas cost for a token deposit, as the estimation might fail due to no allowance.
+    const estimatedL1Gas = BigNumber.from(240000)
     const {
       maxGas: estimatedL2Gas,
       maxSubmissionCost: estimatedL2SubmissionCost
