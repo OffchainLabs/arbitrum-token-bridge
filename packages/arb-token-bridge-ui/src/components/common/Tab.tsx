@@ -7,13 +7,13 @@ export type TabButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
   (props, ref) => {
     const selectedClassName = props.selected
-      ? 'rounded-tl-lg rounded-tr-lg bg-white'
-      : 'bg-blue-arbitrum text-white'
+      ? 'bg-white'
+      : 'bg-blue-arbitrum text-white hover:text-gray-6'
 
     return (
       <button
         ref={ref}
-        className={`arb-hover px-8 py-3 ${selectedClassName}`}
+        className={`rounded-tl-lg rounded-tr-lg px-8 py-3 transition-colors duration-300 ${selectedClassName}`}
         {...props}
       >
         {props.children}
