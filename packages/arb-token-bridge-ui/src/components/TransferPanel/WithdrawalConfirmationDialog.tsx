@@ -180,8 +180,8 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
             </Tab>
           </Tab.List>
 
-          <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
-            <div className="flex flex-col space-y-2">
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Get your funds in under 30 min with a fast exit bridge.
               </p>
