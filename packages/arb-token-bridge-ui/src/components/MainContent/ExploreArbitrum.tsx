@@ -74,7 +74,6 @@ function ProjectCard({
   )
 }
 
-const playImageNumber = getRandomInt({ from: 1, to: 4 })
 const playImageHeights: {
   [playImageNumber: number]: number
 } = {
@@ -90,6 +89,9 @@ const nftMaxIndex = ExploreArbitrumContent.nfts.length - 1
 export function ExploreArbitrum() {
   const { width } = useWindowSize()
 
+  const [playImageNumber, setPlayImageNumber] = useState(
+    getRandomInt({ from: 1, to: 4 })
+  )
   const [defiProjectIndex, setDefiProjectIndex] = useState(
     getRandomInt({ from: 0, to: defiMaxIndex })
   )
@@ -113,7 +115,7 @@ export function ExploreArbitrum() {
 
     // lg:
     return { width: 640, height }
-  }, [width])
+  }, [width, playImageNumber])
 
   function randomize() {
     setDefiProjectIndex(
@@ -133,7 +135,13 @@ export function ExploreArbitrum() {
         <p className="text-2xl text-white">For your enjoyment</p>
       </div>
 
-      <Tab.Group>
+      <Tab.Group
+        onChange={() =>
+          setPlayImageNumber(
+            getRandomInt({ from: 1, to: 4, except: playImageNumber })
+          )
+        }
+      >
         <Tab.List className="bg-blue-arbitrum">
           <Tab as={Fragment}>
             {({ selected }) => (
@@ -170,7 +178,7 @@ export function ExploreArbitrum() {
           </div>
         </Tab.Panel>
         <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">
-          <div className="h-3" />
+          <div className="h-2" />
           <p className="text-xl font-light text-dark">
             Allow your racing mind to settle by dragging your mouse around
           </p>
