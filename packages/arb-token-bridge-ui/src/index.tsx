@@ -5,6 +5,7 @@ import reportWebVitals from './reportWebVitals'
 import {
   registerAnyTrust,
   registerNitroDevnet,
+  registerNewNitroDevnet,
   registerLocalNetwork
 } from './util/networks'
 
@@ -15,6 +16,7 @@ import './styles/tailwind.css'
 
 registerAnyTrust()
 registerNitroDevnet()
+registerNewNitroDevnet()
 
 if (process.env.NODE_ENV === 'development') {
   registerLocalNetwork()
