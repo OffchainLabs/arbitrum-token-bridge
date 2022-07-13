@@ -4,6 +4,7 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { ExternalLink } from './ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
 
@@ -30,14 +31,12 @@ function ArbitrumBetaNotification() {
     <Notification>
       <span>
         Arbitrum is in beta.{' '}
-        <a
-          target="_blank"
-          rel="noreferrer"
+        <ExternalLink
           href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
           className="arb-hover underline"
         >
           Learn more.
-        </a>
+        </ExternalLink>
       </span>
     </Notification>
   )
@@ -46,14 +45,12 @@ function ArbitrumBetaNotification() {
 function RinkebyTestnetNotification() {
   return (
     <Notification>
-      <a
-        target="_blank"
-        rel="noreferrer"
-        href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
+      <ExternalLink
+        href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
         className="arb-hover underline"
       >
         What is Rinkeby Testnet?
-      </a>
+      </ExternalLink>
     </Notification>
   )
 }
@@ -63,8 +60,14 @@ function NitroDevnetNotification() {
 
   return (
     <Notification>
-      <button onClick={handleTwitterClick} className="underline">
-        Request testnet ETH from the Nitro Devnet Twitter faucet!
+      <ExternalLink
+        href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
+        className="arb-hover underline"
+      >
+        What is Nitro Devnet?
+      </ExternalLink>{' '}
+      <button onClick={handleTwitterClick} className="arb-hover underline">
+        Request ETH from the Nitro Devnet Twitter faucet!
       </button>
     </Notification>
   )

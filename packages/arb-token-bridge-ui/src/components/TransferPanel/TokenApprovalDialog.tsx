@@ -110,7 +110,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           <span className="text-sm font-light text-cyan-dark">
             After approval, you’ll see a second prompt in your wallet for the
             standard L2 deposit fee.{' '}
-            <ExternalLink href="#" className="underline">
+            <ExternalLink
+              href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
+              className="underline"
+            >
               Learn more.
             </ExternalLink>
           </span>

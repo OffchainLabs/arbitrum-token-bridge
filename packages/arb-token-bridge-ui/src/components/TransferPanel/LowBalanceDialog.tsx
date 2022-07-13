@@ -98,7 +98,10 @@ export function LowBalanceDialog(props: UseDialogProps) {
               Arbitrum from a Centralized Exchange or fiat on-ramp.
             </p>
 
-            <ExternalLink href="#" className="arb-hover font-light underline">
+            <ExternalLink
+              href="https://consensys.zendesk.com/hc/en-us/articles/7277875099547"
+              className="arb-hover font-light underline"
+            >
               Learn more.
             </ExternalLink>
 
