@@ -46,6 +46,8 @@ export function MainContent() {
     .filter(tx => !seenTransactions.includes(tx.txId))
     // These will be included in the withdrawal cards which are based on L2-to-L1 messages
     .filter(tx => tx.direction !== 'withdraw')
+    // TODO: Include token approval transactions?
+    .filter(tx => tx.direction !== 'approve')
     .filter(tx => {
       if (
         tx.direction === 'outbox' &&
@@ -131,11 +133,13 @@ export function MainContent() {
         </AnimatePresence>
 
         <AnimatePresence exitBeforeEnter>
-          {isTransferPanelVisible ? (
+          {isTransferPanelVisible && (
             <motion.div key="transfer-panel" {...motionDivProps}>
               <TransferPanel />
             </motion.div>
-          ) : (
+          )}
+
+          {unseenTransactions.length > 0 && (
             <motion.div key="explore-arbitrum" {...motionDivProps}>
               <ExploreArbitrum />
             </motion.div>
