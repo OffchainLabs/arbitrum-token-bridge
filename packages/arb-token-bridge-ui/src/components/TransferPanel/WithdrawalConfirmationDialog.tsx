@@ -80,9 +80,9 @@ function FastBridgesTable() {
         <tr className="text-gray-9">
           <th className="w-1/5 px-6 py-4 font-normal">Favorite</th>
           <th className="w-1/5 px-6 py-4 font-normal">Exchange</th>
-          <th className="w-2/5 px-6 py-4 font-normal">
+          {/* <th className="w-2/5 px-6 py-4 font-normal">
             Amount you’ll see on L1
-          </th>
+          </th> */}
           <th className="w-1/5 px-6 py-4 font-normal"></th>
         </tr>
       </thead>
@@ -108,7 +108,7 @@ function FastBridgesTable() {
                 <span>{bridge.name}</span>
               </div>
             </td>
-            <td className="px-6 py-4">0.012 ETH</td>
+            {/* <td className="px-6 py-4">0.012 ETH</td> */}
             <td className="px-6 py-4">
               <ExternalLink
                 href={bridge.href}
