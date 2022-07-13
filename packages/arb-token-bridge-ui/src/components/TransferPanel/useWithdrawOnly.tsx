@@ -70,6 +70,24 @@ const withdrawOnlyTokens = [
     l2CustomAddr: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
     l1Address: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     l2Address: '0x0D5f2b781A13722bA19e35857Fb6676594824960'
+  },
+  {
+    symbol: 'alUSD',
+    l2CustomAddr: '0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A',
+    l1Address: '0xbc6da0fe9ad5f3b0d58160288917aa56653660e9',
+    l2Address: '0x95d2C35934f4eA0076E6f5e8d6edd8080666F84e'
+  },
+  {
+    symbol: 'alETH',
+    l2CustomAddr: '',
+    l1Address: '0x0100546F2cD4C9D97f798fFC9755E47865FF7Ee6',
+    l2Address: '0xC05A105F4EC1ef28a4e7c0cb30Cb791B40FdD66B'
+  },
+  {
+    symbol: 'gALCX',
+    l2CustomAddr: '0x870d36B8AD33919Cc57FFE17Bb5D3b84F3aDee4f',
+    l1Address: '0x93dede06ae3b5590af1d4c111bc54c3f717e4b35',
+    l2Address: '0xEa4d9cE1fE1134528402A79f7B7Eacf87a930C8F'
   }
 ].map(token => {
   const { l1Address, l2Address } = token
