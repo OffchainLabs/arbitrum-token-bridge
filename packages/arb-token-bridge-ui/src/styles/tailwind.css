@@ -265,12 +265,12 @@ input:checked + .slider:before {
   }
 
   /* lg:min-h */
-  .lg\:min-h-\[221px\] {
-    min-height: 221px;
+  .lg\:min-h-\[257px\] {
+    min-height: 257px;
   }
 
-  .lg\:min-h-\[269px\] {
-    min-height: 269px;
+  .lg\:min-h-\[297px\] {
+    min-height: 297px;
   }
 
   /* lg:shadow */

@@ -173,16 +173,16 @@ function TransferPanelSummaryContainer({
     <>
       <div className="block lg:hidden">
         <span className="text-2xl">Summary</span>
-        <div className="h-2" />
+        <div className="h-4" />
       </div>
 
       <div
-        className={`flex flex-col space-y-1 text-lg lg:min-h-[221px] ${className}`}
+        className={`flex flex-col space-y-4 text-lg lg:min-h-[257px] ${className}`}
       >
         {children}
       </div>
 
-      <div className="h-12" />
+      <div className="h-10" />
     </>
   )
 }
@@ -214,18 +214,18 @@ export function TransferPanelSummary({
         <div
           className={`h-[28px] w-full opacity-10 lg:h-[56px] ${bgClassName}`}
         />
-        <div className="pl-4">
+        <div className="flex flex-col space-y-2 pl-4">
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-        </div>
-        <div className="pl-4">
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
         {isETH && (
           <>
-            <div className="h-2" />
-            <div className="lg:border-b lg:border-gray-3" />
-            <div className="h-4" />
+            <div>
+              <div className="h-2" />
+              <div className="lg:border-b lg:border-gray-3" />
+              <div className="h-2" />
+            </div>
             <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
           </>
         )}
@@ -249,7 +249,8 @@ export function TransferPanelSummary({
           )}
         </div>
       </div>
-      <div className="flex flex-row justify-between">
+
+      <div className="flex flex-row items-center justify-between">
         <span className="w-2/5 font-light text-dark">
           You’ll pay in gas fees
         </span>
@@ -262,45 +263,49 @@ export function TransferPanelSummary({
           </span>
         </div>
       </div>
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-row items-center space-x-2">
-          <span className="pl-4 font-light text-gray-6">L1 gas</span>
-          <Tooltip content="L1 fees go to Ethereum miners.">
-            <InformationCircleIcon className="h-4 w-4 text-gray-10" />
-          </Tooltip>
+
+      <div className="flex flex-col space-y-2">
+        <div className="flex flex-row justify-between">
+          <div className="flex flex-row items-center space-x-2">
+            <span className="pl-4 font-light text-gray-6">L1 gas</span>
+            <Tooltip content="L1 fees go to Ethereum miners.">
+              <InformationCircleIcon className="h-4 w-4 text-gray-10" />
+            </Tooltip>
+          </div>
+          <div className="flex w-3/5 flex-row justify-between">
+            <span className="font-light text-gray-6">
+              {formatNumber(estimatedL1GasFees, 4)} ETH
+            </span>
+            <span className="font-light text-gray-6">
+              ({formatUSD(toUSD(estimatedL1GasFees))})
+            </span>
+          </div>
         </div>
-        <div className="flex w-3/5 flex-row justify-between">
-          <span className="font-light text-gray-6">
-            {formatNumber(estimatedL1GasFees, 4)} ETH
-          </span>
-          <span className="font-light text-gray-6">
-            ({formatUSD(toUSD(estimatedL1GasFees))})
-          </span>
-        </div>
-      </div>
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-row items-center space-x-2">
-          <span className="pl-4 font-light text-gray-6">L2 gas</span>
-          <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
-            <InformationCircleIcon className="h-4 w-4 text-gray-10" />
-          </Tooltip>
-        </div>
-        <div className="flex w-3/5 flex-row justify-between">
-          <span className="font-light text-gray-6">
-            {formatNumber(estimatedL2GasFees, 4)} ETH
-          </span>
-          <span className="font-light text-gray-6">
-            ({formatUSD(toUSD(estimatedL2GasFees))})
-          </span>
+        <div className="flex flex-row justify-between">
+          <div className="flex flex-row items-center space-x-2">
+            <span className="pl-4 font-light text-gray-6">L2 gas</span>
+            <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
+              <InformationCircleIcon className="h-4 w-4 text-gray-10" />
+            </Tooltip>
+          </div>
+          <div className="flex w-3/5 flex-row justify-between">
+            <span className="font-light text-gray-6">
+              {formatNumber(estimatedL2GasFees, 4)} ETH
+            </span>
+            <span className="font-light text-gray-6">
+              ({formatUSD(toUSD(estimatedL2GasFees))})
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Only show totals for ETH */}
       {isETH && (
         <>
-          <div className="h-2" />
-          <div className="lg:border-b lg:border-gray-3" />
-          <div className="h-4" />
+          <div>
+            <div className="h-2" />
+            <div className="lg:border-b lg:border-gray-3" />
+            <div className="h-2" />
+          </div>
           <div className="flex flex-row justify-between">
             <span className="w-2/5 font-light text-dark">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">

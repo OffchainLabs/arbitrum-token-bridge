@@ -691,7 +691,7 @@ export function TransferPanel() {
         >
           <div className="hidden lg:block">
             <span className="text-2xl">Summary</span>
-            <div className="h-2" />
+            <div className="h-4" />
           </div>
 
           {isSummaryVisible ? (
@@ -701,7 +701,7 @@ export function TransferPanel() {
               gasSummary={gasSummary}
             />
           ) : (
-            <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[269px]">
+            <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[297px]">
               <span className="text-xl">
                 Bridging summary will appear here.
               </span>
