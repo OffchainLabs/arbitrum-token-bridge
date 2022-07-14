@@ -121,9 +121,9 @@ const NewNitroDevnet: L2Network = {
   explorerUrl: 'https://nitro-devnet-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: true,
-  name: "Arbitrum Nitro Goerli Testnet",
+  name: "Arbitrum Rollup Goerli Testnet",
   partnerChainID: 5,
-  rpcURL: 'goerli-rollup.arbitrum.io/rpc',
+  rpcURL: 'https://goerli-rollup.arbitrum.io/rpc',
   tokenBridge: {
     l1CustomGateway: '0x9fDD1C4E4AA24EEc1d913FABea925594a20d43C7',
     l1ERC20Gateway: '0x715D99480b77A8d9D603638e593a539E21345FdF',
