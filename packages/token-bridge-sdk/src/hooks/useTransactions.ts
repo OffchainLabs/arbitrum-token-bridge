@@ -3,7 +3,10 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_types'
+import {
+  EthDepositMessage,
+  IL1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -318,6 +321,38 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
+  const fetchAndUpdateEthDepositMessageStatus = async (
+    txID: string,
+    ethDepositMessage: EthDepositMessage
+  ) => {
+    updateTxnL1ToL2MsgData(txID, {
+      fetchingUpdate: true,
+      status: L1ToL2MessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: ethDepositMessage.l2DepositTxHash
+    })
+
+    // It's ok to bail here, as the RetryableTxnsIncluder will pick it up
+    const res = await ethDepositMessage.wait(undefined, 500)
+
+    function getStatus(): L1ToL2MessageStatus {
+      if (!res) {
+        return L1ToL2MessageStatus.NOT_YET_CREATED
+      }
+
+      return res.status === 0
+        ? L1ToL2MessageStatus.CREATION_FAILED
+        : L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+    }
+
+    updateTxnL1ToL2MsgData(txID, {
+      fetchingUpdate: false,
+      status: getStatus(),
+      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
+      // Only show `l2TxID` after we have the tx receipt
+      l2TxID: res !== null ? ethDepositMessage.l2DepositTxHash : undefined
+    })
+  }
+
   const fetchAndUpdateL1ToL2MsgStatus = async (
     txID: string,
     l1ToL2Msg: IL1ToL2MessageReader,
@@ -455,7 +490,8 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       updateTransaction,
       removeTransaction,
       addFailedTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateEthDepositMessageStatus
     }
   ]
 }

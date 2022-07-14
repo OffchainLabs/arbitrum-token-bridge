@@ -5,7 +5,10 @@ import {
   L1ToL2MessageStatus,
   L2ToL1MessageStatus as OutgoingMessageState
 } from '@arbitrum/sdk'
-import { IL1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/utils/migration_types'
+import {
+  EthDepositMessage,
+  IL1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
@@ -190,6 +193,10 @@ export interface TransactionActions {
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
   ) => void
+  fetchAndUpdateEthDepositMessageStatus: (
+    txID: string,
+    ethDepositMessage: EthDepositMessage
+  ) => void
 }
 
 export type ArbTokenBridgeTransactions = {
@@ -202,6 +209,7 @@ export type ArbTokenBridgeTransactions = {
   | 'updateTransaction'
   | 'addTransactions'
   | 'fetchAndUpdateL1ToL2MsgStatus'
+  | 'fetchAndUpdateEthDepositMessageStatus'
 >
 
 export interface ArbTokenBridge {

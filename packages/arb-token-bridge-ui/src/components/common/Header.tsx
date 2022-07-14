@@ -47,7 +47,7 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Mainnet (Arbiscan)
+                  Arbitrum One (Arbiscan)
                 </a>
               )}
             </Menu.Item>
@@ -62,7 +62,7 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Mainnet (Offchain Labs)
+                  Arbitrum One (Offchain Labs)
                 </a>
               )}
             </Menu.Item>
@@ -99,7 +99,7 @@ function ExplorerMenu() {
             <Menu.Item>
               {({ active }) => (
                 <a
-                  href="https://nitro-devnet-explorer.arbitrum.io"
+                  href="https://a4ba-explorer.arbitrum.io"
                   target="_blank"
                   className={classNames(
                     active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
@@ -107,7 +107,22 @@ function ExplorerMenu() {
                   )}
                   rel="noreferrer"
                 >
-                  Nitro Devnet (BlockScout)
+                  Arbitrum Nova (BlockScout)
+                </a>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <a
+                  href="https://goerli-rollup-explorer.arbitrum.io"
+                  target="_blank"
+                  className={classNames(
+                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    'block px-4 py-2 text-sm'
+                  )}
+                  rel="noreferrer"
+                >
+                  Goerli Testnet Rollup (BlockScout)
                 </a>
               )}
             </Menu.Item>
