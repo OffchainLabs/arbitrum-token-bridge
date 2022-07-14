@@ -14,7 +14,6 @@ export const rpcURLs: { [chainId: number]: string } = {
   5: `https://goerli.infura.io/v3/${INFURA_KEY}`,
   42161: 'https://arb1.arbitrum.io/rpc',
   421611: 'https://rinkeby.arbitrum.io/rpc',
-  421612: 'https://nitro-devnet.arbitrum.io/rpc',
   42170: 'https://a4ba.arbitrum.io/rpc',
   421613: 'https://goerli-rollup.arbitrum.io/rpc'
 }
@@ -68,7 +67,7 @@ const Goerli: L1Network = {
   explorerUrl: 'https://goerli.etherscan.io',
   isCustom: true,
   name: 'Goerli',
-  partnerChainIDs: [421612],
+  partnerChainIDs: [421613],
   rpcURL: rpcURLs[5]
 }
 
