@@ -15,7 +15,8 @@ export const rpcURLs: { [chainId: number]: string } = {
   42161: 'https://arb1.arbitrum.io/rpc',
   421611: 'https://rinkeby.arbitrum.io/rpc',
   421612: 'https://nitro-devnet.arbitrum.io/rpc',
-  42170: 'https://a4ba.arbitrum.io/rpc'
+  42170: 'https://a4ba.arbitrum.io/rpc',
+  421613: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
 l1Networks[1].rpcURL = rpcURLs[1]
