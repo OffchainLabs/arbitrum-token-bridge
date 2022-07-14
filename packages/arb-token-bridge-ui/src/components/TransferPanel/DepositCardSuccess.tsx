@@ -25,6 +25,10 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   }, [])
 
   const balance = useMemo(() => {
+    if (!arbTokenBridge || !arbTokenBridge.balances) {
+      return null
+    }
+
     if (tx.asset === 'eth') {
       return arbTokenBridge.balances.eth.arbChainBalance
     }
