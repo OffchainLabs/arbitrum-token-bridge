@@ -28,7 +28,7 @@ export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
 
 const AnyTrust: L2Network = {
   chainID: 42170,
-  confirmPeriodBlocks: 20,
+  confirmPeriodBlocks: 45818,
   ethBridge: {
     bridge: '0xc1ebd02f738644983b6c4b2d440b8e77dde276bd',
     inbox: '0xc4448b71118c9071bcb9734a0eac55d18a153949',
