@@ -31,7 +31,7 @@ const MainContent = () => {
       return false
     }
 
-    return l2.network.chainID === 421612
+    return l2.network.chainID === 421613
   }, [l2])
 
   return (
@@ -58,7 +58,7 @@ const MainContent = () => {
             <span id="twitter-faucet-container">
               Request testnet Eth from the{' '}
               <a id="faucet-link" target="_blank" onClick={handleTwitterClick}>
-                Nitro Devnet twitter faucet!
+                Nitro Testnet twitter faucet!
               </a>
             </span>
           </Alert>
