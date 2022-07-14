@@ -15,7 +15,6 @@ import 'tippy.js/themes/light.css'
 import './styles/tailwind.css'
 
 registerAnyTrust()
-registerNitroDevnet()
 registerNewNitroDevnet()
 
 if (process.env.NODE_ENV === 'development') {
