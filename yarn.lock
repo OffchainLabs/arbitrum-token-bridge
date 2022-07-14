@@ -27,10 +27,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.0"
 
-"@arbitrum/sdk-classic@npm:@arbitrum/sdk@1.1.10":
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-1.1.10.tgz#58d1baf646a37ecf76bab73781e3bc91ac8b803f"
-  integrity sha512-T+pscVnIhxwvtL9s93lb0mwWFi9rUFhMaHj8PwezVJtDZ/u1jCpF37dPLdSUs1LyVApm4gnp+LQvbe5yaUWyRw==
+"@arbitrum/sdk-classic@npm:@arbitrum/sdk@1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-1.1.12.tgz#2f805a864bd1bcc8a677fcccebab3ca442c28d7d"
+  integrity sha512-s8ku93/wQ9bIMNbO4HWp4+qndzakVc/ppH1l9z4TFHHqNHbD2ejKmiGQeHXdraJsgVs2JnFYVWtq/fVbCB5rDg==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -59,12 +59,12 @@
     ts-node "^10.2.1"
     typechain "7.0.0"
 
-"@arbitrum/sdk@2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-2.0.4.tgz#5d5a336d54f155cb1587f9728b8bd058224e07fa"
-  integrity sha512-0jgZBzU1zMI8zvJFZkkhZ6lFMAJ8+CklWgCdaEQXaVfIcHFtjo8YpEX/Wz45ydRnaYNy5W60g0THliRY0MjH9A==
+"@arbitrum/sdk@2.0.5":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-2.0.5.tgz#43d749de5c79b212d0e7f80d66f22d2a446baecb"
+  integrity sha512-bZxhk0loeo5poUy8+3zIgFW8ILDzfJWbVmjKzWZ121DYcO/zy0opTug/fPF+C7jdBO76vfLUrEnSeV6h4Rqjyw==
   dependencies:
-    "@arbitrum/sdk-classic" "npm:@arbitrum/sdk@1.1.10"
+    "@arbitrum/sdk-classic" "npm:@arbitrum/sdk@1.1.12"
     "@arbitrum/sdk-nitro" "npm:@arbitrum/sdk@3.0.0-beta.3"
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
