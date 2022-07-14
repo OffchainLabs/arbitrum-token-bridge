@@ -82,7 +82,7 @@ const NewNitroDevnet: L2Network = {
     rollup: '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17',
     sequencerInbox: '0x0484A87B144745A2E5b7c359552119B6EA2917A9'
   },
-  explorerUrl: 'https://nitro-devnet-explorer.arbitrum.io',
+  explorerUrl: 'https://goerli-rollup-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: true,
   name: 'Arbitrum Rollup Goerli Testnet',
