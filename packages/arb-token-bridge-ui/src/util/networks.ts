@@ -14,8 +14,8 @@ export const rpcURLs: { [chainId: number]: string } = {
   5: `https://goerli.infura.io/v3/${INFURA_KEY}`,
   42161: 'https://arb1.arbitrum.io/rpc',
   421611: 'https://rinkeby.arbitrum.io/rpc',
-  421612: 'https://nitro-devnet.arbitrum.io/rpc',
-  42170: 'https://a4ba.arbitrum.io/rpc'
+  42170: 'https://a4ba.arbitrum.io/rpc',
+  421613: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
 l1Networks[1].rpcURL = rpcURLs[1]
@@ -67,42 +67,42 @@ const Goerli: L1Network = {
   explorerUrl: 'https://goerli.etherscan.io',
   isCustom: true,
   name: 'Goerli',
-  partnerChainIDs: [421612],
+  partnerChainIDs: [421613],
   rpcURL: rpcURLs[5]
 }
 
-const NitroDevnet: L2Network = {
-  chainID: 421612,
+const NewNitroDevnet: L2Network = {
+  chainID: 421613,
   confirmPeriodBlocks: 960,
   retryableLifetimeSeconds: SEVEN_DAYS_IN_SECONDS,
   ethBridge: {
-    bridge: '0x9903a892da86c1e04522d63b08e5514a921e81df',
-    inbox: '0x1fdbbcc914e84af593884bf8e8dd6877c29035a2',
-    outbox: '0xFDF2B11347dA17326BAF30bbcd3F4b09c4719584',
-    rollup: '0x767CfF8D8de386d7cbe91DbD39675132ba2f5967',
-    sequencerInbox: '0xb32f4257e05c56c53d46bbec9e85770eb52425d6'
+    bridge: '0xaf4159a80b6cc41ed517db1c453d1ef5c2e4db72',
+    inbox: '0x6BEbC4925716945D46F0Ec336D5C2564F419682C',
+    outbox: '0x45Af9Ed1D03703e480CE7d328fB684bb67DA5049',
+    rollup: '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17',
+    sequencerInbox: '0x0484A87B144745A2E5b7c359552119B6EA2917A9'
   },
   explorerUrl: 'https://nitro-devnet-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: true,
-  name: 'Arbitrum Nitro Devnet',
+  name: 'Arbitrum Rollup Goerli Testnet',
   partnerChainID: 5,
-  rpcURL: 'https://nitro-devnet.arbitrum.io/rpc',
+  rpcURL: 'https://goerli-rollup.arbitrum.io/rpc',
   tokenBridge: {
-    l1CustomGateway: '0x23D4e0D7Cb7AE7CF745E82262B17eb46535Ae819',
-    l1ERC20Gateway: '0x6336C4e811b2f7D17d45b6241Fd47F2E11621Ffb',
-    l1GatewayRouter: '0x8BDFa67ace22cE2BFb2fFebe72f0c91CDA694d4b',
-    l1MultiCall: '0x90863B80f274b6D2227b01f2c1de4fdCb04896E2',
-    l1ProxyAdmin: '0x678cC9702ebF79d741E4f815937475311A58404a',
-    l1Weth: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6',
-    l1WethGateway: '0x64bfF696bE6a087A81936b9a2489624015381be4',
-    l2CustomGateway: '0x7AC493f26EF26904E52fE46C8DaEE247b9A556B8',
-    l2ERC20Gateway: '0xf298434ffE691400b932f4b14B436f451F4CED76',
-    l2GatewayRouter: '0xC502Ded1EE1d616B43F7f20Ebde83Be1A275ca3c',
-    l2Multicall: '0x1068dbfcc13f3a22fcAe684943AFA43cc66fA689',
-    l2ProxyAdmin: '0x1F2715AaC7EeFb75ebCc478f3D9a361fa47A95DD',
-    l2Weth: '0x96CfA560e7332DebA750e330fb6f59E2269f40Dd',
-    l2WethGateway: '0xf10c7CAA33A3360f60053Bc1081980f62567505F'
+    l1CustomGateway: '0x9fDD1C4E4AA24EEc1d913FABea925594a20d43C7',
+    l1ERC20Gateway: '0x715D99480b77A8d9D603638e593a539E21345FdF',
+    l1GatewayRouter: '0x4c7708168395aEa569453Fc36862D2ffcDaC588c',
+    l1MultiCall: '0xa0A8537a683B49ba4bbE23883d984d4684e0acdD',
+    l1ProxyAdmin: '0x16101A84B00344221E2983190718bFAba30D9CeE',
+    l1Weth: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+    l1WethGateway: '0x6e244cD02BBB8a6dbd7F626f05B2ef82151Ab502',
+    l2CustomGateway: '0x8b6990830cF135318f75182487A4D7698549C717',
+    l2ERC20Gateway: '0x2eC7Bc552CE8E51f098325D2FcF0d3b9d3d2A9a2',
+    l2GatewayRouter: '0xE5B9d8d42d656d1DcB8065A6c012FE3780246041',
+    l2Multicall: '0x108B25170319f38DbED14cA9716C54E5D1FF4623',
+    l2ProxyAdmin: '0xeC377B42712608B0356CC54Da81B2be1A4982bAb',
+    l2Weth: '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3',
+    l2WethGateway: '0xf9F2e89c8347BD96742Cc07095dee490e64301d6'
   }
 }
 
@@ -110,8 +110,8 @@ export function registerAnyTrust() {
   addCustomNetwork({ customL2Network: AnyTrust })
 }
 
-export function registerNitroDevnet() {
-  addCustomNetwork({ customL1Network: Goerli, customL2Network: NitroDevnet })
+export function registerNewNitroDevnet() {
+  addCustomNetwork({ customL1Network: Goerli, customL2Network: NewNitroDevnet })
 }
 
 export function registerLocalNetwork() {

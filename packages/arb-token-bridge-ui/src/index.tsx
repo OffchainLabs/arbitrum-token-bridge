@@ -4,7 +4,7 @@ import App from './components/App/App'
 import reportWebVitals from './reportWebVitals'
 import {
   registerAnyTrust,
-  registerNitroDevnet,
+  registerNewNitroDevnet,
   registerLocalNetwork
 } from './util/networks'
 
@@ -14,7 +14,7 @@ import 'tippy.js/themes/light.css'
 import './styles/tailwind.css'
 
 registerAnyTrust()
-registerNitroDevnet()
+registerNewNitroDevnet()
 
 if (process.env.NODE_ENV === 'development') {
   registerLocalNetwork()

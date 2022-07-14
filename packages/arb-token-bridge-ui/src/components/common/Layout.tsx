@@ -18,10 +18,10 @@ const Layout: React.FC = ({ children }) => {
         return 'Arbitrum One Bridge'
       case 421611:
         return 'RinkArby Testnet Bridge'
-      case 421612:
-        return 'Arbitrum Nitro Devnet Bridge'
       case 42170:
         return 'Arbitrum AnyTrust Bridge'
+      case 421613:
+        return 'Arbitrum Rollup Goerli Testnet Bridge'
       default:
         return 'Arbitrum Bridge'
     }
