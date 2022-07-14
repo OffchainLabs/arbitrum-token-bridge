@@ -13,8 +13,10 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
       </span>
 
       <span className="animate-pulse text-4xl font-semibold text-blue-arbitrum">
-        {tx.nodeBlockDeadline && (
+        {tx.nodeBlockDeadline ? (
           <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
+        ) : (
+          <span>Calculating...</span>
         )}
       </span>
 

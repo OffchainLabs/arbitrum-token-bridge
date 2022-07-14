@@ -75,9 +75,11 @@ export function LowBalanceDialog(props: UseDialogProps) {
           </div>
           <span className="text-center text-3xl font-light text-purple-ethereum">
             {formatNumber(balanceNumber)} ETH{' '}
-            <span className="font-medium">
-              ({formatUSD(toUSD(balanceNumber))})
-            </span>
+            {app.isMainnet && (
+              <span className="font-medium">
+                ({formatUSD(toUSD(balanceNumber))})
+              </span>
+            )}
           </span>
         </div>
         <div className="h-4" />

@@ -34,6 +34,40 @@ function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
+function isWithdrawalInitiation(tx: MergedTransaction) {
+  return tx.direction === 'withdraw'
+}
+
+function isL2ToL1Message(tx: MergedTransaction) {
+  return tx.direction === 'outbox' && L2ToL1MessageStatuses.includes(tx.status)
+}
+
+function dedupeWithdrawals(transactions: MergedTransaction[]) {
+  const map: {
+    [txHash: string]: MergedTransaction
+  } = {}
+
+  transactions.forEach(tx => {
+    // If it's a withdrawal initiation tx - try to find the matching transformed L2-to-L1 message.
+    // If found - use that. If not - use the withdrawal initiation tx, as it still might be pending.
+    if (isWithdrawalInitiation(tx) && !map[tx.txId]) {
+      const matchingL2ToL1Message = transactions.find(
+        _tx => tx.txId === _tx.txId && isL2ToL1Message(_tx)
+      )
+
+      if (matchingL2ToL1Message) {
+        map[tx.txId] = matchingL2ToL1Message
+      } else {
+        map[tx.txId] = tx
+      }
+    } else {
+      map[tx.txId] = tx
+    }
+  })
+
+  return Object.values(map)
+}
+
 export function MainContent() {
   const {
     app: { mergedTransactions, pwLoadedState }
@@ -41,24 +75,21 @@ export function MainContent() {
   const { seenTransactions, layout } = useAppContextState()
   const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
-
-  const unseenTransactions = mergedTransactions
+  const unseenTransactionsWithDuplicates = mergedTransactions
+    // Exclude seen txs
     .filter(tx => !seenTransactions.includes(tx.txId))
-    // These will be included in the withdrawal cards which are based on L2-to-L1 messages
-    .filter(tx => tx.direction !== 'withdraw')
-    // TODO: Include token approval transactions?
+    // Exclude token approval txs
     .filter(tx => tx.direction !== 'approve')
+    // Exclude withdrawal claim txs
     .filter(tx => {
-      if (
-        tx.direction === 'outbox' &&
-        !L2ToL1MessageStatuses.includes(tx.status)
-      ) {
-        return false
+      if (tx.direction === 'outbox') {
+        return L2ToL1MessageStatuses.includes(tx.status)
       }
 
       return true
     })
 
+  const unseenTransactions = dedupeWithdrawals(unseenTransactionsWithDuplicates)
   const prevUnseenTransactions = usePrevious(unseenTransactions)
 
   const didLoadPendingWithdrawals = useMemo(
@@ -113,21 +144,17 @@ export function MainContent() {
         <AnimatePresence>
           {didLoadPendingWithdrawals && (
             <>
-              {unseenTransactions.map(tx => (
-                <motion.div
-                  key={`${tx.txId}-${tx.direction}`}
-                  {...motionDivProps}
-                >
-                  {isDeposit(tx) ? (
-                    <DepositCard key={`${tx.txId}-${tx.direction}`} tx={tx} />
-                  ) : (
-                    <WithdrawalCard
-                      key={`${tx.txId}-${tx.direction}`}
-                      tx={tx}
-                    />
-                  )}
-                </motion.div>
-              ))}
+              {unseenTransactions.map(tx =>
+                isDeposit(tx) ? (
+                  <motion.div key={tx.txId} {...motionDivProps}>
+                    <DepositCard key={tx.txId} tx={tx} />
+                  </motion.div>
+                ) : (
+                  <motion.div key={tx.txId} {...motionDivProps}>
+                    <WithdrawalCard key={tx.txId} tx={tx} />
+                  </motion.div>
+                )
+              )}
             </>
           )}
         </AnimatePresence>

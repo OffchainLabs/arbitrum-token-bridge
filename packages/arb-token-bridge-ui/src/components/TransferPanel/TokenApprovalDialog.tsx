@@ -20,7 +20,7 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { token } = props
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, isMainnet }
   } = useAppState()
 
   const { toUSD } = useETHPrice()
@@ -39,8 +39,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const approvalFeeText = useMemo(() => {
     const eth = formatNumber(estimatedGasFees)
     const usd = formatUSD(toUSD(estimatedGasFees))
-    return `${eth} ETH (${usd})`
-  }, [estimatedGasFees, toUSD])
+    return `${eth} ETH${isMainnet ? ` (${usd})` : ''}`
+  }, [estimatedGasFees, toUSD, isMainnet])
 
   useEffect(() => {
     async function getEstimatedGas() {

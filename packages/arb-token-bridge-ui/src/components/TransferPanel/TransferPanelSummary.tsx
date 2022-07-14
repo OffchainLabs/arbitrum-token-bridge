@@ -242,7 +242,7 @@ export function TransferPanelSummary({
             {formatNumber(amount, 4)} {token?.symbol || 'ETH'}
           </span>
           {/* Only show USD price for ETH */}
-          {isETH && (
+          {isETH && app.isMainnet && (
             <span className="font-medium text-dark">
               {formatUSD(toUSD(amount))}
             </span>
@@ -258,9 +258,11 @@ export function TransferPanelSummary({
           <span className="text-dark">
             {formatNumber(estimatedTotalGasFees, 4)} ETH
           </span>
-          <span className="font-medium text-dark">
-            {formatUSD(toUSD(estimatedTotalGasFees))}
-          </span>
+          {app.isMainnet && (
+            <span className="font-medium text-dark">
+              {formatUSD(toUSD(estimatedTotalGasFees))}
+            </span>
+          )}
         </div>
       </div>
 
@@ -276,9 +278,11 @@ export function TransferPanelSummary({
             <span className="font-light text-gray-6">
               {formatNumber(estimatedL1GasFees, 4)} ETH
             </span>
-            <span className="font-light text-gray-6">
-              ({formatUSD(toUSD(estimatedL1GasFees))})
-            </span>
+            {app.isMainnet && (
+              <span className="font-light text-gray-6">
+                ({formatUSD(toUSD(estimatedL1GasFees))})
+              </span>
+            )}
           </div>
         </div>
         <div className="flex flex-row justify-between">
@@ -292,9 +296,11 @@ export function TransferPanelSummary({
             <span className="font-light text-gray-6">
               {formatNumber(estimatedL2GasFees, 4)} ETH
             </span>
-            <span className="font-light text-gray-6">
-              ({formatUSD(toUSD(estimatedL2GasFees))})
-            </span>
+            {app.isMainnet && (
+              <span className="font-light text-gray-6">
+                ({formatUSD(toUSD(estimatedL2GasFees))})
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -312,9 +318,11 @@ export function TransferPanelSummary({
               <span className="text-dark">
                 {formatNumber(amount + estimatedTotalGasFees, 4)} ETH
               </span>
-              <span className="font-medium text-dark">
-                {formatUSD(toUSD(amount + estimatedTotalGasFees))}
-              </span>
+              {app.isMainnet && (
+                <span className="font-medium text-dark">
+                  {formatUSD(toUSD(amount + estimatedTotalGasFees))}
+                </span>
+              )}
             </div>
           </div>
         </>

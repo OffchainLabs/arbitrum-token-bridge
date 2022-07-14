@@ -124,6 +124,7 @@ export type AppState = {
   arbTokenBridgeLoaded: boolean
 
   changeNetwork: ((network: L1Network | L2Network) => Promise<void>) | null
+  isMainnet: boolean
 }
 
 export const defaultState: AppState = {
@@ -236,7 +237,10 @@ export const defaultState: AppState = {
   }),
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false,
-  changeNetwork: null
+  changeNetwork: null,
+  isMainnet: derived((s: AppState) => {
+    return s.l1NetworkChainId === 1
+  })
 }
 export const state: AppState = {
   ...defaultState

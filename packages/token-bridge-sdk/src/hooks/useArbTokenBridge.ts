@@ -409,7 +409,7 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
-        blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
+        blockNumber: tx.blockNumber,
         l1NetworkID
       })
 
@@ -523,7 +523,7 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
-      blockNumber: tx.blockNumber || 0,
+      blockNumber: tx.blockNumber,
       l1NetworkID: l1.network.chainID.toString()
     })
 
@@ -637,7 +637,7 @@ export const useArbTokenBridge = (
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: await l2.signer.getAddress(),
-      blockNumber: tx.blockNumber || 0,
+      blockNumber: tx.blockNumber,
       l1NetworkID
     })
 
