@@ -4,7 +4,6 @@ import App from './components/App/App'
 import reportWebVitals from './reportWebVitals'
 import {
   registerAnyTrust,
-  registerNitroDevnet,
   registerNewNitroDevnet,
   registerLocalNetwork
 } from './util/networks'
