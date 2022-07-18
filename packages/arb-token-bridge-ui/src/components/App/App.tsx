@@ -45,39 +45,6 @@ type Web3Provider = ExternalProvider & {
 const isSwitchChainSupported = (provider: Web3Provider) =>
   provider && (provider.isMetaMask || provider.isImToken)
 
-const NoMetamaskIndicator = (): JSX.Element => {
-  const { connect } = useWallet()
-
-  function showConnectionModal() {
-    connect(modalProviderOpts)
-  }
-
-  return (
-    <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
-      <Button variant="primary" onClick={showConnectionModal}>
-        Connect Wallet
-      </Button>
-      <ExternalLink href="https://metamask.io/download">
-        <img
-          className="lg:w-[420px]"
-          src="/images/arbinaut-playing-cards.png"
-          alt="Illustration of an Alien and an Arbinaut playing cards"
-        />
-      </ExternalLink>
-    </div>
-  )
-}
-
-function NetworkLoading() {
-  return (
-    <div className="absolute top-0 left-0 flex h-screen w-full items-center justify-center">
-      <div className="opacity-100">
-        <Loader type="TailSpin" color="white" height={64} width={64} />
-      </div>
-    </div>
-  )
-}
-
 async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
   return (await _signer.provider.getCode(_address)).length <= 2
 }
@@ -366,6 +333,25 @@ function Routes() {
   )
 }
 
+function ConnectionFallbackContainer({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
+      {children}
+      <ExternalLink href="https://metamask.io/download">
+        <img
+          className="lg:w-[420px]"
+          src="/images/arbinaut-playing-cards.png"
+          alt="Illustration of an Alien and an Arbinaut playing cards"
+        />
+      </ExternalLink>
+    </div>
+  )
+}
+
 function ConnectionFallback({
   status
 }: {
@@ -374,9 +360,28 @@ function ConnectionFallback({
     | UseNetworksAndSignersStatus.NOT_SUPPORTED
     | UseNetworksAndSignersStatus.NOT_CONNECTED
 }): JSX.Element {
+  const { connect } = useWallet()
+
+  function showConnectionModal() {
+    connect(modalProviderOpts)
+  }
+
   switch (status) {
+    case UseNetworksAndSignersStatus.LOADING:
+      return (
+        <ConnectionFallbackContainer>
+          <Loader type="TailSpin" color="white" height={44} width={44} />
+        </ConnectionFallbackContainer>
+      )
+
     case UseNetworksAndSignersStatus.NOT_CONNECTED:
-      return <NoMetamaskIndicator />
+      return (
+        <ConnectionFallbackContainer>
+          <Button variant="primary" onClick={showConnectionModal}>
+            Connect Wallet
+          </Button>
+        </ConnectionFallbackContainer>
+      )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
       return (
@@ -393,9 +398,6 @@ function ConnectionFallback({
           </span>
         </div>
       )
-
-    default:
-      return <NetworkLoading />
   }
 }
 
