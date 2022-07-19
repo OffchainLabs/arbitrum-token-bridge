@@ -70,6 +70,10 @@ export function useNetworksAndSigners() {
 
 export type NetworksAndSignersProviderProps = {
   /**
+   * Chooses a specific L2 chain in a situation where multiple L2 chains are connected to a single L1 chain.
+   */
+  selectedL2ChainId?: number
+  /**
    * Render prop that gets called with the current status in case of anything other than a successful connection.
    *
    * @see https://reactjs.org/docs/render-props.html
@@ -89,6 +93,8 @@ export type NetworksAndSignersProviderProps = {
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
+  const { selectedL2ChainId } = props
+
   const { provider, account, network, connect, web3Modal } = useWallet()
   const cachedProvider = web3Modal?.cachedProvider
 
@@ -144,8 +150,25 @@ export function NetworksAndSignersProvider(
 
       getL1Network(web3Provider)
         .then(async l1Network => {
+          function getL2NetworkChainId(): number {
+            // Use the first chain id from `partnerChainIDs` as default
+            const defaultL2NetworkChainId = l1Network.partnerChainIDs[0]
+
+            // Return the default if no preference for L2 chain
+            if (!selectedL2ChainId) {
+              return defaultL2NetworkChainId
+            }
+
+            // Return the default if the preffered L2 chain id doesn't match the L1 network
+            if (!l1Network.partnerChainIDs.includes(selectedL2ChainId)) {
+              return defaultL2NetworkChainId
+            }
+
+            return selectedL2ChainId
+          }
+
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const [l2NetworkChainId] = l1Network.partnerChainIDs
+          const l2NetworkChainId = getL2NetworkChainId()
           const l2Provider = new JsonRpcProvider(rpcURLs[l2NetworkChainId])
           const l2Network = await getL2Network(l2Provider)
 
@@ -191,7 +214,7 @@ export function NetworksAndSignersProvider(
             })
         })
     },
-    [latestResult]
+    [latestResult, selectedL2ChainId]
   )
 
   useEffect(() => {

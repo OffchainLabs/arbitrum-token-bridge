@@ -14,7 +14,8 @@ import {
   L1ToL2MessageStatus,
   L2ToL1Message,
   L2ToL1MessageReader,
-  L2TransactionReceipt
+  L2TransactionReceipt,
+  isNitroL2
 } from '@arbitrum/sdk'
 
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
@@ -1192,6 +1193,36 @@ export const useArbTokenBridge = (
     return await Promise.all(ethWithdrawals.map(toEventResultPlus))
   }
 
+  async function getEthWithdrawalsNitro() {
+    const ethWithdrawals = await L2ToL1MessageReader.getEventLogs(
+      l2.signer.provider,
+      {
+        fromBlock: 0,
+        toBlock: 'latest'
+      },
+      undefined,
+      walletAddress
+    )
+
+    async function toEventResultPlus(
+      event: L2ToL1EventResult
+    ): Promise<L2ToL1EventResultPlus> {
+      const { callvalue } = event
+      const outgoingMessageState = await getOutgoingMessageState(event)
+
+      return {
+        ...event,
+        type: AssetType.ETH,
+        value: callvalue,
+        symbol: 'ETH',
+        outgoingMessageState,
+        decimals: 18
+      }
+    }
+
+    return await Promise.all(ethWithdrawals.map(toEventResultPlus))
+  }
+
   const getTokenWithdrawalsV2 = async (
     gatewayAddresses: string[],
     filter?: providers.Filter
@@ -1328,6 +1359,67 @@ export const useArbTokenBridge = (
     )
   }
 
+  async function getTokenWithdrawalsNitro(gatewayAddresses: string[]) {
+    const gatewayWithdrawalsResultsNested = await Promise.all(
+      gatewayAddresses.map(gatewayAddress =>
+        erc20Bridger.getL2WithdrawalEvents(
+          l2.signer.provider,
+          gatewayAddress,
+          { fromBlock: 0, toBlock: 'latest' },
+          undefined,
+          walletAddress
+        )
+      )
+    )
+
+    const gatewayWithdrawalsResults = gatewayWithdrawalsResultsNested.flat()
+    const symbols = await Promise.all(
+      gatewayWithdrawalsResults.map(withdrawEventData =>
+        getTokenSymbol(withdrawEventData.l1Token)
+      )
+    )
+    const decimals = await Promise.all(
+      gatewayWithdrawalsResults.map(withdrawEventData =>
+        getTokenDecimals(withdrawEventData.l1Token)
+      )
+    )
+
+    const l2Txns = await Promise.all(
+      gatewayWithdrawalsResults.map(withdrawEventData =>
+        l2.signer.provider.getTransactionReceipt(withdrawEventData.txHash)
+      )
+    )
+
+    const outgoingMessageStates = await Promise.all(
+      l2Txns.map(txReceipt => {
+        const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+        // TODO: length != 1
+        const [event] = l2TxReceipt.getL2ToL1Events()
+        return getOutgoingMessageState(event)
+      })
+    )
+
+    return gatewayWithdrawalsResults.map(
+      (withdrawEventData: WithdrawalInitiated, i) => {
+        const l2TxReceipt = new L2TransactionReceipt(l2Txns[i])
+        // TODO: length != 1
+        const [event] = l2TxReceipt.getL2ToL1Events()
+
+        const eventDataPlus: L2ToL1EventResultPlus = {
+          ...event,
+          type: AssetType.ERC20,
+          value: withdrawEventData._amount,
+          tokenAddress: withdrawEventData.l1Token,
+          outgoingMessageState: outgoingMessageStates[i],
+          symbol: symbols[i],
+          decimals: decimals[i]
+        }
+
+        return eventDataPlus
+      }
+    )
+  }
+
   async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
     if (
       event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
@@ -1381,14 +1473,22 @@ export const useArbTokenBridge = (
   ) => {
     const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
+    const isNitroL2Network = await isNitroL2(l2.signer.provider)
 
     console.log('*** Getting initial pending withdrawal data ***')
 
     const l2ToL1Txns = (
-      await Promise.all([
-        getEthWithdrawalsV2(filter),
-        getTokenWithdrawalsV2(gatewayAddresses, filter)
-      ])
+      await Promise.all(
+        isNitroL2Network
+          ? [
+              getEthWithdrawalsNitro(),
+              getTokenWithdrawalsNitro(gatewayAddresses)
+            ]
+          : [
+              getEthWithdrawalsV2(filter),
+              getTokenWithdrawalsV2(gatewayAddresses, filter)
+            ]
+      )
     )
       .flat()
       .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)

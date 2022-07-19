@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@arbitrum/use-wallet'
@@ -7,7 +7,12 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
+import {
+  Route,
+  BrowserRouter as Router,
+  Switch,
+  useLocation
+} from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -316,19 +321,13 @@ function Routes() {
         </Route>
 
         <Route path="/" exact>
-          <NetworksAndSignersProvider
-            fallback={status => (
-              <Layout>
-                <ConnectionFallback status={status} />
-              </Layout>
-            )}
-          >
+          <NetworkReady>
             <AppContextProvider>
               <Layout>
                 <Injector>{isTosAccepted && <AppContent />}</Injector>
               </Layout>
             </AppContextProvider>
-          </NetworksAndSignersProvider>
+          </NetworkReady>
         </Route>
 
         <Route path="*">
@@ -348,6 +347,34 @@ function Routes() {
         </Route>
       </Switch>
     </Router>
+  )
+}
+
+function NetworkReady({ children }: { children: React.ReactNode }) {
+  const { search } = useLocation()
+
+  const selectedL2ChainId = useMemo(() => {
+    const searchParams = new URLSearchParams(search)
+    const selectedL2ChainIdSearchParam = searchParams.get('l2ChainId')
+
+    if (!selectedL2ChainIdSearchParam) {
+      return undefined
+    }
+
+    return parseInt(selectedL2ChainIdSearchParam) || undefined
+  }, [search])
+
+  return (
+    <NetworksAndSignersProvider
+      selectedL2ChainId={selectedL2ChainId}
+      fallback={status => (
+        <Layout>
+          <ConnectionFallback status={status} />
+        </Layout>
+      )}
+    >
+      {children}
+    </NetworksAndSignersProvider>
   )
 }
 
