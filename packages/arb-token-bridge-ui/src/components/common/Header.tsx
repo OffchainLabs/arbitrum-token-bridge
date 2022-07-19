@@ -25,11 +25,11 @@ const learnLinks = [
 
 const explorersLinks = [
   {
-    title: 'Mainnet (Arbiscan)',
+    title: 'Arbitrum One (Arbiscan)',
     link: 'https://arbiscan.io'
   },
   {
-    title: 'Mainnet (Arbitrum’s explorer)',
+    title: 'Arbitrum One (Arbitrum’s explorer)',
     link: 'https://explorer.arbitrum.io'
   },
   {
@@ -41,8 +41,12 @@ const explorersLinks = [
     link: 'https://rinkeby-explorer.arbitrum.io'
   },
   {
-    title: 'Nitro Devnet (BlockScout)',
-    link: 'https://nitro-devnet-explorer.arbitrum.io'
+    title: 'Arbitrum Nova (BlockScout)',
+    link: 'https://a4ba-explorer.arbitrum.io'
+  },
+  {
+    title: 'Goerli Rollup (BlockScout)',
+    link: 'https://goerli-rollup-explorer.arbitrum.io'
   }
 ]
 
