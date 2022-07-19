@@ -64,10 +64,10 @@ function NitroDevnetNotification() {
         href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
         className="arb-hover underline"
       >
-        What is Nitro Devnet?
+        What is Nitro Testnet?
       </ExternalLink>{' '}
       <button onClick={handleTwitterClick} className="arb-hover underline">
-        Request ETH from the Nitro Devnet Twitter faucet!
+        Request ETH from the Nitro Testnet Twitter faucet!
       </button>
     </Notification>
   )
