@@ -310,23 +310,41 @@ function Routes() {
       <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
       <Switch>
         <Route path="/tos" exact>
-          <TermsOfService />
+          <Layout>
+            <TermsOfService />
+          </Layout>
         </Route>
+
         <Route path="/" exact>
-          {isTosAccepted && <AppContent />}
+          <NetworksAndSignersProvider
+            fallback={status => (
+              <Layout>
+                <ConnectionFallback status={status} />
+              </Layout>
+            )}
+          >
+            <AppContextProvider>
+              <Layout>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </Layout>
+            </AppContextProvider>
+          </NetworksAndSignersProvider>
         </Route>
+
         <Route path="*">
-          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-            <span className="text-8xl text-white">404</span>
-            <p className="text-3xl text-white">
-              Page not found in this solar system
-            </p>
-            <img
-              src="/images/arbinaut-fixing-spaceship.png"
-              alt="Arbinaut fixing a spaceship"
-              className="lg:max-w-md"
-            />
-          </div>
+          <Layout>
+            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+              <span className="text-8xl text-white">404</span>
+              <p className="text-3xl text-white">
+                Page not found in this solar system
+              </p>
+              <img
+                src="/images/arbinaut-fixing-spaceship.png"
+                alt="Arbinaut fixing a spaceship"
+                className="lg:max-w-md"
+              />
+            </div>
+          </Layout>
         </Route>
       </Switch>
     </Router>
@@ -401,28 +419,12 @@ function ConnectionFallback({
   }
 }
 
-const App = (): JSX.Element => {
+export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
   return (
     <Provider value={overmind}>
-      <NetworksAndSignersProvider
-        fallback={status => (
-          <Layout>
-            <ConnectionFallback status={status} />
-          </Layout>
-        )}
-      >
-        <AppContextProvider>
-          <Layout>
-            <Injector>
-              <Routes />
-            </Injector>
-          </Layout>
-        </AppContextProvider>
-      </NetworksAndSignersProvider>
+      <Routes />
     </Provider>
   )
 }
-
-export default App

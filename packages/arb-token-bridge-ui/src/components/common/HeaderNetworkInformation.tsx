@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useRouteMatch } from 'react-router-dom'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 
@@ -14,6 +15,7 @@ export function HeaderNetworkInformation() {
     l2: { network: l2Network },
     isConnectedToArbitrum
   } = useNetworksAndSigners()
+  const isHomeRoute = useRouteMatch({ path: '/', exact: true })
 
   const network = useMemo(() => {
     if (status !== UseNetworksAndSignersStatus.CONNECTED) {
@@ -22,6 +24,11 @@ export function HeaderNetworkInformation() {
 
     return isConnectedToArbitrum ? l2Network : l1Network
   }, [status, l1Network, l2Network, isConnectedToArbitrum])
+
+  // TODO: The component shouldn't concern itself with which route it's on
+  if (isHomeRoute === null) {
+    return null
+  }
 
   switch (status) {
     case UseNetworksAndSignersStatus.LOADING:
