@@ -377,10 +377,10 @@ function ConnectionFallback({
   if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
     return (
       <Switch>
-      <Route path="/tos">
-        <TermsOfService />
-      </Route>
-      <NoMetamaskIndicator />
+        <Route path="/tos">
+          <TermsOfService />
+        </Route>
+        <NoMetamaskIndicator />
       </Switch>
     )
   }
