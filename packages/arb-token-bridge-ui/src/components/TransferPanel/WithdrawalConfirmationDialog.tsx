@@ -219,30 +219,31 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
               </div>
 
               <div className="flex flex-col space-y-6">
-                <div className="flex flex-row items-center space-x-3">
                   <Checkbox
+                  label={
+                    <span className="font-light">
+                      I understand that it will take {confirmationPeriod} before
+                      I can claim my funds on Ethereum {l1.network?.name}
+                    </span>
+                  }
                     checked={checkbox1Checked}
                     onChange={setCheckbox1Checked}
                   />
-                  <span className="font-light">
-                    I understand that it will take {confirmationPeriod} before I
-                    can claim my funds on Ethereum {l1.network?.name}
-                  </span>
-                </div>
 
-                <div className="flex flex-row items-center space-x-3">
                   <Checkbox
-                    checked={checkbox2Checked}
-                    onChange={setCheckbox2Checked}
-                  />
+                  label={
                   <span className="font-light">
-                    I understand that after claiming my funds, I’ll have to send{' '}
+                      I understand that after claiming my funds, I’ll have to
+                      send{' '}
                     <span className="font-medium">
                       another transaction on L1
                     </span>{' '}
                     and pay another L1 fee
                   </span>
-                </div>
+                  }
+                  checked={checkbox2Checked}
+                  onChange={setCheckbox2Checked}
+                />
               </div>
             </div>
 

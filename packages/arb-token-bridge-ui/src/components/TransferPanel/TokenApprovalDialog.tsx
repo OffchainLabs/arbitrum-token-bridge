@@ -95,16 +95,21 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             </ExternalLink>
           </div>
         </div>
-        <div className="flex flex-row items-center space-x-2">
-          <Checkbox checked={checked} onChange={setChecked} />
-          <span className="text-sm font-light">
-            I understand that I have to pay a one-time{' '}
-            <span className="font-medium">
-              approval fee of {approvalFeeText}*
-            </span>{' '}
-            for each new token I add to my wallet.
-          </span>
-        </div>
+
+        <Checkbox
+          label={
+            <span className="font-light">
+              I understand that I have to pay a one-time{' '}
+              <span className="font-medium">
+                approval fee of {approvalFeeText}*
+              </span>{' '}
+              for each new token I add to my wallet.
+            </span>
+          }
+          checked={checked}
+          onChange={setChecked}
+        />
+
         <div className="flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2">
           <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
           <span className="text-sm font-light text-cyan-dark">
