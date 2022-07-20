@@ -202,7 +202,10 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
                 <p className="font-light">
                   Get your funds in {confirmationPeriod} and pay a small fee
                   twice.{' '}
-                  <ExternalLink href="#" className="underline">
+                  <ExternalLink
+                    href="https://consensys.zendesk.com/hc/en-us/articles/7311862385947"
+                    className="underline"
+                  >
                     Learn more.
                   </ExternalLink>
                 </p>
