@@ -78,41 +78,54 @@ function FastBridgesTable() {
     <table className="w-full border border-gray-5">
       <thead className="bg-gray-1 text-left">
         <tr className="text-gray-9">
-          <th className="w-1/5 px-6 py-4 font-normal">Favorite</th>
-          <th className="w-1/5 px-6 py-4 font-normal">Exchange</th>
-          {/* <th className="w-2/5 px-6 py-4 font-normal">
-            Amount you’ll see on L1
-          </th> */}
-          <th className="w-1/5 px-6 py-4 font-normal"></th>
+          <th className="w-1/6 px-6 py-4 font-normal">Favorite</th>
+          <th className="w-4/6 px-6 py-4 font-normal">Exchange</th>
+          <th className="w-1/6 px-6 py-4 font-normal"></th>
         </tr>
       </thead>
       <tbody className="font-light">
         {sortedFastBridges.map(bridge => (
-          <tr key={bridge.name} className="border border-gray-5 hover:bg-cyan">
-            <td className="flex items-center px-6 py-5">
-              <button onClick={() => toggleFavorite(bridge.name)}>
-                {isFavorite(bridge.name) ? (
-                  <StarIconSolid className="h-6 w-6 text-blue-arbitrum" />
-                ) : (
-                  <StarIconOutline className="h-6 w-6 text-blue-arbitrum" />
-                )}
-              </button>
-            </td>
-            <td className="px-6 py-4">
-              <div className="flex flex-row items-center space-x-4">
-                <img
-                  src={bridge.imageSrc}
-                  alt={bridge.name}
-                  className="h-8 w-8 rounded-full object-contain"
-                />
-                <span>{bridge.name}</span>
-              </div>
-            </td>
-            {/* <td className="px-6 py-4">0.012 ETH</td> */}
-            <td className="px-6 py-4">
+          <tr
+            key={bridge.name}
+            className="cursor-pointer border border-gray-5 hover:bg-cyan"
+          >
+            <td>
               <ExternalLink
                 href={bridge.href}
-                className="arb-hover text-gray-6 hover:text-blue-arbitrum"
+                className="flex h-16 items-center px-6"
+              >
+                <button
+                  onClick={event => {
+                    event.preventDefault()
+                    toggleFavorite(bridge.name)
+                  }}
+                >
+                  {isFavorite(bridge.name) ? (
+                    <StarIconSolid className="h-6 w-6 text-blue-arbitrum" />
+                  ) : (
+                    <StarIconOutline className="h-6 w-6 text-blue-arbitrum" />
+                  )}
+                </button>
+              </ExternalLink>
+            </td>
+
+            <td>
+              <ExternalLink href={bridge.href}>
+                <div className="flex h-16 items-center space-x-4 px-6">
+                  <img
+                    src={bridge.imageSrc}
+                    alt={bridge.name}
+                    className="h-8 w-8 rounded-full object-contain"
+                  />
+                  <span>{bridge.name}</span>
+                </div>
+              </ExternalLink>
+            </td>
+
+            <td>
+              <ExternalLink
+                href={bridge.href}
+                className="arb-hover flex h-16 w-full items-center justify-center text-gray-6 hover:text-blue-arbitrum"
               >
                 <ExternalLinkIcon className="h-5 w-5" />
               </ExternalLink>
