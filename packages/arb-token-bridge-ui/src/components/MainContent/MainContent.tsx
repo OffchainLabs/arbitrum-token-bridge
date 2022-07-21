@@ -166,15 +166,16 @@ export function MainContent() {
             </motion.div>
           )}
 
-          {unseenTransactions.length > 0 && (
-            <motion.div key="explore-arbitrum" {...motionDivProps}>
-              <ExploreArbitrum />
-            </motion.div>
+          {didLoadPendingWithdrawals && unseenTransactions.length > 0 && (
+            <>
+              <motion.div key="explore-arbitrum" {...motionDivProps}>
+                <ExploreArbitrum />
+              </motion.div>
+
+              <div className="h-[25vh]" />
+            </>
           )}
         </AnimatePresence>
-
-        {/* Some additional spacing before footer */}
-        {unseenTransactions.length > 0 && <div className="h-[25vh]" />}
       </div>
     </div>
   )
