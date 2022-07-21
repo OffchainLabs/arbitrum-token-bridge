@@ -4,22 +4,54 @@ import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 
-import LowBalanceDialogContent from './LowBalanceDialogContent.json'
+import {
+  LowBalanceDialogContent,
+  CEXName,
+  FiatOnRampName
+} from './LowBalanceDialogContent'
 
-type ExternalLinkCardProps = {
+type ExternalLinkCardDynamicProps =
+  | {
+      type: 'cex'
+      title: CEXName
+    }
+  | {
+      type: 'fiat'
+      title: FiatOnRampName
+    }
+
+type ExternalLinkCardStaticProps = {
   href: string
-  title: string
   imageSrc: string
 }
 
-function ExternalLinkCard({ href, title, imageSrc }: ExternalLinkCardProps) {
+type ExternalLinkCardProps = ExternalLinkCardDynamicProps &
+  ExternalLinkCardStaticProps
+
+function ExternalLinkCard({
+  type,
+  title,
+  href,
+  imageSrc
+}: ExternalLinkCardProps) {
   return (
-    <ExternalLink href={href} className="arb-hover">
+    <ExternalLink
+      href={href}
+      className="arb-hover"
+      onClick={() => {
+        if (type === 'cex') {
+          trackEvent(`CEX Click: ${title}`)
+        } else {
+          trackEvent(`Fiat On-Ramp Click: ${title}`)
+        }
+      }}
+    >
       <div className="flex flex-col space-y-1 rounded-lg border border-gray-6 bg-white p-1">
         <div className="flex w-full justify-between">
           <div className="w-4" />
@@ -110,14 +142,14 @@ export function LowBalanceDialog(props: UseDialogProps) {
             <p className="py-3 font-medium">Centralized Exchanges</p>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
               {LowBalanceDialogContent.CentralizedExchanges.map(props => (
-                <ExternalLinkCard key={props.href} {...props} />
+                <ExternalLinkCard key={props.href} type="cex" {...props} />
               ))}
             </div>
 
             <p className="py-3 font-medium">Fiat on-ramps</p>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
               {LowBalanceDialogContent.FiatOnRamps.map(props => (
-                <ExternalLinkCard key={props.href} {...props} />
+                <ExternalLinkCard key={props.href} type="fiat" {...props} />
               ))}
             </div>
           </div>

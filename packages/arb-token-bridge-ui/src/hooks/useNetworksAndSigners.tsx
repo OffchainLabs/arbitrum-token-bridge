@@ -15,6 +15,7 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
 import { rpcURLs } from '../util/networks'
+import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
 export enum UseNetworksAndSignersStatus {
@@ -90,6 +91,24 @@ export type NetworksAndSignersProviderProps = {
   children: React.ReactNode
 }
 
+export type ProviderName = 'MetaMask' | 'Coinbase Wallet' | 'WalletConnect'
+
+function getProviderName(provider: any): ProviderName | null {
+  if (provider.isMetaMask) {
+    return 'MetaMask'
+  }
+
+  if (provider.isCoinbaseWallet) {
+    return 'Coinbase Wallet'
+  }
+
+  if (provider.isWalletConnect) {
+    return 'WalletConnect'
+  }
+
+  return null
+}
+
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
@@ -117,7 +136,12 @@ export function NetworksAndSignersProvider(
   useEffect(() => {
     async function tryConnect() {
       try {
-        await connect(modalProviderOpts)
+        const connection = await connect(modalProviderOpts)
+        const providerName = getProviderName(connection.provider.provider)
+
+        if (providerName) {
+          trackEvent(`Connect Wallet Click: ${providerName}`)
+        }
       } catch (error) {
         setResult({
           ...defaults,

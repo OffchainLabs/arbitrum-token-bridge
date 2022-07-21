@@ -16,6 +16,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 const FastBridges = [
   {
@@ -41,7 +42,10 @@ const FastBridges = [
       'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
     href: 'https://across.to'
   }
-]
+] as const
+
+const FastBridgeNames = FastBridges.map(bridge => bridge.name)
+export type FastBridgeName = typeof FastBridgeNames[number]
 
 function FastBridgesTable() {
   const [favorites, setFavorites] = useLocalStorage<string[]>(
@@ -61,7 +65,11 @@ function FastBridgesTable() {
     }
   }
 
-  const sortedFastBridges = FastBridges.sort((a, b) => {
+  function onClick(bridgeName: FastBridgeName) {
+    trackEvent(`Fast Bridge Click: ${bridgeName}`)
+  }
+
+  const sortedFastBridges = [...FastBridges].sort((a, b) => {
     const isFavoriteA = isFavorite(a.name)
     const isFavoriteB = isFavorite(b.name)
 
@@ -93,6 +101,7 @@ function FastBridgesTable() {
               <ExternalLink
                 href={bridge.href}
                 className="flex h-16 items-center px-6"
+                onClick={() => onClick(bridge.name)}
               >
                 <button
                   onClick={event => {
@@ -110,7 +119,10 @@ function FastBridgesTable() {
             </td>
 
             <td>
-              <ExternalLink href={bridge.href}>
+              <ExternalLink
+                href={bridge.href}
+                onClick={() => onClick(bridge.name)}
+              >
                 <div className="flex h-16 items-center space-x-4 px-6">
                   <img
                     src={bridge.imageSrc}
@@ -126,6 +138,7 @@ function FastBridgesTable() {
               <ExternalLink
                 href={bridge.href}
                 className="arb-hover flex h-16 w-full items-center justify-center text-gray-6 hover:text-blue-arbitrum"
+                onClick={() => onClick(bridge.name)}
               >
                 <ExternalLinkIcon className="h-5 w-5" />
               </ExternalLink>
@@ -267,7 +280,10 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
               <Button
                 variant="primary"
                 disabled={!bothCheckboxesChecked}
-                onClick={() => props.onClose(true)}
+                onClick={() => {
+                  props.onClose(true)
+                  trackEvent('Slow Bridge Click')
+                }}
               >
                 Continue
               </Button>

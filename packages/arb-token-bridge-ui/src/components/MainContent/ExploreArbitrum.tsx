@@ -7,8 +7,13 @@ import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
-import ExploreArbitrumContent from './ExploreArbitrumContent.json'
+import {
+  ExploreArbitrumContent,
+  ExploreArbitrumDeFiProjectName,
+  ExploreArbitrumNFTProjectName
+} from './ExploreArbitrumContent'
 
 preloadImages([
   ...ExploreArbitrumContent.defi.map(p => p.imageSrc),
@@ -36,22 +41,43 @@ function getRandomInt({
   return randomInt
 }
 
+type ProjectCardDynamicProps =
+  | {
+      type: 'defi'
+      name: ExploreArbitrumDeFiProjectName
+    }
+  | {
+      type: 'nft'
+      name: ExploreArbitrumNFTProjectName
+    }
+
+type ProjectCardStaticProps = {
+  description: string
+  href: string
+  imageSrc: string
+}
+
+type ProjectCardProps = ProjectCardDynamicProps & ProjectCardStaticProps
+
 function ProjectCard({
+  type,
   name,
   description,
   href,
   imageSrc
-}: {
-  name: string
-  description: string
-  href: string
-  imageSrc: string
-}) {
+}: ProjectCardProps) {
   return (
     <ExternalLink
       href={href}
       className="arb-hover animate__animated animate__flipInX flex h-72 flex-col justify-between rounded-xl bg-gray-4 bg-cover bg-center"
       style={{ backgroundImage: `url(${imageSrc}` }}
+      onClick={() => {
+        if (type === 'defi') {
+          trackEvent(`Explore: DeFi Project Click: ${name}`)
+        } else {
+          trackEvent(`Explore: NFT Project Click: ${name}`)
+        }
+      }}
     >
       <div className="flex flex-grow items-center justify-between">
         <span className="text-explore-arbitrum-project-name pl-8 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
@@ -126,8 +152,8 @@ export function ExploreArbitrum() {
     )
   }
 
-  const defiProject = ExploreArbitrumContent.defi[defiProjectIndex]
-  const nftProject = ExploreArbitrumContent.nfts[nftProjectIndex]
+  const defiProj = ExploreArbitrumContent.defi[defiProjectIndex]
+  const nftProj = ExploreArbitrumContent.nfts[nftProjectIndex]
 
   return (
     <div className="w-full bg-white lg:rounded-xl">
@@ -159,11 +185,11 @@ export function ExploreArbitrum() {
               <p className="text-xl font-light text-dark">
                 Invest your crypto in DeFi
               </p>
-              <ProjectCard key={defiProject.name} {...defiProject} />
+              <ProjectCard key={defiProj.name} type="defi" {...defiProj} />
             </div>
             <div className="flex flex-col space-y-4">
               <p className="text-xl font-light text-dark">Get some dope NFTs</p>
-              <ProjectCard key={nftProject.name} {...nftProject} />
+              <ProjectCard key={nftProj.name} type="nft" {...nftProj} />
             </div>
           </div>
 

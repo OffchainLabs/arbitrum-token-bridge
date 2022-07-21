@@ -4,6 +4,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { DepositCardPending } from './DepositCardPending'
 import { DepositCardL1Failure } from './DepositCardL1Failure'
@@ -104,12 +105,13 @@ export function DepositCardContainer({
         {!isTransferPanelVisible && (
           <button
             className="arb-hover font-light text-blue-arbitrum underline"
-            onClick={() =>
+            onClick={() => {
+              trackEvent('Move More Funds Click')
               dispatch({
                 type: 'layout.set_is_transfer_panel_visible',
                 payload: true
               })
-            }
+            }}
           >
             Move more funds
           </button>

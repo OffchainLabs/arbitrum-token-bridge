@@ -6,6 +6,7 @@ import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
@@ -115,12 +116,13 @@ export function WithdrawalCardContainer({
         {!isTransferPanelVisible && (
           <button
             className="arb-hover font-light text-blue-arbitrum underline"
-            onClick={() =>
+            onClick={() => {
+              trackEvent('Move More Funds Click')
               dispatch({
                 type: 'layout.set_is_transfer_panel_visible',
                 payload: true
               })
-            }
+            }}
           >
             Move more funds
           </button>
