@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
-import { constants } from 'ethers'
+export type WithdrawOnlyToken = {
+  symbol: string
+  l2CustomAddr: string
+  l1Address: string
+  l2Address: string
+}
 
-import { useAppState } from '../../state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-
-const withdrawOnlyTokens = [
+const withdrawOnlyTokens: WithdrawOnlyToken[] = [
   {
     symbol: 'MIM',
     l2CustomAddr: '0xFEa7a6a0B346362BF88A9e4A88416B77a57D6c2A',
@@ -89,76 +90,10 @@ const withdrawOnlyTokens = [
     l1Address: '0x93dede06ae3b5590af1d4c111bc54c3f717e4b35',
     l2Address: '0xEa4d9cE1fE1134528402A79f7B7Eacf87a930C8F'
   }
-].map(token => {
-  const { l1Address, l2Address } = token
-  return {
-    l1Address: l1Address.toLowerCase(),
-    l2Address: l2Address.toLowerCase()
-  }
-})
+]
 
-const withdrawOnlyTokensL1Address = withdrawOnlyTokens.map(t => t.l1Address)
-
-const useWithdrawOnly = () => {
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
-  const {
-    app: { selectedToken, arbTokenBridge }
-  } = useAppState()
-  const [doneAddingTokens, setDoneAddingTokens] = useState(false)
-
-  const addTokens = useCallback(async () => {
-    try {
-      for (let i = 0; i < withdrawOnlyTokens.length; i += 1) {
-        const { l1Address, l2Address } = withdrawOnlyTokens[i]
-
-        if (!l2Address) {
-          continue
-        }
-
-        const { balance } = await arbTokenBridge.token.getL2TokenData(l2Address)
-
-        // add it if user has an L2 balance
-        if (!balance.eq(constants.Zero)) {
-          await arbTokenBridge.token.add(l1Address)
-        }
-      }
-    } catch (err) {
-      console.warn(err)
-    }
-  }, [arbTokenBridge])
-
-  useEffect(() => {
-    if (typeof l1Network === 'undefined') {
-      return
-    }
-
-    const isMainnet = l1Network.chainID === 1
-
-    if (
-      !isMainnet ||
-      !arbTokenBridge ||
-      !arbTokenBridge.token ||
-      arbTokenBridge.walletAddress === '' ||
-      doneAddingTokens
-    ) {
-      return
-    }
-
-    // when ready/ on load, add tokens
-    addTokens()
-    setDoneAddingTokens(true)
-  }, [doneAddingTokens, arbTokenBridge, l1Network])
-
-  const shouldDisableDeposit = useMemo(() => {
-    if (!selectedToken) return false
-    return withdrawOnlyTokensL1Address.includes(
-      selectedToken.address.toLowerCase()
-    )
-  }, [selectedToken])
-
-  return { shouldDisableDeposit }
+export function isWithdrawOnlyToken(erc20L1Address: string) {
+  return withdrawOnlyTokens
+    .map(token => token.l1Address.toLowerCase())
+    .includes(erc20L1Address.toLowerCase())
 }
-
-export default useWithdrawOnly

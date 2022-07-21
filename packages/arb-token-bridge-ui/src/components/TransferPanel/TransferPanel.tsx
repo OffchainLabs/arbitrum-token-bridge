@@ -9,6 +9,7 @@ import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import { StatusBadge } from '../common/StatusBadge'
@@ -17,7 +18,6 @@ import TransactionConfirmationModal, {
 } from '../TransactionConfirmationModal/TransactionConfirmationModal'
 import { TokenImportModal } from '../TokenModal/TokenImportModal'
 import { NetworkBox } from './NetworkBox'
-import useWithdrawOnly from './useWithdrawOnly'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
@@ -109,7 +109,6 @@ const TransferPanel = (): JSX.Element => {
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
 
-  const { shouldDisableDeposit } = useWithdrawOnly()
   const { shouldRequireApprove } = useL2Approve()
 
   useEffect(() => {
@@ -339,8 +338,16 @@ const TransferPanel = (): JSX.Element => {
 
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
+
+    if (
+      isDepositMode &&
+      selectedToken &&
+      isWithdrawOnlyToken(selectedToken.address)
+    ) {
+      return true
+    }
+
     return (
-      shouldDisableDeposit ||
       transferring ||
       l1Amount.trim() === '' ||
       (isDepositMode &&
