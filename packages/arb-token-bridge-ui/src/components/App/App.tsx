@@ -375,7 +375,14 @@ function ConnectionFallback({
     | UseNetworksAndSignersStatus.NOT_CONNECTED
 }): JSX.Element {
   if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
-    return <NoMetamaskIndicator />
+    return (
+      <Switch>
+        <Route path="/tos">
+          <TermsOfService />
+        </Route>
+        <NoMetamaskIndicator />
+      </Switch>
+    )
   }
 
   return (
