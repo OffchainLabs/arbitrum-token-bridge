@@ -144,6 +144,8 @@ export function ExploreArbitrum() {
   }, [width, playImageNumber])
 
   function randomize() {
+    trackEvent('Explore: Randomize Click')
+
     setDefiProjectIndex(
       getRandomInt({ from: 0, to: defiMaxIndex, except: defiProjectIndex })
     )
