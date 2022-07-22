@@ -222,7 +222,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
 
             <FastBridgesTable />
           </Tab.Panel>
-          <Tab.Panel className="flex flex-col justify-between px-8 py-4 md:min-h-[422px]">
+          <Tab.Panel className="flex flex-col justify-between px-8 py-4 md:min-h-[430px]">
             <div className="flex flex-col space-y-6">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">

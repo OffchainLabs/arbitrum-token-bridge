@@ -210,8 +210,8 @@ input:checked + .slider:before {
   }
 
   /* md:min-h */
-  .md\:min-h-\[422px\] {
-    min-height: 422px;
+  .md\:min-h-\[430px\] {
+    min-height: 430px;
   }
 
   /* md:max-h */
