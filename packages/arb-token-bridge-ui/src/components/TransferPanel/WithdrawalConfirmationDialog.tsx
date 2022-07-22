@@ -23,24 +23,24 @@ const FastBridges = [
     name: 'Hop',
     imageSrc:
       'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
-    href: 'https://hop.exchange'
+    href: 'https://app.hop.exchange/#/send?sourceNetwork=arbitrum&destNetwork=ethereum'
   },
   {
     name: 'Celer',
     imageSrc:
       'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
-    href: 'https://cbridge.celer.network'
+    href: 'https://cbridge.celer.network/#/transfer?sourceChainId=42161&destinationChainId=1&tokenSymbol=ETH'
   },
   {
     name: 'Connext',
     imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
-    href: 'https://bridge.connext.network'
+    href: 'https://bridge.connext.network/from-arbitrum-to-ethereum'
   },
   {
     name: 'Across',
     imageSrc:
       'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
-    href: 'https://across.to'
+    href: 'https://across.to/?from=42161&to=1'
   }
 ] as const
 
