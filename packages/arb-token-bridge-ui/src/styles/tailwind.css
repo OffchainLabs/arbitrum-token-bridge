@@ -157,6 +157,11 @@ input:checked + .slider:before {
   background: rgba(0, 0, 0, 0.29);
 }
 
+/* text */
+.text-\[\#595959\] {
+  color: #595959;
+}
+
 /* border */
 .border-\[\#cd0000\] {
   border-color: #cd0000;

@@ -274,17 +274,17 @@ export function TransferPanelSummary({
       <div className="flex flex-col space-y-2">
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light text-gray-6">L1 gas</span>
+            <span className="pl-4 font-light text-[#595959]">L1 gas</span>
             <Tooltip content="L1 fees go to Ethereum miners.">
-              <InformationCircleIcon className="h-4 w-4 text-gray-10" />
+              <InformationCircleIcon className="h-4 w-4 text-[#595959]" />
             </Tooltip>
           </div>
           <div className="flex w-3/5 flex-row justify-between">
-            <span className="font-light text-gray-6">
+            <span className="font-light text-[#595959]">
               {formatNumber(estimatedL1GasFees, 4)} ETH
             </span>
             {isMainnet && (
-              <span className="font-light text-gray-6">
+              <span className="font-light text-[#595959]">
                 ({formatUSD(toUSD(estimatedL1GasFees))})
               </span>
             )}
@@ -292,17 +292,17 @@ export function TransferPanelSummary({
         </div>
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light text-gray-6">L2 gas</span>
+            <span className="pl-4 font-light text-[#595959]">L2 gas</span>
             <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
-              <InformationCircleIcon className="h-4 w-4 text-gray-10" />
+              <InformationCircleIcon className="h-4 w-4 text-[#595959]" />
             </Tooltip>
           </div>
           <div className="flex w-3/5 flex-row justify-between">
-            <span className="font-light text-gray-6">
+            <span className="font-light text-[#595959]">
               {formatNumber(estimatedL2GasFees, 4)} ETH
             </span>
             {isMainnet && (
-              <span className="font-light text-gray-6">
+              <span className="font-light text-[#595959]">
                 ({formatUSD(toUSD(estimatedL2GasFees))})
               </span>
             )}

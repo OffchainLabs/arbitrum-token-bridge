@@ -151,7 +151,7 @@ const NetworkBox = ({
     }
 
     if (errorMessage === NetworkBoxErrorMessage.AMOUNT_TOO_LOW) {
-      return 'Sending ~$0 just to pay gas fees seems like a questionable life choice'
+      return 'Sending ~$0 just to pay gas fees seems like a questionable life choice.'
     }
 
     return `Insufficient balance, please add more to ${isL1 ? 'L1' : 'L2'}.`
