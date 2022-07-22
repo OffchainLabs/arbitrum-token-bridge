@@ -1,12 +1,15 @@
-import React, { useMemo } from 'react'
+import React, { ImgHTMLAttributes } from 'react'
+import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
+import { twMerge } from 'tailwind-merge'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { HeaderMenuDesktop, HeaderMenuMobile } from './HeaderMenu'
-import { HeaderAccountPopover } from './HeaderAccountPopover'
-import { HeaderNetworkInformation } from './HeaderNetworkInformation'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
+import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
+
+const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
 
 const learnLinks = [
   {
@@ -45,7 +48,7 @@ const explorersLinks = [
     link: 'https://a4ba-explorer.arbitrum.io'
   },
   {
-    title: 'Goerli Rollup (BlockScout)',
+    title: 'Arbitrum Goerli Rollup (BlockScout)',
     link: 'https://goerli-rollup-explorer.arbitrum.io'
   }
 ]
@@ -100,35 +103,59 @@ function DesktopExternalLink({
   )
 }
 
-export function Header() {
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
+export type HeaderOverridesProps = {
+  imageSrc?: string
+  className?: string
+}
 
-  const isMainnet = useMemo(() => {
-    if (typeof l1Network === 'undefined') {
-      return true
+export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
+  const header = document.getElementById('header')
+
+  if (header) {
+    if (className) {
+      // Reset back to defaults and then add overrides on top of that
+      header.className = defaultHeaderClassName
+      header.classList.add(...className.split(' '))
     }
 
-    return l1Network.chainID === 1
-  }, [l1Network])
+    const image = document.getElementById('header-image') as HTMLImageElement
 
-  const headerBgClassName = useMemo(() => {
-    return isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
-  }, [isMainnet])
+    if (image && imageSrc) {
+      image.src = imageSrc
+    }
+  }
 
+  return null
+}
+
+function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <header
-      className={`z-50 flex h-[80px] justify-center ${headerBgClassName}`}
-    >
+    <img
+      id="header-image"
+      src={props.src}
+      alt={props.alt || 'Arbitrum logo'}
+      className={twMerge('-ml-2 w-56 lg:ml-0 lg:w-60', props.className || '')}
+    />
+  )
+}
+
+export function HeaderContent({ children }: { children: React.ReactNode }) {
+  const rootElement = document.getElementById('header-content-root')
+
+  if (!rootElement) {
+    return null
+  }
+
+  return ReactDOM.createPortal(children, rootElement)
+}
+
+export function Header() {
+  return (
+    <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-6 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <img
-              src={`/images/ArbitrumHorizontal${l1Network?.chainID || 1}.png`}
-              alt="Arbitrum"
-              className="-ml-2 w-56 lg:ml-0 lg:w-60"
-            />
+            <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-4 xl:space-x-8">
             <HeaderMenuDesktop
@@ -178,8 +205,7 @@ export function Header() {
           )}
         </Disclosure>
         <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-4">
-          <HeaderNetworkInformation />
-          <HeaderAccountPopover />
+          <div id="header-content-root" className="flex space-x-4"></div>
           <div className="flex flex-row space-x-4">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"
@@ -223,8 +249,7 @@ function HeaderMobile() {
         </Disclosure.Button>
       </div>
       <div className="flex min-h-screen flex-col items-center space-y-3 bg-blue-arbitrum pt-4">
-        <HeaderAccountPopover />
-        <HeaderNetworkInformation />
+        <div id="header-content-root"></div>
         <HeaderMenuMobile
           items={learnLinks.map(learn => ({
             title: learn.title,

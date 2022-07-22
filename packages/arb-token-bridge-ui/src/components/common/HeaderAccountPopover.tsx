@@ -8,7 +8,6 @@ import BoringAvatar from 'boring-avatars'
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { PendingWithdrawalsLoadedState } from '../../util'
-import { modalProviderOpts } from '../../util/modelProviderOpts'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
@@ -56,7 +55,7 @@ function isDeposit(tx: MergedTransaction) {
 }
 
 export function HeaderAccountPopover() {
-  const { connect, disconnect, account, web3Modal } = useWallet()
+  const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const [, copyToClipboard] = useCopyToClipboard()
   const {
@@ -124,22 +123,6 @@ export function HeaderAccountPopover() {
     disconnect()
     web3Modal?.clearCachedProvider()
     window.location.reload()
-  }
-
-  if (status === UseNetworksAndSignersStatus.LOADING) {
-    return null
-  }
-
-  if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
-    return (
-      <button
-        onClick={() => connect(modalProviderOpts)}
-        type="button"
-        className="arb-hover rounded-full py-3 text-2xl font-medium text-white lg:bg-lime-dark lg:px-6 lg:text-base lg:font-normal"
-      >
-        Connect Wallet
-      </button>
-    )
   }
 
   return (

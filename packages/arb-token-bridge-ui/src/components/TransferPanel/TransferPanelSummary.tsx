@@ -8,6 +8,8 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { isNetwork } from '../../util/networks'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -202,6 +204,9 @@ export function TransferPanelSummary({
 
   const { app } = useAppState()
   const { toUSD } = useETHPrice()
+  const { l1 } = useNetworksAndSigners()
+
+  const { isMainnet } = isNetwork(l1.network)
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode
@@ -242,7 +247,7 @@ export function TransferPanelSummary({
             {formatNumber(amount, 4)} {token?.symbol || 'ETH'}
           </span>
           {/* Only show USD price for ETH */}
-          {isETH && app.isMainnet && (
+          {isETH && isMainnet && (
             <span className="font-medium text-dark">
               {formatUSD(toUSD(amount))}
             </span>
@@ -258,7 +263,7 @@ export function TransferPanelSummary({
           <span className="text-dark">
             {formatNumber(estimatedTotalGasFees, 4)} ETH
           </span>
-          {app.isMainnet && (
+          {isMainnet && (
             <span className="font-medium text-dark">
               {formatUSD(toUSD(estimatedTotalGasFees))}
             </span>
@@ -278,7 +283,7 @@ export function TransferPanelSummary({
             <span className="font-light text-gray-6">
               {formatNumber(estimatedL1GasFees, 4)} ETH
             </span>
-            {app.isMainnet && (
+            {isMainnet && (
               <span className="font-light text-gray-6">
                 ({formatUSD(toUSD(estimatedL1GasFees))})
               </span>
@@ -296,7 +301,7 @@ export function TransferPanelSummary({
             <span className="font-light text-gray-6">
               {formatNumber(estimatedL2GasFees, 4)} ETH
             </span>
-            {app.isMainnet && (
+            {isMainnet && (
               <span className="font-light text-gray-6">
                 ({formatUSD(toUSD(estimatedL2GasFees))})
               </span>
@@ -318,7 +323,7 @@ export function TransferPanelSummary({
               <span className="text-dark">
                 {formatNumber(amount + estimatedTotalGasFees, 4)} ETH
               </span>
-              {app.isMainnet && (
+              {isMainnet && (
                 <span className="font-medium text-dark">
                   {formatUSD(toUSD(amount + estimatedTotalGasFees))}
                 </span>

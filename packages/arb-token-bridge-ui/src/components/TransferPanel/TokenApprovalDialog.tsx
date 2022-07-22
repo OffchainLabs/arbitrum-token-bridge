@@ -12,6 +12,7 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { isNetwork } from '../../util/networks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -20,12 +21,13 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { token } = props
   const {
-    app: { arbTokenBridge, isMainnet }
+    app: { arbTokenBridge }
   } = useAppState()
 
   const { toUSD } = useETHPrice()
   const { l1GasPrice } = useGasPrice()
   const { l1 } = useNetworksAndSigners()
+  const { isMainnet } = isNetwork(l1.network)
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(BigNumber.from(0))

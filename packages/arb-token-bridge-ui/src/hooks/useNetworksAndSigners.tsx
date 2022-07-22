@@ -20,53 +20,50 @@ import { modalProviderOpts } from '../util/modelProviderOpts'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
-  NOT_CONNECTED = 'network_not_connected',
-  NOT_SUPPORTED = 'network_not_supported',
-  CONNECTED = 'network_connected'
+  NOT_CONNECTED = 'not_connected',
+  NOT_SUPPORTED = 'not_supported',
+  CONNECTED = 'connected'
 }
 
-export type UseNetworksAndSignersDataUnknown = {
-  l1: { network: undefined; signer: undefined }
-  l2: { network: undefined; signer: undefined }
-  isConnectedToArbitrum: undefined
-}
-
-export type UseNetworksAndSignersData = {
-  l1: { network: L1Network; signer: JsonRpcSigner }
-  l2: { network: L2Network; signer: JsonRpcSigner }
-  isConnectedToArbitrum: boolean
-}
-
-const defaults: UseNetworksAndSignersDataUnknown = {
-  l1: { network: undefined, signer: undefined },
-  l2: { network: undefined, signer: undefined },
-  isConnectedToArbitrum: undefined
-}
+export type UseNetworksAndSignersLoadingOrErrorStatus =
+  | UseNetworksAndSignersStatus.LOADING
+  | UseNetworksAndSignersStatus.NOT_CONNECTED
+  | UseNetworksAndSignersStatus.NOT_SUPPORTED
 
 const defaultStatus =
   typeof window.web3 === 'undefined'
     ? UseNetworksAndSignersStatus.NOT_CONNECTED
     : UseNetworksAndSignersStatus.LOADING
 
-export type UseNetworksAndSignersResult =
-  | ({
-      status:
-        | UseNetworksAndSignersStatus.LOADING
-        | UseNetworksAndSignersStatus.NOT_CONNECTED
-        | UseNetworksAndSignersStatus.NOT_SUPPORTED
-    } & UseNetworksAndSignersDataUnknown)
-  | ({
-      status: UseNetworksAndSignersStatus.CONNECTED
-    } & UseNetworksAndSignersData)
+type UseNetworksAndSignersLoadingOrErrorResult = {
+  status: UseNetworksAndSignersLoadingOrErrorStatus
+}
 
-export const NetworksAndSignersContext =
-  createContext<UseNetworksAndSignersResult>({
-    ...defaults,
-    status: defaultStatus
-  })
+type UseNetworksAndSignersConnectedResult = {
+  status: UseNetworksAndSignersStatus.CONNECTED
+  l1: { network: L1Network; signer: JsonRpcSigner }
+  l2: { network: L2Network; signer: JsonRpcSigner }
+  isConnectedToArbitrum: boolean
+}
+
+export type UseNetworksAndSignersResult =
+  | UseNetworksAndSignersLoadingOrErrorResult
+  | UseNetworksAndSignersConnectedResult
+
+export const NetworksAndSignersContext = createContext<
+  UseNetworksAndSignersConnectedResult | undefined
+>(undefined)
 
 export function useNetworksAndSigners() {
-  return useContext(NetworksAndSignersContext)
+  const context = useContext(NetworksAndSignersContext)
+
+  if (typeof context === 'undefined') {
+    throw new Error(
+      'The useNetworksAndSigners Hook must only be used inside NetworksAndSignersContext.Provider.'
+    )
+  }
+
+  return context
 }
 
 export type NetworksAndSignersProviderProps = {
@@ -79,12 +76,7 @@ export type NetworksAndSignersProviderProps = {
    *
    * @see https://reactjs.org/docs/render-props.html
    */
-  fallback: (
-    status:
-      | UseNetworksAndSignersStatus.LOADING
-      | UseNetworksAndSignersStatus.NOT_CONNECTED
-      | UseNetworksAndSignersStatus.NOT_SUPPORTED
-  ) => JSX.Element
+  fallback: (status: UseNetworksAndSignersLoadingOrErrorStatus) => JSX.Element
   /**
    * Renders on successful connection.
    */
@@ -118,7 +110,6 @@ export function NetworksAndSignersProvider(
   const cachedProvider = web3Modal?.cachedProvider
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
-    ...defaults,
     status: defaultStatus
   })
   const latestResult = useLatest(result)
@@ -126,10 +117,7 @@ export function NetworksAndSignersProvider(
   // In case the user manually disconnects, reset to `NOT_CONNECTED` state
   useEffect(() => {
     if (cachedProvider === '') {
-      setResult({
-        ...defaults,
-        status: UseNetworksAndSignersStatus.NOT_CONNECTED
-      })
+      setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
     }
   }, [cachedProvider])
 
@@ -143,10 +131,7 @@ export function NetworksAndSignersProvider(
           trackEvent(`Connect Wallet Click: ${providerName}`)
         }
       } catch (error) {
-        setResult({
-          ...defaults,
-          status: UseNetworksAndSignersStatus.NOT_CONNECTED
-        })
+        setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
       }
     }
 
@@ -160,6 +145,10 @@ export function NetworksAndSignersProvider(
         const nextChainId = (await web3Provider.getNetwork()).chainId
         const current = latestResult.current
 
+        if (current.status !== UseNetworksAndSignersStatus.CONNECTED) {
+          return false
+        }
+
         if (current.isConnectedToArbitrum) {
           return nextChainId === current.l2.network.partnerChainID
         }
@@ -169,7 +158,7 @@ export function NetworksAndSignersProvider(
 
       // Don't switch to loading state when switching to partner network
       if (!(await isSwitchingToPartnerNetwork())) {
-        setResult({ ...defaults, status: UseNetworksAndSignersStatus.LOADING })
+        setResult({ status: UseNetworksAndSignersStatus.LOADING })
       }
 
       getL1Network(web3Provider)
@@ -231,10 +220,7 @@ export function NetworksAndSignersProvider(
               })
             })
             .catch(() => {
-              setResult({
-                status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-                ...defaults
-              })
+              setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
             })
         })
     },
@@ -248,11 +234,13 @@ export function NetworksAndSignersProvider(
     // The `network` object has to be in the list of dependencies for switching between L1-L2 pairs.
   }, [provider, account, network, update])
 
+  if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
+    return props.fallback(result.status)
+  }
+
   return (
     <NetworksAndSignersContext.Provider value={result}>
-      {result.status === UseNetworksAndSignersStatus.CONNECTED
-        ? props.children
-        : props.fallback(result.status)}
+      {props.children}
     </NetworksAndSignersContext.Provider>
   )
 }

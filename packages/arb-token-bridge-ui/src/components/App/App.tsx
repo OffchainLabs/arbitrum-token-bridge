@@ -20,6 +20,10 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
+import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
+import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.png'
+import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.png'
+
 import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
@@ -40,8 +44,20 @@ import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
+  UseNetworksAndSignersLoadingOrErrorStatus,
   NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
+import {
+  HeaderContent,
+  HeaderOverrides,
+  HeaderOverridesProps
+} from '../common/Header'
+import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
+import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
+import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
+import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
+import { Notifications } from '../common/Notifications'
+import { isNetwork } from '../../util/networks'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -55,9 +71,25 @@ async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
 }
 
 const AppContent = (): JSX.Element => {
+  const { l1 } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
+
+  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
+    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
+    const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
+
+    if (isRinkeby) {
+      return { imageSrc: HeaderArbitrumLogoRinkeby, className }
+    }
+
+    if (isGoerli) {
+      return { imageSrc: HeaderArbitrumLogoGoerli, className }
+    }
+
+    return { imageSrc: HeaderArbitrumLogoMainnet, className }
+  }, [l1.network])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
@@ -95,11 +127,20 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
+      <HeaderOverrides {...headerOverridesProps} />
+
+      <HeaderContent>
+        <HeaderNetworkInformation />
+        <HeaderAccountPopover />
+      </HeaderContent>
+
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
       <PWLoadedUpdater />
+
+      <Notifications />
       <MainContent />
     </>
   )
@@ -315,35 +356,29 @@ function Routes() {
       <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
       <Switch>
         <Route path="/tos" exact>
-          <Layout>
-            <TermsOfService />
-          </Layout>
+          <TermsOfService />
         </Route>
 
         <Route path="/" exact>
           <NetworkReady>
             <AppContextProvider>
-              <Layout>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </Layout>
+              <Injector>{isTosAccepted && <AppContent />}</Injector>
             </AppContextProvider>
           </NetworkReady>
         </Route>
 
         <Route path="*">
-          <Layout>
-            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-              <span className="text-8xl text-white">404</span>
-              <p className="text-3xl text-white">
-                Page not found in this solar system
-              </p>
-              <img
-                src="/images/arbinaut-fixing-spaceship.png"
-                alt="Arbinaut fixing a spaceship"
-                className="lg:max-w-md"
-              />
-            </div>
-          </Layout>
+          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+            <span className="text-8xl text-white">404</span>
+            <p className="text-3xl text-white">
+              Page not found in this solar system
+            </p>
+            <img
+              src="/images/arbinaut-fixing-spaceship.png"
+              alt="Arbinaut fixing a spaceship"
+              className="lg:max-w-md"
+            />
+          </div>
         </Route>
       </Switch>
     </Router>
@@ -367,11 +402,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   return (
     <NetworksAndSignersProvider
       selectedL2ChainId={selectedL2ChainId}
-      fallback={status => (
-        <Layout>
-          <ConnectionFallback status={status} />
-        </Layout>
-      )}
+      fallback={status => <ConnectionFallback status={status} />}
     >
       {children}
     </NetworksAndSignersProvider>
@@ -400,10 +431,7 @@ function ConnectionFallbackContainer({
 function ConnectionFallback({
   status
 }: {
-  status:
-    | UseNetworksAndSignersStatus.LOADING
-    | UseNetworksAndSignersStatus.NOT_SUPPORTED
-    | UseNetworksAndSignersStatus.NOT_CONNECTED
+  status: UseNetworksAndSignersLoadingOrErrorStatus
 }): JSX.Element {
   const { connect } = useWallet()
 
@@ -414,18 +442,30 @@ function ConnectionFallback({
   switch (status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
-        <ConnectionFallbackContainer>
-          <Loader type="TailSpin" color="white" height={44} width={44} />
-        </ConnectionFallbackContainer>
+        <>
+          <HeaderContent>
+            <HeaderNetworkLoadingIndicator />
+          </HeaderContent>
+
+          <ConnectionFallbackContainer>
+            <Loader type="TailSpin" color="white" height={44} width={44} />
+          </ConnectionFallbackContainer>
+        </>
       )
 
     case UseNetworksAndSignersStatus.NOT_CONNECTED:
       return (
-        <ConnectionFallbackContainer>
-          <Button variant="primary" onClick={showConnectionModal}>
-            Connect Wallet
-          </Button>
-        </ConnectionFallbackContainer>
+        <>
+          <HeaderContent>
+            <HeaderConnectWalletButton />
+          </HeaderContent>
+
+          <ConnectionFallbackContainer>
+            <Button variant="primary" onClick={showConnectionModal}>
+              Connect Wallet
+            </Button>
+          </ConnectionFallbackContainer>
+        </>
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
@@ -451,7 +491,9 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <Routes />
+      <Layout>
+        <Routes />
+      </Layout>
     </Provider>
   )
 }

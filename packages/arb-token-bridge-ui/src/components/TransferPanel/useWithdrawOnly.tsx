@@ -3,6 +3,7 @@ import { constants } from 'ethers'
 
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { isNetwork } from '../../util/networks'
 
 const withdrawOnlyTokens = [
   {
@@ -108,6 +109,8 @@ const useWithdrawOnly = () => {
   } = useAppState()
   const [doneAddingTokens, setDoneAddingTokens] = useState(false)
 
+  const { isMainnet } = isNetwork(l1Network)
+
   const addTokens = useCallback(async () => {
     try {
       for (let i = 0; i < withdrawOnlyTokens.length; i += 1) {
@@ -134,8 +137,6 @@ const useWithdrawOnly = () => {
       return
     }
 
-    const isMainnet = l1Network.chainID === 1
-
     if (
       !isMainnet ||
       !arbTokenBridge ||
@@ -149,7 +150,7 @@ const useWithdrawOnly = () => {
     // when ready/ on load, add tokens
     addTokens()
     setDoneAddingTokens(true)
-  }, [doneAddingTokens, arbTokenBridge, l1Network])
+  }, [isMainnet, doneAddingTokens, arbTokenBridge, l1Network])
 
   const shouldDisableDeposit = useMemo(() => {
     if (!selectedToken) return false

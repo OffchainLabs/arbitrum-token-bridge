@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom'
 import App from './components/App/App'
 import reportWebVitals from './reportWebVitals'
 import {
-  registerAnyTrust,
-  registerNewNitroDevnet,
+  registerArbitrumNova,
+  registerArbitrumGoerliRollup,
   registerLocalNetwork
 } from './util/networks'
 
@@ -13,8 +13,8 @@ import 'tippy.js/themes/light.css'
 
 import './styles/tailwind.css'
 
-registerAnyTrust()
-registerNewNitroDevnet()
+registerArbitrumNova()
+registerArbitrumGoerliRollup()
 
 if (process.env.NODE_ENV === 'development') {
   registerLocalNetwork()

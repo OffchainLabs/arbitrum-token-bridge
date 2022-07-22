@@ -7,6 +7,7 @@ import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
+import { isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
 import {
@@ -104,6 +105,8 @@ export function TransferPanel() {
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
+  const { isMainnet } = isNetwork(l1Network)
+
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
 
@@ -185,7 +188,6 @@ export function TransferPanel() {
       const ethBalance = arbTokenBridge.balances.eth.balance
 
       if (ethBalance) {
-        const isMainnet = l1Network?.chainID === 1
         const isLowBalance = ethBalance.lte(utils.parseEther('0.05'))
 
         if (isMainnet && isDepositMode && isLowBalance) {
@@ -194,7 +196,7 @@ export function TransferPanel() {
       }
     }
   }, [
-    l1Network,
+    isMainnet,
     isDepositMode,
     arbTokenBridge.balances,
     tokenFromSearchParams,

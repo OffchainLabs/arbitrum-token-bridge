@@ -4,6 +4,7 @@ import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -71,9 +72,11 @@ function ExternalLinkCard({
 }
 
 export function LowBalanceDialog(props: UseDialogProps) {
-  const { l1 } = useNetworksAndSigners()
   const { app } = useAppState()
   const { toUSD } = useETHPrice()
+  const { l1 } = useNetworksAndSigners()
+
+  const { isMainnet } = isNetwork(l1.network)
 
   const balance = useMemo(() => {
     if (
@@ -107,7 +110,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
           </div>
           <span className="text-center text-3xl font-light text-purple-ethereum">
             {formatNumber(balanceNumber)} ETH{' '}
-            {app.isMainnet && (
+            {isMainnet && (
               <span className="font-medium">
                 ({formatUSD(toUSD(balanceNumber))})
               </span>
