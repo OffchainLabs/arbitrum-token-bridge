@@ -16,7 +16,7 @@ import {
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
 import { NetworkBox, NetworkBoxErrorMessage } from './NetworkBox'
-import useWithdrawOnly from './useWithdrawOnly'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
@@ -115,7 +115,6 @@ export function TransferPanel() {
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
 
-  const { shouldDisableDeposit } = useWithdrawOnly()
   const { shouldRequireApprove } = useL2Approve()
 
   const [
@@ -550,8 +549,16 @@ export function TransferPanel() {
 
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
+
+    if (
+      isDepositMode &&
+      selectedToken &&
+      isWithdrawOnlyToken(selectedToken.address)
+    ) {
+      return true
+    }
+
     return (
-      shouldDisableDeposit ||
       transferring ||
       l1Amount.trim() === '' ||
       (isDepositMode &&
