@@ -12,7 +12,7 @@ import { ProviderName } from '../hooks/useNetworksAndSigners'
 declare global {
   interface Window {
     fathom?: {
-      trackEvent: (event: string) => void
+      trackGoal: (eventId: string) => void
     }
   }
 }
@@ -111,5 +111,5 @@ export function trackEvent(event: FathomEvent) {
     return
   }
 
-  window.fathom.trackEvent(eventToEventId[event])
+  window.fathom.trackGoal(eventToEventId[event])
 }
