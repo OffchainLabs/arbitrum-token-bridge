@@ -61,7 +61,10 @@ function NitroDevnetNotification() {
       >
         What is Nitro Testnet?
       </ExternalLink>{' '}
-      <button onClick={handleTwitterClick} className="arb-hover underline">
+      <button
+        onClick={handleTwitterClick}
+        className="arb-hover text-left underline"
+      >
         Request ETH from the Nitro Testnet Twitter faucet!
       </button>
     </Notification>
