@@ -415,7 +415,7 @@ function ConnectionFallbackContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
+    <div className="mt-6 flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
       {children}
       <ExternalLink href="https://metamask.io/download">
         <img
