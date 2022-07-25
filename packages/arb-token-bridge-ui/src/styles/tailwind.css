@@ -176,6 +176,14 @@ input:checked + .slider:before {
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
 }
 
+/* sm: */
+@media (min-width: 640px) {
+  /* sm:w */
+  .sm\:w-\[420px\] {
+    width: 420px;
+  }
+}
+
 /* md: */
 @media (min-width: 768px) {
   /* md:min-w */
@@ -238,10 +246,6 @@ input:checked + .slider:before {
   }
 
   /* lg:w */
-  .lg\:w-\[420px\] {
-    width: 420px;
-  }
-
   .lg\:w-\[466px\] {
     width: 466px;
   }

@@ -419,7 +419,7 @@ function ConnectionFallbackContainer({
       {children}
       <ExternalLink href="https://metamask.io/download">
         <img
-          className="lg:w-[420px]"
+          className="sm:w-[420px]"
           src="/images/arbinaut-playing-cards.png"
           alt="Illustration of an Alien and an Arbinaut playing cards"
         />
