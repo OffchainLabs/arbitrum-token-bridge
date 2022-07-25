@@ -94,7 +94,7 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const { provider } = useWallet()
+  const { provider, account } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
   const networksAndSigners = useNetworksAndSigners()
@@ -173,6 +173,19 @@ export function TransferPanel() {
   }
 
   useEffect(() => {
+    // Check in case of an account switch or network switch
+    if (
+      typeof account === 'undefined' ||
+      typeof arbTokenBridge.walletAddress === 'undefined'
+    ) {
+      return
+    }
+
+    // Wait for the bridge object to be in sync
+    if (account.toLowerCase() !== arbTokenBridge.walletAddress.toLowerCase()) {
+      return
+    }
+
     // This effect runs every time the balance updates, but we want to show the dialog only once
     if (didOpenLowBalanceDialog) {
       return
@@ -195,9 +208,10 @@ export function TransferPanel() {
       }
     }
   }, [
+    account,
     isMainnet,
     isDepositMode,
-    arbTokenBridge.balances,
+    arbTokenBridge,
     tokenFromSearchParams,
     didOpenLowBalanceDialog,
     openLowBalanceDialog
