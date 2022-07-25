@@ -6,6 +6,8 @@
     "@ethersproject/providers": "^5.4.4",
     "@headlessui/react": "^1.4.0",
     "@heroicons/react": "^1.0.3",
+    "@sentry/react": "^7.7.0",
+    "@sentry/tracing": "^7.7.0",
     "@tailwindcss/forms": "^0.3.3",
     "@tippyjs/react": "^4.2.6",
     "@walletconnect/web3-provider": "^1.6.5",
