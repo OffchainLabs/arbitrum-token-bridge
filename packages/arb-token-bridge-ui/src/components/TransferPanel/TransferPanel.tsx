@@ -658,7 +658,7 @@ export function TransferPanel() {
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
-      <div className="mx-auto flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
+      <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
           <NetworkBox
             isL1
@@ -668,10 +668,8 @@ export function TransferPanel() {
             errorMessage={getNetworkBoxErrorMessage(l1Amount, l1Balance)}
           />
           <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
-            <div className="relative flex w-full items-center justify-end">
-              <div className="absolute left-0 right-0 mx-auto flex items-center justify-center">
-                <NetworkSwitchButton />
-              </div>
+            <div className="flex w-full items-center justify-center">
+              <NetworkSwitchButton />
             </div>
           </div>
           <NetworkBox
