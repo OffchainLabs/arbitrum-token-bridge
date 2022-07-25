@@ -184,11 +184,11 @@ export function Header() {
   return (
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
-        <div className="flex items-center lg:space-x-6 xl:space-x-12">
+        <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
             <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
           </a>
-          <div className="hidden items-center lg:flex lg:space-x-4 xl:space-x-8">
+          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
             <HeaderMenuDesktop
               items={learnLinks.map(learn => ({
                 title: learn.title,
@@ -214,6 +214,30 @@ export function Header() {
             >
               Ecosystem
             </HeaderMenuDesktop>
+            <HeaderMenuDesktop
+              items={[
+                {
+                  title: 'What’s up with my retryable?',
+                  anchorProps: {
+                    href: 'https://retryable-tx-panel.arbitrum.io'
+                  }
+                },
+                {
+                  title: 'How popular is Arbitrum?',
+                  anchorProps: {
+                    href: 'https://dune.com/Henrystats/arbitrum-metrics'
+                  }
+                },
+                {
+                  title: 'Which L2 do people trust most?',
+                  anchorProps: {
+                    href: 'https://l2beat.com'
+                  }
+                }
+              ]}
+            >
+              Charts & Stats
+            </HeaderMenuDesktop>
             <DesktopExternalLink href="https://arbitrum.zendesk.com/hc/en-us/requests/new">
               Get Help
             </DesktopExternalLink>
@@ -235,9 +259,12 @@ export function Header() {
             </div>
           )}
         </Disclosure>
-        <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-4">
-          <div id="header-content-root" className="flex space-x-4"></div>
-          <div className="flex flex-row space-x-4">
+        <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-2 xl:space-x-4">
+          <div
+            id="header-content-root"
+            className="flex space-x-2 xl:space-x-4"
+          ></div>
+          <div className="flex flex-row space-x-2 xl:space-x-4">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"
               className="arb-hover h-8 w-8"
@@ -309,6 +336,30 @@ function HeaderMobile() {
           }))}
         >
           Explorers
+        </HeaderMenuMobile>
+        <HeaderMenuMobile
+          items={[
+            {
+              title: 'What’s up with my retryable?',
+              anchorProps: {
+                href: 'https://retryable-tx-panel.arbitrum.io'
+              }
+            },
+            {
+              title: 'How popular is Arbitrum?',
+              anchorProps: {
+                href: 'https://dune.com/Henrystats/arbitrum-metrics'
+              }
+            },
+            {
+              title: 'Which L2 do people trust most?',
+              anchorProps: {
+                href: 'https://l2beat.com'
+              }
+            }
+          ]}
+        >
+          Charts & Stats
         </HeaderMenuMobile>
         <MobileExternalLink href="https://arbitrum.zendesk.com/hc/en-us/requests/new">
           Get Help
