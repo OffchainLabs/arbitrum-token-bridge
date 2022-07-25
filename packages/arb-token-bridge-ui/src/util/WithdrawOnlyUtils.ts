@@ -89,6 +89,12 @@ const withdrawOnlyTokens: WithdrawOnlyToken[] = [
     l2CustomAddr: '0x870d36B8AD33919Cc57FFE17Bb5D3b84F3aDee4f',
     l1Address: '0x93dede06ae3b5590af1d4c111bc54c3f717e4b35',
     l2Address: '0xEa4d9cE1fE1134528402A79f7B7Eacf87a930C8F'
+  },
+  {
+    symbol: 'USX',
+    l2CustomAddr: '0x641441c631e2f909700d2f41fd87f0aa6a6b4edb',
+    l1Address: '0x0a5e677a6a24b2f1a2bf4f3bffc443231d2fdec8',
+    l2Address: '0xcd14C3A2ba27819B352aae73414A26e2b366dC50'
   }
 ]
 
