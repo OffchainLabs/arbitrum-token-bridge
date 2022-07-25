@@ -130,8 +130,8 @@ export function LowBalanceDialog(props: UseDialogProps) {
             <span className="text-xl text-blue-arbitrum">Skip the bridge</span>
             <div className="h-2" />
             <p className="pb-1 font-light text-dark">
-              Given your wallet balance, bridging gas fees (~$20-$40) might not
-              be worth it. You can skip bridging and move funds directly to
+              Given your wallet balance, bridging gas fees (~$2-5) might not be
+              worth it. You can skip bridging and move funds directly to
               Arbitrum from a Centralized Exchange or fiat on-ramp.
             </p>
 

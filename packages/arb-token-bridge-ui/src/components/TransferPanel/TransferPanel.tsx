@@ -200,7 +200,7 @@ export function TransferPanel() {
       const ethBalance = arbTokenBridge.balances.eth.balance
 
       if (ethBalance) {
-        const isLowBalance = ethBalance.lte(utils.parseEther('0.05'))
+        const isLowBalance = ethBalance.lte(utils.parseEther('0.005'))
 
         if (isMainnet && isDepositMode && isLowBalance) {
           openLowBalanceDialog()
