@@ -7,7 +7,7 @@ import { Footer } from './Footer'
 
 function Moon() {
   const { width } = useWindowSize()
-  const moonScaleRange = width >= 1024 ? [0.75, 1.25] : [0.75, 1.75]
+  const moonScaleRange = width >= 1024 ? [0.75, 1] : [0.75, 1.25]
 
   const { scrollYProgress } = useViewportScroll()
   const scale = useTransform(scrollYProgress, [0, 1], moonScaleRange)
