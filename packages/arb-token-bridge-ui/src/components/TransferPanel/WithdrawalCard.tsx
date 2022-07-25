@@ -87,13 +87,17 @@ export function WithdrawalL1TxStatus({
   )
 }
 
+export type WithdrawalCardContainerProps = {
+  tx: MergedTransaction
+  dismissable?: boolean
+  children: React.ReactNode
+}
+
 export function WithdrawalCardContainer({
   tx,
+  dismissable = false,
   children
-}: {
-  tx: MergedTransaction
-  children: React.ReactNode
-}) {
+}: WithdrawalCardContainerProps) {
   const dispatch = useAppContextDispatch()
   const {
     layout: { isTransferPanelVisible }
@@ -109,25 +113,37 @@ export function WithdrawalCardContainer({
     }
   }, [tx])
 
+  function dismiss() {
+    dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
+  }
+
   return (
     <div className={`w-full p-6 lg:rounded-xl ${bgClassName}`}>
+      {dismissable && (
+        <button
+          className="arb-hover absolute top-4 right-4 text-lime-dark underline"
+          onClick={dismiss}
+        >
+          Dismiss
+        </button>
+      )}
+
       <div className="flex flex-col space-y-3">{children}</div>
-      <div className="flex justify-end">
-        {!isTransferPanelVisible && (
-          <button
-            className="arb-hover font-light text-blue-arbitrum underline"
-            onClick={() => {
-              trackEvent('Move More Funds Click')
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: true
-              })
-            }}
-          >
-            Move more funds
-          </button>
-        )}
-      </div>
+
+      {!isTransferPanelVisible && !dismissable && (
+        <button
+          className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
+          onClick={() => {
+            trackEvent('Move More Funds Click')
+            dispatch({
+              type: 'layout.set_is_transfer_panel_visible',
+              payload: true
+            })
+          }}
+        >
+          Move more funds
+        </button>
+      )}
     </div>
   )
 }

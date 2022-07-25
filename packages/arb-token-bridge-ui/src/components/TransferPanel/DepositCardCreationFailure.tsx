@@ -5,29 +5,18 @@ import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DepositCardContainer } from './DepositCard'
-import { useAppContextDispatch } from '../App/AppContext'
 import { shortenTxHash } from '../../util/CommonUtils'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
   const [, copyToClipboard] = useCopyToClipboard()
-  const dispatch = useAppContextDispatch()
-
-  function hide() {
-    dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-  }
 
   return (
-    <DepositCardContainer tx={tx}>
-      <div className="flex flex-row items-start justify-between">
-        <span className="text-4xl font-semibold text-brick-dark">
-          Something went wrong
-        </span>
-        <button className="arb-hover text-brick-dark underline" onClick={hide}>
-          Hide
-        </button>
-      </div>
+    <DepositCardContainer tx={tx} dismissable>
+      <span className="text-4xl font-semibold text-brick-dark">
+        Something went wrong
+      </span>
 
       <p className="text-2xl font-light text-brick-dark">
         No worries, we got you.
@@ -59,6 +48,7 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         <ClipboardCopyIcon className="h-6 w-6 text-brick-dark" />
       </button>
 
+      <div className="h-2" />
       <ExternalLink
         href="https://support.arbitrum.io/hc/en-us/requests/new"
         className="arb-hover w-max rounded-lg bg-dark px-4 py-3 text-2xl text-white"

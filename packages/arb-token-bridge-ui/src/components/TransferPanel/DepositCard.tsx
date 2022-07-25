@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
@@ -70,17 +71,22 @@ export function DepositL2TxStatus({
   }
 }
 
+export type DepositCardContainerProps = {
+  tx: MergedTransaction
+  dismissable?: boolean
+  children: React.ReactNode
+}
+
 export function DepositCardContainer({
   tx,
+  dismissable = false,
   children
-}: {
-  tx: MergedTransaction
-  children: React.ReactNode
-}) {
+}: DepositCardContainerProps) {
   const dispatch = useAppContextDispatch()
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
+
   const bgClassName = useMemo(() => {
     switch (tx.depositStatus) {
       case DepositStatus.L1_FAILURE:
@@ -98,25 +104,54 @@ export function DepositCardContainer({
     }
   }, [tx])
 
+  const dismissButtonClassName = useMemo(() => {
+    switch (tx.depositStatus) {
+      case DepositStatus.L1_FAILURE:
+      case DepositStatus.CREATION_FAILED:
+        return 'text-brick-dark'
+
+      case DepositStatus.L2_SUCCESS:
+        return 'text-lime-dark'
+
+      default:
+        return ''
+    }
+  }, [tx])
+
+  function dismiss() {
+    dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
+  }
+
   return (
     <div className={`w-full p-6 lg:rounded-xl ${bgClassName}`}>
+      {dismissable && (
+        <button
+          className={twMerge(
+            'arb-hover absolute top-4 right-4 underline',
+            dismissButtonClassName
+          )}
+          onClick={dismiss}
+        >
+          Dismiss
+        </button>
+      )}
+
       <div className="flex flex-col space-y-3">{children}</div>
-      <div className="flex justify-end">
-        {!isTransferPanelVisible && (
-          <button
-            className="arb-hover font-light text-blue-arbitrum underline"
-            onClick={() => {
-              trackEvent('Move More Funds Click')
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: true
-              })
-            }}
-          >
-            Move more funds
-          </button>
-        )}
-      </div>
+
+      {!isTransferPanelVisible && !dismissable && (
+        <button
+          className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
+          onClick={() => {
+            trackEvent('Move More Funds Click')
+            dispatch({
+              type: 'layout.set_is_transfer_panel_visible',
+              payload: true
+            })
+          }}
+        >
+          Move more funds
+        </button>
+      )}
     </div>
   )
 }

@@ -43,8 +43,8 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   useEffect(() => {
     const timeout = setTimeout(() => {
       dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-      // Disappears after 10 seconds
-    }, 10 * 1000)
+      // Disappears after 60 seconds
+    }, 60 * 1000)
 
     return () => {
       clearTimeout(timeout)
@@ -53,7 +53,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   }, [tx.txId])
 
   return (
-    <DepositCardContainer tx={tx}>
+    <DepositCardContainer tx={tx} dismissable>
       <span className="text-4xl font-semibold text-blue-arbitrum">
         Success!
       </span>
