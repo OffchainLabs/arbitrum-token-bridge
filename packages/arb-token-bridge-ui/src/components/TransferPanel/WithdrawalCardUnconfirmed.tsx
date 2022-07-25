@@ -20,6 +20,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
         )}
       </span>
 
+      <div className="h-2" />
       <div className="flex flex-col font-light">
         <span className="text-lg text-blue-arbitrum">
           L2 transaction: <WithdrawalL2TxStatus tx={tx} />

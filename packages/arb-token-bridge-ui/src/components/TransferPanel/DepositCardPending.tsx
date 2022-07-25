@@ -28,6 +28,8 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
           depositStatus={tx.depositStatus}
         />
       </span>
+
+      <div className="h-2" />
       <div className="flex flex-col font-light">
         <span className="text-lg text-blue-arbitrum">
           L1 transaction: <DepositL1TxStatus tx={tx} />

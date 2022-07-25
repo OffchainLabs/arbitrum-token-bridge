@@ -57,9 +57,11 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       <span className="text-4xl font-semibold text-blue-arbitrum">
         Success!
       </span>
-      <span className="text-2xl font-light text-blue-arbitrum">
-        {tx.value} {tx.asset.toUpperCase()} has been moved to your wallet.
-        <br />
+      <span className="flex flex-col space-y-4 text-2xl font-light text-blue-arbitrum">
+        <span>
+          {tx.value} {tx.asset.toUpperCase()} has been moved to your wallet.
+        </span>
+
         <div className="flex flex-row items-center space-x-2">
           <span className="font-medium">New balance:</span>
           {balance ? (
@@ -72,6 +74,8 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
           )}
         </div>
       </span>
+
+      <div className="h-2" />
       <div className="flex flex-col font-light">
         <span className="text-lg text-lime-dark">
           L1 transaction: <DepositL1TxStatus tx={tx} />

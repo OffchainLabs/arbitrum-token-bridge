@@ -43,6 +43,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
         </Button>
       </Tooltip>
 
+      <div className="h-2" />
       <div className="flex flex-col font-light">
         <span className="text-lg text-orange-dark">
           L1 transaction: <DepositL1TxStatus tx={tx} />

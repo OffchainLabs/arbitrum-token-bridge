@@ -44,6 +44,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
         </Button>
       </Tooltip>
 
+      <div className="h-2" />
       <div className="flex flex-col font-light">
         <span className="text-lg text-blue-arbitrum">
           L2 transaction: <WithdrawalL2TxStatus tx={tx} />

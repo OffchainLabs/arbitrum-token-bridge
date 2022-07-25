@@ -99,8 +99,8 @@ export function DepositCardContainer({
   }, [tx])
 
   return (
-    <div className={`w-full p-8 lg:rounded-xl ${bgClassName}`}>
-      <div className="flex flex-col space-y-5">{children}</div>
+    <div className={`w-full p-6 lg:rounded-xl ${bgClassName}`}>
+      <div className="flex flex-col space-y-3">{children}</div>
       <div className="flex justify-end">
         {!isTransferPanelVisible && (
           <button
