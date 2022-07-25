@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
@@ -76,6 +76,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
   const { toUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const { isMainnet } = isNetwork(l1.network)
 
@@ -94,6 +95,12 @@ export function LowBalanceDialog(props: UseDialogProps) {
     () => parseFloat(utils.formatEther(balance)),
     [balance]
   )
+
+  useEffect(() => {
+    if (isFormOpen && iframeRef.current) {
+      iframeRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [isFormOpen])
 
   return (
     <Dialog {...props} isCustom>
@@ -176,6 +183,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
           <>
             <div className="h-2" />
             <iframe
+              ref={iframeRef}
               src="https://arbitrum-bridge-ui-feedback-form.vercel.app"
               title="Feedback form"
               height="68px"
