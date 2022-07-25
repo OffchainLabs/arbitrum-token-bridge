@@ -303,7 +303,10 @@ const NetworkBox = ({
               Make sure you have ETH in your L2 wallet, you’ll need it to power
               transactions.
               <br />
-              <ExternalLink href="#" className="arb-hover underline">
+              <ExternalLink
+                href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
+                className="arb-hover underline"
+              >
                 Learn more.
               </ExternalLink>
             </p>
