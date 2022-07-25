@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
@@ -76,6 +76,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
   const { toUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
+  const [isFormOpen, setIsFormOpen] = useState(false)
   const { isMainnet } = isNetwork(l1.network)
 
   const balance = useMemo(() => {
@@ -157,11 +158,30 @@ export function LowBalanceDialog(props: UseDialogProps) {
             </div>
           </div>
         </div>
+
         <div className="h-4" />
-        <p className="text-sm font-light">
-          Is this list missing something?{' '}
-          <ExternalLink className="underline">Let us know.</ExternalLink>
-        </p>
+        <div>
+          <span className="text-sm font-light">
+            Is this list missing something?
+          </span>{' '}
+          <button
+            className="text-sm font-light underline"
+            onClick={() => setIsFormOpen(true)}
+          >
+            Let us know.
+          </button>
+        </div>
+
+        {isFormOpen && (
+          <>
+            <div className="h-2" />
+            <iframe
+              src="https://arbitrum-bridge-ui-feedback-form.vercel.app"
+              title="Feedback form"
+              height="68px"
+            />
+          </>
+        )}
       </div>
     </Dialog>
   )
