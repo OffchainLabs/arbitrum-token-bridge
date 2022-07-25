@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "cd node_modules/@arbitrum/sdk-nitro && yarn && yarn build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start_ui": "yarn workspace arb-token-bridge-ui start",
     "start_sdk": "yarn workspace token-bridge-sdk watch",
@@ -17,5 +18,8 @@
   "license": "ISC",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "resolutions": {
+    "@arbitrum/sdk-nitro": "OffchainLabs/arbitrum-sdk#fix-arb-provider"
+  }
 }
