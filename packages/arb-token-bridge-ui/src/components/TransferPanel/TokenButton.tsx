@@ -79,7 +79,7 @@ export function TokenButton(): JSX.Element {
             <ChevronDownIcon className="h-4 w-4 text-gray-9" />
           </div>
         </Popover.Button>
-        <Popover.Panel className="absolute top-0 left-0 z-50 w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:rounded-lg lg:p-6 lg:shadow-[0px_4px_12px_#9e9e9e]">
+        <Popover.Panel className="absolute top-0 left-0 z-50 h-full w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:rounded-lg lg:p-6 lg:shadow-[0px_4px_12px_#9e9e9e]">
           {({ close }) => (
             <TokenSearch close={close} onImportToken={importToken} />
           )}

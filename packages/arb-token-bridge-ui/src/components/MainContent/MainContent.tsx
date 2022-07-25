@@ -161,7 +161,11 @@ export function MainContent() {
 
         <AnimatePresence exitBeforeEnter>
           {isTransferPanelVisible && (
-            <motion.div key="transfer-panel" {...motionDivProps}>
+            <motion.div
+              key="transfer-panel"
+              {...motionDivProps}
+              className="relative z-10"
+            >
               <TransferPanel />
             </motion.div>
           )}

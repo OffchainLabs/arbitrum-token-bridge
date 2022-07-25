@@ -3,6 +3,7 @@ import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
+import { useMedia } from 'react-use'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -321,11 +322,15 @@ function TokensPanel({
     }
   } = useAppState()
 
+  const isLarge = useMedia('(min-width: 1024px)')
+
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
   const [newToken, setNewToken] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
+
+  const numberOfRows = isLarge ? 5 : 3.5
 
   const getBalance = useCallback(
     (address: string) => {
@@ -467,7 +472,7 @@ function TokensPanel({
             <List
               width={width - 2}
               // Make height equal to 6 rows
-              height={6 * 84}
+              height={numberOfRows * 84}
               rowCount={tokensToShow.length}
               rowHeight={84}
               rowRenderer={virtualizedProps => {
