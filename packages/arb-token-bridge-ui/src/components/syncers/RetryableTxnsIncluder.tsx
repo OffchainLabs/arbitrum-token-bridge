@@ -55,12 +55,19 @@ export function RetryableTxnsIncluder(): JSX.Element {
       actions.app.l1DepositsWithUntrackedL2Messages()
 
     for (let depositTx of l1DepositsWithUntrackedL2Messages) {
-      const depositTxRec = new L1TransactionReceipt(
-        await l1Signer.provider.getTransactionReceipt(depositTx.txID)
-      ) //**TODO: not found, i.e., reorg */
+      const depositTxReceipt = await l1Signer.provider.getTransactionReceipt(
+        depositTx.txID
+      )
+
+      // TODO: Handle tx not found
+      if (!depositTxReceipt) {
+        return
+      }
+
+      const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
       if (depositTx.assetType === AssetType.ETH) {
-        const [ethDepositMessage] = await depositTxRec.getEthDepositMessages(
+        const [ethDepositMessage] = await l1TxReceipt.getEthDepositMessages(
           l2Signer.provider
         )
 
@@ -69,7 +76,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
           ethDepositMessage
         )
       } else {
-        const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer)
+        const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Signer)
         const status = await l1ToL2Msg.status()
 
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
