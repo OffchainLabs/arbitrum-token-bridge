@@ -3,39 +3,24 @@ import React from 'react'
 interface StatusBadgeProps {
   variant?: 'blue' | 'yellow' | 'green' | 'red'
   children: React.ReactNode
-  showDot?: boolean
 }
 
 const variants: Record<string, string> = {
-  blue: 'bg-blue-100 text-blue-800',
-  yellow: 'bg-yellow-100 text-yellow-800',
-  green: 'bg-green-100 text-green-800',
-  red: 'bg-red-100 text-red-800'
-}
-const innerVariants: Record<string, string> = {
-  blue: 'bg-blue-400',
-  yellow: 'bg-yellow-400',
-  green: 'bg-green-400',
-  red: 'bg-red-400'
+  blue: 'bg-cyan text-cyan-dark border border-cyan-dark',
+  yellow: 'bg-orange text-orange-dark border border-orange-dark',
+  green: 'bg-lime text-lime-dark border border-lime-dark',
+  red: 'bg-brick text-brick-dark border border-brick-dark'
 }
 
-const StatusBadge = ({
+export function StatusBadge({
   variant = 'blue',
-  showDot = true,
   children
-}: StatusBadgeProps): JSX.Element => {
+}: StatusBadgeProps): JSX.Element {
   return (
-    <span
-      className={`flex items-center px-3 py-1 inline-flex text-sm leading-5 font-medium rounded-xl ${variants[variant]}`}
+    <div
+      className={`w-max rounded-full px-3 py-1 text-sm ${variants[variant]}`}
     >
-      {showDot && (
-        <span
-          className={`mr-2 w-2 h-2 rounded-full ${innerVariants[variant]}`}
-        />
-      )}
       {children}
-    </span>
+    </div>
   )
 }
-
-export { StatusBadge }

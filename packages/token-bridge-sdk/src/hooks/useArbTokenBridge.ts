@@ -19,6 +19,7 @@ import {
 } from '@arbitrum/sdk'
 
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import { DepositWithdrawEstimator } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
@@ -41,7 +42,10 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated,
   L2ToL1EventResult,
-  NodeBlockDeadlineStatus
+  NodeBlockDeadlineStatus,
+  L1EthDepositTransactionLifecycle,
+  L1ContractCallTransactionLifecycle,
+  L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 
 import {
@@ -205,6 +209,11 @@ export const useArbTokenBridge = (
   const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
   const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
 
+  const gasEstimator = useMemo(
+    () => new DepositWithdrawEstimator(l2.network),
+    [l2.network]
+  )
+
   /**
    * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
    * @param erc20L1Address
@@ -317,7 +326,10 @@ export const useArbTokenBridge = (
     return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.signer.provider)
   }
 
-  const depositEth = async (amount: BigNumber) => {
+  const depositEth = async (
+    amount: BigNumber,
+    txLifecycle?: L1EthDepositTransactionLifecycle
+  ) => {
     let tx: L1EthDepositTransaction
 
     try {
@@ -326,6 +338,10 @@ export const useArbTokenBridge = (
         l2Provider: l2.signer.provider,
         amount
       })
+
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx)
+      }
     } catch (error: any) {
       return alert(error.message)
     }
@@ -342,6 +358,11 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
+
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(receipt)
+    }
+
     const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.signer)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
@@ -355,8 +376,30 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function withdrawEth(amount: BigNumber) {
+  async function depositEthEstimateGas(amount: BigNumber) {
+    const estimatedL1Gas = await gasEstimator.ethDepositL1Gas({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      amount
+    })
+
+    const {
+      maxGas: estimatedL2Gas,
+      maxSubmissionCost: estimatedL2SubmissionCost
+    } = await gasEstimator.ethDepositL2Gas(l2.signer.provider)
+
+    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+  }
+
+  async function withdrawEth(
+    amount: BigNumber,
+    txLifecycle?: L2ContractCallTransactionLifecycle
+  ) {
     const tx = await ethBridger.withdraw({ l2Signer: l2.signer, amount })
+
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx)
+    }
 
     try {
       addTransaction({
@@ -367,11 +410,15 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
-        blockNumber: tx.blockNumber || 0, // TODO: ensure by fetching blocknumber?,
+        blockNumber: tx.blockNumber,
         l1NetworkID
       })
 
       const receipt = await tx.wait()
+
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
+      }
 
       updateTransaction(receipt, tx)
       updateEthBalances()
@@ -392,8 +439,10 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: 'ETH',
           decimals: 18,
-          nodeBlockDeadline: 'NODE_NOT_CREATED'
+          nodeBlockDeadline: 'NODE_NOT_CREATED',
+          l2TxHash: tx.hash
         }
+
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           return {
             ...oldPendingWithdrawalsMap,
@@ -406,6 +455,18 @@ export const useArbTokenBridge = (
     } catch (e) {
       console.error('withdrawEth err', e)
     }
+  }
+
+  async function withdrawEthEstimateGas(amount: BigNumber) {
+    const estimatedL1Gas = await gasEstimator.ethWithdrawalL1Gas(
+      l2.signer.provider
+    )
+    const estimatedL2Gas = await gasEstimator.ethWithdrawalL2Gas({
+      l2Signer: l2.signer,
+      amount
+    })
+
+    return { estimatedL1Gas, estimatedL2Gas }
   }
 
   const approveToken = async (erc20L1Address: string) => {
@@ -433,6 +494,19 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
+  const approveTokenEstimateGas = async (erc20L1Address: string) => {
+    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+      erc20L1Address,
+      l1.signer.provider
+    )
+
+    const contract = ERC20__factory.connect(erc20L1Address, l1.signer.provider)
+
+    return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
+      from: walletAddress
+    })
+  }
+
   const approveTokenL2 = async (erc20L1Address: string) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
@@ -450,7 +524,7 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
-      blockNumber: tx.blockNumber || 0,
+      blockNumber: tx.blockNumber,
       l1NetworkID: l1.network.chainID.toString()
     })
 
@@ -459,14 +533,23 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-  async function depositToken(erc20L1Address: string, amount: BigNumber) {
+  async function depositToken(
+    erc20L1Address: string,
+    amount: BigNumber,
+    txLifecycle?: L1ContractCallTransactionLifecycle
+  ) {
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+
     const tx = await erc20Bridger.deposit({
       l1Signer: l1.signer,
       l2Provider: l2.signer.provider,
       erc20L1Address,
       amount
     })
+
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx)
+    }
 
     addTransaction({
       type: 'deposit-l1',
@@ -475,11 +558,17 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: symbol,
       assetType: AssetType.ERC20,
+      tokenAddress: erc20L1Address,
       sender: walletAddress,
       l1NetworkID
     })
 
     const receipt = await tx.wait()
+
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(receipt)
+    }
+
     const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
@@ -495,7 +584,30 @@ export const useArbTokenBridge = (
     return receipt
   }
 
-  async function withdrawToken(erc20l1Address: string, amount: BigNumber) {
+  async function depositTokenEstimateGas(
+    erc20L1Address: string,
+    amount: BigNumber
+  ) {
+    // We're hardcoding the L1 gas cost for a token deposit, as the estimation might fail due to no allowance.
+    const estimatedL1Gas = BigNumber.from(240000)
+    const {
+      maxGas: estimatedL2Gas,
+      maxSubmissionCost: estimatedL2SubmissionCost
+    } = await gasEstimator.erc20DepositL2Gas({
+      l1Signer: l1.signer,
+      l2Provider: l2.signer.provider,
+      erc20L1Address,
+      amount
+    })
+
+    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+  }
+
+  async function withdrawToken(
+    erc20l1Address: string,
+    amount: BigNumber,
+    txLifecycle?: L2ContractCallTransactionLifecycle
+  ) {
     const bridgeToken = bridgeTokens[erc20l1Address]
 
     const { symbol, decimals } = await (async () => {
@@ -514,6 +626,10 @@ export const useArbTokenBridge = (
       amount
     })
 
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx)
+    }
+
     addTransaction({
       type: 'withdraw',
       status: 'pending',
@@ -522,12 +638,17 @@ export const useArbTokenBridge = (
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: await l2.signer.getAddress(),
-      blockNumber: tx.blockNumber || 0,
+      blockNumber: tx.blockNumber,
       l1NetworkID
     })
 
     try {
       const receipt = await tx.wait()
+
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
+      }
+
       updateTransaction(receipt, tx)
 
       const l2ToL1Events = receipt.getL2ToL1Events()
@@ -544,7 +665,8 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: symbol,
           decimals: decimals,
-          nodeBlockDeadline: 'NODE_NOT_CREATED'
+          nodeBlockDeadline: 'NODE_NOT_CREATED',
+          l2TxHash: tx.hash
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -559,6 +681,22 @@ export const useArbTokenBridge = (
     } catch (err) {
       console.warn('withdraw token err', err)
     }
+  }
+
+  async function withdrawTokenEstimateGas(
+    erc20l1Address: string,
+    amount: BigNumber
+  ) {
+    const estimatedL1Gas = await gasEstimator.erc20WithdrawalL1Gas(
+      l2.signer.provider
+    )
+    const estimatedL2Gas = await gasEstimator.erc20WithdrawalL2Gas({
+      l2Signer: l2.signer,
+      erc20l1Address,
+      amount
+    })
+
+    return { estimatedL1Gas, estimatedL2Gas }
   }
 
   const removeTokensFromList = (listID: number) => {
@@ -885,7 +1023,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ERC20,
       sender: walletAddress,
       txID: res.hash,
-      l1NetworkID
+      l1NetworkID,
+      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
     })
 
     try {
@@ -934,7 +1073,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ETH,
       sender: walletAddress,
       txID: res.hash,
-      l1NetworkID
+      l1NetworkID,
+      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
     })
 
     try {
@@ -1431,7 +1571,9 @@ export const useArbTokenBridge = (
     },
     eth: {
       deposit: depositEth,
+      depositEstimateGas: depositEthEstimateGas,
       withdraw: withdrawEth,
+      withdrawEstimateGas: withdrawEthEstimateGas,
       triggerOutbox: triggerOutboxEth,
       updateBalances: updateEthBalances
     },
@@ -1441,9 +1583,12 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       approve: approveToken,
+      approveEstimateGas: approveTokenEstimateGas,
       approveL2: approveTokenL2,
       deposit: depositToken,
+      depositEstimateGas: depositTokenEstimateGas,
       withdraw: withdrawToken,
+      withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken,
       getL1TokenData,
       getL2TokenData,

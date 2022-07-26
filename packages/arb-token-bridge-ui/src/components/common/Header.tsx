@@ -1,374 +1,369 @@
-import React, { Fragment, useMemo } from 'react'
+import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
+import { Disclosure } from '@headlessui/react'
+import { twMerge } from 'tailwind-merge'
 
-import { useWallet } from '@arbitrum/use-wallet'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { ChevronDownIcon, MenuIcon, XIcon } from '@heroicons/react/solid'
+import { Transition } from './Transition'
+import { ExternalLink } from './ExternalLink'
+import { HeaderMenuDesktop, HeaderMenuMobile } from './HeaderMenu'
+import { GET_HELP_LINK } from '../../constants'
 
-import { useAppState } from '../../state'
-import { modalProviderOpts } from '../../util/modelProviderOpts'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus
-} from '../../hooks/useNetworksAndSigners'
+import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
 
-function classNames(...classes: any) {
-  return classes.filter(Boolean).join(' ')
+const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
+
+const learnLinks = [
+  {
+    title: 'Dev docs',
+    link: 'https://developer.offchainlabs.com'
+  },
+  {
+    title: 'About bridging',
+    link: 'https://arbitrum.io/bridge-tutorial'
+  },
+  {
+    title: 'About Arbitrum',
+    link: 'https://developer.offchainlabs.com/docs/inside_arbitrum'
+  }
+]
+
+const explorersLinks = [
+  {
+    title: 'Arbitrum One (Arbiscan)',
+    link: 'https://arbiscan.io'
+  },
+  {
+    title: 'Arbitrum One (Arbitrum’s explorer)',
+    link: 'https://explorer.arbitrum.io'
+  },
+  {
+    title: 'Rinkarby (Arbiscan)',
+    link: 'https://testnet.arbiscan.io'
+  },
+  {
+    title: 'Rinkarby (Arbitrum’s explorer)',
+    link: 'https://rinkeby-explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Nova (BlockScout)',
+    link: 'https://a4ba-explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Goerli Rollup (BlockScout)',
+    link: 'https://goerli-rollup-explorer.arbitrum.io'
+  }
+]
+
+const MenuIcon = {
+  Open: function () {
+    return (
+      <svg
+        width="40"
+        height="24"
+        viewBox="0 0 40 26"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line x1="8" y1="1" x2="40" y2="1" stroke="#FFFFFF" strokeWidth="2" />
+        <line x1="8" y1="13" x2="40" y2="13" stroke="#FFFFFF" strokeWidth="2" />
+        <line x1="8" y1="25" x2="40" y2="25" stroke="#FFFFFF" strokeWidth="2" />
+      </svg>
+    )
+  },
+  Close: function () {
+    return (
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 29 28"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M16.8285 14.0005L27.4145 3.4145C28.1965 2.6325 28.1965 1.3685 27.4145 0.5865C26.6325 -0.1955 25.3685 -0.1955 24.5865 0.5865L14.0005 11.1725L3.4145 0.5865C2.6325 -0.1955 1.3685 -0.1955 0.5865 0.5865C-0.1955 1.3685 -0.1955 2.6325 0.5865 3.4145L11.1725 14.0005L0.5865 24.5865C-0.1955 25.3685 -0.1955 26.6325 0.5865 27.4145C0.9765 27.8045 1.4885 28.0005 2.0005 28.0005C2.5125 28.0005 3.0245 27.8045 3.4145 27.4145L14.0005 16.8285L24.5865 27.4145C24.9765 27.8045 25.4885 28.0005 26.0005 28.0005C26.5125 28.0005 27.0245 27.8045 27.4145 27.4145C28.1965 26.6325 28.1965 25.3685 27.4145 24.5865L16.8285 14.0005Z"
+          fill="white"
+        />
+      </svg>
+    )
+  }
 }
 
-function ExplorerMenu() {
+function DesktopExternalLink({
+  children,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
-    <Menu as="div" className="relative inline-block text-left">
-      <div>
-        <Menu.Button className=" hidden md:inline-flex text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-          Explorers
-          <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
-        </Menu.Button>
-      </div>
-
-      <Transition
-        as={Fragment}
-        enter="transition ease-out duration-100"
-        enterFrom="transform opacity-0 scale-95"
-        enterTo="transform opacity-100 scale-100"
-        leave="transition ease-in duration-75"
-        leaveFrom="transform opacity-100 scale-100"
-        leaveTo="transform opacity-0 scale-95"
-      >
-        <Menu.Items className="z-50 origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-          <div className="py-1">
-            <Menu.Item>
-              {({ active }) => (
-                <a
-                  href="https://arbiscan.io/"
-                  target="_blank"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
-                  rel="noreferrer"
-                >
-                  Arbitrum One (Arbiscan)
-                </a>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <a
-                  href="https://explorer.arbitrum.io/"
-                  target="_blank"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
-                  rel="noreferrer"
-                >
-                  Arbitrum One (Offchain Labs)
-                </a>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <a
-                  href="https://testnet.arbiscan.io/"
-                  target="_blank"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
-                  rel="noreferrer"
-                >
-                  Rinkarby (Arbiscan)
-                </a>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <a
-                  href="https://rinkeby-explorer.arbitrum.io/"
-                  target="_blank"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
-                  rel="noreferrer"
-                >
-                  Rinkarby (Offchain Labs)
-                </a>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <a
-                  href="https://a4ba-explorer.arbitrum.io"
-                  target="_blank"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
-                  rel="noreferrer"
-                >
-                  Arbitrum Nova (BlockScout)
-                </a>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <a
-                  href="https://goerli-rollup-explorer.arbitrum.io"
-                  target="_blank"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
-                  rel="noreferrer"
-                >
-                  Goerli Testnet Rollup (BlockScout)
-                </a>
-              )}
-            </Menu.Item>
-          </div>
-        </Menu.Items>
-      </Transition>
-    </Menu>
+    <ExternalLink
+      className="arb-hover hidden text-base text-white lg:block"
+      {...props}
+    >
+      {children}
+    </ExternalLink>
   )
 }
 
-const JoinCommunityButton: React.FC = () => (
-  <a
-    href="https://discord.com/invite/5KE54JwyTs"
-    target="_blank"
-    className="bg-bright-blue hover:bg-faded-blue text-navy rounded-md text-sm font-medium"
-    style={{ padding: '10px 12px' }}
-    rel="noopener noreferrer"
-  >
-    Join Community
-  </a>
-)
+export type HeaderOverridesProps = {
+  imageSrc?: string
+  className?: string
+}
 
-const LoginButton: React.FC = () => {
-  const { disconnect, connect } = useWallet()
-  const { status } = useNetworksAndSigners()
+export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
+  const header = document.getElementById('header')
 
-  function showConnectionModal() {
-    connect(modalProviderOpts)
+  if (header) {
+    if (className) {
+      // Reset back to defaults and then add overrides on top of that
+      header.className = defaultHeaderClassName
+      header.classList.add(...className.split(' '))
+    }
+
+    const image = document.getElementById('header-image') as HTMLImageElement
+
+    if (image && imageSrc) {
+      image.src = imageSrc
+    }
   }
 
+  return null
+}
+
+function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <>
-      {status === UseNetworksAndSignersStatus.CONNECTED ? (
-        <button
-          onClick={() => {
-            disconnect()
-            localStorage.removeItem('WEB3_CONNECT_CACHED_PROVIDER')
-            window.location.href = '/'
-          }}
-          type="button"
-          className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
-          style={{ padding: '10px 12px' }}
-        >
-          Logout
-        </button>
-      ) : (
-        <button
-          onClick={showConnectionModal}
-          type="button"
-          className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
-          style={{ padding: '10px 12px' }}
-        >
-          Login
-        </button>
-      )}
-    </>
+    <img
+      id="header-image"
+      src={props.src}
+      alt={props.alt || 'Arbitrum logo'}
+      className={twMerge('-ml-2 w-56 lg:ml-0 lg:w-60', props.className || '')}
+    />
   )
 }
 
-const AddNetworkButton: React.FC = () => {
-  const { status, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+export function HeaderContent({ children }: { children: React.ReactNode }) {
+  const mutationObserverRef = useRef<MutationObserver>()
+  const [, setMutationCycleCount] = useState(0)
 
-  const {
-    app: { changeNetwork }
-  } = useAppState()
+  useEffect(() => {
+    const header = document.getElementById('header')
 
-  const hide = useMemo(() => {
-    return (
-      status !== UseNetworksAndSignersStatus.CONNECTED ||
-      isConnectedToArbitrum ||
-      !changeNetwork
+    if (!header) {
+      return
+    }
+
+    /**
+     * On mobile, the header opens up and closes through a popover component by clicking the hamburger menu.
+     * It's possible for the popover to be closed at the time of rendering this component.
+     * This means that the portal root element won't be found, and nothing will be rendered to the portal.
+     *
+     * This is a little trick that sets up a `MutationObserver` to listen for changes to the header subtree.
+     * Each time a mutation happens, it will call `setMutationCycleCount`, forcing a re-render to the portal.
+     *
+     * There's no real performance concern, as the contents of the header change very rarely.
+     */
+    const config = { subtree: true, childList: true }
+    mutationObserverRef.current = new MutationObserver(() =>
+      setMutationCycleCount(
+        prevMutationCycleCount => prevMutationCycleCount + 1
+      )
     )
-  }, [status, isConnectedToArbitrum, changeNetwork])
+    mutationObserverRef.current.observe(header, config)
 
-  return (
-    <>
-      {hide ? null : (
-        <button
-          onClick={() => {
-            if (typeof l2.network === 'undefined' || !changeNetwork) {
-              console.log("Can't add L2 network")
-              return
-            }
+    return () => mutationObserverRef.current?.disconnect()
+  }, [])
 
-            changeNetwork(l2.network)
-          }}
-          type="button"
-          className="mr-4 text-white hover:text-navy hover:bg-gray-200 cursor-pointer z-50 rounded-md text-sm font-medium"
-          style={{ padding: '10px 12px' }}
-        >
-          Add L2 Network
-        </button>
-      )}
-    </>
-  )
+  const rootElement = document.getElementById('header-content-root')
+
+  if (!rootElement) {
+    return null
+  }
+
+  return ReactDOM.createPortal(children, rootElement)
 }
 
-const Header: React.FC = () => {
+export function Header() {
   return (
-    <Disclosure as="header" className="relative z-50 bg-gray-800 ">
-      {({ open }) => (
-        <>
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="border-b border-gray-700 flex items-center w-full h-16 px-4 sm:px-0 justify-between">
-              <div className="flex items-center">
-                <a href="/" className="flex-shrink-0">
-                  <img
-                    className="w-8 h-8"
-                    src="/images/Arbitrum_Symbol_-_Full_color_-_White_background.svg"
-                    alt="Arbitrum logo"
-                  />
-                </a>
-                <div className="block">
-                  <div className="ml-6 flex lg:hidden items-baseline space-x-4">
-                    <a
-                      href="/"
-                      className="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      Bridge
-                    </a>
-                  </div>
-                  <div className="ml-6 hidden lg:flex items-baseline space-x-4">
-                    <a
-                      href="/"
-                      className="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      Bridge
-                    </a>
-                    <a
-                      href="https://portal.arbitrum.one/"
-                      target="_blank"
-                      className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                      rel="noopener noreferrer"
-                    >
-                      Portal
-                    </a>
-                    <ExplorerMenu />
-                    <a
-                      href="https://arbitrum.io/bridge-tutorial/"
-                      target="_blank"
-                      className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                      rel="noopener noreferrer"
-                    >
-                      Tutorial
-                    </a>
-                    <a
-                      href="https://developer.offchainlabs.com/"
-                      target="_blank"
-                      className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                      rel="noopener noreferrer"
-                    >
-                      Docs
-                    </a>
-                    <a
-                      href="https://arbitrum.zendesk.com/hc/en-us/requests/new"
-                      target="_blank"
-                      className="hidden md:inline-block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                      rel="noopener noreferrer"
-                    >
-                      Support
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="hidden lg:flex items-center">
-                <AddNetworkButton />
-                <LoginButton />
-                <JoinCommunityButton />
-              </div>
-              {/* Mobile menu button */}
-
-              <div className="-ml-2 mr-2 flex items-center lg:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-                  <span className="sr-only">Open main menu</span>
-                  {open ? (
-                    <XIcon className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <MenuIcon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
-              </div>
-            </div>
+    <header id="header" className={defaultHeaderClassName}>
+      <div className="flex w-full max-w-[1440px] justify-between px-8">
+        <div className="flex items-center lg:space-x-2 xl:space-x-12">
+          <a href="/" className="arb-hover flex flex-col items-center">
+            <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
+          </a>
+          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
+            <HeaderMenuDesktop
+              items={learnLinks.map(learn => ({
+                title: learn.title,
+                anchorProps: { href: learn.link }
+              }))}
+            >
+              Learn
+            </HeaderMenuDesktop>
+            <HeaderMenuDesktop
+              items={[
+                {
+                  title: 'App Portal',
+                  anchorProps: { href: 'https://portal.arbitrum.one' }
+                },
+                {
+                  title: 'Explorers',
+                  items: explorersLinks.map(explorer => ({
+                    title: explorer.title,
+                    anchorProps: { href: explorer.link }
+                  }))
+                }
+              ]}
+            >
+              Ecosystem
+            </HeaderMenuDesktop>
+            <HeaderMenuDesktop
+              items={[
+                {
+                  title: 'What’s up with my retryable?',
+                  anchorProps: {
+                    href: 'https://retryable-tx-panel.arbitrum.io'
+                  }
+                },
+                {
+                  title: 'How popular is Arbitrum?',
+                  anchorProps: {
+                    href: 'https://dune.com/Henrystats/arbitrum-metrics'
+                  }
+                },
+                {
+                  title: 'Which L2 do people trust most?',
+                  anchorProps: {
+                    href: 'https://l2beat.com'
+                  }
+                }
+              ]}
+            >
+              Charts & Stats
+            </HeaderMenuDesktop>
+            <DesktopExternalLink href={GET_HELP_LINK}>
+              Get Help
+            </DesktopExternalLink>
           </div>
-
-          <Disclosure.Panel className="lg:hidden absolute z-50 w-full bg-gray-800 px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col items-center px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <a
-                href="https://portal.arbitrum.one/"
-                target="_blank"
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                rel="noopener noreferrer"
-              >
-                Portal
-              </a>
-              <a
-                href="https://arbiscan.io/"
-                target="_blank"
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                rel="noopener noreferrer"
-              >
-                Mainnet Explorer
-              </a>
-              <a
-                href="https://rinkeby-explorer.arbitrum.io/"
-                target="_blank"
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                rel="noopener noreferrer"
-              >
-                Rinkeby Explorer
-              </a>
-              <a
-                href="https://arbitrum.io/bridge-tutorial/"
-                target="_blank"
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                rel="noopener noreferrer"
-              >
-                Tutorial
-              </a>
-              <a
-                href="https://developer.offchainlabs.com/"
-                target="_blank"
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                rel="noopener noreferrer"
-              >
-                Docs
-              </a>
-              <a
-                href="https://arbitrum.zendesk.com/hc/en-us/requests/new"
-                target="_blank"
-                className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-                rel="noopener noreferrer"
-              >
-                Support
-              </a>
+        </div>
+        <Disclosure>
+          {({ open }) => (
+            <div className="flex items-center">
+              {!open && (
+                <Disclosure.Button className="lg:hidden">
+                  <MenuIcon.Open />
+                </Disclosure.Button>
+              )}
+              <Disclosure.Panel>
+                <Transition>
+                  <HeaderMobile />
+                </Transition>
+              </Disclosure.Panel>
             </div>
-            <div className="pt-4 pb-6 border-t border-gray-700">
-              <div className="flex items-center justify-center mt-3 px-2 space-x-1 sm:px-3">
-                <LoginButton /> <JoinCommunityButton />
-              </div>
-            </div>
-          </Disclosure.Panel>
-        </>
-      )}
-    </Disclosure>
+          )}
+        </Disclosure>
+        <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-2 xl:space-x-4">
+          <div
+            id="header-content-root"
+            className="flex space-x-2 xl:space-x-4"
+          ></div>
+          <div className="flex flex-row space-x-2 xl:space-x-4">
+            <ExternalLink
+              href="https://discord.com/invite/ZpZuw7p"
+              className="arb-hover h-8 w-8"
+            >
+              <img src="/icons/discord.png" alt="Discord" />
+            </ExternalLink>
+            <ExternalLink
+              href="https://twitter.com/OffchainLabs"
+              className="arb-hover h-8 w-8"
+            >
+              <img src="/icons/twitter.png" alt="Twitter" />
+            </ExternalLink>
+          </div>
+        </div>
+      </div>
+    </header>
   )
 }
 
-export { Header }
+function MobileExternalLink({
+  children,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+  return (
+    <ExternalLink
+      className="arb-hover py-3 text-2xl font-medium text-white"
+      {...props}
+    >
+      {children}
+    </ExternalLink>
+  )
+}
+
+function HeaderMobile() {
+  return (
+    <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
+      <div className="flex h-[80px] items-center justify-end px-8">
+        <Disclosure.Button className="text-white lg:hidden">
+          <MenuIcon.Close />
+        </Disclosure.Button>
+      </div>
+      <div className="flex min-h-screen flex-col items-center space-y-3 bg-blue-arbitrum pt-4">
+        <div
+          id="header-content-root"
+          className="flex w-full flex-col items-center space-y-3"
+        ></div>
+        <HeaderMenuMobile
+          items={learnLinks.map(learn => ({
+            title: learn.title,
+            anchorProps: { href: learn.link }
+          }))}
+        >
+          Learn
+        </HeaderMenuMobile>
+        <HeaderMenuMobile
+          items={[
+            {
+              title: 'App Portal',
+              anchorProps: { href: 'https://portal.arbitrum.one' }
+            }
+          ]}
+        >
+          Ecosystem
+        </HeaderMenuMobile>
+        <HeaderMenuMobile
+          items={explorersLinks.map(explorer => ({
+            title: explorer.title,
+            anchorProps: { href: explorer.link }
+          }))}
+        >
+          Explorers
+        </HeaderMenuMobile>
+        <HeaderMenuMobile
+          items={[
+            {
+              title: 'What’s up with my retryable?',
+              anchorProps: {
+                href: 'https://retryable-tx-panel.arbitrum.io'
+              }
+            },
+            {
+              title: 'How popular is Arbitrum?',
+              anchorProps: {
+                href: 'https://dune.com/Henrystats/arbitrum-metrics'
+              }
+            },
+            {
+              title: 'Which L2 do people trust most?',
+              anchorProps: {
+                href: 'https://l2beat.com'
+              }
+            }
+          ]}
+        >
+          Charts & Stats
+        </HeaderMenuMobile>
+        <MobileExternalLink href={GET_HELP_LINK}>Get Help</MobileExternalLink>
+      </div>
+    </div>
+  )
+}

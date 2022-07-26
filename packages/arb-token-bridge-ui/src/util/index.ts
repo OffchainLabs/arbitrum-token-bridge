@@ -13,9 +13,17 @@ export enum PendingWithdrawalsLoadedState {
   ERROR
 }
 
-export const resolveTokenImg = (url: string): string => {
+export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {
-    return `https://ipfs.io/ipfs/${url.substr(7)}`
+    return `https://ipfs.io/ipfs/${url.substring(7)}`
   }
+
   return url
+}
+
+export function preloadImages(imageSources: string[]) {
+  imageSources.forEach(imageSrc => {
+    const image = new Image()
+    image.src = imageSrc
+  })
 }

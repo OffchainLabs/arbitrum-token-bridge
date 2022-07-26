@@ -59,7 +59,7 @@ const Alert = ({
         </div>
         <div className="ml-3">
           <h3
-            className={`text-sm font-medium ${
+            className={`text-sm ${
               type === 'red'
                 ? 'text-red-800'
                 : type === 'blue'

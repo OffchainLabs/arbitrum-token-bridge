@@ -17,16 +17,21 @@ import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
+import { ExternalProvider } from '@ethersproject/providers'
+import Loader from 'react-loader-spinner'
 
-import { AppContext } from './AppContext'
+import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
+import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.png'
+import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.png'
+
+import { WelcomeDialog } from './WelcomeDialog'
+import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
 import { Layout } from '../common/Layout'
-import MessageOverlay from '../common/MessageOverlay'
-import { DisclaimerModal } from '../DisclaimerModal/DisclaimerModal'
-import MainContent from '../MainContent/MainContent'
+import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
@@ -34,14 +39,25 @@ import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
-
+import { ExternalLink } from '../common/ExternalLink'
+import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
+  UseNetworksAndSignersLoadingOrErrorStatus,
   NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
-import { useBlockNumber } from '../../hooks/useBlockNumber'
-import { ExternalProvider } from '@ethersproject/providers'
+import {
+  HeaderContent,
+  HeaderOverrides,
+  HeaderOverridesProps
+} from '../common/Header'
+import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
+import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
+import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
+import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
+import { Notifications } from '../common/Notifications'
+import { isNetwork } from '../../util/networks'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -50,57 +66,30 @@ type Web3Provider = ExternalProvider & {
 const isSwitchChainSupported = (provider: Web3Provider) =>
   provider && (provider.isMetaMask || provider.isImToken)
 
-const NoMetamaskIndicator = (): JSX.Element => {
-  const { connect } = useWallet()
-
-  function showConnectionModal() {
-    connect(modalProviderOpts)
-  }
-
-  useEffect(() => {
-    showConnectionModal()
-  }, [])
-
-  return (
-    <div className="container mx-auto px-4">
-      <div className="flex justify-center mb-4">
-        <Alert type="blue">Ethereum provider not detected, please login.</Alert>
-      </div>
-
-      <div className="flex justify-center mb-4">
-        <a
-          href="https://metamask.io/download.html"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            className="w-full max-w-96"
-            src="/images/impact_transparent.png"
-            alt="Wallet"
-          />
-        </a>
-      </div>
-      <div className="flex justify-center">
-        <Button
-          onClick={() => showConnectionModal()}
-          type="button"
-          className="px-12"
-        >
-          Login
-        </Button>
-      </div>
-    </div>
-  )
-}
-
 async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
   return (await _signer.provider.getCode(_address)).length <= 2
 }
 
 const AppContent = (): JSX.Element => {
+  const { l1 } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
+
+  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
+    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
+    const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
+
+    if (isRinkeby) {
+      return { imageSrc: HeaderArbitrumLogoRinkeby, className }
+    }
+
+    if (isGoerli) {
+      return { imageSrc: HeaderArbitrumLogoGoerli, className }
+    }
+
+    return { imageSrc: HeaderArbitrumLogoMainnet, className }
+  }, [l1.network])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
@@ -138,12 +127,20 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
+      <HeaderOverrides {...headerOverridesProps} />
+
+      <HeaderContent>
+        <HeaderNetworkInformation />
+        <HeaderAccountPopover />
+      </HeaderContent>
+
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
       <PWLoadedUpdater />
-      <MessageOverlay />
+
+      <Notifications />
       <MainContent />
     </>
   )
@@ -153,9 +150,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
 
   const networksAndSigners = useNetworksAndSigners()
-  const currentL1BlockNumber = useBlockNumber(
-    networksAndSigners.l1.signer?.provider
-  )
+  const { currentL1BlockNumber } = useAppContextState()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -326,78 +321,67 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   }, [library, networksAndSigners.isConnectedToArbitrum])
 
   return (
-    <AppContext.Provider value={{ currentL1BlockNumber }}>
+    <>
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
       {children}
-    </AppContext.Provider>
-  )
-}
-
-function Routes() {
-  const [prevTosAccepted] = useLocalStorage<string>(
-    'arbitrum:bridge:tos' + (TOS_VERSION === 1 ? '' : `-v${TOS_VERSION - 1}`)
-  )
-  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(
-    'arbitrum:bridge:tos-v' + TOS_VERSION
-  )
-
-  const isTosAccepted = tosAccepted !== undefined
-  const isPrevTosAccepted = prevTosAccepted !== undefined
-
-  return (
-    <>
-      <DisclaimerModal
-        setTosAccepted={setTosAccepted}
-        tosAccepted={isTosAccepted}
-        prevTosAccepted={isPrevTosAccepted}
-      />
-      <Switch>
-        <Route path="/tos">
-          <TermsOfService />
-        </Route>
-        {isTosAccepted && (
-          <Route path="/">
-            <AppContent />
-          </Route>
-        )}
-      </Switch>
     </>
   )
 }
 
-function ConnectionFallback({
-  status
-}: {
-  status:
-    | UseNetworksAndSignersStatus.NOT_SUPPORTED
-    | UseNetworksAndSignersStatus.NOT_CONNECTED
-}): JSX.Element {
-  if (status === UseNetworksAndSignersStatus.NOT_CONNECTED) {
-    return (
-      <Switch>
-        <Route path="/tos">
-          <TermsOfService />
-        </Route>
-        <NoMetamaskIndicator />
-      </Switch>
-    )
+function Routes() {
+  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
+  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
+
+  const isTosAccepted = tosAccepted !== undefined
+
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  function onClose(confirmed: boolean) {
+    // Only close after confirming (agreeing to terms)
+    if (confirmed) {
+      setTosAccepted('true')
+      welcomeDialogProps.onClose(confirmed)
+    }
   }
 
   return (
-    <div>
-      <div className="mb-4">
-        You are on the wrong network. Read our tutorial below on how to switch
-        networks.
-      </div>
-      <iframe
-        title="Bridge Tutorial"
-        src="https://arbitrum.io/bridge-tutorial/"
-        width="100%"
-        height={500}
-      />
-    </div>
+    <Router>
+      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+      <Switch>
+        <Route path="/tos" exact>
+          <TermsOfService />
+        </Route>
+
+        <Route path="/" exact>
+          <NetworkReady>
+            <AppContextProvider>
+              <Injector>{isTosAccepted && <AppContent />}</Injector>
+            </AppContextProvider>
+          </NetworkReady>
+        </Route>
+
+        <Route path="*">
+          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+            <span className="text-8xl text-white">404</span>
+            <p className="text-3xl text-white">
+              Page not found in this solar system
+            </p>
+            <img
+              src="/images/arbinaut-fixing-spaceship.png"
+              alt="Arbinaut fixing a spaceship"
+              className="lg:max-w-md"
+            />
+          </div>
+        </Route>
+      </Switch>
+    </Router>
   )
 }
 
@@ -418,33 +402,102 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   return (
     <NetworksAndSignersProvider
       selectedL2ChainId={selectedL2ChainId}
-      fallback={status => (
-        <Layout>
-          <ConnectionFallback status={status} />
-        </Layout>
-      )}
+      fallback={status => <ConnectionFallback status={status} />}
     >
       {children}
     </NetworksAndSignersProvider>
   )
 }
 
-const App = (): JSX.Element => {
-  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-
+function ConnectionFallbackContainer({
+  children
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <Router>
-      <Provider value={overmind}>
-        <NetworkReady>
-          <Layout>
-            <Injector>
-              <Routes />
-            </Injector>
-          </Layout>
-        </NetworkReady>
-      </Provider>
-    </Router>
+    <div className="mt-6 flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
+      {children}
+      <ExternalLink href="https://metamask.io/download">
+        <img
+          className="sm:w-[420px]"
+          src="/images/arbinaut-playing-cards.png"
+          alt="Illustration of an Alien and an Arbinaut playing cards"
+        />
+      </ExternalLink>
+    </div>
   )
 }
 
-export default App
+function ConnectionFallback({
+  status
+}: {
+  status: UseNetworksAndSignersLoadingOrErrorStatus
+}): JSX.Element {
+  const { connect } = useWallet()
+
+  async function showConnectionModal() {
+    try {
+      await connect(modalProviderOpts)
+    } catch (error) {
+      // Dialog was closed by user
+    }
+  }
+
+  switch (status) {
+    case UseNetworksAndSignersStatus.LOADING:
+      return (
+        <>
+          <HeaderContent>
+            <HeaderNetworkLoadingIndicator />
+          </HeaderContent>
+
+          <ConnectionFallbackContainer>
+            <Loader type="TailSpin" color="white" height={44} width={44} />
+          </ConnectionFallbackContainer>
+        </>
+      )
+
+    case UseNetworksAndSignersStatus.NOT_CONNECTED:
+      return (
+        <>
+          <HeaderContent>
+            <HeaderConnectWalletButton />
+          </HeaderContent>
+
+          <ConnectionFallbackContainer>
+            <Button variant="primary" onClick={showConnectionModal}>
+              Connect Wallet
+            </Button>
+          </ConnectionFallbackContainer>
+        </>
+      )
+
+    case UseNetworksAndSignersStatus.NOT_SUPPORTED:
+      return (
+        <div className="flex w-full justify-center">
+          <span className="py-24 text-2xl font-light text-blue-link text-white">
+            You are on the wrong network.{' '}
+            <ExternalLink
+              href="https://arbitrum.io/bridge-tutorial"
+              className="arb-hover underline"
+            >
+              Read our tutorial
+            </ExternalLink>{' '}
+            on how to switch networks.
+          </span>
+        </div>
+      )
+  }
+}
+
+export default function App() {
+  const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+
+  return (
+    <Provider value={overmind}>
+      <Layout>
+        <Routes />
+      </Layout>
+    </Provider>
+  )
+}

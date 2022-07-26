@@ -1,14 +1,23 @@
-import React from 'react'
+import Tippy from '@tippyjs/react'
 
-const Tooltip = ({ children }: { children: React.ReactNode }): JSX.Element => {
-  return (
-    <div className="absolute bottom-0 flex flex-col items-center mb-8 group-hover:flex bg-black hidden z-50 right-0">
-      <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black shadow-lg ">
-        {children}
-      </span>
-      <div className="w-3 h-3 -mt-2 rotate-45 bg-black " />
-    </div>
-  )
+export type TooltipProps = {
+  show?: boolean
+  children: React.ReactNode
+  content?: React.ReactNode
 }
 
-export { Tooltip }
+export function Tooltip({
+  show = true,
+  content,
+  children
+}: TooltipProps): JSX.Element {
+  if (!show) {
+    return <>{children}</>
+  }
+
+  return (
+    <Tippy theme="light" content={content}>
+      <div className="w-max">{children}</div>
+    </Tippy>
+  )
+}

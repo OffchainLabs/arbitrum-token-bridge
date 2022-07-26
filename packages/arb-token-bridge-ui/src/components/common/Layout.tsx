@@ -1,65 +1,46 @@
-import React, { useMemo } from 'react'
+import React from 'react'
+import { useWindowSize } from 'react-use'
+import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
-import Footer from './Footer'
 import { Header } from './Header'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { Footer } from './Footer'
 
-const Layout: React.FC = ({ children }) => {
-  const { l2 } = useNetworksAndSigners()
-  const { network: l2Network } = l2
+function Moon() {
+  const { width } = useWindowSize()
+  const moonScaleRange = width >= 1024 ? [0.75, 1] : [0.75, 1.25]
 
-  const headerText = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return 'Arbitrum Bridge'
-    }
-
-    switch (l2Network.chainID) {
-      case 42161:
-        return 'Arbitrum One Bridge'
-      case 421611:
-        return 'RinkArby Testnet Bridge'
-      case 42170:
-        return 'Arbitrum AnyTrust Bridge'
-      case 421613:
-        return 'Arbitrum Rollup Goerli Testnet Bridge'
-      default:
-        return 'Arbitrum Bridge'
-    }
-  }, [l2Network])
+  const { scrollYProgress } = useViewportScroll()
+  const scale = useTransform(scrollYProgress, [0, 1], moonScaleRange)
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="bg-gray-800">
-        <Header />
-      </div>
-
-      <div className="bg-gray-800 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative min-h-heading">
-          <div className="block">
-            <div className="pt-10 pb-5 relative z-10">
-              <h1 className="text-3xl font-bold text-white">{headerText}</h1>
-            </div>
-          </div>
-
-          <div className="absolute z-1 right-8 md:right-32 -bottom-24 w-64">
-            <img
-              className="w-full"
-              src="/images/Arbitrum_Symbol_-_Full_color_-_White_background_inner.svg"
-              alt="Arbitrum logo"
-            />
-          </div>
-        </div>
-      </div>
-
-      <main className="mt-12 flex-grow">
-        <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+    <motion.img
+      src="/images/moon.png"
+      alt="Moon"
+      className="absolute bottom-[-10%] z-0 lg:bottom-[-45%] lg:right-0 lg:max-w-[75vw]"
+      style={{ scale }}
+    />
   )
 }
 
-export { Layout }
+export type LayoutProps = {
+  children: React.ReactNode
+}
+
+export function Layout(props: LayoutProps) {
+  return (
+    <div
+      style={{ backgroundImage: 'url(/images/space.jpeg)' }}
+      className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
+    >
+      <Header />
+
+      <div className="bg-gradient-overlay z-10 flex min-h-[calc(100vh-80px)] flex-col">
+        <main>{props.children}</main>
+      </div>
+
+      <Footer />
+
+      <Moon />
+    </div>
+  )
+}

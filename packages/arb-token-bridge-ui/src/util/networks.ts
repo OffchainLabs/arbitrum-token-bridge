@@ -26,7 +26,7 @@ export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   421611: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
 }
 
-const AnyTrust: L2Network = {
+const ArbitrumNova: L2Network = {
   chainID: 42170,
   confirmPeriodBlocks: 45818,
   ethBridge: {
@@ -39,7 +39,7 @@ const AnyTrust: L2Network = {
   explorerUrl: 'https://a4ba-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: true,
-  name: 'AnyTrust',
+  name: 'Arbitrum Nova',
   partnerChainID: 1,
   retryableLifetimeSeconds: SEVEN_DAYS_IN_SECONDS,
   rpcURL: 'https://a4ba.arbitrum.io/rpc',
@@ -71,7 +71,7 @@ const Goerli: L1Network = {
   rpcURL: rpcURLs[5]
 }
 
-const NewNitroDevnet: L2Network = {
+const ArbitrumGoerliRollup: L2Network = {
   chainID: 421613,
   confirmPeriodBlocks: 960,
   retryableLifetimeSeconds: SEVEN_DAYS_IN_SECONDS,
@@ -85,7 +85,7 @@ const NewNitroDevnet: L2Network = {
   explorerUrl: 'https://goerli-rollup-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: true,
-  name: 'Arbitrum Rollup Goerli Testnet',
+  name: 'Arbitrum Goerli Rollup',
   partnerChainID: 5,
   rpcURL: 'https://goerli-rollup.arbitrum.io/rpc',
   tokenBridge: {
@@ -106,12 +106,15 @@ const NewNitroDevnet: L2Network = {
   }
 }
 
-export function registerAnyTrust() {
-  addCustomNetwork({ customL2Network: AnyTrust })
+export function registerArbitrumNova() {
+  addCustomNetwork({ customL2Network: ArbitrumNova })
 }
 
-export function registerNewNitroDevnet() {
-  addCustomNetwork({ customL1Network: Goerli, customL2Network: NewNitroDevnet })
+export function registerArbitrumGoerliRollup() {
+  addCustomNetwork({
+    customL1Network: Goerli,
+    customL2Network: ArbitrumGoerliRollup
+  })
 }
 
 export function registerLocalNetwork() {
@@ -139,5 +142,23 @@ export function registerLocalNetwork() {
     addCustomNetwork({ customL1Network, customL2Network })
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
+  }
+}
+
+export function isNetwork(network: L1Network | L2Network) {
+  const chainId = network.chainID
+
+  return {
+    // L1
+    isMainnet: chainId === 1,
+    // L1 Testnets
+    isRinkeby: chainId === 4,
+    isGoerli: chainId === 5,
+    // L2
+    isArbitrumOne: chainId === 42161,
+    isArbitrumNova: chainId === 42170,
+    // L2 Testnets
+    isArbitrumRinkeby: chainId === 421611,
+    isArbitrumGoerliRollup: chainId === 421613
   }
 }

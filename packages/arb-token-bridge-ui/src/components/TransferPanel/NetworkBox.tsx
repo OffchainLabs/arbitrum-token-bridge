@@ -1,144 +1,317 @@
-import React, { useMemo } from 'react'
-
-import { useWallet } from '@arbitrum/use-wallet'
-import { BigNumber } from 'ethers'
-import { formatUnits } from 'ethers/lib/utils'
-import Loader from 'react-loader-spinner'
+import React, { useMemo, useState } from 'react'
+import { utils, BigNumber } from 'ethers'
 import { BridgeBalance } from 'token-bridge-sdk'
+import Loader from 'react-loader-spinner'
 
-import { useAppState } from '../../state'
-import ExplorerLink from '../common/ExplorerLink'
-import { AmountBox } from './AmountBox'
 import { TokenButton } from './TokenButton'
+import { useAppState } from '../../state'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { formatBigNumber } from '../../util/NumberUtils'
+import { ExternalLink } from '../common/ExternalLink'
+import { useGasPrice } from '../../hooks/useGasPrice'
+
+const NetworkStyleProps: {
+  L1: { style: React.CSSProperties; className: string }
+  L2: { style: React.CSSProperties; className: string }
+} = {
+  L1: {
+    style: { backgroundImage: `url(/images/NetworkBoxEth.png)` },
+    className: 'bg-contain bg-no-repeat bg-purple-ethereum'
+  },
+  L2: {
+    style: { backgroundImage: `url(/images/NetworkBoxArb.png)` },
+    className: 'bg-contain bg-no-repeat bg-blue-arbitrum'
+  }
+}
+
+function NetworkInfo({ isL1 }: { isL1: boolean }): JSX.Element | null {
+  const {
+    app: { isDepositMode }
+  } = useAppState()
+  const {
+    l1: { network: l1Network },
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
+
+  const fromOrTo = useMemo(() => {
+    if (isDepositMode) {
+      return isL1 ? 'From' : 'To'
+    }
+
+    return isL1 ? 'To' : 'From'
+  }, [isL1, isDepositMode])
+
+  if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
+    return null
+  }
+
+  return (
+    <span className="font-regular text-lg text-white lg:text-2xl">
+      <span className="hidden sm:inline">{fromOrTo}: </span>
+      <span>{isL1 ? l1Network.name : l2Network.name}</span>
+    </span>
+  )
+}
+
+function calculateEstimatedL1GasFees(
+  estimatedL1Gas: BigNumber,
+  l1GasPrice: BigNumber
+) {
+  return parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
+}
+
+function calculateEstimatedL2GasFees(
+  estimatedL2Gas: BigNumber,
+  l2GasPrice: BigNumber,
+  estimatedL2SubmissionCost: BigNumber
+) {
+  return parseFloat(
+    utils.formatEther(
+      estimatedL2Gas.mul(l2GasPrice).add(estimatedL2SubmissionCost)
+    )
+  )
+}
+
+function MaxButton({
+  loading,
+  onClick
+}: {
+  loading: boolean
+  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick']
+}) {
+  if (loading) {
+    return (
+      <div className="px-3">
+        <Loader type="TailSpin" color="#999999" height={16} width={16} />
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="p-2 text-sm font-light text-gray-9"
+    >
+      MAX
+    </button>
+  )
+}
+
+export enum NetworkBoxErrorMessage {
+  INSUFFICIENT_FUNDS,
+  AMOUNT_TOO_LOW
+}
+
+export type NetworkBoxProps = {
+  isL1: boolean
+  amount: string
+  className?: string
+  setAmount: (amount: string) => void
+  errorMessage?: NetworkBoxErrorMessage
+}
 
 const NetworkBox = ({
   isL1,
   amount,
   className,
-  setAmount
-}: {
-  isL1: boolean
-  amount: string
-  className?: string
-  setAmount: (amount: string) => void
-}) => {
-  const { provider } = useWallet()
+  setAmount,
+  errorMessage
+}: NetworkBoxProps) => {
   const {
     app: { isDepositMode, selectedToken, arbTokenBridge }
   } = useAppState()
-  const balance = useMemo(() => {
+  const { l1GasPrice, l2GasPrice } = useGasPrice()
+
+  const [calculatingMaxAmount, setCalculatingMaxAmount] = useState(false)
+
+  const ethBalance = useMemo(() => {
     let b: BridgeBalance | undefined = arbTokenBridge?.balances?.eth
-    if (selectedToken) {
-      b = arbTokenBridge?.balances?.erc20[selectedToken.address]
+    return isL1 ? b?.balance : b?.arbChainBalance
+  }, [isL1, arbTokenBridge])
+
+  const tokenBalance = useMemo(() => {
+    if (!selectedToken) {
+      return null
     }
-    if (isL1) {
-      return b?.balance
-    }
-    return b?.arbChainBalance
+
+    let b: BridgeBalance | undefined =
+      arbTokenBridge?.balances?.erc20[selectedToken.address]
+
+    return isL1 ? b?.balance : b?.arbChainBalance
   }, [isL1, selectedToken, arbTokenBridge])
 
   const canIEnterAmount = useMemo(() => {
     return (isL1 && isDepositMode) || (!isL1 && !isDepositMode)
   }, [isDepositMode, isL1])
 
-  async function setMaxAmount() {
-    if (!balance) {
-      return
+  const errorMessageText = useMemo(() => {
+    if (typeof errorMessage === 'undefined') {
+      return null
     }
-    if (selectedToken) {
-      // @ts-ignore
-      setAmount(formatUnits(balance, selectedToken?.decimals || 18))
-      return
-    }
-    const gasPrice: BigNumber | undefined = await provider?.getGasPrice()
-    if (!gasPrice) {
-      return
-    }
-    console.log('Gas price', formatUnits(gasPrice.toString(), 18))
-    const balanceMinusGas = formatUnits(
-      balance.sub(gasPrice).toString(),
-      // @ts-ignore
-      selectedToken?.decimals || 18
-    )
-    console.log('Price - gas price', balanceMinusGas)
 
-    setAmount(balanceMinusGas)
+    if (errorMessage === NetworkBoxErrorMessage.AMOUNT_TOO_LOW) {
+      return 'Sending ~$0 just to pay gas fees seems like a questionable life choice.'
+    }
+
+    return `Insufficient balance, please add more to ${isL1 ? 'L1' : 'L2'}.`
+  }, [errorMessage, isL1])
+
+  async function estimateGas(weiValue: BigNumber): Promise<{
+    estimatedL1Gas: BigNumber
+    estimatedL2Gas: BigNumber
+    estimatedL2SubmissionCost: BigNumber
+  }> {
+    if (isDepositMode) {
+      const result = await arbTokenBridge.eth.depositEstimateGas(weiValue)
+      return result
+    }
+
+    const result = await arbTokenBridge.eth.withdrawEstimateGas(weiValue)
+    return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
+  }
+
+  async function setMaxAmount() {
+    if (selectedToken) {
+      if (!tokenBalance) {
+        return
+      }
+
+      // For tokens, we can set the max amount, and have the gas summary component handle the rest
+      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals || 18))
+      return
+    }
+
+    if (!ethBalance) {
+      return
+    }
+
+    try {
+      setCalculatingMaxAmount(true)
+      const result = await estimateGas(ethBalance)
+
+      const estimatedL1GasFees = calculateEstimatedL1GasFees(
+        result.estimatedL1Gas,
+        l1GasPrice
+      )
+      const estimatedL2GasFees = calculateEstimatedL2GasFees(
+        result.estimatedL2Gas,
+        l2GasPrice,
+        result.estimatedL2SubmissionCost
+      )
+
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
+
+      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setCalculatingMaxAmount(false)
+    }
   }
 
   const balanceMemo = useMemo(() => {
     return (
-      <div className="inline-flex items-center">
-        {balance ? (
-          <span className="mr-1 font-semibold">
-            {/* @ts-ignore */}
-            {formatUnits(balance, selectedToken?.decimals || 18)}
+      <div className="flex flex-col items-end">
+        {selectedToken && (
+          <>
+            {tokenBalance ? (
+              <span className="font-light text-white lg:text-xl">
+                Balance: {formatBigNumber(tokenBalance, selectedToken.decimals)}{' '}
+                {selectedToken?.symbol}
+              </span>
+            ) : (
+              <Loader type="TailSpin" color="white" height={16} width={16} />
+            )}
+          </>
+        )}
+        {ethBalance ? (
+          <span className="font-light text-white lg:text-xl">
+            {selectedToken === null && <span>Balance: </span>}
+            {formatBigNumber(ethBalance)} ETH
           </span>
         ) : (
-          <div className="mx-2">
-            <Loader
-              type="Oval"
-              color="rgb(40, 160, 240)"
-              height={14}
-              width={14}
-            />
-          </div>
-        )}
-        {balance !== null && balance !== undefined && (
-          <span className="mr-1 font-semibold">
-            {selectedToken ? selectedToken.symbol : 'Eth '}
-          </span>
+          <Loader type="TailSpin" color="white" height={16} width={16} />
         )}
       </div>
     )
-  }, [balance, selectedToken])
-  const shouldShowMaxButton = !!selectedToken && !!balance && !balance.isZero()
+  }, [ethBalance, tokenBalance, selectedToken])
+
+  const shouldShowMaxButton = useMemo(() => {
+    if (selectedToken) {
+      return tokenBalance && !tokenBalance.isZero()
+    }
+
+    return ethBalance && !ethBalance.isZero()
+  }, [ethBalance, selectedToken, tokenBalance])
+
+  const networkStyleProps = isL1 ? NetworkStyleProps.L1 : NetworkStyleProps.L2
+  const borderClassName =
+    typeof errorMessage !== 'undefined'
+      ? 'border border-[#cd0000]'
+      : 'border border-gray-9'
 
   return (
     <div
-      className={`max-w-networkBox w-full mx-auto shadow-networkBox bg-white p-6 rounded-lg ${
-        className || ''
-      }`}
+      className={`w-full rounded-xl p-2 ${className} ${networkStyleProps.className}`}
     >
-      <div className="flex flex-col">
-        <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row">
-          <div className="flex flex-col">
-            <div className="text-sm leading-5 font-medium text-gray-700 mb-1">
-              Layer {isL1 ? '1' : '2'}
-              {' Balance: '}
-              <span>{canIEnterAmount && balanceMemo}</span>
-            </div>
-            {!canIEnterAmount && (
-              <div className="flex items-center text-lg leading-8 font-semibold text-gray-700 mb-1">
-                {balanceMemo}
-              </div>
-            )}
-            {selectedToken && (
-              <p className="text-sm leading-5 font-medium text-gray-500">
-                Token address:
-                <ExplorerLink
-                  hash={isL1 ? selectedToken.address : selectedToken.l2Address}
-                  type="address"
-                  layer={isL1 ? 1 : 2}
-                />
-              </p>
-            )}
+      <div
+        className={`p-4 ${networkStyleProps.className}`}
+        style={networkStyleProps.style}
+      >
+        <div className="flex flex-col">
+          <div className="flex flex-row justify-between">
+            <NetworkInfo isL1={isL1} />
+            <div>{balanceMemo}</div>
           </div>
           {canIEnterAmount && (
-            <div className="self-center sm:self-end mt-4 sm:mt-0">
-              <TokenButton />
-            </div>
+            <>
+              <div className="h-4" />
+              <div
+                className={`flex h-16 flex-row items-center rounded-lg bg-white ${borderClassName}`}
+              >
+                <TokenButton />
+                <div className="h-full border-r border-gray-4" />
+                <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
+                  <input
+                    autoFocus
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    className="h-full w-full bg-transparent text-lg font-light placeholder:text-gray-9 lg:text-3xl"
+                  />
+                  {shouldShowMaxButton && (
+                    <MaxButton
+                      loading={calculatingMaxAmount}
+                      onClick={setMaxAmount}
+                    />
+                  )}
+                </div>
+              </div>
+              {errorMessageText && (
+                <>
+                  <div className="h-1" />
+                  <span className="text-sm text-brick">{errorMessageText}</span>
+                </>
+              )}
+            </>
+          )}
+          {isL1 && isDepositMode && selectedToken && (
+            <p className="mt-1 text-xs font-light text-white">
+              Make sure you have ETH in your L2 wallet, you’ll need it to power
+              transactions.
+              <br />
+              <ExternalLink
+                href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
+                className="arb-hover underline"
+              >
+                Learn more.
+              </ExternalLink>
+            </p>
           )}
         </div>
-        {canIEnterAmount && (
-          <div className="flex self-center mt-5">
-            <AmountBox
-              amount={amount}
-              setAmount={setAmount}
-              setMaxAmount={setMaxAmount}
-              showMaxButton={shouldShowMaxButton}
-            />
-          </div>
-        )}
       </div>
     </div>
   )

@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Popover } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
-import { resolveTokenImg } from '../../util'
-import { TokenImportModal } from '../TokenModal/TokenImportModal'
-import { TokenModal } from '../TokenModal/TokenModal'
+import { sanitizeImageSrc } from '../../util'
+import { TokenImportDialog } from './TokenImportDialog'
+import { TokenSearch } from '../TransferPanel/TokenSearch'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
+import { useDialog } from '../common/Dialog'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -19,9 +22,8 @@ export function TokenButton(): JSX.Element {
   } = useAppState()
   const { status } = useNetworksAndSigners()
 
-  const [tokenModalOpen, setTokenModalOpen] = useState(false)
-  const [tokenImportModalOpen, setTokenImportModalOpen] = useState(false)
   const [tokenToImport, setTokenToImport] = useState<string>()
+  const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
@@ -36,54 +38,53 @@ export function TokenButton(): JSX.Element {
     }
     const logo = bridgeTokens[selectedAddress]?.logoURI
     if (logo) {
-      return resolveTokenImg(logo)
+      return sanitizeImageSrc(logo)
     }
     return undefined
   }, [selectedToken?.address, status, arbTokenBridgeLoaded])
 
-  // Reset the token back to undefined every time the modal closes
-  useEffect(() => {
-    if (!tokenImportModalOpen) {
-      setTokenToImport(undefined)
-    }
-  }, [tokenImportModalOpen])
+  function closeWithReset() {
+    setTokenToImport(undefined)
+    tokenImportDialogProps.onClose(false)
+  }
 
-  function handleImportToken(address: string) {
+  function importToken(address: string) {
     setTokenToImport(address)
-    setTokenImportModalOpen(true)
+    openTokenImportDialog()
   }
 
   return (
-    <div>
-      <TokenModal
-        isOpen={tokenModalOpen}
-        setIsOpen={setTokenModalOpen}
-        onImportToken={handleImportToken}
-      />
+    <>
       {typeof tokenToImport !== 'undefined' && (
-        <TokenImportModal
-          isOpen={tokenImportModalOpen}
-          setIsOpen={setTokenImportModalOpen}
+        <TokenImportDialog
+          {...tokenImportDialogProps}
+          onClose={closeWithReset}
           address={tokenToImport}
         />
       )}
-      <button
-        type="button"
-        onClick={() => setTokenModalOpen(true)}
-        className="bg-white border border-gray-300 shadow-md active:shadow-sm rounded-md py-2 px-4"
-      >
-        <div className="flex items-center whitespace-nowrap flex-nowrap ">
-          <div>Token:</div>
-          {tokenLogo && (
-            <img
-              src={tokenLogo}
-              alt="Token logo"
-              className="rounded-full w-5 h-5 mx-1"
-            />
+
+      <Popover className="h-full">
+        <Popover.Button className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-gray-2">
+          <div className="flex items-center space-x-2">
+            {tokenLogo && (
+              <img
+                src={tokenLogo}
+                alt="Token logo"
+                className="h-5 w-5 rounded-full lg:h-8 lg:w-8"
+              />
+            )}
+            <span className="text-lg font-light lg:text-3xl">
+              {selectedToken ? selectedToken.symbol : 'ETH'}
+            </span>
+            <ChevronDownIcon className="h-4 w-4 text-gray-9" />
+          </div>
+        </Popover.Button>
+        <Popover.Panel className="absolute top-0 left-0 z-50 h-full w-full bg-white px-6 py-4 lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:rounded-lg lg:p-6 lg:shadow-[0px_4px_12px_#9e9e9e]">
+          {({ close }) => (
+            <TokenSearch close={close} onImportToken={importToken} />
           )}
-          <div>{selectedToken ? selectedToken.symbol : 'Eth'}</div>
-        </div>
-      </button>
-    </div>
+        </Popover.Panel>
+      </Popover>
+    </>
   )
 }
