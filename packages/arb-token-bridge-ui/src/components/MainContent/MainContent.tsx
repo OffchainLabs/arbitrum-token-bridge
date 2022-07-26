@@ -1,112 +1,186 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
+import { usePrevious } from 'react-use'
+import { motion, AnimatePresence } from 'framer-motion'
 
+import { PendingWithdrawalsLoadedState } from '../../util'
 import { useAppState } from '../../state'
-import { Alert } from '../common/Alert'
-import { Button } from '../common/Button'
-import { TransactionsModal } from '../TransactionsModal/TransactionsModal'
-import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
+import { SeenTransactionsCache } from '../../state/SeenTransactionsCache'
+import { MergedTransaction } from '../../state/app/state'
+import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { DepositCard } from '../TransferPanel/DepositCard'
+import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import useTwitter from '../../hooks/useTwitter'
+import { ExploreArbitrum } from './ExploreArbitrum'
 
-const MainContent = () => {
+const motionDivProps = {
+  layout: true,
+  initial: {
+    opacity: 0,
+    scale: 0.9
+  },
+  animate: {
+    opacity: 1,
+    scale: 1
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9
+  }
+}
+
+const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
+
+function isDeposit(tx: MergedTransaction) {
+  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
+}
+
+function isWithdrawalInitiation(tx: MergedTransaction) {
+  return tx.direction === 'withdraw'
+}
+
+function isL2ToL1Message(tx: MergedTransaction) {
+  return tx.direction === 'outbox' && L2ToL1MessageStatuses.includes(tx.status)
+}
+
+function dedupeWithdrawals(transactions: MergedTransaction[]) {
+  const map: {
+    [txHash: string]: MergedTransaction
+  } = {}
+
+  transactions.forEach(tx => {
+    // If it's a withdrawal initiation tx - try to find the matching transformed L2-to-L1 message.
+    // If found - use that. If not - use the withdrawal initiation tx, as it still might be pending.
+    if (isWithdrawalInitiation(tx) && !map[tx.txId]) {
+      const matchingL2ToL1Message = transactions.find(
+        _tx => tx.txId === _tx.txId && isL2ToL1Message(_tx)
+      )
+
+      if (matchingL2ToL1Message) {
+        map[tx.txId] = matchingL2ToL1Message
+      } else {
+        map[tx.txId] = tx
+      }
+    } else {
+      map[tx.txId] = tx
+    }
+  })
+
+  return Object.values(map)
+}
+
+export function MainContent() {
   const {
-    app: { mergedTransactions }
+    app: { mergedTransactions, pwLoadedState }
   } = useAppState()
-  const { l2 } = useNetworksAndSigners()
-  const handleTwitterClick = useTwitter()
+  const { seenTransactions, layout } = useAppContextState()
+  const { isTransferPanelVisible } = layout
+  const dispatch = useAppContextDispatch()
+  const unseenTransactionsWithDuplicates = mergedTransactions
+    // Exclude seen txs
+    .filter(tx => !seenTransactions.includes(tx.txId))
+    // Exclude token approval txs
+    .filter(tx => tx.direction !== 'approve')
+    // Exclude withdrawal claim txs
+    .filter(tx => {
+      if (tx.direction === 'outbox') {
+        return L2ToL1MessageStatuses.includes(tx.status)
+      }
 
-  const [transactionsModalOpen, setTransactionModalOpen] = useState(false)
+      return true
+    })
 
-  const isArbitrumOne = useMemo(() => {
-    if (typeof l2.network === 'undefined') {
-      return false
+  const unseenTransactions = dedupeWithdrawals(unseenTransactionsWithDuplicates)
+  const prevUnseenTransactions = usePrevious(unseenTransactions)
+
+  const didLoadPendingWithdrawals = useMemo(
+    () => pwLoadedState === PendingWithdrawalsLoadedState.READY,
+    [pwLoadedState]
+  )
+
+  useEffect(() => {
+    const prevUnseenTransactionsLength = prevUnseenTransactions?.length || 0
+
+    // The last visible card was hidden, so bring back the transfer panel
+    if (prevUnseenTransactionsLength > 0 && unseenTransactions.length === 0) {
+      dispatch({ type: 'layout.set_is_transfer_panel_visible', payload: true })
     }
+    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
+  }, [unseenTransactions, prevUnseenTransactions])
 
-    return l2.network.chainID === 42161
-  }, [l2])
+  useEffect(() => {
+    if (didLoadPendingWithdrawals) {
+      const cacheCreatedTimestamp = SeenTransactionsCache.getCreationTimestamp()
 
-  const isNitroDevnet = useMemo(() => {
-    if (typeof l2.network === 'undefined') {
-      return false
+      // Should never be the case, more of a sanity check
+      if (!cacheCreatedTimestamp) {
+        return
+      }
+
+      // Some withdrawals won't be marked as seen on cache creation, as their L2 tx hash wasn't in the local cache at initialization.
+      // In that case, we wait for the L2-to-L1 messages to load via the subgraph, and then mark their L2 txs as seen.
+      unseenTransactions
+        .filter(tx => L2ToL1MessageStatuses.includes(tx.status))
+        .forEach(tx => {
+          const txCreatedAt = tx.createdAt
+
+          // Should never be the case, more of a sanity check
+          if (!txCreatedAt) {
+            dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
+            return
+          }
+
+          // We only pick those older than the cache, so we don't accidentally mark fresh withdrawals as seen.
+          if (new Date(txCreatedAt) < cacheCreatedTimestamp) {
+            dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
+          }
+        })
     }
-
-    return l2.network.chainID === 421613
-  }, [l2])
+    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
+  }, [didLoadPendingWithdrawals, unseenTransactions])
 
   return (
-    <div className="mx-auto px-4">
-      {isArbitrumOne && (
-        <div className="mb-4 mx-auto max-w-networkBox w-full">
-          <Alert type="blue">
-            NOTICE: Arbitrum One is in mainnet Beta, which currently includes
-            administrative controls.{' '}
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
-            >
-              <u>(more info)</u>
-            </a>
-          </Alert>
-        </div>
-      )}
-
-      {isNitroDevnet && (
-        <div className="mb-4 mx-auto max-w-networkBox w-full">
-          <Alert type="blue">
-            <span id="twitter-faucet-container">
-              Request testnet Eth from the{' '}
-              <a id="faucet-link" target="_blank" onClick={handleTwitterClick}>
-                Nitro Testnet twitter faucet!
-              </a>
-            </span>
-          </Alert>
-        </div>
-      )}
-
-      <div className="mb-4 mx-auto max-w-networkBox w-full">
-        <Alert type="ramps">
-          Looking for fast bridges and direct fiat on-ramps for Arbitrum?&nbsp;
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href="https://portal.arbitrum.one/#bridgesandonramps"
-          >
-            <u>Click here!</u>
-          </a>
-        </Alert>
-      </div>
-
-      <TransferPanel />
-
-      {mergedTransactions?.length > 0 && (
-        <>
-          <TransactionsTable transactions={mergedTransactions?.slice(0, 5)} />
-
-          <div className="h-6" />
-
-          {mergedTransactions?.length > 5 && (
-            <div className="max-w-networkBox mx-auto mb-4">
-              <Button
-                onClick={() => setTransactionModalOpen(true)}
-                variant="white"
-                size="md"
-                className="w-full"
-              >
-                View all
-              </Button>
-            </div>
+    <div className="flex w-full justify-center">
+      <div className="w-full max-w-screen-lg flex-col space-y-6">
+        <AnimatePresence>
+          {didLoadPendingWithdrawals && (
+            <>
+              {unseenTransactions.map(tx =>
+                isDeposit(tx) ? (
+                  <motion.div key={tx.txId} {...motionDivProps}>
+                    <DepositCard key={tx.txId} tx={tx} />
+                  </motion.div>
+                ) : (
+                  <motion.div key={tx.txId} {...motionDivProps}>
+                    <WithdrawalCard key={tx.txId} tx={tx} />
+                  </motion.div>
+                )
+              )}
+            </>
           )}
-        </>
-      )}
+        </AnimatePresence>
 
-      <TransactionsModal
-        isOpen={transactionsModalOpen}
-        setIsOpen={setTransactionModalOpen}
-      />
+        <AnimatePresence exitBeforeEnter>
+          {isTransferPanelVisible && (
+            <motion.div
+              key="transfer-panel"
+              {...motionDivProps}
+              className="relative z-10"
+            >
+              <TransferPanel />
+            </motion.div>
+          )}
+
+          {didLoadPendingWithdrawals && unseenTransactions.length > 0 && (
+            <>
+              <motion.div key="explore-arbitrum" {...motionDivProps}>
+                <ExploreArbitrum />
+              </motion.div>
+
+              <div className="h-[25vh]" />
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
-
-export default MainContent

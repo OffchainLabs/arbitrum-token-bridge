@@ -1,23 +1,22 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
-
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
-import Loader from 'react-loader-spinner'
 import { useLatest } from 'react-use'
 
 import { useAppState } from '../../state'
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { ConnectionState } from '../../util'
+import { isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
-import { StatusBadge } from '../common/StatusBadge'
-import TransactionConfirmationModal, {
-  ModalStatus
-} from '../TransactionConfirmationModal/TransactionConfirmationModal'
-import { TokenImportModal } from '../TokenModal/TokenImportModal'
-import { NetworkBox } from './NetworkBox'
+import {
+  TokenDepositCheckDialog,
+  TokenDepositCheckDialogType
+} from './TokenDepositCheckDialog'
+import { TokenImportDialog } from './TokenImportDialog'
+import { NetworkBox, NetworkBoxErrorMessage } from './NetworkBox'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
@@ -27,6 +26,13 @@ import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { useDialog } from '../common/Dialog'
+import { TokenApprovalDialog } from './TokenApprovalDialog'
+import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
+import { LowBalanceDialog } from './LowBalanceDialog'
+import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
+import { useAppContextDispatch } from '../App/AppContext'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -69,37 +75,38 @@ enum ImportTokenModalStatus {
   CLOSED
 }
 
-const TransferPanel = (): JSX.Element => {
+export function TransferPanel() {
   const tokenFromSearchParams = useTokenFromSearchParams()
 
-  const [confimationModalStatus, setConfirmationModalStatus] =
-    useState<ModalStatus>(ModalStatus.CLOSED)
+  const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
+    useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
 
   const {
     app: {
       connectionState,
-      pwLoadedState,
       changeNetwork,
       selectedToken,
       isDepositMode,
-      pendingTransactions,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens, walletAddress },
       arbTokenBridge,
       warningTokens
     }
   } = useAppState()
-  const { provider } = useWallet()
+  const { provider, account } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network },
-    l2: { signer: l2Signer }
+    l2: { network: l2Network, signer: l2Signer }
   } = networksAndSigners
+  const dispatch = useAppContextDispatch()
+
+  const { isMainnet } = isNetwork(l1Network)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -110,6 +117,35 @@ const TransferPanel = (): JSX.Element => {
   const [l2Amount, setL2AmountState] = useState<string>('')
 
   const { shouldRequireApprove } = useL2Approve()
+
+  const [
+    lowBalanceDialogProps,
+    openLowBalanceDialog,
+    { didOpen: didOpenLowBalanceDialog }
+  ] = useDialog()
+  const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
+  const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
+  const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
+    useDialog()
+
+  // The amount of funds to bridge over, represented as a floating point number
+  const amount = useMemo(() => {
+    if (isDepositMode) {
+      return parseFloat(l1Amount || '0')
+    }
+
+    return parseFloat(l2Amount || '0')
+  }, [isDepositMode, l1Amount, l2Amount])
+
+  const ethBalance = useMemo(() => {
+    if (!arbTokenBridge || !arbTokenBridge.balances) {
+      return null
+    }
+
+    return isDepositMode
+      ? arbTokenBridge.balances.eth.balance
+      : arbTokenBridge.balances.eth.arbChainBalance
+  }, [isDepositMode, arbTokenBridge])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -136,6 +172,51 @@ const TransferPanel = (): JSX.Element => {
       Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
     )
   }
+
+  useEffect(() => {
+    // Check in case of an account switch or network switch
+    if (
+      typeof account === 'undefined' ||
+      typeof arbTokenBridge.walletAddress === 'undefined'
+    ) {
+      return
+    }
+
+    // Wait for the bridge object to be in sync
+    if (account.toLowerCase() !== arbTokenBridge.walletAddress.toLowerCase()) {
+      return
+    }
+
+    // This effect runs every time the balance updates, but we want to show the dialog only once
+    if (didOpenLowBalanceDialog) {
+      return
+    }
+
+    // Don't open when the token import dialog should open
+    if (typeof tokenFromSearchParams !== 'undefined') {
+      return
+    }
+
+    if (typeof arbTokenBridge.balances !== 'undefined') {
+      const ethBalance = arbTokenBridge.balances.eth.balance
+
+      if (ethBalance) {
+        const isLowBalance = ethBalance.lte(utils.parseEther('0.005'))
+
+        if (isMainnet && isDepositMode && isLowBalance) {
+          openLowBalanceDialog()
+        }
+      }
+    }
+  }, [
+    account,
+    isMainnet,
+    isDepositMode,
+    arbTokenBridge,
+    tokenFromSearchParams,
+    didOpenLowBalanceDialog,
+    openLowBalanceDialog
+  ])
 
   const l1Balance = useMemo(() => {
     if (selectedToken) {
@@ -179,19 +260,46 @@ const TransferPanel = (): JSX.Element => {
     return isConnected && isDepositMode && isUnbridgedToken
   }, [l1Network, isDepositMode, selectedToken])
 
-  const showModalOnDeposit = useCallback(() => {
-    if (isBridgingANewStandardToken) {
-      if (!selectedToken)
-        throw new Error('Invalid app state: no selected token')
-      setConfirmationModalStatus(ModalStatus.NEW_TOKEN_DEPOSITING)
-    } else {
-      const isAUserAddedToken =
-        selectedToken && selectedToken.listID === undefined
-      setConfirmationModalStatus(
-        isAUserAddedToken ? ModalStatus.USER_ADDED_DEPOSIT : ModalStatus.DEPOSIT
-      )
+  async function depositToken() {
+    if (!selectedToken) {
+      throw new Error('Invalid app state: no selected token')
     }
-  }, [isBridgingANewStandardToken, selectedToken])
+
+    function getDialogType(): TokenDepositCheckDialogType | null {
+      let type: TokenDepositCheckDialogType | null = null
+
+      if (isBridgingANewStandardToken) {
+        type = 'new-token'
+      } else {
+        const isUserAddedToken =
+          selectedToken &&
+          typeof selectedToken.listID === 'undefined' &&
+          typeof selectedToken.l2Address === 'undefined'
+
+        if (isUserAddedToken) {
+          type = 'user-added-token'
+        }
+      }
+
+      return type
+    }
+
+    // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
+    const dialogType = getDialogType()
+
+    if (dialogType) {
+      setTokenDepositCheckDialogType(dialogType)
+
+      const waitForInput = openTokenCheckDialog()
+      const confirmed = await waitForInput()
+
+      if (confirmed) {
+        transfer()
+      }
+    } else {
+      transfer()
+    }
+  }
 
   const transfer = async () => {
     if (
@@ -225,6 +333,7 @@ const TransferPanel = (): JSX.Element => {
           )
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          trackEvent('Switch Network and Transfer')
           await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
 
           while (
@@ -271,17 +380,39 @@ const TransferPanel = (): JSX.Element => {
           )
 
           if (!allowance.gte(amountRaw)) {
+            const waitForInput = openTokenApprovalDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+
             await latestToken.current.approve(selectedToken.address)
           }
 
-          await latestToken.current.deposit(selectedToken.address, amountRaw)
+          await latestToken.current.deposit(selectedToken.address, amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
-          await latestEth.current.deposit(amountRaw)
+          await latestEth.current.deposit(amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         }
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          trackEvent('Switch Network and Transfer')
           await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
 
           while (
@@ -303,6 +434,14 @@ const TransferPanel = (): JSX.Element => {
         ) {
           return alert('Network connection issue; contact support')
         }
+
+        const waitForInput = openWithdrawalConfirmationDialog()
+        const confirmed = await waitForInput()
+
+        if (!confirmed) {
+          return
+        }
+
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
@@ -323,10 +462,25 @@ const TransferPanel = (): JSX.Element => {
               await latestToken.current.approveL2(selectedToken.address)
             }
           }
-          latestToken.current.withdraw(selectedToken.address, amountRaw)
+
+          await latestToken.current.withdraw(selectedToken.address, amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          latestEth.current.withdraw(amountRaw)
+          await latestEth.current.withdraw(amountRaw, {
+            onTxSubmit: () => {
+              dispatch({
+                type: 'layout.set_is_transfer_panel_visible',
+                payload: false
+              })
+            }
+          })
         }
       }
     } catch (ex) {
@@ -335,6 +489,80 @@ const TransferPanel = (): JSX.Element => {
       setTransferring(false)
     }
   }
+
+  const amountBigNumber = useMemo(
+    () =>
+      utils.parseUnits(
+        isDepositMode ? l1Amount || '0' : l2Amount || '0',
+        selectedToken?.decimals || 18
+      ),
+    [isDepositMode, l1Amount, l2Amount, selectedToken]
+  )
+
+  // Only run gas estimation when it makes sense, i.e. when there is enough funds
+  const shouldRunGasEstimation = useMemo(
+    () =>
+      isDepositMode
+        ? Number(l1Amount) <= Number(l1Balance)
+        : Number(l2Amount) <= Number(l2Balance),
+    [isDepositMode, l1Amount, l1Balance, l2Amount, l2Balance]
+  )
+
+  const gasSummary = useGasSummary(
+    amountBigNumber,
+    selectedToken,
+    shouldRunGasEstimation
+  )
+
+  const getNetworkBoxErrorMessage = useCallback(
+    (
+      _amountEntered: string,
+      _balance: string | null
+    ): NetworkBoxErrorMessage | undefined => {
+      // No error while loading balance
+      if (_balance === null || ethBalance === null) {
+        return undefined
+      }
+
+      const amountEntered = Number(_amountEntered)
+      const balance = Number(_balance)
+
+      if (amountEntered > balance) {
+        return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+      }
+
+      // The amount entered is enough funds, but now let's include gas costs
+      switch (gasSummary.status) {
+        // No error while loading gas costs
+        case 'idle':
+        case 'loading':
+          return undefined
+
+        case 'error':
+          return NetworkBoxErrorMessage.AMOUNT_TOO_LOW
+
+        case 'success': {
+          if (selectedToken) {
+            // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
+            const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+
+            if (gasSummary.estimatedTotalGasFees > ethBalanceFloat) {
+              return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+            }
+
+            return undefined
+          }
+
+          if (amountEntered + gasSummary.estimatedTotalGasFees > balance) {
+            return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+          }
+
+          return undefined
+        }
+      }
+    },
+    [gasSummary, ethBalance, selectedToken]
+  )
 
   const disableDeposit = useMemo(() => {
     const l1AmountNum = +l1Amount
@@ -360,6 +588,31 @@ const TransferPanel = (): JSX.Element => {
     )
   }, [transferring, isDepositMode, l1Amount, l1Balance])
 
+  // TODO: Refactor this and the property above
+  const disableDepositV2 = useMemo(() => {
+    // Keep the button disabled while loading gas summary
+    if (!ethBalance || disableDeposit || gasSummary.status !== 'success') {
+      return true
+    }
+
+    if (selectedToken) {
+      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+    }
+
+    return (
+      Number(l1Amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
+    )
+  }, [
+    ethBalance,
+    disableDeposit,
+    selectedToken,
+    gasSummary,
+    l1Amount,
+    l1Balance
+  ])
+
   const disableWithdrawal = useMemo(() => {
     const l2AmountNum = +l2Amount
 
@@ -378,50 +631,62 @@ const TransferPanel = (): JSX.Element => {
     )
   }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
 
+  // TODO: Refactor this and the property above
+  const disableWithdrawalV2 = useMemo(() => {
+    // Keep the button disabled while loading gas summary
+    if (!ethBalance || disableWithdrawal || gasSummary.status !== 'success') {
+      return true
+    }
+
+    if (selectedToken) {
+      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+    }
+
+    return (
+      Number(l2Amount) + gasSummary.estimatedTotalGasFees > Number(l2Balance)
+    )
+  }, [
+    ethBalance,
+    disableWithdrawal,
+    selectedToken,
+    gasSummary,
+    l2Amount,
+    l2Balance
+  ])
+
+  const isSummaryVisible = useMemo(() => {
+    if (transferring) {
+      return true
+    }
+
+    return !(isDepositMode ? disableDeposit : disableWithdrawal)
+  }, [transferring, isDepositMode, disableDeposit, disableWithdrawal])
+
   return (
     <>
-      <div className="flex justify-between items-end gap-4 flex-wrap max-w-networkBox w-full mx-auto mb-4 min-h-10">
-        <div>
-          {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-            <div>
-              <StatusBadge showDot={false}>
-                <div className="mr-2">
-                  <Loader
-                    type="Oval"
-                    color="rgb(45, 55, 75)"
-                    height={14}
-                    width={14}
-                  />
-                </div>
-                Loading pending withdrawals
-              </StatusBadge>
-            </div>
-          )}
-          {pwLoadedState === PendingWithdrawalsLoadedState.ERROR && (
-            <div>
-              <StatusBadge variant="red">
-                Loading pending withdrawals failed
-              </StatusBadge>
-            </div>
-          )}
-        </div>
-        {pendingTransactions?.length > 0 && (
-          <StatusBadge>{pendingTransactions?.length} Processing</StatusBadge>
-        )}
-      </div>
-      <div className="flex flex-col w-full max-w-networkBox mx-auto mb-8">
-        <div className="flex flex-col">
+      <TokenApprovalDialog
+        {...tokenApprovalDialogProps}
+        token={selectedToken}
+      />
+
+      <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
+
+      <LowBalanceDialog {...lowBalanceDialogProps} />
+
+      <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
+        <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
           <NetworkBox
             isL1
             amount={l1Amount}
             setAmount={setl1Amount}
             className={isDepositMode ? 'order-1' : 'order-3'}
+            errorMessage={getNetworkBoxErrorMessage(l1Amount, l1Balance)}
           />
-          <div className="h-2 relative flex justify-center order-2 w-full">
-            <div className="flex items-center justify-end relative w-full">
-              <div className="absolute left-0 right-0 mx-auto flex items-center justify-center">
-                <NetworkSwitchButton />
-              </div>
+          <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
+            <div className="flex w-full items-center justify-center">
+              <NetworkSwitchButton />
             </div>
           </div>
           <NetworkBox
@@ -429,50 +694,89 @@ const TransferPanel = (): JSX.Element => {
             amount={l2Amount}
             setAmount={setl2Amount}
             className={isDepositMode ? 'order-3' : 'order-1'}
+            errorMessage={getNetworkBoxErrorMessage(l2Amount, l2Balance)}
           />
         </div>
 
-        <div className="h-6" />
+        <div className="border-r border-gray-3" />
+
+        <div
+          style={
+            isSummaryVisible
+              ? {}
+              : {
+                  background: `url(/images/ArbitrumFaded.png)`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center'
+                }
+          }
+          className="flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
+        >
+          <div className="hidden lg:block">
+            <span className="text-2xl">Summary</span>
+            <div className="h-4" />
+          </div>
+
+          {isSummaryVisible ? (
+            <TransferPanelSummary
+              amount={amount}
+              token={selectedToken}
+              gasSummary={gasSummary}
+            />
+          ) : (
+            <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[297px]">
+              <span className="text-xl">
+                Bridging summary will appear here.
+              </span>
+            </div>
+          )}
+
+          {isDepositMode ? (
+            <Button
+              variant="primary"
+              loading={transferring}
+              disabled={disableDepositV2}
+              onClick={() => {
+                if (selectedToken) {
+                  depositToken()
+                } else {
+                  transfer()
+                }
+              }}
+              className="w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl"
+            >
+              Move funds to {l2Network?.name}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              loading={transferring}
+              disabled={disableWithdrawalV2}
+              onClick={transfer}
+              className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
+            >
+              Move funds to {l1Network?.name}
+            </Button>
+          )}
+        </div>
 
         {typeof tokenFromSearchParams !== 'undefined' && (
-          <TokenImportModal
+          <TokenImportDialog
             isOpen={importTokenModalStatus === ImportTokenModalStatus.OPEN}
-            setIsOpen={() =>
+            onClose={() =>
               setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
             }
             address={tokenFromSearchParams}
           />
         )}
 
-        <TransactionConfirmationModal
-          onConfirm={transfer}
-          status={confimationModalStatus}
-          closeModal={() => setConfirmationModalStatus(ModalStatus.CLOSED)}
-          isDepositing={isDepositMode}
-          symbol={selectedToken ? selectedToken.symbol : 'Eth'}
-          amount={isDepositMode ? l1Amount : l2Amount}
+        <TokenDepositCheckDialog
+          {...tokenCheckDialogProps}
+          type={tokenDepositCheckDialogType}
+          symbol={selectedToken ? selectedToken.symbol : 'ETH'}
         />
-        {isDepositMode ? (
-          <Button
-            onClick={showModalOnDeposit}
-            disabled={disableDeposit}
-            isLoading={transferring}
-          >
-            {isBridgingANewStandardToken ? 'Deploy/Deposit' : 'Deposit'}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => setConfirmationModalStatus(ModalStatus.WITHDRAW)}
-            disabled={disableWithdrawal}
-            variant="navy"
-            isLoading={transferring}
-          >
-            Withdraw
-          </Button>
-        )}
       </div>
     </>
   )
 }
-
-export { TransferPanel }

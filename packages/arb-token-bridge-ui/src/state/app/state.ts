@@ -15,6 +15,7 @@ import {
   OutgoingMessageState,
   NodeBlockDeadlineStatus,
   L1ToL2MessageData,
+  L2ToL1MessageData,
   getUniqueIdOrHashFromEvent
 } from 'token-bridge-sdk'
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
@@ -84,6 +85,7 @@ export interface MergedTransaction {
   tokenAddress: string | null
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
+  l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
 }
 
@@ -181,8 +183,9 @@ export const defaultState: AppState = {
         uniqueId: null, // not needed
         isWithdrawal: false,
         blockNum: tx.blockNumber || null,
-        tokenAddress: null, // not needed
+        tokenAddress: tx.tokenAddress || null,
         l1ToL2MsgData: tx.l1ToL2MsgData,
+        l2ToL1MsgData: tx.l2ToL1MsgData,
         depositStatus: getDepositStatus(tx)
       }
     })
@@ -209,7 +212,7 @@ export const defaultState: AppState = {
           BigNumber.from(tx.timestamp).toNumber() * 1000 +
           (uniqueIdOrHash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
         resolvedAt: null,
-        txId: uniqueIdOrHash.toString(),
+        txId: tx.l2TxHash || 'l2-tx-hash-not-found',
         asset: tx.symbol?.toLocaleLowerCase(),
         value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
         uniqueId: uniqueIdOrHash,

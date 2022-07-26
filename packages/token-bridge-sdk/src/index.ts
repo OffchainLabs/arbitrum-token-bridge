@@ -26,7 +26,10 @@ export type {
 } from './hooks/useTransactions'
 
 export { txnTypeToLayer } from './hooks/useTransactions'
-export type { L1ToL2MessageData } from './hooks/useTransactions'
+export type {
+  L1ToL2MessageData,
+  L2ToL1MessageData
+} from './hooks/useTransactions'
 
 export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 

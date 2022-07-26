@@ -1,21 +1,30 @@
 import { useState, useEffect, ImgHTMLAttributes } from 'react'
 
-export interface SafeImageProps extends ImgHTMLAttributes<HTMLImageElement> {
+import { sanitizeImageSrc } from '../../util'
+
+export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   fallback: JSX.Element
 }
 
 export function SafeImage(props: SafeImageProps) {
-  const [isValid, setIsValid] = useState(true)
+  const [validImageSrc, setValidImageSrc] = useState<false | string>(false)
 
   useEffect(() => {
     if (typeof props.src === 'undefined') {
-      setIsValid(false)
+      setValidImageSrc(false)
     } else {
+      const sanitizedImageSrc = sanitizeImageSrc(props.src)
+
       const image = new Image()
-      image.onerror = () => setIsValid(false)
-      image.src = props.src
+      image.onerror = () => setValidImageSrc(false)
+      image.onload = () => setValidImageSrc(sanitizedImageSrc)
+      image.src = sanitizedImageSrc
     }
   }, [props.src])
 
-  return isValid ? <img {...props} alt={props.alt || ''} /> : props.fallback
+  if (!validImageSrc) {
+    return props.fallback
+  }
+
+  return <img {...props} src={validImageSrc} alt={props.alt || ''} />
 }
