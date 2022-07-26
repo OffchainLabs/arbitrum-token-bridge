@@ -10,6 +10,8 @@ import {
   registerLocalNetwork
 } from './util/networks'
 
+import Package from '../package.json'
+
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 
@@ -24,8 +26,9 @@ if (process.env.NODE_ENV === 'development') {
 
 Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN,
+  release: Package.version,
   integrations: [new BrowserTracing()],
-  tracesSampleRate: 0.2
+  tracesSampleRate: 0.5
 })
 
 ReactDOM.render(<App />, document.getElementById('root'))
