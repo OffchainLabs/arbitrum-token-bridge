@@ -18,11 +18,6 @@ export function RetryableTxnsIncluder(): JSX.Element {
   } = useAppState()
 
   const checkAndUpdateFailedRetryables = useCallback(async () => {
-    // This should never be the case
-    if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
-      return
-    }
-
     const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
 
     for (let depositTx of failedRetryablesToRedeem) {
@@ -46,11 +41,6 @@ export function RetryableTxnsIncluder(): JSX.Element {
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
    */
   const checkAndAddMissingL1ToL2Messagges = useCallback(async () => {
-    // This should never be the case
-    if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
-      return
-    }
-
     const l1DepositsWithUntrackedL2Messages =
       actions.app.l1DepositsWithUntrackedL2Messages()
 
