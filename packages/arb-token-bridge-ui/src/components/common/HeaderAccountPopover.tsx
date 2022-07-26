@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
+import ReactDOM from 'react-dom'
 import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
@@ -75,6 +76,22 @@ async function tryGetAvatar(
   } catch (error) {
     return null
   }
+}
+
+export function HeaderAccountPopoverNotification({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  const rootElement = document.getElementById(
+    'header-account-popover-notification-root'
+  )
+
+  if (!rootElement) {
+    return null
+  }
+
+  return ReactDOM.createPortal(children, rootElement)
 }
 
 export function HeaderAccountPopover() {
@@ -163,6 +180,10 @@ export function HeaderAccountPopover() {
             </span>
           </div>
         </div>
+        <div
+          id="header-account-popover-notification-root"
+          className="absolute -bottom-2 -right-2 hidden lg:flex"
+        ></div>
       </Popover.Button>
       <Transition>
         <Popover.Panel className="relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4 lg:min-w-[896px] lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
