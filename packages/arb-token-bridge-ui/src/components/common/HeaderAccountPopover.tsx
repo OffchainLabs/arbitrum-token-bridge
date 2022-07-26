@@ -3,6 +3,7 @@ import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
 import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
@@ -54,6 +55,28 @@ function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
+async function tryLookupAddress(
+  provider: JsonRpcProvider,
+  address: string
+): Promise<string | null> {
+  try {
+    return await provider.lookupAddress(address)
+  } catch (error) {
+    return null
+  }
+}
+
+async function tryGetAvatar(
+  provider: JsonRpcProvider,
+  address: string
+): Promise<string | null> {
+  try {
+    return await provider.getAvatar(address)
+  } catch (error) {
+    return null
+  }
+}
+
 export function HeaderAccountPopover() {
   const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
@@ -69,8 +92,8 @@ export function HeaderAccountPopover() {
     async function resolveENSInfo() {
       if (account && l1.signer) {
         const [name, avatar] = await Promise.all([
-          l1.signer.provider.lookupAddress(account),
-          l1.signer.provider.getAvatar(account)
+          tryLookupAddress(l1.signer.provider, account),
+          tryGetAvatar(l1.signer.provider, account)
         ])
 
         setENSInfo({ name, avatar })
