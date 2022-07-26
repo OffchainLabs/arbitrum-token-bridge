@@ -435,8 +435,12 @@ function ConnectionFallback({
 }): JSX.Element {
   const { connect } = useWallet()
 
-  function showConnectionModal() {
-    connect(modalProviderOpts)
+  async function showConnectionModal() {
+    try {
+      await connect(modalProviderOpts)
+    } catch (error) {
+      // Dialog was closed by user
+    }
   }
 
   switch (status) {
