@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge'
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { HeaderMenuDesktop, HeaderMenuMobile } from './HeaderMenu'
+import { GET_HELP_LINK } from '../../constants'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
 
@@ -238,7 +239,7 @@ export function Header() {
             >
               Charts & Stats
             </HeaderMenuDesktop>
-            <DesktopExternalLink href="https://arbitrum.zendesk.com/hc/en-us/requests/new">
+            <DesktopExternalLink href={GET_HELP_LINK}>
               Get Help
             </DesktopExternalLink>
           </div>
@@ -361,9 +362,7 @@ function HeaderMobile() {
         >
           Charts & Stats
         </HeaderMenuMobile>
-        <MobileExternalLink href="https://arbitrum.zendesk.com/hc/en-us/requests/new">
-          Get Help
-        </MobileExternalLink>
+        <MobileExternalLink href={GET_HELP_LINK}>Get Help</MobileExternalLink>
       </div>
     </div>
   )

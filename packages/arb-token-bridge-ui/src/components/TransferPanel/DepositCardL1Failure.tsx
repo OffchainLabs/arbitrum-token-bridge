@@ -6,6 +6,7 @@ import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCardContainer } from './DepositCard'
+import { GET_HELP_LINK } from '../../constants'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
@@ -41,7 +42,7 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
 
       <div className="h-2" />
       <ExternalLink
-        href="https://support.arbitrum.io/hc/en-us/requests/new"
+        href={GET_HELP_LINK}
         className="arb-hover w-max rounded-lg bg-dark px-4 py-3 text-2xl text-white"
       >
         Get Help

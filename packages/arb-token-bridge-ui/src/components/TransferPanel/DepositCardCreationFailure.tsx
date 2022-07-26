@@ -6,6 +6,7 @@ import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DepositCardContainer } from './DepositCard'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { GET_HELP_LINK } from '../../constants'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
@@ -50,7 +51,7 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
 
       <div className="h-2" />
       <ExternalLink
-        href="https://support.arbitrum.io/hc/en-us/requests/new"
+        href={GET_HELP_LINK}
         className="arb-hover w-max rounded-lg bg-dark px-4 py-3 text-2xl text-white"
       >
         Get Help
