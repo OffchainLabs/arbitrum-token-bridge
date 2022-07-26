@@ -21,11 +21,19 @@ export function RetryableTxnsIncluder(): JSX.Element {
     const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
 
     for (let depositTx of failedRetryablesToRedeem) {
-      const depositTxRec = new L1TransactionReceipt(
-        await l1Signer.provider.getTransactionReceipt(depositTx.txId)
-      ) //**TODO: not found, i.e., reorg */
-      const l1ToL2Msg = await depositTxRec.getL1ToL2Message(l2Signer.provider)
+      const depositTxReceipt = await l1Signer.provider.getTransactionReceipt(
+        depositTx.txId
+      )
+
+      // TODO: Handle tx not found
+      if (!depositTxReceipt) {
+        return
+      }
+
+      const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+      const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Signer.provider)
       const status = await l1ToL2Msg.status()
+
       if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
           depositTx.txId,
