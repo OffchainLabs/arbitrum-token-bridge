@@ -19,7 +19,7 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { token } = props
+  const { isOpen, token } = props
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -45,8 +45,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }, [estimatedGasFees, toUSD, isMainnet])
 
   useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
     async function getEstimatedGas() {
-      if (token?.address) {
+      if (arbTokenBridge.token && token?.address) {
         setEstimatedGas(
           await arbTokenBridge.token.approveEstimateGas(token.address)
         )
@@ -54,7 +58,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     getEstimatedGas()
-  }, [token?.address])
+  }, [isOpen, token?.address])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
