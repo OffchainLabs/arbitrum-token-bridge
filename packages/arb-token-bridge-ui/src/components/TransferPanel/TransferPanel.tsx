@@ -32,6 +32,7 @@ import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextDispatch } from '../App/AppContext'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -332,6 +333,7 @@ export function TransferPanel() {
           )
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          trackEvent('Switch Network and Transfer')
           await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
 
           while (
@@ -410,6 +412,7 @@ export function TransferPanel() {
         }
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+          trackEvent('Switch Network and Transfer')
           await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
 
           while (
