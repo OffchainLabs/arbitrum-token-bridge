@@ -45,7 +45,7 @@
 
 "@arbitrum/sdk-nitro@OffchainLabs/arbitrum-sdk#fix-arb-provider", "@arbitrum/sdk-nitro@npm:@arbitrum/sdk@3.0.0-beta.3":
   version "3.0.0-beta.5"
-  resolved "https://codeload.github.com/OffchainLabs/arbitrum-sdk/tar.gz/b699112d5a611b943c8b11ca462708902d3d64c7"
+  resolved "https://codeload.github.com/OffchainLabs/arbitrum-sdk/tar.gz/eeb71e89c42026428bfb1472c790c3a581e7bd16"
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
