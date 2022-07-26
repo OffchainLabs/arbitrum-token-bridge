@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { usePrevious } from 'react-use'
 import { motion, AnimatePresence } from 'framer-motion'
+import Loader from 'react-loader-spinner'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
 import { useAppState } from '../../state'
@@ -11,6 +12,7 @@ import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
+import { HeaderAccountPopoverNotification } from '../common/HeaderAccountPopover'
 
 const motionDivProps = {
   layout: true,
@@ -68,6 +70,27 @@ function dedupeWithdrawals(transactions: MergedTransaction[]) {
   return Object.values(map)
 }
 
+function WithdrawalsIndicator({ amount }: { amount: number }) {
+  const { app } = useAppState()
+  const { pwLoadedState } = app
+
+  if (pwLoadedState === PendingWithdrawalsLoadedState.READY && amount === 0) {
+    return null
+  }
+
+  return (
+    <div className="border-1 flex h-4 w-4 items-center justify-center rounded-full border-white bg-brick text-xs transition-colors duration-500 lg:h-6 lg:w-6 lg:border-2">
+      {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
+        <Loader type="TailSpin" color="black" height={14} width={14} />
+      )}
+
+      {pwLoadedState === PendingWithdrawalsLoadedState.READY && (
+        <span className="text-xs">{amount}</span>
+      )}
+    </div>
+  )
+}
+
 export function MainContent() {
   const {
     app: { mergedTransactions, pwLoadedState }
@@ -95,6 +118,11 @@ export function MainContent() {
   const didLoadPendingWithdrawals = useMemo(
     () => pwLoadedState === PendingWithdrawalsLoadedState.READY,
     [pwLoadedState]
+  )
+
+  const numberOfPendingWithdrawals = useMemo(
+    () => unseenTransactions.filter(tx => !isDeposit(tx)).length,
+    [unseenTransactions]
   )
 
   useEffect(() => {
@@ -141,6 +169,10 @@ export function MainContent() {
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
+        <HeaderAccountPopoverNotification>
+          <WithdrawalsIndicator amount={numberOfPendingWithdrawals} />
+        </HeaderAccountPopoverNotification>
+
         <AnimatePresence>
           {didLoadPendingWithdrawals && (
             <>
