@@ -31,6 +31,8 @@ export type FathomEvent =
   //
   | `Slow Bridge Click`
   | `Move More Funds Click`
+  //
+  | 'Switch Network and Transfer'
 
 const eventToEventId: {
   [key in FathomEvent]: string
@@ -99,7 +101,9 @@ const eventToEventId: {
   'Fast Bridge Click: Across': 'EZDV8TMY',
   //
   'Slow Bridge Click': '9CEY3IGM',
-  'Move More Funds Click': 'YE1OYTL4'
+  'Move More Funds Click': 'YE1OYTL4',
+  //
+  'Switch Network and Transfer': '4F5SKZRG'
 }
 
 export function trackEvent(event: FathomEvent) {
