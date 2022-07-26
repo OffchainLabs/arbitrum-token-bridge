@@ -471,7 +471,6 @@ function TokensPanel({
           {({ width }) => (
             <List
               width={width - 2}
-              // Make height equal to 6 rows
               height={numberOfRows * 84}
               rowCount={tokensToShow.length}
               rowHeight={84}
