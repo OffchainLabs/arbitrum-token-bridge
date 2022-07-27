@@ -2,6 +2,7 @@ import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
+import { useMedia } from 'react-use'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
@@ -90,7 +91,7 @@ const MenuIcon = {
   }
 }
 
-function useResponsiveHeaderPortal() {
+export function useResponsiveHeaderPortal() {
   const mutationObserverRef = useRef<MutationObserver>()
   const [, setMutationCycleCount] = useState(0)
 
@@ -175,8 +176,10 @@ function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
 
 export function HeaderContent({ children }: { children: React.ReactNode }) {
   useResponsiveHeaderPortal()
+  const isLarge = useMedia('(min-width: 1024px)')
 
-  const rootElement = document.getElementById('header-content-root')
+  const size = isLarge ? 'desktop' : 'mobile'
+  const rootElement = document.getElementById(`header-content-root-${size}`)
 
   if (!rootElement) {
     return null
@@ -286,7 +289,7 @@ export function Header() {
         </Disclosure>
         <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-2 xl:space-x-4">
           <div
-            id="header-content-root"
+            id="header-content-root-desktop"
             className="flex space-x-2 xl:space-x-4"
           ></div>
           <div className="flex flex-row space-x-2 xl:space-x-4">
@@ -333,7 +336,7 @@ function HeaderMobile() {
       </div>
       <div className="flex min-h-screen flex-col items-center space-y-3 bg-blue-arbitrum pt-4">
         <div
-          id="header-content-root"
+          id="header-content-root-mobile"
           className="flex w-full flex-col items-center space-y-3"
         ></div>
         <HeaderMenuMobile

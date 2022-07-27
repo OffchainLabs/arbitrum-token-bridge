@@ -21,6 +21,7 @@ import {
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
+import { useResponsiveHeaderPortal } from './Header'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 
 type ENSInfo = { name: string | null; avatar: string | null }
@@ -83,6 +84,8 @@ export function HeaderAccountPopoverNotification({
 }: {
   children: React.ReactNode
 }) {
+  useResponsiveHeaderPortal()
+
   const rootElement = document.getElementById(
     'header-account-popover-notification-root'
   )
