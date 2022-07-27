@@ -12,6 +12,7 @@ import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
+import { HeaderMobileNotification } from '../common/Header'
 import { HeaderAccountPopoverNotification } from '../common/HeaderAccountPopover'
 
 const motionDivProps = {
@@ -175,6 +176,10 @@ export function MainContent() {
         <HeaderAccountPopoverNotification>
           <PendingWithdrawalsIndicator />
         </HeaderAccountPopoverNotification>
+
+        <HeaderMobileNotification>
+          <PendingWithdrawalsIndicator />
+        </HeaderMobileNotification>
 
         <AnimatePresence>
           {didLoadPendingWithdrawals && (

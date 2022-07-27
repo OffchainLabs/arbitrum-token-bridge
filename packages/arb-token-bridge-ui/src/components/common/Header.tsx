@@ -185,6 +185,22 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
   return ReactDOM.createPortal(children, rootElement)
 }
 
+export function HeaderMobileNotification({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  useResponsiveHeaderPortal()
+
+  const rootElement = document.getElementById('header-mobile-notification-root')
+
+  if (!rootElement) {
+    return null
+  }
+
+  return ReactDOM.createPortal(children, rootElement)
+}
+
 export function Header() {
   return (
     <header id="header" className={defaultHeaderClassName}>
@@ -252,8 +268,12 @@ export function Header() {
           {({ open }) => (
             <div className="flex items-center">
               {!open && (
-                <Disclosure.Button className="lg:hidden">
+                <Disclosure.Button className="relative lg:hidden">
                   <MenuIcon.Open />
+                  <div
+                    id="header-mobile-notification-root"
+                    className="absolute -top-3 -right-2"
+                  ></div>
                 </Disclosure.Button>
               )}
               <Disclosure.Panel>
