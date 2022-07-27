@@ -75,7 +75,6 @@ export function MainContent() {
   const { seenTransactions, layout } = useAppContextState()
   const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
-
   const unseenTransactionsWithDuplicates = mergedTransactions
     // Exclude seen txs
     .filter(tx => !seenTransactions.includes(tx.txId))

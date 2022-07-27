@@ -195,7 +195,7 @@ export function HeaderMobileNotification({
 }) {
   useResponsiveHeaderPortal()
 
-  const rootElement = document.getElementById('header-mobile-notification-root')
+  const rootElement = document.getElementById('header-notification-root-mobile')
 
   if (!rootElement) {
     return null
@@ -274,7 +274,7 @@ export function Header() {
                 <Disclosure.Button className="relative lg:hidden">
                   <MenuIcon.Open />
                   <div
-                    id="header-mobile-notification-root"
+                    id="header-notification-root-mobile"
                     className="absolute -top-3 -right-2"
                   ></div>
                 </Disclosure.Button>
