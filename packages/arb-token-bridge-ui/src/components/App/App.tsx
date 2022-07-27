@@ -74,6 +74,8 @@ async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
 
 const AppContent = (): JSX.Element => {
   const { l1 } = useNetworksAndSigners()
+  const { layout } = useAppContextState()
+  const { isPendingWithdrawalsIndicatorVisible } = layout
   const {
     app: { connectionState }
   } = useAppState()
@@ -137,10 +139,12 @@ const AppContent = (): JSX.Element => {
       </HeaderContent>
 
       <HeaderMobileNotification>
-        <PendingWithdrawalsIndicator
-          loaderProps={{ height: 12, width: 12 }}
-          className="h-4 w-4 border text-[10px]"
-        />
+        {isPendingWithdrawalsIndicatorVisible && (
+          <PendingWithdrawalsIndicator
+            loaderProps={{ height: 12, width: 12 }}
+            className="h-4 w-4 border text-[10px]"
+          />
+        )}
       </HeaderMobileNotification>
 
       <PendingTransactionsUpdater />

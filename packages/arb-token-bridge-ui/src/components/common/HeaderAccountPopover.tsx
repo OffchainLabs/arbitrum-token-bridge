@@ -21,7 +21,10 @@ import {
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
-import { PendingWithdrawalsIndicator } from './PendingWithdrawalsIndicator'
+import {
+  PendingWithdrawalsIndicator,
+  usePendingWithdrawalsIndicator
+} from './PendingWithdrawalsIndicator'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -78,6 +81,11 @@ async function tryGetAvatar(
   }
 }
 
+function PopoverPanelEventListener({ onOpen }: { onOpen: () => void }) {
+  useEffect(() => onOpen(), [onOpen])
+  return null
+}
+
 export function HeaderAccountPopover() {
   const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
@@ -85,6 +93,10 @@ export function HeaderAccountPopover() {
   const {
     app: { mergedTransactions, pwLoadedState }
   } = useAppState()
+  const {
+    isVisible: isPendingWithdrawalsIndicatorVisible,
+    hide: hidePendingWithdrawalsIndicator
+  } = usePendingWithdrawalsIndicator()
   const isLarge = useMedia('(min-width: 1024px)')
 
   const [showCopied, setShowCopied] = useState(false)
@@ -167,15 +179,19 @@ export function HeaderAccountPopover() {
             </span>
           </div>
         </div>
-        <div className="absolute right-6 flex justify-center lg:-bottom-2 lg:-right-2">
-          <PendingWithdrawalsIndicator
-            loaderProps={{ height: loaderSize, width: loaderSize }}
-            className="h-11 w-11 border-2 text-sm lg:h-6 lg:w-6 lg:text-xs"
-          />
-        </div>
+
+        {isPendingWithdrawalsIndicatorVisible && (
+          <div className="absolute right-6 flex justify-center lg:-bottom-2 lg:-right-2">
+            <PendingWithdrawalsIndicator
+              loaderProps={{ height: loaderSize, width: loaderSize }}
+              className="h-11 w-11 border-2 text-sm lg:h-6 lg:w-6 lg:text-xs"
+            />
+          </div>
+        )}
       </Popover.Button>
       <Transition>
         <Popover.Panel className="relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4 lg:min-w-[896px] lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+          <PopoverPanelEventListener onOpen={hidePendingWithdrawalsIndicator} />
           <div className="bg-blue-arbitrum p-4 lg:rounded-tl-md lg:rounded-tr-md">
             <div className="flex flex-row justify-between">
               <Transition show={showCopied}>

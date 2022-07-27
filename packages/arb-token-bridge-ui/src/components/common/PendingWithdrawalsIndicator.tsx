@@ -1,9 +1,29 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 import Loader from 'react-loader-spinner'
 
 import { useAppState } from '../../state'
 import { PendingWithdrawalsLoadedState } from '../../util'
+import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+
+export function usePendingWithdrawalsIndicator() {
+  const { app } = useAppState()
+  const { pwLoadedState } = app
+
+  const { layout } = useAppContextState()
+  const { isPendingWithdrawalsIndicatorVisible } = layout
+
+  const dispatch = useAppContextDispatch()
+
+  const hide = useCallback(() => {
+    // Don't hide indicator while loading
+    if (pwLoadedState !== PendingWithdrawalsLoadedState.LOADING) {
+      dispatch({ type: 'layout.hide_pending_withdrawals_indicator' })
+    }
+  }, [dispatch, pwLoadedState])
+
+  return { isVisible: isPendingWithdrawalsIndicatorVisible, hide }
+}
 
 export type PendingWithdrawalsIndicatorProps = {
   loaderProps?: { width: number; height: number }
