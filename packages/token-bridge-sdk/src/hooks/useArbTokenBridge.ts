@@ -59,7 +59,6 @@ import {
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 
 const { Zero } = constants
-const RINKEBY_NITRO_GENESIS_BLOCK = 13656922
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -1147,7 +1146,7 @@ export const useArbTokenBridge = (
     // )
 
     const startBlock = 0
-    const pivotBlock = RINKEBY_NITRO_GENESIS_BLOCK
+    const pivotBlock = await getNitroGenesisBlockNumber()
 
     const oldEthWithdrawals = await getETHWithdrawals(
       walletAddress,
@@ -1244,7 +1243,7 @@ export const useArbTokenBridge = (
     // const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
     const startBlock = 0
-    const pivotBlock = RINKEBY_NITRO_GENESIS_BLOCK
+    const pivotBlock = await getNitroGenesisBlockNumber()
 
     const results = await getTokenWithdrawalsGraph(
       walletAddress,
@@ -1472,6 +1471,13 @@ export const useArbTokenBridge = (
         throw e
       }
     }
+  }
+
+  async function getNitroGenesisBlockNumber(): Promise<number> {
+    // TODO: Read from node interface
+    return new Promise(resolve => {
+      setTimeout(() => resolve(13656922), 1000)
+    })
   }
 
   const setInitialPendingWithdrawals = async (
