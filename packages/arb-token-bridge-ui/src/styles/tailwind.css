@@ -162,6 +162,10 @@ input:checked + .slider:before {
   color: #595959;
 }
 
+.text-\[10px\] {
+  font-size: 0.625rem; /* 10px */
+}
+
 /* border */
 .border-\[\#cd0000\] {
   border-color: #cd0000;
