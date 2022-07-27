@@ -170,7 +170,7 @@ export function HeaderAccountPopover() {
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
+      <Popover.Button className="arb-hover flex w-full items-center justify-center rounded-full lg:w-max">
         <div className="py-3 lg:py-0">
           <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
             <SafeImage
@@ -185,7 +185,7 @@ export function HeaderAccountPopover() {
         </div>
         <div
           id="header-account-popover-notification-root"
-          className="absolute -bottom-2 -right-2 hidden lg:flex"
+          className="absolute right-6 flex justify-center lg:-bottom-2 lg:-right-2"
         ></div>
       </Popover.Button>
       <Transition>

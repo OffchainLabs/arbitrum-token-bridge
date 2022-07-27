@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
-import { usePrevious } from 'react-use'
+import { useMedia, usePrevious } from 'react-use'
 import { motion, AnimatePresence } from 'framer-motion'
+import { twMerge } from 'tailwind-merge'
 import Loader from 'react-loader-spinner'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
@@ -71,7 +72,15 @@ function dedupeWithdrawals(transactions: MergedTransaction[]) {
   return Object.values(map)
 }
 
-function PendingWithdrawalsIndicator() {
+type PendingWithdrawalsIndicatorProps = {
+  loaderProps?: { width: number; height: number }
+  className?: string
+}
+
+function PendingWithdrawalsIndicator({
+  loaderProps = { width: 14, height: 14 },
+  className = ''
+}: PendingWithdrawalsIndicatorProps) {
   const { app } = useAppState()
   const { pwLoadedState, withdrawalsTransformed } = app
 
@@ -87,14 +96,25 @@ function PendingWithdrawalsIndicator() {
     return null
   }
 
+  const bgClassName =
+    pwLoadedState === PendingWithdrawalsLoadedState.LOADING
+      ? 'bg-white'
+      : 'bg-brick'
+
   return (
-    <div className="flex h-4 w-4 items-center justify-center rounded-full border border-white bg-brick transition-colors duration-500 lg:h-6 lg:w-6 lg:border-2">
+    <div
+      className={twMerge(
+        'flex items-center justify-center rounded-full border-white transition-colors',
+        bgClassName,
+        className
+      )}
+    >
       {pwLoadedState === PendingWithdrawalsLoadedState.LOADING && (
-        <Loader type="TailSpin" color="black" height={14} width={14} />
+        <Loader type="TailSpin" color="black" {...loaderProps} />
       )}
 
       {pwLoadedState === PendingWithdrawalsLoadedState.READY && (
-        <span className="text-[10px] lg:text-xs">{amount}</span>
+        <span>{amount}</span>
       )}
     </div>
   )
@@ -107,6 +127,8 @@ export function MainContent() {
   const { seenTransactions, layout } = useAppContextState()
   const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
+  const isLarge = useMedia('(min-width: 1024px)')
+
   const unseenTransactionsWithDuplicates = mergedTransactions
     // Exclude seen txs
     .filter(tx => !seenTransactions.includes(tx.txId))
@@ -128,6 +150,8 @@ export function MainContent() {
     () => pwLoadedState === PendingWithdrawalsLoadedState.READY,
     [pwLoadedState]
   )
+
+  const loaderSize = isLarge ? 14 : 24
 
   useEffect(() => {
     const prevUnseenTransactionsLength = prevUnseenTransactions?.length || 0
@@ -174,11 +198,17 @@ export function MainContent() {
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
         <HeaderAccountPopoverNotification>
-          <PendingWithdrawalsIndicator />
+          <PendingWithdrawalsIndicator
+            loaderProps={{ height: loaderSize, width: loaderSize }}
+            className="h-11 w-11 border-2 text-sm lg:h-6 lg:w-6 lg:text-xs"
+          />
         </HeaderAccountPopoverNotification>
 
         <HeaderMobileNotification>
-          <PendingWithdrawalsIndicator />
+          <PendingWithdrawalsIndicator
+            loaderProps={{ height: 12, width: 12 }}
+            className="h-4 w-4 border text-[10px]"
+          />
         </HeaderMobileNotification>
 
         <AnimatePresence>
