@@ -49,6 +49,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
+  HeaderMobileNotification,
   HeaderOverrides,
   HeaderOverridesProps
 } from '../common/Header'
@@ -57,6 +58,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
+import { PendingWithdrawalsIndicator } from '../common/PendingWithdrawalsIndicator'
 import { isNetwork } from '../../util/networks'
 
 type Web3Provider = ExternalProvider & {
@@ -133,6 +135,13 @@ const AppContent = (): JSX.Element => {
         <HeaderNetworkInformation />
         <HeaderAccountPopover />
       </HeaderContent>
+
+      <HeaderMobileNotification>
+        <PendingWithdrawalsIndicator
+          loaderProps={{ height: 12, width: 12 }}
+          className="h-4 w-4 border text-[10px]"
+        />
+      </HeaderMobileNotification>
 
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />

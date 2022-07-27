@@ -11,8 +11,6 @@ import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
-import { HeaderMobileNotification } from '../common/Header'
-import { PendingWithdrawalsIndicator } from '../common/PendingWithdrawalsIndicator'
 
 const motionDivProps = {
   layout: true,
@@ -144,13 +142,6 @@ export function MainContent() {
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
-        <HeaderMobileNotification>
-          <PendingWithdrawalsIndicator
-            loaderProps={{ height: 12, width: 12 }}
-            className="h-4 w-4 border text-[10px]"
-          />
-        </HeaderMobileNotification>
-
         <AnimatePresence>
           {didLoadPendingWithdrawals && (
             <>
