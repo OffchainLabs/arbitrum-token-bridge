@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { useMedia, usePrevious } from 'react-use'
+import { usePrevious } from 'react-use'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
@@ -12,7 +12,6 @@ import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
 import { HeaderMobileNotification } from '../common/Header'
-import { HeaderAccountPopoverNotification } from '../common/HeaderAccountPopover'
 import { PendingWithdrawalsIndicator } from '../common/PendingWithdrawalsIndicator'
 
 const motionDivProps = {
@@ -78,7 +77,6 @@ export function MainContent() {
   const { seenTransactions, layout } = useAppContextState()
   const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
-  const isLarge = useMedia('(min-width: 1024px)')
 
   const unseenTransactionsWithDuplicates = mergedTransactions
     // Exclude seen txs
@@ -101,8 +99,6 @@ export function MainContent() {
     () => pwLoadedState === PendingWithdrawalsLoadedState.READY,
     [pwLoadedState]
   )
-
-  const loaderSize = isLarge ? 14 : 24
 
   useEffect(() => {
     const prevUnseenTransactionsLength = prevUnseenTransactions?.length || 0
@@ -148,13 +144,6 @@ export function MainContent() {
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
-        <HeaderAccountPopoverNotification>
-          <PendingWithdrawalsIndicator
-            loaderProps={{ height: loaderSize, width: loaderSize }}
-            className="h-11 w-11 border-2 text-sm lg:h-6 lg:w-6 lg:text-xs"
-          />
-        </HeaderAccountPopoverNotification>
-
         <HeaderMobileNotification>
           <PendingWithdrawalsIndicator
             loaderProps={{ height: 12, width: 12 }}

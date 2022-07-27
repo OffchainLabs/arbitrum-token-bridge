@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import ReactDOM from 'react-dom'
-import { useCopyToClipboard } from 'react-use'
+import { useCopyToClipboard, useMedia } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
 import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
@@ -21,8 +20,8 @@ import {
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
-import { useResponsiveHeaderPortal } from './Header'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import { PendingWithdrawalsIndicator } from './PendingWithdrawalsIndicator'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -79,24 +78,6 @@ async function tryGetAvatar(
   }
 }
 
-export function HeaderAccountPopoverNotification({
-  children
-}: {
-  children: React.ReactNode
-}) {
-  useResponsiveHeaderPortal()
-
-  const rootElement = document.getElementById(
-    'header-account-popover-notification-root'
-  )
-
-  if (!rootElement) {
-    return null
-  }
-
-  return ReactDOM.createPortal(children, rootElement)
-}
-
 export function HeaderAccountPopover() {
   const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
@@ -104,9 +85,12 @@ export function HeaderAccountPopover() {
   const {
     app: { mergedTransactions, pwLoadedState }
   } = useAppState()
+  const isLarge = useMedia('(min-width: 1024px)')
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
+
+  const loaderSize = isLarge ? 14 : 24
 
   useEffect(() => {
     async function resolveENSInfo() {
@@ -183,10 +167,12 @@ export function HeaderAccountPopover() {
             </span>
           </div>
         </div>
-        <div
-          id="header-account-popover-notification-root"
-          className="absolute right-6 flex justify-center lg:-bottom-2 lg:-right-2"
-        ></div>
+        <div className="absolute right-6 flex justify-center lg:-bottom-2 lg:-right-2">
+          <PendingWithdrawalsIndicator
+            loaderProps={{ height: loaderSize, width: loaderSize }}
+            className="h-11 w-11 border-2 text-sm lg:h-6 lg:w-6 lg:text-xs"
+          />
+        </div>
       </Popover.Button>
       <Transition>
         <Popover.Panel className="relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4 lg:min-w-[896px] lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
