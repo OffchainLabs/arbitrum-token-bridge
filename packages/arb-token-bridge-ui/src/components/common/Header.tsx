@@ -90,6 +90,39 @@ const MenuIcon = {
   }
 }
 
+function useResponsiveHeaderPortal() {
+  const mutationObserverRef = useRef<MutationObserver>()
+  const [, setMutationCycleCount] = useState(0)
+
+  useEffect(() => {
+    const header = document.getElementById('header')
+
+    if (!header) {
+      return
+    }
+
+    /**
+     * On mobile, the header opens up and closes through a popover component by clicking the hamburger menu.
+     * It's possible for the popover to be closed at the time of rendering this component.
+     * This means that the portal root element won't be found, and nothing will be rendered to the portal.
+     *
+     * This is a little trick that sets up a `MutationObserver` to listen for changes to the header subtree.
+     * Each time a mutation happens, it will call `setMutationCycleCount`, forcing a re-render to the portal.
+     *
+     * There's no real performance concern, as the contents of the header change very rarely.
+     */
+    const config = { subtree: true, childList: true }
+    mutationObserverRef.current = new MutationObserver(() =>
+      setMutationCycleCount(
+        prevMutationCycleCount => prevMutationCycleCount + 1
+      )
+    )
+    mutationObserverRef.current.observe(header, config)
+
+    return () => mutationObserverRef.current?.disconnect()
+  }, [])
+}
+
 function DesktopExternalLink({
   children,
   ...props
@@ -141,36 +174,7 @@ function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
 }
 
 export function HeaderContent({ children }: { children: React.ReactNode }) {
-  const mutationObserverRef = useRef<MutationObserver>()
-  const [, setMutationCycleCount] = useState(0)
-
-  useEffect(() => {
-    const header = document.getElementById('header')
-
-    if (!header) {
-      return
-    }
-
-    /**
-     * On mobile, the header opens up and closes through a popover component by clicking the hamburger menu.
-     * It's possible for the popover to be closed at the time of rendering this component.
-     * This means that the portal root element won't be found, and nothing will be rendered to the portal.
-     *
-     * This is a little trick that sets up a `MutationObserver` to listen for changes to the header subtree.
-     * Each time a mutation happens, it will call `setMutationCycleCount`, forcing a re-render to the portal.
-     *
-     * There's no real performance concern, as the contents of the header change very rarely.
-     */
-    const config = { subtree: true, childList: true }
-    mutationObserverRef.current = new MutationObserver(() =>
-      setMutationCycleCount(
-        prevMutationCycleCount => prevMutationCycleCount + 1
-      )
-    )
-    mutationObserverRef.current.observe(header, config)
-
-    return () => mutationObserverRef.current?.disconnect()
-  }, [])
+  useResponsiveHeaderPortal()
 
   const rootElement = document.getElementById('header-content-root')
 
