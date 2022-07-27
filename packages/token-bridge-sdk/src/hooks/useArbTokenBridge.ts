@@ -59,6 +59,7 @@ import {
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 
 const { Zero } = constants
+const RINKEBY_NITRO_GENESIS_BLOCK = 13656922
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -1133,17 +1134,20 @@ export const useArbTokenBridge = (
   }
 
   const getEthWithdrawalsV2 = async (filter?: providers.Filter) => {
-    const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    // const startBlock =
+    //   (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
-    const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
-      l1NetworkID
-    )
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+    // const latestGraphBlockNumber = await getBuiltInsGraphLatestBlockNumber(
+    //   l1NetworkID
+    // )
+    // const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
 
-    console.log(
-      `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
-    )
+    // console.log(
+    //   `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
+    // )
+
+    const startBlock = 0
+    const pivotBlock = RINKEBY_NITRO_GENESIS_BLOCK
 
     const oldEthWithdrawals = await getETHWithdrawals(
       walletAddress,
@@ -1227,17 +1231,20 @@ export const useArbTokenBridge = (
     gatewayAddresses: string[],
     filter?: providers.Filter
   ) => {
-    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
-      l1NetworkID
-    )
-    console.log(
-      `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
-    )
+    // const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
+    //   l1NetworkID
+    // )
+    // console.log(
+    //   `*** L2 gateway graph block number: ${latestGraphBlockNumber} ***`
+    // )
 
-    const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
+    // const startBlock =
+    //   (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
 
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+    // const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+
+    const startBlock = 0
+    const pivotBlock = RINKEBY_NITRO_GENESIS_BLOCK
 
     const results = await getTokenWithdrawalsGraph(
       walletAddress,
@@ -1473,22 +1480,14 @@ export const useArbTokenBridge = (
   ) => {
     const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
-    const isNitroL2Network = await isNitroL2(l2.signer.provider)
 
     console.log('*** Getting initial pending withdrawal data ***')
 
     const l2ToL1Txns = (
-      await Promise.all(
-        isNitroL2Network
-          ? [
-              getEthWithdrawalsNitro(),
-              getTokenWithdrawalsNitro(gatewayAddresses)
-            ]
-          : [
-              getEthWithdrawalsV2(filter),
-              getTokenWithdrawalsV2(gatewayAddresses, filter)
-            ]
-      )
+      await Promise.all([
+        getEthWithdrawalsV2(filter),
+        getTokenWithdrawalsV2(gatewayAddresses, filter)
+      ])
     )
       .flat()
       .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
