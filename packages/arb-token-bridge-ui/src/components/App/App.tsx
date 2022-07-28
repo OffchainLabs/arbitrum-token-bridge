@@ -75,7 +75,6 @@ const AppContent = (): JSX.Element => {
   const {
     app: { connectionState }
   } = useAppState()
-  const { isRinkeby } = isNetwork(l1.network)
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
@@ -91,38 +90,6 @@ const AppContent = (): JSX.Element => {
 
     return { imageSrc: HeaderArbitrumLogoMainnet, className }
   }, [l1.network])
-
-  if (isRinkeby) {
-    return (
-      <div className="flex w-full flex-col items-center justify-center space-y-4 px-8 py-4 text-center lg:py-16">
-        <p className="text-2xl text-white">
-          The Arbitrum Rinkeby Rollup is under maintenance for the migration to
-          Nitro.
-          <br />
-          <ExternalLink
-            href="https://twitter.com/arbitrum/status/1552708498663809026"
-            className="underline"
-          >
-            Learn more.
-          </ExternalLink>
-          <br />
-          <br />
-          <ExternalLink
-            href="https://twitter.com/ArbitrumDevs/status/1548066537377959937"
-            className="text-base underline"
-          >
-            In desperate need of a testnet? Check out the Arbitrum Goerli Rollup
-            which is already on Nitro!
-          </ExternalLink>
-        </p>
-        <img
-          src="/images/arbinaut-fixing-spaceship.png"
-          alt="Arbinaut fixing a spaceship"
-          className="lg:max-w-md"
-        />
-      </div>
-    )
-  }
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
