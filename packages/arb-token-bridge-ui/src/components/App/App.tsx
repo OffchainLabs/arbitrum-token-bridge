@@ -100,7 +100,7 @@ const AppContent = (): JSX.Element => {
           Nitro.
           <br />
           <ExternalLink
-            href="https://twitter.com/ArbitrumDevs/status/1552262541929242625"
+            href="https://twitter.com/arbitrum/status/1552708498663809026"
             className="underline"
           >
             Learn more.
