@@ -1222,7 +1222,9 @@ export const useArbTokenBridge = (
     )
 
     async function toEventResultPlus(
-      event: L2ToL1EventResult
+      // `l2TxHash` exists on results from subgraph
+      // `transactionHash` exists on results from logs
+      event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
     ): Promise<L2ToL1EventResultPlus> {
       const { callvalue } = event
       const outgoingMessageState = await getOutgoingMessageState(event)
@@ -1233,7 +1235,8 @@ export const useArbTokenBridge = (
         value: callvalue,
         symbol: 'ETH',
         outgoingMessageState,
-        decimals: 18
+        decimals: 18,
+        l2TxHash: event.l2TxHash || event.transactionHash
       }
     }
 
@@ -1429,7 +1432,8 @@ export const useArbTokenBridge = (
           tokenAddress: withdrawEventData.l1Token,
           outgoingMessageState: outgoingMessageStates[i],
           symbol: symbols[i],
-          decimals: decimals[i]
+          decimals: decimals[i],
+          l2TxHash: l2TxReceipt.transactionHash
         }
 
         return eventDataPlus
