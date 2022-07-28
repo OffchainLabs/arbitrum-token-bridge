@@ -1489,7 +1489,7 @@ export const useArbTokenBridge = (
   }
 
   function getRinkebyPivotBlock() {
-    return 13622530
+    return 13919178
   }
 
   const setInitialPendingWithdrawals = async (
