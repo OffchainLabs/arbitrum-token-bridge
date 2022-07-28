@@ -1,7 +1,20 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
-import { l1Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
+import { convertNetworkNitroToClassic } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
-const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60
+import * as ClassicNetworks from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
+import * as NitroNetworks from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
+
+NitroNetworks.l1Networks[1].partnerChainIDs.push(42170)
+ClassicNetworks.l1Networks[1].partnerChainIDs.push(42170)
+
+ClassicNetworks.l1Networks[5] = NitroNetworks.l1Networks[5]
+
+ClassicNetworks.l2Networks[421613] = convertNetworkNitroToClassic(
+  NitroNetworks.l2Networks[421613]
+)
+ClassicNetworks.l2Networks[42170] = convertNetworkNitroToClassic(
+  NitroNetworks.l2Networks[42170]
+)
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
 if (!INFURA_KEY) {
@@ -18,8 +31,9 @@ export const rpcURLs: { [chainId: number]: string } = {
   421613: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
-l1Networks[1].rpcURL = rpcURLs[1]
-l1Networks[4].rpcURL = rpcURLs[4]
+NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
+NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
+NitroNetworks.l1Networks[5].rpcURL = rpcURLs[4]
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   42161: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
