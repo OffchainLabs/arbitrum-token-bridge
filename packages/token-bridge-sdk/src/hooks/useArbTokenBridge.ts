@@ -1183,12 +1183,18 @@ export const useArbTokenBridge = (
       event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
     ): Promise<L2ToL1EventResultPlus> {
       const { callvalue } = event
+      let outgoingMessageState: OutgoingMessageState
 
-      const batchNumber = (event as any).batchNumber as BigNumber
-      const outgoingMessageState =
-        batchNumber.toNumber() > lastOutboxEntryIndexDec
-          ? OutgoingMessageState.UNCONFIRMED
-          : await getOutgoingMessageState(event)
+      if (isClassicEvent(event)) {
+        const batchNumber = (event as any).batchNumber as BigNumber
+
+        outgoingMessageState =
+          batchNumber.toNumber() > lastOutboxEntryIndexDec
+            ? OutgoingMessageState.UNCONFIRMED
+            : await getOutgoingMessageState(event)
+      } else {
+        outgoingMessageState = await getOutgoingMessageState(event)
+      }
 
       return {
         ...event,
