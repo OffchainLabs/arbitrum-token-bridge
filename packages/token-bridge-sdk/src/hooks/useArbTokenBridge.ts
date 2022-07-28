@@ -1357,7 +1357,8 @@ export const useArbTokenBridge = (
           tokenAddress: withdrawEventData.l1Token,
           outgoingMessageState: outgoingMessageStates[i],
           symbol: symbols[i],
-          decimals: decimals[i]
+          decimals: decimals[i],
+          l2TxHash: l2TxReceipt.transactionHash
         }
 
         return eventDataPlus
