@@ -17,11 +17,14 @@ import {
   L2TransactionReceipt,
   isNitroL2
 } from '@arbitrum/sdk'
-
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import { DepositWithdrawEstimator } from '@arbitrum/sdk/dist/lib/utils/migration_types'
+import {
+  DepositWithdrawEstimator,
+  getOutboxAddr as getClassicOutboxAddress
+} from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
+import { getL2Network as getClassicL2Network } from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -118,6 +121,10 @@ function assertSignersHaveProviders(
   if (typeof params.l2.signer === 'undefined') {
     throw new Error(`No Provider found for L2 Signer`)
   }
+}
+
+function isClassicEvent(event: L2ToL1EventResult) {
+  return typeof (event as any).indexInBatch !== 'undefined'
 }
 
 export const useArbTokenBridge = (
@@ -1523,10 +1530,21 @@ export const useArbTokenBridge = (
       return OutgoingMessageState.EXECUTED
     }
 
+    async function getOutboxAddress() {
+      if (isClassicEvent(event)) {
+        const batchNumber = (event as any).batchNumber as BigNumber
+        const classicL2Network = await getClassicL2Network(l2.signer.provider)
+
+        return getClassicOutboxAddress(classicL2Network, batchNumber.toNumber())
+      }
+
+      return l2.network.ethBridge.outbox
+    }
+
     const messageReader = new L2ToL1MessageReader(
       l1.signer.provider,
       event,
-      l2.network.ethBridge.outbox
+      await getOutboxAddress()
     )
 
     try {
