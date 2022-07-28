@@ -33,7 +33,7 @@ export const rpcURLs: { [chainId: number]: string } = {
 
 NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
 NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
-NitroNetworks.l1Networks[5].rpcURL = rpcURLs[4]
+NitroNetworks.l1Networks[5].rpcURL = rpcURLs[5]
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   42161: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
