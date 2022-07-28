@@ -1017,7 +1017,7 @@ export const useArbTokenBridge = (
     const messageWriter = L2ToL1Message.fromEvent(
       l1.signer,
       event,
-      l2.network.ethBridge.outbox
+      await getOutboxAddress(event)
     )
 
     const res = await messageWriter.execute(l2.signer.provider)
@@ -1069,7 +1069,7 @@ export const useArbTokenBridge = (
     const messageWriter = L2ToL1Message.fromEvent(
       l1.signer,
       event,
-      l2.network.ethBridge.outbox
+      await getOutboxAddress(event)
     )
 
     const res = await messageWriter.execute(l2.signer.provider)
@@ -1455,7 +1455,7 @@ export const useArbTokenBridge = (
     const messageReader = L2ToL1MessageReader.fromEvent(
       l1.signer,
       event,
-      l2.network.ethBridge.outbox
+      await getOutboxAddress(event)
     )
 
     try {
@@ -1538,26 +1538,26 @@ export const useArbTokenBridge = (
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
+  async function getOutboxAddress(event: L2ToL1EventResult) {
+    if (isClassicEvent(event)) {
+      const batchNumber = (event as any).batchNumber as BigNumber
+      const classicL2Network = await getClassicL2Network(l2.signer.provider)
+
+      return getClassicOutboxAddress(classicL2Network, batchNumber.toNumber())
+    }
+
+    return l2.network.ethBridge.outbox
+  }
+
   async function getOutgoingMessageState(event: L2ToL1EventResult) {
     if (executedMessagesCache[getExecutedMessagesCacheKey(event)]) {
       return OutgoingMessageState.EXECUTED
     }
 
-    async function getOutboxAddress() {
-      if (isClassicEvent(event)) {
-        const batchNumber = (event as any).batchNumber as BigNumber
-        const classicL2Network = await getClassicL2Network(l2.signer.provider)
-
-        return getClassicOutboxAddress(classicL2Network, batchNumber.toNumber())
-      }
-
-      return l2.network.ethBridge.outbox
-    }
-
     const messageReader = new L2ToL1MessageReader(
       l1.signer.provider,
       event,
-      await getOutboxAddress()
+      await getOutboxAddress(event)
     )
 
     try {
