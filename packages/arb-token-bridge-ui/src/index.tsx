@@ -4,11 +4,7 @@ import { BrowserTracing } from '@sentry/tracing'
 
 import App from './components/App/App'
 import reportWebVitals from './reportWebVitals'
-import {
-  registerArbitrumNova,
-  registerArbitrumGoerliRollup,
-  registerLocalNetwork
-} from './util/networks'
+import { registerLocalNetwork } from './util/networks'
 
 import Package from '../package.json'
 
@@ -16,9 +12,6 @@ import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 
 import './styles/tailwind.css'
-
-registerArbitrumNova()
-registerArbitrumGoerliRollup()
 
 if (process.env.NODE_ENV === 'development') {
   registerLocalNetwork()
