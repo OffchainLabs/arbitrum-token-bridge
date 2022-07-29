@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 
 import { constants } from 'ethers'
 import { ERC20__factory } from 'token-bridge-sdk'
@@ -19,6 +19,10 @@ const L2ApproveTokens = [
     l2Address: l2Address.toLowerCase()
   }
 })
+
+export function tokenRequiresApprovalOnL2(erc20L1Address: string) {
+  return L2ApproveTokens.map(token => token.l1Address).includes(erc20L1Address)
+}
 
 const L2ApproveTokensL1Address = L2ApproveTokens.map(t => t.l1Address)
 
