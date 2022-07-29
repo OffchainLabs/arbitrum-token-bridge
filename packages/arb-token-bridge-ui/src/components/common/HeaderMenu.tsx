@@ -4,18 +4,19 @@ import { Disclosure, Popover } from '@headlessui/react'
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 
-type HeaderMenuItem = {
+export type HeaderMenuItem = {
   title: string
   anchorProps?: React.AnchorHTMLAttributes<HTMLAnchorElement>
   items?: HeaderMenuItem[]
 }
 
-type HeaderMenuProps = {
-  children: React.ReactNode
+export type HeaderMenuProps = {
   items: HeaderMenuItem[]
 }
 
-export function HeaderMenuDesktop(props: HeaderMenuProps) {
+export function HeaderMenuDesktop(
+  props: HeaderMenuProps & { children: React.ReactNode }
+) {
   return (
     <Popover as="div" className="relative inline-block text-left">
       <div>
@@ -72,7 +73,9 @@ export function HeaderMenuDesktop(props: HeaderMenuProps) {
   )
 }
 
-export function HeaderMenuMobile(props: HeaderMenuProps) {
+export function HeaderMenuMobile(
+  props: HeaderMenuProps & { children: React.ReactNode }
+) {
   return (
     <Disclosure>
       {({ open }) => (

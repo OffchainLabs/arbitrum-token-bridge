@@ -5,14 +5,29 @@ import { twMerge } from 'tailwind-merge'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
-import { HeaderMenuDesktop, HeaderMenuMobile } from './HeaderMenu'
+import {
+  HeaderMenuDesktop,
+  HeaderMenuMobile,
+  HeaderMenuProps
+} from './HeaderMenu'
 import { GET_HELP_LINK } from '../../constants'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
 
 const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
 
-const learnLinks = [
+function toHeaderMenuProps(
+  links: { title: string; link: string }[]
+): HeaderMenuProps {
+  return {
+    items: links.map(item => ({
+      title: item.title,
+      anchorProps: { href: item.link }
+    }))
+  }
+}
+
+const learnMenuProps = toHeaderMenuProps([
   {
     title: 'Dev docs',
     link: 'https://developer.offchainlabs.com'
@@ -25,9 +40,9 @@ const learnLinks = [
     title: 'About Arbitrum',
     link: 'https://developer.offchainlabs.com/docs/inside_arbitrum'
   }
-]
+])
 
-const explorersLinks = [
+const explorersMenuProps = toHeaderMenuProps([
   {
     title: 'Arbitrum One (Arbiscan)',
     link: 'https://arbiscan.io'
@@ -52,7 +67,22 @@ const explorersLinks = [
     title: 'Arbitrum Goerli Rollup (BlockScout)',
     link: 'https://goerli-rollup-explorer.arbitrum.io'
   }
-]
+])
+
+const chartsStatsMenuProps = toHeaderMenuProps([
+  {
+    title: 'What’s up with my retryable?',
+    link: 'https://retryable-tx-panel.arbitrum.io'
+  },
+  {
+    title: 'How popular is Arbitrum?',
+    link: 'https://dune.com/Henrystats/arbitrum-metrics'
+  },
+  {
+    title: 'Which L2 do people trust most?',
+    link: 'https://l2beat.com'
+  }
+])
 
 const MenuIcon = {
   Open: function () {
@@ -190,14 +220,7 @@ export function Header() {
             <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
-            <HeaderMenuDesktop
-              items={learnLinks.map(learn => ({
-                title: learn.title,
-                anchorProps: { href: learn.link }
-              }))}
-            >
-              Learn
-            </HeaderMenuDesktop>
+            <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
             <HeaderMenuDesktop
               items={[
                 {
@@ -206,37 +229,13 @@ export function Header() {
                 },
                 {
                   title: 'Explorers',
-                  items: explorersLinks.map(explorer => ({
-                    title: explorer.title,
-                    anchorProps: { href: explorer.link }
-                  }))
+                  items: explorersMenuProps.items
                 }
               ]}
             >
               Ecosystem
             </HeaderMenuDesktop>
-            <HeaderMenuDesktop
-              items={[
-                {
-                  title: 'What’s up with my retryable?',
-                  anchorProps: {
-                    href: 'https://retryable-tx-panel.arbitrum.io'
-                  }
-                },
-                {
-                  title: 'How popular is Arbitrum?',
-                  anchorProps: {
-                    href: 'https://dune.com/Henrystats/arbitrum-metrics'
-                  }
-                },
-                {
-                  title: 'Which L2 do people trust most?',
-                  anchorProps: {
-                    href: 'https://l2beat.com'
-                  }
-                }
-              ]}
-            >
+            <HeaderMenuDesktop {...chartsStatsMenuProps}>
               Charts & Stats
             </HeaderMenuDesktop>
             <DesktopExternalLink href={GET_HELP_LINK}>
@@ -312,14 +311,7 @@ function HeaderMobile() {
           id="header-content-root"
           className="flex w-full flex-col items-center space-y-3"
         ></div>
-        <HeaderMenuMobile
-          items={learnLinks.map(learn => ({
-            title: learn.title,
-            anchorProps: { href: learn.link }
-          }))}
-        >
-          Learn
-        </HeaderMenuMobile>
+        <HeaderMenuMobile {...learnMenuProps}>Learn</HeaderMenuMobile>
         <HeaderMenuMobile
           items={[
             {
@@ -330,36 +322,8 @@ function HeaderMobile() {
         >
           Ecosystem
         </HeaderMenuMobile>
-        <HeaderMenuMobile
-          items={explorersLinks.map(explorer => ({
-            title: explorer.title,
-            anchorProps: { href: explorer.link }
-          }))}
-        >
-          Explorers
-        </HeaderMenuMobile>
-        <HeaderMenuMobile
-          items={[
-            {
-              title: 'What’s up with my retryable?',
-              anchorProps: {
-                href: 'https://retryable-tx-panel.arbitrum.io'
-              }
-            },
-            {
-              title: 'How popular is Arbitrum?',
-              anchorProps: {
-                href: 'https://dune.com/Henrystats/arbitrum-metrics'
-              }
-            },
-            {
-              title: 'Which L2 do people trust most?',
-              anchorProps: {
-                href: 'https://l2beat.com'
-              }
-            }
-          ]}
-        >
+        <HeaderMenuMobile {...explorersMenuProps}>Explorers</HeaderMenuMobile>
+        <HeaderMenuMobile {...chartsStatsMenuProps}>
           Charts & Stats
         </HeaderMenuMobile>
         <MobileExternalLink href={GET_HELP_LINK}>Get Help</MobileExternalLink>
