@@ -37,16 +37,16 @@ const explorersLinks = [
     link: 'https://explorer.arbitrum.io'
   },
   {
-    title: 'Rinkarby (Arbiscan)',
+    title: 'Arbitrum Nova (BlockScout)',
+    link: 'https://a4ba-explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Rinkeby (Arbiscan)',
     link: 'https://testnet.arbiscan.io'
   },
   {
-    title: 'Rinkarby (Arbitrum’s explorer)',
+    title: 'Arbitrum Rinkeby (BlockScout)',
     link: 'https://rinkeby-explorer.arbitrum.io'
-  },
-  {
-    title: 'Arbitrum Nova (BlockScout)',
-    link: 'https://a4ba-explorer.arbitrum.io'
   },
   {
     title: 'Arbitrum Goerli Rollup (BlockScout)',
