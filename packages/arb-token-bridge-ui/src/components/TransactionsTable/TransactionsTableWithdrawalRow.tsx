@@ -156,6 +156,16 @@ function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
   const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
 
+  if (tx.status === 'Unconfirmed') {
+    return (
+      <Tooltip content={<span>Funds aren’t ready to claim yet.</span>}>
+        <Button variant="primary" disabled>
+          Claim
+        </Button>
+      </Tooltip>
+    )
+  }
+
   if (tx.status === 'Confirmed') {
     return (
       <Tooltip
