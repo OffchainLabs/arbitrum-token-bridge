@@ -2,6 +2,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
+import { Button } from '../common/Button'
+import { Tooltip } from '../common/Tooltip'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
@@ -19,6 +21,12 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           <span>Calculating...</span>
         )}
       </span>
+
+      <Tooltip content={<span>Funds aren’t ready to claim yet.</span>}>
+        <Button variant="primary" className="text-2xl" disabled>
+          Claim {tx.value} {tx.asset.toUpperCase()}
+        </Button>
+      </Tooltip>
 
       <div className="h-2" />
       <div className="flex flex-col font-light">
