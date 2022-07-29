@@ -10,6 +10,7 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { tokenRequiresApprovalOnL2 } from './useL2Approve'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -115,11 +116,24 @@ export function useGasSummary(
           }
         } else {
           if (token) {
-            const estimateGasResult =
-              await arbTokenBridge.token.withdrawEstimateGas(
-                token.address,
-                amountDebounced
-              )
+            let estimateGasResult: {
+              estimatedL1Gas: BigNumber
+              estimatedL2Gas: BigNumber
+            }
+
+            // TODO: Update, as this only handles LPT
+            if (tokenRequiresApprovalOnL2(token.address)) {
+              estimateGasResult = {
+                estimatedL1Gas: BigNumber.from(5_000),
+                estimatedL2Gas: BigNumber.from(10_000)
+              }
+            } else {
+              estimateGasResult =
+                await arbTokenBridge.token.withdrawEstimateGas(
+                  token.address,
+                  amountDebounced
+                )
+            }
 
             setResult({
               ...estimateGasResult,
