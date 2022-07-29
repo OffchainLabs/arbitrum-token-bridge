@@ -50,7 +50,11 @@ function dedupeWithdrawals(transactions: MergedTransaction[]) {
   transactions.forEach(tx => {
     // If it's a withdrawal initiation tx - try to find the matching transformed L2-to-L1 message.
     // If found - use that. If not - use the withdrawal initiation tx, as it still might be pending.
-    if (isWithdrawalInitiation(tx) && !map[tx.txId]) {
+    if (isWithdrawalInitiation(tx)) {
+      if (typeof map[tx.txId] !== 'undefined') {
+        return
+      }
+
       const matchingL2ToL1Message = transactions.find(
         _tx => tx.txId === _tx.txId && isL2ToL1Message(_tx)
       )
