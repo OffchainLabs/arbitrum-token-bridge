@@ -411,6 +411,13 @@ export function TransferPanel() {
           })
         }
       } else {
+        const waitForInput = openWithdrawalConfirmationDialog()
+        const confirmed = await waitForInput()
+
+        if (!confirmed) {
+          return
+        }
+
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
           await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
@@ -433,13 +440,6 @@ export function TransferPanel() {
           !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
         ) {
           return alert('Network connection issue; contact support')
-        }
-
-        const waitForInput = openWithdrawalConfirmationDialog()
-        const confirmed = await waitForInput()
-
-        if (!confirmed) {
-          return
         }
 
         if (selectedToken) {
