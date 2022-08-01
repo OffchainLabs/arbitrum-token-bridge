@@ -232,20 +232,49 @@ export const useArbTokenBridge = (
     erc20L1Address: string,
     throwOnInvalidERC20 = true
   ): Promise<L1TokenData> {
+    type GetL1TokenDataOverrides = {
+      params: { name?: true; symbol?: true }
+      result: { name?: string; symbol?: string }
+    }
+
+    function getOverrides(): GetL1TokenDataOverrides {
+      const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
+
+      const overrides: {
+        [erc20L1Address: string]: GetL1TokenDataOverrides
+      } = {
+        '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': {
+          // Don't query for name & symbol
+          params: {},
+          result: { name: 'Maker', symbol: 'MKR' }
+        }
+      }
+
+      if (typeof overrides[erc20L1AddressLowercased] !== 'undefined') {
+        return overrides[erc20L1AddressLowercased]
+      }
+
+      return {
+        // By default query for name & symbol
+        params: { name: true, symbol: true },
+        result: {}
+      }
+    }
+
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1.signer.provider
     )
 
+    const overrides = getOverrides()
     const contract = ERC20__factory.connect(erc20L1Address, l1.signer)
 
     const multiCaller = await MultiCaller.fromProvider(l1.signer.provider)
     const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
-      name: true,
-      symbol: true,
       balanceOf: { account: walletAddress },
       allowance: { owner: walletAddress, spender: l1GatewayAddress },
-      decimals: true
+      decimals: true,
+      ...overrides.params
     })
 
     if (typeof tokenData.balance === 'undefined') {
@@ -262,6 +291,7 @@ export const useArbTokenBridge = (
       balance: tokenData.balance || BigNumber.from(0),
       allowance: tokenData.allowance || BigNumber.from(0),
       decimals: tokenData.decimals || 0,
+      ...overrides.result,
       contract
     }
   }
