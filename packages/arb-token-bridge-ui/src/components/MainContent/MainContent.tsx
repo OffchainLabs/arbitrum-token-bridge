@@ -163,7 +163,7 @@ export function MainContent() {
           )}
         </AnimatePresence>
 
-        <AnimatePresence exitBeforeEnter>
+        <AnimatePresence>
           {isTransferPanelVisible && (
             <motion.div
               key="transfer-panel"
@@ -173,7 +173,9 @@ export function MainContent() {
               <TransferPanel />
             </motion.div>
           )}
+        </AnimatePresence>
 
+        <AnimatePresence>
           {didLoadPendingWithdrawals && unseenTransactions.length > 0 && (
             <>
               <motion.div key="explore-arbitrum" {...motionDivProps}>
