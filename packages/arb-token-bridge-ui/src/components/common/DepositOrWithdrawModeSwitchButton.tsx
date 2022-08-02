@@ -2,7 +2,7 @@ import { SwitchVerticalIcon } from '@heroicons/react/outline'
 
 import { useActions, useAppState } from '../../state'
 
-export function NetworkSwitchButton() {
+export function DepositOrWithdrawModeSwitchButton() {
   const {
     app: { isDepositMode }
   } = useAppState()

@@ -9,7 +9,7 @@ import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
-import { NetworkSwitchButton } from '../common/NetworkSwitchButton'
+import { DepositOrWithdrawModeSwitchButton } from '../common/DepositOrWithdrawModeSwitchButton'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
@@ -686,7 +686,7 @@ export function TransferPanel() {
           />
           <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
             <div className="flex w-full items-center justify-center">
-              <NetworkSwitchButton />
+              <DepositOrWithdrawModeSwitchButton />
             </div>
           </div>
           <NetworkBox
