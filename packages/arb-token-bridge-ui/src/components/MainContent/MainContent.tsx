@@ -146,20 +146,16 @@ export function MainContent() {
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
         <AnimatePresence>
-          {didLoadPendingWithdrawals && (
-            <>
-              {unseenTransactions.map(tx =>
-                isDeposit(tx) ? (
-                  <motion.div key={tx.txId} {...motionDivProps}>
-                    <DepositCard key={tx.txId} tx={tx} />
-                  </motion.div>
-                ) : (
-                  <motion.div key={tx.txId} {...motionDivProps}>
-                    <WithdrawalCard key={tx.txId} tx={tx} />
-                  </motion.div>
-                )
-              )}
-            </>
+          {unseenTransactions.map(tx =>
+            isDeposit(tx) ? (
+              <motion.div key={tx.txId} {...motionDivProps}>
+                <DepositCard key={tx.txId} tx={tx} />
+              </motion.div>
+            ) : (
+              <motion.div key={tx.txId} {...motionDivProps}>
+                <WithdrawalCard key={tx.txId} tx={tx} />
+              </motion.div>
+            )
           )}
         </AnimatePresence>
 
@@ -176,7 +172,7 @@ export function MainContent() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {didLoadPendingWithdrawals && unseenTransactions.length > 0 && (
+          {unseenTransactions.length > 0 && (
             <>
               <motion.div key="explore-arbitrum" {...motionDivProps}>
                 <ExploreArbitrum />
