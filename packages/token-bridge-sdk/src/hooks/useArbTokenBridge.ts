@@ -1201,7 +1201,10 @@ export const useArbTokenBridge = (
     )
 
     const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
+
+    const lastOutboxEntryIndexDec = isRinkeby
+      ? 6152
+      : await getLatestOutboxEntryIndex(l1NetworkID)
 
     console.log(
       `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
