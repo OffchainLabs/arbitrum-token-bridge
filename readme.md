@@ -6,7 +6,7 @@
 
 1. `cd ./arb-token-bridge && yarn install`
 
-1. `cd ./packages/use-wallet && yarn build`
+1. `cd ./packages/use-wallet && yarn build` 
 
 1. Set infura key:
 
