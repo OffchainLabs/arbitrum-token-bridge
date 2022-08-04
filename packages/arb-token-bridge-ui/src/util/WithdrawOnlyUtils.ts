@@ -60,12 +60,12 @@ const withdrawOnlyTokens: WithdrawOnlyToken[] = [
     l1Address: '0x10010078a54396F62c96dF8532dc2B4847d47ED3',
     l2Address: '0x626195b5a8b5f865E3516201D6ac30ee1B46A6e9'
   },
-  {
-    symbol: 'FRAX',
-    l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
-    l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
-    l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
-  },
+  // {
+  //   symbol: 'FRAX',
+  //   l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
+  //   l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+  //   l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
+  // },
   {
     symbol: 'gOHM',
     l2CustomAddr: '0x8D9bA570D6cb60C7e3e0F31343Efe75AB8E65FB1',
