@@ -68,6 +68,10 @@ export function registerLocalNetwork() {
   }
 }
 
+export function isArbitrumNetwork(network: L1Network | L2Network) {
+  return Boolean((network as any).isArbitrum)
+}
+
 export function isNetwork(network: L1Network | L2Network) {
   const chainId = network.chainID
 
