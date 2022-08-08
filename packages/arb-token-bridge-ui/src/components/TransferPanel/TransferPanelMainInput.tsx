@@ -7,7 +7,7 @@ type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 function MaxButton(props: MaxButtonProps) {
-  const { loading, className = '' } = props
+  const { loading, className = '', ...rest } = props
 
   if (loading) {
     return (
@@ -21,7 +21,7 @@ function MaxButton(props: MaxButtonProps) {
     <button
       type="button"
       className={`p-2 text-sm font-light text-gray-9 ${className}`}
-      {...props}
+      {...rest}
     >
       MAX
     </button>
@@ -37,8 +37,8 @@ export type TransferPanelMainInputProps =
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps } = props
-  const { visible: maxButtonVisible } = maxButtonProps
+  const { errorMessage, maxButtonProps, ...rest } = props
+  const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
 
   const borderClassName =
     typeof errorMessage !== 'undefined'
@@ -57,9 +57,9 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             type="number"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-lg font-light placeholder:text-gray-9 lg:text-3xl"
-            {...props}
+            {...rest}
           />
-          {maxButtonVisible && <MaxButton {...maxButtonProps} />}
+          {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
         </div>
       </div>
 
