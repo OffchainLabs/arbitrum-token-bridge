@@ -78,6 +78,7 @@ export function isNetwork(network: L1Network | L2Network) {
     isRinkeby: chainId === 4,
     isGoerli: chainId === 5,
     // L2
+    isArbitrum: Boolean((network as any).isArbitrum),
     isArbitrumOne: chainId === 42161,
     isArbitrumNova: chainId === 42170,
     // L2 Testnets
