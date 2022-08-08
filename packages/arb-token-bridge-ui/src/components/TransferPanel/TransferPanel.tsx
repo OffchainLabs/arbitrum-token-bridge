@@ -9,13 +9,11 @@ import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
-import { DepositOrWithdrawModeSwitchButton } from '../common/DepositOrWithdrawModeSwitchButton'
 import {
   TokenDepositCheckDialog,
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
-import { NetworkBox, NetworkBoxErrorMessage } from './NetworkBox'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   useNetworksAndSigners,
@@ -33,6 +31,10 @@ import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextDispatch } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import {
+  TransferPanelMain,
+  TransferPanelMainErrorMessage
+} from './TransferPanelMain'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -490,14 +492,16 @@ export function TransferPanel() {
     }
   }
 
-  const amountBigNumber = useMemo(
-    () =>
-      utils.parseUnits(
+  const amountBigNumber = useMemo(() => {
+    try {
+      return utils.parseUnits(
         isDepositMode ? l1Amount || '0' : l2Amount || '0',
         selectedToken?.decimals || 18
-      ),
-    [isDepositMode, l1Amount, l2Amount, selectedToken]
-  )
+      )
+    } catch (error) {
+      return BigNumber.from(0)
+    }
+  }, [isDepositMode, l1Amount, l2Amount, selectedToken])
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
   const shouldRunGasEstimation = useMemo(
@@ -514,11 +518,11 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  const getNetworkBoxErrorMessage = useCallback(
+  const getErrorMessage = useCallback(
     (
       _amountEntered: string,
       _balance: string | null
-    ): NetworkBoxErrorMessage | undefined => {
+    ): TransferPanelMainErrorMessage | undefined => {
       // No error while loading balance
       if (_balance === null || ethBalance === null) {
         return undefined
@@ -528,7 +532,7 @@ export function TransferPanel() {
       const balance = Number(_balance)
 
       if (amountEntered > balance) {
-        return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
       }
 
       // The amount entered is enough funds, but now let's include gas costs
@@ -539,7 +543,7 @@ export function TransferPanel() {
           return undefined
 
         case 'error':
-          return NetworkBoxErrorMessage.AMOUNT_TOO_LOW
+          return TransferPanelMainErrorMessage.AMOUNT_TOO_LOW
 
         case 'success': {
           if (selectedToken) {
@@ -547,14 +551,14 @@ export function TransferPanel() {
             const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
 
             if (gasSummary.estimatedTotalGasFees > ethBalanceFloat) {
-              return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+              return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
             }
 
             return undefined
           }
 
           if (amountEntered + gasSummary.estimatedTotalGasFees > balance) {
-            return NetworkBoxErrorMessage.INSUFFICIENT_FUNDS
+            return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
           return undefined
@@ -676,27 +680,15 @@ export function TransferPanel() {
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
-        <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
-          <NetworkBox
-            isL1
-            amount={l1Amount}
-            setAmount={setl1Amount}
-            className={isDepositMode ? 'order-1' : 'order-3'}
-            errorMessage={getNetworkBoxErrorMessage(l1Amount, l1Balance)}
-          />
-          <div className="relative order-2 flex h-10 w-full justify-center lg:h-12">
-            <div className="flex w-full items-center justify-center">
-              <DepositOrWithdrawModeSwitchButton />
-            </div>
-          </div>
-          <NetworkBox
-            isL1={false}
-            amount={l2Amount}
-            setAmount={setl2Amount}
-            className={isDepositMode ? 'order-3' : 'order-1'}
-            errorMessage={getNetworkBoxErrorMessage(l2Amount, l2Balance)}
-          />
-        </div>
+        <TransferPanelMain
+          amount={isDepositMode ? l1Amount : l2Amount}
+          setAmount={isDepositMode ? setl1Amount : setl2Amount}
+          errorMessage={
+            isDepositMode
+              ? getErrorMessage(l1Amount, l1Balance)
+              : getErrorMessage(l2Amount, l2Balance)
+          }
+        />
 
         <div className="border-r border-gray-3" />
 
