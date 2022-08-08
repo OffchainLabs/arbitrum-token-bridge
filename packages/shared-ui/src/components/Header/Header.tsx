@@ -10,11 +10,13 @@ import {
   HeaderMenuMobile,
   HeaderMenuProps
 } from './HeaderMenu'
-import { GET_HELP_LINK } from '../../constants'
-
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
+import { GET_HELP_LINK } from '../../helpers/constants'
 
 const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
+
+interface HeaderProps {
+  logoSrc: string
+}
 
 function toHeaderMenuProps(
   links: { title: string; link: string }[]
@@ -211,13 +213,13 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
   return ReactDOM.createPortal(children, rootElement)
 }
 
-export function Header() {
+export function Header(props: HeaderProps) {
   return (
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
+            <HeaderImageElement src={props.logoSrc} />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
