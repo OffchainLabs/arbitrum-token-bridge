@@ -278,11 +278,17 @@ export const useArbTokenBridge = (
     })
 
     if (typeof tokenData.balance === 'undefined') {
-      if (throwOnInvalidERC20) throw new Error(`No balance method available`)
+      if (throwOnInvalidERC20)
+        throw new Error(
+          `getL1TokenData: No balance method available for ${erc20L1Address}`
+        )
     }
 
     if (typeof tokenData.allowance === 'undefined') {
-      if (throwOnInvalidERC20) throw new Error(`No allowance method available`)
+      if (throwOnInvalidERC20)
+        throw new Error(
+          `getL1TokenData: No allowance method available for ${erc20L1Address}`
+        )
     }
 
     return {
@@ -313,7 +319,9 @@ export const useArbTokenBridge = (
     })
 
     if (typeof tokenData.balance === 'undefined') {
-      throw new Error(`No balance method available`)
+      throw new Error(
+        `getL2TokenData: No balance method available for ${erc20L2Address}`
+      )
     }
 
     return {
@@ -1201,7 +1209,10 @@ export const useArbTokenBridge = (
     )
 
     const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
-    const lastOutboxEntryIndexDec = await getLatestOutboxEntryIndex(l1NetworkID)
+
+    const lastOutboxEntryIndexDec = isRinkeby
+      ? 6152
+      : await getLatestOutboxEntryIndex(l1NetworkID)
 
     console.log(
       `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
