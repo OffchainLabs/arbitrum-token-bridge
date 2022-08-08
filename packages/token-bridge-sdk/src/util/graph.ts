@@ -196,6 +196,10 @@ export const getTokenWithdrawals = async (
   toBlock: number,
   l1NetworkID: string
 ): Promise<GetTokenWithdrawalsResult[]> => {
+  if (fromBlock === 0 && toBlock === 0) {
+    return []
+  }
+
   const client = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':
@@ -322,6 +326,11 @@ export const getBuiltInsGraphLatestBlockNumber = (l1NetworkID: string) => {
 }
 
 export const getL2GatewayGraphLatestBlockNumber = (l1NetworkID: string) => {
+  // TODO: Revert hardcoded value
+  if (l1NetworkID === '4') {
+    return 0
+  }
+
   const subgraphName = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':

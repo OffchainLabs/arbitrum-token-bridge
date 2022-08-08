@@ -1285,7 +1285,8 @@ export const useArbTokenBridge = (
 
     // Special logic for Rinkeby migration to Nitro
     if (isRinkeby) {
-      pivotBlock = getRinkebyPivotBlock()
+      // TODO: Revert hardcoded value
+      pivotBlock = 0
     } else {
       pivotBlock = await getL2GatewayGraphLatestBlockNumber(l1NetworkID)
       console.log(`*** L2 gateway graph block number: ${pivotBlock} ***`)
