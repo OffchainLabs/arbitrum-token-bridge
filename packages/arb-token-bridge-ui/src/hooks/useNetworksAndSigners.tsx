@@ -156,11 +156,6 @@ export function NetworksAndSignersProvider(
         return current.l1.network?.partnerChainIDs.includes(nextChainId)
       }
 
-      // Don't switch to loading state when switching to partner network
-      if (!(await isSwitchingToPartnerNetwork())) {
-        setResult({ status: UseNetworksAndSignersStatus.LOADING })
-      }
-
       getL1Network(web3Provider)
         .then(async l1Network => {
           function getL2NetworkChainId(): number {
