@@ -393,13 +393,13 @@ export function TransferPanelMain({
   }
 
   async function setMaxAmount() {
-    const ethBalance = isConnectedToArbitrum
-      ? ethBalances.arbitrum
-      : ethBalances.ethereum
+    const ethBalance = isDepositMode
+      ? ethBalances.ethereum
+      : ethBalances.arbitrum
 
-    const tokenBalance = isConnectedToArbitrum
-      ? tokenBalances.arbitrum
-      : tokenBalances.ethereum
+    const tokenBalance = isDepositMode
+      ? tokenBalances.ethereum
+      : tokenBalances.arbitrum
 
     if (selectedToken) {
       if (!tokenBalance) {
