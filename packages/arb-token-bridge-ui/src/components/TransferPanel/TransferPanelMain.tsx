@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
+import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
@@ -12,7 +13,6 @@ import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
-import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
 
@@ -71,8 +71,29 @@ function NetworkListbox({
     return 'bg-[rgba(101,109,123,0.8)]'
   }, [value])
 
+  const getOptionClassName = useCallback(
+    (index: number) => {
+      if (index === 0) {
+        return 'rounded-tl-xl rounded-tr-xl'
+      }
+
+      if (index === options.length - 1) {
+        return 'rounded-bl-xl rounded-br-xl'
+      }
+
+      return ''
+    },
+    [options.length]
+  )
+
   return (
-    <Listbox disabled={disabled} value={value} onChange={onChange}>
+    <Listbox
+      as="div"
+      className="relative"
+      disabled={disabled}
+      value={value}
+      onChange={onChange}
+    >
       <Listbox.Button
         disabled={disabled}
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
@@ -82,19 +103,21 @@ function NetworkListbox({
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
-      <Transition>
-        <Listbox.Options className="absolute z-20 rounded-full bg-white p-1 shadow-[0px_4px_12px_#9e9e9e]">
-          {options.map(option => (
-            <Listbox.Option
-              key={option.chainID}
-              value={option}
-              className="cursor-pointer rounded-full px-3 py-1 hover:bg-blue-arbitrum hover:text-white"
-            >
-              <span className="text-2xl">{option.name}</span>
-            </Listbox.Option>
-          ))}
-        </Listbox.Options>
-      </Transition>
+
+      <Listbox.Options className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+        {options.map((option, index) => (
+          <Listbox.Option
+            key={option.chainID}
+            value={option}
+            className={twMerge(
+              'cursor-pointer px-4 py-2 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+              getOptionClassName(index)
+            )}
+          >
+            <span>{option.name}</span>
+          </Listbox.Option>
+        ))}
+      </Listbox.Options>
     </Listbox>
   )
 }
