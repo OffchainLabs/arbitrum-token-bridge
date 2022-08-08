@@ -24,6 +24,10 @@ import {
   useTokenBalances
 } from './TransferPanelMainUtils'
 
+import EthereumLogo from '../../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
+
 import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.png'
 import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.png'
 import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.png'
@@ -71,6 +75,20 @@ function NetworkListbox({
     return 'bg-[rgba(101,109,123,0.8)]'
   }, [value])
 
+  const getOptionImageSrc = useCallback((network: L1Network | L2Network) => {
+    const { isArbitrum, isArbitrumNova } = isNetwork(network)
+
+    if (!isArbitrum) {
+      return EthereumLogo
+    }
+
+    if (isArbitrumNova) {
+      return ArbitrumNovaLogo
+    }
+
+    return ArbitrumOneLogo
+  }, [])
+
   const getOptionClassName = useCallback(
     (index: number) => {
       if (index === 0) {
@@ -110,10 +128,15 @@ function NetworkListbox({
             key={option.chainID}
             value={option}
             className={twMerge(
-              'cursor-pointer px-4 py-2 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+              'flex cursor-pointer items-center space-x-2 px-4 py-2 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
               getOptionClassName(index)
             )}
           >
+            <img
+              src={getOptionImageSrc(option)}
+              alt={`${option.name} logo`}
+              className="h-8"
+            />
             <span>{option.name}</span>
           </Listbox.Option>
         ))}
