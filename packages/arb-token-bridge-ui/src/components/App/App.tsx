@@ -420,8 +420,8 @@ function ConnectionFallbackContainer({
       <ExternalLink href="https://metamask.io/download">
         <img
           className="sm:w-[420px]"
-          src="/images/arbinaut-playing-cards.png"
-          alt="Illustration of an Alien and an Arbinaut playing cards"
+          src="/images/three-arbinauts.png"
+          alt="Three Arbinauts"
         />
       </ExternalLink>
     </div>
@@ -452,7 +452,9 @@ function ConnectionFallback({
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <Loader type="TailSpin" color="white" height={44} width={44} />
+            <div className="absolute mt-20 sm:mt-24">
+              <Loader type="TailSpin" color="white" height={44} width={44} />
+            </div>
           </ConnectionFallbackContainer>
         </>
       )
