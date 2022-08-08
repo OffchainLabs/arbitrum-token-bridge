@@ -113,7 +113,7 @@ function NetworkContainer({
   return (
     <div className={`rounded-xl p-2 transition-colors ${backgroundClassName}`}>
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat px-4 py-1 sm:flex-row"
+        className="space-y-3.5 bg-contain bg-no-repeat px-4 py-1.5 sm:flex-row"
         style={{ backgroundImage }}
       >
         {children}
@@ -341,30 +341,32 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
-        <TransferPanelMainInput
-          maxButtonProps={{
-            visible: true,
-            loading: calculatingMaxAmount,
-            onClick: setMaxAmount
-          }}
-          errorMessage={errorMessageText}
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-        />
+        <div className="flex flex-col space-y-1 pb-2.5">
+          <TransferPanelMainInput
+            maxButtonProps={{
+              visible: true,
+              loading: calculatingMaxAmount,
+              onClick: setMaxAmount
+            }}
+            errorMessage={errorMessageText}
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+          />
 
-        {isDepositMode && selectedToken && (
-          <p className="mt-1 text-xs font-light text-white">
-            Make sure you have ETH in your L2 wallet, you’ll need it to power
-            transactions.
-            <br />
-            <ExternalLink
-              href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
-              className="arb-hover underline"
-            >
-              Learn more.
-            </ExternalLink>
-          </p>
-        )}
+          {isDepositMode && selectedToken && (
+            <p className="mt-1 text-xs font-light text-white">
+              Make sure you have ETH in your L2 wallet, you’ll need it to power
+              transactions.
+              <br />
+              <ExternalLink
+                href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
+                className="arb-hover underline"
+              >
+                Learn more.
+              </ExternalLink>
+            </p>
+          )}
+        </div>
       </NetworkContainer>
 
       <div className="z-10 flex w-full items-center justify-center lg:h-12">
