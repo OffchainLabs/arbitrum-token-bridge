@@ -161,6 +161,18 @@ input:checked + .slider:before {
   background: rgba(101, 109, 123, 0.8);
 }
 
+.bg-\[rgba\(118\,121\,145\,0\.8\)\] {
+  background: rgba(118, 121, 145, 0.8);
+}
+
+.bg-\[rgba\(175\,165\,228\,0\.8\)\] {
+  background: rgba(175, 165, 228, 0.8);
+}
+
+.bg-\[\#2b1889\] {
+  background-color: #2b1889;
+}
+
 /* text */
 .text-\[\#595959\] {
   color: #595959;

@@ -10,7 +10,7 @@ import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { isArbitrumNetwork, isNetwork } from '../../util/networks'
+import { isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
@@ -23,6 +23,10 @@ import {
   useETHBalances,
   useTokenBalances
 } from './TransferPanelMainUtils'
+
+import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.png'
+import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.png'
+import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.png'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -53,11 +57,25 @@ function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
+  const buttonClassName = useMemo(() => {
+    const { isArbitrum, isArbitrumNova } = isNetwork(value)
+
+    if (!isArbitrum) {
+      return 'bg-[rgba(118,121,145,0.8)]'
+    }
+
+    if (isArbitrumNova) {
+      return 'bg-[rgba(175,165,228,0.8)]'
+    }
+
+    return 'bg-[rgba(101,109,123,0.8)]'
+  }, [value])
+
   return (
     <Listbox disabled={disabled} value={value} onChange={onChange}>
       <Listbox.Button
         disabled={disabled}
-        className="arb-hover flex w-max items-center space-x-1 rounded-full bg-[rgba(101,109,123,0.8)] px-4 py-3 text-2xl text-white"
+        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
       >
         <span>
           {label} {value.name}
@@ -72,7 +90,7 @@ function NetworkListbox({
               value={option}
               className="cursor-pointer rounded-full px-3 py-1 hover:bg-blue-arbitrum hover:text-white"
             >
-              <span className="text-2xl">{value.name}</span>
+              <span className="text-2xl">{option.name}</span>
             </Listbox.Option>
           ))}
         </Listbox.Options>
@@ -100,15 +118,28 @@ function NetworkContainer({
   network: L1Network | L2Network
   children: React.ReactNode
 }) {
-  const isArbitrum = isArbitrumNetwork(network)
+  const { backgroundImage, backgroundClassName } = useMemo(() => {
+    const { isArbitrum, isArbitrumNova } = isNetwork(network)
 
-  const backgroundClassName = isArbitrum
-    ? 'bg-blue-arbitrum'
-    : 'bg-purple-ethereum'
+    if (!isArbitrum) {
+      return {
+        backgroundImage: `url(${TransparentEthereumLogo})`,
+        backgroundClassName: 'bg-purple-ethereum'
+      }
+    }
 
-  const backgroundImage = isArbitrum
-    ? 'url(/images/NetworkBoxArb.png)'
-    : 'url(/images/NetworkBoxEth.png)'
+    if (isArbitrumNova) {
+      return {
+        backgroundImage: `url(${TransparentArbitrumNovaLogo})`,
+        backgroundClassName: 'bg-[#2b1889]'
+      }
+    }
+
+    return {
+      backgroundImage: `url(${TransparentArbitrumOneLogo})`,
+      backgroundClassName: 'bg-blue-arbitrum'
+    }
+  }, [network])
 
   return (
     <div className={`rounded-xl p-2 transition-colors ${backgroundClassName}`}>
@@ -378,7 +409,7 @@ export function TransferPanelMain({
           <NetworkListbox
             disabled={toListboxDisabled}
             label="To:"
-            options={listboxOptions.filter(n => isArbitrumNetwork(n))}
+            options={listboxOptions.filter(n => isNetwork(n).isArbitrum)}
             value={to}
             onChange={network => {
               history.push({
@@ -396,8 +427,6 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
-
-      <span>isDepositMode: {app.isDepositMode.toString()}</span>
     </div>
   )
 }
