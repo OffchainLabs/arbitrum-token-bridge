@@ -4,6 +4,7 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -109,6 +110,7 @@ export function TransferPanel() {
   const dispatch = useAppContextDispatch()
 
   const { isMainnet } = isNetwork(l1Network)
+  const { isArbitrumNova } = isNetwork(l2Network)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -736,7 +738,10 @@ export function TransferPanel() {
                   transfer()
                 }
               }}
-              className="w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl',
+                isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
+              )}
             >
               Move funds to {l2Network?.name}
             </Button>

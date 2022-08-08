@@ -134,6 +134,15 @@ input:checked + .slider:before {
   max-width: 1440px;
 }
 
+.max-w-8 {
+  max-width: 2rem;
+}
+
+/* max-h */
+.max-h-8 {
+  max-height: 2rem;
+}
+
 /* h */
 .h-\[28px\] {
   height: 28px;
@@ -165,12 +174,12 @@ input:checked + .slider:before {
   background: rgba(118, 121, 145, 0.8);
 }
 
-.bg-\[rgba\(175\,165\,228\,0\.8\)\] {
-  background: rgba(175, 165, 228, 0.8);
+.bg-\[rgba\(255\,206\,162\,0\.8\)\] {
+  background: rgba(255, 206, 162, 0.8);
 }
 
-.bg-\[\#2b1889\] {
-  background-color: #2b1889;
+.bg-\[\#8a4100\] {
+  background: #8a4100;
 }
 
 /* text */

@@ -69,7 +69,7 @@ function NetworkListbox({
     }
 
     if (isArbitrumNova) {
-      return 'bg-[rgba(175,165,228,0.8)]'
+      return 'bg-[rgba(255,206,162,0.8)]'
     }
 
     return 'bg-[rgba(101,109,123,0.8)]'
@@ -128,14 +128,14 @@ function NetworkListbox({
             key={option.chainID}
             value={option}
             className={twMerge(
-              'flex cursor-pointer items-center space-x-2 px-4 py-2 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+              'flex h-12 cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
               getOptionClassName(index)
             )}
           >
             <img
               src={getOptionImageSrc(option)}
               alt={`${option.name} logo`}
-              className="h-8"
+              className="w-8"
             />
             <span>{option.name}</span>
           </Listbox.Option>
@@ -177,7 +177,7 @@ function NetworkContainer({
     if (isArbitrumNova) {
       return {
         backgroundImage: `url(${TransparentArbitrumNovaLogo})`,
-        backgroundClassName: 'bg-[#2b1889]'
+        backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
