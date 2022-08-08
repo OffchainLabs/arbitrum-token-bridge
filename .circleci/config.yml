@@ -22,6 +22,7 @@ jobs:
             - packages/arb-token-bridge-ui/node_modules
             - packages/token-bridge-sdk/node_modules
             - packages/use-wallet/node_modules
+            - packages/shared-ui/node_modules
           key: v1-yarn-{{ checksum "yarn.lock" }}
       - persist_to_workspace:
           root: .
