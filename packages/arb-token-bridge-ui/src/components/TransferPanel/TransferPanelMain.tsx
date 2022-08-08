@@ -199,7 +199,13 @@ function NetworkContainer({
   )
 }
 
-function ETHBalance({ on }: { on: 'ethereum' | 'arbitrum' }) {
+function ETHBalance({
+  on,
+  prefix = ''
+}: {
+  on: 'ethereum' | 'arbitrum'
+  prefix?: string
+}) {
   const balances = useETHBalances()
   const balance = balances[on]
 
@@ -209,6 +215,7 @@ function ETHBalance({ on }: { on: 'ethereum' | 'arbitrum' }) {
 
   return (
     <span className="text-xl font-light text-white">
+      {prefix}
       {formatBigNumber(balance, 18, 5)} ETH
     </span>
   )
@@ -216,10 +223,12 @@ function ETHBalance({ on }: { on: 'ethereum' | 'arbitrum' }) {
 
 function TokenBalance({
   forToken,
-  on
+  on,
+  prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
   on: 'ethereum' | 'arbitrum'
+  prefix?: string
 }) {
   const balances = useTokenBalances(forToken?.address)
   const balance = balances[on]
@@ -234,6 +243,7 @@ function TokenBalance({
 
   return (
     <span className="text-xl font-light text-white">
+      {prefix}
       {formatBigNumber(balance, forToken.decimals, 5)} {forToken.symbol}
     </span>
   )
@@ -251,7 +261,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center space-y-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col items-center space-y-3.5 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       {children}
     </div>
   )
@@ -272,15 +282,12 @@ export function TransferPanelMain({
   errorMessage?: TransferPanelMainErrorMessage
 }) {
   const history = useHistory()
+  const actions = useActions()
+  const { l1GasPrice, l2GasPrice } = useGasPrice()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
-
-  const { l1GasPrice, l2GasPrice } = useGasPrice()
-
-  const [calculatingMaxAmount, setCalculatingMaxAmount] = useState(false)
-  const actions = useActions()
 
   const ethBalances = useETHBalances()
   const tokenBalances = useTokenBalances(selectedToken?.address)
@@ -290,6 +297,8 @@ export function TransferPanelMain({
 
   const [from, setFrom] = useState<L1Network | L2Network>(externalFrom)
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
+
+  const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
 
   useEffect(() => {
     setFrom(externalFrom)
@@ -311,6 +320,30 @@ export function TransferPanelMain({
 
     return !app.isDepositMode
   }, [isConnectedToArbitrum, l1.network, app.isDepositMode])
+
+  const maxButtonVisible = useMemo(() => {
+    const ethBalance = isDepositMode
+      ? ethBalances.ethereum
+      : ethBalances.arbitrum
+
+    const tokenBalance = isDepositMode
+      ? tokenBalances.ethereum
+      : tokenBalances.arbitrum
+
+    if (selectedToken) {
+      if (!tokenBalance) {
+        return false
+      }
+
+      return !tokenBalance.isZero()
+    }
+
+    if (!ethBalance) {
+      return false
+    }
+
+    return !ethBalance.isZero()
+  }, [ethBalances, tokenBalances, selectedToken, isDepositMode])
 
   const errorMessageText = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
@@ -374,7 +407,7 @@ export function TransferPanelMain({
     }
 
     try {
-      setCalculatingMaxAmount(true)
+      setLoadingMaxAmount(true)
       const result = await estimateGas(ethBalance)
 
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
@@ -394,7 +427,7 @@ export function TransferPanelMain({
     } catch (error) {
       console.error(error)
     } finally {
-      setCalculatingMaxAmount(false)
+      setLoadingMaxAmount(false)
     }
   }
 
@@ -413,16 +446,20 @@ export function TransferPanelMain({
             <TokenBalance
               on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
               forToken={selectedToken}
+              prefix={selectedToken ? 'Balance: ' : ''}
             />
-            <ETHBalance on={app.isDepositMode ? 'ethereum' : 'arbitrum'} />
+            <ETHBalance
+              on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+              prefix={selectedToken ? '' : 'Balance: '}
+            />
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
         <div className="flex flex-col space-y-1 pb-2.5">
           <TransferPanelMainInput
             maxButtonProps={{
-              visible: true,
-              loading: calculatingMaxAmount,
+              visible: maxButtonVisible,
+              loading: loadingMaxAmount,
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageText}
@@ -446,7 +483,7 @@ export function TransferPanelMain({
         </div>
       </NetworkContainer>
 
-      <div className="z-10 flex w-full items-center justify-center lg:h-12">
+      <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
         <SwitchNetworksButton onClick={switchNetworks} />
       </div>
 
@@ -455,7 +492,7 @@ export function TransferPanelMain({
           <NetworkListbox
             disabled={toListboxDisabled}
             label="To:"
-            options={listboxOptions.filter(n => isNetwork(n).isArbitrum)}
+            options={listboxOptions}
             value={to}
             onChange={network => {
               history.push({
@@ -468,8 +505,12 @@ export function TransferPanelMain({
             <TokenBalance
               on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
               forToken={selectedToken}
+              prefix={selectedToken ? 'Balance: ' : ''}
             />
-            <ETHBalance on={app.isDepositMode ? 'arbitrum' : 'ethereum'} />
+            <ETHBalance
+              on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+              prefix={selectedToken ? '' : 'Balance: '}
+            />
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
