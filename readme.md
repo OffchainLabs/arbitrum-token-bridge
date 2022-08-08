@@ -8,6 +8,8 @@
 
 1. `cd ./packages/use-wallet && yarn build`
 
+1. `cd ./packages/shared-ui && yarn build`
+
 1. Set infura key:
 
    1. `touch ./packages/arb-token-bridge-ui/.env`

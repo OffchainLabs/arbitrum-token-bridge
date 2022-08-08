@@ -2,7 +2,9 @@ import React from 'react'
 import { useWindowSize } from 'react-use'
 import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
-import { Header } from './Header'
+import HeaderArbiturmLogoMainnet from 'src/assets/HeaderArbitrumLogoMainnet.png'
+
+import { Header } from '@arbitrum/shared-ui'
 import { Footer } from './Footer'
 
 function Moon() {
@@ -32,7 +34,7 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.jpeg)' }}
       className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      <Header />
+      <Header logoSrc={HeaderArbiturmLogoMainnet} />
 
       <div className="bg-gradient-overlay z-20 flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>

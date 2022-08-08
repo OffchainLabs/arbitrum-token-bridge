@@ -51,7 +51,7 @@ import {
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps
-} from '../common/Header'
+} from '@arbitrum/shared-ui'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
