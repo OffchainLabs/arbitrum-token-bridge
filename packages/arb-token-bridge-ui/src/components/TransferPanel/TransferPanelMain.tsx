@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
@@ -292,10 +292,6 @@ export function TransferPanelMain({
   const ethBalances = useETHBalances()
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
-  const { search } = useLocation()
-  const searchParams = new URLSearchParams(search)
-  const l2ChainIdParam = searchParams.get('l2ChainId')
-
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
 
@@ -316,11 +312,6 @@ export function TransferPanelMain({
 
   // For now, we only want the `to` listbox to be enabled when connected to Mainnet, for switching between One and Nova.
   const toListboxDisabled = useMemo(() => {
-    // TODO: Remove on launch
-    if (!l2ChainIdParam) {
-      return true
-    }
-
     const { isMainnet } = isNetwork(l1.network)
 
     if (isConnectedToArbitrum || !isMainnet) {
@@ -328,7 +319,7 @@ export function TransferPanelMain({
     }
 
     return !app.isDepositMode
-  }, [isConnectedToArbitrum, l1.network, app.isDepositMode, l2ChainIdParam])
+  }, [isConnectedToArbitrum, l1.network, app.isDepositMode])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode
