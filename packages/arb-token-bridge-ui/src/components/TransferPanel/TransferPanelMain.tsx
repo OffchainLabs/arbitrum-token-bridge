@@ -122,7 +122,7 @@ function NetworkListbox({
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
 
-      <Listbox.Options className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+      <Listbox.Options className="absolute z-20 mt-2 rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
         {options.map((option, index) => (
           <Listbox.Option
             key={option.chainID}
