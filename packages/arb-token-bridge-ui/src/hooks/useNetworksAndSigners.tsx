@@ -11,6 +11,7 @@ import {
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
+import { updateL2ChainIdAndClearCache } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
@@ -141,6 +142,10 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
+      if (selectedL2ChainId) {
+        updateL2ChainIdAndClearCache(selectedL2ChainId)
+      }
+
       async function isSwitchingToPartnerNetwork() {
         const nextChainId = (await web3Provider.getNetwork()).chainId
         const current = latestResult.current
