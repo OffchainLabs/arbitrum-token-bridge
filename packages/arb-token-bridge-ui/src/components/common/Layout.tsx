@@ -5,8 +5,7 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 import HeaderArbiturmLogoMainnet from 'src/assets/HeaderArbitrumLogoMainnet.png'
 import { GET_HELP_LINK } from 'src/constants'
 
-import { Header } from '@arbitrum/shared-ui'
-import { Footer } from './Footer'
+import { Footer, Header } from '@arbitrum/shared-ui'
 
 function Moon() {
   const { width } = useWindowSize()
