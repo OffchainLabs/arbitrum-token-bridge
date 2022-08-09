@@ -10,12 +10,12 @@ import {
   HeaderMenuMobile,
   HeaderMenuProps
 } from './HeaderMenu'
-import { GET_HELP_LINK } from '../../helpers/constants'
 
 const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
 
 interface HeaderProps {
   logoSrc: string
+  getHelpLink: string
 }
 
 function toHeaderMenuProps(
@@ -240,7 +240,7 @@ export function Header(props: HeaderProps) {
             <HeaderMenuDesktop {...chartsStatsMenuProps}>
               Charts & Stats
             </HeaderMenuDesktop>
-            <DesktopExternalLink href={GET_HELP_LINK}>
+            <DesktopExternalLink href={props.getHelpLink}>
               Get Help
             </DesktopExternalLink>
           </div>
@@ -255,7 +255,7 @@ export function Header(props: HeaderProps) {
               )}
               <Disclosure.Panel>
                 <Transition>
-                  <HeaderMobile />
+                  <HeaderMobile getHelpLink={props.getHelpLink} />
                 </Transition>
               </Disclosure.Panel>
             </div>
@@ -300,7 +300,7 @@ function MobileExternalLink({
   )
 }
 
-function HeaderMobile() {
+function HeaderMobile(props: Partial<HeaderProps>) {
   return (
     <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
       <div className="flex h-[80px] items-center justify-end px-8">
@@ -328,7 +328,7 @@ function HeaderMobile() {
         <HeaderMenuMobile {...chartsStatsMenuProps}>
           Charts & Stats
         </HeaderMenuMobile>
-        <MobileExternalLink href={GET_HELP_LINK}>Get Help</MobileExternalLink>
+        <MobileExternalLink href={props.getHelpLink}>Get Help</MobileExternalLink>
       </div>
     </div>
   )
