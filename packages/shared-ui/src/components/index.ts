@@ -3,4 +3,5 @@ export {
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps
-} from "./Header"; 
+} from "./Header"
+export { Footer } from "./Footer"
