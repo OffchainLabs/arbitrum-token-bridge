@@ -56,6 +56,23 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: false,
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
+  },
+  {
+    id: 6,
+    originChainID: '42170',
+    url: '/arbed_42170_uniswap_labs_default.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI:
+      'https://ipfs.io/ipfs/QmNa8mQkrNKp1WEEeGjFezDmDeodkWRevGFN8JCV7b4Xir'
+  },
+  {
+    id: 7,
+    originChainID: '42170',
+    url: '/arbed_42170_gemini_token_list.json',
+    name: 'Arbed Gemini List',
+    isDefault: true,
+    logoURI: 'https://gemini.com/static/images/loader.png'
   }
 ]
 
