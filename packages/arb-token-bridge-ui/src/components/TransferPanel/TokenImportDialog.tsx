@@ -13,6 +13,7 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
+import { SafeImage } from '../common/SafeImage'
 
 enum ImportStatus {
   LOADING,
@@ -319,7 +320,7 @@ export function TokenImportDialog({
 
         <div className="flex flex-col items-center py-4">
           {tokenToImport?.logoURI && (
-            <img
+            <SafeImage
               style={{ width: '25px', height: '25px' }}
               className="mb-2 rounded-full"
               src={tokenToImport?.logoURI}
