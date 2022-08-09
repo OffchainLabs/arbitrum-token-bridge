@@ -57,7 +57,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -256,6 +256,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const changeNetwork = async (network: L1Network | L2Network) => {
         const chainId = network.chainID
         const hexChainId = hexValue(BigNumber.from(chainId))
+        const networkName = getNetworkName(network)
         const provider = library?.provider
 
         if (isSwitchChainSupported(provider)) {
@@ -281,7 +282,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                 params: [
                   {
                     chainId: hexChainId,
-                    chainName: network.name,
+                    chainName: networkName,
                     nativeCurrency: {
                       name: 'Ether',
                       symbol: 'ETH',
@@ -308,7 +309,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
             : 'withdraw'
 
           alert(
-            `Please connect to ${network.name} to ${targetTxName}; make sure your wallet is connected to ${network.name} when you are signing your ${targetTxName} transaction.`
+            `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
           )
 
           // TODO: reset state so user can attempt to press "Deposit" again

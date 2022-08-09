@@ -8,7 +8,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -743,7 +743,7 @@ export function TransferPanel() {
                 isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
               )}
             >
-              Move funds to {l2Network?.name}
+              Move funds to {getNetworkName(l2Network)}
             </Button>
           ) : (
             <Button
@@ -753,7 +753,7 @@ export function TransferPanel() {
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
-              Move funds to {l1Network?.name}
+              Move funds to {getNetworkName(l1Network)}
             </Button>
           )}
         </div>
