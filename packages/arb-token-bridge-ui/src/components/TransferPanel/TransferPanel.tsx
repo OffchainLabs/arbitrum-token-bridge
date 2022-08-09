@@ -576,7 +576,7 @@ export function TransferPanel() {
     if (
       isDepositMode &&
       selectedToken &&
-      isWithdrawOnlyToken(selectedToken.address)
+      isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
     ) {
       return true
     }
@@ -592,7 +592,7 @@ export function TransferPanel() {
         isBridgingANewStandardToken &&
         (l1Balance === null || l1AmountNum > +l1Balance))
     )
-  }, [transferring, isDepositMode, l1Amount, l1Balance])
+  }, [transferring, isDepositMode, l2Network, l1Amount, l1Balance])
 
   // TODO: Refactor this and the property above
   const disableDepositV2 = useMemo(() => {
