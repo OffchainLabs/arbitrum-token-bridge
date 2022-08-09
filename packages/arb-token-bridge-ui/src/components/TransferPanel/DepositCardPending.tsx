@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-
+import { getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { DepositCountdown } from '../common/DepositCountdown'
@@ -11,11 +10,7 @@ import {
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l2 } = useNetworksAndSigners()
-
-  const networkName = useMemo(
-    () => (typeof l2.network !== 'undefined' ? l2.network.name : 'Arbitrum'),
-    [l2.network]
-  )
+  const networkName = getNetworkName(l2.network)
 
   return (
     <DepositCardContainer tx={tx}>

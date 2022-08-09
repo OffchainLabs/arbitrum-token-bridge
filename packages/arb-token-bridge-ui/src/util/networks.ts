@@ -101,3 +101,41 @@ export function isNetwork(network: L1Network | L2Network) {
     isArbitrumGoerliRollup: chainId === ChainId.ArbitrumGoerli
   }
 }
+
+export function getNetworkName(
+  chainIdOrNetwork: number | L1Network | L2Network
+) {
+  let chainId: number
+
+  if (typeof chainIdOrNetwork === 'number') {
+    chainId = chainIdOrNetwork
+  } else {
+    chainId = chainIdOrNetwork.chainID
+  }
+
+  switch (chainId) {
+    case ChainId.Mainnet:
+      return 'Mainnet'
+
+    case ChainId.Rinkeby:
+      return 'Rinkeby'
+
+    case ChainId.Goerli:
+      return 'Goerli'
+
+    case ChainId.ArbitrumOne:
+      return 'Arbitrum One'
+
+    case ChainId.ArbitrumNova:
+      return 'Arbitrum Nova'
+
+    case ChainId.ArbitrumRinkeby:
+      return 'Arbitrum Rinkeby'
+
+    case ChainId.ArbitrumGoerli:
+      return 'Arbitrum Goerli'
+
+    default:
+      return 'Unknown'
+  }
+}

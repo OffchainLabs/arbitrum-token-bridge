@@ -17,6 +17,7 @@ import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { getNetworkName } from '../../util/networks'
 
 const FastBridges = [
   {
@@ -152,6 +153,7 @@ function FastBridgesTable() {
 
 export function WithdrawalConfirmationDialog(props: UseDialogProps) {
   const { l1 } = useNetworksAndSigners()
+  const networkName = getNetworkName(l1.network)
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
@@ -184,7 +186,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-blue-arbitrum px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {l1.network?.name}
+              Move funds to {networkName}
             </HeadlessUIDialog.Title>
             <button className="arb-hover" onClick={() => closeWithReset(false)}>
               <XIcon className="h-6 w-6 text-white" />
@@ -249,7 +251,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
                   label={
                     <span className="font-light">
                       I understand that it will take {confirmationPeriod} before
-                      I can claim my funds on Ethereum {l1.network?.name}
+                      I can claim my funds on Ethereum {networkName}
                     </span>
                   }
                   checked={checkbox1Checked}

@@ -11,7 +11,7 @@ import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
@@ -117,7 +117,7 @@ function NetworkListbox({
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
       >
         <span>
-          {label} {value.name}
+          {label} {getNetworkName(value)}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
@@ -134,10 +134,10 @@ function NetworkListbox({
           >
             <img
               src={getOptionImageSrc(option)}
-              alt={`${option.name} logo`}
+              alt={`${getNetworkName(option)} logo`}
               className="w-8"
             />
-            <span>{option.name}</span>
+            <span>{getNetworkName(option)}</span>
           </Listbox.Option>
         ))}
       </Listbox.Options>

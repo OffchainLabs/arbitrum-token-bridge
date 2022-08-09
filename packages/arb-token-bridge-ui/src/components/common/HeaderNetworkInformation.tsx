@@ -4,7 +4,7 @@ import EthereumLogo from '../../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function HeaderNetworkInformation() {
@@ -33,15 +33,17 @@ export function HeaderNetworkInformation() {
     return ArbitrumOneLogo
   }, [network])
 
+  const networkName = getNetworkName(network)
+
   return (
     <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2">
       <img
         src={logoSrc}
-        alt={`${network.name} logo`}
+        alt={`${networkName} logo`}
         className="max-w-8 max-h-8"
       />
       <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-        {network.name}
+        {networkName}
       </span>
     </div>
   )
