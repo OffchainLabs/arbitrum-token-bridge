@@ -4,6 +4,8 @@ import { convertNetworkNitroToClassic } from '@arbitrum/sdk/dist/lib/utils/migra
 import * as ClassicNetworks from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
 import * as NitroNetworks from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 
+NitroNetworks.l2Networks[42170].confirmPeriodBlocks = 45818
+
 NitroNetworks.l1Networks[1].partnerChainIDs.push(42170)
 ClassicNetworks.l1Networks[1].partnerChainIDs.push(42170)
 
