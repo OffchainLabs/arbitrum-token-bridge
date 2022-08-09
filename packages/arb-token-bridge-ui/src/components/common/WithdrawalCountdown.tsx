@@ -2,6 +2,7 @@ import { NodeBlockDeadlineStatus } from 'token-bridge-sdk'
 
 import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { isNetwork } from '../../util/networks'
 
 export function WithdrawalCountdown({
   nodeBlockDeadline
@@ -24,11 +25,8 @@ export function WithdrawalCountdown({
   }
 
   if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
-    return (
-      <span>
-        {l2Network.chainID === 42161 ? '~1 week' : '~1 day'} remaining
-      </span>
-    )
+    const { isMainnet } = isNetwork(l1Network)
+    return <span>{isMainnet ? '~1 week' : '~1 day'} remaining</span>
   }
 
   if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
