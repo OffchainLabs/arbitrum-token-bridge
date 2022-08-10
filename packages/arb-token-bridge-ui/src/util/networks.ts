@@ -25,7 +25,7 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.Goerli]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
-  [ChainId.ArbitrumNova]: 'https://a4ba.arbitrum.io/rpc',
+  [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://rinkeby.arbitrum.io/rpc',
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'

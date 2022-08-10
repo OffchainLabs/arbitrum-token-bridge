@@ -53,7 +53,7 @@ const explorersMenuProps = toHeaderMenuProps([
   },
   {
     title: 'Arbitrum Nova (BlockScout)',
-    link: 'https://a4ba-explorer.arbitrum.io'
+    link: 'https://nova-explorer.arbitrum.io'
   },
   {
     title: 'Arbitrum Rinkeby (Arbiscan)',
