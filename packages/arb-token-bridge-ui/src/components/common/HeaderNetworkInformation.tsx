@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import ArbitrumLogo from '../../assets/ArbitrumLogo.svg'
-import EthereumLogo from '../../assets/EthereumLogo.png'
+import ArbitrumLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumLogo.svg'
+import EthereumLogo from '@arbitrum/shared-ui/dist/assets/EthereumLogo.png'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function HeaderNetworkInformation() {

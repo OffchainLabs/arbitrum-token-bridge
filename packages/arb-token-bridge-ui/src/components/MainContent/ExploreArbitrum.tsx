@@ -8,7 +8,7 @@ import { TabButton } from '../common/Tab'
 import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import ArbitrumLogo from '../../assets/ArbitrumLogo.svg'
+import ArbitrumLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumLogo.svg'
 
 import {
   ExploreArbitrumContent,

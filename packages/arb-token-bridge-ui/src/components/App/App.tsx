@@ -21,9 +21,9 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
-import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.png'
-import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.png'
+import HeaderArbitrumLogoMainnet from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoMainnet.png'
+import HeaderArbitrumLogoRinkeby from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoRinkeby.png'
+import HeaderArbitrumLogoGoerli from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoGoerli.png'
 import { GET_HELP_LINK } from 'src/constants'
 
 import { WelcomeDialog } from './WelcomeDialog'

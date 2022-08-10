@@ -20,7 +20,7 @@ import {
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
-import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import { ReactComponent as CustomClipboardCopyIcon } from '@arbitrum/shared-ui/dist/assets/copy.svg'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
