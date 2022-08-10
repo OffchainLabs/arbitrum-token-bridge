@@ -117,7 +117,7 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
 }
 
 export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
-  return withdrawOnlyTokens[chainId]
+  return (withdrawOnlyTokens[chainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }
