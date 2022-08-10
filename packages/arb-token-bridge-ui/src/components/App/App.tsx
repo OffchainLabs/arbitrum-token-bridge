@@ -13,7 +13,8 @@ import {
   Switch,
   useLocation
 } from 'react-router-dom'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage, useWindowSize } from 'react-use'
+import { motion, useViewportScroll, useTransform } from 'framer-motion'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
@@ -23,6 +24,7 @@ import Loader from 'react-loader-spinner'
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
 import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.png'
 import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.png'
+import { GET_HELP_LINK } from 'src/constants'
 
 import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
@@ -30,7 +32,6 @@ import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
-import { Layout } from '../common/Layout'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -48,9 +49,12 @@ import {
   NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
 import {
+  Header,
   HeaderContent,
   HeaderOverrides,
-  HeaderOverridesProps
+  HeaderOverridesProps,
+  Layout,
+  Footer
 } from '@arbitrum/shared-ui'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
@@ -330,6 +334,23 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
+function Moon() {
+  const { width } = useWindowSize()
+  const moonScaleRange = width >= 1024 ? [0.75, 1] : [0.75, 1.25]
+
+  const { scrollYProgress } = useViewportScroll()
+  const scale = useTransform(scrollYProgress, [0, 1], moonScaleRange)
+
+  return (
+    <motion.img
+      src="/images/moon.png"
+      alt="Moon"
+      className="absolute bottom-[-10%] z-0 lg:bottom-[-45%] lg:right-0 lg:max-w-[75vw]"
+      style={{ scale }}
+    />
+  )
+}
+
 function Routes() {
   const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
   const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
@@ -495,7 +516,21 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <Layout>
+      <Layout
+        header={
+          <Header
+            logoSrc={HeaderArbitrumLogoMainnet}
+            getHelpLink={GET_HELP_LINK}
+          />
+        }
+        footer={
+          <>
+            <Footer />
+            <Moon />
+          </>
+        }
+        backgroundImageSrc='url(/images/space.jpeg)'
+      >
         <Routes />
       </Layout>
     </Provider>
