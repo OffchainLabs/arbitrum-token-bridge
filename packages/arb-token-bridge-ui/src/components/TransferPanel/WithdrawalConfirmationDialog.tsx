@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
 import {
   CheckIcon,
   XIcon,
@@ -17,6 +17,7 @@ import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { getNetworkName, isNetwork } from '../../util/networks'
 
 const FastBridges = [
   {
@@ -151,25 +152,17 @@ function FastBridgesTable() {
 }
 
 export function WithdrawalConfirmationDialog(props: UseDialogProps) {
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const networkName = getNetworkName(l1.network)
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
-  const isTestnet = useMemo(() => {
-    if (typeof l1.network === 'undefined') {
-      return true
-    }
-
-    return l1.network.chainID !== 1
-  }, [l1.network])
-
-  const confirmationPeriod = useMemo(
-    () => (isTestnet ? '~1 day' : '~8 days'),
-    [isTestnet]
-  )
+  const { isMainnet } = isNetwork(l1.network)
+  const confirmationPeriod = isMainnet ? '~8 days' : '~1 day'
+  const { isArbitrumOne } = isNetwork(l2.network)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -184,7 +177,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-blue-arbitrum px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {l1.network?.name}
+              Move funds to {networkName}
             </HeadlessUIDialog.Title>
             <button className="arb-hover" onClick={() => closeWithReset(false)}>
               <XIcon className="h-6 w-6 text-white" />
@@ -192,13 +185,15 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
           </div>
 
           <Tab.List className="bg-blue-arbitrum">
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <TabButton selected={selected}>
-                  Use a third-party bridge
-                </TabButton>
-              )}
-            </Tab>
+            {isArbitrumOne && (
+              <Tab as={Fragment}>
+                {({ selected }) => (
+                  <TabButton selected={selected}>
+                    Use a third-party bridge
+                  </TabButton>
+                )}
+              </Tab>
+            )}
             <Tab as={Fragment}>
               {({ selected }) => (
                 <TabButton selected={selected}>Use Arbitrum’s bridge</TabButton>
@@ -206,22 +201,25 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
             </Tab>
           </Tab.List>
 
-          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                Get your funds in under 30 min with a fast exit bridge.
-              </p>
+          {isArbitrumOne && (
+            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+              <div className="flex flex-col space-y-3">
+                <p className="font-light">
+                  Get your funds in under 30 min with a fast exit bridge.
+                </p>
 
-              <div className="flex flex-row items-center space-x-1">
-                <ExclamationCircleIcon className="h-6 w-6 text-orange-dark" />
-                <span className="font-medium text-orange-dark">
-                  Security not guaranteed by Arbitrum
-                </span>
+                <div className="flex flex-row items-center space-x-1">
+                  <ExclamationCircleIcon className="h-6 w-6 text-orange-dark" />
+                  <span className="font-medium text-orange-dark">
+                    Security not guaranteed by Arbitrum
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <FastBridgesTable />
-          </Tab.Panel>
+              <FastBridgesTable />
+            </Tab.Panel>
+          )}
+
           <Tab.Panel className="flex flex-col justify-between px-8 py-4 md:min-h-[430px]">
             <div className="flex flex-col space-y-6">
               <div className="flex flex-col space-y-3">
@@ -249,7 +247,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
                   label={
                     <span className="font-light">
                       I understand that it will take {confirmationPeriod} before
-                      I can claim my funds on Ethereum {l1.network?.name}
+                      I can claim my funds on Ethereum {networkName}
                     </span>
                   }
                   checked={checkbox1Checked}

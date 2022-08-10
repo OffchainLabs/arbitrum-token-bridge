@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 
-import ArbitrumLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumLogo.svg'
 import EthereumLogo from '@arbitrum/shared-ui/dist/assets/EthereumLogo.png'
+import ArbitrumOneLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumNovaLogo.png'
+
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function HeaderNetworkInformation() {
@@ -16,15 +19,31 @@ export function HeaderNetworkInformation() {
     [l1Network, l2Network, isConnectedToArbitrum]
   )
 
+  const logoSrc = useMemo(() => {
+    const { isArbitrum, isArbitrumNova } = isNetwork(network)
+
+    if (!isArbitrum) {
+      return EthereumLogo
+    }
+
+    if (isArbitrumNova) {
+      return ArbitrumNovaLogo
+    }
+
+    return ArbitrumOneLogo
+  }, [network])
+
+  const networkName = getNetworkName(network)
+
   return (
     <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2">
       <img
-        src={isConnectedToArbitrum ? ArbitrumLogo : EthereumLogo}
-        alt={`${network.name} logo`}
-        className="h-8"
+        src={logoSrc}
+        alt={`${networkName} logo`}
+        className="max-w-8 max-h-8"
       />
       <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-        {network.name}
+        {networkName}
       </span>
     </div>
   )

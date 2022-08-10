@@ -3,10 +3,11 @@ import { useState, useEffect, ImgHTMLAttributes } from 'react'
 import { sanitizeImageSrc } from '../../util'
 
 export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
-  fallback: JSX.Element
+  fallback?: JSX.Element
 }
 
 export function SafeImage(props: SafeImageProps) {
+  const { fallback = null } = props
   const [validImageSrc, setValidImageSrc] = useState<false | string>(false)
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export function SafeImage(props: SafeImageProps) {
   }, [props.src])
 
   if (!validImageSrc) {
-    return props.fallback
+    return fallback
   }
 
   return <img {...props} src={validImageSrc} alt={props.alt || ''} />

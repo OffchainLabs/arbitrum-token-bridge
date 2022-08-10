@@ -15,10 +15,17 @@ export function formatNumber(value: number, maximumFractionDigits: number = 6) {
   })
 }
 
-export function formatBigNumber(value: BigNumber, decimals: number = 18) {
+export function formatBigNumber(
+  value: BigNumber,
+  decimals: number = 18,
+  maximumFractionDigits?: number
+) {
   if (value.isZero()) {
     return '0'
   }
 
-  return formatNumber(parseFloat(utils.formatUnits(value, decimals)))
+  return formatNumber(
+    parseFloat(utils.formatUnits(value, decimals)),
+    maximumFractionDigits
+  )
 }

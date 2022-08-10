@@ -11,6 +11,7 @@ import {
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
+import { updateL2ChainIdAndClearCache } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
@@ -105,21 +106,21 @@ export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
   const { selectedL2ChainId } = props
-
-  const { provider, account, network, connect, web3Modal } = useWallet()
-  const cachedProvider = web3Modal?.cachedProvider
+  const { provider, account, network, connect } = useWallet()
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
   const latestResult = useLatest(result)
 
-  // In case the user manually disconnects, reset to `NOT_CONNECTED` state
+  // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
-    if (cachedProvider === '') {
+    const connected = result.status === UseNetworksAndSignersStatus.CONNECTED
+
+    if (connected && typeof account === 'undefined') {
       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
     }
-  }, [cachedProvider])
+  }, [account, result])
 
   useEffect(() => {
     async function tryConnect() {
@@ -141,6 +142,10 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
+      if (selectedL2ChainId) {
+        updateL2ChainIdAndClearCache(selectedL2ChainId)
+      }
+
       async function isSwitchingToPartnerNetwork() {
         const nextChainId = (await web3Provider.getNetwork()).chainId
         const current = latestResult.current
@@ -154,11 +159,6 @@ export function NetworksAndSignersProvider(
         }
 
         return current.l1.network?.partnerChainIDs.includes(nextChainId)
-      }
-
-      // Don't switch to loading state when switching to partner network
-      if (!(await isSwitchingToPartnerNetwork())) {
-        setResult({ status: UseNetworksAndSignersStatus.LOADING })
       }
 
       getL1Network(web3Provider)

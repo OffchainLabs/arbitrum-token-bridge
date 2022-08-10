@@ -1,3 +1,4 @@
+import { getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
@@ -7,11 +8,12 @@ import { Tooltip } from '../common/Tooltip'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
+  const networkName = getNetworkName(l1.network)
 
   return (
     <WithdrawalCardContainer tx={tx}>
       <span className="animate-pulse text-2xl text-blue-arbitrum">
-        Moving {tx.value} {tx.asset.toUpperCase()} to {l1.network?.name}...
+        Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}...
       </span>
 
       <span className="animate-pulse text-4xl font-semibold text-blue-arbitrum">

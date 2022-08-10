@@ -4,7 +4,7 @@ import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -113,7 +113,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
               className="h-8 opacity-50"
             />
             <span className="text-2xl text-purple-ethereum">
-              {l1.network?.name} Balance
+              {getNetworkName(l1.network)} Balance
             </span>
           </div>
           <span className="text-center text-3xl font-light text-purple-ethereum">

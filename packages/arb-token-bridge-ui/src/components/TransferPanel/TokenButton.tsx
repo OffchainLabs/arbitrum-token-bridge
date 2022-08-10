@@ -70,10 +70,10 @@ export function TokenButton(): JSX.Element {
               <img
                 src={tokenLogo}
                 alt="Token logo"
-                className="h-5 w-5 rounded-full lg:h-8 lg:w-8"
+                className="h-5 w-5 rounded-full sm:h-8 sm:w-8"
               />
             )}
-            <span className="text-lg font-light lg:text-3xl">
+            <span className="text-xl font-light sm:text-3xl">
               {selectedToken ? selectedToken.symbol : 'ETH'}
             </span>
             <ChevronDownIcon className="h-4 w-4 text-gray-9" />
