@@ -45,6 +45,8 @@ const FastBridges = [
   }
 ] as const
 
+const SECONDS_IN_DAY = 86400
+
 const FastBridgeNames = FastBridges.map(bridge => bridge.name)
 export type FastBridgeName = typeof FastBridgeNames[number]
 
@@ -159,7 +161,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
-  const confirmationDays = Math.floor(l1.network.blockTime * l2.network.confirmPeriodBlocks / 86400)
+  const confirmationDays = Math.floor(l1.network.blockTime * l2.network.confirmPeriodBlocks / SECONDS_IN_DAY)
 
   const confirmationPeriod = `~${confirmationDays} day${confirmationDays > 1 ? 's' : ''}`
   const { isArbitrumOne } = isNetwork(l2.network)
