@@ -57,7 +57,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -288,7 +288,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       symbol: 'ETH',
                       decimals: 18
                     },
-                    rpcUrls: [network.rpcURL],
+                    rpcUrls: [network.rpcURL || rpcURLs[network.chainID]],
                     blockExplorerUrls: [network.explorerUrl]
                   }
                 ]
