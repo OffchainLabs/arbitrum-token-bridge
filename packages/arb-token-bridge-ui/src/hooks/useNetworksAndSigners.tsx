@@ -106,21 +106,21 @@ export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
   const { selectedL2ChainId } = props
-
-  const { provider, account, network, connect, web3Modal } = useWallet()
-  const cachedProvider = web3Modal?.cachedProvider
+  const { provider, account, network, connect } = useWallet()
 
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
   const latestResult = useLatest(result)
 
-  // In case the user manually disconnects, reset to `NOT_CONNECTED` state
+  // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
-    if (cachedProvider === '') {
+    const connected = result.status === UseNetworksAndSignersStatus.CONNECTED
+
+    if (connected && typeof account === 'undefined') {
       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
     }
-  }, [cachedProvider])
+  }, [account, result])
 
   useEffect(() => {
     async function tryConnect() {
