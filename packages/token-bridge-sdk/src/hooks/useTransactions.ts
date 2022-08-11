@@ -87,6 +87,7 @@ type TransactionBase = {
   sender: string
   blockNumber?: number
   l1NetworkID: string
+  l2NetworkID?: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData

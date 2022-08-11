@@ -401,7 +401,8 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
-      l1NetworkID
+      l1NetworkID,
+      l2NetworkID
     })
 
     const receipt = await tx.wait()
@@ -458,7 +459,8 @@ export const useArbTokenBridge = (
         assetType: AssetType.ETH,
         sender: walletAddress,
         blockNumber: tx.blockNumber,
-        l1NetworkID
+        l1NetworkID,
+        l2NetworkID
       })
 
       const receipt = await tx.wait()
@@ -563,6 +565,7 @@ export const useArbTokenBridge = (
     const contract = await ERC20__factory.connect(l2Address, l2.signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const tokenData = await getL1TokenData(erc20L1Address)
+
     addTransaction({
       type: 'approve-l2',
       status: 'pending',
@@ -572,7 +575,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ERC20,
       sender: walletAddress,
       blockNumber: tx.blockNumber,
-      l1NetworkID: l1.network.chainID.toString()
+      l1NetworkID,
+      l2NetworkID
     })
 
     const receipt = await tx.wait()
@@ -607,7 +611,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ERC20,
       tokenAddress: erc20L1Address,
       sender: walletAddress,
-      l1NetworkID
+      l1NetworkID,
+      l2NetworkID
     })
 
     const receipt = await tx.wait()
@@ -686,7 +691,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ERC20,
       sender: await l2.signer.getAddress(),
       blockNumber: tx.blockNumber,
-      l1NetworkID
+      l1NetworkID,
+      l2NetworkID
     })
 
     try {
