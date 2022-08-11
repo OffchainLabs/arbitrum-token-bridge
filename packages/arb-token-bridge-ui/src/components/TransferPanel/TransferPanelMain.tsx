@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
+import { Dialog } from '../common/Dialog'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
@@ -15,6 +16,7 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { isWithdrawOnlyToken } from 'src/util/WithdrawOnlyUtils'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -269,7 +271,8 @@ function NetworkListboxPlusBalancesContainer({
 
 export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
-  AMOUNT_TOO_LOW
+  AMOUNT_TOO_LOW,
+  WITHDRAW_ONLY
 }
 
 export function TransferPanelMain({
@@ -299,6 +302,7 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const [withdrawOnlyDialog, setWithdrawOnlyDialog] = useState(false)
 
   useEffect(() => {
     setFrom(externalFrom)
@@ -352,6 +356,20 @@ export function TransferPanelMain({
 
     if (errorMessage === TransferPanelMainErrorMessage.AMOUNT_TOO_LOW) {
       return 'Sending ~$0 just to pay gas fees seems like a questionable life choice.'
+    }
+
+    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
+      return (
+        <>
+          <span>This token can't be bridged over.{' '}</span>
+          <button
+            className="arb-hover underline"
+            onClick={() => setWithdrawOnlyDialog(true)}
+          >
+            Learn more.
+          </button>
+        </>
+      )
     }
 
     return `Insufficient balance, please add more to ${
@@ -514,6 +532,20 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
+
+      <Dialog
+        closeable
+        title='Token not supported'
+        isOpen={withdrawOnlyDialog}
+        onClose={() => setWithdrawOnlyDialog(false)}
+        cancelButtonProps={{ className: 'hidden' }}
+        actionButtonTitle='Close'
+      >
+        <p>
+          The Arbitrum bridge does not currently support {selectedToken?.name},
+          please ask the {selectedToken?.name} team for more info.
+        </p>
+      </Dialog>
     </div>
   )
 }

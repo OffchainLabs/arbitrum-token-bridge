@@ -3,6 +3,7 @@ import { Fragment, useCallback, useRef, useState } from 'react'
 
 import { Button, ButtonProps } from './Button'
 import { getTransitionProps } from './Transition'
+import CloseIcon from 'src/assets/close.svg'
 
 /**
  * Returns a promise which resolves to a boolean value, `false` if the action was canceled and `true` if it was confirmed.
@@ -66,8 +67,10 @@ export function useDialog(): UseDialogResult {
 export type DialogProps = {
   isOpen: boolean
   isCustom?: boolean
+  closeable?: boolean
   title?: string | JSX.Element
   initialFocus?: React.MutableRefObject<HTMLElement | null>
+  cancelButtonProps?: Partial<ButtonProps>
   actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
   onClose: (confirmed: boolean) => void
@@ -98,10 +101,22 @@ export function Dialog(props: DialogProps) {
             props.children
           ) : (
             <>
-              <div className="px-8 py-4">
+              <div className="relative px-8 py-4">
                 <HeadlessUIDialog.Title className="text-2xl font-medium">
                   {props.title}
                 </HeadlessUIDialog.Title>
+                {props.closeable && (
+                  <button
+                    type="button"
+                    className="absolute top-5 right-10"
+                    onClick={() => props.onClose(false)}
+                  >
+                    <img
+                      src={CloseIcon}
+                      className="h-5 w-5 hover:opacity-70"
+                    />
+                  </button>
+                )}
               </div>
 
               <div className="flex-grow px-8 py-4">{props.children}</div>
@@ -111,6 +126,7 @@ export function Dialog(props: DialogProps) {
                   ref={cancelButtonRef}
                   variant="secondary"
                   onClick={() => props.onClose(false)}
+                  {...(props.cancelButtonProps || {})}
                 >
                   Cancel
                 </Button>
