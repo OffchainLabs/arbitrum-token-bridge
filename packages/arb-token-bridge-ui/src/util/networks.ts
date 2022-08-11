@@ -41,6 +41,10 @@ export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumRinkeby]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
 }
 
+export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumRinkeby]: '0x65321bf24210b81500230dcece14faa70a9f50a7'
+}
+
 export function registerLocalNetwork() {
   let localNetwork: {
     l1Network: L1Network
