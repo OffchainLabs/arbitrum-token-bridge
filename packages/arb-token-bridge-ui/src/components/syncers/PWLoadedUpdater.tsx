@@ -6,7 +6,10 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import { l2DaiGatewayAddresses } from '../../util/networks'
+import {
+  l2DaiGatewayAddresses,
+  l2wstETHGatewayAddresses
+} from '../../util/networks'
 
 // Loads pending withdrawals on page load
 export function PWLoadedUpdater(): JSX.Element {
@@ -37,8 +40,14 @@ export function PWLoadedUpdater(): JSX.Element {
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
 
     const l2DaiGateway = l2DaiGatewayAddresses[l2.network.chainID]
+    const l2wstETHGateway = l2wstETHGatewayAddresses[l2.network.chainID]
+
     if (l2DaiGateway) {
       gatewaysToUse.push(l2DaiGateway)
+    }
+
+    if (l2wstETHGateway) {
+      gatewaysToUse.push(l2wstETHGateway)
     }
 
     console.log('**** setting initial pending withdrawals ****')
