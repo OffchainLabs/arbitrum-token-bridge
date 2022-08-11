@@ -16,7 +16,6 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { isWithdrawOnlyToken } from 'src/util/WithdrawOnlyUtils'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
