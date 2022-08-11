@@ -162,15 +162,20 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
-  const confirmationSeconds = l1.network.blockTime * l2.network.confirmPeriodBlocks
+  const confirmationSeconds =
+    l1.network.blockTime * l2.network.confirmPeriodBlocks
   const confirmationDays = Math.round(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
 
   if (confirmationDays >= 2) {
-    confirmationPeriod = `~${confirmationDays} day${confirmationDays > 1 ? 's' : ''}`
+    confirmationPeriod = `~${confirmationDays} day${
+      confirmationDays > 1 ? 's' : ''
+    }`
   } else {
     const confirmationHours = Math.round(confirmationSeconds / SECONDS_IN_HOUR)
-    confirmationPeriod = `~${confirmationHours} hour${confirmationHours > 1 ? 's' : ''}`
+    confirmationPeriod = `~${confirmationHours} hour${
+      confirmationHours > 1 ? 's' : ''
+    }`
   }
 
   const { isArbitrumOne } = isNetwork(l2.network)

@@ -360,7 +360,7 @@ export function TransferPanelMain({
     if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
       return (
         <>
-          <span>This token can't be bridged over.{' '}</span>
+          <span>This token can't be bridged over. </span>
           <button
             className="arb-hover underline"
             onClick={openWithdrawOnlyDialog}
@@ -534,9 +534,9 @@ export function TransferPanelMain({
 
       <Dialog
         closeable
-        title='Token not supported'
+        title="Token not supported"
         cancelButtonProps={{ className: 'hidden' }}
-        actionButtonTitle='Close'
+        actionButtonTitle="Close"
         {...withdrawOnlyDialogProps}
       >
         <p>

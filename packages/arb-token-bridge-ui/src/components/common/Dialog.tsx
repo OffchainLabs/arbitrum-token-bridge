@@ -106,11 +106,8 @@ export function Dialog(props: DialogProps) {
                   {props.title}
                 </HeadlessUIDialog.Title>
                 {closeable && (
-                  <button
-                    type="button"
-                    onClick={() => props.onClose(false)}
-                  >
-                    <XIcon className="h-5 w-5 arb-hover" />
+                  <button type="button" onClick={() => props.onClose(false)}>
+                    <XIcon className="arb-hover h-5 w-5" />
                   </button>
                 )}
               </div>
