@@ -418,8 +418,6 @@ function TokensPanel({
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
       let error = 'Token not found on this network.'
-      console.log(error)
-      console.log('ex', ex)
 
       if (ex.name === 'TokenDisabledError') {
         error = 'This token is currently paused in the bridge.'
