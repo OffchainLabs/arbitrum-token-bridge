@@ -95,8 +95,7 @@ export function TransferPanel() {
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, bridgeTokens, walletAddress },
       arbTokenBridge,
-      warningTokens,
-      l2NetworkChainId
+      warningTokens
     }
   } = useAppState()
   const { provider, account } = useWallet()
@@ -533,9 +532,8 @@ export function TransferPanel() {
 
       if (
         isDepositMode &&
-        l2NetworkChainId &&
         selectedToken &&
-        isWithdrawOnlyToken(selectedToken.address, l2NetworkChainId)) {
+        isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)) {
           return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
 
@@ -576,7 +574,7 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken, l2NetworkChainId]
+    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
   )
 
   const disableDeposit = useMemo(() => {

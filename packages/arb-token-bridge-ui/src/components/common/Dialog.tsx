@@ -1,10 +1,9 @@
 import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
+import { XIcon } from '@heroicons/react/outline'
 
 import { Button, ButtonProps } from './Button'
 import { getTransitionProps } from './Transition'
-import CloseIcon from 'src/assets/close.svg'
-
 /**
  * Returns a promise which resolves to a boolean value, `false` if the action was canceled and `true` if it was confirmed.
  */
@@ -79,6 +78,7 @@ export type DialogProps = {
 
 export function Dialog(props: DialogProps) {
   const isCustom = props.isCustom || false
+  const closeable = props.closeable || false
   const cancelButtonRef = useRef(null)
 
   return (
@@ -101,20 +101,16 @@ export function Dialog(props: DialogProps) {
             props.children
           ) : (
             <>
-              <div className="relative px-8 py-4">
+              <div className="flex items-center justify-between px-8 py-4">
                 <HeadlessUIDialog.Title className="text-2xl font-medium">
                   {props.title}
                 </HeadlessUIDialog.Title>
-                {props.closeable && (
+                {closeable && (
                   <button
                     type="button"
-                    className="absolute top-5 right-10"
                     onClick={() => props.onClose(false)}
                   >
-                    <img
-                      src={CloseIcon}
-                      className="h-5 w-5 hover:opacity-70"
-                    />
+                    <XIcon className="h-5 w-5 arb-hover" />
                   </button>
                 )}
               </div>

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
-import { Dialog } from '../common/Dialog'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
@@ -16,6 +15,7 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { Dialog, useDialog } from '../common/Dialog'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -301,7 +301,7 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [withdrawOnlyDialog, setWithdrawOnlyDialog] = useState(false)
+  const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
   useEffect(() => {
     setFrom(externalFrom)
@@ -363,7 +363,7 @@ export function TransferPanelMain({
           <span>This token can't be bridged over.{' '}</span>
           <button
             className="arb-hover underline"
-            onClick={() => setWithdrawOnlyDialog(true)}
+            onClick={openWithdrawOnlyDialog}
           >
             Learn more.
           </button>
@@ -374,7 +374,7 @@ export function TransferPanelMain({
     return `Insufficient balance, please add more to ${
       isDepositMode ? 'L1' : 'L2'
     }.`
-  }, [errorMessage, isDepositMode])
+  }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
 
   function switchNetworks() {
     const newFrom = to
@@ -535,10 +535,9 @@ export function TransferPanelMain({
       <Dialog
         closeable
         title='Token not supported'
-        isOpen={withdrawOnlyDialog}
-        onClose={() => setWithdrawOnlyDialog(false)}
         cancelButtonProps={{ className: 'hidden' }}
         actionButtonTitle='Close'
+        {...withdrawOnlyDialogProps}
       >
         <p>
           The Arbitrum bridge does not currently support {selectedToken?.name},
