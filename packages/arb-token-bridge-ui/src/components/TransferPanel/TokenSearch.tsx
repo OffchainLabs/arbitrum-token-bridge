@@ -328,6 +328,7 @@ function TokensPanel({
   const tokensFromLists = useTokensFromLists()
 
   const [newToken, setNewToken] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
   const numberOfRows = isLarge ? 5 : 3.5
@@ -416,16 +417,19 @@ function TokensPanel({
 
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
-      console.log('Token not found on this network')
+      let error = 'Token not found on this network.'
 
       if (ex.name === 'TokenDisabledError') {
-        alert('This token is currently paused in the bridge')
+        error = 'This token is currently paused in the bridge.'
       }
+
+      setErrorMessage(error)
     })
   }
 
   const addNewToken: FormEventHandler = async e => {
     e.preventDefault()
+    setErrorMessage('')
 
     if (!isAddress(newToken) || isAddingToken) {
       return
@@ -449,7 +453,10 @@ function TokensPanel({
           <input
             id="newTokenAddress"
             value={newToken}
-            onChange={e => setNewToken(e.target.value)}
+            onChange={e => {
+              setErrorMessage('')
+              setNewToken(e.target.value)
+            }}
             placeholder="Search by token name, symbol, L1 or L2 address"
             className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
@@ -465,6 +472,7 @@ function TokensPanel({
             Add
           </Button>
         </div>
+        {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
       <div className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]">
         <AutoSizer disableHeight>
