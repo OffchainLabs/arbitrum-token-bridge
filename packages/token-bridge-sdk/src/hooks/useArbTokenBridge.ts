@@ -1357,7 +1357,11 @@ export const useArbTokenBridge = (
     )
     const startBlock =
       (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
-    const pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+    let pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
+
+    if (isRinkeby) {
+      pivotBlock = getRinkebyPivotBlock()
+    }
 
     const gatewayWithdrawalsResultsNested = await Promise.all(
       gatewayAddresses.map(gatewayAddress =>
