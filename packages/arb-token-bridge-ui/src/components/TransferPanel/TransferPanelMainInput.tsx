@@ -30,7 +30,7 @@ function MaxButton(props: MaxButtonProps) {
 
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
-    errorMessage?: string
+    errorMessage?: string | React.ReactNode
     maxButtonProps: MaxButtonProps & {
       visible: boolean
     }

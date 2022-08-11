@@ -1,9 +1,10 @@
 import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
+import { XIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
 import { getTransitionProps } from './Transition'
-
 /**
  * Returns a promise which resolves to a boolean value, `false` if the action was canceled and `true` if it was confirmed.
  */
@@ -66,16 +67,21 @@ export function useDialog(): UseDialogResult {
 export type DialogProps = {
   isOpen: boolean
   isCustom?: boolean
+  closeable?: boolean
   title?: string | JSX.Element
   initialFocus?: React.MutableRefObject<HTMLElement | null>
+  cancelButtonProps?: Partial<ButtonProps>
   actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
   onClose: (confirmed: boolean) => void
+  className?: string
   children?: React.ReactNode
 }
 
 export function Dialog(props: DialogProps) {
   const isCustom = props.isCustom || false
+  const closeable = props.closeable || false
+  const className = props.className || ''
   const cancelButtonRef = useRef(null)
 
   return (
@@ -93,15 +99,25 @@ export function Dialog(props: DialogProps) {
         onClose={() => props.onClose(false)}
         className="fixed inset-0 z-50 flex md:items-center md:justify-center md:bg-[rgba(0,0,0,0.6)]"
       >
-        <div className="z-10 max-h-screen w-full overflow-y-auto bg-white md:max-h-[calc(100vh-80px)] md:w-auto md:rounded-xl md:shadow-[0px_4px_12px_#acacac]">
+        <div
+          className={twMerge(
+            'z-10 max-h-screen w-full overflow-y-auto bg-white md:max-h-[calc(100vh-80px)] md:w-auto md:rounded-xl md:shadow-[0px_4px_12px_#acacac]',
+            className
+          )}
+        >
           {isCustom ? (
             props.children
           ) : (
             <>
-              <div className="px-8 py-4">
+              <div className="flex items-center justify-between px-8 py-4">
                 <HeadlessUIDialog.Title className="text-2xl font-medium">
                   {props.title}
                 </HeadlessUIDialog.Title>
+                {closeable && (
+                  <button type="button" onClick={() => props.onClose(false)}>
+                    <XIcon className="arb-hover h-5 w-5" />
+                  </button>
+                )}
               </div>
 
               <div className="flex-grow px-8 py-4">{props.children}</div>
@@ -111,6 +127,7 @@ export function Dialog(props: DialogProps) {
                   ref={cancelButtonRef}
                   variant="secondary"
                   onClick={() => props.onClose(false)}
+                  {...(props.cancelButtonProps || {})}
                 >
                   Cancel
                 </Button>

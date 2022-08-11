@@ -530,6 +530,14 @@ export function TransferPanel() {
         return undefined
       }
 
+      if (
+        isDepositMode &&
+        selectedToken &&
+        isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
+      ) {
+        return TransferPanelMainErrorMessage.WITHDRAW_ONLY
+      }
+
       const amountEntered = Number(_amountEntered)
       const balance = Number(_balance)
 
@@ -567,7 +575,7 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken]
+    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
   )
 
   const disableDeposit = useMemo(() => {

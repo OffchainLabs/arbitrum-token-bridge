@@ -15,6 +15,7 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { Dialog, useDialog } from '../common/Dialog'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -269,7 +270,8 @@ function NetworkListboxPlusBalancesContainer({
 
 export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
-  AMOUNT_TOO_LOW
+  AMOUNT_TOO_LOW,
+  WITHDRAW_ONLY
 }
 
 export function TransferPanelMain({
@@ -299,6 +301,7 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
   useEffect(() => {
     setFrom(externalFrom)
@@ -354,10 +357,24 @@ export function TransferPanelMain({
       return 'Sending ~$0 just to pay gas fees seems like a questionable life choice.'
     }
 
+    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
+      return (
+        <>
+          <span>This token can't be bridged over. </span>
+          <button
+            className="arb-hover underline"
+            onClick={openWithdrawOnlyDialog}
+          >
+            Learn more.
+          </button>
+        </>
+      )
+    }
+
     return `Insufficient balance, please add more to ${
       isDepositMode ? 'L1' : 'L2'
     }.`
-  }, [errorMessage, isDepositMode])
+  }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
 
   function switchNetworks() {
     const newFrom = to
@@ -514,6 +531,20 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
+
+      <Dialog
+        closeable
+        title="Token not supported"
+        cancelButtonProps={{ className: 'hidden' }}
+        actionButtonTitle="Close"
+        {...withdrawOnlyDialogProps}
+        className="md:max-w-[628px]"
+      >
+        <p>
+          The Arbitrum bridge does not currently support {selectedToken?.symbol}
+          , please ask the {selectedToken?.symbol} team for more info.
+        </p>
+      </Dialog>
     </div>
   )
 }
