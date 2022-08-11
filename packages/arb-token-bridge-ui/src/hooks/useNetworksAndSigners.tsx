@@ -142,9 +142,8 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
-      if (selectedL2ChainId) {
-        updateL2ChainIdAndClearCache(selectedL2ChainId)
-      }
+      // It's safe to fall back to 0, as invalid values will be ignored by the SDK
+      updateL2ChainIdAndClearCache(selectedL2ChainId ?? 0)
 
       async function isSwitchingToPartnerNetwork() {
         const nextChainId = (await web3Provider.getNetwork()).chainId
