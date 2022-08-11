@@ -538,10 +538,11 @@ export function TransferPanelMain({
         cancelButtonProps={{ className: 'hidden' }}
         actionButtonTitle="Close"
         {...withdrawOnlyDialogProps}
+        className="md:max-w-[628px]"
       >
         <p>
-          The Arbitrum bridge does not currently support {selectedToken?.name},
-          please ask the {selectedToken?.name} team for more info.
+          The Arbitrum bridge does not currently support {selectedToken?.symbol}
+          , please ask the {selectedToken?.symbol} team for more info.
         </p>
       </Dialog>
     </div>

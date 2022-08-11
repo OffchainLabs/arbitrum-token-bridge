@@ -1,6 +1,7 @@
 import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
 import { XIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
 import { getTransitionProps } from './Transition'
@@ -73,12 +74,14 @@ export type DialogProps = {
   actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
   onClose: (confirmed: boolean) => void
+  className?: string
   children?: React.ReactNode
 }
 
 export function Dialog(props: DialogProps) {
   const isCustom = props.isCustom || false
   const closeable = props.closeable || false
+  const className = props.className || ''
   const cancelButtonRef = useRef(null)
 
   return (
@@ -96,7 +99,12 @@ export function Dialog(props: DialogProps) {
         onClose={() => props.onClose(false)}
         className="fixed inset-0 z-50 flex md:items-center md:justify-center md:bg-[rgba(0,0,0,0.6)]"
       >
-        <div className="z-10 max-h-screen w-full overflow-y-auto bg-white md:max-h-[calc(100vh-80px)] md:w-auto md:rounded-xl md:shadow-[0px_4px_12px_#acacac]">
+        <div
+          className={twMerge(
+            'z-10 max-h-screen w-full overflow-y-auto bg-white md:max-h-[calc(100vh-80px)] md:w-auto md:rounded-xl md:shadow-[0px_4px_12px_#acacac]',
+            className
+          )}
+        >
           {isCustom ? (
             props.children
           ) : (
