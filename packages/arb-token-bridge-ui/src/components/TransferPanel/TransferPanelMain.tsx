@@ -8,6 +8,7 @@ import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
+import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -308,22 +309,6 @@ export function TransferPanelMain({
     setTo(externalTo)
   }, [externalFrom, externalTo])
 
-  const listboxOptions = useMemo(
-    () => getListboxOptionsFromL1Network(l1.network),
-    [l1.network]
-  )
-
-  // For now, we only want the `to` listbox to be enabled when connected to Mainnet, for switching between One and Nova.
-  const toListboxDisabled = useMemo(() => {
-    const { isMainnet } = isNetwork(l1.network)
-
-    if (isConnectedToArbitrum || !isMainnet) {
-      return true
-    }
-
-    return !app.isDepositMode
-  }, [isConnectedToArbitrum, l1.network, app.isDepositMode])
-
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode
       ? ethBalances.ethereum
@@ -400,6 +385,94 @@ export function TransferPanelMain({
     return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
   }
 
+  type NetworkListboxesProps = {
+    from: Omit<NetworkListboxProps, 'label'>
+    to: Omit<NetworkListboxProps, 'label'>
+  }
+
+  const networkListboxProps: NetworkListboxesProps = useMemo(() => {
+    const options = getListboxOptionsFromL1Network(l1.network)
+
+    function updatePreferredL2Chain(l2ChainId: number) {
+      history.replace({
+        pathname: '/',
+        search: `?l2ChainId=${l2ChainId}`
+      })
+    }
+
+    if (isDepositMode) {
+      return {
+        from: {
+          disabled: true,
+          options: [from],
+          value: from,
+          onChange: () => {}
+        },
+        to: {
+          disabled: false,
+          options,
+          value: to,
+          onChange: async network => {
+            // Selecting the same chain
+            if (to.chainID === network.chainID) {
+              return
+            }
+
+            if (isConnectedToArbitrum) {
+              // In deposit mode, if we are connected to a different L2 network
+              //
+              // 1) Switch to the L1 network (to be able to initiate a deposit)
+              // 2) Select the preferred L2 network
+              try {
+                await app.changeNetwork?.(l1.network)
+                updatePreferredL2Chain(network.chainID)
+              } catch (error: any) {
+                // 4001 - User rejected the request
+                if (error.code !== 4001) {
+                  Sentry.captureException(error)
+                }
+              }
+            } else {
+              // If we are connected to an L1 network, we can just select the preferred L2 network
+              updatePreferredL2Chain(network.chainID)
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      from: {
+        disabled: false,
+        options,
+        value: from,
+        onChange: async network => {
+          // Selecting the same chain
+          if (from.chainID === network.chainID) {
+            return
+          }
+
+          // In withdraw mode we always switch to the L2 network
+          try {
+            await app.changeNetwork?.(network)
+            updatePreferredL2Chain(network.chainID)
+          } catch (error: any) {
+            // 4001 - User rejected the request
+            if (error.code !== 4001) {
+              Sentry.captureException(error)
+            }
+          }
+        }
+      },
+      to: {
+        disabled: true,
+        options: [to],
+        value: to,
+        onChange: () => {}
+      }
+    }
+  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
+
   async function setMaxAmount() {
     const ethBalance = isDepositMode
       ? ethBalances.ethereum
@@ -452,13 +525,7 @@ export function TransferPanelMain({
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox
-            disabled
-            label="From:"
-            options={[from]}
-            value={from}
-            onChange={() => {}}
-          />
+          <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
             <TokenBalance
               on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
@@ -506,18 +573,7 @@ export function TransferPanelMain({
 
       <NetworkContainer network={to}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox
-            disabled={toListboxDisabled}
-            label="To:"
-            options={listboxOptions}
-            value={to}
-            onChange={network => {
-              history.push({
-                pathname: '/',
-                search: `?l2ChainId=${network.chainID}`
-              })
-            }}
-          />
+          <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
             <TokenBalance
               on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
