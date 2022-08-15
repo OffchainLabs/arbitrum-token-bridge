@@ -36,6 +36,7 @@ import {
   TransferPanelMain,
   TransferPanelMainErrorMessage
 } from './TransferPanelMain'
+import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -120,6 +121,7 @@ export function TransferPanel() {
   const [l1Amount, setL1AmountState] = useState<string>('')
   const [l2Amount, setL2AmountState] = useState<string>('')
 
+  const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const { shouldRequireApprove } = useL2Approve()
 
   const [
@@ -671,12 +673,22 @@ export function TransferPanel() {
   ])
 
   const isSummaryVisible = useMemo(() => {
+    if (isSwitchingL2Chain) {
+      return false
+    }
+
     if (transferring) {
       return true
     }
 
     return !(isDepositMode ? disableDeposit : disableWithdrawal)
-  }, [transferring, isDepositMode, disableDeposit, disableWithdrawal])
+  }, [
+    isSwitchingL2Chain,
+    transferring,
+    isDepositMode,
+    disableDeposit,
+    disableWithdrawal
+  ])
 
   return (
     <>
@@ -738,7 +750,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={transferring}
-              disabled={disableDepositV2}
+              disabled={isSwitchingL2Chain || disableDepositV2}
               onClick={() => {
                 if (selectedToken) {
                   depositToken()
@@ -757,7 +769,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={transferring}
-              disabled={disableWithdrawalV2}
+              disabled={isSwitchingL2Chain || disableWithdrawalV2}
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
