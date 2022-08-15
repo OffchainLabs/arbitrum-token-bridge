@@ -393,7 +393,7 @@ export function TransferPanelMain({
     const options = getListboxOptionsFromL1Network(l1.network)
 
     function updatePreferredL2Chain(l2ChainId: number) {
-      history.push({
+      history.replace({
         pathname: '/',
         search: `?l2ChainId=${l2ChainId}`
       })
