@@ -104,6 +104,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x641441c631e2f909700d2f41fd87f0aa6a6b4edb',
       l1Address: '0x0a5e677a6a24b2f1a2bf4f3bffc443231d2fdec8',
       l2Address: '0xcd14C3A2ba27819B352aae73414A26e2b366dC50'
+    },
+    {
+      symbol: 'SYN',
+      l2CustomAddr: '0x080f6aed32fc474dd5717105dba5ea57268f46eb',
+      l1Address: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
+      l2Address: '0x1bcfc0b4ee1471674cd6a9f6b363a034375ead84'
     }
   ],
   [ChainId.ArbitrumNova]: [
