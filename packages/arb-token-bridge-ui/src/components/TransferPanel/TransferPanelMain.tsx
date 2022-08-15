@@ -22,6 +22,7 @@ import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
   calculateEstimatedL2GasFees,
+  useIsSwitchingL2Chain,
   useETHBalances,
   useTokenBalances
 } from './TransferPanelMainUtils'
@@ -192,13 +193,17 @@ function NetworkContainer({
   return (
     <div className={`rounded-xl p-2 transition-colors ${backgroundClassName}`}>
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat px-4 py-1.5 sm:flex-row"
+        className="space-y-3.5 bg-contain bg-no-repeat p-1.5 sm:flex-row"
         style={{ backgroundImage }}
       >
         {children}
       </div>
     </div>
   )
+}
+
+function StyledLoader() {
+  return <Loader type="TailSpin" color="white" height={16} width={16} />
 }
 
 function ETHBalance({
@@ -212,7 +217,7 @@ function ETHBalance({
   const balance = balances[on]
 
   if (!balance) {
-    return <Loader type="TailSpin" color="white" height={16} width={16} />
+    return <StyledLoader />
   }
 
   return (
@@ -240,7 +245,7 @@ function TokenBalance({
   }
 
   if (!balance) {
-    return <Loader type="TailSpin" color="white" height={16} width={16} />
+    return <StyledLoader />
   }
 
   return (
@@ -291,6 +296,8 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
+
+  const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const ethBalances = useETHBalances()
   const tokenBalances = useTokenBalances(selectedToken?.address)
@@ -527,15 +534,21 @@ export function TransferPanelMain({
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
-            <TokenBalance
-              on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            <ETHBalance
-              on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
-              prefix={selectedToken ? '' : 'Balance: '}
-            />
+            {isSwitchingL2Chain ? (
+              <StyledLoader />
+            ) : (
+              <>
+                <TokenBalance
+                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  forToken={selectedToken}
+                  prefix={selectedToken ? 'Balance: ' : ''}
+                />
+                <ETHBalance
+                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  prefix={selectedToken ? '' : 'Balance: '}
+                />
+              </>
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
@@ -547,6 +560,7 @@ export function TransferPanelMain({
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageText}
+            disabled={isSwitchingL2Chain}
             value={amount}
             onChange={e => setAmount(e.target.value)}
           />
@@ -575,15 +589,21 @@ export function TransferPanelMain({
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
-            <TokenBalance
-              on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            <ETHBalance
-              on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
-              prefix={selectedToken ? '' : 'Balance: '}
-            />
+            {isSwitchingL2Chain ? (
+              <StyledLoader />
+            ) : (
+              <>
+                <TokenBalance
+                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  forToken={selectedToken}
+                  prefix={selectedToken ? 'Balance: ' : ''}
+                />
+                <ETHBalance
+                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  prefix={selectedToken ? '' : 'Balance: '}
+                />
+              </>
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>

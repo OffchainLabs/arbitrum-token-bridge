@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,
@@ -71,4 +73,29 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       arbitrum: tokenBalances.arbChainBalance
     }
   }, [arbTokenBridge, erc20L1Address])
+}
+
+export function useIsSwitchingL2Chain() {
+  const { app } = useAppState()
+  const { isDepositMode } = app
+
+  const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
+
+  const { search } = useLocation()
+  const searchParams = new URLSearchParams(search)
+  const l2ChainIdSearchParam = searchParams.get('l2ChainId')
+
+  return useMemo(() => {
+    if (isConnectedToArbitrum || !isDepositMode) {
+      return false
+    }
+
+    const parsedL2ChainId = parseInt(l2ChainIdSearchParam || '')
+
+    if (isNaN(parsedL2ChainId)) {
+      return false
+    }
+
+    return l2.network.chainID !== parsedL2ChainId
+  }, [isConnectedToArbitrum, isDepositMode, l2, l2ChainIdSearchParam])
 }
