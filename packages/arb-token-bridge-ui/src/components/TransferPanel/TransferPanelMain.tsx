@@ -8,6 +8,7 @@ import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
+import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -425,8 +426,11 @@ export function TransferPanelMain({
               try {
                 await app.changeNetwork?.(l1.network)
                 updatePreferredL2Chain(network.chainID)
-              } catch (error) {
-                //
+              } catch (error: any) {
+                // 4001 - User rejected the request
+                if (error.code !== 4001) {
+                  Sentry.captureException(error)
+                }
               }
             } else {
               // If we are connected to an L1 network, we can just select the preferred L2 network
@@ -452,8 +456,11 @@ export function TransferPanelMain({
           try {
             await app.changeNetwork?.(network)
             updatePreferredL2Chain(network.chainID)
-          } catch (error) {
-            //
+          } catch (error: any) {
+            // 4001 - User rejected the request
+            if (error.code !== 4001) {
+              Sentry.captureException(error)
+            }
           }
         }
       },
