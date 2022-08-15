@@ -294,7 +294,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                 ]
               })
             } else {
-              throw new Error(err)
+              throw err
             }
           }
         } else {
