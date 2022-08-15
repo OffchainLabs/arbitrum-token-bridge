@@ -276,7 +276,7 @@ function NetworkListboxPlusBalancesContainer({
 
 export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
-  AMOUNT_TOO_LOW,
+  GAS_ESTIMATION_FAILURE,
   WITHDRAW_ONLY
 }
 
@@ -345,8 +345,19 @@ export function TransferPanelMain({
       return undefined
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.AMOUNT_TOO_LOW) {
-      return 'Sending ~$0 just to pay gas fees seems like a questionable life choice.'
+    if (errorMessage === TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE) {
+      return (
+        <span>
+          Gas estimation failed, join our{' '}
+          <ExternalLink
+            href="https://discord.com/invite/ZpZuw7p"
+            className="underline"
+          >
+            Discord
+          </ExternalLink>{' '}
+          and reach out in #support for assistance.
+        </span>
+      )
     }
 
     if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {

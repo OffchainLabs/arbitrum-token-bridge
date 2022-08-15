@@ -521,6 +521,7 @@ export function TransferPanel() {
     selectedToken,
     shouldRunGasEstimation
   )
+  const { status: gasEstimationStatus } = gasSummary
 
   const getErrorMessage = useCallback(
     (
@@ -555,7 +556,7 @@ export function TransferPanel() {
           return undefined
 
         case 'error':
-          return TransferPanelMainErrorMessage.AMOUNT_TOO_LOW
+          return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
         case 'success': {
           if (selectedToken) {
@@ -673,7 +674,7 @@ export function TransferPanel() {
   ])
 
   const isSummaryVisible = useMemo(() => {
-    if (isSwitchingL2Chain) {
+    if (isSwitchingL2Chain || gasEstimationStatus === 'error') {
       return false
     }
 
@@ -684,6 +685,7 @@ export function TransferPanel() {
     return !(isDepositMode ? disableDeposit : disableWithdrawal)
   }, [
     isSwitchingL2Chain,
+    gasEstimationStatus,
     transferring,
     isDepositMode,
     disableDeposit,
