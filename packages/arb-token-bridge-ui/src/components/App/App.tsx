@@ -52,8 +52,8 @@ import {
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps,
-  Layout
 } from '@arbitrum/shared-ui'
+import { Layout } from '../common/Layout'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
@@ -517,7 +517,7 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <Layout logoSrc={HeaderArbitrumLogoMainnet} getHelpLink={GET_HELP_LINK}>
+      <Layout>
         <Routes />
         <Moon />
       </Layout>
