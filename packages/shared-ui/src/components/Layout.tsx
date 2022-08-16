@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { Header, HeaderProps } from './Header'
 import { Footer } from './Footer'
 
-import SpaceImage from '../assets/space.jpeg'
+import SpaceImage from '../internal/space.jpeg'
 
 interface LayoutProps extends HeaderProps {
   children: ReactNode
