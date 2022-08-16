@@ -49,12 +49,10 @@ import {
   NetworksAndSignersProvider
 } from '../../hooks/useNetworksAndSigners'
 import {
-  Header,
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps,
-  Layout,
-  Footer
+  Layout
 } from '@arbitrum/shared-ui'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
@@ -519,22 +517,9 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <Layout
-        header={
-          <Header
-            logoSrc={HeaderArbitrumLogoMainnet}
-            getHelpLink={GET_HELP_LINK}
-          />
-        }
-        footer={
-          <>
-            <Footer />
-            <Moon />
-          </>
-        }
-        backgroundImageSrc='url(/images/space.jpeg)'
-      >
+      <Layout logoSrc={HeaderArbitrumLogoMainnet} getHelpLink={GET_HELP_LINK}>
         <Routes />
+        <Moon />
       </Layout>
     </Provider>
   )

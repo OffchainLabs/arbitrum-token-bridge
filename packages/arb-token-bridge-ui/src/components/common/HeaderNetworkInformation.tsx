@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
-import EthereumLogo from '@arbitrum/shared-ui/dist/assets/EthereumLogo.png'
-import ArbitrumOneLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumNovaLogo.png'
+import EthereumLogo from '../../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'

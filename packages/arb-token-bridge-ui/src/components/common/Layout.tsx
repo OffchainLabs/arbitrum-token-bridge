@@ -34,10 +34,7 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.jpeg)' }}
       className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      <Header
-        logoSrc={HeaderArbiturmLogoMainnet}
-        getHelpLink={GET_HELP_LINK}
-      />
+      <Header logoSrc={HeaderArbiturmLogoMainnet} getHelpLink={GET_HELP_LINK} />
 
       <div className="bg-gradient-overlay z-20 flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>

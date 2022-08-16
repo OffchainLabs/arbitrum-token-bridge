@@ -9,7 +9,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
-import ArbitrumOneLogo from '@arbitrum/shared-ui/dist/assets/ArbitrumOneLogo.svg'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
 
 import {
   ExploreArbitrumContent,

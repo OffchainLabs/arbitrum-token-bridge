@@ -13,7 +13,7 @@ import {
 
 const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
 
-interface HeaderProps {
+export interface HeaderProps {
   logoSrc: string
   getHelpLink: string
 }
@@ -300,7 +300,7 @@ function MobileExternalLink({
   )
 }
 
-function HeaderMobile(props: Partial<HeaderProps>) {
+function HeaderMobile({ getHelpLink }: Pick<HeaderProps, 'getHelpLink'>) {
   return (
     <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
       <div className="flex h-[80px] items-center justify-end px-8">
@@ -328,7 +328,7 @@ function HeaderMobile(props: Partial<HeaderProps>) {
         <HeaderMenuMobile {...chartsStatsMenuProps}>
           Charts & Stats
         </HeaderMenuMobile>
-        <MobileExternalLink href={props.getHelpLink}>Get Help</MobileExternalLink>
+        <MobileExternalLink href={getHelpLink}>Get Help</MobileExternalLink>
       </div>
     </div>
   )

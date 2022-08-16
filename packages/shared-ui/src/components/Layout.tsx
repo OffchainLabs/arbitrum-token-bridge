@@ -1,25 +1,30 @@
 import React, { ReactNode } from 'react'
 
-interface LayoutProps {
+import { Header, HeaderProps } from './Header'
+import { Footer } from './Footer'
+
+import SpaceImage from '../assets/space.jpeg'
+
+interface LayoutProps extends HeaderProps {
   children: ReactNode
-  header?: ReactNode
-  footer?: ReactNode
-  backgroundImageSrc?: string
 }
 
 export function Layout(props: LayoutProps) {
   return (
     <div
-      style={{ backgroundImage: props.backgroundImageSrc }}
+      style={{ backgroundImage: `url(${SpaceImage})` }}
       className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      {props.header}
+      <Header
+        logoSrc={props.logoSrc}
+        getHelpLink={props.getHelpLink}
+      />
 
       <div className="bg-gradient-overlay z-20 flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>
       </div>
 
-      {props.footer}
+      <Footer />
     </div>
   )
 }
