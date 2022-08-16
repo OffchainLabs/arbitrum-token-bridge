@@ -312,9 +312,19 @@ export function TransferPanelMain({
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
   useEffect(() => {
+    const l2ChainId = isConnectedToArbitrum
+      ? externalFrom.chainID
+      : externalTo.chainID
+
     setFrom(externalFrom)
     setTo(externalTo)
-  }, [externalFrom, externalTo])
+
+    // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
+    history.replace({
+      pathname: '/',
+      search: `?l2ChainId=${l2ChainId}`
+    })
+  }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode
