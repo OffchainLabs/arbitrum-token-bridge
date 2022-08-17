@@ -49,7 +49,9 @@ jobs:
             - v1-yarn-  
       - run:
           name: Run audit
-          command: yarn audit:ci
+          command: |
+            yarn install --cache-folder ~/.cache/yarn
+            yarn audit:ci
           
 workflows:
   version: 2
