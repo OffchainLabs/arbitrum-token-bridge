@@ -44,12 +44,12 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-        keys:
-          - v1-yarn-{{ checksum "yarn.lock" }}
-          - v1-yarn-  
+          keys:
+            - v1-yarn-{{ checksum "yarn.lock" }}
+            - v1-yarn-  
       - run:
-        name: Run audit
-        command: yarn audit:ci
+          name: Run audit
+          command: yarn audit:ci
           
 workflows:
   version: 2
