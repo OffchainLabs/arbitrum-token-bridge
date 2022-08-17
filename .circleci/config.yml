@@ -47,7 +47,7 @@ jobs:
         keys:
           - v1-yarn-{{ checksum "yarn.lock" }}
           - v1-yarn-  
-      - run
+      - run:
         name: Run audit
         command: yarn audit:ci
           
