@@ -38,11 +38,25 @@ jobs:
           name: Run tests
           command: yarn test:sdk
 
+  audit:
+    docker:
+      - image: cimg/node:16.14.2-browsers
+    steps:
+      - checkout
+      - restore_cache:
+        keys:
+          - v1-yarn-{{ checksum "yarn.lock" }}
+          - v1-yarn-  
+      - run
+        name: audit
+        command: yarn audit:ci
+          
 workflows:
   version: 2
   build-test:
     jobs:
       - build
+      - sdk-audit
       - test-sdk:
           requires:
             - build
