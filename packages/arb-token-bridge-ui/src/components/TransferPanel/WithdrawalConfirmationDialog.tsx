@@ -19,18 +19,20 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 
-type NetworkNames = {
-  [key in FastBridgeNames]: {
-    [key in ChainId]?: ChainId | string
-  }
-}
-
 enum FastBridgeNames {
   Hop = 'Hop',
   Celer = 'Celer',
   Connext = 'Connext',
   Across = 'Across'
 }
+
+type NetworkNames = {
+  [key in FastBridgeNames]: {
+    [key in ChainId]?: ChainId | string
+  }
+}
+
+export type FastBridgeName = `${FastBridgeNames}`
 
 const BridgeNetworkNames: NetworkNames = {
   [FastBridgeNames.Hop]: {
@@ -98,10 +100,6 @@ function getFastBridges(from: ChainId, to: ChainId) {
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
-
-// TODO: fix analytics
-// const FastBridgeNames = getFastBridges().map(bridge => bridge.name)
-// export type FastBridgeName = typeof FastBridgeNames[number]
 
 function FastBridgesTable() {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
