@@ -17,51 +17,107 @@ import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 
-const FastBridges = [
-  {
-    name: 'Hop',
-    imageSrc:
-      'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
-    href: 'https://app.hop.exchange/#/send?sourceNetwork=arbitrum&destNetwork=ethereum'
-  },
-  {
-    name: 'Celer',
-    imageSrc:
-      'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
-    href: 'https://cbridge.celer.network/#/transfer?sourceChainId=42161&destinationChainId=1&tokenSymbol=ETH'
-  },
-  {
-    name: 'Connext',
-    imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
-    href: 'https://bridge.connext.network/from-arbitrum-to-ethereum'
-  },
-  {
-    name: 'Across',
-    imageSrc:
-      'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
-    href: 'https://across.to/?from=42161&to=1'
+type NetworkNames = {
+  [key in FastBridgeNames]: {
+    [key in ChainId]?: ChainId | string
   }
-] as const
+}
+
+enum FastBridgeNames {
+  Hop = 'Hop',
+  Celer = 'Celer',
+  Connext = 'Connext',
+  Across = 'Across'
+}
+
+const BridgeNetworkNames: NetworkNames = {
+  [FastBridgeNames.Hop]: {
+    [ChainId.Mainnet]: 'ethereum',
+    [ChainId.ArbitrumOne]: 'arbitrum',
+    // TODO: Nova not supported.
+    [ChainId.ArbitrumNova]: 'arbitrum_nova'
+  },
+  [FastBridgeNames.Celer]: {
+    [ChainId.Mainnet]: ChainId.Mainnet,
+    [ChainId.ArbitrumOne]: ChainId.ArbitrumOne,
+    // TODO: Nova not supported.
+    [ChainId.ArbitrumNova]: ChainId.ArbitrumNova
+  },
+  [FastBridgeNames.Connext]: {
+    [ChainId.Mainnet]: 'ethereum',
+    [ChainId.ArbitrumOne]: 'arbitrum',
+    [ChainId.ArbitrumNova]: 'arbitrum_nova'
+  },
+  [FastBridgeNames.Across]: {
+    [ChainId.Mainnet]: ChainId.Mainnet,
+    [ChainId.ArbitrumOne]: ChainId.ArbitrumOne,
+    // TODO: Nova not supported.
+    [ChainId.ArbitrumNova]: ChainId.ArbitrumNova
+  }
+}
+
+function getFastBridges(from: ChainId, to: ChainId) {
+  return [
+    {
+      name: FastBridgeNames.Hop,
+      imageSrc:
+        'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
+      href: `https://app.hop.exchange/#/send?sourceNetwork=${
+        BridgeNetworkNames[FastBridgeNames.Hop][from]
+      }&destNetwork=${BridgeNetworkNames[FastBridgeNames.Hop][to]}`
+    },
+    {
+      name: FastBridgeNames.Celer,
+      imageSrc:
+        'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
+      href: `https://cbridge.celer.network/#/transfer?sourceChainId=${
+        BridgeNetworkNames[FastBridgeNames.Celer][from]
+      }&destinationChainId=${
+        BridgeNetworkNames[FastBridgeNames.Celer][to]
+      }&tokenSymbol=ETH`
+    },
+    {
+      name: FastBridgeNames.Connext,
+      imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
+      href: `https://bridge.connext.network/from-${
+        BridgeNetworkNames[FastBridgeNames.Connext][from]
+      }-to-${BridgeNetworkNames[FastBridgeNames.Connext][to]}`
+    },
+    {
+      name: FastBridgeNames.Across,
+      imageSrc:
+        'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
+      href: `https://across.to/?from=${
+        BridgeNetworkNames[FastBridgeNames.Across][from]
+      }&to=${BridgeNetworkNames[FastBridgeNames.Across][to]}`
+    }
+  ] as const
+}
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
 
-const FastBridgeNames = FastBridges.map(bridge => bridge.name)
-export type FastBridgeName = typeof FastBridgeNames[number]
+// TODO: fix analytics
+// const FastBridgeNames = getFastBridges().map(bridge => bridge.name)
+// export type FastBridgeName = typeof FastBridgeNames[number]
 
 function FastBridgesTable() {
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',
     []
   )
 
-  function isFavorite(bridgeName: string) {
+  const from = isConnectedToArbitrum ? l1.network : l2.network
+  const to = isConnectedToArbitrum ? l2.network : l1.network
+
+  function isFavorite(bridgeName: FastBridgeNames) {
     return favorites.includes(bridgeName)
   }
 
-  function toggleFavorite(bridgeName: string) {
+  function toggleFavorite(bridgeName: FastBridgeNames) {
     if (favorites.includes(bridgeName)) {
       setFavorites(favorites.filter(favorite => favorite !== bridgeName))
     } else {
@@ -69,22 +125,24 @@ function FastBridgesTable() {
     }
   }
 
-  function onClick(bridgeName: FastBridgeName) {
+  function onClick(bridgeName: FastBridgeNames) {
     trackEvent(`Fast Bridge Click: ${bridgeName}`)
   }
 
-  const sortedFastBridges = [...FastBridges].sort((a, b) => {
-    const isFavoriteA = isFavorite(a.name)
-    const isFavoriteB = isFavorite(b.name)
+  const sortedFastBridges = [...getFastBridges(from.chainID, to.chainID)].sort(
+    (a, b) => {
+      const isFavoriteA = isFavorite(a.name)
+      const isFavoriteB = isFavorite(b.name)
 
-    if (isFavoriteA && !isFavoriteB) {
-      return -1
-    } else if (!isFavoriteA && isFavoriteB) {
-      return 1
-    } else {
-      return 0
+      if (isFavoriteA && !isFavoriteB) {
+        return -1
+      } else if (!isFavoriteA && isFavoriteB) {
+        return 1
+      } else {
+        return 0
+      }
     }
-  })
+  )
 
   return (
     <table className="w-full border border-gray-5">
@@ -178,7 +236,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
     }`
   }
 
-  const { isArbitrumOne } = isNetwork(l2.network)
+  const { isArbitrumOne, isArbitrumNova } = isNetwork(l2.network)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -201,7 +259,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
           </div>
 
           <Tab.List className="bg-blue-arbitrum">
-            {isArbitrumOne && (
+            {(isArbitrumOne || isArbitrumNova) && (
               <Tab as={Fragment}>
                 {({ selected }) => (
                   <TabButton selected={selected}>
@@ -217,7 +275,7 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
             </Tab>
           </Tab.List>
 
-          {isArbitrumOne && (
+          {(isArbitrumOne || isArbitrumNova) && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
