@@ -37,11 +37,11 @@ export type FastBridgeName = `${FastBridgeNames}`
 const BridgeNetworkNames: NetworkNames = {
   [FastBridgeNames.Hop]: {
     [ChainId.Mainnet]: 'ethereum',
-    [ChainId.ArbitrumOne]: 'arbitrum',
+    [ChainId.ArbitrumOne]: 'arbitrum'
   },
   [FastBridgeNames.Celer]: {
     [ChainId.Mainnet]: ChainId.Mainnet,
-    [ChainId.ArbitrumOne]: ChainId.ArbitrumOne,
+    [ChainId.ArbitrumOne]: ChainId.ArbitrumOne
   },
   [FastBridgeNames.Connext]: {
     [ChainId.Mainnet]: 'ethereum',
@@ -50,11 +50,14 @@ const BridgeNetworkNames: NetworkNames = {
   },
   [FastBridgeNames.Across]: {
     [ChainId.Mainnet]: ChainId.Mainnet,
-    [ChainId.ArbitrumOne]: ChainId.ArbitrumOne,
+    [ChainId.ArbitrumOne]: ChainId.ArbitrumOne
   }
 }
 
-function getAvailableBridgesForNetwork(from: ChainId, to: ChainId): FastBridgeNames[] {
+function getAvailableBridgesForNetwork(
+  from: ChainId,
+  to: ChainId
+): FastBridgeNames[] {
   switch (true) {
     case from === ChainId.ArbitrumOne && to === ChainId.Mainnet:
       return [
@@ -66,9 +69,7 @@ function getAvailableBridgesForNetwork(from: ChainId, to: ChainId): FastBridgeNa
     case from === ChainId.ArbitrumOne && to === ChainId.ArbitrumNova:
     case from === ChainId.ArbitrumNova && to === ChainId.ArbitrumOne:
     case from === ChainId.ArbitrumNova && to === ChainId.Mainnet:
-      return [
-        FastBridgeNames.Connext
-      ]
+      return [FastBridgeNames.Connext]
     default:
       return []
   }
@@ -78,39 +79,55 @@ function getFastBridges(from: ChainId, to: ChainId) {
   const availableBridges = getAvailableBridgesForNetwork(from, to)
 
   return [
-    ...availableBridges.includes(FastBridgeNames.Hop) ? [{
-      name: FastBridgeNames.Hop,
-      imageSrc:
-        'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
-      href: `https://app.hop.exchange/#/send?sourceNetwork=${
-        BridgeNetworkNames[FastBridgeNames.Hop][from]
-      }&destNetwork=${BridgeNetworkNames[FastBridgeNames.Hop][to]}`
-    }] : [],
-    ...availableBridges.includes(FastBridgeNames.Celer) ? [{
-      name: FastBridgeNames.Celer,
-      imageSrc:
-        'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
-      href: `https://cbridge.celer.network/#/transfer?sourceChainId=${
-        BridgeNetworkNames[FastBridgeNames.Celer][from]
-      }&destinationChainId=${
-        BridgeNetworkNames[FastBridgeNames.Celer][to]
-      }&tokenSymbol=ETH`
-    }] : [],
-    ...availableBridges.includes(FastBridgeNames.Connext) ? [{
-      name: FastBridgeNames.Connext,
-      imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
-      href: `https://bridge.connext.network/from-${
-        BridgeNetworkNames[FastBridgeNames.Connext][from]
-      }-to-${BridgeNetworkNames[FastBridgeNames.Connext][to]}`
-    }] : [],
-    ...availableBridges.includes(FastBridgeNames.Across) ? [{
-      name: FastBridgeNames.Across,
-      imageSrc:
-        'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
-      href: `https://across.to/?from=${
-        BridgeNetworkNames[FastBridgeNames.Across][from]
-      }&to=${BridgeNetworkNames[FastBridgeNames.Across][to]}`
-    }] : []
+    ...(availableBridges.includes(FastBridgeNames.Hop)
+      ? [
+          {
+            name: FastBridgeNames.Hop,
+            imageSrc:
+              'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
+            href: `https://app.hop.exchange/#/send?sourceNetwork=${
+              BridgeNetworkNames[FastBridgeNames.Hop][from]
+            }&destNetwork=${BridgeNetworkNames[FastBridgeNames.Hop][to]}`
+          }
+        ]
+      : []),
+    ...(availableBridges.includes(FastBridgeNames.Celer)
+      ? [
+          {
+            name: FastBridgeNames.Celer,
+            imageSrc:
+              'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
+            href: `https://cbridge.celer.network/#/transfer?sourceChainId=${
+              BridgeNetworkNames[FastBridgeNames.Celer][from]
+            }&destinationChainId=${
+              BridgeNetworkNames[FastBridgeNames.Celer][to]
+            }&tokenSymbol=ETH`
+          }
+        ]
+      : []),
+    ...(availableBridges.includes(FastBridgeNames.Connext)
+      ? [
+          {
+            name: FastBridgeNames.Connext,
+            imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
+            href: `https://bridge.connext.network/from-${
+              BridgeNetworkNames[FastBridgeNames.Connext][from]
+            }-to-${BridgeNetworkNames[FastBridgeNames.Connext][to]}`
+          }
+        ]
+      : []),
+    ...(availableBridges.includes(FastBridgeNames.Across)
+      ? [
+          {
+            name: FastBridgeNames.Across,
+            imageSrc:
+              'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
+            href: `https://across.to/?from=${
+              BridgeNetworkNames[FastBridgeNames.Across][from]
+            }&to=${BridgeNetworkNames[FastBridgeNames.Across][to]}`
+          }
+        ]
+      : [])
   ] as const
 }
 
@@ -235,7 +252,8 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
 
   const from = isConnectedToArbitrum ? l1.network : l2.network
   const to = isConnectedToArbitrum ? l2.network : l1.network
-  const hasAvailableBridges = getAvailableBridgesForNetwork(from.chainID, to.chainID).length > 0
+  const hasAvailableBridges =
+    getAvailableBridgesForNetwork(from.chainID, to.chainID).length > 0
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
     l1.network.blockTime * l2.network.confirmPeriodBlocks
