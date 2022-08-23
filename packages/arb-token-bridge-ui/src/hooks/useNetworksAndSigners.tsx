@@ -187,6 +187,11 @@ export function NetworksAndSignersProvider(
         .catch(() => {
           getL2Network(web3Provider)
             .then(async l2Network => {
+              if(l2Network.chainID != _selectedL2ChainId){
+                setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+                return
+              }
+
               // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
               const l1NetworkChainId = l2Network.partnerChainID
               const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
