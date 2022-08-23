@@ -14,7 +14,7 @@ import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
-import { defaultL2ChainId, rpcURLs } from '../util/networks'
+import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
@@ -148,7 +148,7 @@ export function NetworksAndSignersProvider(
       if (selectedL2ChainId === undefined){
         // If l2ChainId is undefined, use a default L2 based on the connected provider chainid
         try {
-          _selectedL2ChainId = await defaultL2ChainId(providerChainId)
+          _selectedL2ChainId = chainIdToDefaultL2ChainId[providerChainId]
         } catch (err) {
           console.warn('Bad l2ChainId', err)
           setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
