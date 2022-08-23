@@ -145,12 +145,11 @@ export function NetworksAndSignersProvider(
       const providerChainId = (await web3Provider.getNetwork()).chainId
 
       let _selectedL2ChainId = selectedL2ChainId
-      if (selectedL2ChainId === undefined){
+      if (_selectedL2ChainId === undefined){
         // If l2ChainId is undefined, use a default L2 based on the connected provider chainid
-        try {
-          _selectedL2ChainId = chainIdToDefaultL2ChainId[providerChainId]
-        } catch (err) {
-          console.warn('Bad l2ChainId', err)
+        _selectedL2ChainId = chainIdToDefaultL2ChainId[providerChainId]
+        if (_selectedL2ChainId === undefined){
+          console.error(`Unknown provider chainId: ${providerChainId}`)
           setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
           return
         }
