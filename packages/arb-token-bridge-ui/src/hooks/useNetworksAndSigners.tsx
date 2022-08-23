@@ -11,11 +11,10 @@ import {
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
-import { updateL2ChainIdAndClearCache } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
-import { rpcURLs } from '../util/networks'
+import { ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
@@ -142,45 +141,33 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
-      // It's safe to fall back to 0, as invalid values will be ignored by the SDK
-      updateL2ChainIdAndClearCache(selectedL2ChainId ?? 0)
 
-      async function isSwitchingToPartnerNetwork() {
-        const nextChainId = (await web3Provider.getNetwork()).chainId
-        const current = latestResult.current
-
-        if (current.status !== UseNetworksAndSignersStatus.CONNECTED) {
-          return false
+      async function defaultL2NetworkChainId(provider: JsonRpcProvider) {
+        const providerChainId = (await web3Provider.getNetwork()).chainId
+        switch(providerChainId){
+          case ChainId.Mainnet:
+          case ChainId.ArbitrumOne:
+            return ChainId.ArbitrumOne
+          case ChainId.Rinkeby:
+          case ChainId.ArbitrumRinkeby:
+            return ChainId.ArbitrumRinkeby
+          case ChainId.Goerli:
+          case ChainId.ArbitrumGoerli:
+            return ChainId.ArbitrumGoerli
+          case ChainId.ArbitrumNova:
+            return ChainId.ArbitrumNova
+          default:
+            return providerChainId
         }
-
-        if (current.isConnectedToArbitrum) {
-          return nextChainId === current.l2.network.partnerChainID
-        }
-
-        return current.l1.network?.partnerChainIDs.includes(nextChainId)
       }
 
-      getL1Network(web3Provider)
+      let _selectedL2ChainId = selectedL2ChainId ?? await defaultL2NetworkChainId(web3Provider)
+
+      getL1Network(web3Provider, _selectedL2ChainId)
         .then(async l1Network => {
-          function getL2NetworkChainId(): number {
-            // Use the first chain id from `partnerChainIDs` as default
-            const defaultL2NetworkChainId = l1Network.partnerChainIDs[0]
-
-            // Return the default if no preference for L2 chain
-            if (!selectedL2ChainId) {
-              return defaultL2NetworkChainId
-            }
-
-            // Return the default if the preffered L2 chain id doesn't match the L1 network
-            if (!l1Network.partnerChainIDs.includes(selectedL2ChainId)) {
-              return defaultL2NetworkChainId
-            }
-
-            return selectedL2ChainId
-          }
 
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const l2NetworkChainId = getL2NetworkChainId()
+          const l2NetworkChainId = _selectedL2ChainId
           const l2Provider = new JsonRpcProvider(rpcURLs[l2NetworkChainId])
           const l2Network = await getL2Network(l2Provider)
 
@@ -203,7 +190,7 @@ export function NetworksAndSignersProvider(
               // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
               const l1NetworkChainId = l2Network.partnerChainID
               const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
-              const l1Network = await getL1Network(l1Provider)
+              const l1Network = await getL1Network(l1Provider, _selectedL2ChainId)
 
               setResult({
                 status: UseNetworksAndSignersStatus.CONNECTED,
