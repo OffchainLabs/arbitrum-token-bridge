@@ -45,6 +45,24 @@ export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumRinkeby]: '0x65321bf24210b81500230dcece14faa70a9f50a7'
 }
 
+export async function defaultL2ChainId(chainId: number) {
+  switch(chainId){
+    case ChainId.Mainnet:
+    case ChainId.ArbitrumOne:
+      return ChainId.ArbitrumOne
+    case ChainId.Rinkeby:
+    case ChainId.ArbitrumRinkeby:
+      return ChainId.ArbitrumRinkeby
+    case ChainId.Goerli:
+    case ChainId.ArbitrumGoerli:
+      return ChainId.ArbitrumGoerli
+    case ChainId.ArbitrumNova:
+      return ChainId.ArbitrumNova
+    default:
+      throw new Error(`Unhandled chain id: ${chainId}`);
+  }
+}
+
 export function registerLocalNetwork() {
   let localNetwork: {
     l1Network: L1Network
