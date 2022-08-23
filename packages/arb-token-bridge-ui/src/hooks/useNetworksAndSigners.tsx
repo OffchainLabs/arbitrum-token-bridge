@@ -14,6 +14,7 @@ import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 import { useHistory, useLocation } from 'react-router'
+import { useAppState } from 'src/state'
 
 import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
@@ -106,6 +107,7 @@ export function NetworksAndSignersProvider(
 ): JSX.Element {
   const { selectedL2ChainId } = props
   const { provider, account, network, connect } = useWallet()
+  const { app: { isDepositMode} } = useAppState()
   const { search } = useLocation()
   const history = useHistory()
 
@@ -152,6 +154,7 @@ export function NetworksAndSignersProvider(
 
       // Remove params when network is valid but doesn't match the params
       if (
+        !isDepositMode &&
         Object.values(ChainId).includes(selectedL2ChainIdSearchParam) &&
         providerChainId !== selectedL2ChainIdSearchParam
       ) {
