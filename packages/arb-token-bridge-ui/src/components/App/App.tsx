@@ -75,7 +75,7 @@ const AppContent = (): JSX.Element => {
   const {
     app: { connectionState }
   } = useAppState()
-  const { isRinkeby } = isNetwork(l1.network)
+  const { isArbitrumOne } = isNetwork(l1.network)
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
@@ -92,15 +92,15 @@ const AppContent = (): JSX.Element => {
     return { imageSrc: HeaderArbitrumLogoMainnet, className }
   }, [l1.network])
 
-  if (isRinkeby) {
+  if (isArbitrumOne) {
     return (
       <div className="flex w-full flex-col items-center justify-center space-y-4 px-8 py-4 text-center lg:py-16">
         <p className="text-2xl text-white">
-          The Arbitrum Rinkeby Rollup is under maintenance for the migration to
+          Arbitrum One is under maintenance for the migration to
           Nitro.
           <br />
           <ExternalLink
-            href="https://twitter.com/ArbitrumDevs/status/1552262541929242625"
+            href="https://offchain.medium.com/prepare-your-engines-nitro-is-imminent-a46af99b9e60"
             className="underline"
           >
             Learn more.
