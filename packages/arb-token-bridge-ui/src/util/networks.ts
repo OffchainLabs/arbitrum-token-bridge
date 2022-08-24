@@ -47,7 +47,7 @@ export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
 
 // Default L2 Chain to use for a certain chainId
 export const chainIdToDefaultL2ChainId: { [chainId: number]: number } = {
-  [ChainId.Mainnet]: ChainId.ArbitrumOne,
+  [ChainId.Mainnet]: ChainId.ArbitrumNova,
   [ChainId.ArbitrumOne]: ChainId.ArbitrumOne,
   [ChainId.Rinkeby]: ChainId.ArbitrumRinkeby,
   [ChainId.ArbitrumRinkeby]: ChainId.ArbitrumRinkeby,
