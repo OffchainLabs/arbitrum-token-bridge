@@ -53,6 +53,7 @@ const apolloL2GatewaysClient = new ApolloClient({
 const networkIDAndLayerToClient = (networkID: string, layer: 1 | 2) => {
   switch (networkID) {
     case '1':
+    case '1337':
       return layer === 1 ? apolloL1Mainnetlient : apolloL2Mainnetlient
     case '4':
       return layer === 1 ? apolloL1RinkebyClient : apolloL2RinkebyClient
@@ -199,6 +200,7 @@ export const getTokenWithdrawals = async (
   const client = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':
+      case '1337':
         return apolloL2GatewaysClient
       case '4':
         return apolloL2GatewaysRinkebyClient
@@ -310,6 +312,7 @@ export const getBuiltInsGraphLatestBlockNumber = (l1NetworkID: string) => {
   const subgraphName = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':
+      case '1337':
         return 'fredlacs/arb-builtins'
       case '4':
         return 'fredlacs/arb-builtins-rinkeby'
@@ -325,6 +328,7 @@ export const getL2GatewayGraphLatestBlockNumber = (l1NetworkID: string) => {
   const subgraphName = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':
+      case '1337':
         return 'fredlacs/layer2-token-gateway'
       case '4':
         return 'fredlacs/layer2-token-gateway-rinkeby'

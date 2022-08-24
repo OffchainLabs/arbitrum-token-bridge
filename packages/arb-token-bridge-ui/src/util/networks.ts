@@ -1,5 +1,11 @@
-import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import { L1Network, L2Network, addCustomNetwork, isNitroL2 } from '@arbitrum/sdk'
 import * as NitroNetworks from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
+import {
+  getL2Network as nitroGetL2Network,
+  getL1Network as nitroGetL1Network,
+} from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
+import { JsonRpcProvider, Provider } from '@ethersproject/providers'
+
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -14,7 +20,9 @@ export enum ChainId {
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
   ArbitrumRinkeby = 421611,
-  ArbitrumGoerli = 421613
+  ArbitrumGoerli = 421613,
+  L1ShadowFork = 1337,
+  L2ShadowFork = 412346
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -28,7 +36,56 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://rinkeby.arbitrum.io/rpc',
-  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
+  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
+  // shadow fork
+  [ChainId.L1ShadowFork]: 'https://arb1-shadowfork.arbitrum.io/l1',
+  [ChainId.L2ShadowFork]: 'https://arb1-shadowfork.arbitrum.io/l2',
+}
+
+const inferShadowNetworks = async (
+  l1Provider: Provider,
+  l2Provider: Provider
+) => {
+  const mainnetL2 = await nitroGetL2Network(42161)
+  let l2Network: L2Network
+  if ((await l1Provider.getCode(mainnetL2.ethBridge.inbox)).length > 2) {
+    l2Network = mainnetL2
+  } else throw new Error('Could not infer shadow networks.')
+
+  const l1Network = await nitroGetL1Network(l2Network.partnerChainID)
+  const copiedNetworks: { l1Network: L1Network; l2Network: L2Network } = {
+    l1Network: { ...l1Network },
+    l2Network: { ...l2Network },
+  }
+
+  const l2ChainId = (await l2Provider.getNetwork()).chainId
+  copiedNetworks.l2Network.chainID = l2ChainId
+  copiedNetworks.l2Network.isCustom = true
+  const l1ChainID = (await l1Provider.getNetwork()).chainId
+  copiedNetworks.l2Network.partnerChainID = l1ChainID
+  copiedNetworks.l2Network.rpcURL = rpcURLs[l2ChainId]
+  copiedNetworks.l1Network.rpcURL = rpcURLs[l1ChainID]
+  copiedNetworks.l1Network.chainID = l1ChainID
+  copiedNetworks.l1Network.isCustom = true
+  copiedNetworks.l1Network.partnerChainIDs = [l2ChainId]
+
+  return { ...copiedNetworks }
+}
+
+export async function addShadowFork() {
+  const ethProvider = new JsonRpcProvider(rpcURLs[ChainId.L1ShadowFork])
+  const arbProvider = new JsonRpcProvider(rpcURLs[ChainId.L2ShadowFork])
+
+  const networks = await inferShadowNetworks(ethProvider, arbProvider)
+
+  addCustomNetwork({
+    customL1Network: networks.l1Network,
+    customL2Network: networks.l2Network,
+  })
+  NitroNetworks.l1Networks[ChainId.L1ShadowFork].rpcURL = rpcURLs[ChainId.L1ShadowFork]
+  // this triggers `generateL2NitroNetwork` inside the sdk to update the addresses to the new nitro deployments
+  const isNitro = await isNitroL2(arbProvider)
+  return isNitro
 }
 
 NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
@@ -53,7 +110,9 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: number } = {
   [ChainId.ArbitrumRinkeby]: ChainId.ArbitrumRinkeby,
   [ChainId.Goerli]: ChainId.ArbitrumGoerli,
   [ChainId.ArbitrumGoerli]: ChainId.ArbitrumGoerli,
-  [ChainId.ArbitrumNova]: ChainId.ArbitrumNova
+  [ChainId.ArbitrumNova]: ChainId.ArbitrumNova,
+  [ChainId.L1ShadowFork]: ChainId.L2ShadowFork,
+  [ChainId.L2ShadowFork]: ChainId.L2ShadowFork
 }
 
 export function registerLocalNetwork() {
@@ -91,13 +150,13 @@ export function isNetwork(network: L1Network | L2Network) {
 
   return {
     // L1
-    isMainnet: chainId === ChainId.Mainnet,
+    isMainnet: chainId === ChainId.Mainnet || chainId === ChainId.L1ShadowFork,
     // L1 Testnets
     isRinkeby: chainId === ChainId.Rinkeby,
     isGoerli: chainId === ChainId.Goerli,
     // L2
     isArbitrum: Boolean((network as any).isArbitrum),
-    isArbitrumOne: chainId === ChainId.ArbitrumOne,
+    isArbitrumOne: chainId === ChainId.ArbitrumOne || chainId === ChainId.L2ShadowFork,
     isArbitrumNova: chainId === ChainId.ArbitrumNova,
     // L2 Testnets
     isArbitrumRinkeby: chainId === ChainId.ArbitrumRinkeby,
@@ -137,6 +196,12 @@ export function getNetworkName(
 
     case ChainId.ArbitrumGoerli:
       return 'Arbitrum Goerli'
+    
+    case ChainId.L1ShadowFork:
+      return 'L1 Shadow Fork'
+    
+    case ChainId.L2ShadowFork:
+      return 'L2 Shadow Fork'
 
     default:
       return 'Unknown'
