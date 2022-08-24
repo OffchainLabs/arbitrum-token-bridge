@@ -96,23 +96,36 @@ const AppContent = (): JSX.Element => {
     return (
       <div className="flex w-full flex-col items-center justify-center space-y-4 px-8 py-4 text-center lg:py-16">
         <p className="text-2xl text-white">
-          Arbitrum One is under maintenance for the migration to
-          Nitro.
+          Arbitrum One is under maintenance for the Nitro upgrade.
+          <br />
+          <br />
+          You may still use this UI to interact with the other Arbitrum networks:
+          <br />
+          <a className="underline" href="/?l2ChainId=42170">
+            Arbitrum Nova
+          </a>
+          <br />
+          <a className="underline" href="/?l2ChainId=421613">
+            Goerli Testnet
+          </a>{" "}
+          <br />
+          <a className="underline" href="/?l2ChainId=421611">
+            Rinkeby Testnet
+          </a>
+
+          {/* <ExternalLink
+            href="https://twitter.com/ArbitrumDevs/status/1548066537377959937"
+            className="text-base underline"
+          >
+            Want to stay up to date with our progress? Follow this tweet thread.
+          </ExternalLink> */}
+          <br />
           <br />
           <ExternalLink
             href="https://offchain.medium.com/prepare-your-engines-nitro-is-imminent-a46af99b9e60"
             className="underline"
           >
             Learn more.
-          </ExternalLink>
-          <br />
-          <br />
-          <ExternalLink
-            href="https://twitter.com/ArbitrumDevs/status/1548066537377959937"
-            className="text-base underline"
-          >
-            In desperate need of a testnet? Check out the Arbitrum Goerli Rollup
-            which is already on Nitro!
           </ExternalLink>
         </p>
         <img
