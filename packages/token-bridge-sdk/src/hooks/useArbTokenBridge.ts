@@ -211,7 +211,7 @@ export const useArbTokenBridge = (
   ] = useTransactions()
 
   const isRinkeby = l1.network.chainID === 4
-  const isArbitrumOne = l1.network.chainID === 42161
+  const isArbitrumOne = l2.network.chainID === 42161
   
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
