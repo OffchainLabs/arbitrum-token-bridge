@@ -71,11 +71,11 @@ async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
 }
 
 const AppContent = (): JSX.Element => {
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
-  const { isArbitrumOne } = isNetwork(l1.network)
+  const { isArbitrumOne } = isNetwork(l2.network)
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
