@@ -31,6 +31,7 @@ export type FathomEvent =
   //
   | `Slow Bridge Click`
   | `Move More Funds Click`
+  | `Add to Google Calendar Click`
   //
   | 'Switch Network and Transfer'
 
@@ -102,6 +103,7 @@ const eventToEventId: {
   //
   'Slow Bridge Click': '9CEY3IGM',
   'Move More Funds Click': 'YE1OYTL4',
+  'Add to Google Calendar Click': 'CZTO23FP',
   //
   'Switch Network and Transfer': '4F5SKZRG'
 }
