@@ -1,14 +1,17 @@
 import { Fragment, useState } from 'react'
+import { useCopyToClipboard } from 'react-use'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XIcon, ExternalLinkIcon } from '@heroicons/react/outline'
 
+import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
 import { CanonicalTokensBridgeInfo, getFastBridges } from 'src/util/fastBridges'
 import { TabButton } from '../common/Tab'
 import { useAppState } from 'src/state'
 import { useNetworksAndSigners } from 'src/hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from 'src/util/networks'
+import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 
 function FastBridgesTable() {
   // TODO: Add Phantom tracking event
@@ -88,7 +91,15 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const networkName = getNetworkName(l2.network)
   const { isArbitrumOne } = isNetwork(l2.network)
 
+  const [, copyToClipboard] = useCopyToClipboard()
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0)
+  const [showCopied, setShowCopied] = useState(false)
+
+  function copy(value: string) {
+    setShowCopied(true)
+    copyToClipboard(value)
+    setTimeout(() => setShowCopied(false), 1000)
+  }
 
   return (
     <Dialog
@@ -158,25 +169,48 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
             </Tab.Panel>
           )}
 
-          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                If you choose to use Arbitrum’s bridge instead, you’ll have to
-                do two transfers.
-              </p>
-              <ol className="list-decimal px-4 font-light">
-                {/* TODO: are all tokens going to be structured like arbi{token_symbol}? */}
-                <li>
-                  Transfer on Arbitrum’s bridge to get arbi
-                  {selectedToken?.symbol}
-                </li>
-                <li>
-                  Transfer on {selectedToken?.symbol}'s bridge to swap arbi
-                  {selectedToken?.symbol} for {selectedToken?.symbol}
-                </li>
-              </ol>
-            </div>
-          </Tab.Panel>
+          {selectedToken && (
+            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+              <div className="flex flex-col space-y-3">
+                <p className="font-light">
+                  If you choose to use Arbitrum’s bridge instead, you’ll have to
+                  do two transfers.
+                </p>
+                <ol className="list-decimal px-4 font-light">
+                  {/* TODO: are all tokens going to be structured like arbi{token_symbol}? */}
+                  <li>
+                    Transfer on Arbitrum’s bridge to get arbi
+                    {selectedToken?.symbol}
+                  </li>
+                  <li>
+                    Transfer on {selectedToken?.symbol}'s bridge to swap arbi
+                    {selectedToken?.symbol} for {selectedToken?.symbol}
+                  </li>
+                </ol>
+                <div>
+                  <Transition show={showCopied}>
+                    <span className="absolute left-[89px] top-4 text-xs font-light text-white">
+                      Copied to clipboard!
+                    </span>
+                  </Transition>
+                  <div>
+                </div>
+
+                <button
+                  className="arb-hover bg-gray-300 border border-blue-arbitrum px-6 py-3 ml-4 rounded-xl"
+                  onClick={() => copy(CanonicalTokensBridgeInfo[selectedToken.symbol].bridgeUrl)}
+                >
+                  <div className="flex flex-row items-center space-x-3">
+                    <span className="font-light">
+                      Copy link for {selectedToken?.symbol} bridge
+                    </span>
+                    <CustomClipboardCopyIcon className="h-6 w-6 text-red" />
+                  </div>
+                </button>
+                </div>
+              </div>
+            </Tab.Panel>
+          )}
         </Tab.Group>
       </div>
     </Dialog>

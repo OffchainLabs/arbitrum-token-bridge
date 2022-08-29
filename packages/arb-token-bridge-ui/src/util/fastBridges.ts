@@ -92,10 +92,12 @@ export const CanonicalTokensBridgeInfo: {
   [tokenSymbol in string]: {
     supportedBridges: FastBridgeNames[]
     learnMoreUrl: string
+    bridgeUrl: string
   }
 } = {
   FRAX: {
     supportedBridges: [FastBridgeNames.Celer],
-    learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge'
+    learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
+    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
   }
 }
