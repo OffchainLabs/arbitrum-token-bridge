@@ -28,6 +28,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
+import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextDispatch } from '../App/AppContext'
@@ -37,6 +38,7 @@ import {
   TransferPanelMainErrorMessage
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
+import { CanonicalTokensBridgeInfo } from 'src/util/fastBridges'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -132,6 +134,8 @@ export function TransferPanel() {
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
+    useDialog()
+  const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
 
   // The amount of funds to bridge over, represented as a floating point number
@@ -394,6 +398,19 @@ export function TransferPanel() {
             }
 
             await latestToken.current.approve(selectedToken.address)
+          }
+
+          if (
+            Object.keys(CanonicalTokensBridgeInfo).includes(
+              selectedToken.symbol
+            )
+          ) {
+            const waitForInput = openDepositConfirmationDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
           }
 
           await latestToken.current.deposit(selectedToken.address, amountRaw, {
@@ -700,6 +717,8 @@ export function TransferPanel() {
       />
 
       <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
+
+      <DepositConfirmationDialog {...depositConfirmationDialogProps} />
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 

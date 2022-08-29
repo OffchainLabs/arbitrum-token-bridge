@@ -9,6 +9,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { useLocalStorage } from '@rehooks/local-storage'
+import { useAppState } from 'src/state'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -18,40 +19,22 @@ import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-
-const FastBridges = [
-  {
-    name: 'Hop',
-    imageSrc:
-      'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
-    href: 'https://app.hop.exchange/#/send?sourceNetwork=arbitrum&destNetwork=ethereum'
-  },
-  {
-    name: 'Celer',
-    imageSrc:
-      'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
-    href: 'https://cbridge.celer.network/#/transfer?sourceChainId=42161&destinationChainId=1&tokenSymbol=ETH'
-  },
-  {
-    name: 'Connext',
-    imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
-    href: 'https://bridge.connext.network/from-arbitrum-to-ethereum'
-  },
-  {
-    name: 'Across',
-    imageSrc:
-      'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
-    href: 'https://across.to/?from=42161&to=1'
-  }
-] as const
+import { getFastBridges, FastBridgeNames } from 'src/util/fastBridges'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
 
-const FastBridgeNames = FastBridges.map(bridge => bridge.name)
-export type FastBridgeName = typeof FastBridgeNames[number]
+export type FastBridgeName = `${FastBridgeNames}`
 
 function FastBridgesTable() {
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const from = isConnectedToArbitrum ? l2.network : l1.network
+  const to = isConnectedToArbitrum ? l1.network : l2.network
+
+  const {
+    app: { selectedToken }
+  } = useAppState()
+
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',
     []
@@ -73,7 +56,9 @@ function FastBridgesTable() {
     trackEvent(`Fast Bridge Click: ${bridgeName}`)
   }
 
-  const sortedFastBridges = [...FastBridges].sort((a, b) => {
+  const sortedFastBridges = [
+    ...getFastBridges(from.chainID, to.chainID, selectedToken?.symbol || 'ETH')
+  ].sort((a, b) => {
     const isFavoriteA = isFavorite(a.name)
     const isFavoriteB = isFavorite(b.name)
 
