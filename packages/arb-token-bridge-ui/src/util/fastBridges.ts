@@ -95,12 +95,7 @@ export const CanonicalTokensBridgeInfo: {
   }
 } = {
   FRAX: {
-    supportedBridges: [
-      FastBridgeNames.Celer,
-      FastBridgeNames.Hop,
-      FastBridgeNames.Connext,
-      FastBridgeNames.Across
-    ],
+    supportedBridges: [FastBridgeNames.Celer],
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge'
   }
 }
