@@ -204,7 +204,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                     <span className="font-light">
                       Copy link for {selectedToken?.symbol} bridge
                     </span>
-                    <CustomClipboardCopyIcon className="h-6 w-6 text-red" />
+                    <CustomClipboardCopyIcon className="h-6 w-6" />
                   </div>
                 </button>
                 </div>
