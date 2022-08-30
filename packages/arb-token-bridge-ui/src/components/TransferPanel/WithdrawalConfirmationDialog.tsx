@@ -6,12 +6,12 @@ import {
   StarIcon as StarIconOutline,
   ExternalLinkIcon
 } from '@heroicons/react/outline'
-import GoogleCalendarIcon from '../../assets/GoogleCalendar.svg'
 import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { useLocalStorage } from '@rehooks/local-storage'
 import dayjs from 'dayjs'
 
+import GoogleCalendarIcon from '../../assets/GoogleCalendar.svg'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
