@@ -105,6 +105,9 @@ const eventToEventId: {
   'Fast Bridge Click: Across': 'EZDV8TMY',
   //
   'FRAX: Fast Bridge Click: Celer': '6PZJPSBO',
+  'FRAX: Fast Bridge Click: Hop': '',
+  'FRAX: Fast Bridge Click: Connext': '',
+  'FRAX: Fast Bridge Click: Across': '',
   'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
   'FRAX: Copy Bridge Link Click': 'WWJ8WGXM',
   //
