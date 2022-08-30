@@ -99,6 +99,9 @@ const eventToEventId: {
   'Fast Bridge Click: Celer': 'JGSCWGST',
   'Fast Bridge Click: Connext': 'KFF7GMET',
   'Fast Bridge Click: Across': 'EZDV8TMY',
+  // TODO: Add to phantom
+  'Fast Bridge Click: Synapse': '',
+  'Fast Bridge Click: Stargate': '',
   //
   'Slow Bridge Click': '9CEY3IGM',
   'Move More Funds Click': 'YE1OYTL4',
