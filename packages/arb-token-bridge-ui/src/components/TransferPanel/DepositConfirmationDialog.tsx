@@ -6,12 +6,18 @@ import { XIcon, ExternalLinkIcon } from '@heroicons/react/outline'
 
 import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
-import { CanonicalTokensBridgeInfo, getFastBridges } from 'src/util/fastBridges'
+import {
+  CanonicalTokenName,
+  CanonicalTokensBridgeInfo,
+  getFastBridges,
+  FastBridgeName
+} from 'src/util/fastBridges'
 import { TabButton } from '../common/Tab'
 import { useAppState } from 'src/state'
 import { useNetworksAndSigners } from 'src/hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from 'src/util/networks'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import { trackEvent } from 'src/util/AnalyticsUtils'
 
 function FastBridgesTable() {
   // TODO: Add Phantom tracking event
@@ -22,6 +28,14 @@ function FastBridgesTable() {
   const {
     app: { selectedToken }
   } = useAppState()
+
+  function onClick(bridgeName: FastBridgeName) {
+    trackEvent(
+      `${
+        selectedToken?.symbol as CanonicalTokenName
+      }: Fast Bridge Click: ${bridgeName}`
+    )
+  }
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, selectedToken?.symbol || 'ETH')
@@ -57,7 +71,10 @@ function FastBridgesTable() {
             className="cursor-pointer border border-gray-5 hover:bg-cyan"
           >
             <td>
-              <ExternalLink href={bridge.href}>
+              <ExternalLink
+                href={bridge.href}
+                onClick={() => onClick(bridge.name)}
+              >
                 <div className="flex h-16 items-center space-x-4 px-6">
                   <img
                     src={bridge.imageSrc}
@@ -107,6 +124,13 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
       onClose={confirmed => {
         props.onClose(confirmed)
         setActiveTabIndex(0)
+        if (confirmed) {
+          trackEvent(
+            `${
+              selectedToken?.symbol as CanonicalTokenName
+            }: Use Arbitrum Bridge Click`
+          )
+        }
       }}
       actionButtonProps={{ hidden: activeTabIndex === 0 }}
       actionButtonTitle="I want to do two swaps"
@@ -193,20 +217,29 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                       Copied to clipboard!
                     </span>
                   </Transition>
-                  <div>
-                </div>
+                  <div></div>
 
-                <button
-                  className="arb-hover bg-gray-300 border border-blue-arbitrum px-6 py-3 ml-4 rounded-xl"
-                  onClick={() => copy(CanonicalTokensBridgeInfo[selectedToken.symbol].bridgeUrl)}
-                >
-                  <div className="flex flex-row items-center space-x-3">
-                    <span className="font-light">
-                      Copy link for {selectedToken?.symbol} bridge
-                    </span>
-                    <CustomClipboardCopyIcon className="h-6 w-6" />
-                  </div>
-                </button>
+                  <button
+                    className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
+                    onClick={() => {
+                      copy(
+                        CanonicalTokensBridgeInfo[selectedToken.symbol]
+                          .bridgeUrl
+                      )
+                      trackEvent(
+                        `${
+                          selectedToken.symbol as CanonicalTokenName
+                        }: Copy Bridge Link Click`
+                      )
+                    }}
+                  >
+                    <div className="flex flex-row items-center space-x-3">
+                      <span className="font-light">
+                        Copy link for {selectedToken?.symbol} bridge
+                      </span>
+                      <CustomClipboardCopyIcon className="h-6 w-6" />
+                    </div>
+                  </button>
                 </div>
               </div>
             </Tab.Panel>

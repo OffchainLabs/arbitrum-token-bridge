@@ -19,12 +19,10 @@ import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { getFastBridges, FastBridgeNames } from 'src/util/fastBridges'
+import { getFastBridges, FastBridgeName } from 'src/util/fastBridges'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
-
-export type FastBridgeName = `${FastBridgeNames}`
 
 function FastBridgesTable() {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()

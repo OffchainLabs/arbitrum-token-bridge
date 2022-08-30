@@ -6,7 +6,8 @@ import {
   CEXName,
   FiatOnRampName
 } from '../components/TransferPanel/LowBalanceDialogContent'
-import { FastBridgeName } from '../components/TransferPanel/WithdrawalConfirmationDialog'
+import { FastBridgeName } from './fastBridges'
+import { CanonicalTokenName } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 
 declare global {
@@ -28,6 +29,9 @@ export type FathomEvent =
   | `Fiat On-Ramp Click: ${FiatOnRampName}`
   //
   | `Fast Bridge Click: ${FastBridgeName}`
+  | `${CanonicalTokenName}: Fast Bridge Click: ${FastBridgeName}`
+  | `${CanonicalTokenName}: Use Arbitrum Bridge Click`
+  | `${CanonicalTokenName}: Copy Bridge Link Click`
   //
   | `Slow Bridge Click`
   | `Move More Funds Click`
@@ -99,6 +103,10 @@ const eventToEventId: {
   'Fast Bridge Click: Celer': 'JGSCWGST',
   'Fast Bridge Click: Connext': 'KFF7GMET',
   'Fast Bridge Click: Across': 'EZDV8TMY',
+  //
+  'FRAX: Fast Bridge Click: Celer': '6PZJPSBO',
+  'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
+  'FRAX: Copy Bridge Link Click': 'WWJ8WGXM',
   //
   'Slow Bridge Click': '9CEY3IGM',
   'Move More Funds Click': 'YE1OYTL4',
