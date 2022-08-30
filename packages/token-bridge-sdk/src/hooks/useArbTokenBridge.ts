@@ -211,6 +211,7 @@ export const useArbTokenBridge = (
   ] = useTransactions()
 
   const isRinkeby = l1.network.chainID === 4
+  const isArbitrumOne = l2.network.chainID === 42161
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
@@ -1216,9 +1217,17 @@ export const useArbTokenBridge = (
 
     const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
 
-    const lastOutboxEntryIndexDec = isRinkeby
-      ? 6152
-      : await getLatestOutboxEntryIndex(l1NetworkID)
+    const lastOutboxEntryIndexDec = await (() => {
+      if (isRinkeby) {
+        return 6152
+      }
+
+      if (isArbitrumOne) {
+        return 16270
+      }
+
+      return getLatestOutboxEntryIndex(l1NetworkID)
+    })()
 
     console.log(
       `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
