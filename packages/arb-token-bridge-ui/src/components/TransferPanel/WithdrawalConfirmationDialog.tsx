@@ -42,6 +42,16 @@ const FastBridges = [
     imageSrc:
       'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
     href: 'https://across.to/?from=42161&to=1'
+  },
+  {
+    name: 'Stargate',
+    imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/18934.png',
+    href: 'https://stargate.finance/transfer?dstChain=arbitrum&dstToken=eth'
+  },
+  {
+    name: 'Synapse',
+    imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/12147.png',
+    href: 'https://synapseprotocol.com/?inputCurrency=USDC&outputCurrency=USDC&outputChain=42161'
   }
 ] as const
 
