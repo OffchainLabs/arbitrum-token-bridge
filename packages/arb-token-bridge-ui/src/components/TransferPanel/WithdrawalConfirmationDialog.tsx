@@ -30,7 +30,7 @@ const FastBridges = [
     name: 'Celer',
     imageSrc:
       'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
-    href: 'https://cbridge.celer.network/#/transfer?sourceChainId=42161&destinationChainId=1&tokenSymbol=ETH'
+    href: 'https://cbridge.celer.network/42161/1/ETH'
   },
   {
     name: 'Connext',
