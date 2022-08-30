@@ -6,7 +6,7 @@ import {
   StarIcon as StarIconOutline,
   ExternalLinkIcon
 } from '@heroicons/react/outline'
-import GoogleCalendarIcon from 'src/assets/GoogleCalendar.svg'
+import GoogleCalendarIcon from '../../assets/GoogleCalendar.svg'
 import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -20,6 +20,7 @@ import { TabButton } from '../common/Tab'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
+import { useAppState } from '../../state'
 
 const FastBridges = [
   {
@@ -156,15 +157,25 @@ function FastBridgesTable() {
   )
 }
 
-function getCalendarUrl(confirmationDays: number) {
-  const title = 'Arbitrum Withdrawal'
+function getCalendarUrl(
+  confirmationDays: number,
+  amount: string,
+  token: string,
+  networkName: string
+) {
+  const title = `${amount} ${token} Withdrawal from ${networkName}`
   const withdrawalDate = dayjs().add(confirmationDays, 'day').format('YYYYMMDD')
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${withdrawalDate}%2F${withdrawalDate}`
 }
 
-export function WithdrawalConfirmationDialog(props: UseDialogProps) {
+export function WithdrawalConfirmationDialog(
+  props: UseDialogProps & { amount: string }
+) {
   const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(l1.network)
+  const {
+    app: { selectedToken }
+  } = useAppState()
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
@@ -300,16 +311,19 @@ export function WithdrawalConfirmationDialog(props: UseDialogProps) {
                 Set calendar reminder for {confirmationPeriod} from now
               </p>
               <div className="flex justify-center">
-                <a
-                  href={getCalendarUrl(confirmationDays)}
+                <ExternalLink
+                  href={getCalendarUrl(
+                    confirmationDays,
+                    props.amount,
+                    selectedToken?.symbol || 'ETH',
+                    getNetworkName(l2.network)
+                  )}
                   onClick={() => trackEvent('Add to Google Calendar Click')}
-                  rel="noopener noreferrer"
-                  target="_blank"
                   className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"
                 >
                   <img src={GoogleCalendarIcon} alt="Google Calendar Icon" />
                   <span>Add to Google Calendar</span>
-                </a>
+                </ExternalLink>
               </div>
               <p className="text-center text-sm font-light">
                 We don’t store any email data
