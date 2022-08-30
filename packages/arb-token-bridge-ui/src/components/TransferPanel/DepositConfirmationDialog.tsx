@@ -20,7 +20,6 @@ import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg
 import { trackEvent } from 'src/util/AnalyticsUtils'
 
 function FastBridgesTable() {
-  // TODO: Add Phantom tracking event
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
