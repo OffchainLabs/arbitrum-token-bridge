@@ -19,6 +19,7 @@ import { useAppState } from 'src/state'
 import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
+
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
   NOT_CONNECTED = 'not_connected',
@@ -107,7 +108,9 @@ export function NetworksAndSignersProvider(
 ): JSX.Element {
   const { selectedL2ChainId } = props
   const { provider, account, network, connect } = useWallet()
-  const { app: { isDepositMode} } = useAppState()
+  const {
+    app: { isDepositMode }
+  } = useAppState()
   const { search } = useLocation()
   const history = useHistory()
 
