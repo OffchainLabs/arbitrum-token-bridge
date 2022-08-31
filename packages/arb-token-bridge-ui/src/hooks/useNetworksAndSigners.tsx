@@ -141,14 +141,13 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
-
       const providerChainId = (await web3Provider.getNetwork()).chainId
 
       let _selectedL2ChainId = selectedL2ChainId
-      if (_selectedL2ChainId === undefined){
+      if (_selectedL2ChainId === undefined) {
         // If l2ChainId is undefined, use a default L2 based on the connected provider chainid
         _selectedL2ChainId = chainIdToDefaultL2ChainId[providerChainId]
-        if (_selectedL2ChainId === undefined){
+        if (_selectedL2ChainId === undefined) {
           console.error(`Unknown provider chainId: ${providerChainId}`)
           setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
           return
@@ -157,7 +156,6 @@ export function NetworksAndSignersProvider(
 
       getL1Network(web3Provider, _selectedL2ChainId!)
         .then(async l1Network => {
-
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
           const l2Provider = new JsonRpcProvider(rpcURLs[_selectedL2ChainId!])
           const l2Network = await getL2Network(l2Provider)
@@ -177,7 +175,7 @@ export function NetworksAndSignersProvider(
         })
         .catch(() => {
           // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
-          if(providerChainId != _selectedL2ChainId){
+          if (providerChainId != _selectedL2ChainId) {
             // Make sure the L2 provider chainid match the selected chainid
             setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
             return
@@ -186,7 +184,10 @@ export function NetworksAndSignersProvider(
             .then(async l2Network => {
               const l1NetworkChainId = l2Network.partnerChainID
               const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
-              const l1Network = await getL1Network(l1Provider, _selectedL2ChainId!)
+              const l1Network = await getL1Network(
+                l1Provider,
+                _selectedL2ChainId!
+              )
 
               setResult({
                 status: UseNetworksAndSignersStatus.CONNECTED,
