@@ -303,34 +303,37 @@ export function WithdrawalConfirmationDialog(
                   checked={checkbox2Checked}
                   onChange={setCheckbox2Checked}
                 />
+
+                <div className="flex flex-col justify-center space-y-2.5 rounded bg-cyan py-4 align-middle ">
+                  <p className="text-center text-sm font-light">
+                    Set calendar reminder for {confirmationPeriod} from now
+                  </p>
+                  <div className="flex justify-center">
+                    <ExternalLink
+                      href={getCalendarUrl(
+                        confirmationDays,
+                        props.amount,
+                        selectedToken?.symbol || 'ETH',
+                        getNetworkName(l2.network)
+                      )}
+                      onClick={() => trackEvent('Add to Google Calendar Click')}
+                      className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"
+                    >
+                      <img
+                        src={GoogleCalendarIcon}
+                        alt="Google Calendar Icon"
+                      />
+                      <span>Add to Google Calendar</span>
+                    </ExternalLink>
+                  </div>
+                  <p className="text-center text-sm font-light">
+                    We don’t store any email data
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col justify-center space-y-2.5 rounded bg-cyan py-4 align-middle">
-              <p className="text-center text-sm font-light">
-                Set calendar reminder for {confirmationPeriod} from now
-              </p>
-              <div className="flex justify-center">
-                <ExternalLink
-                  href={getCalendarUrl(
-                    confirmationDays,
-                    props.amount,
-                    selectedToken?.symbol || 'ETH',
-                    getNetworkName(l2.network)
-                  )}
-                  onClick={() => trackEvent('Add to Google Calendar Click')}
-                  className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"
-                >
-                  <img src={GoogleCalendarIcon} alt="Google Calendar Icon" />
-                  <span>Add to Google Calendar</span>
-                </ExternalLink>
-              </div>
-              <p className="text-center text-sm font-light">
-                We don’t store any email data
-              </p>
-            </div>
-
-            <div className="flex flex-row justify-end space-x-2">
+            <div className="mt-2 flex flex-row justify-end space-x-2">
               <Button variant="secondary" onClick={() => props.onClose(false)}>
                 Cancel
               </Button>
