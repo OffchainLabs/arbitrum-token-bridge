@@ -699,7 +699,10 @@ export function TransferPanel() {
         token={selectedToken}
       />
 
-      <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
+      <WithdrawalConfirmationDialog
+        {...withdrawalConfirmationDialogProps}
+        amount={isDepositMode ? l1Amount : l2Amount}
+      />
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
