@@ -51,6 +51,8 @@ const FastBridges = [
   {
     name: 'Synapse',
     imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/12147.png',
+    // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
+    // We make sure to prompt a network switch to Arbitrum prior to showing this.
     href: 'https://synapseprotocol.com/?inputCurrency=ETH&outputCurrency=ETH&outputChain=1'
   }
 ] as const
