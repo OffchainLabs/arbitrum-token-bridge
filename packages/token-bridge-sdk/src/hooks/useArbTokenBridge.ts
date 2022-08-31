@@ -1223,10 +1223,12 @@ export const useArbTokenBridge = (
       if (isRinkeby) {
         return 6152
       }
+
       if (isArbitrumOne) {
         // TODO: update this value
-        return 15767
+        return 16270
       }
+
       return getLatestOutboxEntryIndex(l1NetworkID)
     })()
 
