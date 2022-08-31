@@ -46,12 +46,12 @@ const FastBridges = [
   {
     name: 'Stargate',
     imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/18934.png',
-    href: 'https://stargate.finance/transfer?dstChain=arbitrum&dstToken=eth'
+    href: 'https://stargate.finance/transfer?srcChain=arbitrum&dstChain=ethereum&srcToken=eth'
   },
   {
     name: 'Synapse',
     imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/12147.png',
-    href: 'https://synapseprotocol.com/?inputCurrency=USDC&outputCurrency=USDC&outputChain=42161'
+    href: 'https://synapseprotocol.com/?inputCurrency=ETH&outputCurrency=ETH&outputChain=1'
   }
 ] as const
 
