@@ -12,7 +12,7 @@ import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
@@ -130,7 +130,6 @@ function NetworkListbox({
           <Listbox.Option
             key={option.chainID}
             value={option}
-            disabled={option.chainID === ChainId.ArbitrumOne}
             className={twMerge(
               'flex h-12 cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
               getOptionClassName(index)
