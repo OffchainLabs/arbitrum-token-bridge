@@ -1531,8 +1531,7 @@ export const useArbTokenBridge = (
   }
 
   function getArb1PivotBlock() {
-    // TODO: update pivot block
-    return 15402558
+    return 22202305
   }
 
   const setInitialPendingWithdrawals = async (
