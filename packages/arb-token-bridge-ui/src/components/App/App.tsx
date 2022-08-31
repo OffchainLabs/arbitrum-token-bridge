@@ -71,7 +71,7 @@ async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
 }
 
 const AppContent = (): JSX.Element => {
-  const { l1, l2 } = useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
@@ -96,37 +96,29 @@ const AppContent = (): JSX.Element => {
     return (
       <div className="flex w-full flex-col items-center justify-center space-y-4 px-8 py-4 text-center lg:py-16">
         <p className="text-2xl text-white">
-          Arbitrum One is under maintenance for the Nitro upgrade.
-          <br />
-          <br />
-          You may still use this UI to interact with the other Arbitrum networks:
-          <br />
-          <a className="underline" href="/?l2ChainId=42170">
-            Arbitrum Nova
-          </a>
-          <br />
-          <a className="underline" href="/?l2ChainId=421613">
-            Goerli Testnet
-          </a>{" "}
-          <br />
-          <a className="underline" href="/?l2ChainId=421611">
-            Rinkeby Testnet
-          </a>
-
-          {/* <ExternalLink
-            href="https://twitter.com/ArbitrumDevs/status/1548066537377959937"
-            className="text-base underline"
-          >
-            Want to stay up to date with our progress? Follow this tweet thread.
-          </ExternalLink> */}
-          <br />
-          <br />
+          Arbitrum One is under maintenance for the Nitro upgrade.{' '}
           <ExternalLink
             href="https://offchain.medium.com/prepare-your-engines-nitro-is-imminent-a46af99b9e60"
             className="underline"
           >
             Learn more.
           </ExternalLink>
+          <br />
+          <br />
+          {isConnectedToArbitrum ? (
+            <span>
+              You can switch to Ethereum or another Arbitrum network using your
+              wallet.
+            </span>
+          ) : (
+            <span>
+              You may still use this UI to interact with{' '}
+              <a className="underline" href="/?l2ChainId=42170">
+                Arbitrum Nova
+              </a>
+              .
+            </span>
+          )}
         </p>
         <img
           src="/images/arbinaut-fixing-spaceship.png"
