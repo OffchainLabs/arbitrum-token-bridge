@@ -52,7 +52,6 @@ import {
 } from './arbTokenBridge.types'
 
 import {
-  getLatestOutboxEntryIndex,
   getETHWithdrawals,
   getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
@@ -1219,41 +1218,13 @@ export const useArbTokenBridge = (
 
     const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
 
-    const lastOutboxEntryIndexDec = await (() => {
-      if (isRinkeby) {
-        return 6152
-      }
-
-      if (isArbitrumOne) {
-        // TODO: update this value
-        return 16270
-      }
-
-      return getLatestOutboxEntryIndex(l1NetworkID)
-    })()
-
-    console.log(
-      `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
-    )
-
     async function toEventResultPlus(
       // `l2TxHash` exists on results from subgraph
       // `transactionHash` exists on results from logs
       event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
     ): Promise<L2ToL1EventResultPlus> {
       const { callvalue } = event
-      let outgoingMessageState: OutgoingMessageState
-
-      if (isClassicEvent(event)) {
-        const batchNumber = (event as any).batchNumber as BigNumber
-
-        outgoingMessageState =
-          batchNumber.toNumber() > lastOutboxEntryIndexDec
-            ? OutgoingMessageState.UNCONFIRMED
-            : await getOutgoingMessageState(event)
-      } else {
-        outgoingMessageState = await getOutgoingMessageState(event)
-      }
+      const outgoingMessageState = await getOutgoingMessageState(event)
 
       return {
         ...event,
