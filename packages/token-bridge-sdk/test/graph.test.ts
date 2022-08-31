@@ -1,11 +1,6 @@
 import 'cross-fetch/polyfill'
-import {
-  getTokenWithdrawals,
-  messageHasExecuted,
-  getNodes,
-  getETHWithdrawals
-} from '../src/util/graph'
-import { utils, BigNumber } from 'ethers'
+import { getTokenWithdrawals, getETHWithdrawals } from '../src/util/graph'
+import { utils } from 'ethers'
 
 const assert = require('assert')
 
@@ -37,24 +32,6 @@ describe('Graph tests', function () {
         '1'
       )
       console.log(`Got ${res.length} eth withdrawals `)
-    })
-  })
-
-  describe('#messageHasExecuted', function () {
-    it('should return false for out of range batch', async () => {
-      const res = await messageHasExecuted(
-        BigNumber.from(10000000000),
-        BigNumber.from(0),
-        '1'
-      )
-      assert(!res, 'returns false gracefully')
-    })
-  })
-
-  describe('#getNodes', function () {
-    it('should get nodes!', async () => {
-      const nodes = await getNodes('1', 0)      
-      assert(nodes.length > 1600)
     })
   })
 })
