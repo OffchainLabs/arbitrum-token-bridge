@@ -6,8 +6,7 @@ import {
   CEXName,
   FiatOnRampName
 } from '../components/TransferPanel/LowBalanceDialogContent'
-import { FastBridgeName } from './fastBridges'
-import { CanonicalTokenName } from './fastBridges'
+import { CanonicalTokenName, FastBridgeName } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 
 declare global {
