@@ -4,7 +4,9 @@ enum FastBridgeNames {
   Hop = 'Hop',
   Celer = 'Celer',
   Connext = 'Connext',
-  Across = 'Across'
+  Across = 'Across',
+  Stargate = 'Stargate',
+  Synapse = 'Synapse'
 }
 
 enum CanonicalTokenNames {
@@ -50,6 +52,14 @@ export function getFastBridges(
         )}-to-${chainIdToNetworkName(to)}`
       case FastBridgeNames.Across:
         return `https://across.to/?from=${from}&to=${to}`
+      case FastBridgeNames.Stargate:
+        return `https://stargate.finance/transfer?srcChain=${chainIdToNetworkName(
+          from
+        )}&dstChain=${chainIdToNetworkName(to)}&srcToken=${tokenSymbol}`
+      case FastBridgeNames.Synapse:
+        // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
+        // We make sure to prompt a network switch to Arbitrum prior to showing this.
+        return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
       default:
         return ''
     }
@@ -79,6 +89,14 @@ export function getFastBridges(
       imageSrc:
         'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
       href: getBridgeDeepLink(FastBridgeNames.Across)
+    },
+    [FastBridgeNames.Stargate]: {
+      imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/18934.png',
+      href: getBridgeDeepLink(FastBridgeNames.Stargate)
+    },
+    [FastBridgeNames.Synapse]: {
+      imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/12147.png',
+      href: getBridgeDeepLink(FastBridgeNames.Synapse)
     }
   }
 

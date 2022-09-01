@@ -434,13 +434,6 @@ export function TransferPanel() {
           })
         }
       } else {
-        const waitForInput = openWithdrawalConfirmationDialog()
-        const confirmed = await waitForInput()
-
-        if (!confirmed) {
-          return
-        }
-
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
           await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
@@ -454,6 +447,13 @@ export function TransferPanel() {
           }
 
           await new Promise(r => setTimeout(r, 3000))
+        }
+
+        const waitForInput = openWithdrawalConfirmationDialog()
+        const confirmed = await waitForInput()
+
+        if (!confirmed) {
+          return
         }
 
         const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
@@ -716,7 +716,10 @@ export function TransferPanel() {
         token={selectedToken}
       />
 
-      <WithdrawalConfirmationDialog {...withdrawalConfirmationDialogProps} />
+      <WithdrawalConfirmationDialog
+        {...withdrawalConfirmationDialogProps}
+        amount={isDepositMode ? l1Amount : l2Amount}
+      />
 
       <DepositConfirmationDialog {...depositConfirmationDialogProps} />
 
