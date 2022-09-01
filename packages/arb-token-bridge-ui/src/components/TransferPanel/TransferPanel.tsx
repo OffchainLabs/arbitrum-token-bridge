@@ -38,7 +38,7 @@ import {
   TransferPanelMainErrorMessage
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
-import { CanonicalTokensBridgeInfo } from 'src/util/fastBridges'
+import { CanonicalTokensBridgeInfo } from '../../util/fastBridges'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
