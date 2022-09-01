@@ -111,6 +111,8 @@ const eventToEventId: {
   'FRAX: Fast Bridge Click: Hop': '',
   'FRAX: Fast Bridge Click: Connext': '',
   'FRAX: Fast Bridge Click: Across': '',
+  'FRAX: Fast Bridge Click: Stargate': '',
+  'FRAX: Fast Bridge Click: Synapse': '',
   'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
   'FRAX: Copy Bridge Link Click': 'WWJ8WGXM',
   //
