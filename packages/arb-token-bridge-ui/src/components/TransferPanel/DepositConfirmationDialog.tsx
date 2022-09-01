@@ -1,9 +1,9 @@
 import { Fragment, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
-import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XIcon, ExternalLinkIcon } from '@heroicons/react/outline'
 
+import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
 import {
@@ -11,13 +11,13 @@ import {
   CanonicalTokensBridgeInfo,
   getFastBridges,
   FastBridgeName
-} from 'src/util/fastBridges'
+} from '../../util/fastBridges'
 import { TabButton } from '../common/Tab'
-import { useAppState } from 'src/state'
-import { useNetworksAndSigners } from 'src/hooks/useNetworksAndSigners'
-import { getNetworkName, isNetwork } from 'src/util/networks'
+import { useAppState } from '../../state'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
-import { trackEvent } from 'src/util/AnalyticsUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 function FastBridgesTable() {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
