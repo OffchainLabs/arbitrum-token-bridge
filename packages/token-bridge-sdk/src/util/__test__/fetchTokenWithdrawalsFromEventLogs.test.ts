@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { getL2Network, L2Network } from '@arbitrum/sdk'
 
-import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawals'
+import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawalsFromEventLogs'
 
 const l2Provider = new JsonRpcProvider('https://rinkeby.arbitrum.io/rpc')
 
