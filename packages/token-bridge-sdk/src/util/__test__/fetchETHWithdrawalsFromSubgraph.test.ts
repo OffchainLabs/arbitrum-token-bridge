@@ -11,7 +11,7 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
       l1NetworkId: 4
     })
 
-    expect(result.length).toEqual(0)
+    expect(result).toHaveLength(0)
   })
 
   it('fetches some ETH withdrawals from subgraph pre-nitro', async () => {
@@ -22,7 +22,7 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
       l1NetworkId: 4
     })
 
-    expect(result.length).toEqual(5)
+    expect(result).toHaveLength(5)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -57,7 +57,7 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
       l1NetworkId: 4
     })
 
-    expect(result.length).toEqual(2)
+    expect(result).toHaveLength(2)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

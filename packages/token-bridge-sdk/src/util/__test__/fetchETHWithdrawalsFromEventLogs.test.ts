@@ -13,7 +13,7 @@ describe('fetchETHWithdrawalsFromEventLogs', () => {
       l2Provider
     })
 
-    expect(result.length).toEqual(0)
+    expect(result).toHaveLength(0)
   })
 
   it('fetches some ETH withdrawals from event logs pre-nitro', async () => {
@@ -24,7 +24,7 @@ describe('fetchETHWithdrawalsFromEventLogs', () => {
       l2Provider
     })
 
-    expect(result.length).toEqual(5)
+    expect(result).toHaveLength(5)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -59,7 +59,7 @@ describe('fetchETHWithdrawalsFromEventLogs', () => {
       l2Provider
     })
 
-    expect(result.length).toEqual(5)
+    expect(result).toHaveLength(5)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
