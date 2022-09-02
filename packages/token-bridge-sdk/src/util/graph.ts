@@ -1,7 +1,6 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
 import { AssetType, L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
-import axios from 'axios'
 import { utils } from 'ethers'
 
 export type GetTokenWithdrawalsResult = {
@@ -218,67 +217,4 @@ export const getTokenWithdrawals = async (
         }
       })
   )
-}
-
-const getLatestIndexedBlockNumber = async (subgraphName: string) => {
-  try {
-    const res = await axios.post(
-      'https://api.thegraph.com/index-node/graphql',
-      {
-        query: `{ indexingStatusForCurrentVersion(subgraphName: "${subgraphName}") {  chains { network latestBlock { number }  } } }`
-      }
-    )
-    return res.data.data.indexingStatusForCurrentVersion.chains[0].latestBlock
-      .number
-  } catch (err) {
-    console.warn('Error getting graph status:', err)
-
-    return 0
-  }
-}
-
-const getLatestIndexedBlockNumberUsingMeta = async (subgraphName: string) => {
-  try {
-    const res = await axios.post(
-      'https://api.thegraph.com/subgraphs/name/' + subgraphName,
-      {
-        query: `{ _meta { block { number } } }`
-      }
-    )
-    return res.data.data._meta.block.number
-  } catch (err) {
-    console.warn('Error getting graph status:', err)
-
-    return 0
-  }
-}
-
-export const getBuiltInsGraphLatestBlockNumber = (l1NetworkID: string) => {
-  const subgraphName = ((l1NetworkID: string) => {
-    switch (l1NetworkID) {
-      case '1':
-        return 'fredlacs/arb-builtins'
-      case '4':
-        return 'fredlacs/arb-builtins-rinkeby'
-      default:
-        throw new Error('Unsupported netwowk')
-    }
-  })(l1NetworkID)
-
-  return getLatestIndexedBlockNumberUsingMeta(subgraphName)
-}
-
-export const getL2GatewayGraphLatestBlockNumber = (l1NetworkID: string) => {
-  const subgraphName = ((l1NetworkID: string) => {
-    switch (l1NetworkID) {
-      case '1':
-        return 'fredlacs/layer2-token-gateway'
-      case '4':
-        return 'fredlacs/layer2-token-gateway-rinkeby'
-      default:
-        throw new Error('Unsupported netwowk')
-    }
-  })(l1NetworkID)
-
-  return getLatestIndexedBlockNumberUsingMeta(subgraphName)
 }
