@@ -4,7 +4,7 @@ import { AssetType, L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
 import axios from 'axios'
 import { utils } from 'ethers'
 
-export interface GetTokenWithdrawalsResult {
+export type GetTokenWithdrawalsResult = {
   l2ToL1Event: L2ToL1EventResult & { l2TxHash: string }
   otherData: {
     value: BigNumber

@@ -1,4 +1,9 @@
-import { getTokenWithdrawals as graph_getTokenWithdrawals } from './graph'
+import {
+  getTokenWithdrawals as graph_getTokenWithdrawals,
+  GetTokenWithdrawalsResult
+} from './graph'
+
+export type FetchTokenWithdrawalsFromSubgraphResult = GetTokenWithdrawalsResult
 
 /**
  * Fetches initiated token withdrawals from subgraph in range of [fromBlock, toBlock].
@@ -20,7 +25,7 @@ export function fetchTokenWithdrawalsFromSubgraph({
   fromBlock: number
   toBlock: number
   l1NetworkId: number
-}) {
+}): Promise<FetchTokenWithdrawalsFromSubgraphResult[]> {
   return graph_getTokenWithdrawals(
     address,
     fromBlock,
