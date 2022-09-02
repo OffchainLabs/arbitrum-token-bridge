@@ -110,6 +110,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x080f6aed32fc474dd5717105dba5ea57268f46eb',
       l1Address: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
       l2Address: '0x1bcfc0b4ee1471674cd6a9f6b363a034375ead84'
+    },
+    {
+      symbol: 'EMAX',
+      l2CustomAddr: '0x123389C2f0e9194d9bA98c21E63c375B67614108',
+      l1Address: '0x15874d65e649880c2614e7a480cb7c9A55787FF6',
+      l2Address: '0x94293e4e6ab410E898aa68318D0A964106Ff3257'
     }
   ],
   [ChainId.ArbitrumNova]: [
