@@ -82,7 +82,7 @@ export const getETHWithdrawals = async (
   const res = await client.query({
     query: gql`{
       l2ToL1Transactions(
-        where: {caller:"${callerAddress}", data: "0x", arbBlockNum_gte: ${fromBlock}, arbBlockNum_lt:${toBlock}}
+        where: {caller:"${callerAddress}", data: "0x", arbBlockNum_gte: ${fromBlock}, arbBlockNum_lte:${toBlock}}
         orderBy: timestamp
         orderDirection: desc
         ) {
