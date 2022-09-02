@@ -77,6 +77,10 @@ export const getETHWithdrawals = async (
   toBlock: number,
   networkID: string
 ): Promise<(L2ToL1EventResult & { l2TxHash: string })[]> => {
+  if (fromBlock === 0 && toBlock === 0) {
+    return []
+  }
+
   const client = networkIDAndLayerToClient(networkID, 2)
   const res = await client.query({
     query: gql`{
@@ -137,6 +141,10 @@ export const getTokenWithdrawals = async (
   toBlock: number,
   l1NetworkID: string
 ): Promise<GetTokenWithdrawalsResult[]> => {
+  if (fromBlock === 0 && toBlock === 0) {
+    return []
+  }
+
   const client = ((l1NetworkID: string) => {
     switch (l1NetworkID) {
       case '1':
