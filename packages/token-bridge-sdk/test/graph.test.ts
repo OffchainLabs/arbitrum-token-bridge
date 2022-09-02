@@ -1,4 +1,3 @@
-import 'cross-fetch/polyfill'
 import { getTokenWithdrawals, getETHWithdrawals } from '../src/util/graph'
 import { utils } from 'ethers'
 

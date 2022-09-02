@@ -1,6 +1,5 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { getL2Network, L2Network } from '@arbitrum/sdk'
-import 'cross-fetch/polyfill'
 
 import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawals'
 
