@@ -4,7 +4,7 @@ import { AssetType, L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
 import axios from 'axios'
 import { utils } from 'ethers'
 
-interface GetTokenWithdrawalsResult {
+export interface GetTokenWithdrawalsResult {
   l2ToL1Event: L2ToL1EventResult & { l2TxHash: string }
   otherData: {
     value: BigNumber
@@ -152,7 +152,7 @@ export const getTokenWithdrawals = async (
   const res = await client.query({
     query: gql`{
       withdrawals(
-        where: { from:"${sender}", l2BlockNum_gte: ${fromBlock}, l2BlockNum_lt: ${toBlock}}
+        where: { from:"${sender}", l2BlockNum_gte: ${fromBlock}, l2BlockNum_lte: ${toBlock}}
         orderBy: l2BlockNum
         orderDirection: desc
       ) {
@@ -174,45 +174,50 @@ export const getTokenWithdrawals = async (
     }
     `
   })
-  return res.data.withdrawals.map((eventData: any) => {
-    const {
-      amount: value,
-      l2ToL1Event: {
-        l2TxHash,
-        id,
-        caller,
-        destination,
-        batchNumber,
-        indexInBatch,
-        arbBlockNum,
-        ethBlockNum,
-        timestamp,
-        callvalue,
-        data
-      }
-    } = eventData
-    const l2ToL1Event = {
-      destination,
-      timestamp,
-      data,
-      caller,
-      uniqueId: BigNumber.from(id),
-      batchNumber: BigNumber.from(batchNumber),
-      indexInBatch: BigNumber.from(indexInBatch),
-      arbBlockNum: BigNumber.from(arbBlockNum),
-      ethBlockNum: BigNumber.from(ethBlockNum),
-      callvalue: BigNumber.from(callvalue)
-    } as L2ToL1EventResult
-    const tokenAddress = utils.hexDataSlice(data, 16, 36)
-    return {
-      l2ToL1Event: { ...l2ToL1Event, l2TxHash },
-      otherData: {
-        value: BigNumber.from(value),
-        tokenAddress,
-        type: AssetType.ERC20
-      }
-    }
-  })
+  return (
+    res.data.withdrawals
+      // Filter out badly indexed Nitro events
+      .filter((eventData: any) => eventData.l2ToL1Event !== null)
+      .map((eventData: any) => {
+        const {
+          amount: value,
+          l2ToL1Event: {
+            l2TxHash,
+            id,
+            caller,
+            destination,
+            batchNumber,
+            indexInBatch,
+            arbBlockNum,
+            ethBlockNum,
+            timestamp,
+            callvalue,
+            data
+          }
+        } = eventData
+        const l2ToL1Event = {
+          destination,
+          timestamp,
+          data,
+          caller,
+          uniqueId: BigNumber.from(id),
+          batchNumber: BigNumber.from(batchNumber),
+          indexInBatch: BigNumber.from(indexInBatch),
+          arbBlockNum: BigNumber.from(arbBlockNum),
+          ethBlockNum: BigNumber.from(ethBlockNum),
+          callvalue: BigNumber.from(callvalue)
+        } as L2ToL1EventResult
+        const tokenAddress = utils.hexDataSlice(data, 16, 36)
+        return {
+          l2ToL1Event: { ...l2ToL1Event, l2TxHash },
+          otherData: {
+            value: BigNumber.from(value),
+            tokenAddress,
+            type: AssetType.ERC20
+          }
+        }
+      })
+  )
 }
 
 const getLatestIndexedBlockNumber = async (subgraphName: string) => {
