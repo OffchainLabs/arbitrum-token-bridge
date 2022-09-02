@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { BigNumber, constants, utils, providers } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -14,8 +14,7 @@ import {
   L1ToL2MessageStatus,
   L2ToL1Message,
   L2ToL1MessageReader,
-  L2TransactionReceipt,
-  isNitroL2
+  L2TransactionReceipt
 } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import {
@@ -51,12 +50,13 @@ import {
   L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 
+import { fetchETHWithdrawalsFromSubgraph } from '../util/fetchETHWithdrawalsFromSubgraph'
+import { fetchETHWithdrawalsFromEventLogs } from '../util/fetchETHWithdrawalsFromEventLogs'
 import {
-  getETHWithdrawals,
-  getTokenWithdrawals as getTokenWithdrawalsGraph,
-  getL2GatewayGraphLatestBlockNumber,
-  getBuiltInsGraphLatestBlockNumber
-} from '../util/graph'
+  fetchTokenWithdrawalsFromSubgraph,
+  FetchTokenWithdrawalsFromSubgraphResult
+} from '../util/fetchTokenWithdrawalsFromSubgraph'
+import { fetchTokenWithdrawalsFromEventLogs } from '../util/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 
@@ -209,8 +209,8 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
-  const isRinkeby = l1.network.chainID === 4
   const isArbitrumOne = l2.network.chainID === 42161
+  const isArbitrumRinkeby = l2.network.chainID === 421611
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
@@ -1185,298 +1185,68 @@ export const useArbTokenBridge = (
     }
   }
 
-  const getEthWithdrawalsV2 = async (filter?: providers.Filter) => {
-    const startBlock = 0
-    let pivotBlock: number
+  async function mapETHWithdrawalToL2ToL1EventResult(
+    // `l2TxHash` exists on result from subgraph
+    // `transactionHash` exists on result from event logs
+    event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
+  ): Promise<L2ToL1EventResultPlus> {
+    const { callvalue } = event
+    const outgoingMessageState = await getOutgoingMessageState(event)
 
-    // Special logic for Rinkeby migration to Nitro
-    if (isRinkeby) {
-      pivotBlock = getRinkebyPivotBlock()
-    } else if (isArbitrumOne) {
-      pivotBlock = getArb1PivotBlock()
-    } else {
-      pivotBlock = await getBuiltInsGraphLatestBlockNumber(l1NetworkID)
-      console.log(`*** L2 gateway graph block number: ${pivotBlock} ***`)
+    return {
+      ...event,
+      type: AssetType.ETH,
+      value: callvalue,
+      symbol: 'ETH',
+      outgoingMessageState,
+      decimals: 18,
+      l2TxHash: event.l2TxHash || event.transactionHash
     }
-
-    const oldEthWithdrawals = await getETHWithdrawals(
-      walletAddress,
-      startBlock,
-      pivotBlock,
-      l1NetworkID
-    )
-
-    const recentEthWithdrawals = await L2ToL1MessageReader.getEventLogs(
-      l2.signer.provider,
-      {
-        fromBlock: pivotBlock,
-        toBlock: 'latest'
-      },
-      undefined,
-      walletAddress
-    )
-
-    const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
-
-    async function toEventResultPlus(
-      // `l2TxHash` exists on results from subgraph
-      // `transactionHash` exists on results from logs
-      event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
-    ): Promise<L2ToL1EventResultPlus> {
-      const { callvalue } = event
-      const outgoingMessageState = await getOutgoingMessageState(event)
-
-      return {
-        ...event,
-        type: AssetType.ETH,
-        value: callvalue,
-        symbol: 'ETH',
-        outgoingMessageState,
-        decimals: 18,
-        l2TxHash: event.l2TxHash || event.transactionHash
-      }
-    }
-
-    return await Promise.all(ethWithdrawals.map(toEventResultPlus))
   }
 
-  async function getEthWithdrawalsNitro() {
-    const ethWithdrawals = await L2ToL1MessageReader.getEventLogs(
-      l2.signer.provider,
-      {
-        fromBlock: 0,
-        toBlock: 'latest'
-      },
-      undefined,
-      walletAddress
+  async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
+    result: FetchTokenWithdrawalsFromSubgraphResult
+  ): Promise<L2ToL1EventResultPlus> {
+    const symbol = await getTokenSymbol(result.otherData.tokenAddress)
+    const decimals = await getTokenDecimals(result.otherData.tokenAddress)
+    const outgoingMessageState = await getOutgoingMessageState(
+      result.l2ToL1Event
     )
 
-    async function toEventResultPlus(
-      // `l2TxHash` exists on results from subgraph
-      // `transactionHash` exists on results from logs
-      event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
-    ): Promise<L2ToL1EventResultPlus> {
-      const { callvalue } = event
-      const outgoingMessageState = await getOutgoingMessageState(event)
-
-      return {
-        ...event,
-        type: AssetType.ETH,
-        value: callvalue,
-        symbol: 'ETH',
-        outgoingMessageState,
-        decimals: 18,
-        l2TxHash: event.l2TxHash || event.transactionHash
-      }
+    return {
+      ...result.l2ToL1Event,
+      ...result.otherData,
+      symbol,
+      decimals,
+      outgoingMessageState
     }
-
-    return await Promise.all(ethWithdrawals.map(toEventResultPlus))
   }
 
-  const getTokenWithdrawalsV2 = async (
-    gatewayAddresses: string[],
-    filter?: providers.Filter
-  ) => {
-    const startBlock = 0
-    let pivotBlock: number
+  async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+    result: WithdrawalInitiated
+  ): Promise<L2ToL1EventResultPlus> {
+    const symbol = await getTokenSymbol(result.l1Token)
+    const decimals = await getTokenDecimals(result.l1Token)
 
-    // Special logic for Rinkeby migration to Nitro
-    if (isRinkeby) {
-      pivotBlock = getRinkebyPivotBlock()
-    } else if (isArbitrumOne) {
-      pivotBlock = getArb1PivotBlock()
-    } else {
-      pivotBlock = await getL2GatewayGraphLatestBlockNumber(l1NetworkID)
-      console.log(`*** L2 gateway graph block number: ${pivotBlock} ***`)
+    const txReceipt = await l2.signer.provider.getTransactionReceipt(
+      result.txHash
+    )
+    const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+
+    // TODO: length != 1
+    const [event] = l2TxReceipt.getL2ToL1Events()
+    const outgoingMessageState = await getOutgoingMessageState(event)
+
+    return {
+      ...event,
+      type: AssetType.ERC20,
+      value: result._amount,
+      tokenAddress: result.l1Token,
+      outgoingMessageState,
+      symbol,
+      decimals,
+      l2TxHash: l2TxReceipt.transactionHash
     }
-
-    const results = await getTokenWithdrawalsGraph(
-      walletAddress,
-      startBlock,
-      pivotBlock,
-      l1NetworkID
-    )
-
-    const symbols = await Promise.all(
-      results.map(resultData =>
-        getTokenSymbol(resultData.otherData.tokenAddress)
-      )
-    )
-    const decimals = await Promise.all(
-      results.map(resultData =>
-        getTokenDecimals(resultData.otherData.tokenAddress)
-      )
-    )
-
-    const outgoingMessageStates = await Promise.all(
-      results.map(withdrawEventData =>
-        getOutgoingMessageState(withdrawEventData.l2ToL1Event)
-      )
-    )
-
-    const oldTokenWithdrawals: L2ToL1EventResultPlus[] = results.map(
-      (resultsData, i) => ({
-        ...resultsData.l2ToL1Event,
-        ...resultsData.otherData,
-        outgoingMessageState: outgoingMessageStates[i],
-        symbol: symbols[i],
-        decimals: decimals[i]
-      })
-    )
-
-    const recentTokenWithdrawals = await getTokenWithdrawals(gatewayAddresses, {
-      fromBlock: pivotBlock
-    })
-
-    return [...oldTokenWithdrawals, ...recentTokenWithdrawals]
-  }
-
-  const getTokenWithdrawals = async (
-    gatewayAddresses: string[],
-    filter?: providers.Filter
-  ) => {
-    const t = new Date().getTime()
-
-    const latestGraphBlockNumber = await getL2GatewayGraphLatestBlockNumber(
-      l1NetworkID
-    )
-    const startBlock =
-      (filter && filter.fromBlock && +filter.fromBlock.toString()) || 0
-    let pivotBlock = Math.max(latestGraphBlockNumber, startBlock)
-
-    if (isRinkeby) {
-      pivotBlock = getRinkebyPivotBlock()
-    } else if (isArbitrumOne) {
-      pivotBlock = getArb1PivotBlock()
-    }
-
-    const gatewayWithdrawalsResultsNested = await Promise.all(
-      gatewayAddresses.map(gatewayAddress =>
-        erc20Bridger.getL2WithdrawalEvents(
-          l2.signer.provider,
-          gatewayAddress,
-          { fromBlock: pivotBlock, toBlock: 'latest' },
-          undefined,
-          walletAddress
-        )
-      )
-    )
-
-    console.log(
-      `*** got token gateway event data in ${
-        (new Date().getTime() - t) / 1000
-      } seconds *** `
-    )
-
-    const gatewayWithdrawalsResults = gatewayWithdrawalsResultsNested.flat()
-    const symbols = await Promise.all(
-      gatewayWithdrawalsResults.map(withdrawEventData =>
-        getTokenSymbol(withdrawEventData.l1Token)
-      )
-    )
-    const decimals = await Promise.all(
-      gatewayWithdrawalsResults.map(withdrawEventData =>
-        getTokenDecimals(withdrawEventData.l1Token)
-      )
-    )
-
-    const l2Txns = await Promise.all(
-      gatewayWithdrawalsResults.map(withdrawEventData =>
-        l2.signer.provider.getTransactionReceipt(withdrawEventData.txHash)
-      )
-    )
-
-    const outgoingMessageStates = await Promise.all(
-      l2Txns.map(txReceipt => {
-        const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-        // TODO: length != 1
-        const [event] = l2TxReceipt.getL2ToL1Events()
-        return getOutgoingMessageState(event)
-      })
-    )
-
-    return gatewayWithdrawalsResults.map(
-      (withdrawEventData: WithdrawalInitiated, i) => {
-        const l2TxReceipt = new L2TransactionReceipt(l2Txns[i])
-        // TODO: length != 1
-        const [event] = l2TxReceipt.getL2ToL1Events()
-
-        const eventDataPlus: L2ToL1EventResultPlus = {
-          ...event,
-          type: AssetType.ERC20,
-          value: withdrawEventData._amount,
-          tokenAddress: withdrawEventData.l1Token,
-          outgoingMessageState: outgoingMessageStates[i],
-          symbol: symbols[i],
-          decimals: decimals[i],
-          l2TxHash: l2TxReceipt.transactionHash
-        }
-
-        return eventDataPlus
-      }
-    )
-  }
-
-  async function getTokenWithdrawalsNitro(gatewayAddresses: string[]) {
-    const gatewayWithdrawalsResultsNested = await Promise.all(
-      gatewayAddresses.map(gatewayAddress =>
-        erc20Bridger.getL2WithdrawalEvents(
-          l2.signer.provider,
-          gatewayAddress,
-          { fromBlock: 0, toBlock: 'latest' },
-          undefined,
-          walletAddress
-        )
-      )
-    )
-
-    const gatewayWithdrawalsResults = gatewayWithdrawalsResultsNested.flat()
-    const symbols = await Promise.all(
-      gatewayWithdrawalsResults.map(withdrawEventData =>
-        getTokenSymbol(withdrawEventData.l1Token)
-      )
-    )
-    const decimals = await Promise.all(
-      gatewayWithdrawalsResults.map(withdrawEventData =>
-        getTokenDecimals(withdrawEventData.l1Token)
-      )
-    )
-
-    const l2Txns = await Promise.all(
-      gatewayWithdrawalsResults.map(withdrawEventData =>
-        l2.signer.provider.getTransactionReceipt(withdrawEventData.txHash)
-      )
-    )
-
-    const outgoingMessageStates = await Promise.all(
-      l2Txns.map(txReceipt => {
-        const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-        // TODO: length != 1
-        const [event] = l2TxReceipt.getL2ToL1Events()
-        return getOutgoingMessageState(event)
-      })
-    )
-
-    return gatewayWithdrawalsResults.map(
-      (withdrawEventData: WithdrawalInitiated, i) => {
-        const l2TxReceipt = new L2TransactionReceipt(l2Txns[i])
-        // TODO: length != 1
-        const [event] = l2TxReceipt.getL2ToL1Events()
-
-        const eventDataPlus: L2ToL1EventResultPlus = {
-          ...event,
-          type: AssetType.ERC20,
-          value: withdrawEventData._amount,
-          tokenAddress: withdrawEventData.l1Token,
-          outgoingMessageState: outgoingMessageStates[i],
-          symbol: symbols[i],
-          decimals: decimals[i],
-          l2TxHash: l2TxReceipt.transactionHash
-        }
-
-        return eventDataPlus
-      }
-    )
   }
 
   async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
@@ -1526,40 +1296,78 @@ export const useArbTokenBridge = (
     }
   }
 
-  function getRinkebyPivotBlock() {
-    return 13919178
+  function getLatestSubgraphBlockNumber() {
+    if (isArbitrumOne) {
+      return 22202305
+    }
+
+    if (isArbitrumRinkeby) {
+      return 13919178
+    }
+
+    // Currently no subgraphs for other networks
+    return 0
   }
 
-  function getArb1PivotBlock() {
-    return 22202305
-  }
-
-  const setInitialPendingWithdrawals = async (
-    gatewayAddresses: string[],
-    filter?: providers.Filter
-  ) => {
+  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
     const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
-    const isNitroL2Network = await isNitroL2(l2.signer.provider)
+    const latestSubgraphBlockNumber = getLatestSubgraphBlockNumber()
 
     console.log('*** Getting initial pending withdrawal data ***')
 
+    const [
+      ethWithdrawalsFromSubgraph,
+      ethWithdrawalsFromEventLogs,
+      tokenWithdrawalsFromSubgraph,
+      tokenWithdrawalsFromEventLogs
+    ] = await Promise.all([
+      // ETH Withdrawals
+      fetchETHWithdrawalsFromSubgraph({
+        address: walletAddress,
+        fromBlock: 0,
+        toBlock: latestSubgraphBlockNumber,
+        l1NetworkId: l1.network.chainID
+      }),
+      fetchETHWithdrawalsFromEventLogs({
+        address: walletAddress,
+        fromBlock: latestSubgraphBlockNumber + 1,
+        toBlock: 'latest',
+        l2Provider: l2.signer.provider
+      }),
+      // Token Withdrawals
+      fetchTokenWithdrawalsFromSubgraph({
+        address: walletAddress,
+        fromBlock: 0,
+        toBlock: latestSubgraphBlockNumber,
+        l1NetworkId: l1.network.chainID
+      }),
+      fetchTokenWithdrawalsFromEventLogs({
+        address: walletAddress,
+        fromBlock: latestSubgraphBlockNumber + 1,
+        toBlock: 'latest',
+        l2Network: l2.network,
+        l2Provider: l2.signer.provider,
+        l2GatewayAddresses: gatewayAddresses
+      })
+    ])
+
     const l2ToL1Txns = (
-      await Promise.all(
-        // v2 methods also load the historical data - for new nitro networks we only use the nitro specific methods
-        isNitroL2Network && !isRinkeby && !isArbitrumOne
-          ? [
-              getEthWithdrawalsNitro(),
-              getTokenWithdrawalsNitro(gatewayAddresses)
-            ]
-          : [
-              getEthWithdrawalsV2(filter),
-              getTokenWithdrawalsV2(gatewayAddresses, filter)
-            ]
-      )
-    )
-      .flat()
-      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+      await Promise.all([
+        ...ethWithdrawalsFromSubgraph.map(withdrawal =>
+          mapETHWithdrawalToL2ToL1EventResult(withdrawal)
+        ),
+        ...ethWithdrawalsFromEventLogs.map(withdrawal =>
+          mapETHWithdrawalToL2ToL1EventResult(withdrawal)
+        ),
+        ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
+          mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
+        ),
+        ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
+          mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
+        )
+      ])
+    ).sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
     console.log(
       `*** done getting pending withdrawals, took ${
