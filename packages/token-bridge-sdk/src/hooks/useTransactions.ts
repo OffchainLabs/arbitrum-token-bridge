@@ -295,7 +295,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
   const addTransactions = (transactions: Transaction[]) => {
-    const timestampedTransactoins = transactions.map(txn => {
+    const timestampedTransactions = transactions.map(txn => {
       return {
         ...txn,
         timestampCreated: new Date().toISOString()
@@ -303,7 +303,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
     return dispatch({
       type: 'ADD_TRANSACTIONS',
-      transactions: timestampedTransactoins
+      transactions: timestampedTransactions
     })
   }
   const addFailedTransaction = (transaction: FailedTransaction) => {
