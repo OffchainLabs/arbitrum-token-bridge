@@ -373,17 +373,22 @@ export const useArbTokenBridge = (
     return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.signer.provider)
   }
 
-  const depositEth = async (
-    amount: BigNumber,
+  const depositEth = async ({
+    amount,
+    l1Signer,
+    txLifecycle
+  }: {
+    amount: BigNumber
+    l1Signer: Signer
     txLifecycle?: L1EthDepositTransactionLifecycle
-  ) => {
+  }) => {
     let tx: L1EthDepositTransaction
 
     try {
       tx = await ethBridger.deposit({
-        l1Signer: l1.signer,
-        l2Provider: l2.signer.provider,
-        amount
+        amount,
+        l1Signer,
+        l2Provider: l2.signer.provider
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -424,11 +429,17 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function depositEthEstimateGas(amount: BigNumber) {
+  async function depositEthEstimateGas({
+    amount,
+    l1Signer
+  }: {
+    amount: BigNumber
+    l1Signer: Signer
+  }) {
     const estimatedL1Gas = await gasEstimator.ethDepositL1Gas({
-      l1Signer: l1.signer,
-      l2Provider: l2.signer.provider,
-      amount
+      amount,
+      l1Signer,
+      l2Provider: l2.signer.provider
     })
 
     const {

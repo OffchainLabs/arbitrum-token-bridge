@@ -405,7 +405,11 @@ export function TransferPanelMain({
     estimatedL2SubmissionCost: BigNumber
   }> {
     if (isDepositMode) {
-      const result = await arbTokenBridge.eth.depositEstimateGas(weiValue)
+      const result = await arbTokenBridge.eth.depositEstimateGas({
+        amount: weiValue,
+        l1Signer: l1.signer
+      })
+
       return result
     }
 

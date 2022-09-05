@@ -407,12 +407,16 @@ export function TransferPanel() {
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
-          await latestEth.current.deposit(amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestEth.current.deposit({
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         }

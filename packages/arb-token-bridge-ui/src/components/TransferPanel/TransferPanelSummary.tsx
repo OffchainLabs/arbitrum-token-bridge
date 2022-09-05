@@ -114,7 +114,10 @@ export function useGasSummary(
             setResult(estimateGasResult)
           } else {
             const estimateGasResult =
-              await arbTokenBridge.eth.depositEstimateGas(amountDebounced)
+              await arbTokenBridge.eth.depositEstimateGas({
+                amount: amountDebounced,
+                l1Signer: latestNetworksAndSigners.current.l1.signer
+              })
 
             setResult(estimateGasResult)
           }
