@@ -43,10 +43,10 @@
     ts-node "^10.2.1"
     typechain "7.0.0"
 
-"@arbitrum/sdk-nitro@npm:@arbitrum/sdk@3.0.0-beta.8":
-  version "3.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.0.0-beta.8.tgz#639981b0772309552576a61ce66edcb98505a97c"
-  integrity sha512-wSjzilBc2rSAPqJXvr5tIs/1W8SAqBdi/XseH3IwziUiXLcZdZ+yHanN6FfNtwk0Ij6HY9D4Qt3ZLhW0E+LM7A==
+"@arbitrum/sdk-nitro@npm:@arbitrum/sdk@3.0.0-beta.10":
+  version "3.0.0-beta.10"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.0.0-beta.10.tgz#2b622a228f5a0a81d221e8553fcc44b665f19c94"
+  integrity sha512-6e5UeUTQg/GovDolL48+ybBU33gBnsRtCOu1P/Lh0+t+198yJKxnSQp8aaDd8OzoOyCxqDrS16c85aHE4zDFEg==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -59,13 +59,13 @@
     ts-node "^10.2.1"
     typechain "7.0.0"
 
-"@arbitrum/sdk@2.0.11":
-  version "2.0.11"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-2.0.11.tgz#406a2b8cfd84c5fc3cf3a8092bdd748931d1bc65"
-  integrity sha512-exwNa1YB7mOnhFuNHRrUYiVQI14lQRJVQ8BDs+b7Ro6pGwNg7DRgYu+V9AeS5MR+Xxvyx4hjeLcCDcVpevE1ww==
+"@arbitrum/sdk@2.0.14":
+  version "2.0.14"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-2.0.14.tgz#a2a984dcde579d84f33df49d0f54b780713f769b"
+  integrity sha512-cEmAsqm8N3dJNroz/DtqnQggktdpLDRTRJP1opo2jsk8FGu+V8x2OK2F0ZigF22HvRocZ6M1vyi8tO29SolR6w==
   dependencies:
     "@arbitrum/sdk-classic" "npm:@arbitrum/sdk@1.1.13"
-    "@arbitrum/sdk-nitro" "npm:@arbitrum/sdk@3.0.0-beta.8"
+    "@arbitrum/sdk-nitro" "npm:@arbitrum/sdk@3.0.0-beta.10"
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
@@ -2225,7 +2225,7 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.5.tgz#db5a11bf66bdab39569719555b0f76e138d7bd64"
   integrity sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==
 
-"@rehooks/local-storage@2.4.0", "@rehooks/local-storage@^2.3.0":
+"@rehooks/local-storage@^2.3.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.0.tgz#fb884b2b657cad5f77aa6ab60bb3532f0e0725d2"
   integrity sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg==

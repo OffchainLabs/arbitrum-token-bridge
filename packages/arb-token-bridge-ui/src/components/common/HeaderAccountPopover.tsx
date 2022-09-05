@@ -216,8 +216,11 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-gray-1`
+                      className={`${
+                        !selected ? 'arb-hover' : ''
+                      } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
+                        selected &&
+                        `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
                       }`}
                     >
                       Deposits
@@ -227,8 +230,11 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-gray-1`
+                      className={`${
+                        !selected ? 'arb-hover' : ''
+                      } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
+                        selected &&
+                        `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
                       }`}
                     >
                       Withdrawals
@@ -241,13 +247,14 @@ export function HeaderAccountPopover() {
                   // Currently we load deposit history from local cache, so it's always a success
                   status="success"
                   transactions={deposits}
+                  className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
                 />
               </Tab.Panel>
               <Tab.Panel>
                 <TransactionsTable
                   status={getTransactionsDataStatus(pwLoadedState)}
                   transactions={withdrawals}
-                  className="rounded-tl-lg"
+                  className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
                 />
               </Tab.Panel>
             </Tab.Group>

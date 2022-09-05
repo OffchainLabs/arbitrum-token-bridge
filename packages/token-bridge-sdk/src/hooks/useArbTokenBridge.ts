@@ -52,7 +52,6 @@ import {
 } from './arbTokenBridge.types'
 
 import {
-  getLatestOutboxEntryIndex,
   getETHWithdrawals,
   getTokenWithdrawals as getTokenWithdrawalsGraph,
   getL2GatewayGraphLatestBlockNumber,
@@ -211,6 +210,7 @@ export const useArbTokenBridge = (
   ] = useTransactions()
 
   const isRinkeby = l1.network.chainID === 4
+  const isArbitrumOne = l2.network.chainID === 42161
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
@@ -1192,6 +1192,8 @@ export const useArbTokenBridge = (
     // Special logic for Rinkeby migration to Nitro
     if (isRinkeby) {
       pivotBlock = getRinkebyPivotBlock()
+    } else if (isArbitrumOne) {
+      pivotBlock = getArb1PivotBlock()
     } else {
       pivotBlock = await getBuiltInsGraphLatestBlockNumber(l1NetworkID)
       console.log(`*** L2 gateway graph block number: ${pivotBlock} ***`)
@@ -1216,32 +1218,13 @@ export const useArbTokenBridge = (
 
     const ethWithdrawals = [...oldEthWithdrawals, ...recentEthWithdrawals]
 
-    const lastOutboxEntryIndexDec = isRinkeby
-      ? 6152
-      : await getLatestOutboxEntryIndex(l1NetworkID)
-
-    console.log(
-      `*** Last Outbox Entry Batch Number: ${lastOutboxEntryIndexDec} ***`
-    )
-
     async function toEventResultPlus(
       // `l2TxHash` exists on results from subgraph
       // `transactionHash` exists on results from logs
       event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
     ): Promise<L2ToL1EventResultPlus> {
       const { callvalue } = event
-      let outgoingMessageState: OutgoingMessageState
-
-      if (isClassicEvent(event)) {
-        const batchNumber = (event as any).batchNumber as BigNumber
-
-        outgoingMessageState =
-          batchNumber.toNumber() > lastOutboxEntryIndexDec
-            ? OutgoingMessageState.UNCONFIRMED
-            : await getOutgoingMessageState(event)
-      } else {
-        outgoingMessageState = await getOutgoingMessageState(event)
-      }
+      const outgoingMessageState = await getOutgoingMessageState(event)
 
       return {
         ...event,
@@ -1300,6 +1283,8 @@ export const useArbTokenBridge = (
     // Special logic for Rinkeby migration to Nitro
     if (isRinkeby) {
       pivotBlock = getRinkebyPivotBlock()
+    } else if (isArbitrumOne) {
+      pivotBlock = getArb1PivotBlock()
     } else {
       pivotBlock = await getL2GatewayGraphLatestBlockNumber(l1NetworkID)
       console.log(`*** L2 gateway graph block number: ${pivotBlock} ***`)
@@ -1361,6 +1346,8 @@ export const useArbTokenBridge = (
 
     if (isRinkeby) {
       pivotBlock = getRinkebyPivotBlock()
+    } else if (isArbitrumOne) {
+      pivotBlock = getArb1PivotBlock()
     }
 
     const gatewayWithdrawalsResultsNested = await Promise.all(
@@ -1543,6 +1530,10 @@ export const useArbTokenBridge = (
     return 13919178
   }
 
+  function getArb1PivotBlock() {
+    return 22202305
+  }
+
   const setInitialPendingWithdrawals = async (
     gatewayAddresses: string[],
     filter?: providers.Filter
@@ -1555,7 +1546,8 @@ export const useArbTokenBridge = (
 
     const l2ToL1Txns = (
       await Promise.all(
-        isNitroL2Network && !isRinkeby
+        // v2 methods also load the historical data - for new nitro networks we only use the nitro specific methods
+        isNitroL2Network && !isRinkeby && !isArbitrumOne
           ? [
               getEthWithdrawalsNitro(),
               getTokenWithdrawalsNitro(gatewayAddresses)
