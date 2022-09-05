@@ -179,15 +179,15 @@ export type DepositGasEstimates = GasEstimates & {
 
 export interface ArbTokenBridgeEth {
   deposit: (
-    weiValue: BigNumber,
+    amount: BigNumber,
     txLifecycle?: L1EthDepositTransactionLifecycle
   ) => Promise<void | ContractReceipt>
-  depositEstimateGas: (weiValue: BigNumber) => Promise<DepositGasEstimates>
+  depositEstimateGas: (amount: BigNumber) => Promise<DepositGasEstimates>
   withdraw: (
-    weiValue: BigNumber,
+    amount: BigNumber,
     txLifecycle?: L2ContractCallTransactionLifecycle
   ) => Promise<void | ContractReceipt>
-  withdrawEstimateGas: (weiValue: BigNumber) => Promise<GasEstimates>
+  withdrawEstimateGas: (amount: BigNumber) => Promise<GasEstimates>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }
