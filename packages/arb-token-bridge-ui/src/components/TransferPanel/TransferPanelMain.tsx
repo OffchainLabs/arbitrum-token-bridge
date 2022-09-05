@@ -409,7 +409,11 @@ export function TransferPanelMain({
       return result
     }
 
-    const result = await arbTokenBridge.eth.withdrawEstimateGas(weiValue)
+    const result = await arbTokenBridge.eth.withdrawEstimateGas({
+      amount: weiValue,
+      l2Signer: l2.signer
+    })
+
     return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
   }
 

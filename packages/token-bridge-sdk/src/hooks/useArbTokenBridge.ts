@@ -439,11 +439,19 @@ export const useArbTokenBridge = (
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
-  async function withdrawEth(
-    amount: BigNumber,
+  async function withdrawEth({
+    amount,
+    l2Signer,
+    txLifecycle
+  }: {
+    amount: BigNumber
+    l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
-  ) {
-    const tx = await ethBridger.withdraw({ l2Signer: l2.signer, amount })
+  }) {
+    const tx = await ethBridger.withdraw({
+      amount,
+      l2Signer
+    })
 
     if (txLifecycle?.onTxSubmit) {
       txLifecycle.onTxSubmit(tx)
@@ -506,13 +514,20 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function withdrawEthEstimateGas(amount: BigNumber) {
+  async function withdrawEthEstimateGas({
+    amount,
+    l2Signer
+  }: {
+    amount: BigNumber
+    l2Signer: Signer
+  }) {
     const estimatedL1Gas = await gasEstimator.ethWithdrawalL1Gas(
       l2.signer.provider
     )
+
     const estimatedL2Gas = await gasEstimator.ethWithdrawalL2Gas({
-      l2Signer: l2.signer,
-      amount
+      amount,
+      l2Signer
     })
 
     return { estimatedL1Gas, estimatedL2Gas }

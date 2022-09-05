@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import { useLatest } from 'react-use'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -36,6 +37,9 @@ export function useGasSummary(
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const { l1GasPrice, l2GasPrice } = useGasPrice()
+
+  const networksAndSigners = useNetworksAndSigners()
+  const latestNetworksAndSigners = useLatest(networksAndSigners)
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1500)
@@ -141,7 +145,10 @@ export function useGasSummary(
             })
           } else {
             const estimateGasResult =
-              await arbTokenBridge.eth.withdrawEstimateGas(amountDebounced)
+              await arbTokenBridge.eth.withdrawEstimateGas({
+                amount: amountDebounced,
+                l2Signer: latestNetworksAndSigners.current.l2.signer
+              })
 
             setResult({
               ...estimateGasResult,
@@ -160,7 +167,14 @@ export function useGasSummary(
     if (arbTokenBridge && arbTokenBridge.eth && arbTokenBridge.token) {
       estimateGas()
     }
-  }, [isDepositMode, amount, amountDebounced, token, shouldRunGasEstimation])
+  }, [
+    isDepositMode,
+    amount,
+    amountDebounced,
+    token,
+    shouldRunGasEstimation,
+    latestNetworksAndSigners
+  ])
 
   return {
     status,

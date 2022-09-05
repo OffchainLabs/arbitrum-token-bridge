@@ -1,3 +1,4 @@
+import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
@@ -183,11 +184,15 @@ export interface ArbTokenBridgeEth {
     txLifecycle?: L1EthDepositTransactionLifecycle
   ) => Promise<void | ContractReceipt>
   depositEstimateGas: (amount: BigNumber) => Promise<DepositGasEstimates>
-  withdraw: (
-    amount: BigNumber,
+  withdraw: (params: {
+    amount: BigNumber
+    l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
-  ) => Promise<void | ContractReceipt>
-  withdrawEstimateGas: (amount: BigNumber) => Promise<GasEstimates>
+  }) => Promise<void | ContractReceipt>
+  withdrawEstimateGas: (params: {
+    amount: BigNumber
+    l2Signer: Signer
+  }) => Promise<GasEstimates>
   triggerOutbox: (id: string) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }

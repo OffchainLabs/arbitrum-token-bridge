@@ -479,12 +479,17 @@ export function TransferPanel() {
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          await latestEth.current.withdraw(amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+
+          await latestEth.current.withdraw({
+            amount: amountRaw,
+            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         }
