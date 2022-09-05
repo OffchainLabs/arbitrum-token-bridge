@@ -106,10 +106,11 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult =
-              await arbTokenBridge.token.depositEstimateGas(
-                token.address,
-                amountDebounced
-              )
+              await arbTokenBridge.token.depositEstimateGas({
+                erc20L1Address: token.address,
+                amount: amountDebounced,
+                l1Signer: latestNetworksAndSigners.current.l1.signer
+              })
 
             setResult(estimateGasResult)
           } else {

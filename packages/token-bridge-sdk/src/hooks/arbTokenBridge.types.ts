@@ -215,15 +215,17 @@ export interface ArbTokenBridgeToken {
   approve: (erc20L1Address: string) => Promise<void>
   approveEstimateGas: (erc20L1Address: string) => Promise<BigNumber>
   approveL2: (erc20L1Address: string) => Promise<void>
-  deposit: (
-    erc20Address: string,
-    amount: BigNumber,
-    txLifecycle?: L1ContractCallTransactionLifecycle
-  ) => Promise<void | ContractReceipt>
-  depositEstimateGas: (
-    erc20Address: string,
+  deposit: (params: {
+    erc20L1Address: string
     amount: BigNumber
-  ) => Promise<DepositGasEstimates>
+    l1Signer: Signer
+    txLifecycle?: L1ContractCallTransactionLifecycle
+  }) => Promise<void | ContractReceipt>
+  depositEstimateGas: (params: {
+    erc20L1Address: string
+    amount: BigNumber
+    l1Signer: Signer
+  }) => Promise<DepositGasEstimates>
   withdraw: (
     erc20l1Address: string,
     amount: BigNumber,

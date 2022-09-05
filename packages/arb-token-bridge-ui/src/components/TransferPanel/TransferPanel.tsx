@@ -396,12 +396,17 @@ export function TransferPanel() {
             await latestToken.current.approve(selectedToken.address)
           }
 
-          await latestToken.current.deposit(selectedToken.address, amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestToken.current.deposit({
+            erc20L1Address: selectedToken.address,
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         } else {

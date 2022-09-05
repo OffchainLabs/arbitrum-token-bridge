@@ -610,15 +610,21 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-  async function depositToken(
-    erc20L1Address: string,
-    amount: BigNumber,
+  async function depositToken({
+    erc20L1Address,
+    amount,
+    l1Signer,
+    txLifecycle
+  }: {
+    erc20L1Address: string
+    amount: BigNumber
+    l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
-  ) {
+  }) {
     const { symbol, decimals } = await getL1TokenData(erc20L1Address)
 
     const tx = await erc20Bridger.deposit({
-      l1Signer: l1.signer,
+      l1Signer,
       l2Provider: l2.signer.provider,
       erc20L1Address,
       amount
@@ -662,17 +668,23 @@ export const useArbTokenBridge = (
     return receipt
   }
 
-  async function depositTokenEstimateGas(
-    erc20L1Address: string,
+  async function depositTokenEstimateGas({
+    erc20L1Address,
+    amount,
+    l1Signer
+  }: {
+    erc20L1Address: string
     amount: BigNumber
-  ) {
+    l1Signer: Signer
+  }) {
     // We're hardcoding the L1 gas cost for a token deposit, as the estimation might fail due to no allowance.
     const estimatedL1Gas = BigNumber.from(240000)
+
     const {
       maxGas: estimatedL2Gas,
       maxSubmissionCost: estimatedL2SubmissionCost
     } = await gasEstimator.erc20DepositL2Gas({
-      l1Signer: l1.signer,
+      l1Signer,
       l2Provider: l2.signer.provider,
       erc20L1Address,
       amount
