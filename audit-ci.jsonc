@@ -4,6 +4,6 @@
     // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
     "*|arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>*",
     // react-scripts needs upgrade from v4 to v5. Waiting for migration to nextjs
-    "*|arb-token-bridge-ui>react-scripts>*"
+    // "*|arb-token-bridge-ui>react-scripts>*"
   ]
 }
