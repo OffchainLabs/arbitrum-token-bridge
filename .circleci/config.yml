@@ -53,7 +53,9 @@ workflows:
   build-test:
     jobs:
       - build
-      - audit
+      - audit:
+          requires:
+            - build
       - test-sdk:
           requires:
             - build
