@@ -26,7 +26,7 @@
     "test:ci": "jest --ci"
   },
   "dependencies": {
-    "@apollo/client": "^3.4.10",
+    "@apollo/client": "^3.6.9",
     "@arbitrum/sdk": "2.0.14",
     "@rehooks/local-storage": "^2.3.0",
     "@uniswap/token-lists": "^1.0.0-beta.27",
@@ -34,7 +34,7 @@
     "ajv-formats": "^2.1.1",
     "axios": "^0.21.4",
     "ethers": "^5.6.0",
-    "graphql": "^15.5.3"
+    "graphql": "^16.6.0"
   },
   "eslintConfig": {
     "extends": "react-app"
