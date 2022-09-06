@@ -693,26 +693,32 @@ export const useArbTokenBridge = (
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
-  async function withdrawToken(
-    erc20l1Address: string,
-    amount: BigNumber,
+  async function withdrawToken({
+    erc20L1Address,
+    amount,
+    l2Signer,
+    txLifecycle
+  }: {
+    erc20L1Address: string
+    amount: BigNumber
+    l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
-  ) {
-    const bridgeToken = bridgeTokens[erc20l1Address]
+  }) {
+    const bridgeToken = bridgeTokens[erc20L1Address]
 
     const { symbol, decimals } = await (async () => {
       if (bridgeToken) {
         const { symbol, decimals } = bridgeToken
         return { symbol, decimals }
       }
-      const { symbol, decimals } = await getL1TokenData(erc20l1Address)
-      addToken(erc20l1Address)
+      const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+      addToken(erc20L1Address)
       return { symbol, decimals }
     })()
 
     const tx = await erc20Bridger.withdraw({
-      l2Signer: l2.signer,
-      erc20l1Address,
+      l2Signer,
+      erc20l1Address: erc20L1Address,
       amount
     })
 
@@ -751,7 +757,7 @@ export const useArbTokenBridge = (
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
           type: AssetType.ERC20,
-          tokenAddress: erc20l1Address,
+          tokenAddress: erc20L1Address,
           value: amount,
           outgoingMessageState,
           symbol: symbol,
@@ -767,23 +773,29 @@ export const useArbTokenBridge = (
           }
         })
       }
-      updateTokenData(erc20l1Address)
+      updateTokenData(erc20L1Address)
       return receipt
     } catch (err) {
       console.warn('withdraw token err', err)
     }
   }
 
-  async function withdrawTokenEstimateGas(
-    erc20l1Address: string,
+  async function withdrawTokenEstimateGas({
+    erc20L1Address,
+    amount,
+    l2Signer
+  }: {
+    erc20L1Address: string
     amount: BigNumber
-  ) {
+    l2Signer: Signer
+  }) {
     const estimatedL1Gas = await gasEstimator.erc20WithdrawalL1Gas(
       l2.signer.provider
     )
+
     const estimatedL2Gas = await gasEstimator.erc20WithdrawalL2Gas({
-      l2Signer: l2.signer,
-      erc20l1Address,
+      l2Signer,
+      erc20l1Address: erc20L1Address,
       amount
     })
 

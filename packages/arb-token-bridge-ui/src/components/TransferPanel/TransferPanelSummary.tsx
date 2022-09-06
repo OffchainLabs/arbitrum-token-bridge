@@ -137,10 +137,11 @@ export function useGasSummary(
               }
             } else {
               estimateGasResult =
-                await arbTokenBridge.token.withdrawEstimateGas(
-                  token.address,
-                  amountDebounced
-                )
+                await arbTokenBridge.token.withdrawEstimateGas({
+                  erc20L1Address: token.address,
+                  amount: amountDebounced,
+                  l2Signer: latestNetworksAndSigners.current.l2.signer
+                })
             }
 
             setResult({

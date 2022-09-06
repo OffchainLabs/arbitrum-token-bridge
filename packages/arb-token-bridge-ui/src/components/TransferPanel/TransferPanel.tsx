@@ -478,12 +478,17 @@ export function TransferPanel() {
             }
           }
 
-          await latestToken.current.withdraw(selectedToken.address, amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestToken.current.withdraw({
+            erc20L1Address: selectedToken.address,
+            amount: amountRaw,
+            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         } else {
