@@ -36,7 +36,7 @@ jobs:
           at: .
       - run:
           name: Run tests
-          command: yarn test:sdk
+          command: yarn test:ci:sdk
 
   audit:
     docker:
