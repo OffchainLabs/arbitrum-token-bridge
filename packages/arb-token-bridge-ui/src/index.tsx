@@ -21,7 +21,7 @@ Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN,
   release: Package.version,
   integrations: [new BrowserTracing()],
-  tracesSampleRate: 0.5
+  tracesSampleRate: 0.15
 })
 
 ReactDOM.render(<App />, document.getElementById('root'))
