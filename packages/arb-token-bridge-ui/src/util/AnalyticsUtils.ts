@@ -28,7 +28,6 @@ export type FathomEvent =
   | `Fiat On-Ramp Click: ${FiatOnRampName}`
   //
   | `Fast Bridge Click: ${FastBridgeName}`
-  | `${CanonicalTokenName}: Fast Bridge Click: ${FastBridgeName}`
   | `${CanonicalTokenName}: Use Arbitrum Bridge Click`
   | `${CanonicalTokenName}: Copy Bridge Link Click`
   //
@@ -38,8 +37,11 @@ export type FathomEvent =
   //
   | 'Switch Network and Transfer'
 
-const eventToEventId: {
-  [key in FathomEvent]: string
+type FathomEventCanonicalTokens =
+  `${CanonicalTokenName}: Fast Bridge Click: ${FastBridgeName}`
+
+const eventToEventId: { [key in FathomEvent]: string } & {
+  [key in FathomEventCanonicalTokens]?: string
 } = {
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
@@ -107,11 +109,6 @@ const eventToEventId: {
   'Fast Bridge Click: Stargate': '6VZXVGEQ',
   //
   'FRAX: Fast Bridge Click: Celer': '6PZJPSBO',
-  'FRAX: Fast Bridge Click: Hop': '',
-  'FRAX: Fast Bridge Click: Connext': '',
-  'FRAX: Fast Bridge Click: Across': '',
-  'FRAX: Fast Bridge Click: Stargate': '',
-  'FRAX: Fast Bridge Click: Synapse': '',
   'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
   'FRAX: Copy Bridge Link Click': 'WWJ8WGXM',
   //
@@ -122,7 +119,7 @@ const eventToEventId: {
   'Switch Network and Transfer': '4F5SKZRG'
 }
 
-export function trackEvent(event: FathomEvent) {
+export function trackEvent(event: FathomEvent | FathomEventCanonicalTokens) {
   if (typeof window.fathom === 'undefined') {
     return
   }
@@ -131,5 +128,5 @@ export function trackEvent(event: FathomEvent) {
     return
   }
 
-  window.fathom.trackGoal(eventToEventId[event])
+  window.fathom.trackGoal(eventToEventId[event]!)
 }
