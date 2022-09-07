@@ -267,7 +267,7 @@ export const useArbTokenBridge = (
     )
 
     const overrides = getOverrides()
-    const contract = ERC20__factory.connect(erc20L1Address, l1.signer)
+    const contract = ERC20__factory.connect(erc20L1Address, l1.signer.provider)
 
     const multiCaller = await MultiCaller.fromProvider(l1.signer.provider)
     const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
@@ -1004,8 +1004,8 @@ export const useArbTokenBridge = (
   }, [])
 
   async function updateEthBalances() {
-    const l1Balance = await l1.signer.getBalance()
-    const l2Balance = await l2.signer.getBalance()
+    const l1Balance = await l1.signer.provider.getBalance(walletAddress)
+    const l2Balance = await l2.signer.provider.getBalance(walletAddress)
 
     setEthBalances({
       balance: l1Balance,
@@ -1538,7 +1538,7 @@ export const useArbTokenBridge = (
     }
 
     const messageReader = L2ToL1MessageReader.fromEvent(
-      l1.signer,
+      l1.signer.provider,
       event,
       await getOutboxAddress(event)
     )
