@@ -16,7 +16,7 @@ enum CanonicalTokenNames {
 export type FastBridgeName = `${FastBridgeNames}`
 export type CanonicalTokenName = `${CanonicalTokenNames}`
 
-type FastBridgeInfo = {
+export type FastBridgeInfo = {
   name: FastBridgeNames
   imageSrc: string
   href: string

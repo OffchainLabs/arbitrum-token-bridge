@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { XIcon, ExternalLinkIcon } from '@heroicons/react/outline'
+import { XIcon } from '@heroicons/react/outline'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Transition } from '../common/Transition'
@@ -9,32 +9,26 @@ import { ExternalLink } from '../common/ExternalLink'
 import {
   CanonicalTokenName,
   CanonicalTokensBridgeInfo,
-  getFastBridges,
-  FastBridgeName
+  getFastBridges
 } from '../../util/fastBridges'
 import { TabButton } from '../common/Tab'
+import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
-function FastBridgesTable() {
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
-
+export function DepositConfirmationDialog(props: UseDialogProps) {
   const {
     app: { selectedToken }
   } = useAppState()
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const networkName = getNetworkName(l2.network)
+  const { isArbitrumOne } = isNetwork(l2.network)
 
-  function onClick(bridgeName: FastBridgeName) {
-    trackEvent(
-      `${
-        selectedToken?.symbol as CanonicalTokenName
-      }: Fast Bridge Click: ${bridgeName}`
-    )
-  }
+  const from = isConnectedToArbitrum ? l2.network : l1.network
+  const to = isConnectedToArbitrum ? l1.network : l2.network
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, selectedToken?.symbol || 'ETH')
@@ -46,66 +40,6 @@ function FastBridgesTable() {
       )
     )
   })
-
-  const sortedFastBridges = fastBridges.sort((a, b) => {
-    if (a.name < b.name) {
-      return -1
-    } else {
-      return 1
-    }
-  })
-
-  return (
-    <table className="w-full border border-gray-5">
-      <thead className="bg-gray-1 text-left">
-        <tr className="text-gray-9">
-          <th className="w-4/5 px-6 py-4 font-normal">Bridge</th>
-          <th className="w-1/5 px-6 py-4 font-normal"></th>
-        </tr>
-      </thead>
-      <tbody className="font-light">
-        {sortedFastBridges.map(bridge => (
-          <tr
-            key={bridge.name}
-            className="cursor-pointer border border-gray-5 hover:bg-cyan"
-          >
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                onClick={() => onClick(bridge.name)}
-              >
-                <div className="flex h-16 items-center space-x-4 px-6">
-                  <img
-                    src={bridge.imageSrc}
-                    alt={bridge.name}
-                    className="h-8 w-8 rounded-full object-contain"
-                  />
-                  <span>{bridge.name}</span>
-                </div>
-              </ExternalLink>
-            </td>
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                className="arb-hover flex h-16 w-full items-center justify-center text-gray-6 hover:text-blue-arbitrum"
-              >
-                <ExternalLinkIcon className="h-5 w-5" />
-              </ExternalLink>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
-export function DepositConfirmationDialog(props: UseDialogProps) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
-  const { l2 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network)
-  const { isArbitrumOne } = isNetwork(l2.network)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0)
@@ -188,7 +122,12 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                 </p>
               </div>
 
-              <FastBridgesTable />
+              <BridgesTable
+                bridgeList={fastBridges}
+                selectedCanonicalToken={
+                  selectedToken.symbol as CanonicalTokenName
+                }
+              />
             </Tab.Panel>
           )}
 
