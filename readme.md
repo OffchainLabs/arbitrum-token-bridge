@@ -36,7 +36,7 @@
 
 1. install `serve`: `npm install -g serve`
 1. (back in root dir:) `yarn build`
-1. `yarn serve
+1. `yarn serve`
 
 ### Deposit Lifecycle
 
