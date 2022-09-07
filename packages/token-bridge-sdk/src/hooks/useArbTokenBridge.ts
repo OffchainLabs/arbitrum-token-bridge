@@ -310,7 +310,7 @@ export const useArbTokenBridge = (
   async function getL2TokenData(erc20L2Address: string): Promise<L2TokenData> {
     const contract = StandardArbERC20__factory.connect(
       erc20L2Address,
-      l2.signer
+      l2.signer.provider
     )
 
     const multiCaller = await MultiCaller.fromProvider(l2.signer.provider)
@@ -416,7 +416,9 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.signer)
+    const [ethDepositMessage] = await receipt.getEthDepositMessages(
+      l2.signer.provider
+    )
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -588,7 +590,7 @@ export const useArbTokenBridge = (
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
-    const contract = await ERC20__factory.connect(l2Address, l2.signer)
+    const contract = await ERC20__factory.connect(l2Address, l2.signer.provider)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const tokenData = await getL1TokenData(erc20L1Address)
 
@@ -653,7 +655,7 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer)
+    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.signer.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -733,7 +735,7 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: symbol,
       assetType: AssetType.ERC20,
-      sender: await l2.signer.getAddress(),
+      sender: walletAddress,
       blockNumber: tx.blockNumber,
       l1NetworkID,
       l2NetworkID
