@@ -123,7 +123,7 @@ function assertSignersHaveProviders(
 }
 
 function isClassicEvent(event: L2ToL1EventResult) {
-  return typeof (event as any).indexInBatch !== 'undefined'
+  return typeof (event as any).batchNumber !== 'undefined'
 }
 
 export const useArbTokenBridge = (
