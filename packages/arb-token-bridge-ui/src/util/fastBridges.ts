@@ -27,7 +27,7 @@ export function getFastBridges(
   to: ChainId,
   tokenSymbol: string
 ): FastBridgeInfo[] {
-  function chainIdToNetworkName(chainId: ChainId): string {
+  function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
       case ChainId.Mainnet:
         return 'ethereum'
@@ -41,21 +41,21 @@ export function getFastBridges(
   function getBridgeDeepLink(bridge: FastBridgeNames): string {
     switch (bridge) {
       case FastBridgeNames.Hop:
-        return `https://app.hop.exchange/#/send?sourceNetwork=${chainIdToNetworkName(
+        return `https://app.hop.exchange/#/send?sourceNetwork=${chainIdToSlug(
           from
-        )}&destNetwork=${chainIdToNetworkName(to)}&token=${tokenSymbol}`
+        )}&destNetwork=${chainIdToSlug(to)}&token=${tokenSymbol}`
       case FastBridgeNames.Celer:
         return `https://cbridge.celer.network/${from}/${to}/${tokenSymbol}`
       case FastBridgeNames.Connext:
-        return `https://bridge.connext.network/${tokenSymbol}-from-${chainIdToNetworkName(
+        return `https://bridge.connext.network/${tokenSymbol}-from-${chainIdToSlug(
           from
-        )}-to-${chainIdToNetworkName(to)}`
+        )}-to-${chainIdToSlug(to)}`
       case FastBridgeNames.Across:
         return `https://across.to/?from=${from}&to=${to}`
       case FastBridgeNames.Stargate:
-        return `https://stargate.finance/transfer?srcChain=${chainIdToNetworkName(
+        return `https://stargate.finance/transfer?srcChain=${chainIdToSlug(
           from
-        )}&dstChain=${chainIdToNetworkName(to)}&srcToken=${tokenSymbol}`
+        )}&dstChain=${chainIdToSlug(to)}&srcToken=${tokenSymbol}`
       case FastBridgeNames.Synapse:
         // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
