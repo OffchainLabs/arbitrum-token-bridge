@@ -270,6 +270,16 @@ export function TransferPanel() {
     return isConnected && isDepositMode && isUnbridgedToken
   }, [l1Network, isDepositMode, selectedToken])
 
+  const isCanonicalToken = useMemo(() => {
+    if (selectedToken) {
+      return Object.keys(CanonicalTokensBridgeInfo)
+        .map(key => key.toLowerCase())
+        .includes(selectedToken.symbol.toLowerCase())
+    } else {
+      return false
+    }
+  }, [selectedToken])
+
   async function depositToken() {
     if (!selectedToken) {
       throw new Error('Invalid app state: no selected token')
@@ -400,11 +410,7 @@ export function TransferPanel() {
             await latestToken.current.approve(selectedToken.address)
           }
 
-          if (
-            Object.keys(CanonicalTokensBridgeInfo).includes(
-              selectedToken.symbol
-            )
-          ) {
+          if (isCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
             const confirmed = await waitForInput()
 
