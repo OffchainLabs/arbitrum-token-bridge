@@ -1,6 +1,6 @@
 # Arbitrum Token Bridge Web UI
 
-### Local Dev Start
+## Run Locally
 
 1. `git clone https://github.com/OffchainLabs/arb-token-bridge`
 
@@ -8,13 +8,21 @@
 
 1. `cd ./packages/use-wallet && yarn build`
 
-1. Set infura key:
+1. Set env vars:
 
    1. `touch ./packages/arb-token-bridge-ui/.env`
 
    1. In `.env`, add `REACT_APP_INFURA_KEY=my-infura-key`
 
-   1. (to use other rpc endpoint, set in `packages/arb-token-bridge-ui/src/util/networks.ts`)
+   1. For custom urls, set optional vars:
+
+   - `ETHEREUM_RPC_URL`=my-eth-node
+   - `RINKEBY_RPC_URL`=my-rinkeby-node
+   - `GOERLI_RPC_URL`=my-goerli-node
+     (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
+     If no custom URL is provided, infura will be used by default.
+
+#### Dev Build
 
 1. (back in root dir:) `yarn start_sdk`
 
@@ -23,6 +31,12 @@
 1. `yarn start_ui`
 
 1. Visit `http://localhost:3000/`
+
+#### Local Production Build
+
+1. install `serve`: `npm install -g serve`
+1. (back in root dir:) `yarn build`
+1. `yarn serve
 
 ### Deposit Lifecycle
 

@@ -19,10 +19,10 @@ export enum ChainId {
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Mainnet]: process.env.ETHEREUM_RPC_URL || `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   // L1 Testnets
-  [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
-  [ChainId.Goerli]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Rinkeby]: process.env.RINKEBY_RPC_URL ||  `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Goerli]:  process.env.GOERLI_RPC_URL || `https://goerli.infura.io/v3/${INFURA_KEY}`,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
