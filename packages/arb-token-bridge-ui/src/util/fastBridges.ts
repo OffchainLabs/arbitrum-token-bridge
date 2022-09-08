@@ -13,7 +13,11 @@ export enum CanonicalTokenNames {
   FRAX = 'FRAX'
 }
 
-export type CanonicalTokenSupportedBridges<T extends CanonicalTokenNames> =
+export enum CanonicalTokenAddresses {
+  FRAX = '0x853d955acef822db058eb8505911ed77f175b99e'
+}
+
+export type CanonicalTokenSupportedBridges<T extends CanonicalTokenAddresses> =
   `${typeof CanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
 
 export type FastBridgeInfo = {
@@ -111,10 +115,11 @@ export function getFastBridges(
 }
 
 export const CanonicalTokensBridgeInfo = {
-  [CanonicalTokenNames.FRAX]: {
+  [CanonicalTokenAddresses.FRAX]: {
+    tokenSymbol: 'FRAX',
+    swapTokenSymbol: 'arbiFRAX',
     supportedBridges: [FastBridgeNames.Celer],
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
     bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum',
-    swappedTokenSymbol: 'arbiFRAX'
   }
 } as const

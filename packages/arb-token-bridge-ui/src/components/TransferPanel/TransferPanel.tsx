@@ -274,7 +274,7 @@ export function TransferPanel() {
     if (selectedToken) {
       return Object.keys(CanonicalTokensBridgeInfo)
         .map(key => key.toLowerCase())
-        .includes(selectedToken.symbol.toLowerCase())
+        .includes(selectedToken.address.toLowerCase())
     } else {
       return false
     }

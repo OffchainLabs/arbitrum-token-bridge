@@ -7,6 +7,7 @@ import {
   FiatOnRampName
 } from '../components/TransferPanel/LowBalanceDialogContent'
 import {
+  CanonicalTokenAddresses,
   CanonicalTokenNames,
   CanonicalTokenSupportedBridges,
   FastBridgeNames
@@ -25,7 +26,7 @@ type FastBridgeName = `${FastBridgeNames}`
 type CanonicalTokenName = `${CanonicalTokenNames}`
 
 export type FathomEventCanonicalTokens =
-  | `${CanonicalTokenNames.FRAX}: Fast Bridge Click: ${CanonicalTokenSupportedBridges<CanonicalTokenNames.FRAX>}`
+  | `${CanonicalTokenNames.FRAX}: Fast Bridge Click: ${CanonicalTokenSupportedBridges<CanonicalTokenAddresses.FRAX>}`
 
 export type FathomEvent =
   | `Connect Wallet Click: ${ProviderName}`

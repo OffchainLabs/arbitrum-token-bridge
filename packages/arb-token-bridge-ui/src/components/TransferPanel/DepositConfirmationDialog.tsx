@@ -7,6 +7,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
 import {
+  CanonicalTokenAddresses,
   CanonicalTokenNames,
   CanonicalTokensBridgeInfo,
   FastBridgeNames,
@@ -21,7 +22,7 @@ import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(props: UseDialogProps) {
-  const { app } = useAppState()
+  const { app: { selectedToken } } = useAppState()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network)
   const { isArbitrumOne } = isNetwork(l2.network)
@@ -29,9 +30,10 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
-  const tokenSymbol = app.selectedToken?.symbol as CanonicalTokenNames
-  const swappedTokenSymbol =
-    tokenSymbol && CanonicalTokensBridgeInfo[tokenSymbol].swappedTokenSymbol
+  const tokenSymbol = selectedToken?.symbol as CanonicalTokenNames
+  const tokenAddress = selectedToken?.address as CanonicalTokenAddresses
+  const swapTokenSymbol =
+    tokenAddress && CanonicalTokensBridgeInfo[tokenAddress].swapTokenSymbol
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, tokenSymbol || 'ETH')
@@ -39,7 +41,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
     return (
       tokenSymbol &&
       (
-        CanonicalTokensBridgeInfo[tokenSymbol]
+        CanonicalTokensBridgeInfo[tokenAddress]
           .supportedBridges as readonly FastBridgeNames[]
       ).includes(bridge.name)
     )
@@ -110,7 +112,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
                   has fully integrated with.{' '}
                   <ExternalLink
-                    href={CanonicalTokensBridgeInfo[tokenSymbol].learnMoreUrl}
+                    href={CanonicalTokensBridgeInfo[tokenAddress].learnMoreUrl}
                     className="underline"
                   >
                     Learn more
@@ -135,11 +137,11 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                 </p>
                 <ol className="list-decimal px-4 font-light">
                   <li>
-                    Transfer on Arbitrum’s bridge to get {swappedTokenSymbol}
+                    Transfer on Arbitrum’s bridge to get {swapTokenSymbol}
                   </li>
                   <li>
                     Transfer on {tokenSymbol}'s bridge to swap{' '}
-                    {swappedTokenSymbol} for {tokenSymbol}
+                    {swapTokenSymbol} for {tokenSymbol}
                   </li>
                 </ol>
                 <div>
@@ -153,7 +155,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   <button
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
-                      copy(CanonicalTokensBridgeInfo[tokenSymbol].bridgeUrl)
+                      copy(CanonicalTokensBridgeInfo[tokenAddress].bridgeUrl)
                       trackEvent(
                         `${
                           tokenSymbol as CanonicalTokenNames
