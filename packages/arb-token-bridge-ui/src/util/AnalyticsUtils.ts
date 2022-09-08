@@ -47,7 +47,6 @@ export type FathomEvent =
   //
   | 'Switch Network and Transfer'
 
-
 const eventToEventId: { [key in FathomEvent]: string } & {
   [key in FathomEventCanonicalTokens]: string
 } = {

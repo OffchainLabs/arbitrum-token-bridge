@@ -21,9 +21,7 @@ import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(props: UseDialogProps) {
-  const {
-    app
-  } = useAppState()
+  const { app } = useAppState()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network)
   const { isArbitrumOne } = isNetwork(l2.network)
@@ -38,9 +36,10 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   ].filter(bridge => {
     return (
       tokenSymbol &&
-      (CanonicalTokensBridgeInfo[tokenSymbol].supportedBridges as readonly FastBridgeNames[]).includes(
-        bridge.name
-      )
+      (
+        CanonicalTokensBridgeInfo[tokenSymbol]
+          .supportedBridges as readonly FastBridgeNames[]
+      ).includes(bridge.name)
     )
   })
 
@@ -61,11 +60,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
         props.onClose(confirmed)
         setActiveTabIndex(0)
         if (confirmed) {
-          trackEvent(
-            `${
-              tokenSymbol
-            }: Use Arbitrum Bridge Click`
-          )
+          trackEvent(`${tokenSymbol}: Use Arbitrum Bridge Click`)
         }
       }}
       actionButtonProps={{ hidden: activeTabIndex === 0 }}
@@ -109,14 +104,11 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
-                  To get the canonical variant of {tokenSymbol}{' '}
-                  directly onto {networkName} you’ll have to use a bridge that{' '}
-                  {tokenSymbol} has fully integrated with.{' '}
+                  To get the canonical variant of {tokenSymbol} directly onto{' '}
+                  {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
+                  has fully integrated with.{' '}
                   <ExternalLink
-                    href={
-                      CanonicalTokensBridgeInfo[tokenSymbol]
-                        .learnMoreUrl
-                    }
+                    href={CanonicalTokensBridgeInfo[tokenSymbol].learnMoreUrl}
                     className="underline"
                   >
                     Learn more
@@ -127,9 +119,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
 
               <BridgesTable
                 bridgeList={fastBridges}
-                selectedCanonicalToken={
-                  tokenSymbol as CanonicalTokenNames
-                }
+                selectedCanonicalToken={tokenSymbol as CanonicalTokenNames}
               />
             </Tab.Panel>
           )}
@@ -163,10 +153,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   <button
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
-                      copy(
-                        CanonicalTokensBridgeInfo[tokenSymbol]
-                          .bridgeUrl
-                      )
+                      copy(CanonicalTokensBridgeInfo[tokenSymbol].bridgeUrl)
                       trackEvent(
                         `${
                           tokenSymbol as CanonicalTokenNames

@@ -26,9 +26,7 @@ export function BridgesTable(props: {
   function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedCanonicalToken) {
       trackEvent(
-        `${props.selectedCanonicalToken}: Fast Bridge Click: ${
-          bridgeName
-        }` as FathomEventCanonicalTokens
+        `${props.selectedCanonicalToken}: Fast Bridge Click: ${bridgeName}` as FathomEventCanonicalTokens
       )
     } else {
       trackEvent(`Fast Bridge Click: ${bridgeName}`)

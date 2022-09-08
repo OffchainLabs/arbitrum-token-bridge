@@ -13,8 +13,8 @@ export enum CanonicalTokenNames {
   FRAX = 'FRAX'
 }
 
-export type CanonicalTokenSupportedBridges<T extends CanonicalTokenNames>
-  = `${typeof CanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
+export type CanonicalTokenSupportedBridges<T extends CanonicalTokenNames> =
+  `${typeof CanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
