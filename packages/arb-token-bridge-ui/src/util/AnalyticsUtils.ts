@@ -55,6 +55,7 @@ const eventToEventId: {
   'Explore: DeFi Project Click: 1inch': 'DZBLQTEL',
   'Explore: DeFi Project Click: Beefy Finance': 'NDMROCKL',
   'Explore: DeFi Project Click: Yearn Finance': '32U989O7',
+  'Explore: DeFi Project Click: KyberSwap': 'RVW7KSNB',
   //
   'Explore: NFT Project Click: Arbibots': 'UKENMGHD',
   'Explore: NFT Project Click: Smol Brains': '7JMIH5HA',
