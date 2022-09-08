@@ -9,16 +9,16 @@ export enum FastBridgeNames {
   Synapse = 'Synapse'
 }
 
-export enum CanonicalTokenNames {
+export enum NonCanonicalTokenNames {
   FRAX = 'FRAX'
 }
 
-export enum CanonicalTokenAddresses {
+export enum NonCanonicalTokenAddresses {
   FRAX = '0x853d955acef822db058eb8505911ed77f175b99e'
 }
 
-export type CanonicalTokenSupportedBridges<T extends CanonicalTokenAddresses> =
-  `${typeof CanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
+export type NonCanonicalTokenSupportedBridges<T extends NonCanonicalTokenAddresses> =
+  `${typeof NonCanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
@@ -114,8 +114,8 @@ export function getFastBridges(
   })
 }
 
-export const CanonicalTokensBridgeInfo = {
-  [CanonicalTokenAddresses.FRAX]: {
+export const NonCanonicalTokensBridgeInfo = {
+  [NonCanonicalTokenAddresses.FRAX]: {
     tokenSymbol: 'FRAX',
     swapTokenSymbol: 'arbiFRAX',
     supportedBridges: [FastBridgeNames.Celer],

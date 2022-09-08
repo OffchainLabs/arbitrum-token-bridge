@@ -7,9 +7,9 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
 import {
-  CanonicalTokenAddresses,
-  CanonicalTokenNames,
-  CanonicalTokensBridgeInfo,
+  NonCanonicalTokenAddresses,
+  NonCanonicalTokenNames,
+  NonCanonicalTokensBridgeInfo,
   FastBridgeNames,
   getFastBridges
 } from '../../util/fastBridges'
@@ -30,10 +30,10 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
-  const tokenSymbol = selectedToken?.symbol as CanonicalTokenNames
-  const tokenAddress = selectedToken?.address as CanonicalTokenAddresses
+  const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
+  const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
   const swapTokenSymbol =
-    tokenAddress && CanonicalTokensBridgeInfo[tokenAddress].swapTokenSymbol
+    tokenAddress && NonCanonicalTokensBridgeInfo[tokenAddress].swapTokenSymbol
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, tokenSymbol || 'ETH')
@@ -41,7 +41,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
     return (
       tokenSymbol &&
       (
-        CanonicalTokensBridgeInfo[tokenAddress]
+        NonCanonicalTokensBridgeInfo[tokenAddress]
           .supportedBridges as readonly FastBridgeNames[]
       ).includes(bridge.name)
     )
@@ -112,7 +112,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
                   has fully integrated with.{' '}
                   <ExternalLink
-                    href={CanonicalTokensBridgeInfo[tokenAddress].learnMoreUrl}
+                    href={NonCanonicalTokensBridgeInfo[tokenAddress].learnMoreUrl}
                     className="underline"
                   >
                     Learn more
@@ -123,7 +123,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
 
               <BridgesTable
                 bridgeList={fastBridges}
-                selectedCanonicalToken={tokenSymbol as CanonicalTokenNames}
+                selectedNonCanonicalToken={tokenSymbol}
               />
             </Tab.Panel>
           )}
@@ -155,10 +155,10 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   <button
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
-                      copy(CanonicalTokensBridgeInfo[tokenAddress].bridgeUrl)
+                      copy(NonCanonicalTokensBridgeInfo[tokenAddress].bridgeUrl)
                       trackEvent(
                         `${
-                          tokenSymbol as CanonicalTokenNames
+                          tokenSymbol
                         }: Copy Bridge Link Click`
                       )
                     }}

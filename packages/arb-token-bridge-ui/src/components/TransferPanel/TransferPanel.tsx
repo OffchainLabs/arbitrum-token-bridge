@@ -38,7 +38,7 @@ import {
   TransferPanelMainErrorMessage
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
-import { CanonicalTokensBridgeInfo } from '../../util/fastBridges'
+import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -270,9 +270,9 @@ export function TransferPanel() {
     return isConnected && isDepositMode && isUnbridgedToken
   }, [l1Network, isDepositMode, selectedToken])
 
-  const isCanonicalToken = useMemo(() => {
+  const isNonCanonicalToken = useMemo(() => {
     if (selectedToken) {
-      return Object.keys(CanonicalTokensBridgeInfo)
+      return Object.keys(NonCanonicalTokensBridgeInfo)
         .map(key => key.toLowerCase())
         .includes(selectedToken.address.toLowerCase())
     } else {
@@ -410,7 +410,7 @@ export function TransferPanel() {
             await latestToken.current.approve(selectedToken.address)
           }
 
-          if (isCanonicalToken) {
+          if (isNonCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
             const confirmed = await waitForInput()
 

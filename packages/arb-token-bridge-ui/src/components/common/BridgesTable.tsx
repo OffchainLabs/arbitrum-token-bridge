@@ -7,16 +7,16 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
 
 import { ExternalLink } from './ExternalLink'
 import {
-  CanonicalTokenNames,
+  NonCanonicalTokenNames,
   FastBridgeInfo,
   FastBridgeNames
 } from '../../util/fastBridges'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { FathomEventCanonicalTokens } from '../../util/AnalyticsUtils'
+import { FathomEventNonCanonicalTokens } from '../../util/AnalyticsUtils'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
-  selectedCanonicalToken?: CanonicalTokenNames
+  selectedNonCanonicalToken?: NonCanonicalTokenNames
 }) {
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',
@@ -24,9 +24,9 @@ export function BridgesTable(props: {
   )
 
   function onClick(bridgeName: FastBridgeNames) {
-    if (props.selectedCanonicalToken) {
+    if (props.selectedNonCanonicalToken) {
       trackEvent(
-        `${props.selectedCanonicalToken}: Fast Bridge Click: ${bridgeName}` as FathomEventCanonicalTokens
+        `${props.selectedNonCanonicalToken}: Fast Bridge Click: ${bridgeName}` as FathomEventNonCanonicalTokens
       )
     } else {
       trackEvent(`Fast Bridge Click: ${bridgeName}`)

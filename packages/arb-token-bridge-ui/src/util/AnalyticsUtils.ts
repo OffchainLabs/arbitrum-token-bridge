@@ -7,9 +7,9 @@ import {
   FiatOnRampName
 } from '../components/TransferPanel/LowBalanceDialogContent'
 import {
-  CanonicalTokenAddresses,
-  CanonicalTokenNames,
-  CanonicalTokenSupportedBridges,
+  NonCanonicalTokenAddresses,
+  NonCanonicalTokenNames,
+  NonCanonicalTokenSupportedBridges,
   FastBridgeNames
 } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
@@ -23,10 +23,10 @@ declare global {
 }
 
 type FastBridgeName = `${FastBridgeNames}`
-type CanonicalTokenName = `${CanonicalTokenNames}`
+type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
 
-export type FathomEventCanonicalTokens =
-  | `${CanonicalTokenNames.FRAX}: Fast Bridge Click: ${CanonicalTokenSupportedBridges<CanonicalTokenAddresses.FRAX>}`
+export type FathomEventNonCanonicalTokens =
+  | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
 export type FathomEvent =
   | `Connect Wallet Click: ${ProviderName}`
@@ -39,8 +39,8 @@ export type FathomEvent =
   | `Fiat On-Ramp Click: ${FiatOnRampName}`
   //
   | `Fast Bridge Click: ${FastBridgeName}`
-  | `${CanonicalTokenName}: Use Arbitrum Bridge Click`
-  | `${CanonicalTokenName}: Copy Bridge Link Click`
+  | `${NonCanonicalTokenName}: Use Arbitrum Bridge Click`
+  | `${NonCanonicalTokenName}: Copy Bridge Link Click`
   //
   | `Slow Bridge Click`
   | `Move More Funds Click`
@@ -49,7 +49,7 @@ export type FathomEvent =
   | 'Switch Network and Transfer'
 
 const eventToEventId: { [key in FathomEvent]: string } & {
-  [key in FathomEventCanonicalTokens]: string
+  [key in FathomEventNonCanonicalTokens]: string
 } = {
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
@@ -127,7 +127,7 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Switch Network and Transfer': '4F5SKZRG'
 }
 
-export function trackEvent(event: FathomEvent | FathomEventCanonicalTokens) {
+export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {
   if (typeof window.fathom === 'undefined') {
     return
   }
