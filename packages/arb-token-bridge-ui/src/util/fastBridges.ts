@@ -30,7 +30,7 @@ export type FastBridgeInfo = {
 export function getFastBridges(
   from: ChainId,
   to: ChainId,
-  tokenSymbol: string
+  tokenSymbol: string = 'ETH'
 ): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {

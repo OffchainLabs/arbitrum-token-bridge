@@ -38,7 +38,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
     tokenAddress && NonCanonicalTokensBridgeInfo[tokenAddress].swapTokenSymbol
 
   const fastBridges = [
-    ...getFastBridges(from.chainID, to.chainID, tokenSymbol || 'ETH')
+    ...getFastBridges(from.chainID, to.chainID, tokenSymbol)
   ].filter(bridge => {
     return (
       tokenSymbol &&

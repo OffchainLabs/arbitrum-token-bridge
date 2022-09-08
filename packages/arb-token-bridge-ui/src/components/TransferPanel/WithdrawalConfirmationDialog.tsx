@@ -48,7 +48,7 @@ export function WithdrawalConfirmationDialog(
   const fastBridges = getFastBridges(
     from.chainID,
     to.chainID,
-    selectedToken?.symbol || 'ETH'
+    selectedToken?.symbol
   )
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
