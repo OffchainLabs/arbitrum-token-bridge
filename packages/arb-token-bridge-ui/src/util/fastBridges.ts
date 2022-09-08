@@ -114,6 +114,7 @@ export const CanonicalTokensBridgeInfo = {
   [CanonicalTokenNames.FRAX]: {
     supportedBridges: [FastBridgeNames.Celer],
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
-    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
+    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum',
+    swappedTokenSymbol: 'arbiFRAX'
   }
 } as const

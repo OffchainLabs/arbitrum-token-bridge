@@ -30,6 +30,8 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
   const tokenSymbol = app.selectedToken?.symbol as CanonicalTokenNames
+  const swappedTokenSymbol =
+    tokenSymbol && CanonicalTokensBridgeInfo[tokenSymbol].swappedTokenSymbol
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, tokenSymbol || 'ETH')
@@ -132,14 +134,12 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   do two transfers.
                 </p>
                 <ol className="list-decimal px-4 font-light">
-                  {/* TODO: are all tokens going to be structured like arbi{token_symbol}? */}
                   <li>
-                    Transfer on Arbitrum’s bridge to get arbi
-                    {tokenSymbol}
+                    Transfer on Arbitrum’s bridge to get {swappedTokenSymbol}
                   </li>
                   <li>
-                    Transfer on {tokenSymbol}'s bridge to swap arbi
-                    {tokenSymbol} for {tokenSymbol}
+                    Transfer on {tokenSymbol}'s bridge to swap{' '}
+                    {swappedTokenSymbol} for {tokenSymbol}
                   </li>
                 </ol>
                 <div>
