@@ -41,7 +41,7 @@ const useL2Approve = () => {
     if (!l2Signer || !l2Signer.provider) return
     try {
       for (let i = 0; i < L2ApproveTokens.length; i += 1) {
-        const { l1Address, l2Address } = L2ApproveTokens[i]
+        const { l1Address, l2Address } = L2ApproveTokens[i]!
         if (!l2Address) continue
         const token = ERC20__factory.connect(l2Address, l2Signer.provider)
         const l2Bal = await token.balanceOf(arbTokenBridge.walletAddress)

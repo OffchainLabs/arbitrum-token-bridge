@@ -69,6 +69,10 @@ export function RetryableTxnsIncluder(): JSX.Element {
           l2Signer.provider
         )
 
+        if (!ethDepositMessage) {
+          return
+        }
+
         arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
           depositTx.txID,
           ethDepositMessage

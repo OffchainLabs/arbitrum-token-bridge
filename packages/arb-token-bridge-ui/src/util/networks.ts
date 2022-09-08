@@ -17,7 +17,7 @@ export enum ChainId {
   ArbitrumGoerli = 421613
 }
 
-export const rpcURLs: { [chainId: number]: string } = {
+export const rpcURLs: { [chainId in ChainId]: string } = {
   // L1
   [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   // L1 Testnets
@@ -31,9 +31,15 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
-NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
-NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
-NitroNetworks.l1Networks[5].rpcURL = rpcURLs[5]
+if (NitroNetworks.l1Networks[1]) {
+  NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
+}
+if (NitroNetworks.l1Networks[4]) {
+  NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
+}
+if (NitroNetworks.l1Networks[5]) {
+  NitroNetworks.l1Networks[5].rpcURL = rpcURLs[5]
+}
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
@@ -75,8 +81,8 @@ export function registerLocalNetwork() {
     const customL1Network = localNetwork.l1Network
     const customL2Network = localNetwork.l2Network
 
-    rpcURLs[customL1Network.chainID] = customL1Network.rpcURL
-    rpcURLs[customL2Network.chainID] = customL2Network.rpcURL
+    rpcURLs[customL1Network.chainID as ChainId] = customL1Network.rpcURL
+    rpcURLs[customL2Network.chainID as ChainId] = customL2Network.rpcURL
     chainIdToDefaultL2ChainId[customL1Network.chainID] = customL2Network.chainID
     chainIdToDefaultL2ChainId[customL2Network.chainID] = customL2Network.chainID
 

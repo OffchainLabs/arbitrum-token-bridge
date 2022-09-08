@@ -14,7 +14,7 @@ import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
-import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
@@ -157,7 +157,8 @@ export function NetworksAndSignersProvider(
       getL1Network(web3Provider, _selectedL2ChainId!)
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const l2Provider = new JsonRpcProvider(rpcURLs[_selectedL2ChainId!])
+          const l2Rpc = rpcURLs[_selectedL2ChainId as ChainId]
+          const l2Provider = new JsonRpcProvider(l2Rpc)
           const l2Network = await getL2Network(l2Provider)
 
           setResult({
@@ -183,7 +184,8 @@ export function NetworksAndSignersProvider(
           getL2Network(web3Provider)
             .then(async l2Network => {
               const l1NetworkChainId = l2Network.partnerChainID
-              const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
+              const l1Rpc = rpcURLs[l1NetworkChainId as ChainId]
+              const l1Provider = new JsonRpcProvider(l1Rpc)
               const l1Network = await getL1Network(
                 l1Provider,
                 _selectedL2ChainId!

@@ -152,8 +152,9 @@ function getListboxOptionsFromL1Network(network: L1Network) {
   let options: L2Network[] = []
 
   network.partnerChainIDs.forEach(chainId => {
-    if (l2Networks[chainId] && !options.includes(l2Networks[chainId])) {
-      options.push(l2Networks[chainId])
+    const l2Network = l2Networks[chainId]
+    if (l2Network && !options.includes(l2Network)) {
+      options.push(l2Network)
     }
   })
 

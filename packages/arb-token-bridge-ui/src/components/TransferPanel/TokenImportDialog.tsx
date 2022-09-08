@@ -126,11 +126,12 @@ export function TokenImportDialog({
         ...latestTokensFromUser.current
       }
 
+      const token = tokens[erc20L1Address]
       // We found the token in an unimported list
-      if (typeof tokens[erc20L1Address] !== 'undefined') {
+      if (typeof token !== 'undefined') {
         return {
           found: true,
-          token: tokens[erc20L1Address],
+          token,
           status: ImportStatus.KNOWN_UNIMPORTED
         }
       }
