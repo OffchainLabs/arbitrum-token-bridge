@@ -16,11 +16,11 @@
 
    1. For custom urls, set optional vars:
 
-   - `ETHEREUM_RPC_URL`=my-eth-node
-   - `RINKEBY_RPC_URL`=my-rinkeby-node
-   - `GOERLI_RPC_URL`=my-goerli-node
+   - `REACT_APP_ETHEREUM_RPC_URL=my-eth-node`
+   - `REACT_APP_RINKEBY_RPC_URL=my-rinkeby-node`
+   - `REACT_APP_GOERLI_RPC_URL=my-goerli-node`
      (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
-     If no custom URL is provided, infura will be used by default.
+     If no custom URL is provided, Infura will be used by default.
 
 #### Dev Build
 
