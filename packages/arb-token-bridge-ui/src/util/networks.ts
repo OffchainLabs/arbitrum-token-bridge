@@ -19,10 +19,16 @@ export enum ChainId {
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]: process.env.REACT_APP_ETHEREUM_RPC_URL || `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Mainnet]:
+    process.env.REACT_APP_ETHEREUM_RPC_URL ||
+    `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   // L1 Testnets
-  [ChainId.Rinkeby]: process.env.REACT_APP_RINKEBY_RPC_URL ||  `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
-  [ChainId.Goerli]:  process.env.REACT_APP_GOERLI_RPC_URL || `https://goerli.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Rinkeby]:
+    process.env.REACT_APP_RINKEBY_RPC_URL ||
+    `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Goerli]:
+    process.env.REACT_APP_GOERLI_RPC_URL ||
+    `https://goerli.infura.io/v3/${INFURA_KEY}`,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
