@@ -22,7 +22,9 @@ import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(props: UseDialogProps) {
-  const { app: { selectedToken } } = useAppState()
+  const {
+    app: { selectedToken }
+  } = useAppState()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network)
   const { isArbitrumOne } = isNetwork(l2.network)
@@ -112,7 +114,9 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
                   has fully integrated with.{' '}
                   <ExternalLink
-                    href={NonCanonicalTokensBridgeInfo[tokenAddress].learnMoreUrl}
+                    href={
+                      NonCanonicalTokensBridgeInfo[tokenAddress].learnMoreUrl
+                    }
                     className="underline"
                   >
                     Learn more
@@ -140,8 +144,8 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                     Transfer on Arbitrum’s bridge to get {swapTokenSymbol}
                   </li>
                   <li>
-                    Transfer on {tokenSymbol}'s bridge to swap{' '}
-                    {swapTokenSymbol} for {tokenSymbol}
+                    Transfer on {tokenSymbol}'s bridge to swap {swapTokenSymbol}{' '}
+                    for {tokenSymbol}
                   </li>
                 </ol>
                 <div>
@@ -156,11 +160,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
                       copy(NonCanonicalTokensBridgeInfo[tokenAddress].bridgeUrl)
-                      trackEvent(
-                        `${
-                          tokenSymbol
-                        }: Copy Bridge Link Click`
-                      )
+                      trackEvent(`${tokenSymbol}: Copy Bridge Link Click`)
                     }}
                   >
                     <div className="flex flex-row items-center space-x-3">

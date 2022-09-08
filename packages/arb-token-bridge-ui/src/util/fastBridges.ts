@@ -17,8 +17,9 @@ export enum NonCanonicalTokenAddresses {
   FRAX = '0x853d955acef822db058eb8505911ed77f175b99e'
 }
 
-export type NonCanonicalTokenSupportedBridges<T extends NonCanonicalTokenAddresses> =
-  `${typeof NonCanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
+export type NonCanonicalTokenSupportedBridges<
+  T extends NonCanonicalTokenAddresses
+> = `${typeof NonCanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
@@ -120,6 +121,6 @@ export const NonCanonicalTokensBridgeInfo = {
     swapTokenSymbol: 'arbiFRAX',
     supportedBridges: [FastBridgeNames.Celer],
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
-    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum',
+    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
   }
 } as const
