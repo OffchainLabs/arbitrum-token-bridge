@@ -7,36 +7,39 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
 
 import { ExternalLink } from './ExternalLink'
 import {
-  CanonicalTokenName,
+  CanonicalTokenNames,
   FastBridgeInfo,
-  FastBridgeName
+  FastBridgeNames
 } from '../../util/fastBridges'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { FathomEventCanonicalTokens } from '../../util/AnalyticsUtils'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
-  selectedCanonicalToken?: CanonicalTokenName
+  selectedCanonicalToken?: CanonicalTokenNames
 }) {
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',
     []
   )
 
-  function onClick(bridgeName: FastBridgeName) {
+  function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedCanonicalToken) {
       trackEvent(
-        `${props.selectedCanonicalToken}: Fast Bridge Click: ${bridgeName}`
+        `${props.selectedCanonicalToken}: Fast Bridge Click: ${
+          bridgeName
+        }` as FathomEventCanonicalTokens
       )
     } else {
       trackEvent(`Fast Bridge Click: ${bridgeName}`)
     }
   }
 
-  function isFavorite(bridgeName: FastBridgeName) {
+  function isFavorite(bridgeName: FastBridgeNames) {
     return favorites.includes(bridgeName)
   }
 
-  function toggleFavorite(bridgeName: FastBridgeName) {
+  function toggleFavorite(bridgeName: FastBridgeNames) {
     if (favorites.includes(bridgeName)) {
       setFavorites(favorites.filter(favorite => favorite !== bridgeName))
     } else {

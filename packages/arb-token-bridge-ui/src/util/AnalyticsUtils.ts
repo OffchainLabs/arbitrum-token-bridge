@@ -6,7 +6,11 @@ import {
   CEXName,
   FiatOnRampName
 } from '../components/TransferPanel/LowBalanceDialogContent'
-import { CanonicalTokenName, FastBridgeName } from './fastBridges'
+import {
+  CanonicalTokenNames,
+  CanonicalTokenSupportedBridges,
+  FastBridgeNames
+} from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 
 declare global {
@@ -16,6 +20,12 @@ declare global {
     }
   }
 }
+
+type FastBridgeName = `${FastBridgeNames}`
+type CanonicalTokenName = `${CanonicalTokenNames}`
+
+export type FathomEventCanonicalTokens =
+  | `${CanonicalTokenNames.FRAX}: Fast Bridge Click: ${CanonicalTokenSupportedBridges<CanonicalTokenNames.FRAX>}`
 
 export type FathomEvent =
   | `Connect Wallet Click: ${ProviderName}`
@@ -37,11 +47,9 @@ export type FathomEvent =
   //
   | 'Switch Network and Transfer'
 
-type FathomEventCanonicalTokens =
-  `${CanonicalTokenName}: Fast Bridge Click: ${FastBridgeName}`
 
 const eventToEventId: { [key in FathomEvent]: string } & {
-  [key in FathomEventCanonicalTokens]?: string
+  [key in FathomEventCanonicalTokens]: string
 } = {
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
@@ -128,5 +136,5 @@ export function trackEvent(event: FathomEvent | FathomEventCanonicalTokens) {
     return
   }
 
-  window.fathom.trackGoal(eventToEventId[event]!)
+  window.fathom.trackGoal(eventToEventId[event])
 }

@@ -7,8 +7,9 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Transition } from '../common/Transition'
 import { ExternalLink } from '../common/ExternalLink'
 import {
-  CanonicalTokenName,
+  CanonicalTokenNames,
   CanonicalTokensBridgeInfo,
+  FastBridgeNames,
   getFastBridges
 } from '../../util/fastBridges'
 import { TabButton } from '../common/Tab'
@@ -21,7 +22,7 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(props: UseDialogProps) {
   const {
-    app: { selectedToken }
+    app
   } = useAppState()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network)
@@ -30,12 +31,14 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
+  const tokenSymbol = app.selectedToken?.symbol as CanonicalTokenNames
+
   const fastBridges = [
-    ...getFastBridges(from.chainID, to.chainID, selectedToken?.symbol || 'ETH')
+    ...getFastBridges(from.chainID, to.chainID, tokenSymbol || 'ETH')
   ].filter(bridge => {
     return (
-      selectedToken &&
-      CanonicalTokensBridgeInfo[selectedToken.symbol].supportedBridges.includes(
+      tokenSymbol &&
+      (CanonicalTokensBridgeInfo[tokenSymbol].supportedBridges as readonly FastBridgeNames[]).includes(
         bridge.name
       )
     )
@@ -60,7 +63,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
         if (confirmed) {
           trackEvent(
             `${
-              selectedToken?.symbol as CanonicalTokenName
+              tokenSymbol
             }: Use Arbitrum Bridge Click`
           )
         }
@@ -102,16 +105,16 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
             </Tab>
           </Tab.List>
 
-          {isArbitrumOne && selectedToken && (
+          {isArbitrumOne && tokenSymbol && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
-                  To get the canonical variant of {selectedToken.symbol}{' '}
+                  To get the canonical variant of {tokenSymbol}{' '}
                   directly onto {networkName} you’ll have to use a bridge that{' '}
-                  {selectedToken.symbol} has fully integrated with.{' '}
+                  {tokenSymbol} has fully integrated with.{' '}
                   <ExternalLink
                     href={
-                      CanonicalTokensBridgeInfo[selectedToken.symbol]
+                      CanonicalTokensBridgeInfo[tokenSymbol]
                         .learnMoreUrl
                     }
                     className="underline"
@@ -125,13 +128,13 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
               <BridgesTable
                 bridgeList={fastBridges}
                 selectedCanonicalToken={
-                  selectedToken.symbol as CanonicalTokenName
+                  tokenSymbol as CanonicalTokenNames
                 }
               />
             </Tab.Panel>
           )}
 
-          {selectedToken && (
+          {tokenSymbol && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
@@ -142,11 +145,11 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   {/* TODO: are all tokens going to be structured like arbi{token_symbol}? */}
                   <li>
                     Transfer on Arbitrum’s bridge to get arbi
-                    {selectedToken?.symbol}
+                    {tokenSymbol}
                   </li>
                   <li>
-                    Transfer on {selectedToken?.symbol}'s bridge to swap arbi
-                    {selectedToken?.symbol} for {selectedToken?.symbol}
+                    Transfer on {tokenSymbol}'s bridge to swap arbi
+                    {tokenSymbol} for {tokenSymbol}
                   </li>
                 </ol>
                 <div>
@@ -161,19 +164,19 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
                       copy(
-                        CanonicalTokensBridgeInfo[selectedToken.symbol]
+                        CanonicalTokensBridgeInfo[tokenSymbol]
                           .bridgeUrl
                       )
                       trackEvent(
                         `${
-                          selectedToken.symbol as CanonicalTokenName
+                          tokenSymbol as CanonicalTokenNames
                         }: Copy Bridge Link Click`
                       )
                     }}
                   >
                     <div className="flex flex-row items-center space-x-3">
                       <span className="font-light">
-                        Copy link for {selectedToken?.symbol} bridge
+                        Copy link for {tokenSymbol} bridge
                       </span>
                       <CustomClipboardCopyIcon className="h-6 w-6" />
                     </div>

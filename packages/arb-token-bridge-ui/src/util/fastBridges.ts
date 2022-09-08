@@ -1,6 +1,6 @@
 import { ChainId } from './networks'
 
-enum FastBridgeNames {
+export enum FastBridgeNames {
   Hop = 'Hop',
   Celer = 'Celer',
   Connext = 'Connext',
@@ -9,12 +9,12 @@ enum FastBridgeNames {
   Synapse = 'Synapse'
 }
 
-enum CanonicalTokenNames {
+export enum CanonicalTokenNames {
   FRAX = 'FRAX'
 }
 
-export type FastBridgeName = `${FastBridgeNames}`
-export type CanonicalTokenName = `${CanonicalTokenNames}`
+export type CanonicalTokenSupportedBridges<T extends CanonicalTokenNames>
+  = `${typeof CanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
@@ -110,16 +110,10 @@ export function getFastBridges(
   })
 }
 
-export const CanonicalTokensBridgeInfo: {
-  [tokenSymbol in string]: {
-    supportedBridges: FastBridgeNames[]
-    learnMoreUrl: string
-    bridgeUrl: string
-  }
-} = {
+export const CanonicalTokensBridgeInfo = {
   [CanonicalTokenNames.FRAX]: {
     supportedBridges: [FastBridgeNames.Celer],
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
     bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
   }
-}
+} as const
