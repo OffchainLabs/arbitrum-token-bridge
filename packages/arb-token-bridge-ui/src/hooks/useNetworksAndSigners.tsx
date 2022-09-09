@@ -1,7 +1,7 @@
 /*
 
-Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI. 
-These can be used to answer and access the following use-cases across the app - 
+Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI.
+These can be used to answer and access the following use-cases across the app -
 
 1. Is the network connected? If yes, is it Arbitrum (L2) or Ethereum (L1)?
 2. Signer exposed by the wallet to sign and execute RPC transactions
@@ -46,11 +46,11 @@ const defaultStatus =
     ? UseNetworksAndSignersStatus.NOT_CONNECTED
     : UseNetworksAndSignersStatus.LOADING
 
-type UseNetworksAndSignersLoadingOrErrorResult = {
+export type UseNetworksAndSignersLoadingOrErrorResult = {
   status: UseNetworksAndSignersLoadingOrErrorStatus
 }
 
-type UseNetworksAndSignersConnectedResult = {
+export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
   l1: { network: L1Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
   l2: { network: L2Network; signer: JsonRpcSigner; provider: JsonRpcProvider }

@@ -45,7 +45,8 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
   UseNetworksAndSignersLoadingOrErrorStatus,
-  NetworksAndSignersProvider
+  NetworksAndSignersProvider,
+  UseNetworksAndSignersConnectedResult
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
@@ -158,20 +159,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { provider: library } = useWallet()
 
   const initBridge = useCallback(
-    async (params: {
-      l1: {
-        signer: JsonRpcSigner
-        network: L1Network
-      }
-      l2: {
-        signer: JsonRpcSigner
-        network: L2Network
-      }
-    }) => {
-      const {
-        l1: { signer: l1Signer },
-        l2: { signer: l2Signer }
-      } = params
+    async (params: UseNetworksAndSignersConnectedResult) => {
+      const { l1, l2 } = params
+      const { signer: l1Signer } = l1
+      const { signer: l2Signer } = l2
 
       const l1Address = await l1Signer.getAddress()
       const l2Address = await l2Signer.getAddress()
@@ -192,7 +183,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
       }
 
-      setTokenBridgeParams({ walletAddress: l1Address, ...params })
+      setTokenBridgeParams({
+        walletAddress: l1Address,
+        l1: {
+          network: l1.network,
+          provider: l1.provider
+        },
+        l2: {
+          network: l2.network,
+          provider: l2.provider
+        }
+      })
     },
     []
   )
