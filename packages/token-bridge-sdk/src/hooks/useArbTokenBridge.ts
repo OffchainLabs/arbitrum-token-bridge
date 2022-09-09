@@ -546,10 +546,16 @@ export const useArbTokenBridge = (
     return { estimatedL1Gas, estimatedL2Gas }
   }
 
-  const approveToken = async (erc20L1Address: string) => {
+  const approveToken = async ({
+    erc20L1Address,
+    l1Signer
+  }: {
+    erc20L1Address: string
+    l1Signer: Signer
+  }) => {
     const tx = await erc20Bridger.approveToken({
-      l1Signer: l1.signer,
-      erc20L1Address
+      erc20L1Address,
+      l1Signer
     })
 
     const tokenData = await getL1TokenData(erc20L1Address)

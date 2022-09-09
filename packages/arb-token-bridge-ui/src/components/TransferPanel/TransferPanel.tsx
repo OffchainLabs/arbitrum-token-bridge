@@ -393,7 +393,10 @@ export function TransferPanel() {
               return
             }
 
-            await latestToken.current.approve(selectedToken.address)
+            await latestToken.current.approve({
+              erc20L1Address: selectedToken.address,
+              l1Signer: latestNetworksAndSigners.current.l1.signer
+            })
           }
 
           await latestToken.current.deposit({
