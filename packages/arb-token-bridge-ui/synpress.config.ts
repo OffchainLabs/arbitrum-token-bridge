@@ -7,8 +7,8 @@ export default defineConfig({
     runMode: 0,
     openMode: 0
   },
-  screenshotsFolder: 'screenshots',
-  videosFolder: 'videos',
+  screenshotsFolder: 'cypress/screenshots',
+  videosFolder: 'cypress/videos',
   video: true,
   chromeWebSecurity: true,
   viewportWidth: 1366,
