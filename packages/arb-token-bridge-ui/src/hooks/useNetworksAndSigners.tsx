@@ -1,3 +1,14 @@
+/*
+
+Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI. 
+These can be used to answer and access the following use-cases across the app - 
+
+1. Is the network connected? If yes, is it Arbitrum (L2) or Ethereum (L1)?
+2. Signer exposed by the wallet to sign and execute RPC transactions
+3. Provider exposed by the wallet to query the blockchain
+
+*/
+
 import React, {
   useCallback,
   useEffect,
@@ -41,8 +52,8 @@ type UseNetworksAndSignersLoadingOrErrorResult = {
 
 type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
-  l1: { network: L1Network; signer: JsonRpcSigner }
-  l2: { network: L2Network; signer: JsonRpcSigner }
+  l1: { network: L1Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
+  l2: { network: L2Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
   isConnectedToArbitrum: boolean
 }
 
@@ -83,6 +94,7 @@ export type NetworksAndSignersProviderProps = {
   children: React.ReactNode
 }
 
+// TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
 export type ProviderName = 'MetaMask' | 'Coinbase Wallet' | 'WalletConnect'
 
 function getProviderName(provider: any): ProviderName | null {
@@ -121,6 +133,7 @@ export function NetworksAndSignersProvider(
     }
   }, [account, result])
 
+  // When user clicks on any of the wallets to connect at the start of the session
   useEffect(() => {
     async function tryConnect() {
       try {
@@ -160,15 +173,21 @@ export function NetworksAndSignersProvider(
           const l2Provider = new JsonRpcProvider(rpcURLs[_selectedL2ChainId!])
           const l2Network = await getL2Network(l2Provider)
 
+          // from the L1 network, instantiate the provider for that too
+          // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
+          const l1Provider = new JsonRpcProvider(rpcURLs[l1Network.chainID!])
+
           setResult({
             status: UseNetworksAndSignersStatus.CONNECTED,
             l1: {
               network: l1Network,
-              signer: web3Provider.getSigner(0)
+              signer: web3Provider.getSigner(0),
+              provider: l1Provider
             },
             l2: {
               network: l2Network,
-              signer: l2Provider.getSigner(address!)
+              signer: l2Provider.getSigner(address!),
+              provider: l2Provider
             },
             isConnectedToArbitrum: false
           })
@@ -189,15 +208,21 @@ export function NetworksAndSignersProvider(
                 _selectedL2ChainId!
               )
 
+              const l2Provider = new JsonRpcProvider(
+                rpcURLs[l2Network.chainID!]
+              )
+
               setResult({
                 status: UseNetworksAndSignersStatus.CONNECTED,
                 l1: {
                   network: l1Network,
-                  signer: l1Provider.getSigner(address!)
+                  signer: l1Provider.getSigner(address!),
+                  provider: l1Provider
                 },
                 l2: {
                   network: l2Network,
-                  signer: web3Provider.getSigner(0)
+                  signer: web3Provider.getSigner(0),
+                  provider: l2Provider
                 },
                 isConnectedToArbitrum: true
               })
