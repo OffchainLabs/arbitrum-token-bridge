@@ -34,8 +34,8 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
-  const swapTokenSymbol =
-    tokenAddress && NonCanonicalTokensBridgeInfo[tokenAddress].swapTokenSymbol
+  const tokenSymbolOnArbitrum =
+    tokenAddress && NonCanonicalTokensBridgeInfo[tokenAddress].tokenSymbolOnArbitrum
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, tokenSymbol)
@@ -141,10 +141,10 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                 </p>
                 <ol className="list-decimal px-4 font-light">
                   <li>
-                    Transfer on Arbitrum’s bridge to get {swapTokenSymbol}
+                    Transfer on Arbitrum’s bridge to get {tokenSymbolOnArbitrum}
                   </li>
                   <li>
-                    Transfer on {tokenSymbol}'s bridge to swap {swapTokenSymbol}{' '}
+                    Transfer on {tokenSymbol}'s bridge to swap {tokenSymbolOnArbitrum}{' '}
                     for {tokenSymbol}
                   </li>
                 </ol>
