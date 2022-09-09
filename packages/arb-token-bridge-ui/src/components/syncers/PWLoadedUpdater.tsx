@@ -57,15 +57,9 @@ export function PWLoadedUpdater(): JSX.Element {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
       } else {
-        const bridgeUpdateBlockNumber = 0
+        console.log(`Nonce is ${nonce}`)
 
-        console.log(
-          `Nonce is ${nonce} and bridgeUpdateBlockNumber is ${bridgeUpdateBlockNumber}`
-        )
-
-        setInitialPendingWithdrawals(gatewaysToUse, {
-          fromBlock: bridgeUpdateBlockNumber
-        })
+        setInitialPendingWithdrawals(gatewaysToUse)
           .then(() => {
             console.info('Setting withdrawals to ready state')
 

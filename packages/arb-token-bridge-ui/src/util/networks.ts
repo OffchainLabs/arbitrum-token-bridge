@@ -19,10 +19,16 @@ export enum ChainId {
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Mainnet]:
+    process.env.REACT_APP_ETHEREUM_RPC_URL ||
+    `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   // L1 Testnets
-  [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
-  [ChainId.Goerli]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Rinkeby]:
+    process.env.REACT_APP_RINKEBY_RPC_URL ||
+    `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Goerli]:
+    process.env.REACT_APP_GOERLI_RPC_URL ||
+    `https://goerli.infura.io/v3/${INFURA_KEY}`,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
@@ -42,7 +48,8 @@ export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
 }
 
 export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
-  [ChainId.ArbitrumRinkeby]: '0x65321bf24210b81500230dcece14faa70a9f50a7'
+  [ChainId.ArbitrumRinkeby]: '0x65321bf24210b81500230dcece14faa70a9f50a7',
+  [ChainId.ArbitrumOne]: '0x07d4692291b9e30e326fd31706f686f83f331b82'
 }
 
 // Default L2 Chain to use for a certain chainId

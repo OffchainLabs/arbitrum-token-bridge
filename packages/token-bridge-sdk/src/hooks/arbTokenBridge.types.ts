@@ -303,8 +303,5 @@ export interface ArbTokenBridge {
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  setInitialPendingWithdrawals: (
-    gatewayAddresses: string[],
-    filter?: ethers.providers.Filter
-  ) => Promise<void>
+  setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
 }

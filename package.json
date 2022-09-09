@@ -10,12 +10,17 @@
     "start_sdk": "yarn workspace token-bridge-sdk watch",
     "build": "yarn workspace @arbitrum/use-wallet build && yarn workspace token-bridge-sdk build && yarn workspace arb-token-bridge-ui build",
     "format": "yarn workspace arb-token-bridge-ui format && yarn workspace token-bridge-sdk format",
-    "test:sdk": "yarn workspace token-bridge-sdk test"
+    "audit:ci": "audit-ci --config ./audit-ci.jsonc",
+    "test:ci:sdk": "yarn workspace token-bridge-sdk test:ci",
+    "serve": "serve -s packages/arb-token-bridge-ui/build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "audit-ci": "^6.3.0"
+  }
 }
