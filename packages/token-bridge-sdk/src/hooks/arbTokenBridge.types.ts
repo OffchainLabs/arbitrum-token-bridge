@@ -197,7 +197,10 @@ export interface ArbTokenBridgeEth {
     amount: BigNumber
     l2Signer: Signer
   }) => Promise<GasEstimates>
-  triggerOutbox: (id: string) => Promise<void | ContractReceipt>
+  triggerOutbox: (params: {
+    id: string
+    l1Signer: Signer
+  }) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }
 
@@ -240,7 +243,10 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber
     l2Signer: Signer
   }) => Promise<GasEstimates>
-  triggerOutbox: (id: string) => Promise<void | ContractReceipt>
+  triggerOutbox: (params: {
+    id: string
+    l1Signer: Signer
+  }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>

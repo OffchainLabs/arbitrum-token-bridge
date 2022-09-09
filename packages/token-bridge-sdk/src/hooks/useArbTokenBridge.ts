@@ -1107,7 +1107,13 @@ export const useArbTokenBridge = (
     })
   }
 
-  async function triggerOutboxToken(id: string) {
+  async function triggerOutboxToken({
+    id,
+    l1Signer
+  }: {
+    id: string
+    l1Signer: Signer
+  }) {
     const event = pendingWithdrawalsMap[id]
 
     if (!pendingWithdrawalsMap[id]) {
@@ -1117,7 +1123,7 @@ export const useArbTokenBridge = (
     const { tokenAddress, value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(
-      l1.signer,
+      l1Signer,
       event,
       await getOutboxAddress(event)
     )
@@ -1159,7 +1165,13 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function triggerOutboxEth(id: string) {
+  async function triggerOutboxEth({
+    id,
+    l1Signer
+  }: {
+    id: string
+    l1Signer: Signer
+  }) {
     const event = pendingWithdrawalsMap[id]
 
     if (!event) {
@@ -1169,7 +1181,7 @@ export const useArbTokenBridge = (
     const { value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(
-      l1.signer,
+      l1Signer,
       event,
       await getOutboxAddress(event)
     )
