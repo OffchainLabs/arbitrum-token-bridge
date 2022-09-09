@@ -45,8 +45,8 @@
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "getUnusedComponents": "ts-prune | grep ' default$'",
-    "e2e:open": "synpress open",
-    "e2e:run": "synpress run"
+    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
+    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@craco/craco": "6.2.0",
-    "@synthetixio/synpress": "^2.0.2-beta.1",
+    "@synthetixio/synpress": "2.0.1",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",
     "@types/react": "^17.0.18",
@@ -78,7 +78,7 @@
     "@typescript-eslint/parser": "^4.24.0",
     "autoprefixer": "^9",
     "cross-env": "^7.0.3",
-    "cypress": "^10.7.0",
+    "env-cmd": "^10.1.0",
     "eslint": "^7.27.0",
     "eslint-config-airbnb-typescript": "^12.3.1",
     "eslint-config-prettier": "^8.3.0",

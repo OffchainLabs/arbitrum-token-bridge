@@ -2889,7 +2889,7 @@
     penpal "3.0.7"
     pocket-js-core "0.0.3"
 
-"@rehooks/local-storage@^2.3.0":
+"@rehooks/local-storage@2.4.0", "@rehooks/local-storage@^2.3.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.0.tgz#fb884b2b657cad5f77aa6ab60bb3532f0e0725d2"
   integrity sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg==
@@ -3211,10 +3211,10 @@
     synthetix "2.41.0"
     web3-utils "1.2.11"
 
-"@synthetixio/synpress@^2.0.2-beta.1":
-  version "2.0.2-beta.1"
-  resolved "https://registry.yarnpkg.com/@synthetixio/synpress/-/synpress-2.0.2-beta.1.tgz#a1f1247f58ee35717e6f4ea329cfa41237ed75d0"
-  integrity sha512-kwT0XF6ttx1ZZ1wqb8DjeyRVPH1IVfHZ886rLP+i9bYqqSGrSC1N+AevMSWfsmkSUCJP2w8ymuM1Ia4UKY0lEA==
+"@synthetixio/synpress@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@synthetixio/synpress/-/synpress-2.0.1.tgz#57624e589eb3b14305b0df87aa4050cbec2ff4ac"
+  integrity sha512-Fun3Cf/2uZ9rpStAjS86jOQkr6Qp/qL91rVt8urBfdf527kfii7vl/CvOG6xGaTooE194PJFeQyVlHT25Vpu5g==
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/react" "^6.2.0"
@@ -7699,7 +7699,7 @@ commander@^2.18.0, commander@^2.19.0, commander@^2.20.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
 
-commander@^4.1.1:
+commander@^4.0.0, commander@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-4.1.1.tgz#9fd602bd936294e9e9ef46a3f4d6964044b18068"
   integrity sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==
@@ -9309,6 +9309,14 @@ entities@~2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.1.0.tgz#992d3129cf7df6870b96c57858c249a120f8b8b5"
   integrity sha512-hCx1oky9PFrJ611mf0ifBLBRW8lUUVRlFolb5gWRfIELabBlbp9xZvrqZLZAs+NxFnbfQoeGd8wDkygjg7U85w==
+
+env-cmd@^10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/env-cmd/-/env-cmd-10.1.0.tgz#c7f5d3b550c9519f137fdac4dd8fb6866a8c8c4b"
+  integrity sha512-mMdWTT9XKN7yNth/6N6g2GuKuJTsKMDHlQFUDacb/heQRRWOTIZ42t1rMHnQu4jYxU1ajdTeJM+9eEETlqToMA==
+  dependencies:
+    commander "^4.0.0"
+    cross-spawn "^7.0.0"
 
 errno@^0.1.3, errno@~0.1.1, errno@~0.1.7:
   version "0.1.8"
