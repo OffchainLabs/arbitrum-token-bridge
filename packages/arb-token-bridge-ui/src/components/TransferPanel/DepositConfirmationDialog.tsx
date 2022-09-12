@@ -29,13 +29,23 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const networkName = getNetworkName(l2.network)
   const { isArbitrumOne } = isNetwork(l2.network)
 
+  const [, copyToClipboard] = useCopyToClipboard()
+  const [activeTabIndex, setActiveTabIndex] = useState<number>(0)
+  const [showCopied, setShowCopied] = useState(false)
+
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
+  const bridgeInfo = NonCanonicalTokensBridgeInfo[tokenAddress]
+
+  if (!bridgeInfo) {
+    return null
+  }
+
   const tokenSymbolOnArbitrum =
-    tokenAddress && NonCanonicalTokensBridgeInfo[tokenAddress].tokenSymbolOnArbitrum
+    tokenAddress && bridgeInfo && bridgeInfo.tokenSymbolOnArbitrum
 
   const fastBridges = [
     ...getFastBridges(from.chainID, to.chainID, tokenSymbol)
@@ -48,10 +58,6 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
       ).includes(bridge.name)
     )
   })
-
-  const [, copyToClipboard] = useCopyToClipboard()
-  const [activeTabIndex, setActiveTabIndex] = useState<number>(0)
-  const [showCopied, setShowCopied] = useState(false)
 
   function copy(value: string) {
     setShowCopied(true)
@@ -144,8 +150,8 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                     Transfer on Arbitrum’s bridge to get {tokenSymbolOnArbitrum}
                   </li>
                   <li>
-                    Transfer on {tokenSymbol}'s bridge to swap {tokenSymbolOnArbitrum}{' '}
-                    for {tokenSymbol}
+                    Transfer on {tokenSymbol}'s bridge to swap{' '}
+                    {tokenSymbolOnArbitrum} for {tokenSymbol}
                   </li>
                 </ol>
                 <div>
