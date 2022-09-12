@@ -1,15 +1,24 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { MergedTransaction } from '../../state/app/state'
+import { L1TransactionReceipt } from '@arbitrum/sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { DepositCardContainer, DepositL1TxStatus } from './DepositCard'
 import { Tooltip } from '../common/Tooltip'
 import { Button } from '../common/Button'
+import dayjs from 'dayjs'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
+  const [retryableExpiryDays, setRetryableExpiryDays] = useState<number>(0)
+  const {
+    isConnectedToArbitrum,
+    l1: { signer: l1Signer },
+    l2: { signer: l2Signer }
+  } = useNetworksAndSigners()
+
   const { redeem, isRedeeming } = useRedeemRetryable()
+
 
   const isRedeemButtonDisabled = useMemo(
     () =>
@@ -19,6 +28,33 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
     [isConnectedToArbitrum]
   )
 
+  const getRetryableExpiryDays = useCallback(async () => {
+    let daysTillExpiry: number = 0
+    try {
+      const depositTxReceipt = await l1Signer.provider.getTransactionReceipt(
+        tx.txId
+      )
+      const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+      const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Signer.provider)
+
+      const now = dayjs()
+      const expiryDate = await l1ToL2Msg.getTimeout()
+
+      daysTillExpiry = dayjs(+expiryDate.toString() * 1000).diff(now, 'days')
+    } catch {
+      daysTillExpiry = 0
+    }
+
+    return daysTillExpiry
+  }, [l1Signer, l2Signer])
+
+  useEffect(() => {
+    ;(async () => {
+      const daysTillExpiry = await getRetryableExpiryDays()
+      setRetryableExpiryDays(daysTillExpiry)
+    })()
+  }, [])
+
   return (
     <DepositCardContainer tx={tx}>
       <span className="text-4xl font-semibold text-brick-dark">
@@ -26,9 +62,12 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
       </span>
 
       <div className="h-1" />
-      <span className="text-2xl font-normal text-brick-dark">
-        You have ~4 days to retry, so best to click the button now!
-      </span>
+      {retryableExpiryDays > 0 && (
+        <span className="text-2xl font-normal text-brick-dark">
+          You have ~{retryableExpiryDays} days to retry, so best to click the
+          button now!
+        </span>
+      )}
       <div className="h-1" />
 
       <Tooltip
