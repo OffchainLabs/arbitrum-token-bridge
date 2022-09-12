@@ -4,7 +4,7 @@ import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XIcon } from '@heroicons/react/outline'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { Transition } from '../common/Transition'
+import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import {
   NonCanonicalTokenAddresses,
@@ -30,7 +30,6 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   const { isArbitrumOne } = isNetwork(l2.network)
 
   const [, copyToClipboard] = useCopyToClipboard()
-  const [activeTabIndex, setActiveTabIndex] = useState<number>(0)
   const [showCopied, setShowCopied] = useState(false)
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
@@ -65,20 +64,9 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   }
 
   return (
-    <Dialog
-      {...props}
-      onClose={confirmed => {
-        props.onClose(confirmed)
-        setActiveTabIndex(0)
-        if (confirmed) {
-          trackEvent(`${tokenSymbol}: Use Arbitrum Bridge Click`)
-        }
-      }}
-      actionButtonProps={{ hidden: activeTabIndex === 0 }}
-      actionButtonTitle="I want to do two swaps"
-    >
+    <Dialog {...props} isCustom>
       <div className="flex flex-col md:min-w-[725px] md:max-w-[725px]">
-        <Tab.Group onChange={setActiveTabIndex}>
+        <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-blue-arbitrum px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
               Move funds to {networkName}
@@ -87,7 +75,6 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
               className="arb-hover"
               onClick={() => {
                 props.onClose(false)
-                setActiveTabIndex(0)
               }}
             >
               <XIcon className="h-6 w-6 text-white" />
@@ -132,6 +119,14 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                 bridgeList={fastBridges}
                 selectedNonCanonicalToken={tokenSymbol}
               />
+              <div className="mt-2 flex flex-row justify-end space-x-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => props.onClose(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
             </Tab.Panel>
           )}
 
@@ -152,13 +147,6 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   </li>
                 </ol>
                 <div>
-                  <Transition show={showCopied}>
-                    <span className="absolute left-[89px] top-4 text-xs font-light text-white">
-                      Copied to clipboard!
-                    </span>
-                  </Transition>
-                  <div></div>
-
                   <button
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
@@ -168,12 +156,34 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   >
                     <div className="flex flex-row items-center space-x-3">
                       <span className="font-light">
-                        Copy link for {tokenSymbol} bridge
+                        {showCopied
+                          ? 'Copied to clipboard!'
+                          : `Copy link for ${tokenSymbol} bridge`}
                       </span>
-                      <CustomClipboardCopyIcon className="h-6 w-6" />
+                      {!showCopied && (
+                        <CustomClipboardCopyIcon className="h-6 w-6" />
+                      )}
                     </div>
                   </button>
                 </div>
+              </div>
+
+              <div className="mt-2 flex flex-row justify-end space-x-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => props.onClose(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    props.onClose(true)
+                    trackEvent(`${tokenSymbol}: Use Arbitrum Bridge Click`)
+                  }}
+                >
+                  I want to do two swaps
+                </Button>
               </div>
             </Tab.Panel>
           )}
