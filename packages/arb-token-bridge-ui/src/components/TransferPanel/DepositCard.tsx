@@ -123,7 +123,7 @@ export function DepositCardContainer({
   }
 
   return (
-    <div className={`w-full p-6 lg:rounded-xl ${bgClassName}`}>
+    <div className={`w-full p-6 pb-12 sm:pb-6 lg:rounded-xl ${bgClassName}`}>
       {dismissable && (
         <button
           className={twMerge(
