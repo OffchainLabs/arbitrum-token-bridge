@@ -52,10 +52,9 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
   ].filter(bridge => {
     return (
       tokenSymbol &&
-      (
-        NonCanonicalTokensBridgeInfo[tokenAddress]
-          .supportedBridges as readonly FastBridgeNames[]
-      ).includes(bridge.name)
+      (bridgeInfo.supportedBridges as readonly FastBridgeNames[]).includes(
+        bridge.name
+      )
     )
   })
 
@@ -120,9 +119,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
                   has fully integrated with.{' '}
                   <ExternalLink
-                    href={
-                      NonCanonicalTokensBridgeInfo[tokenAddress].learnMoreUrl
-                    }
+                    href={bridgeInfo.learnMoreUrl}
                     className="underline"
                   >
                     Learn more
@@ -165,7 +162,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
                   <button
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
-                      copy(NonCanonicalTokensBridgeInfo[tokenAddress].bridgeUrl)
+                      copy(bridgeInfo.bridgeUrl)
                       trackEvent(`${tokenSymbol}: Copy Bridge Link Click`)
                     }}
                   >
