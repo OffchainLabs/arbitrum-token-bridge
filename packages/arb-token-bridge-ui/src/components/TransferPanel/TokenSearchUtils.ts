@@ -72,10 +72,11 @@ function tokenListsToSearchableTokenStorage(
       tokenList.tokens.forEach(token => {
         const address = token.address.toLowerCase()
         const stringifiedChainId = String(token.chainId)
+        const accAddress = acc[address]
 
         if (stringifiedChainId === l1ChainId) {
           // The address is from an L1 token
-          if (typeof acc[address] === 'undefined') {
+          if (typeof accAddress === 'undefined') {
             // First time encountering the token through its L1 address
             acc[address] = {
               ...token,
@@ -86,16 +87,16 @@ function tokenListsToSearchableTokenStorage(
           } else {
             // Token was already added to the map through its L2 token
             acc[address] = {
-              ...acc[address]!,
+              ...accAddress,
               address
             }
           }
 
           // acc[address] was defined in the if/else above
-          const tokenLists = acc[address]!.tokenLists
+          const tokenLists = accAddress!.tokenLists
 
           if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
-            acc[address]!.tokenLists.push(tokenList.bridgeTokenListId)
+            accAddress!.tokenLists.push(tokenList.bridgeTokenListId)
           }
         } else if (stringifiedChainId === l2ChainId) {
           // The token is an L2 token
