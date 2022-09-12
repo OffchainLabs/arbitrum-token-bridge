@@ -145,17 +145,11 @@ export const useArbTokenBridge = (
     ContractStorage<ERC20BridgeToken>
   >({})
 
-  const balanceIsEmpty = (balance: BridgeBalance) =>
-    balance['balance'] === defaultBalance['balance'] &&
-    balance['arbChainBalance'] === defaultBalance['arbChainBalance']
-
   const [erc20Balances, setErc20Balances] = useState<
     ContractStorage<BridgeBalance>
   >({})
 
-  const [erc721Balances, setErc721Balances] = useState<
-    ContractStorage<ERC721Balance>
-  >({})
+  const [erc721Balances] = useState<ContractStorage<ERC721Balance>>({})
 
   const defaultTokenList: string[] = []
 
@@ -168,27 +162,21 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
-  const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
-    string[]
-  >('ERC721Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+  const [ERC721Cache, , clearERC721Cache] = useLocalStorage<string[]>(
+    'ERC721Cache',
+    []
+  ) as [string[], React.Dispatch<string[]>, React.Dispatch<void>]
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
 
-  const [
-    executedMessagesCache,
-    setExecutedMessagesCache,
-    clearExecutedMessagesCache
-  ] = useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
-    ExecutedMessagesCache,
-    React.Dispatch<ExecutedMessagesCache>,
-    React.Dispatch<void>
-  ]
+  const [executedMessagesCache, setExecutedMessagesCache] =
+    useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
+      ExecutedMessagesCache,
+      React.Dispatch<ExecutedMessagesCache>,
+      React.Dispatch<void>
+    ]
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
@@ -202,8 +190,6 @@ export const useArbTokenBridge = (
       setTransactionConfirmed,
       setTransactionSuccess,
       updateTransaction,
-      removeTransaction,
-      addFailedTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
@@ -250,8 +236,10 @@ export const useArbTokenBridge = (
         }
       }
 
-      if (typeof overrides[erc20L1AddressLowercased] !== 'undefined') {
-        return overrides[erc20L1AddressLowercased]
+      const erc20L1AddressLowercasedOverride =
+        overrides[erc20L1AddressLowercased]
+      if (typeof erc20L1AddressLowercasedOverride !== 'undefined') {
+        return erc20L1AddressLowercasedOverride
       }
 
       return {
@@ -277,14 +265,14 @@ export const useArbTokenBridge = (
       ...overrides.params
     })
 
-    if (typeof tokenData.balance === 'undefined') {
+    if (typeof tokenData?.balance === 'undefined') {
       if (throwOnInvalidERC20)
         throw new Error(
           `getL1TokenData: No balance method available for ${erc20L1Address}`
         )
     }
 
-    if (typeof tokenData.allowance === 'undefined') {
+    if (typeof tokenData?.allowance === 'undefined') {
       if (throwOnInvalidERC20)
         throw new Error(
           `getL1TokenData: No allowance method available for ${erc20L1Address}`
@@ -292,11 +280,11 @@ export const useArbTokenBridge = (
     }
 
     return {
-      name: tokenData.name || getDefaultTokenName(erc20L1Address),
-      symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
-      balance: tokenData.balance || BigNumber.from(0),
-      allowance: tokenData.allowance || BigNumber.from(0),
-      decimals: tokenData.decimals || 0,
+      name: tokenData?.name || getDefaultTokenName(erc20L1Address),
+      symbol: tokenData?.symbol || getDefaultTokenSymbol(erc20L1Address),
+      balance: tokenData?.balance || BigNumber.from(0),
+      allowance: tokenData?.allowance || BigNumber.from(0),
+      decimals: tokenData?.decimals || 0,
       ...overrides.result,
       contract
     }
@@ -318,14 +306,14 @@ export const useArbTokenBridge = (
       balanceOf: { account: walletAddress }
     })
 
-    if (typeof tokenData.balance === 'undefined') {
+    if (typeof tokenData?.balance === 'undefined') {
       throw new Error(
         `getL2TokenData: No balance method available for ${erc20L2Address}`
       )
     }
 
     return {
-      balance: tokenData.balance,
+      balance: tokenData?.balance,
       contract
     }
   }
@@ -413,6 +401,10 @@ export const useArbTokenBridge = (
 
     const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.signer)
 
+    if (!ethDepositMessage) {
+      return
+    }
+
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED,
@@ -477,6 +469,10 @@ export const useArbTokenBridge = (
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventResult = l2ToL1Events[0]
         console.info('withdraw event data:', l2ToL1EventResult)
+
+        if (!l2ToL1EventResult) {
+          return
+        }
 
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
 
@@ -708,6 +704,11 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
+
+        if (!l2ToL1EventDataResult) {
+          return
+        }
+
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
@@ -817,7 +818,12 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID].tokenAddress
+        const l1Network = bridgeInfo[l1NetworkID]
+        if (!l1Network) {
+          return
+        }
+
+        const l1Address = l1Network.tokenAddress
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -1002,7 +1008,7 @@ export const useArbTokenBridge = (
     })
     const l1Balances = l1Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l1AddressesBalances[index].balance
+      balance: l1AddressesBalances[index]?.balance || 0
     }))
 
     const l2Addresses = l1Addresses
@@ -1015,7 +1021,7 @@ export const useArbTokenBridge = (
     })
     const l2Balances = l2Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l2AddressesBalances[index].balance
+      balance: l2AddressesBalances[index]?.balance || 0
     }))
 
     const l2AddressToBalanceMap: {
@@ -1052,7 +1058,7 @@ export const useArbTokenBridge = (
   async function triggerOutboxToken(id: string) {
     const event = pendingWithdrawalsMap[id]
 
-    if (!pendingWithdrawalsMap[id]) {
+    if (!event) {
       throw new Error('Outbox message not found')
     }
 
@@ -1154,8 +1160,9 @@ export const useArbTokenBridge = (
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
 
-    if (addressToSymbol[l1Address]) {
-      return addressToSymbol[l1Address]
+    const l1Symbol = addressToSymbol[l1Address]
+    if (l1Symbol) {
+      return l1Symbol
     }
 
     try {
@@ -1171,8 +1178,9 @@ export const useArbTokenBridge = (
   const getTokenDecimals = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
 
-    if (addressToDecimals[l1Address]) {
-      return addressToDecimals[l1Address]
+    const l1Decimals = addressToDecimals[l1Address]
+    if (l1Decimals) {
+      return l1Decimals
     }
 
     try {
@@ -1235,10 +1243,11 @@ export const useArbTokenBridge = (
 
     // TODO: length != 1
     const [event] = l2TxReceipt.getL2ToL1Events()
-    const outgoingMessageState = await getOutgoingMessageState(event)
+
+    const outgoingMessageState = await getOutgoingMessageState(event!)
 
     return {
-      ...event,
+      ...event!,
       type: AssetType.ERC20,
       value: result._amount,
       tokenAddress: result.l1Token,
