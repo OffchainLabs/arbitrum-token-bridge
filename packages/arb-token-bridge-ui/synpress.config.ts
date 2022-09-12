@@ -4,7 +4,7 @@ import synpressPlugins from '@synthetixio/synpress/plugins'
 export default defineConfig({
   userAgent: 'synpress',
   retries: {
-    runMode: 0,
+    runMode: process.env.CI ? 1 : 0,
     openMode: 0
   },
   screenshotsFolder: 'cypress/screenshots',

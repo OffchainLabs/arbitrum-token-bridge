@@ -27,12 +27,12 @@ import "@testing-library/cypress/add-commands";
 
 Cypress.Commands.add("login", () => {
   cy.visit(`/`);
-  cy.findByRole("button", {
-    name: "Connect Wallet",
-  })
+  cy.findByText("Agree to terms").should("be.visible").click();
+  cy.findByText("MetaMask").should("be.visible");
+  cy.findByText("Connect to your MetaMask Wallet")
     .click()
     .then(() => {
       cy.acceptMetamaskAccess().should("be.true");
-      cy.confirmMetamaskSignatureRequest().should("be.true");
+      cy.switchToCypressWindow().should("be.true");
     });
 });
