@@ -36,8 +36,8 @@
   "scripts": {
     "analyze": "cross-env REACT_APP_INTERACTIVE_ANALYZE=1 $npm_execpath run build",
     "build:tailwind": "tailwindcss build src/styles/tailwind.css -o src/styles/tailwind.output.css",
-    "prestart": "yarn run build:tailwind",
-    "prebuild": "yarn run build:tailwind",
+    "prestart": "$npm_execpath run build:tailwind",
+    "prebuild": "$npm_execpath run build:tailwind",
     "start": "craco start",
     "build": "CI= craco build",
     "test": "craco test",
