@@ -3,7 +3,7 @@
   "version": "3.1.3",
   "private": true,
   "dependencies": {
-    "@ethersproject/providers": "^5.4.4",
+    "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.4.0",
     "@heroicons/react": "^1.0.3",
     "@sentry/react": "^7.9.0",
@@ -36,8 +36,8 @@
   "scripts": {
     "analyze": "cross-env REACT_APP_INTERACTIVE_ANALYZE=1 $npm_execpath run build",
     "build:tailwind": "tailwindcss build src/styles/tailwind.css -o src/styles/tailwind.output.css",
-    "prestart": "$npm_execpath run build:tailwind",
-    "prebuild": "$npm_execpath run build:tailwind",
+    "prestart": "yarn run build:tailwind",
+    "prebuild": "yarn run build:tailwind",
     "start": "craco start",
     "build": "CI= craco build",
     "test": "craco test",
@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@craco/craco": "6.2.0",
-    "@synthetixio/synpress": "2.0.1",
+    "@synthetixio/synpress": "^2.2.1-beta.0",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",
     "@types/react": "^17.0.18",
