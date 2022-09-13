@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { IL1ToL2MessageWriter, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { useAppState } from '../state'
-import { MergedTransaction } from '..//state/app/state'
+import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
@@ -16,7 +16,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     app: { arbTokenBridge }
   } = useAppState()
   const {
-    l1: { signer: l1Signer },
+    l1: { provider: l1Provider },
     l2: { signer: l2Signer }
   } = useNetworksAndSigners()
 
@@ -24,10 +24,6 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
 
   async function redeem(tx: MergedTransaction) {
     if (isRedeeming) {
-      return
-    }
-
-    if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
       return
     }
 
@@ -39,7 +35,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: l1Signer.provider,
+        l1Provider,
         l2Signer
       })
     } catch (error: any) {

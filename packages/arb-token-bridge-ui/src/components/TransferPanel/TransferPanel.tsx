@@ -497,7 +497,7 @@ export function TransferPanel() {
               selectedToken.l2Address,
               walletAddress,
               amountRaw,
-              l2Signer.provider
+              latestNetworksAndSigners.current.l2.provider
             )
             if (!allowed) {
               await latestToken.current.approveL2(selectedToken.address)

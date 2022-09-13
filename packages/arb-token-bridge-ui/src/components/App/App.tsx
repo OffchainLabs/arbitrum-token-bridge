@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
@@ -17,7 +16,7 @@ import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { ExternalProvider } from '@ethersproject/providers'
+import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
@@ -67,8 +66,8 @@ type Web3Provider = ExternalProvider & {
 const isSwitchChainSupported = (provider: Web3Provider) =>
   provider && (provider.isMetaMask || provider.isImToken)
 
-async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
-  return (await _signer.provider.getCode(_address)).length <= 2
+async function addressIsEOA(address: string, provider: JsonRpcProvider) {
+  return (await provider.getCode(address)).length <= 2
 }
 
 const AppContent = (): JSX.Element => {
@@ -161,15 +160,15 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
-      const { signer: l1Signer } = l1
-      const { signer: l2Signer } = l2
+      const { signer: l1Signer, provider: l1Provider } = l1
+      const { signer: l2Signer, provider: l2Provider } = l2
 
       const l1Address = await l1Signer.getAddress()
       const l2Address = await l2Signer.getAddress()
 
       try {
-        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Signer)
-        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Signer)
+        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Provider)
+        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Provider)
 
         if (!l1AddressIsEOA || !l2AddressIsEOA) {
           actions.app.setConnectionState(ConnectionState.NOT_EOA)

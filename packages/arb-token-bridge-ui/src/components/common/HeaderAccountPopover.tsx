@@ -80,6 +80,7 @@ async function tryGetAvatar(
 export function HeaderAccountPopover() {
   const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
   const {
     app: { mergedTransactions, pwLoadedState }
@@ -90,10 +91,10 @@ export function HeaderAccountPopover() {
 
   useEffect(() => {
     async function resolveENSInfo() {
-      if (account && l1.signer) {
+      if (account) {
         const [name, avatar] = await Promise.all([
-          tryLookupAddress(l1.signer.provider, account),
-          tryGetAvatar(l1.signer.provider, account)
+          tryLookupAddress(l1Provider, account),
+          tryGetAvatar(l1Provider, account)
         ])
 
         setENSInfo({ name, avatar })
@@ -101,7 +102,7 @@ export function HeaderAccountPopover() {
     }
 
     resolveENSInfo()
-  }, [account, l1.signer])
+  }, [account, l1Provider])
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
