@@ -85,17 +85,17 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
           onClick={() => redeem(tx)}
           className="text-2xl"
         >
-          Retry for free
+          Re-execute
         </Button>
       </Tooltip>
 
       <div className="h-2" />
       <div className="flex flex-col font-light">
         <span className="text-lg text-orange-dark">
-          L1 transaction (Etherscan): <DepositL1TxStatus tx={tx} />
+          L1 transaction: <DepositL1TxStatus tx={tx} />
         </span>
         <span className="text-lg text-orange-dark">
-          L2 transaction (Arbiscan):{' '}
+          L2 transaction:{' '}
           {isRedeeming ? 'Pending...' : 'Failed. Try re-executing.'}
         </span>
       </div>
