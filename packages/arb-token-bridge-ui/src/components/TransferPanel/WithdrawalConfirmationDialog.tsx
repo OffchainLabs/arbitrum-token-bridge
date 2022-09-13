@@ -2,13 +2,9 @@ import { Fragment, useState } from 'react'
 import {
   CheckIcon,
   XIcon,
-  ExclamationCircleIcon,
-  StarIcon as StarIconOutline,
-  ExternalLinkIcon
+  ExclamationCircleIcon
 } from '@heroicons/react/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { useLocalStorage } from '@rehooks/local-storage'
 import dayjs from 'dayjs'
 
 import GoogleCalendarIcon from '../../assets/GoogleCalendar.svg'
@@ -17,161 +13,15 @@ import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
+import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useAppState } from '../../state'
-
-const FastBridges = [
-  {
-    name: 'Hop',
-    imageSrc:
-      'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
-    href: 'https://app.hop.exchange/#/send?sourceNetwork=arbitrum&destNetwork=ethereum'
-  },
-  {
-    name: 'Celer',
-    imageSrc:
-      'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
-    href: 'https://cbridge.celer.network/42161/1/ETH'
-  },
-  {
-    name: 'Connext',
-    imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
-    href: 'https://bridge.connext.network/from-arbitrum-to-ethereum'
-  },
-  {
-    name: 'Across',
-    imageSrc:
-      'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
-    href: 'https://across.to/?from=42161&to=1'
-  },
-  {
-    name: 'Stargate',
-    imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/18934.png',
-    href: 'https://stargate.finance/transfer?srcChain=arbitrum&dstChain=ethereum&srcToken=eth'
-  },
-  {
-    name: 'Synapse',
-    imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/12147.png',
-    // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
-    // We make sure to prompt a network switch to Arbitrum prior to showing this.
-    href: 'https://synapseprotocol.com/?inputCurrency=ETH&outputCurrency=ETH&outputChain=1'
-  }
-] as const
+import { getFastBridges } from '../../util/fastBridges'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
-
-const FastBridgeNames = FastBridges.map(bridge => bridge.name)
-export type FastBridgeName = typeof FastBridgeNames[number]
-
-function FastBridgesTable() {
-  const [favorites, setFavorites] = useLocalStorage<string[]>(
-    'arbitrum:bridge:favorite-fast-bridges',
-    []
-  )
-
-  function isFavorite(bridgeName: string) {
-    return favorites.includes(bridgeName)
-  }
-
-  function toggleFavorite(bridgeName: string) {
-    if (favorites.includes(bridgeName)) {
-      setFavorites(favorites.filter(favorite => favorite !== bridgeName))
-    } else {
-      setFavorites([...favorites, bridgeName])
-    }
-  }
-
-  function onClick(bridgeName: FastBridgeName) {
-    trackEvent(`Fast Bridge Click: ${bridgeName}`)
-  }
-
-  const sortedFastBridges = [...FastBridges].sort((a, b) => {
-    const isFavoriteA = isFavorite(a.name)
-    const isFavoriteB = isFavorite(b.name)
-
-    if (isFavoriteA && !isFavoriteB) {
-      return -1
-    } else if (!isFavoriteA && isFavoriteB) {
-      return 1
-    }
-
-    if (a.name < b.name) {
-      return -1
-    } else {
-      return 1
-    }
-  })
-
-  return (
-    <table className="w-full border border-gray-5">
-      <thead className="bg-gray-1 text-left">
-        <tr className="text-gray-9">
-          <th className="w-1/6 px-6 py-4 font-normal">Favorite</th>
-          <th className="w-4/6 px-6 py-4 font-normal">Exchange</th>
-          <th className="w-1/6 px-6 py-4 font-normal"></th>
-        </tr>
-      </thead>
-      <tbody className="font-light">
-        {sortedFastBridges.map(bridge => (
-          <tr
-            key={bridge.name}
-            className="cursor-pointer border border-gray-5 hover:bg-cyan"
-          >
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                className="flex h-16 items-center px-6"
-                onClick={() => onClick(bridge.name)}
-              >
-                <button
-                  onClick={event => {
-                    event.preventDefault()
-                    toggleFavorite(bridge.name)
-                  }}
-                >
-                  {isFavorite(bridge.name) ? (
-                    <StarIconSolid className="h-6 w-6 text-blue-arbitrum" />
-                  ) : (
-                    <StarIconOutline className="h-6 w-6 text-blue-arbitrum" />
-                  )}
-                </button>
-              </ExternalLink>
-            </td>
-
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                onClick={() => onClick(bridge.name)}
-              >
-                <div className="flex h-16 items-center space-x-4 px-6">
-                  <img
-                    src={bridge.imageSrc}
-                    alt={bridge.name}
-                    className="h-8 w-8 rounded-full object-contain"
-                  />
-                  <span>{bridge.name}</span>
-                </div>
-              </ExternalLink>
-            </td>
-
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                className="arb-hover flex h-16 w-full items-center justify-center text-gray-6 hover:text-blue-arbitrum"
-                onClick={() => onClick(bridge.name)}
-              >
-                <ExternalLinkIcon className="h-5 w-5" />
-              </ExternalLink>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
 
 function getCalendarUrl(
   confirmationDays: number,
@@ -187,11 +37,19 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const networkName = getNetworkName(l1.network)
   const {
     app: { selectedToken }
   } = useAppState()
+
+  const from = isConnectedToArbitrum ? l2.network : l1.network
+  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const fastBridges = getFastBridges(
+    from.chainID,
+    to.chainID,
+    selectedToken?.symbol
+  )
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
@@ -267,7 +125,7 @@ export function WithdrawalConfirmationDialog(
                 </div>
               </div>
 
-              <FastBridgesTable />
+              <BridgesTable bridgeList={fastBridges} />
             </Tab.Panel>
           )}
 
