@@ -31,7 +31,7 @@ Cypress.Commands.add("login", () => {
   cy.findByText("MetaMask").should("be.visible");
   cy.findByText("Connect to your MetaMask Wallet").click();
   cy.acceptMetamaskAccess().then(connected => {
-    expect(connected).should("be.true");
+    expect(connected).to.be.true;
     cy.switchToCypressWindow().should("be.true");
   });
 });
