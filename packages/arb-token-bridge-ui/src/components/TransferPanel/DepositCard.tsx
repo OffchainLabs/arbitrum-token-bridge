@@ -97,7 +97,7 @@ export function DepositCardContainer({
         return 'bg-lime'
 
       case DepositStatus.L2_FAILURE:
-        return 'bg-brick'
+        return 'bg-orange'
 
       default:
         return 'bg-white'

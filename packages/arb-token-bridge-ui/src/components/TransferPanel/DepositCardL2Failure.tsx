@@ -10,7 +10,11 @@ import { Button } from '../common/Button'
 import dayjs from 'dayjs'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
-  const [retryableExpiryDays, setRetryableExpiryDays] = useState<number>(0)
+  const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
+    isValid: boolean // false, if the days are still loading, or ticket is expired
+    days: number
+  }>({ isValid: false, days: 0 })
+
   const {
     isConnectedToArbitrum,
     l1: { signer: l1Signer },
@@ -18,7 +22,6 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   } = useNetworksAndSigners()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
-
 
   const isRedeemButtonDisabled = useMemo(
     () =>
@@ -30,6 +33,8 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
 
   const getRetryableExpiryDays = useCallback(async () => {
     let daysTillExpiry: number = 0
+    let isValid = false // daysTillExpiry still loading...
+
     try {
       const depositTxReceipt = await l1Signer.provider.getTransactionReceipt(
         tx.txId
@@ -41,11 +46,14 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
       const expiryDate = await l1ToL2Msg.getTimeout()
 
       daysTillExpiry = dayjs(+expiryDate.toString() * 1000).diff(now, 'days')
+
+      // show days till expiry only if retryable is not expired
+      if (daysTillExpiry >= 0) isValid = true
     } catch {
-      daysTillExpiry = 0
+      isValid = false
     }
 
-    return daysTillExpiry
+    return { isValid, days: daysTillExpiry }
   }, [l1Signer, l2Signer])
 
   useEffect(() => {
@@ -57,17 +65,25 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
 
   return (
     <DepositCardContainer tx={tx}>
-      <span className="text-4xl font-semibold text-brick-dark">
+      <span className="text-4xl font-semibold text-orange-dark">
         {isRedeeming ? 'Re-executing...' : 'L2 transaction failed'}
       </span>
 
       <div className="h-1" />
-      {retryableExpiryDays > 0 && (
-        <span className="text-2xl font-normal text-brick-dark">
-          You have ~{retryableExpiryDays} days to retry, so best to click the
-          button now!
+
+      {/* Only show the `days remaining to retry..` message if the remaining days are valid */}
+      {retryableExpiryDays?.isValid && (
+        <span className="text-2xl font-normal text-orange-dark">
+          No worries, we can try again. You have{' '}
+          {retryableExpiryDays.days > 0
+            ? retryableExpiryDays.days > 1
+              ? `${retryableExpiryDays.days} days`
+              : `${retryableExpiryDays.days} day`
+            : 'less than a day'}{' '}
+          to re-execute.
         </span>
       )}
+
       <div className="h-1" />
 
       <Tooltip
