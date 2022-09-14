@@ -11,13 +11,13 @@ type GetRetryableTicketParams = {
   l2Signer: Signer
 }
 
-type GetRetryableTicketExpirationDateParams = {
+type GetRetryableTicketExpirationParams = {
   l1TxHash: string
   l1Provider: JsonRpcProvider
   l2Provider: JsonRpcProvider
 }
 
-type RetryableTicketExpirationDateResponse = {
+type RetryableTicketExpirationResponse = {
   date: number
   daysTillExpiry: number
   isValid: boolean
@@ -52,7 +52,7 @@ export const getRetryableTicketExpirationDate = async ({
   l1TxHash,
   l1Provider,
   l2Provider
-}: GetRetryableTicketExpirationDateParams): Promise<RetryableTicketExpirationDateResponse> => {
+}: GetRetryableTicketExpirationParams): Promise<RetryableTicketExpirationResponse> => {
   let daysTillExpiry: number = 0
   let isValid = false // daysTillExpiry still loading...
   let expiryTimestamp = 0
