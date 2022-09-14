@@ -497,7 +497,9 @@ export function TransferPanel() {
               latestNetworksAndSigners.current.l2.provider
             )
             if (!allowed) {
-              await latestToken.current.approveL2(selectedToken.address)
+              await latestToken.current.approveL2({
+                erc20L1Address: selectedToken.address
+              })
             }
           }
 

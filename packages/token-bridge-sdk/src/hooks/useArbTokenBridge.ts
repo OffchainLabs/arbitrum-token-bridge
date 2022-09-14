@@ -560,7 +560,11 @@ export const useArbTokenBridge = (
     })
   }
 
-  const approveTokenL2 = async (erc20L1Address: string) => {
+  const approveTokenL2 = async ({
+    erc20L1Address
+  }: {
+    erc20L1Address: string
+  }) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
