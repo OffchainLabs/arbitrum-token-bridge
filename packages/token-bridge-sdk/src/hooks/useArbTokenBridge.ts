@@ -543,7 +543,11 @@ export const useArbTokenBridge = (
     updateTokenData(erc20L1Address)
   }
 
-  const approveTokenEstimateGas = async (erc20L1Address: string) => {
+  const approveTokenEstimateGas = async ({
+    erc20L1Address
+  }: {
+    erc20L1Address: string
+  }) => {
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1.provider

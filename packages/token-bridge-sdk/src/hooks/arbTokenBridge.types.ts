@@ -219,7 +219,7 @@ export interface ArbTokenBridgeToken {
     erc20L1Address: string
     l1Signer: Signer
   }) => Promise<void>
-  approveEstimateGas: (erc20L1Address: string) => Promise<BigNumber>
+  approveEstimateGas: (params: { erc20L1Address: string }) => Promise<BigNumber>
   approveL2: (erc20L1Address: string) => Promise<void>
   deposit: (params: {
     erc20L1Address: string
