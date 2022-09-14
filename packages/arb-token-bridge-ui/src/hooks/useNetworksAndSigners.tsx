@@ -176,7 +176,9 @@ export function NetworksAndSignersProvider(
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-          const l1Provider = new JsonRpcProvider(rpcURLs[l1Network.chainID!])
+          const l1Provider = new JsonRpcProvider(
+            rpcURLs[l1Network.chainID as ChainId]
+          )
 
           setResult({
             status: UseNetworksAndSignersStatus.CONNECTED,
@@ -211,7 +213,7 @@ export function NetworksAndSignersProvider(
               )
 
               const l2Provider = new JsonRpcProvider(
-                rpcURLs[l2Network.chainID!]
+                rpcURLs[l2Network.chainID as ChainId]
               )
 
               setResult({
