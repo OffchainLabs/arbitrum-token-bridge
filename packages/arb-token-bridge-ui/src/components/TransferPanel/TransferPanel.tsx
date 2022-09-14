@@ -486,11 +486,8 @@ export function TransferPanel() {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          if (
-            shouldRequireApprove &&
-            selectedToken.l2Address &&
-            l2Signer?.provider
-          ) {
+
+          if (shouldRequireApprove && selectedToken.l2Address) {
             const allowed = await isAllowedL2(
               arbTokenBridge,
               selectedToken.address,
