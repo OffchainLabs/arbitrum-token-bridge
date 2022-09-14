@@ -24,7 +24,7 @@ import {
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
-
+import { useHistory } from 'react-router-dom'
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
@@ -118,7 +118,7 @@ export function NetworksAndSignersProvider(
 ): JSX.Element {
   const { selectedL2ChainId } = props
   const { provider, account, network, connect } = useWallet()
-
+  const history = useHistory()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
@@ -156,18 +156,38 @@ export function NetworksAndSignersProvider(
     async (web3Provider: Web3Provider, address: string) => {
       const providerChainId = (await web3Provider.getNetwork()).chainId
 
-      let _selectedL2ChainId = selectedL2ChainId
-      if (_selectedL2ChainId === undefined) {
-        // If l2ChainId is undefined, use a default L2 based on the connected provider chainid
-        _selectedL2ChainId = chainIdToDefaultL2ChainId[providerChainId]
-        if (_selectedL2ChainId === undefined) {
-          console.error(`Unknown provider chainId: ${providerChainId}`)
-          setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
-          return
-        }
+      // If provider is not supported, display warning message
+      if (!(providerChainId in chainIdToDefaultL2ChainId)) {
+        console.error(`Provider chainId not supported: ${providerChainId}`)
+        setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
       }
 
-      getL1Network(web3Provider, _selectedL2ChainId!)
+      /***
+       * Case 1: selectedChainId is undefined => set it to provider's default L2
+       * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
+       * Case 3: selectedChainId is defined and supported, continue
+       */
+      let _selectedL2ChainId = selectedL2ChainId
+      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]
+
+      // Case 1: use a default L2 based on the connected provider chainid
+      _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
+      if (_selectedL2ChainId === undefined) {
+        console.error(`Unknown provider chainId: ${providerChainId}`)
+        setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+        return
+      }
+
+      // Case 2: L2 is not supported by provider
+      if (!providerSupportedL2.includes(_selectedL2ChainId)) {
+        history.replace({
+          pathname: '/'
+        })
+        return
+      }
+
+      // Case 3
+      getL1Network(web3Provider, _selectedL2ChainId)
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
           const l2Provider = new JsonRpcProvider(rpcURLs[_selectedL2ChainId!])
@@ -232,7 +252,7 @@ export function NetworksAndSignersProvider(
             })
         })
     },
-    [latestResult, selectedL2ChainId]
+    [latestResult, selectedL2ChainId, history]
   )
 
   useEffect(() => {
