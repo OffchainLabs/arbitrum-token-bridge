@@ -1,36 +1,47 @@
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber } from 'ethers'
+import { formatBigNumber } from '../../../src/util/NumberUtils'
+
+async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
+  const goerliProvider = new JsonRpcProvider(rpcURL)
+  return await goerliProvider.getBalance(Cypress.env('ADDRESS'))
+}
+
+const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env('INFURA_KEY')}`
+const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
+
 /**
  * When user wants to bridge ETH from L1 to L2
  */
 describe('Deposit ETH', () => {
   // Happy Path
   context('user has some ETH and is on L1', () => {
+    let l1ETHbal
+    let l2ETHbal
+
     before(() => {
+      getInitialETHBalance(goerliRPC).then(
+        val => (l1ETHbal = formatBigNumber(val, 18, 5))
+      )
+      getInitialETHBalance(arbitrumGoerliRPC).then(
+        val => (l2ETHbal = formatBigNumber(val, 18, 5))
+      )
       cy.disconnectMetamaskWalletFromAllDapps()
       cy.login()
     })
 
     it('should show l2 chain id on url query param', () => {
       // hardcoded to 421613 because e2e test is run on goerli
-      // TODO => add more tests for other chain ids
-      cy.wait(1000).url().should('contain', '?l2ChainId=421613')
+      // TODO => add more tests for other chain ids?
+      cy.url().should('contain', '?l2ChainId=421613')
     })
 
-    // TODO => use fixture for ETH balance value
     it('should show L1 ETH balance correctly', () => {
-      cy.findByRole('button', { name: /From: Goerli/i })
-        .parent()
-        .siblings()
-        .last()
-        .contains(/(Balance: )(\d*)(\.\d+)*( ETH)/)
+      cy.findByText(`Balance: ${l1ETHbal} ETH`).should('be.visible')
     })
 
-    // TODO => use fixture for ETH balance value
     it('should show L2 ETH balance correctly', () => {
-      cy.findByRole('button', { name: /To: Arbitrum Goerli/i })
-        .parent()
-        .siblings()
-        .last()
-        .contains(/(Balance: )(\d*)(\.\d+)*( ETH)/)
+      cy.findByText(`Balance: ${l2ETHbal} ETH`).should('be.visible')
     })
 
     it('should show empty bridging summary', () => {
@@ -39,8 +50,12 @@ describe('Deposit ETH', () => {
 
     context("bridge amount is lower than user's L1 ETH balance value", () => {
       it('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount').type('0.01')
-        cy.findByText('You’re moving').siblings().last().contains('0.01 ETH')
+        cy.findByPlaceholderText('Enter amount').type('0.0001')
+        cy.wait(3000)
+          .findByText('You’re moving')
+          .siblings()
+          .last()
+          .contains('0.0001 ETH')
         cy.findByText('You’ll pay in gas fees')
           .siblings()
           .last()
@@ -58,12 +73,10 @@ describe('Deposit ETH', () => {
       })
 
       it('should deposit successfully', () => {
-        cy.findByPlaceholderText('Enter amount').type('0.01')
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Goerli'
         }).click()
-        // TODO => remove undefined. it has to be added now because of synpress' type file
-        cy.confirmMetamaskTransaction(undefined).then(confirmed => {
+        cy.confirmMetamaskTransaction().then(confirmed => {
           expect(confirmed).to.be.true
         })
       })

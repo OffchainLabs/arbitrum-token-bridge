@@ -20,8 +20,11 @@ export default defineConfig({
   pageLoadTimeout: 30000,
   requestTimeout: 30000,
   e2e: {
+    // @ts-ignore
     setupNodeEvents(on, config) {
-      synpressPlugins(on, config)
+      config.env.ADDRESS = process.env.ADDRESS
+      config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+      return synpressPlugins(on, config)
     },
     baseUrl: 'http://localhost:3000',
     specPattern: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}',
