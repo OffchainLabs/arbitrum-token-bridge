@@ -52,6 +52,10 @@ export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x07d4692291b9e30e326fd31706f686f83f331b82'
 }
 
+export const l2LptGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
+}
+
 // Default L2 Chain to use for a certain chainId
 export const chainIdToDefaultL2ChainId: { [chainId: number]: number } = {
   [ChainId.Mainnet]: ChainId.ArbitrumOne,
