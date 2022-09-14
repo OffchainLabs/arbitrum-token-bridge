@@ -4,17 +4,17 @@
 
 1. `git clone https://github.com/OffchainLabs/arb-token-bridge`
 
-1. `cd ./arb-token-bridge && yarn install`
+2. `cd ./arb-token-bridge && yarn install`
 
-1. `cd ./packages/use-wallet && yarn build`
+3. `cd ./packages/use-wallet && yarn build`
 
-1. Set env vars:
+4. Set env vars:
 
    1. `touch ./packages/arb-token-bridge-ui/.env`
 
-   1. In `.env`, add `REACT_APP_INFURA_KEY=my-infura-key`
+   2. In `.env`, add `REACT_APP_INFURA_KEY=my-infura-key`
 
-   1. For custom urls, set optional vars:
+   3. For custom urls, set optional vars:
 
    - `REACT_APP_ETHEREUM_RPC_URL=my-eth-node`
    - `REACT_APP_RINKEBY_RPC_URL=my-rinkeby-node`
@@ -26,17 +26,31 @@
 
 1. (back in root dir:) `yarn start_sdk`
 
-1. Open new terminal tab
+2. Open new terminal tab
 
-1. `yarn start_ui`
+3. `yarn start_ui`
 
-1. Visit `http://localhost:3000/`
+4. Visit `http://localhost:3000/`
 
 #### Local Production Build
 
 1. install `serve`: `npm install -g serve`
-1. (back in root dir:) `yarn build`
-1. `yarn serve`
+2. (back in root dir:) `yarn build`
+3. `yarn serve`
+
+#### Run End-to-End Tests
+
+1. Run the token bridge UI locally
+
+2. Set env vars:
+
+   1. At this repository's root, `touch ./packages/arb-token-bridge-ui/.e2e.env`
+
+   2. In `.e2e-env`, add `SECRET_WORDS="your, seed, phrase, for, your, e2e, test, metamask, extension"`
+
+3. `cd ./packages/arb-token-bridge-ui/ && yarn e2e:run`
+
+Read more about the setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
 
 ### Deposit Lifecycle
 
