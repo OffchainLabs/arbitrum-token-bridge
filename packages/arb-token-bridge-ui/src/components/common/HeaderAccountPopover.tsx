@@ -4,6 +4,7 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
 import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { Resolution } from '@unstoppabledomains/resolution';
 import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
@@ -21,9 +22,13 @@ import {
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import { ChainId } from 'src/util/networks'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
+
+type UDInfo = { name: string | null }
+const udInfoDefaults: UDInfo = { name: null }
 
 function getTransactionsDataStatus(
   pwLoadedState: PendingWithdrawalsLoadedState
@@ -53,6 +58,15 @@ function CustomBoringAvatar({ size, name }: { size: number; name?: string }) {
 
 function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
+}
+
+async function tryLookupUD(address: string) {
+  const UDresolution = Resolution.fromEthersProvider({});
+  try {
+    return await UDresolution.reverse(address)
+  } catch (error) {
+    return null
+  }
 }
 
 async function tryLookupAddress(
@@ -87,16 +101,19 @@ export function HeaderAccountPopover() {
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
+  const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
 
   useEffect(() => {
     async function resolveENSInfo() {
       if (account && l1.signer) {
-        const [name, avatar] = await Promise.all([
+        const [ensName, avatar] = await Promise.all([
           tryLookupAddress(l1.signer.provider, account),
           tryGetAvatar(l1.signer.provider, account)
         ])
+        setENSInfo({ name: ensName, avatar })
 
-        setENSInfo({ name, avatar })
+        const udName = await tryLookupUD(account);
+        setUDInfo({ name: udName })
       }
     }
 
@@ -159,7 +176,7 @@ export function HeaderAccountPopover() {
               fallback={<CustomBoringAvatar size={32} name={account} />}
             />
             <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-              {ensInfo.name || accountShort}
+              {ensInfo.name || udInfo.name || accountShort}
             </span>
           </div>
         </div>
@@ -175,7 +192,7 @@ export function HeaderAccountPopover() {
               </Transition>
               <button
                 className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
-                onClick={() => copy(ensInfo.name || account || '')}
+                onClick={() => copy(ensInfo.name || udInfo.name || account || '')}
               >
                 <SafeImage
                   src={ensInfo.avatar || undefined}
@@ -184,7 +201,7 @@ export function HeaderAccountPopover() {
                 />
                 <div className="flex flex-row items-center space-x-3">
                   <span className="text-2xl font-normal text-white">
-                    {ensInfo.name || accountShort}
+                    {ensInfo.name || udInfo.name || accountShort}
                   </span>
                   <CustomClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
