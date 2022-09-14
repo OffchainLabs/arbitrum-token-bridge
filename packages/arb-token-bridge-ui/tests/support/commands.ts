@@ -29,6 +29,7 @@ export function login() {
   cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
   cy.findByText('Connect to your MetaMask Wallet').click()
+  // TODO => remove undefined. it has to be added now because of synpress' type file
   cy.acceptMetamaskAccess(undefined).then(connected => {
     expect(connected).to.be.true
     cy.switchToCypressWindow().should('be.true')
