@@ -6,7 +6,7 @@ import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { DepositCardContainer, DepositL1TxStatus } from './DepositCard'
 import { Tooltip } from '../common/Tooltip'
 import { Button } from '../common/Button'
-import { getRetryableTicketExpirationDate } from 'src/util/RetryableUtils'
+import { getRetryableTicketExpiration } from 'src/util/RetryableUtils'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
@@ -32,12 +32,11 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
 
   useEffect(() => {
     ;(async () => {
-      const { daysTillExpiry, isValid } =
-        await getRetryableTicketExpirationDate({
-          l1TxHash: tx.txId,
-          l1Provider: l1Signer.provider,
-          l2Provider: l2Signer.provider
-        })
+      const { daysTillExpiry, isValid } = await getRetryableTicketExpiration({
+        l1TxHash: tx.txId,
+        l1Provider: l1Signer.provider,
+        l2Provider: l2Signer.provider
+      })
 
       setRetryableExpiryDays({
         days: daysTillExpiry,

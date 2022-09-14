@@ -48,7 +48,7 @@ export async function getRetryableTicket({
   return retryableTicket
 }
 
-export const getRetryableTicketExpirationDate = async ({
+export const getRetryableTicketExpiration = async ({
   l1TxHash,
   l1Provider,
   l2Provider
