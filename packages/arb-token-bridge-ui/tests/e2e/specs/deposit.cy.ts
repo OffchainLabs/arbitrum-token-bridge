@@ -30,10 +30,11 @@ describe('Deposit ETH', () => {
       cy.login()
     })
 
-    it('should show l2 chain id on url query param', () => {
-      // hardcoded to 421613 because e2e test is run on goerli
-      // TODO => add more tests for other chain ids?
-      cy.url().should('contain', '?l2ChainId=421613')
+    it('should show L1 and L2 chains correctly', () => {
+      cy.findByRole('button', { name: /From: Goerli/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
+        'be.visible'
+      )
     })
 
     it('should show L1 ETH balance correctly', () => {
@@ -49,35 +50,51 @@ describe('Deposit ETH', () => {
     })
 
     context("bridge amount is lower than user's L1 ETH balance value", () => {
+      const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount').type('0.0001')
+        // wait for summary to load, takes a few secs
+        // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
         cy.wait(3000)
           .findByText('You’re moving')
           .siblings()
           .last()
           .contains('0.0001 ETH')
+          .should('be.true')
         cy.findByText('You’ll pay in gas fees')
           .siblings()
           .last()
-          .contains(/0\.\d+( ETH)/)
+          .contains(zeroToLessThanOneETH)
+          .should('be.true')
         cy.findByText('L1 gas')
           .parent()
           .siblings()
           .last()
-          .contains(/0\.\d+( ETH)/)
-        cy.findByText('L2 gas').parent().siblings().last().contains('0 ETH')
+          .contains(zeroToLessThanOneETH)
+          .should('be.true')
+        cy.findByText('L2 gas')
+          .parent()
+          .siblings()
+          .last()
+          .contains(zeroToLessThanOneETH)
+          .should('be.true')
         cy.findByText('Total amount')
           .siblings()
           .last()
           .contains(/(\d*)(\.\d+)*( ETH)/)
+          .should('be.true')
       })
 
       it('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Goerli'
         }).click()
-        cy.confirmMetamaskTransaction().then(confirmed => {
-          expect(confirmed).to.be.true
+        cy.confirmMetamaskTransaction().then(() => {
+          // wait for transaction confirmation check to update UI
+          // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
+          cy.wait(30000)
+            .findByText('Moving 0.0001 ETH to Arbitrum Goerli...')
+            .should('be.visible')
         })
       })
     })
