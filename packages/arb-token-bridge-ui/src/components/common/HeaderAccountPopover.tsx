@@ -22,7 +22,6 @@ import {
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
-import { ChainId } from 'src/util/networks'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -60,7 +59,7 @@ function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
-async function tryLookupUD(address: string) {
+async function tryLookupUDName(address: string) {
   const UDresolution = Resolution.fromEthersProvider({});
   try {
     return await UDresolution.reverse(address)
@@ -104,20 +103,19 @@ export function HeaderAccountPopover() {
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
 
   useEffect(() => {
-    async function resolveENSInfo() {
+    async function resolveNameServiceInfo() {
       if (account && l1.signer) {
-        const [ensName, avatar] = await Promise.all([
+        const [ensName, avatar, udName] = await Promise.all([
           tryLookupAddress(l1.signer.provider, account),
-          tryGetAvatar(l1.signer.provider, account)
+          tryGetAvatar(l1.signer.provider, account),
+          tryLookupUDName(account)
         ])
         setENSInfo({ name: ensName, avatar })
-
-        const udName = await tryLookupUD(account);
         setUDInfo({ name: udName })
       }
     }
 
-    resolveENSInfo()
+    resolveNameServiceInfo()
   }, [account, l1.signer])
 
   const [deposits, withdrawals] = useMemo(() => {
@@ -176,7 +174,7 @@ export function HeaderAccountPopover() {
               fallback={<CustomBoringAvatar size={32} name={account} />}
             />
             <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-              {ensInfo.name || udInfo.name || accountShort}
+              {ensInfo.name ?? udInfo.name ?? accountShort}
             </span>
           </div>
         </div>
@@ -192,7 +190,7 @@ export function HeaderAccountPopover() {
               </Transition>
               <button
                 className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
-                onClick={() => copy(ensInfo.name || udInfo.name || account || '')}
+                onClick={() => copy(ensInfo.name ?? udInfo.name ?? account ?? '')}
               >
                 <SafeImage
                   src={ensInfo.avatar || undefined}
@@ -201,7 +199,7 @@ export function HeaderAccountPopover() {
                 />
                 <div className="flex flex-row items-center space-x-3">
                   <span className="text-2xl font-normal text-white">
-                    {ensInfo.name || udInfo.name || accountShort}
+                    {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
                   <CustomClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
