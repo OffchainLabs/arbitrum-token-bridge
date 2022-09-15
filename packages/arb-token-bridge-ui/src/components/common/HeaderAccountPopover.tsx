@@ -61,9 +61,9 @@ function isDeposit(tx: MergedTransaction) {
 
 async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
   const UDresolution = Resolution.fromEthersProvider({uns: {
+    // TODO => remove Layer2 config when UD lib supports our use case
     // Layer2 (polygon) is required in the object type but we only want to use Layer1
     // This is a hack to only support Ethereum Mainnet UD names
-    // TODO => remove Layer2 config when UD lib supports our use case
     // https://github.com/unstoppabledomains/resolution/issues/229
     locations: {
       Layer1: {
@@ -83,7 +83,7 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
   }
 }
 
-async function tryLookupAddress(
+async function tryLookupENSName(
   provider: JsonRpcProvider,
   address: string
 ): Promise<string | null> {
@@ -94,7 +94,7 @@ async function tryLookupAddress(
   }
 }
 
-async function tryGetAvatar(
+async function tryLookupENSAvatar(
   provider: JsonRpcProvider,
   address: string
 ): Promise<string | null> {
@@ -121,8 +121,8 @@ export function HeaderAccountPopover() {
     async function resolveNameServiceInfo() {
       if (account && l1.signer) {
         const [ensName, avatar, udName] = await Promise.all([
-          tryLookupAddress(l1.signer.provider, account),
-          tryGetAvatar(l1.signer.provider, account),
+          tryLookupENSName(l1.signer.provider, account),
+          tryLookupENSAvatar(l1.signer.provider, account),
           tryLookupUDName(l1.signer.provider, account)
         ])
         setENSInfo({ name: ensName, avatar })
