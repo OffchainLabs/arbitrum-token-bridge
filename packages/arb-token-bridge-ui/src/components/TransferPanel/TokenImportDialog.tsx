@@ -1,16 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { ERC20BridgeToken, toERC20BridgeToken } from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
 
 import { useActions, useAppState } from '../../state'
-import {
-  useTokensFromLists,
-  useTokensFromUser,
-  toERC20BridgeToken
-} from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
@@ -51,10 +46,9 @@ export function TokenImportDialog({
   } = useNetworksAndSigners()
   const actions = useActions()
 
-  const tokensFromUser = useTokensFromUser()
+  const { tokensFromLists, tokensFromUser } = token
   const latestTokensFromUser = useLatest(tokensFromUser)
 
-  const tokensFromLists = useTokensFromLists()
   const latestTokensFromLists = useLatest(tokensFromLists)
 
   const latestBridgeTokens = useLatest(bridgeTokens)

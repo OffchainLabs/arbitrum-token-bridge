@@ -10,7 +10,9 @@ export type {
   ContractStorage,
   NodeBlockDeadlineStatus,
   L1TokenData,
-  L2TokenData
+  L2TokenData,
+  SearchableToken,
+  BridgeTokenList
 } from './hooks/arbTokenBridge.types'
 export {
   TokenType,
@@ -35,3 +37,11 @@ export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 
 export { validateTokenList } from './util/index'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
+export {
+  addBridgeTokenListToBridge,
+  fetchTokenListFromURL,
+  fetchTokenLists,
+  toERC20BridgeToken,
+  listIdsToNames,
+  BRIDGE_TOKEN_LISTS
+} from './util/token'
