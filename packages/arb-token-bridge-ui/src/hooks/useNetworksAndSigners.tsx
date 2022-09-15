@@ -52,8 +52,16 @@ export type UseNetworksAndSignersLoadingOrErrorResult = {
 
 export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
-  l1: { network: L1Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
-  l2: { network: L2Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
+  l1: {
+    network: L1Network
+    provider: JsonRpcProvider
+    signer: Omit<JsonRpcSigner, 'provider'>
+  }
+  l2: {
+    network: L2Network
+    provider: JsonRpcProvider
+    signer: Omit<JsonRpcSigner, 'provider'>
+  }
   isConnectedToArbitrum: boolean
 }
 
