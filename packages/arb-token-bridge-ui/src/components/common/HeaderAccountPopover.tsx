@@ -59,8 +59,23 @@ function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
-async function tryLookupUDName(address: string) {
-  const UDresolution = Resolution.fromEthersProvider({});
+async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
+  const UDresolution = Resolution.fromEthersProvider({uns: {
+    // Layer2 (polygon) is required in the object type but we only want to use Layer1
+    // This is a hack to only support Ethereum Mainnet UD names
+    // TODO => remove Layer2 config when UD lib supports our use case
+    // https://github.com/unstoppabledomains/resolution/issues/229
+    locations: {
+      Layer1: {
+        network: 'mainnet',
+        provider
+      },
+      Layer2: {
+        network: 'mainnet',
+        provider
+      }
+    }
+  }});
   try {
     return await UDresolution.reverse(address)
   } catch (error) {
@@ -108,7 +123,7 @@ export function HeaderAccountPopover() {
         const [ensName, avatar, udName] = await Promise.all([
           tryLookupAddress(l1.signer.provider, account),
           tryGetAvatar(l1.signer.provider, account),
-          tryLookupUDName(account)
+          tryLookupUDName(l1.signer.provider, account)
         ])
         setENSInfo({ name: ensName, avatar })
         setUDInfo({ name: udName })
