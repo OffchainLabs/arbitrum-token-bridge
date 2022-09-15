@@ -88,10 +88,12 @@ export function registerLocalNetwork() {
 
     rpcURLs[customL1Network.chainID] = customL1Network.rpcURL
     rpcURLs[customL2Network.chainID] = customL2Network.rpcURL
-    chainIdToDefaultL2ChainId[customL1Network.chainID][0] =
+    chainIdToDefaultL2ChainId[customL1Network.chainID] = [
       customL2Network.chainID
-    chainIdToDefaultL2ChainId[customL2Network.chainID][0] =
+    ]
+    chainIdToDefaultL2ChainId[customL2Network.chainID] = [
       customL2Network.chainID
+    ]
 
     addCustomNetwork({ customL1Network, customL2Network })
   } catch (error: any) {
