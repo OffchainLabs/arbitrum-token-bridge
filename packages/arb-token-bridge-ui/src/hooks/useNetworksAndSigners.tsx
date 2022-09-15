@@ -160,6 +160,7 @@ export function NetworksAndSignersProvider(
       if (!(providerChainId in chainIdToDefaultL2ChainId)) {
         console.error(`Provider chainId not supported: ${providerChainId}`)
         setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+        return
       }
 
       /***
@@ -172,7 +173,7 @@ export function NetworksAndSignersProvider(
 
       // Case 1: use a default L2 based on the connected provider chainid
       _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
-      if (_selectedL2ChainId === undefined) {
+      if (typeof _selectedL2ChainId === 'undefined') {
         console.error(`Unknown provider chainId: ${providerChainId}`)
         setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
         return
