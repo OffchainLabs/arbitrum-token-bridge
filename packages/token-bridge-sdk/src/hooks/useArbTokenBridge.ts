@@ -48,7 +48,8 @@ import {
   NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle
+  L2ContractCallTransactionLifecycle,
+  SearchableToken
 } from './arbTokenBridge.types'
 
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -60,7 +61,10 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getTokenLists, tokenListsToSearchableTokenStorage } from '../util/token'
+import {
+  getTokenLists,
+  tokenListsToSearchableTokenStorage
+} from '../util/token'
 
 const { Zero } = constants
 
@@ -224,6 +228,42 @@ export const useArbTokenBridge = (
     () => new DepositWithdrawEstimator(l2.network),
     [l2.network]
   )
+
+  const tokensFromLists: SearchableTokenStorage = useMemo(() => {
+    const l1Network = l1.network
+    const l2Network = l2.network
+
+    const tokenLists = getTokenLists(String(l2Network.chainID))
+
+    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
+      return {}
+    }
+
+    return tokenListsToSearchableTokenStorage(
+      tokenLists,
+      String(l1Network.chainID),
+      String(l2Network.chainID)
+    )
+  }, [l1.network, l2.network])
+
+  const tokensFromUser: SearchableTokenStorage = useMemo(() => {
+    const storage: SearchableTokenStorage = {}
+
+    // Can happen when switching networks.
+    if (typeof bridgeTokens === 'undefined') {
+      return {}
+    }
+
+    Object.keys(bridgeTokens).forEach((_address: string) => {
+      const bridgeToken = bridgeTokens[_address]
+
+      // Any tokens in the bridge that don't have a list id were added by the user.
+      if (bridgeToken && !bridgeToken.listID) {
+        storage[_address] = { ...bridgeToken, tokenLists: [] }
+      }
+    })
+    return storage
+  }, [bridgeTokens])
 
   /**
    * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
@@ -526,7 +566,9 @@ export const useArbTokenBridge = (
       erc20L1Address
     })
 
-    const tokenData = await getL1TokenData(erc20L1Address)
+    const tokenData =
+      searchTokenFromList(erc20L1Address) ||
+      (await getL1TokenData(erc20L1Address))
 
     addTransaction({
       type: 'approve',
@@ -566,7 +608,9 @@ export const useArbTokenBridge = (
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
     const contract = await ERC20__factory.connect(l2Address, l2.signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const tokenData = await getL1TokenData(erc20L1Address)
+    const tokenData =
+      searchTokenFromList(erc20L1Address) ||
+      (await getL1TokenData(erc20L1Address))
 
     addTransaction({
       type: 'approve-l2',
@@ -591,7 +635,9 @@ export const useArbTokenBridge = (
     amount: BigNumber,
     txLifecycle?: L1ContractCallTransactionLifecycle
   ) {
-    const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+    const { symbol, decimals } =
+      searchTokenFromList(erc20L1Address) ||
+      (await getL1TokenData(erc20L1Address))
 
     const tx = await erc20Bridger.deposit({
       l1Signer: l1.signer,
@@ -669,7 +715,9 @@ export const useArbTokenBridge = (
         const { symbol, decimals } = bridgeToken
         return { symbol, decimals }
       }
-      const { symbol, decimals } = await getL1TokenData(erc20l1Address)
+      const { symbol, decimals } =
+        searchTokenFromList(erc20l1Address) ||
+        (await getL1TokenData(erc20l1Address))
       addToken(erc20l1Address)
       return { symbol, decimals }
     })()
@@ -1068,7 +1116,9 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.signer.provider)
 
-    const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
+    const { symbol, decimals } =
+      searchTokenFromList(tokenAddress as string) ||
+      (await getL1TokenData(tokenAddress as string))
 
     addTransaction({
       status: 'pending',
@@ -1161,7 +1211,9 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { symbol } = await getL1TokenData(l1Address, false)
+      const { symbol } =
+        searchTokenFromList(l1Address) ||
+        (await getL1TokenData(l1Address, false))
       addressToSymbol[l1Address] = symbol
       return symbol
     } catch (err) {
@@ -1178,7 +1230,9 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { decimals } = await getL1TokenData(l1Address, false)
+      const { decimals } =
+        searchTokenFromList(l1Address) ||
+        (await getL1TokenData(l1Address, false))
       addressToDecimals[l1Address] = decimals
       return decimals
     } catch (err) {
@@ -1445,41 +1499,18 @@ export const useArbTokenBridge = (
     setExecutedMessagesCache({ ...executedMessagesCache, [cacheKey]: true })
   }
 
-  const tokensFromLists: SearchableTokenStorage = useMemo(() => {
-    const l1Network = l1.network
-    const l2Network = l2.network
-
-    const tokenLists = getTokenLists(String(l2Network.chainID))
-
-    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
-      return {}
-    }
-
-    return tokenListsToSearchableTokenStorage(
-      tokenLists,
-      String(l1Network.chainID),
-      String(l2Network.chainID)
-    )
-  }, [l1.network, l2.network])
-
-  const tokensFromUser: SearchableTokenStorage = useMemo(() => {
-    const storage: SearchableTokenStorage = {}
-
-    // Can happen when switching networks.
-    if (typeof bridgeTokens === 'undefined') {
-      return {}
-    }
-
-    Object.keys(bridgeTokens).forEach((_address: string) => {
-      const bridgeToken = bridgeTokens[_address]
-
-      // Any tokens in the bridge that don't have a list id were added by the user.
-      if (bridgeToken && !bridgeToken.listID) {
-        storage[_address] = { ...bridgeToken, tokenLists: [] }
-      }
-    })
-    return storage
-  }, [bridgeTokens])
+  /*
+    function to search for a token within the union of token lists (pre-configured + user added)
+    Objective : if basic data like { symbol, name, decimals } is reqd, then why query the chain for the token data already fetched.
+  */
+  const searchTokenFromList = useCallback(
+    (tokenAddress: string): SearchableToken | null => {
+      if (!tokenAddress) return null
+      const tokens = { ...tokensFromLists, ...tokensFromUser }
+      return tokens[tokenAddress] || null
+    },
+    [tokensFromLists, tokensFromUser]
+  )
 
   return {
     walletAddress,
@@ -1508,6 +1539,7 @@ export const useArbTokenBridge = (
       add: addToken,
       addTokensFromList,
       removeTokensFromList,
+      searchTokenFromList,
       updateTokenData,
       approve: approveToken,
       approveEstimateGas: approveTokenEstimateGas,
