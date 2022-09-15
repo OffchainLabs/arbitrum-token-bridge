@@ -33,6 +33,7 @@ import {
   AssetType,
   BridgeBalance,
   BridgeToken,
+  SearchableTokenStorage,
   ContractStorage,
   ERC20BridgeToken,
   ERC721Balance,
@@ -59,6 +60,7 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { getTokenLists, tokenListsToSearchableTokenStorage } from '../util/token'
 
 const { Zero } = constants
 
@@ -1443,6 +1445,42 @@ export const useArbTokenBridge = (
     setExecutedMessagesCache({ ...executedMessagesCache, [cacheKey]: true })
   }
 
+  const tokensFromLists: SearchableTokenStorage = useMemo(() => {
+    const l1Network = l1.network
+    const l2Network = l2.network
+
+    const tokenLists = getTokenLists(String(l2Network.chainID))
+
+    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
+      return {}
+    }
+
+    return tokenListsToSearchableTokenStorage(
+      tokenLists,
+      String(l1Network.chainID),
+      String(l2Network.chainID)
+    )
+  }, [l1.network, l2.network])
+
+  const tokensFromUser: SearchableTokenStorage = useMemo(() => {
+    const storage: SearchableTokenStorage = {}
+
+    // Can happen when switching networks.
+    if (typeof bridgeTokens === 'undefined') {
+      return {}
+    }
+
+    Object.keys(bridgeTokens).forEach((_address: string) => {
+      const bridgeToken = bridgeTokens[_address]
+
+      // Any tokens in the bridge that don't have a list id were added by the user.
+      if (bridgeToken && !bridgeToken.listID) {
+        storage[_address] = { ...bridgeToken, tokenLists: [] }
+      }
+    })
+    return storage
+  }, [bridgeTokens])
+
   return {
     walletAddress,
     bridgeTokens: bridgeTokens,
@@ -1465,6 +1503,8 @@ export const useArbTokenBridge = (
       updateBalances: updateEthBalances
     },
     token: {
+      tokensFromLists,
+      tokensFromUser,
       add: addToken,
       addTokensFromList,
       removeTokensFromList,

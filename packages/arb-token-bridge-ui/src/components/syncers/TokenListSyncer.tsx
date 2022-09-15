@@ -5,7 +5,7 @@ import {
   BRIDGE_TOKEN_LISTS,
   addBridgeTokenListToBridge,
   fetchTokenLists
-} from '../../tokenLists'
+} from 'token-bridge-sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 // Adds whitelisted tokens to the bridge data on app load

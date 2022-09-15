@@ -6,22 +6,18 @@ import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 
 import { useActions, useAppState } from '../../state'
-import {
-  BRIDGE_TOKEN_LISTS,
-  BridgeTokenList,
-  listIdsToNames,
-  addBridgeTokenListToBridge
-} from '../../tokenLists'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { sanitizeImageSrc } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
   SearchableToken,
-  useTokensFromLists,
-  useTokensFromUser,
-  toERC20BridgeToken
-} from './TokenSearchUtils'
+  toERC20BridgeToken,
+  addBridgeTokenListToBridge,
+  BRIDGE_TOKEN_LISTS,
+  BridgeTokenList,
+  listIdsToNames
+} from 'token-bridge-sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 enum Panel {
@@ -324,8 +320,7 @@ function TokensPanel({
 
   const isLarge = useMedia('(min-width: 1024px)')
 
-  const tokensFromUser = useTokensFromUser()
-  const tokensFromLists = useTokensFromLists()
+  const { tokensFromLists, tokensFromUser } = token
 
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')

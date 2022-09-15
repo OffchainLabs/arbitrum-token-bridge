@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react'
 import axios from 'axios'
+import {
+  ArbTokenBridge,
+  BridgeTokenList,
+  ERC20BridgeToken,
+  L1TokenData,
+  SearchableTokenStorage,
+  TokenListWithId,
+  TokenType
+} from '../hooks/arbTokenBridge.types'
+import { validateTokenList } from './index'
 import { TokenList } from '@uniswap/token-lists'
-import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
 
-export interface BridgeTokenList {
-  id: number
-  originChainID: string
-  url: string
-  name: string
-  isDefault: boolean
-  logoURI: string
-}
+const STORAGE_KEY = 'arbitrum:bridge:token-lists'
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
@@ -82,13 +83,6 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
   listIdsToNames[bridgeTokenList.id] = bridgeTokenList.name
 })
 
-export interface TokenListWithId extends TokenList {
-  l2ChainId: string
-  bridgeTokenListId: number
-}
-
-const STORAGE_KEY = 'arbitrum:bridge:token-lists'
-
 export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
@@ -159,18 +153,6 @@ export function fetchTokenLists(): Promise<void> {
   })
 }
 
-export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const [tokenLists, setTokenLists] = useState<TokenListWithId[]>(() =>
-    getTokenLists(forL2ChainId)
-  )
-
-  useEffect(() => {
-    setTokenLists(getTokenLists(forL2ChainId))
-  }, [forL2ChainId])
-
-  return tokenLists
-}
-
 export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
   const storage = sessionStorage.getItem(STORAGE_KEY)
 
@@ -185,4 +167,102 @@ export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
   }
 
   return parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
+}
+
+export function tokenListsToSearchableTokenStorage(
+  tokenLists: TokenListWithId[],
+  l1ChainId: string,
+  l2ChainId: string
+): SearchableTokenStorage {
+  return (
+    tokenLists
+      //
+      .reduce((acc: SearchableTokenStorage, tokenList: TokenListWithId) => {
+        tokenList.tokens.forEach(token => {
+          const address = token.address.toLowerCase()
+          const stringifiedChainId = String(token.chainId)
+
+          if (stringifiedChainId === l1ChainId) {
+            // The address is from an L1 token
+
+            if (typeof acc[address] === 'undefined') {
+              // First time encountering the token through its L1 address
+              acc[address] = {
+                ...token,
+                type: TokenType.ERC20,
+                l2Address: undefined,
+                tokenLists: []
+              }
+            } else {
+              // Token was already added to the map through its L2 token
+              acc[address] = { ...acc[address], address }
+            }
+
+            const tokenLists = acc[address].tokenLists
+
+            if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
+              acc[address].tokenLists.push(tokenList.bridgeTokenListId)
+            }
+          } else if (stringifiedChainId === l2ChainId) {
+            // The token is an L2 token
+
+            if (!token.extensions?.bridgeInfo) {
+              return
+            }
+
+            // @ts-ignore
+            //
+            // TODO: should we upgrade '@uniswap/token-lists'?
+            const bridgeInfo: {
+              [chainId: string]: { tokenAddress: string }
+            } = token.extensions.bridgeInfo
+
+            if (bridgeInfo[l1ChainId]) {
+              const addressOnL1 =
+                bridgeInfo[l1ChainId].tokenAddress.toLowerCase()
+
+              if (!addressOnL1) {
+                return
+              }
+
+              if (typeof acc[addressOnL1] === 'undefined') {
+                // Token is not on the list yet
+
+                acc[addressOnL1] = {
+                  name: token.name,
+                  symbol: token.symbol,
+                  type: TokenType.ERC20,
+                  logoURI: token.logoURI,
+                  address: addressOnL1,
+                  l2Address: address,
+                  decimals: token.decimals,
+                  tokenLists: []
+                }
+              } else {
+                // The token's L1 address is already on the list, just fill in its L2 address
+                acc[addressOnL1].l2Address = address
+              }
+
+              const tokenLists = acc[addressOnL1].tokenLists
+
+              if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
+                acc[addressOnL1].tokenLists.push(tokenList.bridgeTokenListId)
+              }
+            }
+          }
+        })
+
+        return acc
+      }, {})
+  )
+}
+
+export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.contract.address,
+    decimals: data.decimals
+  }
 }
