@@ -32,18 +32,17 @@ const useL2Approve = () => {
   } = useAppState()
   const {
     l1: { network: l1Network },
-    l2: { signer: l2Signer }
+    l2: { provider: l2Provider }
   } = useNetworksAndSigners()
 
   const [doneAddingTokens, setDoneAddingTokens] = useState(false)
 
   const addTokens = useCallback(async () => {
-    if (!l2Signer || !l2Signer.provider) return
     try {
       for (let i = 0; i < L2ApproveTokens.length; i += 1) {
         const { l1Address, l2Address } = L2ApproveTokens[i]
         if (!l2Address) continue
-        const token = ERC20__factory.connect(l2Address, l2Signer.provider)
+        const token = ERC20__factory.connect(l2Address, l2Provider)
         const l2Bal = await token.balanceOf(arbTokenBridge.walletAddress)
         if (!l2Bal.eq(constants.Zero)) {
           // add it if user has an L2 balance

@@ -407,7 +407,10 @@ export function TransferPanel() {
               return
             }
 
-            await latestToken.current.approve(selectedToken.address)
+            await latestToken.current.approve({
+              erc20L1Address: selectedToken.address,
+              l1Signer: latestNetworksAndSigners.current.l1.signer
+            })
           }
 
           if (isNonCanonicalToken) {
@@ -419,23 +422,32 @@ export function TransferPanel() {
             }
           }
 
-          await latestToken.current.deposit(selectedToken.address, amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestToken.current.deposit({
+            erc20L1Address: selectedToken.address,
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
-          await latestEth.current.deposit(amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestEth.current.deposit({
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         }
@@ -474,40 +486,49 @@ export function TransferPanel() {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          if (
-            shouldRequireApprove &&
-            selectedToken.l2Address &&
-            l2Signer?.provider
-          ) {
+
+          if (shouldRequireApprove && selectedToken.l2Address) {
             const allowed = await isAllowedL2(
               arbTokenBridge,
               selectedToken.address,
               selectedToken.l2Address,
               walletAddress,
               amountRaw,
-              l2Signer.provider
+              latestNetworksAndSigners.current.l2.provider
             )
             if (!allowed) {
-              await latestToken.current.approveL2(selectedToken.address)
+              await latestToken.current.approveL2({
+                erc20L1Address: selectedToken.address
+              })
             }
           }
 
-          await latestToken.current.withdraw(selectedToken.address, amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestToken.current.withdraw({
+            erc20L1Address: selectedToken.address,
+            amount: amountRaw,
+            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          await latestEth.current.withdraw(amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+
+          await latestEth.current.withdraw({
+            amount: amountRaw,
+            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         }
