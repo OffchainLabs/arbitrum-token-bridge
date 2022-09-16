@@ -19,6 +19,7 @@ import React, {
 import {
   JsonRpcSigner,
   JsonRpcProvider,
+  StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
@@ -199,12 +200,16 @@ export function NetworksAndSignersProvider(
       getL1Network(web3Provider, _selectedL2ChainId)
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const l2Provider = new JsonRpcProvider(rpcURLs[_selectedL2ChainId!])
+          const l2Provider = new StaticJsonRpcProvider(
+            rpcURLs[_selectedL2ChainId!]
+          )
           const l2Network = await getL2Network(l2Provider)
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-          const l1Provider = new JsonRpcProvider(rpcURLs[l1Network.chainID!])
+          const l1Provider = new StaticJsonRpcProvider(
+            rpcURLs[l1Network.chainID!]
+          )
 
           setResult({
             status: UseNetworksAndSignersStatus.CONNECTED,
@@ -231,13 +236,15 @@ export function NetworksAndSignersProvider(
           getL2Network(web3Provider)
             .then(async l2Network => {
               const l1NetworkChainId = l2Network.partnerChainID
-              const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
+              const l1Provider = new StaticJsonRpcProvider(
+                rpcURLs[l1NetworkChainId]
+              )
               const l1Network = await getL1Network(
                 l1Provider,
                 _selectedL2ChainId!
               )
 
-              const l2Provider = new JsonRpcProvider(
+              const l2Provider = new StaticJsonRpcProvider(
                 rpcURLs[l2Network.chainID!]
               )
 
