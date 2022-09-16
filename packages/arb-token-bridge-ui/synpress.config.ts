@@ -4,13 +4,16 @@ import synpressPlugins from '@synthetixio/synpress/plugins'
 export default defineConfig({
   userAgent: 'synpress',
   retries: {
-    runMode: process.env.CI ? 1 : 0,
+    // Configure retry attempts for `cypress run`
+    // Default is 0
+    runMode: 0,
     openMode: 0
   },
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: true,
+  video: false,
   chromeWebSecurity: true,
+  modifyObstructiveCode: false,
   viewportWidth: 1366,
   viewportHeight: 850,
   env: {

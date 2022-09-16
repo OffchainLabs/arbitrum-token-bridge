@@ -52,37 +52,39 @@ describe('Deposit ETH', () => {
     context("bridge amount is lower than user's L1 ETH balance value", () => {
       const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
       it('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount').type('0.0001')
-        // wait for summary to load, takes a few secs
-        // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
-        cy.wait(3000)
-          .findByText('You’re moving')
-          .siblings()
-          .last()
-          .contains('0.0001 ETH')
-          .should('be.true')
-        cy.findByText('You’ll pay in gas fees')
-          .siblings()
-          .last()
-          .contains(zeroToLessThanOneETH)
-          .should('be.true')
-        cy.findByText('L1 gas')
-          .parent()
-          .siblings()
-          .last()
-          .contains(zeroToLessThanOneETH)
-          .should('be.true')
-        cy.findByText('L2 gas')
-          .parent()
-          .siblings()
-          .last()
-          .contains(zeroToLessThanOneETH)
-          .should('be.true')
-        cy.findByText('Total amount')
-          .siblings()
-          .last()
-          .contains(/(\d*)(\.\d+)*( ETH)/)
-          .should('be.true')
+        cy.findByPlaceholderText('Enter amount')
+          .type('0.0001')
+          .then(() => {
+            // wait for summary to load, takes a few secs
+            // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
+            cy.findByText('You’re moving')
+              .siblings()
+              .last()
+              .contains('0.0001 ETH')
+              .should('be.visible')
+            cy.findByText('You’ll pay in gas fees')
+              .siblings()
+              .last()
+              .contains(zeroToLessThanOneETH)
+              .should('be.visible')
+            cy.findByText('L1 gas')
+              .parent()
+              .siblings()
+              .last()
+              .contains(zeroToLessThanOneETH)
+              .should('be.visible')
+            cy.findByText('L2 gas')
+              .parent()
+              .siblings()
+              .last()
+              .contains(zeroToLessThanOneETH)
+              .should('be.visible')
+            cy.findByText('Total amount')
+              .siblings()
+              .last()
+              .contains(/(\d*)(\.\d+)*( ETH)/)
+              .should('be.visible')
+          })
       })
 
       it('should deposit successfully', () => {
@@ -92,9 +94,9 @@ describe('Deposit ETH', () => {
         cy.confirmMetamaskTransaction().then(() => {
           // wait for transaction confirmation check to update UI
           // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
-          cy.wait(30000)
-            .findByText('Moving 0.0001 ETH to Arbitrum Goerli...')
-            .should('be.visible')
+          cy.findByText('Moving 0.0001 ETH to Arbitrum Goerli...').should(
+            'be.visible'
+          )
         })
       })
     })
