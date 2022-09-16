@@ -9,7 +9,10 @@ export type UseGasPriceResult = {
 }
 
 export function useGasPrice(): UseGasPriceResult {
-  const { l1, l2 } = useNetworksAndSigners()
+  const {
+    l1: { provider: l1Provider },
+    l2: { provider: l2Provider }
+  } = useNetworksAndSigners()
 
   const [result, setResult] = useState<UseGasPriceResult>({
     l1GasPrice: BigNumber.from(0),
@@ -18,23 +21,16 @@ export function useGasPrice(): UseGasPriceResult {
 
   useEffect(() => {
     async function fetchGasPrice() {
-      const l1Signer = l1.signer
-      const l2Signer = l2.signer
-
-      if (typeof l1Signer === 'undefined' || typeof l2Signer === 'undefined') {
-        return
-      }
-
       const [l1GasPrice, l2GasPrice] = await Promise.all([
-        l1Signer.provider.getGasPrice(),
-        l2Signer.provider.getGasPrice()
+        l1Provider.getGasPrice(),
+        l2Provider.getGasPrice()
       ])
 
       setResult({ l1GasPrice, l2GasPrice })
     }
 
     fetchGasPrice()
-  }, [l1.signer, l2.signer])
+  }, [l1Provider, l2Provider])
 
   return result
 }
