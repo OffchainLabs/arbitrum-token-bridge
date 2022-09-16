@@ -15,7 +15,7 @@
     "axios": "^0.21.4",
     "boring-avatars": "^1.7.0",
     "dayjs": "^1.10.6",
-    "framer-motion": "4.1.17",
+    "framer-motion": "^4.1.17",
     "lodash-es": "^4.17.21",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
