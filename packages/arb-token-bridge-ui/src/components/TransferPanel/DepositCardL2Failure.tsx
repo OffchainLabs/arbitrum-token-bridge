@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+/*
+  + We show this card when the L1 txn is completed, but L2 txn fails for some reason.
+  + In that case, we give user an option to raise a Retryable ticket request (basically, retry that transaction)
+  + This action is only limited to ~7 day window from the time of failure of the transaction.
+    + The text for how many days remain is updated dynamically in the card using `retryableExpiryDays` state.
+  + When the ~7 day window expires, we don't show this card, and move the transaction to `EXPIRED` state.
+*/
+
+import { useEffect, useMemo, useState, useCallback } from 'react'
 
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -6,18 +14,18 @@ import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { DepositCardContainer, DepositL1TxStatus } from './DepositCard'
 import { Tooltip } from '../common/Tooltip'
 import { Button } from '../common/Button'
-import { getRetryableTicketExpiration } from 'src/util/RetryableUtils'
+import { getRetryableTicketExpiration } from '../../util/RetryableUtils'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
-    isValid: boolean // false, if the days are still loading, or ticket is expired
+    isValid: boolean // false, if the days are still loading, or ticket is expired or there was error in loading
     days: number
   }>({ isValid: false, days: 0 })
 
   const {
     isConnectedToArbitrum,
-    l1: { signer: l1Signer },
-    l2: { signer: l2Signer }
+    l1: { provider: l1Provider },
+    l2: { provider: l2Provider }
   } = useNetworksAndSigners()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
@@ -30,20 +38,37 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
     [isConnectedToArbitrum]
   )
 
-  useEffect(() => {
-    ;(async () => {
-      const { daysTillExpiry, isValid } = await getRetryableTicketExpiration({
-        l1TxHash: tx.txId,
-        l1Provider: l1Signer.provider,
-        l2Provider: l2Signer.provider
-      })
+  const updateRetryableTicketExpirationDate =
+    useCallback(async (): Promise<void> => {
+      const { daysUntilExpired, isLoading, isLoadingError, isExpired } =
+        await getRetryableTicketExpiration({
+          l1TxHash: tx.txId,
+          l1Provider,
+          l2Provider
+        })
 
+      // update the state to show/hide text and the card
       setRetryableExpiryDays({
-        days: daysTillExpiry,
-        isValid
+        days: daysUntilExpired,
+        isValid: isLoading || isLoadingError || isExpired
       })
-    })()
-  }, [l1Signer.provider, l2Signer.provider, tx.txId])
+    }, [tx.txId, l1Provider, l2Provider])
+
+  useEffect(() => {
+    updateRetryableTicketExpirationDate()
+  }, [updateRetryableTicketExpirationDate])
+
+  const retryableExpiryDaysText = useMemo((): string => {
+    const remainingDays = retryableExpiryDays.days
+    if (remainingDays < 1) {
+      return 'less than a day'
+    } else if (remainingDays > 1) {
+      return `${remainingDays} days`
+    } else {
+      // case : remainingDays === 1
+      return `${remainingDays} day`
+    }
+  }, [retryableExpiryDays.days])
 
   return (
     <>
@@ -57,13 +82,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
           <div className="h-1" />
 
           <span className="text-2xl font-normal text-orange-dark">
-            No worries, we can try again. You have{' '}
-            {retryableExpiryDays.days > 0
-              ? retryableExpiryDays.days > 1
-                ? `${retryableExpiryDays.days} days`
-                : `${retryableExpiryDays.days} day`
-              : 'less than a day'}{' '}
-            to re-execute.
+            {`No worries, we can try again. You have ${retryableExpiryDaysText} to re-execute.`}
           </span>
 
           <div className="h-1" />

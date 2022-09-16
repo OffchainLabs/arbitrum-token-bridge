@@ -18,9 +18,11 @@ type GetRetryableTicketExpirationParams = {
 }
 
 type RetryableTicketExpirationResponse = {
-  date: number
-  daysTillExpiry: number
-  isValid: boolean
+  isLoading: boolean
+  isLoadingError: boolean
+  expirationDate: number
+  daysUntilExpired: number
+  isExpired: boolean
 }
 
 export async function getRetryableTicket({
@@ -53,9 +55,12 @@ export const getRetryableTicketExpiration = async ({
   l1Provider,
   l2Provider
 }: GetRetryableTicketExpirationParams): Promise<RetryableTicketExpirationResponse> => {
-  let daysTillExpiry: number = 0
-  let isValid = false // daysTillExpiry still loading...
-  let expiryTimestamp = 0
+  let isLoading = true,
+    isLoadingError = false,
+    isExpired = false
+
+  let daysUntilExpired = 0,
+    expirationDate = 0
 
   try {
     const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
@@ -63,21 +68,27 @@ export const getRetryableTicketExpiration = async ({
     const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
 
     const now = dayjs()
-    const expiryDate = await l1ToL2Msg.getTimeout()
 
-    const expiryTimestamp = +expiryDate.toString() * 1000
+    const expiryDateResponse = await l1ToL2Msg.getTimeout()
+    const expirationDate = Number(expiryDateResponse.toString()) * 1000
 
-    daysTillExpiry = dayjs(expiryTimestamp).diff(now, 'days')
+    daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 
-    // show days till expiry only if retryable is not expired
-    if (daysTillExpiry >= 0) isValid = true
+    if (daysUntilExpired >= 0) isExpired = false
   } catch {
-    isValid = false
+    isLoadingError = true
   }
 
+  isLoading = false
+
   return {
-    date: expiryTimestamp,
-    daysTillExpiry,
-    isValid
+    // promise loading state
+    isLoading,
+    isLoadingError,
+
+    // expiration state
+    expirationDate,
+    daysUntilExpired,
+    isExpired
   }
 }
