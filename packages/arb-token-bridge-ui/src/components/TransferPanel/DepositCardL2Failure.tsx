@@ -50,7 +50,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
       // update the state to show/hide text and the card
       setRetryableExpiryDays({
         days: daysUntilExpired,
-        isValid: isLoading || isLoadingError || isExpired
+        isValid: !(isLoading || isLoadingError || isExpired)
       })
     }, [tx.txId, l1Provider, l2Provider])
 
