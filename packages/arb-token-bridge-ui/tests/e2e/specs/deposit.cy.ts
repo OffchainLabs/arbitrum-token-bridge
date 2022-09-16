@@ -53,10 +53,15 @@ describe('Deposit ETH', () => {
       const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
-          .type('0.0001')
+          // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
+          // cypress by default tries to scroll the element into view even when it is already in view
+          // for unknown reasons, probably due to our root div's overflow:hidden CSS property,
+          // cypress would wrongly scroll the div and bring the element to the top of the view
+          // and in turn include the full moon into the view, cropping the header out of visible area
+          // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
+          // because the element is already in view and does not require scrolling
+          .type('0.0001', { scrollBehavior: false })
           .then(() => {
-            // wait for summary to load, takes a few secs
-            // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
             cy.findByText('You’re moving')
               .siblings()
               .last()
@@ -90,10 +95,16 @@ describe('Deposit ETH', () => {
       it('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Goerli'
-        }).click()
+        }).click({ scrollBehavior: false })
+        // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
+        // cypress by default tries to scroll the element into view even when it is already in view
+        // for unknown reasons, probably due to our root div's overflow:hidden CSS property,
+        // cypress would wrongly scroll the div and bring the element to the top of the view
+        // and in turn include the full moon into the view, cropping the header out of visible area
+        // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
+        // because the element is already in view and does not require scrolling
+
         cy.confirmMetamaskTransaction().then(() => {
-          // wait for transaction confirmation check to update UI
-          // eslint-disable-next-line cypress/no-unnecessary-waiting, ui-testing/no-hard-wait
           cy.findByText('Moving 0.0001 ETH to Arbitrum Goerli...').should(
             'be.visible'
           )
