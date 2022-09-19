@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
+import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -12,6 +13,9 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
+  const { l1 } = useNetworksAndSigners()
+  const { signer: l1Signer } = l1
+
   const [isClaiming, setIsClaiming] = useState(false)
 
   async function claim(tx: MergedTransaction) {
@@ -29,9 +33,15 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
 
     try {
       if (tx.asset === 'eth') {
-        res = await arbTokenBridge.eth.triggerOutbox(tx.uniqueId.toString())
+        res = await arbTokenBridge.eth.triggerOutbox({
+          id: tx.uniqueId.toString(),
+          l1Signer
+        })
       } else {
-        res = await arbTokenBridge.token.triggerOutbox(tx.uniqueId.toString())
+        res = await arbTokenBridge.token.triggerOutbox({
+          id: tx.uniqueId.toString(),
+          l1Signer
+        })
       }
     } catch (error: any) {
       err = error

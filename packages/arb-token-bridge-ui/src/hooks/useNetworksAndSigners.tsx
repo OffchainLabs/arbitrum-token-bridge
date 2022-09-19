@@ -1,7 +1,7 @@
 /*
 
-Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI. 
-These can be used to answer and access the following use-cases across the app - 
+Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI.
+These can be used to answer and access the following use-cases across the app -
 
 1. Is the network connected? If yes, is it Arbitrum (L2) or Ethereum (L1)?
 2. Signer exposed by the wallet to sign and execute RPC transactions
@@ -19,6 +19,7 @@ import React, {
 import {
   JsonRpcSigner,
   JsonRpcProvider,
+  StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
@@ -46,14 +47,22 @@ const defaultStatus =
     ? UseNetworksAndSignersStatus.NOT_CONNECTED
     : UseNetworksAndSignersStatus.LOADING
 
-type UseNetworksAndSignersLoadingOrErrorResult = {
+export type UseNetworksAndSignersLoadingOrErrorResult = {
   status: UseNetworksAndSignersLoadingOrErrorStatus
 }
 
-type UseNetworksAndSignersConnectedResult = {
+export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
-  l1: { network: L1Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
-  l2: { network: L2Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
+  l1: {
+    network: L1Network
+    provider: JsonRpcProvider
+    signer: Omit<JsonRpcSigner, 'provider'>
+  }
+  l2: {
+    network: L2Network
+    provider: JsonRpcProvider
+    signer: Omit<JsonRpcSigner, 'provider'>
+  }
   isConnectedToArbitrum: boolean
 }
 
@@ -191,12 +200,16 @@ export function NetworksAndSignersProvider(
       getL1Network(web3Provider, _selectedL2ChainId)
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const l2Provider = new JsonRpcProvider(rpcURLs[_selectedL2ChainId!])
+          const l2Provider = new StaticJsonRpcProvider(
+            rpcURLs[_selectedL2ChainId!]
+          )
           const l2Network = await getL2Network(l2Provider)
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-          const l1Provider = new JsonRpcProvider(rpcURLs[l1Network.chainID!])
+          const l1Provider = new StaticJsonRpcProvider(
+            rpcURLs[l1Network.chainID!]
+          )
 
           setResult({
             status: UseNetworksAndSignersStatus.CONNECTED,
@@ -223,13 +236,15 @@ export function NetworksAndSignersProvider(
           getL2Network(web3Provider)
             .then(async l2Network => {
               const l1NetworkChainId = l2Network.partnerChainID
-              const l1Provider = new JsonRpcProvider(rpcURLs[l1NetworkChainId])
+              const l1Provider = new StaticJsonRpcProvider(
+                rpcURLs[l1NetworkChainId]
+              )
               const l1Network = await getL1Network(
                 l1Provider,
                 _selectedL2ChainId!
               )
 
-              const l2Provider = new JsonRpcProvider(
+              const l2Provider = new StaticJsonRpcProvider(
                 rpcURLs[l2Network.chainID!]
               )
 
