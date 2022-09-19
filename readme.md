@@ -56,6 +56,8 @@ Read more about the setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.
 
 We use a couple of tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
 
+- [Yarn](https://classic.yarnpkg.com) - Package manager
+  - Find Yarn install guide for your system [here](https://classic.yarnpkg.com/en/docs/install)
 - [Prettier](https://prettier.io) - Automatic code formatting
   - Find Prettier integration for your code editor [here](https://prettier.io/docs/en/editors.html)
 - [EditorConfig](https://editorconfig.org) - Automatic file formatting
