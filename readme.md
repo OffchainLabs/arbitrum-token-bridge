@@ -52,6 +52,17 @@
 
 Read more about the setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
 
+### Development Tools
+
+We use a couple of tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
+
+- [Prettier](https://prettier.io) - Automatic code formatting
+  - Find Prettier integration for your code editor [here](https://prettier.io/docs/en/editors.html)
+- [EditorConfig](https://editorconfig.org) - Automatic file formatting
+  - Find EditorConfig integration for your code editor [here](https://editorconfig.org/#download)
+- [ESLint](https://eslint.org) - Static analysis for JavaScript
+  - Find ESLint integration for your code editor [here](https://eslint.org/docs/latest/user-guide/integrations#editors)
+
 ### Deposit Lifecycle
 
 A Deposit is tracked via a single `Transaction` entry (in the `useTransactions` hook) which represents its initiated L1 transaction; its L2 status is tracked via the `L1ToL2MessageData` field.
