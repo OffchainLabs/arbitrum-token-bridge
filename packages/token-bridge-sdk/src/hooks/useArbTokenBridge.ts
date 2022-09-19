@@ -25,6 +25,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { getL2Network as getClassicL2Network } from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
 
+import { useBalanceContext } from '../context/balanceContext'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   AddressToSymbol,
@@ -35,7 +36,6 @@ import {
   BridgeToken,
   ContractStorage,
   ERC20BridgeToken,
-  ERC721Balance,
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
   TokenType,
@@ -108,29 +108,11 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams,
   autoLoadCache = true
 ): ArbTokenBridge => {
+  const [balanceState, setEthBalances, setErc20Balances] = useBalanceContext()
   const { walletAddress, l1, l2 } = params
-
-  const defaultBalance = {
-    balance: null,
-    arbChainBalance: null
-  }
-
-  const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
 
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken>
-  >({})
-
-  const balanceIsEmpty = (balance: BridgeBalance) =>
-    balance['balance'] === defaultBalance['balance'] &&
-    balance['arbChainBalance'] === defaultBalance['arbChainBalance']
-
-  const [erc20Balances, setErc20Balances] = useState<
-    ContractStorage<BridgeBalance>
-  >({})
-
-  const [erc721Balances, setErc721Balances] = useState<
-    ContractStorage<ERC721Balance>
   >({})
 
   const defaultTokenList: string[] = []
@@ -144,27 +126,21 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
-  const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
-    string[]
-  >('ERC721Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+  const [ERC721Cache, , clearERC721Cache] = useLocalStorage<string[]>(
+    'ERC721Cache',
+    []
+  ) as [string[], React.Dispatch<string[]>, React.Dispatch<void>]
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
 
-  const [
-    executedMessagesCache,
-    setExecutedMessagesCache,
-    clearExecutedMessagesCache
-  ] = useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
-    ExecutedMessagesCache,
-    React.Dispatch<ExecutedMessagesCache>,
-    React.Dispatch<void>
-  ]
+  const [executedMessagesCache, setExecutedMessagesCache] =
+    useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
+      ExecutedMessagesCache,
+      React.Dispatch<ExecutedMessagesCache>,
+      React.Dispatch<void>
+    ]
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
@@ -178,8 +154,6 @@ export const useArbTokenBridge = (
       setTransactionConfirmed,
       setTransactionSuccess,
       updateTransaction,
-      removeTransaction,
-      addFailedTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
@@ -948,14 +922,11 @@ export const useArbTokenBridge = (
     setBridgeTokens(oldBridgeTokens => {
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
-    setErc20Balances(oldBridgeBalances => {
-      const newBal = {
-        [l1Address]: {
-          balance: l1TokenBalance,
-          arbChainBalance: l2TokenBalance
-        }
+    setErc20Balances({
+      [l1Address]: {
+        balance: l1TokenBalance,
+        arbChainBalance: l2TokenBalance
       }
-      return { ...oldBridgeBalances, ...newBal }
     })
     return l1Address
   }
@@ -1008,10 +979,9 @@ export const useArbTokenBridge = (
         arbChainBalance: l2Data?.balance || Zero
       }
 
-      setErc20Balances(oldErc20Balances => ({
-        ...oldErc20Balances,
+      setErc20Balances({
         [l1Address]: erc20TokenBalance
-      }))
+      })
       const newBridgeTokens = { [l1Address]: bridgeToken }
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
@@ -1055,28 +1025,24 @@ export const useArbTokenBridge = (
       return { ...acc, [tokenAddr]: balance }
     }, {})
 
-    setErc20Balances(oldERC20Balances => {
-      const newERC20Balances: ContractStorage<BridgeBalance> =
-        l1Balances.reduce(
-          (acc, { tokenAddr: l1TokenAddress, balance: l1Balance }) => {
-            const l2Address = (bridgeTokens[l1TokenAddress] as ERC20BridgeToken)
-              .l2Address
+    const newERC20Balances: ContractStorage<BridgeBalance> = l1Balances.reduce(
+      (acc, { tokenAddr: l1TokenAddress, balance: l1Balance }) => {
+        const l2Address = (bridgeTokens[l1TokenAddress] as ERC20BridgeToken)
+          .l2Address
 
-            return {
-              ...acc,
-              [l1TokenAddress]: {
-                balance: l1Balance,
-                arbChainBalance: l2Address
-                  ? l2AddressToBalanceMap[l2Address]
-                  : undefined
-              }
-            }
-          },
-          {}
-        )
-
-      return { ...oldERC20Balances, ...newERC20Balances }
-    })
+        return {
+          ...acc,
+          [l1TokenAddress]: {
+            balance: l1Balance,
+            arbChainBalance: l2Address
+              ? l2AddressToBalanceMap[l2Address]
+              : undefined
+          }
+        }
+      },
+      {}
+    )
+    setErc20Balances(newERC20Balances)
   }
 
   async function triggerOutboxToken({
@@ -1486,11 +1452,7 @@ export const useArbTokenBridge = (
   return {
     walletAddress,
     bridgeTokens: bridgeTokens,
-    balances: {
-      eth: ethBalances,
-      erc20: erc20Balances,
-      erc721: erc721Balances
-    },
+    balances: balanceState,
     cache: {
       erc20: ERC20Cache,
       erc721: ERC721Cache,

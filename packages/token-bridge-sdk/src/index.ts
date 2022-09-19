@@ -35,3 +35,5 @@ export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 
 export { validateTokenList } from './util/index'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
+
+export { BalanceProvider, useBalanceContext } from './context/balanceContext'
