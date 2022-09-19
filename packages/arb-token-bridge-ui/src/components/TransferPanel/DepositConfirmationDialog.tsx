@@ -47,7 +47,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
     tokenAddress && bridgeInfo && bridgeInfo.tokenSymbolOnArbitrum
 
   const fastBridges = [
-    ...getFastBridges(from.chainID, to.chainID, tokenSymbol)
+    ...getFastBridges(from.chainID, to.chainID, tokenSymbol, '0')
   ].filter(bridge => {
     return (
       tokenSymbol &&

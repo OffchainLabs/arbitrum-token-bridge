@@ -30,7 +30,8 @@ export type FastBridgeInfo = {
 export function getFastBridges(
   from: ChainId,
   to: ChainId,
-  tokenSymbol: string = 'ETH'
+  tokenSymbol: string = 'ETH',
+  amount?: string
 ): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
@@ -54,9 +55,9 @@ export function getFastBridges(
       case FastBridgeNames.Connext:
         return `https://bridge.connext.network/${tokenSymbol}-from-${chainIdToSlug(
           from
-        )}-to-${chainIdToSlug(to)}`
+        )}-to-${chainIdToSlug(to)}?amount=${amount}`
       case FastBridgeNames.Across:
-        return `https://across.to/?from=${from}&to=${to}`
+        return `https://across.to/?from=${from}&to=${to}&asset=${tokenSymbol}&amount=${amount}`
       case FastBridgeNames.Stargate:
         return `https://stargate.finance/transfer?srcChain=${chainIdToSlug(
           from
