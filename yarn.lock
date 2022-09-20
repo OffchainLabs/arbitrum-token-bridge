@@ -2872,7 +2872,7 @@
     penpal "3.0.7"
     pocket-js-core "0.0.3"
 
-"@rehooks/local-storage@^2.3.0":
+"@rehooks/local-storage@2.4.0", "@rehooks/local-storage@^2.3.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.0.tgz#fb884b2b657cad5f77aa6ab60bb3532f0e0725d2"
   integrity sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg==
@@ -3194,10 +3194,10 @@
     synthetix "2.41.0"
     web3-utils "1.2.11"
 
-"@synthetixio/synpress@^2.3.2":
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/@synthetixio/synpress/-/synpress-2.3.2.tgz#b26af3935d57494b75985c383130131af8b6a3b2"
-  integrity sha512-FvObKt1zzlNchX5rat5Vxxa/bm601UjXQpDDGfDSsVXtE8c3e4dhBmFvWn6KSd574CG88SfIRSuJmX5V7kkqyw==
+"@synthetixio/synpress@^2.3.3-beta.0":
+  version "2.3.3-beta.0"
+  resolved "https://registry.yarnpkg.com/@synthetixio/synpress/-/synpress-2.3.3-beta.0.tgz#7218f28631df1142c5eb50937db3aeed1fc5ba93"
+  integrity sha512-UqcP+2mOdHgiTmvzLa8AFqrJvMRAqaxjHkOQ38lggdO0iunfyvNe2XQOoGvRslqSvb3pTJ2fW/lZ225H5r6h7w==
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/react" "^6.2.0"
