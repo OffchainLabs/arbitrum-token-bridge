@@ -14,7 +14,7 @@ import {
 } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
-import { TokenBridgeParams } from 'token-bridge-sdk'
+import { TokenBridgeParams, BalanceContextProvider } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
@@ -363,7 +363,9 @@ function Routes() {
         <Route path="/" exact>
           <NetworkReady>
             <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
+              <BalanceContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </BalanceContextProvider>
             </AppContextProvider>
           </NetworkReady>
         </Route>

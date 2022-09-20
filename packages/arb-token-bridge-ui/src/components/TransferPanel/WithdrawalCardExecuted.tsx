@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
+import { BigNumber } from 'ethers'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -30,7 +31,8 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     }
 
     if (tx.asset === 'eth') {
-      return arbTokenBridge.balances.eth.balance
+      // return arbTokenBridge.balances.eth.balance
+      return BigNumber.from(5)
     }
 
     if (!tx.tokenAddress) {

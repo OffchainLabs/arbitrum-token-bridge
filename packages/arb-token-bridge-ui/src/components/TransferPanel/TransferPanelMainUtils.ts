@@ -4,6 +4,7 @@ import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useBalance } from 'token-bridge-sdk'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,
@@ -29,22 +30,6 @@ export function calculateEstimatedL2GasFees(
 export type Balances = {
   ethereum: BigNumber | null
   arbitrum: BigNumber | null
-}
-
-export function useETHBalances(): Balances {
-  const { app } = useAppState()
-  const { arbTokenBridge } = app
-
-  return useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
-      return { ethereum: null, arbitrum: null }
-    }
-
-    return {
-      ethereum: arbTokenBridge.balances.eth.balance,
-      arbitrum: arbTokenBridge.balances.eth.arbChainBalance
-    }
-  }, [arbTokenBridge])
 }
 
 export function useTokenBalances(erc20L1Address?: string): Balances {
