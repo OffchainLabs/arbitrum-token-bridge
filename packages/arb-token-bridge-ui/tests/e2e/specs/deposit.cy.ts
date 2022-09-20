@@ -93,6 +93,12 @@ describe('Deposit ETH', () => {
       })
 
       it('should deposit successfully', () => {
+        // if deposit cards show up, they should be dismissed, otherwise the explicit "not scrolling"
+        // behaviour would make it impossible for cypress to find the button
+        cy.findAllByText('Dismiss').each(el => {
+          cy.wrap(el).click({ scrollBehavior: false })
+        })
+
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Goerli'
         }).click({ scrollBehavior: false })
