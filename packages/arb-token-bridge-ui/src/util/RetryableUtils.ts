@@ -1,12 +1,28 @@
 import { L1TransactionReceipt, IL1ToL2MessageWriter } from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
+import dayjs from 'dayjs'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 type GetRetryableTicketParams = {
   l1TxHash: string
   retryableCreationId?: string
   l1Provider: Provider
   l2Signer: Signer
+}
+
+type GetRetryableTicketExpirationParams = {
+  l1TxHash: string
+  l1Provider: JsonRpcProvider
+  l2Provider: JsonRpcProvider
+}
+
+type RetryableTicketExpirationResponse = {
+  isLoading: boolean
+  isLoadingError: boolean
+  expirationDate: number
+  daysUntilExpired: number
+  isExpired: boolean
 }
 
 export async function getRetryableTicket({
@@ -32,4 +48,47 @@ export async function getRetryableTicket({
   }
 
   return retryableTicket
+}
+
+export const getRetryableTicketExpiration = async ({
+  l1TxHash,
+  l1Provider,
+  l2Provider
+}: GetRetryableTicketExpirationParams): Promise<RetryableTicketExpirationResponse> => {
+  let isLoading = true,
+    isLoadingError = false,
+    isExpired = false
+
+  let daysUntilExpired = 0,
+    expirationDate = 0
+
+  try {
+    const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
+    const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+    const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
+
+    const now = dayjs()
+
+    const expiryDateResponse = await l1ToL2Msg.getTimeout()
+    const expirationDate = Number(expiryDateResponse.toString()) * 1000
+
+    daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
+
+    if (daysUntilExpired >= 0) isExpired = false
+  } catch {
+    isLoadingError = true
+  }
+
+  isLoading = false
+
+  return {
+    // promise loading state
+    isLoading,
+    isLoadingError,
+
+    // expiration state
+    expirationDate,
+    daysUntilExpired,
+    isExpired
+  }
 }
