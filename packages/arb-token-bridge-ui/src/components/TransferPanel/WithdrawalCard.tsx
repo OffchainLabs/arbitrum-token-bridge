@@ -118,7 +118,7 @@ export function WithdrawalCardContainer({
   }
 
   return (
-    <div className={`w-full p-6 lg:rounded-xl ${bgClassName}`}>
+    <div className={`w-full p-6 pb-12 sm:pb-6 lg:rounded-xl ${bgClassName}`}>
       {dismissable && (
         <button
           className="arb-hover absolute top-4 right-4 text-lime-dark underline"
