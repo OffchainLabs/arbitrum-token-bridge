@@ -16,6 +16,10 @@ import {
   L2ToL1MessageReader,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
+import {
+  EthDepositParams,
+  L1ToL2TxReqAndSigner
+} from '@arbitrum/sdk/dist/lib/assetBridger/ethBridger'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import {
   DepositWithdrawEstimator,
@@ -59,6 +63,7 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 const { Zero } = constants
 
@@ -343,23 +348,29 @@ export const useArbTokenBridge = (
     return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider)
   }
 
+  // TODO: From my understanding user can provide params or txRequest to deposit.
+  // Should we make a TS rule to require at least one of them?
   const depositEth = async ({
-    amount,
-    l1Signer,
+    params,
+    l1ToL2TxReq,
     txLifecycle
   }: {
-    amount: BigNumber
-    l1Signer: Signer
+    params?: EthDepositParams
+    l1ToL2TxReq?: L1ToL2TxReqAndSigner
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => {
     let tx: L1EthDepositTransaction
 
     try {
-      tx = await ethBridger.deposit({
-        amount,
-        l1Signer,
-        l2Provider: l2.provider
-      })
+      if (!params && !l1ToL2TxReq) {
+        throw new Error('No call data provided.')
+      }
+
+      const txParams = (params || l1ToL2TxReq) as
+        | EthDepositParams
+        | L1ToL2TxReqAndSigner
+
+      tx = await ethBridger.deposit(txParams)
 
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
@@ -367,6 +378,11 @@ export const useArbTokenBridge = (
     } catch (error: any) {
       return alert(error.message)
     }
+
+    // TODO: l1ToL2TxReq.txRequest.value returns BigNumberish.
+    // Possible solution: export toBigNumber from bignumber.ts in SDK and parse it here.
+    // TODO: Remove hack 'as BigNumber'
+    const amount = params?.amount || (l1ToL2TxReq?.txRequest.value as BigNumber)
 
     addTransaction({
       type: 'deposit-l1',
@@ -381,12 +397,22 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
+    // TODO: Returns array. Currently we have a single item returned.
+    // What are the differences between the old and new implementations?
+    const { messageNum } = receipt.getInboxMessageDeliveredEvents()[0]
 
     if (txLifecycle?.onTxConfirm) {
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.provider)
+    const ethDepositMessage = new EthDepositMessage(
+      l2.provider,
+      l2.network.chainID,
+      messageNum,
+      receipt.from,
+      receipt.to,
+      amount
+    )
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -420,18 +446,24 @@ export const useArbTokenBridge = (
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
+  // TODO: add RequestObject as a possible parameter?
+  // Or is RequestObject the same as current parameters and user will populate them as usual?
+  // Context from v3 docs: New getDepositRequest and getWithdrawalRequest get transaction request objects that can be sent later.
   async function withdrawEth({
     amount,
     l2Signer,
+    destinationAddress,
     txLifecycle
   }: {
     amount: BigNumber
     l2Signer: Signer
+    destinationAddress: string
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) {
     const tx = await ethBridger.withdraw({
       amount,
-      l2Signer
+      l2Signer,
+      destinationAddress
     })
 
     if (txLifecycle?.onTxSubmit) {
@@ -635,12 +667,15 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.provider)
+    // TODO: This has been changed to getL1ToL2Messages and returns an array.
+    // Should l1ToL2MsgData return a mapped result?
+    const l1ToL2Msg = await receipt.getL1ToL2Messages(l2.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+      // TODO: removed hardcoded 0 index
+      retryableCreationTxID: l1ToL2Msg[0].retryableCreationId,
       l2TxID: undefined
     }
 
@@ -701,6 +736,9 @@ export const useArbTokenBridge = (
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
+      // TODO: Isn't L1 address the same as destination address? Both params are required.
+      // What's the difference between the two?
+      destinationAddress: erc20L1Address,
       amount
     })
 
@@ -1094,11 +1132,9 @@ export const useArbTokenBridge = (
 
     const { tokenAddress, value } = event
 
-    const messageWriter = L2ToL1Message.fromEvent(
-      l1Signer,
-      event,
-      await getOutboxAddress(event)
-    )
+    // TODO: is getOutboxAddress a callback here?
+    // It's not working with v3. Safe to remove?
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
 
     const res = await messageWriter.execute(l2.provider)
 
@@ -1152,11 +1188,7 @@ export const useArbTokenBridge = (
 
     const { value } = event
 
-    const messageWriter = L2ToL1Message.fromEvent(
-      l1Signer,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
 
     const res = await messageWriter.execute(l2.provider)
 
@@ -1297,11 +1329,7 @@ export const useArbTokenBridge = (
       return event
     }
 
-    const messageReader = L2ToL1MessageReader.fromEvent(
-      l1.provider,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageReader = L2ToL1MessageReader.fromEvent(l1.provider, event)
 
     try {
       const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
@@ -1403,6 +1431,8 @@ export const useArbTokenBridge = (
         ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
           mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
         ),
+        // TODO: Why do we need an array of arguments and an object with the same values as the mentioned array?
+        // inside mapTokenWithdrawalFromEventLogsToL2ToL1EventResult param (withdrawal param)
         ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
           mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
         )
@@ -1426,6 +1456,7 @@ export const useArbTokenBridge = (
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
+  // TODO: Where used in v3?
   async function getOutboxAddress(event: L2ToL1EventResult) {
     if (isClassicEvent(event)) {
       const batchNumber = (event as any).batchNumber as BigNumber
@@ -1442,11 +1473,7 @@ export const useArbTokenBridge = (
       return OutgoingMessageState.EXECUTED
     }
 
-    const messageReader = new L2ToL1MessageReader(
-      l1.provider,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageReader = new L2ToL1MessageReader(l1.provider, event)
 
     try {
       const status = await messageReader.status(l2.provider)

@@ -10,6 +10,10 @@ import {
   EthDepositMessage,
   IL1ToL2MessageReader
 } from '@arbitrum/sdk/dist/lib/utils/migration_types'
+import {
+  EthDepositParams,
+  L1ToL2TxReqAndSigner
+} from '@arbitrum/sdk/dist/lib/assetBridger/ethBridger'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
@@ -179,11 +183,16 @@ export type DepositGasEstimates = GasEstimates & {
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: (params: {
-    amount: BigNumber
-    l1Signer: Signer
+  deposit: ({
+    params,
+    l1Tol2TxReq,
+    txLifecycle
+  }: {
+    params: EthDepositParams
+    l1Tol2TxReq: L1ToL2TxReqAndSigner
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => Promise<void | ContractReceipt>
+  // TODO: remove; replace with provider.estimateGas
   depositEstimateGas: (params: {
     amount: BigNumber
     l1Signer: Signer
@@ -191,6 +200,7 @@ export interface ArbTokenBridgeEth {
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
+    destinationAddress: string
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
