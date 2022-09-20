@@ -71,7 +71,7 @@ export function AppContextProvider({
   const { seenTransactions } = state
 
   const { l1 } = useNetworksAndSigners()
-  const currentL1BlockNumber = useBlockNumber(l1.signer?.provider)
+  const currentL1BlockNumber = useBlockNumber(l1.provider)
 
   useEffect(() => {
     dispatch({

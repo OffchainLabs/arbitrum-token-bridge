@@ -4,7 +4,7 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
 import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { Resolution } from '@unstoppabledomains/resolution';
+import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
@@ -60,22 +60,24 @@ function isDeposit(tx: MergedTransaction) {
 }
 
 async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
-  const UDresolution = Resolution.fromEthersProvider({uns: {
-    // TODO => remove Layer2 config when UD lib supports our use case
-    // Layer2 (polygon) is required in the object type but we only want to use Layer1
-    // This is a hack to only support Ethereum Mainnet UD names
-    // https://github.com/unstoppabledomains/resolution/issues/229
-    locations: {
-      Layer1: {
-        network: 'mainnet',
-        provider
-      },
-      Layer2: {
-        network: 'mainnet',
-        provider
+  const UDresolution = Resolution.fromEthersProvider({
+    uns: {
+      // TODO => remove Layer2 config when UD lib supports our use case
+      // Layer2 (polygon) is required in the object type but we only want to use Layer1
+      // This is a hack to only support Ethereum Mainnet UD names
+      // https://github.com/unstoppabledomains/resolution/issues/229
+      locations: {
+        Layer1: {
+          network: 'mainnet',
+          provider
+        },
+        Layer2: {
+          network: 'mainnet',
+          provider
+        }
       }
     }
-  }});
+  })
   try {
     return await UDresolution.reverse(address)
   } catch (error) {
@@ -108,6 +110,7 @@ async function tryLookupENSAvatar(
 export function HeaderAccountPopover() {
   const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
   const {
     app: { mergedTransactions, pwLoadedState }
@@ -119,11 +122,11 @@ export function HeaderAccountPopover() {
 
   useEffect(() => {
     async function resolveNameServiceInfo() {
-      if (account && l1.signer) {
+      if (account) {
         const [ensName, avatar, udName] = await Promise.all([
-          tryLookupENSName(l1.signer.provider, account),
-          tryLookupENSAvatar(l1.signer.provider, account),
-          tryLookupUDName(l1.signer.provider, account)
+          tryLookupENSName(l1Provider, account),
+          tryLookupENSAvatar(l1Provider, account),
+          tryLookupUDName(l1Provider, account)
         ])
         setENSInfo({ name: ensName, avatar })
         setUDInfo({ name: udName })
@@ -131,7 +134,7 @@ export function HeaderAccountPopover() {
     }
 
     resolveNameServiceInfo()
-  }, [account, l1.signer])
+  }, [account, l1Provider])
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
@@ -205,7 +208,9 @@ export function HeaderAccountPopover() {
               </Transition>
               <button
                 className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
-                onClick={() => copy(ensInfo.name ?? udInfo.name ?? account ?? '')}
+                onClick={() =>
+                  copy(ensInfo.name ?? udInfo.name ?? account ?? '')
+                }
               >
                 <SafeImage
                   src={ensInfo.avatar || undefined}

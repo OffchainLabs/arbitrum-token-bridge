@@ -10,8 +10,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
   const {
-    l1: { signer: l1Signer },
-    l2: { signer: l2Signer }
+    l1: { provider: l1Provider },
+    l2: { provider: l2Provider }
   } = useNetworksAndSigners()
 
   const {
@@ -20,16 +20,10 @@ export function PendingTransactionsUpdater(): JSX.Element {
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
-      const provider =
-        txnTypeToLayer(tx.type) === 2 ? l2Signer?.provider : l1Signer?.provider
-
-      if (typeof provider === 'undefined') {
-        return null
-      }
-
+      const provider = txnTypeToLayer(tx.type) === 2 ? l2Provider : l1Provider
       return provider.getTransactionReceipt(tx.txID)
     },
-    [l1Signer, l2Signer]
+    [l1Provider, l2Provider]
   )
 
   // eslint-disable-next-line consistent-return

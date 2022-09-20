@@ -1,3 +1,4 @@
+import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
@@ -192,17 +193,28 @@ export type DepositGasEstimates = GasEstimates & {
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: (
-    weiValue: BigNumber,
+  deposit: (params: {
+    amount: BigNumber
+    l1Signer: Signer
     txLifecycle?: L1EthDepositTransactionLifecycle
-  ) => Promise<void | ContractReceipt>
-  depositEstimateGas: (weiValue: BigNumber) => Promise<DepositGasEstimates>
-  withdraw: (
-    weiValue: BigNumber,
+  }) => Promise<void | ContractReceipt>
+  depositEstimateGas: (params: {
+    amount: BigNumber
+    l1Signer: Signer
+  }) => Promise<DepositGasEstimates>
+  withdraw: (params: {
+    amount: BigNumber
+    l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
-  ) => Promise<void | ContractReceipt>
-  withdrawEstimateGas: (weiValue: BigNumber) => Promise<GasEstimates>
-  triggerOutbox: (id: string) => Promise<void | ContractReceipt>
+  }) => Promise<void | ContractReceipt>
+  withdrawEstimateGas: (params: {
+    amount: BigNumber
+    l2Signer: Signer
+  }) => Promise<GasEstimates>
+  triggerOutbox: (params: {
+    id: string
+    l1Signer: Signer
+  }) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }
 
@@ -226,28 +238,38 @@ export interface ArbTokenBridgeToken {
   removeTokensFromList: (listID: number) => void
   searchTokenFromList: (erc20L1orL2Address: string) => SearchableToken | null
   updateTokenData: (l1Address: string) => Promise<void>
-  approve: (erc20L1Address: string) => Promise<void>
-  approveEstimateGas: (erc20L1Address: string) => Promise<BigNumber>
-  approveL2: (erc20L1Address: string) => Promise<void>
-  deposit: (
-    erc20Address: string,
-    amount: BigNumber,
+  approve: (params: {
+    erc20L1Address: string
+    l1Signer: Signer
+  }) => Promise<void>
+  approveEstimateGas: (params: { erc20L1Address: string }) => Promise<BigNumber>
+  approveL2: (params: { erc20L1Address: string }) => Promise<void>
+  deposit: (params: {
+    erc20L1Address: string
+    amount: BigNumber
+    l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
-  ) => Promise<void | ContractReceipt>
-  depositEstimateGas: (
-    erc20Address: string,
+  }) => Promise<void | ContractReceipt>
+  depositEstimateGas: (params: {
+    erc20L1Address: string
     amount: BigNumber
-  ) => Promise<DepositGasEstimates>
-  withdraw: (
-    erc20l1Address: string,
-    amount: BigNumber,
+    l1Signer: Signer
+  }) => Promise<DepositGasEstimates>
+  withdraw: (params: {
+    erc20L1Address: string
+    amount: BigNumber
+    l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
-  ) => Promise<void | ContractReceipt>
-  withdrawEstimateGas: (
-    erc20l1Address: string,
+  }) => Promise<void | ContractReceipt>
+  withdrawEstimateGas: (params: {
+    erc20L1Address: string
     amount: BigNumber
-  ) => Promise<GasEstimates>
-  triggerOutbox: (id: string) => Promise<void | ContractReceipt>
+    l2Signer: Signer
+  }) => Promise<GasEstimates>
+  triggerOutbox: (params: {
+    id: string
+    l1Signer: Signer
+  }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
