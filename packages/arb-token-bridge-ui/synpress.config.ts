@@ -1,5 +1,6 @@
 import { defineConfig } from 'cypress'
 import synpressPlugins from '@synthetixio/synpress/plugins'
+import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -27,7 +28,9 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       config.env.ADDRESS = process.env.ADDRESS
       config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
-      return synpressPlugins(on, config)
+      cypressLocalStoragePlugin(on, config)
+      synpressPlugins(on, config)
+      return config
     },
     baseUrl: 'http://localhost:3000',
     specPattern: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}',

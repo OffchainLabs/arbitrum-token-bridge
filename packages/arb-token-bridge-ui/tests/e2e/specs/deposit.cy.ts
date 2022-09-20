@@ -20,6 +20,7 @@ describe('Deposit ETH', () => {
     let l2ETHbal
 
     before(() => {
+      cy.clearLocalStorageSnapshot()
       getInitialETHBalance(goerliRPC).then(
         val => (l1ETHbal = formatBigNumber(val, 18, 5))
       )
@@ -35,6 +36,12 @@ describe('Deposit ETH', () => {
       cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
         'be.visible'
       )
+      // cypress clears local storage between tests
+      // so in order to preserve local storage on the page between tests
+      // we need to use the cypress-localstorage-commands plugin
+      // or else we have to visit the page every test which will be much slower
+      // https://docs.cypress.io/api/commands/clearlocalstorage
+      cy.saveLocalStorage()
     })
 
     it('should show L1 ETH balance correctly', () => {
@@ -52,6 +59,8 @@ describe('Deposit ETH', () => {
     context("bridge amount is lower than user's L1 ETH balance value", () => {
       const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
       it('should show summary', () => {
+        // restore local storage from first test
+        cy.restoreLocalStorage()
         cy.findByPlaceholderText('Enter amount')
           // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
           // cypress by default tries to scroll the element into view even when it is already in view
@@ -90,15 +99,12 @@ describe('Deposit ETH', () => {
               .contains(/(\d*)(\.\d+)*( ETH)/)
               .should('be.visible')
           })
+        cy.saveLocalStorage()
       })
 
       it('should deposit successfully', () => {
-        // if deposit cards show up, they should be dismissed, otherwise the explicit "not scrolling"
-        // behaviour would make it impossible for cypress to find the button
-        cy.findAllByText('Dismiss').each(el => {
-          cy.wrap(el).click({ scrollBehavior: false })
-        })
-
+        // restore local storage from previous test
+        cy.restoreLocalStorage()
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Goerli'
         }).click({ scrollBehavior: false })
