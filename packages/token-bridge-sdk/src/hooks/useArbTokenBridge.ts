@@ -426,18 +426,16 @@ export const useArbTokenBridge = (
   async function withdrawEth({
     amount,
     l2Signer,
-    destinationAddress,
     txLifecycle
   }: {
     amount: BigNumber
     l2Signer: Signer
-    destinationAddress: string
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) {
     const tx = await ethBridger.withdraw({
       amount,
       l2Signer,
-      destinationAddress
+      destinationAddress: walletAddress
     })
 
     if (txLifecycle?.onTxSubmit) {
@@ -717,9 +715,7 @@ export const useArbTokenBridge = (
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
-      // TODO: Isn't L1 address the same as destination address? Both params are required.
-      // What's the difference between the two?
-      destinationAddress: erc20L1Address,
+      destinationAddress: walletAddress,
       amount
     })
 
@@ -1419,8 +1415,6 @@ export const useArbTokenBridge = (
         ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
           mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
         ),
-        // TODO: Why do we need an array of arguments and an object with the same values as the mentioned array?
-        // inside mapTokenWithdrawalFromEventLogsToL2ToL1EventResult param (withdrawal param)
         ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
           mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
         )
