@@ -344,8 +344,6 @@ export const useArbTokenBridge = (
     return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider)
   }
 
-  // TODO: From my understanding user can provide params or txRequest to deposit.
-  // Should we make a TS rule to require at least one of them?
   const depositEth = async ({
     amount,
     l1Signer,
@@ -430,9 +428,6 @@ export const useArbTokenBridge = (
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
-  // TODO: add RequestObject as a possible parameter?
-  // Or is RequestObject the same as current parameters and user will populate them as usual?
-  // Context from v3 docs: New getDepositRequest and getWithdrawalRequest get transaction request objects that can be sent later.
   async function withdrawEth({
     amount,
     l2Signer,
