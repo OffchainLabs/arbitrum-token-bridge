@@ -326,6 +326,11 @@ export function TransferPanelMain({
     updateQueryParams({ l2ChainId })
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
+  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  useEffect(() => {
+    updateQueryParams({ amount })
+  }, [amount])
+
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode
       ? ethBalances.ethereum
@@ -553,10 +558,6 @@ export function TransferPanelMain({
       setLoadingMaxAmount(false)
     }
   }
-
-  useEffect(() => {
-    updateQueryParams({ amount })
-  }, [amount])
 
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">

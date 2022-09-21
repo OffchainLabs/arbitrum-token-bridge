@@ -125,12 +125,6 @@ export function TransferPanel() {
 
   const { amount: queryAmount } = useArbQueryParams()
 
-  useEffect(() => {
-    if (queryAmount && !Number.isNaN(+queryAmount)) {
-      setAmount(queryAmount)
-    }
-  }, [queryAmount])
-
   const [
     lowBalanceDialogProps,
     openLowBalanceDialog,
@@ -741,11 +735,19 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
-  // The set amount - set both the deposit and withdrawal amounts
+  // a common set-amount function to set both the deposit and withdrawal amounts
+  // helpful when we want to set both l1, l2 amounts when browser query params change
   const setAmount = useCallback(amount => {
     setl1Amount(amount || '0')
     setl2Amount(amount || '0')
   }, [])
+
+  // update the amount in the input boxes (both L1 and L2) when browser search param changes
+  useEffect(() => {
+    if (queryAmount && !Number.isNaN(+queryAmount)) {
+      setAmount(queryAmount)
+    }
+  }, [queryAmount])
 
   return (
     <>
