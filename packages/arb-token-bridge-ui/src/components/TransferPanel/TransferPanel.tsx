@@ -139,7 +139,7 @@ export function TransferPanel() {
     if (queryAmount && !Number.isNaN(+queryAmount)) {
       setAmount(queryAmount)
     }
-  }, [])
+  }, [queryAmount])
 
   const [
     lowBalanceDialogProps,
