@@ -126,6 +126,15 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const { shouldRequireApprove } = useL2Approve()
 
+  const { search } = useLocation()
+
+  useEffect(() => {
+    const amount = new URLSearchParams(search)?.get('amount')
+    if (amount && !Number.isNaN(+amount)) {
+      setAmount(amount)
+    }
+  }, [])
+
   const [
     lowBalanceDialogProps,
     openLowBalanceDialog,
@@ -735,6 +744,18 @@ export function TransferPanel() {
     disableDeposit,
     disableWithdrawal
   ])
+
+  // The set amount depending on deposit or withdrawal is selected
+  const setAmount = useCallback(
+    amount => {
+      if (isDepositMode) {
+        setL1AmountState(amount || '0')
+      } else {
+        setL2AmountState(amount || '0')
+      }
+    },
+    [isDepositMode]
+  )
 
   return (
     <>
