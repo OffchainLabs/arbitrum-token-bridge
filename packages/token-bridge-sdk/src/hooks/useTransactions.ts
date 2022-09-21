@@ -5,8 +5,8 @@ import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  IL1ToL2MessageReader
-} from '@arbitrum/sdk/dist/lib/utils/migration_types'
+  L1ToL2MessageReader as IL1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
