@@ -16,10 +16,6 @@ import {
   L2ToL1MessageReader,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
-import {
-  EthDepositParams,
-  L1ToL2TxReqAndSigner
-} from '@arbitrum/sdk/dist/lib/assetBridger/ethBridger'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import {
   DepositWithdrawEstimator,
@@ -353,7 +349,7 @@ export const useArbTokenBridge = (
   const depositEth = async ({
     amount,
     l1Signer,
-    txLifecycle,
+    txLifecycle
   }: {
     amount: BigNumber
     l1Signer: Signer
@@ -364,7 +360,7 @@ export const useArbTokenBridge = (
     try {
       tx = await ethBridger.deposit({
         amount,
-        l1Signer,
+        l1Signer
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -653,7 +649,7 @@ export const useArbTokenBridge = (
     if (txLifecycle?.onTxConfirm) {
       txLifecycle.onTxConfirm(receipt)
     }
-    
+
     const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
