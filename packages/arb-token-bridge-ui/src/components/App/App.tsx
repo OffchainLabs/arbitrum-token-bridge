@@ -12,6 +12,9 @@ import {
   Switch,
   useLocation
 } from 'react-router-dom'
+import { QueryParamProvider } from 'use-query-params'
+import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
+import { parse, stringify } from 'query-string'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -354,34 +357,42 @@ function Routes() {
 
   return (
     <Router>
-      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-      <Switch>
-        <Route path="/tos" exact>
-          <TermsOfService />
-        </Route>
+      <QueryParamProvider
+        adapter={ReactRouter5Adapter}
+        options={{
+          searchStringToObject: parse,
+          objectToSearchString: stringify
+        }}
+      >
+        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+        <Switch>
+          <Route path="/tos" exact>
+            <TermsOfService />
+          </Route>
 
-        <Route path="/" exact>
-          <NetworkReady>
-            <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
-            </AppContextProvider>
-          </NetworkReady>
-        </Route>
+          <Route path="/" exact>
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </AppContextProvider>
+            </NetworkReady>
+          </Route>
 
-        <Route path="*">
-          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-            <span className="text-8xl text-white">404</span>
-            <p className="text-3xl text-white">
-              Page not found in this solar system
-            </p>
-            <img
-              src="/images/arbinaut-fixing-spaceship.png"
-              alt="Arbinaut fixing a spaceship"
-              className="lg:max-w-md"
-            />
-          </div>
-        </Route>
-      </Switch>
+          <Route path="*">
+            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+              <span className="text-8xl text-white">404</span>
+              <p className="text-3xl text-white">
+                Page not found in this solar system
+              </p>
+              <img
+                src="/images/arbinaut-fixing-spaceship.png"
+                alt="Arbinaut fixing a spaceship"
+                className="lg:max-w-md"
+              />
+            </div>
+          </Route>
+        </Switch>
+      </QueryParamProvider>
     </Router>
   )
 }

@@ -39,6 +39,13 @@ import {
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
+import {
+  JsonParam,
+  NumberParam,
+  StringParam,
+  useQueryParam,
+  useQueryParams
+} from 'use-query-params'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -126,12 +133,11 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const { shouldRequireApprove } = useL2Approve()
 
-  const { search } = useLocation()
+  const [queryAmount] = useQueryParam('amount', StringParam)
 
   useEffect(() => {
-    const amount = new URLSearchParams(search)?.get('amount')
-    if (amount && !Number.isNaN(+amount)) {
-      setAmount(amount)
+    if (queryAmount && !Number.isNaN(+queryAmount)) {
+      setAmount(queryAmount)
     }
   }, [])
 
@@ -745,17 +751,11 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
-  // The set amount depending on deposit or withdrawal is selected
-  const setAmount = useCallback(
-    amount => {
-      if (isDepositMode) {
-        setL1AmountState(amount || '0')
-      } else {
-        setL2AmountState(amount || '0')
-      }
-    },
-    [isDepositMode]
-  )
+  // The set amount - set both the deposit and withdrawal amounts
+  const setAmount = useCallback(amount => {
+    setl1Amount(amount || '0')
+    setl2Amount(amount || '0')
+  }, [])
 
   return (
     <>

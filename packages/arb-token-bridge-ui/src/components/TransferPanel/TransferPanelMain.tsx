@@ -34,6 +34,7 @@ import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.png'
 import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.png'
 import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.png'
+import { NumberParam, StringParam, useQueryParams } from 'use-query-params'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -311,7 +312,15 @@ export function TransferPanelMain({
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
+  const [queryParams, setQueryParams] = useQueryParams({
+    amount: StringParam,
+    l2ChainId: NumberParam,   
+  });
+
   useEffect(() => {
+
+    console.log("XXXX history updated", history);
+
     const l2ChainId = isConnectedToArbitrum
       ? externalFrom.chainID
       : externalTo.chainID
@@ -320,10 +329,9 @@ export function TransferPanelMain({
     setTo(externalTo)
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
-    history.replace({
-      pathname: '/',
-      search: `?l2ChainId=${l2ChainId}`
-    })
+    setQueryParams({l2ChainId}, 'replaceIn');
+
+
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
   const maxButtonVisible = useMemo(() => {
@@ -429,11 +437,8 @@ export function TransferPanelMain({
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
     const options = getListboxOptionsFromL1Network(l1.network)
 
-    function updatePreferredL2Chain(l2ChainId: number) {
-      history.replace({
-        pathname: '/',
-        search: `?l2ChainId=${l2ChainId}`
-      })
+    function updatePreferredL2Chain(l2ChainId: number) {  
+      setQueryParams({l2ChainId}, 'replaceIn');
     }
 
     if (isDepositMode) {
@@ -556,6 +561,13 @@ export function TransferPanelMain({
       setLoadingMaxAmount(false)
     }
   }
+
+
+  useEffect(()=>{
+    setQueryParams({amount}, 'replaceIn');
+  },[amount])
+
+  
 
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">

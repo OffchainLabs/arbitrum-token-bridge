@@ -29,6 +29,7 @@ import { useHistory } from 'react-router-dom'
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
+import { NumberParam, StringParam, useQueryParams } from 'use-query-params'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -125,13 +126,23 @@ function getProviderName(provider: any): ProviderName | null {
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
-  const { selectedL2ChainId } = props
+  // const { selectedL2ChainId } = props
   const { provider, account, network, connect } = useWallet()
   const history = useHistory()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
   const latestResult = useLatest(result)
+  
+
+  const [queryParams, setQueryParams] = useQueryParams({
+    amount: StringParam,
+    l2ChainId: NumberParam,   
+  });
+  const { amount,  l2ChainId  } = queryParams;
+  const selectedAmount = amount;
+  const selectedL2ChainId = l2ChainId;
+
 
   // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
@@ -190,9 +201,11 @@ export function NetworksAndSignersProvider(
 
       // Case 2: L2 is not supported by provider
       if (!providerSupportedL2.includes(_selectedL2ChainId)) {
-        history.replace({
-          pathname: '/'
-        })
+        
+        // remove the l2chainId, keeping the rest of the params intact
+        setQueryParams({
+          amount: selectedAmount
+        }, 'replace')
         return
       }
 
