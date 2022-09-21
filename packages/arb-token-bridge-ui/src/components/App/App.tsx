@@ -6,12 +6,7 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-  useLocation
-} from 'react-router-dom'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { QueryParamProvider } from 'use-query-params'
 import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
 import { parse, stringify } from 'query-string'
@@ -61,6 +56,7 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
+import useArbQueryParams from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -398,22 +394,11 @@ function Routes() {
 }
 
 function NetworkReady({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation()
-
-  const selectedL2ChainId = useMemo(() => {
-    const searchParams = new URLSearchParams(search)
-    const selectedL2ChainIdSearchParam = searchParams.get('l2ChainId')
-
-    if (!selectedL2ChainIdSearchParam) {
-      return undefined
-    }
-
-    return parseInt(selectedL2ChainIdSearchParam) || undefined
-  }, [search])
+  const { l2ChainId } = useArbQueryParams()
 
   return (
     <NetworksAndSignersProvider
-      selectedL2ChainId={selectedL2ChainId}
+      selectedL2ChainId={l2ChainId || undefined}
       fallback={status => <ConnectionFallback status={status} />}
     >
       {children}

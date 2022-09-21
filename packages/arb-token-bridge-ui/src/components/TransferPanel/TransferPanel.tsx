@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
@@ -21,6 +20,7 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import useL2Approve from './useL2Approve'
+import useArbQueryParams from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
@@ -39,13 +39,6 @@ import {
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
-import {
-  JsonParam,
-  NumberParam,
-  StringParam,
-  useQueryParam,
-  useQueryParams
-} from 'use-query-params'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -65,10 +58,7 @@ const isAllowedL2 = async (
 }
 
 function useTokenFromSearchParams(): string | undefined {
-  const { search } = useLocation()
-
-  const searchParams = new URLSearchParams(search)
-  const tokenFromSearchParams = searchParams.get('token')?.toLowerCase()
+  const { token: tokenFromSearchParams } = useArbQueryParams()
 
   if (!tokenFromSearchParams) {
     return undefined
@@ -133,7 +123,7 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const { shouldRequireApprove } = useL2Approve()
 
-  const [queryAmount] = useQueryParam('amount', StringParam)
+  const { amount: queryAmount } = useArbQueryParams()
 
   useEffect(() => {
     if (queryAmount && !Number.isNaN(+queryAmount)) {
