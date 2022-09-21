@@ -183,16 +183,10 @@ export type DepositGasEstimates = GasEstimates & {
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: ({
-    params,
-    l1Tol2TxReq,
-    txLifecycle
-  }: {
-    params: EthDepositParams
-    l1Tol2TxReq: L1ToL2TxReqAndSigner
-    txLifecycle?: L1EthDepositTransactionLifecycle
+  deposit: (params: {
+    amount: BigNumber
+    l1Signer: Signer
   }) => Promise<void | ContractReceipt>
-  // TODO: remove; replace with provider.estimateGas
   depositEstimateGas: (params: {
     amount: BigNumber
     l1Signer: Signer
@@ -200,7 +194,6 @@ export interface ArbTokenBridgeEth {
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
-    destinationAddress: string
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {

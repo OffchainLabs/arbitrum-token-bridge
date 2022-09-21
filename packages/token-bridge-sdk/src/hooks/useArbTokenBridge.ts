@@ -351,26 +351,21 @@ export const useArbTokenBridge = (
   // TODO: From my understanding user can provide params or txRequest to deposit.
   // Should we make a TS rule to require at least one of them?
   const depositEth = async ({
-    params,
-    l1ToL2TxReq,
-    txLifecycle
+    amount,
+    l1Signer,
+    txLifecycle,
   }: {
-    params?: EthDepositParams
-    l1ToL2TxReq?: L1ToL2TxReqAndSigner
+    amount: BigNumber
+    l1Signer: Signer
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => {
     let tx: L1EthDepositTransaction
 
     try {
-      if (!params && !l1ToL2TxReq) {
-        throw new Error('No call data provided.')
-      }
-
-      const txParams = (params || l1ToL2TxReq) as
-        | EthDepositParams
-        | L1ToL2TxReqAndSigner
-
-      tx = await ethBridger.deposit(txParams)
+      tx = await ethBridger.deposit({
+        amount,
+        l1Signer,
+      })
 
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
@@ -378,11 +373,6 @@ export const useArbTokenBridge = (
     } catch (error: any) {
       return alert(error.message)
     }
-
-    // TODO: l1ToL2TxReq.txRequest.value returns BigNumberish.
-    // Possible solution: export toBigNumber from bignumber.ts in SDK and parse it here.
-    // TODO: Remove hack 'as BigNumber'
-    const amount = params?.amount || (l1ToL2TxReq?.txRequest.value as BigNumber)
 
     addTransaction({
       type: 'deposit-l1',
@@ -397,9 +387,7 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
-    // TODO: Returns array. Currently we have a single item returned.
-    // What are the differences between the old and new implementations?
-    const { messageNum } = receipt.getInboxMessageDeliveredEvents()[0]
+    const [{ messageNum }] = receipt.getInboxMessageDeliveredEvents()
 
     if (txLifecycle?.onTxConfirm) {
       txLifecycle.onTxConfirm(receipt)
@@ -497,7 +485,6 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventResult = l2ToL1Events[0]
-        console.info('withdraw event data:', l2ToL1EventResult)
 
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
 
@@ -666,16 +653,13 @@ export const useArbTokenBridge = (
     if (txLifecycle?.onTxConfirm) {
       txLifecycle.onTxConfirm(receipt)
     }
-
-    // TODO: This has been changed to getL1ToL2Messages and returns an array.
-    // Should l1ToL2MsgData return a mapped result?
-    const l1ToL2Msg = await receipt.getL1ToL2Messages(l2.provider)
+    
+    const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
-      // TODO: removed hardcoded 0 index
-      retryableCreationTxID: l1ToL2Msg[0].retryableCreationId,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
       l2TxID: undefined
     }
 
