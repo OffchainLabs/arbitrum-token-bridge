@@ -13,7 +13,7 @@ import {
   useLocation
 } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState } from 'src/util/index'
+import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
