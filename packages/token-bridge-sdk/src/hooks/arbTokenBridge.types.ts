@@ -14,6 +14,7 @@ import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 
 import {
   L1EthDepositTransaction,
@@ -84,7 +85,7 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
 
-export type WithdrawalInitiated = WithdrawalInitiatedEvent['args'] & {
+export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
 }
 
