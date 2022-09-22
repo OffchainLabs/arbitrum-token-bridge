@@ -412,12 +412,7 @@ export const useArbTokenBridge = (
       value: depositRequest.txRequest.value
     })
 
-    // TODO: get this from retryables? (it's omitted in sdk types tho)
-    const estimatedL2Gas = await l2.provider.estimateGas({
-      data: depositRequest.txRequest.data,
-      from: depositRequest.txRequest.from,
-      value: depositRequest.txRequest.value
-    })
+    const estimatedL2Gas = BigNumber.from(0)
 
     // TODO: can we still get estimatedL2SubmissionCost in v3?
     const estimatedL2SubmissionCost = BigNumber.from(0)
