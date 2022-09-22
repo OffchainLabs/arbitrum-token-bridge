@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import { useLatest } from 'react-use'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -10,7 +11,7 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { tokenRequiresApprovalOnL2 } from './useL2Approve'
+import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -36,6 +37,9 @@ export function useGasSummary(
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const { l1GasPrice, l2GasPrice } = useGasPrice()
+
+  const networksAndSigners = useNetworksAndSigners()
+  const latestNetworksAndSigners = useLatest(networksAndSigners)
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1500)
@@ -102,15 +106,19 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult =
-              await arbTokenBridge.token.depositEstimateGas(
-                token.address,
-                amountDebounced
-              )
+              await arbTokenBridge.token.depositEstimateGas({
+                erc20L1Address: token.address,
+                amount: amountDebounced,
+                l1Signer: latestNetworksAndSigners.current.l1.signer
+              })
 
             setResult(estimateGasResult)
           } else {
             const estimateGasResult =
-              await arbTokenBridge.eth.depositEstimateGas(amountDebounced)
+              await arbTokenBridge.eth.depositEstimateGas({
+                amount: amountDebounced,
+                l1Signer: latestNetworksAndSigners.current.l1.signer
+              })
 
             setResult(estimateGasResult)
           }
@@ -122,17 +130,23 @@ export function useGasSummary(
             }
 
             // TODO: Update, as this only handles LPT
-            if (tokenRequiresApprovalOnL2(token.address)) {
+            if (
+              tokenRequiresApprovalOnL2(
+                token.address,
+                latestNetworksAndSigners.current.l2.network.chainID
+              )
+            ) {
               estimateGasResult = {
                 estimatedL1Gas: BigNumber.from(5_000),
                 estimatedL2Gas: BigNumber.from(10_000)
               }
             } else {
               estimateGasResult =
-                await arbTokenBridge.token.withdrawEstimateGas(
-                  token.address,
-                  amountDebounced
-                )
+                await arbTokenBridge.token.withdrawEstimateGas({
+                  erc20L1Address: token.address,
+                  amount: amountDebounced,
+                  l2Signer: latestNetworksAndSigners.current.l2.signer
+                })
             }
 
             setResult({
@@ -141,7 +155,10 @@ export function useGasSummary(
             })
           } else {
             const estimateGasResult =
-              await arbTokenBridge.eth.withdrawEstimateGas(amountDebounced)
+              await arbTokenBridge.eth.withdrawEstimateGas({
+                amount: amountDebounced,
+                l2Signer: latestNetworksAndSigners.current.l2.signer
+              })
 
             setResult({
               ...estimateGasResult,
@@ -160,7 +177,14 @@ export function useGasSummary(
     if (arbTokenBridge && arbTokenBridge.eth && arbTokenBridge.token) {
       estimateGas()
     }
-  }, [isDepositMode, amount, amountDebounced, token, shouldRunGasEstimation])
+  }, [
+    isDepositMode,
+    amount,
+    amountDebounced,
+    token,
+    shouldRunGasEstimation,
+    latestNetworksAndSigners
+  ])
 
   return {
     status,

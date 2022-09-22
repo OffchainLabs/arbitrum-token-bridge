@@ -57,14 +57,14 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 }
 
 // Default L2 Chain to use for a certain chainId
-export const chainIdToDefaultL2ChainId: { [chainId: number]: number } = {
-  [ChainId.Mainnet]: ChainId.ArbitrumOne,
-  [ChainId.ArbitrumOne]: ChainId.ArbitrumOne,
-  [ChainId.Rinkeby]: ChainId.ArbitrumRinkeby,
-  [ChainId.ArbitrumRinkeby]: ChainId.ArbitrumRinkeby,
-  [ChainId.Goerli]: ChainId.ArbitrumGoerli,
-  [ChainId.ArbitrumGoerli]: ChainId.ArbitrumGoerli,
-  [ChainId.ArbitrumNova]: ChainId.ArbitrumNova
+export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
+  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli],
+  [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
+  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
+  [ChainId.ArbitrumRinkeby]: [ChainId.ArbitrumRinkeby],
+  [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
+  [ChainId.Mainnet]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
+  [ChainId.Rinkeby]: [ChainId.ArbitrumRinkeby]
 }
 
 export function registerLocalNetwork() {
@@ -88,8 +88,12 @@ export function registerLocalNetwork() {
 
     rpcURLs[customL1Network.chainID] = customL1Network.rpcURL
     rpcURLs[customL2Network.chainID] = customL2Network.rpcURL
-    chainIdToDefaultL2ChainId[customL1Network.chainID] = customL2Network.chainID
-    chainIdToDefaultL2ChainId[customL2Network.chainID] = customL2Network.chainID
+    chainIdToDefaultL2ChainId[customL1Network.chainID] = [
+      customL2Network.chainID
+    ]
+    chainIdToDefaultL2ChainId[customL2Network.chainID] = [
+      customL2Network.chainID
+    ]
 
     addCustomNetwork({ customL1Network, customL2Network })
   } catch (error: any) {

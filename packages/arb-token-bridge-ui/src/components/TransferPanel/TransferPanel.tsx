@@ -20,7 +20,6 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import useL2Approve from './useL2Approve'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
@@ -39,6 +38,7 @@ import {
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
+import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -124,7 +124,6 @@ export function TransferPanel() {
   const [l2Amount, setL2AmountState] = useState<string>('')
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
-  const { shouldRequireApprove } = useL2Approve()
 
   const [
     lowBalanceDialogProps,
@@ -407,7 +406,10 @@ export function TransferPanel() {
               return
             }
 
-            await latestToken.current.approve(selectedToken.address)
+            await latestToken.current.approve({
+              erc20L1Address: selectedToken.address,
+              l1Signer: latestNetworksAndSigners.current.l1.signer
+            })
           }
 
           if (isNonCanonicalToken) {
@@ -419,23 +421,32 @@ export function TransferPanel() {
             }
           }
 
-          await latestToken.current.deposit(selectedToken.address, amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestToken.current.deposit({
+            erc20L1Address: selectedToken.address,
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
-          await latestEth.current.deposit(amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestEth.current.deposit({
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         }
@@ -474,10 +485,10 @@ export function TransferPanel() {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
+
           if (
-            shouldRequireApprove &&
-            selectedToken.l2Address &&
-            l2Signer?.provider
+            tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
+            selectedToken.l2Address
           ) {
             const allowed = await isAllowedL2(
               arbTokenBridge,
@@ -485,29 +496,42 @@ export function TransferPanel() {
               selectedToken.l2Address,
               walletAddress,
               amountRaw,
-              l2Signer.provider
+              latestNetworksAndSigners.current.l2.provider
             )
             if (!allowed) {
-              await latestToken.current.approveL2(selectedToken.address)
+              await latestToken.current.approveL2({
+                erc20L1Address: selectedToken.address,
+                l2Signer: latestNetworksAndSigners.current.l2.signer
+              })
             }
           }
 
-          await latestToken.current.withdraw(selectedToken.address, amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+          await latestToken.current.withdraw({
+            erc20L1Address: selectedToken.address,
+            amount: amountRaw,
+            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
-          await latestEth.current.withdraw(amountRaw, {
-            onTxSubmit: () => {
-              dispatch({
-                type: 'layout.set_is_transfer_panel_visible',
-                payload: false
-              })
+
+          await latestEth.current.withdraw({
+            amount: amountRaw,
+            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+              }
             }
           })
         }

@@ -34,12 +34,6 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2Address: ''
     },
     {
-      symbol: 'LDO',
-      l2CustomAddr: '',
-      l1Address: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
-      l2Address: ''
-    },
-    {
       symbol: 'renBTC',
       l2CustomAddr: '0xdbf31df14b66535af65aac99c32e9ea844e14501',
       l1Address: '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D',
