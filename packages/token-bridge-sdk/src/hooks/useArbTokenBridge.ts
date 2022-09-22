@@ -412,6 +412,7 @@ export const useArbTokenBridge = (
       value: depositRequest.txRequest.value
     })
 
+    // TODO: get this from retryables? (it's omitted in sdk types tho)
     const estimatedL2Gas = await l2.provider.estimateGas({
       data: depositRequest.txRequest.data,
       from: depositRequest.txRequest.from,
@@ -510,11 +511,8 @@ export const useArbTokenBridge = (
       destinationAddress
     })
 
-    const estimatedL1Gas = await l1.provider.estimateGas({
-      data: withdrawalRequest.txRequest.data,
-      to: withdrawalRequest.txRequest.to,
-      value: withdrawalRequest.txRequest.value
-    })
+    // Can't do this atm. Hardcoded to 130000.
+    const estimatedL1Gas = BigNumber.from(130000)
 
     const estimatedL2Gas = await l2.provider.estimateGas({
       data: withdrawalRequest.txRequest.data,
@@ -670,19 +668,21 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
   }) {
-    // We're hardcoding the L1 gas cost for a token deposit, as the estimation might fail due to no allowance.
-    const estimatedL1Gas = BigNumber.from(240000)
-
-    const depositRequest = await ethBridger.getDepositRequest({
+    const depositRequest = await erc20Bridger.getDepositRequest({
       amount,
-      from: erc20L1Address
+      from: walletAddress,
+      erc20L1Address,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
     })
 
-    const estimatedL2Gas = await l2.provider.estimateGas({
+    const estimatedL1Gas = await l1.provider.estimateGas({
       data: depositRequest.txRequest.data,
       from: depositRequest.txRequest.from,
       value: depositRequest.txRequest.value
     })
+
+    const estimatedL2Gas = depositRequest.retryableData.maxFeePerGas
 
     // TODO: can we still get estimatedL2SubmissionCost in v3?
     const estimatedL2SubmissionCost = BigNumber.from(0)
@@ -779,20 +779,18 @@ export const useArbTokenBridge = (
 
   async function withdrawTokenEstimateGas({
     amount,
-    destinationAddress
+    erc20L1Address
   }: {
     amount: BigNumber
-    destinationAddress: string
+    erc20L1Address: string
   }) {
-    const withdrawalRequest = await ethBridger.getWithdrawalRequest({
-      amount,
-      destinationAddress
-    })
+    const estimatedL1Gas = BigNumber.from(160000)
 
-    const estimatedL1Gas = await l1.provider.estimateGas({
-      data: withdrawalRequest.txRequest.data,
-      to: withdrawalRequest.txRequest.to,
-      value: withdrawalRequest.txRequest.value
+    // TODO: rename getWithdrawalParams to getWithdrawalRequest in sdk
+    const withdrawalRequest = await erc20Bridger.getWithdrawalParams({
+      amount,
+      destinationAddress: walletAddress,
+      erc20l1Address: erc20L1Address
     })
 
     const estimatedL2Gas = await l2.provider.estimateGas({

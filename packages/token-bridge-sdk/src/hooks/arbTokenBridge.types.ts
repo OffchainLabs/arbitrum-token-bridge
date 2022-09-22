@@ -240,7 +240,7 @@ export interface ArbTokenBridgeToken {
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     amount: BigNumber
-    destinationAddress: string
+    erc20L1Address: string
   }) => Promise<GasEstimates>
   triggerOutbox: (params: {
     id: string
