@@ -186,18 +186,13 @@ export interface ArbTokenBridgeEth {
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     amount: BigNumber
-    from: string
   }) => Promise<DepositGasEstimates>
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
-    destinationAddress: string
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
-  withdrawEstimateGas: (params: {
-    amount: BigNumber
-    destinationAddress: string
-  }) => Promise<GasEstimates>
+  withdrawEstimateGas: (params: { amount: BigNumber }) => Promise<GasEstimates>
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer

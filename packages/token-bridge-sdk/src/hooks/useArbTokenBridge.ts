@@ -397,14 +397,12 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function depositEthEstimateGas({
-    amount,
-    from
-  }: {
-    amount: BigNumber
-    from: string
-  }) {
-    const depositRequest = await ethBridger.getDepositRequest({ amount, from })
+  async function depositEthEstimateGas({ amount }: { amount: BigNumber }) {
+    // TODO: question - is from going to be walletAddress?
+    const depositRequest = await ethBridger.getDepositRequest({
+      amount,
+      from: walletAddress
+    })
 
     const estimatedL1Gas = await l1.provider.estimateGas({
       data: depositRequest.txRequest.data,
@@ -494,16 +492,10 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function withdrawEthEstimateGas({
-    amount,
-    destinationAddress
-  }: {
-    amount: BigNumber
-    destinationAddress: string
-  }) {
+  async function withdrawEthEstimateGas({ amount }: { amount: BigNumber }) {
     const withdrawalRequest = await ethBridger.getWithdrawalRequest({
       amount,
-      destinationAddress
+      destinationAddress: walletAddress
     })
 
     // Can't do this atm. Hardcoded to 130000.
