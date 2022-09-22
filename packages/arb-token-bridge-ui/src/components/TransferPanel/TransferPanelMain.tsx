@@ -5,8 +5,8 @@ import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
-import { L1Network, L2Network } from '@arbitrum/sdk'
-import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
+import { EthBridger, L1Network, L2Network } from '@arbitrum/sdk'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 
@@ -326,6 +326,8 @@ export function TransferPanelMain({
     })
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
+  const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
+
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode
       ? ethBalances.ethereum
@@ -405,20 +407,40 @@ export function TransferPanelMain({
     estimatedL2SubmissionCost: BigNumber
   }> {
     if (isDepositMode) {
-      const result = await arbTokenBridge.eth.depositEstimateGas({
-        amount: weiValue,
-        l1Signer: l1.signer
+      const depositRequest = await ethBridger.getDepositRequest({
+        amount: BigNumber.from(amount),
+        from: l1.signer._address
       })
 
-      return result
+      const estimatedL1Gas = await l1.provider.estimateGas({
+        data: depositRequest.txRequest.data,
+        from: depositRequest.txRequest.from,
+        value: depositRequest.txRequest.value
+      })
+
+      const estimatedL2Gas = BigNumber.from(0)
+      const estimatedL2SubmissionCost = BigNumber.from(0)
+
+      return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
     }
 
-    const result = await arbTokenBridge.eth.withdrawEstimateGas({
-      amount: weiValue,
-      l2Signer: l2.signer
+    const withdrawalRequest = await ethBridger.getWithdrawalRequest({
+      amount: BigNumber.from(amount),
+      destinationAddress: l1.signer._address
     })
 
-    return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
+    // Can't do this atm. Hardcoded to 130_000.
+    const estimatedL1Gas = BigNumber.from(130_000)
+
+    const estimatedL2Gas = await l2.provider.estimateGas({
+      data: withdrawalRequest.txRequest.data,
+      to: withdrawalRequest.txRequest.to,
+      value: withdrawalRequest.txRequest.value
+    })
+
+    const estimatedL2SubmissionCost = BigNumber.from(0)
+
+    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
   type NetworkListboxesProps = {

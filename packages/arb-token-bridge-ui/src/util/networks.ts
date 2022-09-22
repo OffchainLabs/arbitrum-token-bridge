@@ -1,5 +1,4 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
-import * as NitroNetworks from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -37,10 +36,7 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
-NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
-NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
-NitroNetworks.l1Networks[5].rpcURL = rpcURLs[5]
-
+// TODO: Remove this?
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
   [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F',
@@ -85,9 +81,7 @@ export function registerLocalNetwork() {
   try {
     const customL1Network = localNetwork.l1Network
     const customL2Network = localNetwork.l2Network
-
-    rpcURLs[customL1Network.chainID] = customL1Network.rpcURL
-    rpcURLs[customL2Network.chainID] = customL2Network.rpcURL
+    // TODO: Remove this?
     chainIdToDefaultL2ChainId[customL1Network.chainID] = [
       customL2Network.chainID
     ]

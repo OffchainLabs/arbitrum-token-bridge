@@ -54,7 +54,6 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 const { Zero } = constants
 

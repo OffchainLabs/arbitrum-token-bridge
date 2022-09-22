@@ -288,7 +288,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       symbol: 'ETH',
                       decimals: 18
                     },
-                    rpcUrls: [network.rpcURL || rpcURLs[network.chainID]],
+                    // TODO: if rpcs aren't on the network object anymore do we simply remove this here?
+                    rpcUrls: [rpcURLs[network.chainID]],
                     blockExplorerUrls: [network.explorerUrl]
                   }
                 ]
