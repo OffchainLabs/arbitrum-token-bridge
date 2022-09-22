@@ -24,7 +24,6 @@ import {
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
-import { useLatest } from 'react-use'
 import { useArbQueryParams } from './useArbQueryParams'
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
@@ -130,9 +129,8 @@ export function NetworksAndSignersProvider(
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
-  const latestResult = useLatest(result)
 
-  const { setQueryParams } = useArbQueryParams()
+  const [, setQueryParams] = useArbQueryParams()
 
   // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
@@ -271,7 +269,7 @@ export function NetworksAndSignersProvider(
             })
         })
     },
-    [latestResult, selectedL2ChainId, setQueryParams]
+    [selectedL2ChainId, setQueryParams]
   )
 
   useEffect(() => {

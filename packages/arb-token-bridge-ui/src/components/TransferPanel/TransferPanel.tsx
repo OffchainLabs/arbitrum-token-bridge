@@ -58,7 +58,7 @@ const isAllowedL2 = async (
 }
 
 function useTokenFromSearchParams(): string | undefined {
-  const { token: tokenFromSearchParams } = useArbQueryParams()
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   if (!tokenFromSearchParams) {
     return undefined
@@ -122,7 +122,7 @@ export function TransferPanel() {
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const { amount: queryAmount } = useArbQueryParams()
+  const [{ amount: queryAmount }] = useArbQueryParams()
 
   const [
     lowBalanceDialogProps,

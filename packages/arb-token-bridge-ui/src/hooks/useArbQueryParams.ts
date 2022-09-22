@@ -6,18 +6,29 @@
   - If we introduce a new queryParam for our bridge in the future, define it here and it will be accessible throughout the app :)
   
   - Example - to get the value of `?amount=` in browser, simply use
-    `const { amount } = useArbQueryParams()`
+    `const [{ amount }] = useArbQueryParams()`
+
+  - Example - to set the value of `?amount=` in browser, simply use
+    `const [, setQueryParams] = useArbQueryParams()`
+    `setQueryParams(newAmount)`
 
 */
 
 import { NumberParam, StringParam, useQueryParams } from 'use-query-params'
 
 export const useArbQueryParams = () => {
-  const [queryParams, setQueryParams] = useQueryParams({
+  /*
+  
+  returns [ 
+              queryParams (getter for all query state variables),
+              setQueryParams (setter for all query state variables)
+          ] 
+
+  */
+
+  return useQueryParams({
     amount: StringParam, // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam // import a new token using a Dialog Box
   })
-
-  return { ...queryParams, setQueryParams }
 }

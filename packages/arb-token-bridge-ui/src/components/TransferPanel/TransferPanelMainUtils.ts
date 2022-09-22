@@ -80,7 +80,7 @@ export function useIsSwitchingL2Chain() {
   const { isDepositMode } = app
 
   const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const { l2ChainId: l2ChainIdSearchParam } = useArbQueryParams()
+  const [{ l2ChainId: l2ChainIdSearchParam }] = useArbQueryParams()
 
   return useMemo(() => {
     if (isConnectedToArbitrum || !isDepositMode) {

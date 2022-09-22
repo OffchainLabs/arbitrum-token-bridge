@@ -312,7 +312,7 @@ export function TransferPanelMain({
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
-  const { setQueryParams } = useArbQueryParams()
+  const [, setQueryParams] = useArbQueryParams()
 
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum

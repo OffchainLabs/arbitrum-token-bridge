@@ -395,7 +395,7 @@ function Routes() {
 }
 
 function NetworkReady({ children }: { children: React.ReactNode }) {
-  const { l2ChainId } = useArbQueryParams()
+  const [{ l2ChainId }] = useArbQueryParams()
 
   return (
     <NetworksAndSignersProvider
