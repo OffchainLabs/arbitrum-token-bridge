@@ -12,24 +12,12 @@
 
 import { NumberParam, StringParam, useQueryParams } from 'use-query-params'
 
-type ArbQueryParamsType = {
-  amount?: string | null | undefined
-  l2ChainId?: number | null | undefined
-  token?: string | null | undefined
-}
-
-const useArbQueryParams = () => {
+export const useArbQueryParams = () => {
   const [queryParams, setQueryParams] = useQueryParams({
     amount: StringParam, // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam // import a new token using a Dialog Box
   })
 
-  const updateQueryParams = (params: ArbQueryParamsType) => {
-    setQueryParams(params, 'replaceIn')
-  }
-
-  return { ...queryParams, updateQueryParams }
+  return { ...queryParams, setQueryParams }
 }
-
-export default useArbQueryParams

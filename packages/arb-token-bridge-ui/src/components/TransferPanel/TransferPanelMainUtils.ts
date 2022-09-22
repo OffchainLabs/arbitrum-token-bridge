@@ -3,7 +3,7 @@ import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import useArbQueryParams from '../../hooks/useArbQueryParams'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,

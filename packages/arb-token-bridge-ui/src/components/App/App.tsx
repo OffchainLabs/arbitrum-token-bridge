@@ -56,7 +56,7 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
-import useArbQueryParams from '../../hooks/useArbQueryParams'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -357,7 +357,8 @@ function Routes() {
         adapter={ReactRouter5Adapter}
         options={{
           searchStringToObject: parse,
-          objectToSearchString: stringify
+          objectToSearchString: stringify,
+          updateType: 'replaceIn' // replace just a single parameter when updating query-state, leaving the rest as is
         }}
       >
         <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />

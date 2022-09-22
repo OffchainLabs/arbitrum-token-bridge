@@ -19,7 +19,7 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import useArbQueryParams from '../../hooks/useArbQueryParams'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
