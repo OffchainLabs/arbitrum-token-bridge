@@ -28,21 +28,9 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2Address: '0x488cc08935458403a0458e45E20c0159c8AB2c92'
     },
     {
-      symbol: 'wstETH',
-      l2CustomAddr: '',
-      l1Address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
-      l2Address: ''
-    },
-    {
       symbol: 'stETH',
       l2CustomAddr: '',
       l1Address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
-      l2Address: ''
-    },
-    {
-      symbol: 'LDO',
-      l2CustomAddr: '',
-      l1Address: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
       l2Address: ''
     },
     {

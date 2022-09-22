@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
@@ -14,10 +13,10 @@ import {
   useLocation
 } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState } from 'src/util/index'
+import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { ExternalProvider } from '@ethersproject/providers'
+import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
@@ -45,7 +44,8 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
   UseNetworksAndSignersLoadingOrErrorStatus,
-  NetworksAndSignersProvider
+  NetworksAndSignersProvider,
+  UseNetworksAndSignersConnectedResult
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
@@ -66,8 +66,8 @@ type Web3Provider = ExternalProvider & {
 const isSwitchChainSupported = (provider: Web3Provider) =>
   provider && (provider.isMetaMask || provider.isImToken)
 
-async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
-  return (await _signer.provider.getCode(_address)).length <= 2
+async function addressIsEOA(address: string, provider: JsonRpcProvider) {
+  return (await provider.getCode(address)).length <= 2
 }
 
 const AppContent = (): JSX.Element => {
@@ -158,27 +158,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { provider: library } = useWallet()
 
   const initBridge = useCallback(
-    async (params: {
-      l1: {
-        signer: JsonRpcSigner
-        network: L1Network
-      }
-      l2: {
-        signer: JsonRpcSigner
-        network: L2Network
-      }
-    }) => {
-      const {
-        l1: { signer: l1Signer },
-        l2: { signer: l2Signer }
-      } = params
+    async (params: UseNetworksAndSignersConnectedResult) => {
+      const { l1, l2 } = params
+      const { signer: l1Signer, provider: l1Provider } = l1
+      const { signer: l2Signer, provider: l2Provider } = l2
 
       const l1Address = await l1Signer.getAddress()
       const l2Address = await l2Signer.getAddress()
 
       try {
-        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Signer)
-        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Signer)
+        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Provider)
+        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Provider)
 
         if (!l1AddressIsEOA || !l2AddressIsEOA) {
           actions.app.setConnectionState(ConnectionState.NOT_EOA)
@@ -192,7 +182,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
       }
 
-      setTokenBridgeParams({ walletAddress: l1Address, ...params })
+      setTokenBridgeParams({
+        walletAddress: l1Address,
+        l1: {
+          network: l1.network,
+          provider: l1.provider
+        },
+        l2: {
+          network: l2.network,
+          provider: l2.provider
+        }
+      })
     },
     []
   )
