@@ -87,7 +87,8 @@ export function useIsSwitchingL2Chain() {
       return false
     }
 
-    if (isNaN(l2ChainIdSearchParam || NaN)) {
+    // if l2ChainId url param is either null, undefined, blank, 0 or invalid number
+    if (!l2ChainIdSearchParam || isNaN(l2ChainIdSearchParam)) {
       return false
     }
 
