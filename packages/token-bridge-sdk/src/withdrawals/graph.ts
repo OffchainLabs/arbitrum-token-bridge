@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
-import { BigNumber } from '@ethersproject/bignumber'
+import { utils, BigNumber } from 'ethers'
+
 import { AssetType, L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
-import { utils } from 'ethers'
 
 export type GetTokenWithdrawalsResult = {
   l2ToL1Event: L2ToL1EventResult & { l2TxHash: string }
@@ -37,10 +37,27 @@ const apolloL2GatewaysRinkebyClient = new ApolloClient({
   cache: new InMemoryCache()
 })
 
+const apolloL2GatewaysNitroRinkebyClient = new ApolloClient({
+  uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-rinkeby',
+  cache: new InMemoryCache()
+})
+
 const apolloL2GatewaysClient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway',
   cache: new InMemoryCache()
 })
+
+export function getL2SubgraphClient(l2NetworkId: number) {
+  switch (l2NetworkId) {
+    case 421611:
+      return apolloL2GatewaysNitroRinkebyClient
+
+    default:
+      throw new Error(
+        `[getL2SubgraphClient] Unsupported network: ${l2NetworkId}`
+      )
+  }
+}
 
 const networkIDAndLayerToClient = (networkID: string, layer: 1 | 2) => {
   switch (networkID) {

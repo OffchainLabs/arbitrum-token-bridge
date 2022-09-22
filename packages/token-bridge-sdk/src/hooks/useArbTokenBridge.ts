@@ -562,9 +562,9 @@ export const useArbTokenBridge = (
 
   const approveTokenL2 = async ({
     erc20L1Address,
-    l2Signer,
+    l2Signer
   }: {
-    erc20L1Address: string,
+    erc20L1Address: string
     l2Signer: Signer
   }) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
@@ -1369,7 +1369,7 @@ export const useArbTokenBridge = (
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l1NetworkId: l1.network.chainID
+        l2NetworkId: l2.network.chainID
       }),
       fetchETHWithdrawalsFromEventLogs({
         address: walletAddress,
