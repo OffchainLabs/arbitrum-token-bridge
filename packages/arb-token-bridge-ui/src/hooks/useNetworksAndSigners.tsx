@@ -1,7 +1,7 @@
 /*
 
-Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI. 
-These can be used to answer and access the following use-cases across the app - 
+Hooks and utility functions written to maintain L1 and L2 connnection state (using context) and their metadata across the Bridge UI.
+These can be used to answer and access the following use-cases across the app -
 
 1. Is the network connected? If yes, is it Arbitrum (L2) or Ethereum (L1)?
 2. Signer exposed by the wallet to sign and execute RPC transactions
@@ -19,6 +19,7 @@ import React, {
 import {
   JsonRpcSigner,
   JsonRpcProvider,
+  StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
@@ -26,6 +27,7 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { useLatest } from 'react-use'
 
 import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { useHistory } from 'react-router-dom'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
@@ -46,14 +48,22 @@ const defaultStatus =
     ? UseNetworksAndSignersStatus.NOT_CONNECTED
     : UseNetworksAndSignersStatus.LOADING
 
-type UseNetworksAndSignersLoadingOrErrorResult = {
+export type UseNetworksAndSignersLoadingOrErrorResult = {
   status: UseNetworksAndSignersLoadingOrErrorStatus
 }
 
-type UseNetworksAndSignersConnectedResult = {
+export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
-  l1: { network: L1Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
-  l2: { network: L2Network; signer: JsonRpcSigner; provider: JsonRpcProvider }
+  l1: {
+    network: L1Network
+    provider: JsonRpcProvider
+    signer: Omit<JsonRpcSigner, 'provider'>
+  }
+  l2: {
+    network: L2Network
+    provider: JsonRpcProvider
+    signer: Omit<JsonRpcSigner, 'provider'>
+  }
   isConnectedToArbitrum: boolean
 }
 
@@ -118,7 +128,7 @@ export function NetworksAndSignersProvider(
 ): JSX.Element {
   const { selectedL2ChainId } = props
   const { provider, account, network, connect } = useWallet()
-
+  const history = useHistory()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
@@ -156,27 +166,49 @@ export function NetworksAndSignersProvider(
     async (web3Provider: Web3Provider, address: string) => {
       const providerChainId = (await web3Provider.getNetwork()).chainId
 
-      let _selectedL2ChainId = selectedL2ChainId
-      if (_selectedL2ChainId === undefined) {
-        // If l2ChainId is undefined, use a default L2 based on the connected provider chainid
-        _selectedL2ChainId = chainIdToDefaultL2ChainId[providerChainId]
-        if (_selectedL2ChainId === undefined) {
-          console.error(`Unknown provider chainId: ${providerChainId}`)
-          setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
-          return
-        }
+      // If provider is not supported, display warning message
+      if (!(providerChainId in chainIdToDefaultL2ChainId)) {
+        console.error(`Provider chainId not supported: ${providerChainId}`)
+        setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+        return
       }
 
-      getL1Network(web3Provider, _selectedL2ChainId!)
+      /***
+       * Case 1: selectedChainId is undefined => set it to provider's default L2
+       * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
+       * Case 3: selectedChainId is defined and supported, continue
+       */
+      let _selectedL2ChainId = selectedL2ChainId
+      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
+
+      // Case 1: use a default L2 based on the connected provider chainid
+      _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
+      if (typeof _selectedL2ChainId === 'undefined') {
+        console.error(`Unknown provider chainId: ${providerChainId}`)
+        setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+        return
+      }
+
+      // Case 2: L2 is not supported by provider
+      if (!providerSupportedL2.includes(_selectedL2ChainId)) {
+        history.replace({
+          pathname: '/'
+        })
+        return
+      }
+
+      // Case 3
+      getL1Network(web3Provider, _selectedL2ChainId)
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const l2Rpc = rpcURLs[_selectedL2ChainId as ChainId]
-          const l2Provider = new JsonRpcProvider(l2Rpc)
+          const l2Provider = new StaticJsonRpcProvider(
+            rpcURLs[_selectedL2ChainId as ChainId]
+          )
           const l2Network = await getL2Network(l2Provider)
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-          const l1Provider = new JsonRpcProvider(
+          const l1Provider = new StaticJsonRpcProvider(
             rpcURLs[l1Network.chainID as ChainId]
           )
 
@@ -205,14 +237,15 @@ export function NetworksAndSignersProvider(
           getL2Network(web3Provider)
             .then(async l2Network => {
               const l1NetworkChainId = l2Network.partnerChainID
-              const l1Rpc = rpcURLs[l1NetworkChainId as ChainId]
-              const l1Provider = new JsonRpcProvider(l1Rpc)
+              const l1Provider = new StaticJsonRpcProvider(
+                rpcURLs[l1NetworkChainId as ChainId]
+              )
               const l1Network = await getL1Network(
                 l1Provider,
                 _selectedL2ChainId!
               )
 
-              const l2Provider = new JsonRpcProvider(
+              const l2Provider = new StaticJsonRpcProvider(
                 rpcURLs[l2Network.chainID as ChainId]
               )
 
@@ -236,7 +269,7 @@ export function NetworksAndSignersProvider(
             })
         })
     },
-    [latestResult, selectedL2ChainId]
+    [latestResult, selectedL2ChainId, history]
   )
 
   useEffect(() => {
