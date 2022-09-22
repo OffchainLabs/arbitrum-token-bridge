@@ -371,20 +371,12 @@ export const useArbTokenBridge = (
     })
 
     const receipt = await tx.wait()
-    const [{ messageNum }] = receipt.getInboxMessageDeliveredEvents()
 
     if (txLifecycle?.onTxConfirm) {
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const ethDepositMessage = new EthDepositMessage(
-      l2.provider,
-      l2.network.chainID,
-      messageNum,
-      receipt.from,
-      receipt.to,
-      amount
-    )
+    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -398,7 +390,6 @@ export const useArbTokenBridge = (
   }
 
   async function depositEthEstimateGas({ amount }: { amount: BigNumber }) {
-    // TODO: question - is from going to be walletAddress?
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
       from: walletAddress
@@ -411,8 +402,6 @@ export const useArbTokenBridge = (
     })
 
     const estimatedL2Gas = BigNumber.from(0)
-
-    // TODO: can we still get estimatedL2SubmissionCost in v3?
     const estimatedL2SubmissionCost = BigNumber.from(0)
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
@@ -498,8 +487,8 @@ export const useArbTokenBridge = (
       destinationAddress: walletAddress
     })
 
-    // Can't do this atm. Hardcoded to 130000.
-    const estimatedL1Gas = BigNumber.from(130000)
+    // Can't do this atm. Hardcoded to 130_000.
+    const estimatedL1Gas = BigNumber.from(130_000)
 
     const estimatedL2Gas = await l2.provider.estimateGas({
       data: withdrawalRequest.txRequest.data,
@@ -669,10 +658,9 @@ export const useArbTokenBridge = (
       value: depositRequest.txRequest.value
     })
 
-    const estimatedL2Gas = depositRequest.retryableData.maxFeePerGas
-
-    // TODO: can we still get estimatedL2SubmissionCost in v3?
-    const estimatedL2SubmissionCost = BigNumber.from(0)
+    const estimatedL2Gas = depositRequest.retryableData.gasLimit
+    const estimatedL2SubmissionCost =
+      depositRequest.retryableData.maxSubmissionCost
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
@@ -771,7 +759,7 @@ export const useArbTokenBridge = (
     amount: BigNumber
     erc20L1Address: string
   }) {
-    const estimatedL1Gas = BigNumber.from(160000)
+    const estimatedL1Gas = BigNumber.from(160_000)
 
     // TODO: rename getWithdrawalParams to getWithdrawalRequest in sdk
     const withdrawalRequest = await erc20Bridger.getWithdrawalParams({
