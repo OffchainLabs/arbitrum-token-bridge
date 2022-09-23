@@ -1251,15 +1251,14 @@ export const useArbTokenBridge = (
   async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
     result: FetchTokenWithdrawalsFromSubgraphResult
   ): Promise<L2ToL1EventResultPlus> {
-    const symbol = await getTokenSymbol(result.otherData.tokenAddress)
-    const decimals = await getTokenDecimals(result.otherData.tokenAddress)
-    const outgoingMessageState = await getOutgoingMessageState(
-      result.l2ToL1Event
-    )
+    const symbol = await getTokenSymbol(result.tokenAddress)
+    const decimals = await getTokenDecimals(result.tokenAddress)
+    const outgoingMessageState = await getOutgoingMessageState(result)
 
     return {
-      ...result.l2ToL1Event,
-      ...result.otherData,
+      ...result,
+      value: result.amount,
+      type: AssetType.ERC20,
       symbol,
       decimals,
       outgoingMessageState
@@ -1382,7 +1381,7 @@ export const useArbTokenBridge = (
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l1NetworkId: l1.network.chainID
+        l2Provider: l2.provider
       }),
       fetchTokenWithdrawalsFromEventLogs({
         address: walletAddress,
