@@ -754,8 +754,7 @@ export const useArbTokenBridge = (
   }) {
     const estimatedL1Gas = BigNumber.from(160_000)
 
-    // TODO: rename getWithdrawalParams to getWithdrawalRequest in sdk
-    const withdrawalRequest = await erc20Bridger.getWithdrawalParams({
+    const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
       amount,
       destinationAddress: walletAddress,
       erc20l1Address: erc20L1Address
