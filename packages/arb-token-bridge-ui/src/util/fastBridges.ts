@@ -31,7 +31,7 @@ export function getFastBridges(
   from: ChainId,
   to: ChainId,
   tokenSymbol: string = 'ETH',
-  amount?: string
+  amount: string
 ): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
