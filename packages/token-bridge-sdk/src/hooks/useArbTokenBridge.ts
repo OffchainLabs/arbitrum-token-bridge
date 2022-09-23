@@ -394,12 +394,9 @@ export const useArbTokenBridge = (
       from: walletAddress
     })
 
-    const estimatedL1Gas = await l1.provider.estimateGas({
-      data: depositRequest.txRequest.data,
-      from: depositRequest.txRequest.from,
-      to: depositRequest.txRequest.to,
-      value: depositRequest.txRequest.value
-    })
+    const estimatedL1Gas = await l1.provider.estimateGas(
+      depositRequest.txRequest
+    )
 
     const estimatedL2Gas = BigNumber.from(0)
     const estimatedL2SubmissionCost = BigNumber.from(0)
@@ -490,11 +487,9 @@ export const useArbTokenBridge = (
     // Can't do this atm. Hardcoded to 130_000.
     const estimatedL1Gas = BigNumber.from(130_000)
 
-    const estimatedL2Gas = await l2.provider.estimateGas({
-      data: withdrawalRequest.txRequest.data,
-      to: withdrawalRequest.txRequest.to,
-      value: withdrawalRequest.txRequest.value
-    })
+    const estimatedL2Gas = await l2.provider.estimateGas(
+      withdrawalRequest.txRequest
+    )
 
     return { estimatedL1Gas, estimatedL2Gas }
   }
@@ -652,12 +647,9 @@ export const useArbTokenBridge = (
       l2Provider: l2.provider
     })
 
-    const estimatedL1Gas = await l1.provider.estimateGas({
-      data: depositRequest.txRequest.data,
-      from: depositRequest.txRequest.from,
-      to: depositRequest.txRequest.to,
-      value: depositRequest.txRequest.value
-    })
+    const estimatedL1Gas = await l1.provider.estimateGas(
+      depositRequest.txRequest
+    )
 
     const estimatedL2Gas = depositRequest.retryableData.gasLimit
     const estimatedL2SubmissionCost =
@@ -769,11 +761,9 @@ export const useArbTokenBridge = (
       erc20l1Address: erc20L1Address
     })
 
-    const estimatedL2Gas = await l2.provider.estimateGas({
-      data: withdrawalRequest.txRequest.data,
-      to: withdrawalRequest.txRequest.to,
-      value: withdrawalRequest.txRequest.value
-    })
+    const estimatedL2Gas = await l2.provider.estimateGas(
+      withdrawalRequest.txRequest
+    )
 
     return { estimatedL1Gas, estimatedL2Gas }
   }
