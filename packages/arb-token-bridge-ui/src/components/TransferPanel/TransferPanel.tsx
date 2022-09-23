@@ -719,7 +719,10 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <DepositConfirmationDialog {...depositConfirmationDialogProps} />
+      <DepositConfirmationDialog
+        {...depositConfirmationDialogProps}
+        amount={isDepositMode ? l1Amount : l2Amount}
+      />
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
