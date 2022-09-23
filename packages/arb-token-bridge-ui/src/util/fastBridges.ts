@@ -49,7 +49,9 @@ export function getFastBridges(
       case FastBridgeNames.Hop:
         return `https://app.hop.exchange/#/send?sourceNetwork=${chainIdToSlug(
           from
-        )}&destNetwork=${chainIdToSlug(to)}&token=${tokenSymbol}&amount=${amount}`
+        )}&destNetwork=${chainIdToSlug(
+          to
+        )}&token=${tokenSymbol}&amount=${amount}`
       case FastBridgeNames.Celer:
         return `https://cbridge.celer.network/${from}/${to}/${tokenSymbol}`
       case FastBridgeNames.Connext:

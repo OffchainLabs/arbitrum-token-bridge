@@ -21,7 +21,9 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
-export function DepositConfirmationDialog(props: UseDialogProps) {
+export function DepositConfirmationDialog(
+  props: UseDialogProps & { amount: string }
+) {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -47,7 +49,7 @@ export function DepositConfirmationDialog(props: UseDialogProps) {
     tokenAddress && bridgeInfo && bridgeInfo.tokenSymbolOnArbitrum
 
   const fastBridges = [
-    ...getFastBridges(from.chainID, to.chainID, tokenSymbol, '0') // REMOVE : this hardcoded 0, only added for testing..
+    ...getFastBridges(from.chainID, to.chainID, tokenSymbol, props?.amount)
   ].filter(bridge => {
     return (
       tokenSymbol &&
