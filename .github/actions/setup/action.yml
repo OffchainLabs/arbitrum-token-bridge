@@ -1,5 +1,5 @@
 name: Setup
-description: "Check out repo and run yarn install with cache"
+description: "Check out repo and run yarn install with cache if found"
 runs:
   using: "composite"
   steps:
