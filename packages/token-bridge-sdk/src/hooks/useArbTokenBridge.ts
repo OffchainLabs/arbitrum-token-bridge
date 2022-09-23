@@ -59,6 +59,7 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { fetchL2BlockNumberFromSubgraph } from '../withdrawals/graph'
 
 const { Zero } = constants
 
@@ -1337,25 +1338,20 @@ export const useArbTokenBridge = (
     }
   }
 
-  function getLatestSubgraphBlockNumber() {
-    if (isArbitrumOne) {
-      return 22202305
-    }
-
-    if (isArbitrumRinkeby) {
-      return 13919178
-    }
-
-    // Currently no subgraphs for other networks
-    return 0
-  }
-
   const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
     const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
-    const latestSubgraphBlockNumber = getLatestSubgraphBlockNumber()
 
     console.log('*** Getting initial pending withdrawal data ***')
+
+    const latestSubgraphBlockNumber = await fetchL2BlockNumberFromSubgraph(
+      l2.network.chainID
+    )
+
+    console.log(
+      'Latest block number on L2 from subgraph:',
+      latestSubgraphBlockNumber
+    )
 
     const [
       ethWithdrawalsFromSubgraph,
