@@ -44,6 +44,10 @@ export async function fetchTokenWithdrawalsFromSubgraph({
   toBlock: number
   l2Provider: JsonRpcProvider
 }): Promise<FetchTokenWithdrawalsFromSubgraphResult[]> {
+  if (fromBlock === 0 && toBlock === 0) {
+    return []
+  }
+
   const l2NetworkId = (await l2Provider.getNetwork()).chainId
 
   const queryResult: QueryResult = await getL2SubgraphClient(l2NetworkId).query(
