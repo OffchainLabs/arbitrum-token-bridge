@@ -197,7 +197,7 @@ export function NetworksAndSignersProvider(
       }
 
       // Case 3
-      getL1Network(web3Provider, _selectedL2ChainId)
+      getL1Network(web3Provider)
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
           const l2Provider = new StaticJsonRpcProvider(
@@ -239,10 +239,7 @@ export function NetworksAndSignersProvider(
               const l1Provider = new StaticJsonRpcProvider(
                 rpcURLs[l1NetworkChainId]
               )
-              const l1Network = await getL1Network(
-                l1Provider,
-                _selectedL2ChainId!
-              )
+              const l1Network = await getL1Network(l1Provider)
 
               const l2Provider = new StaticJsonRpcProvider(
                 rpcURLs[l2Network.chainID!]

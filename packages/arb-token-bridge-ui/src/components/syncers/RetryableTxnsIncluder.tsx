@@ -31,7 +31,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-      const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
+      const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
       const status = await l1ToL2Msg.status()
 
       if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
@@ -65,16 +65,14 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
       if (depositTx.assetType === AssetType.ETH) {
-        const [ethDepositMessage] = await l1TxReceipt.getEthDepositMessages(
-          l2Provider
-        )
+        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
         arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
           depositTx.txID,
           ethDepositMessage
         )
       } else {
-        const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
         const status = await l1ToL2Msg.status()
 
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(

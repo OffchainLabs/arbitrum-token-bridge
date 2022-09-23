@@ -397,6 +397,7 @@ export const useArbTokenBridge = (
     const estimatedL1Gas = await l1.provider.estimateGas({
       data: depositRequest.txRequest.data,
       from: depositRequest.txRequest.from,
+      to: depositRequest.txRequest.to,
       value: depositRequest.txRequest.value
     })
 
@@ -654,6 +655,7 @@ export const useArbTokenBridge = (
     const estimatedL1Gas = await l1.provider.estimateGas({
       data: depositRequest.txRequest.data,
       from: depositRequest.txRequest.from,
+      to: depositRequest.txRequest.to,
       value: depositRequest.txRequest.value
     })
 
