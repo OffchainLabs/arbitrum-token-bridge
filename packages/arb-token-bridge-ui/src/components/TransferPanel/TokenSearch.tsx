@@ -71,8 +71,8 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
 
-  const [l1Balance] = useBalance({ provider: l1Provider, walletAddress })
-  const [l2Balance] = useBalance({ provider: l2Provider, walletAddress })
+  const [ethL1Balance] = useBalance({ provider: l1Provider, walletAddress })
+  const [ethL2Balance] = useBalance({ provider: l2Provider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -88,13 +88,13 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
   const tokenBalance = useMemo(() => {
     if (!token) {
-      return isDepositMode ? l1Balance : l2Balance
+      return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
     return isDepositMode
       ? balances?.erc20[token.address]?.balance
       : balances?.erc20[token.address]?.arbChainBalance
-  }, [l1Balance, l2Balance, token, isDepositMode, balances])
+  }, [ethL1Balance, ethL2Balance, token, isDepositMode, balances])
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
@@ -329,8 +329,8 @@ function TokensPanel({
     l2: { provider: L2Provider }
   } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
-  const [ethBalanceL1] = useBalance({ provider: L1Provider, walletAddress })
-  const [ethBalanceL2] = useBalance({ provider: L2Provider, walletAddress })
+  const [ethL1Balance] = useBalance({ provider: L1Provider, walletAddress })
+  const [ethL2Balance] = useBalance({ provider: L2Provider, walletAddress })
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -344,14 +344,14 @@ function TokensPanel({
   const getBalance = useCallback(
     (address: string) => {
       if (address === ETH_IDENTIFIER) {
-        return isDepositMode ? ethBalanceL1 : ethBalanceL2
+        return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
       return isDepositMode
         ? balances?.erc20[address]?.balance
         : balances?.erc20[address]?.arbChainBalance
     },
-    [ethBalanceL1, ethBalanceL2, isDepositMode, balances]
+    [ethL1Balance, ethL2Balance, isDepositMode, balances]
   )
 
   const tokensToShow = useMemo(() => {

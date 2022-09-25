@@ -219,10 +219,10 @@ function ETHBalance({
   const { l1, l2 } = networksAndSigners
   const walletAddress = arbTokenBridge.walletAddress
 
-  const [l1Balance] = useBalance({ provider: l1.provider, walletAddress })
-  const [l2Balance] = useBalance({ provider: l2.provider, walletAddress })
+  const [ethL1Balance] = useBalance({ provider: l1.provider, walletAddress })
+  const [ethL2Balance] = useBalance({ provider: l2.provider, walletAddress })
 
-  const balance = on === 'ethereum' ? l1Balance : l2Balance
+  const balance = on === 'ethereum' ? ethL1Balance : ethL2Balance
 
   if (!balance) {
     return <StyledLoader />

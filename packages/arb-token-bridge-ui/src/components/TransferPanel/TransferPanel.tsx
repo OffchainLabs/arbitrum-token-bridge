@@ -205,7 +205,6 @@ export function TransferPanel() {
     }
 
     if (typeof arbTokenBridge.balances !== 'undefined') {
-      // const ethBalance = arbTokenBridge.balances.eth.balance
       if (!ethBalanceL1) {
         return
       }

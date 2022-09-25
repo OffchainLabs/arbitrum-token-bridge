@@ -113,11 +113,11 @@ export const useArbTokenBridge = (
     ContractStorage<ERC20BridgeToken>
   >({})
 
-  const [, updateL1Balance] = useBalance({
+  const [, updateEthL1Balance] = useBalance({
     provider: l1.provider,
     walletAddress
   })
-  const [, updateL2Balance] = useBalance({
+  const [, updateEthL2Balance] = useBalance({
     provider: l2.provider,
     walletAddress
   })
@@ -998,7 +998,7 @@ export const useArbTokenBridge = (
   )
 
   const updateEthBalances = async () => {
-    Promise.all([updateL1Balance(), updateL2Balance()])
+    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
   }
 
   const updateTokenBalances = async (
