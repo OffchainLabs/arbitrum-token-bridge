@@ -113,6 +113,15 @@ export const useArbTokenBridge = (
     ContractStorage<ERC20BridgeToken>
   >({})
 
+  const [, updateL1Balance] = useBalance({
+    provider: l1.provider,
+    walletAddress
+  })
+  const [, updateL2Balance] = useBalance({
+    provider: l2.provider,
+    walletAddress
+  })
+
   const [erc20Balances, setErc20Balances] = useState<
     ContractStorage<BridgeBalance>
   >({})
@@ -374,7 +383,7 @@ export const useArbTokenBridge = (
     }
 
     updateTransaction(receipt, tx, l1ToL2MsgData)
-    // updateEthBalances()
+    updateEthBalances()
   }
 
   async function depositEthEstimateGas({
@@ -437,7 +446,7 @@ export const useArbTokenBridge = (
       }
 
       updateTransaction(receipt, tx)
-      // updateEthBalances()
+      updateEthBalances()
 
       const l2ToL1Events = receipt.getL2ToL1Events()
 
@@ -987,6 +996,11 @@ export const useArbTokenBridge = (
     },
     [setErc20Balances, bridgeTokens, setBridgeTokens]
   )
+
+  const updateEthBalances = async () => {
+    console.info('UPDATE BALANCE')
+    Promise.all([updateL1Balance(), updateL2Balance()])
+  }
 
   const updateTokenBalances = async (
     bridgeTokens: ContractStorage<BridgeToken>

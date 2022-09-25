@@ -25,7 +25,6 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   } = useNetworksAndSigners()
 
   const [ethBalance] = useBalance({
-    // TODO: Check with Dragisa
     provider: isConnectedToArbitrum ? L2Provider : L1Provider,
     walletAddress: arbTokenBridge.walletAddress
   })

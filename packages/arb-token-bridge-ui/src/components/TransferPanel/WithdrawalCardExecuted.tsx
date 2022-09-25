@@ -11,12 +11,17 @@ import {
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
 import { formatBigNumber } from '../../util/NumberUtils'
+import { useNetworksAndSigners } from 'src/hooks/useNetworksAndSigners'
+import { useBalance } from 'token-bridge-sdk'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
     app: { arbTokenBridge, selectedToken }
   } = useAppState()
   const dispatch = useAppContextDispatch()
+  const { l1 } = useNetworksAndSigners()
+  const { walletAddress } = arbTokenBridge
+  const [ethBalance] = useBalance({ provider: l1.provider, walletAddress })
 
   useEffect(() => {
     // Add token to bridge just in case
@@ -31,8 +36,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     }
 
     if (tx.asset === 'eth') {
-      // return arbTokenBridge.balances.eth.balance
-      return BigNumber.from(5)
+      return ethBalance
     }
 
     if (!tx.tokenAddress) {
@@ -40,7 +44,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     }
 
     return arbTokenBridge.balances.erc20[tx.tokenAddress]?.balance
-  }, [tx, arbTokenBridge])
+  }, [ethBalance, tx, arbTokenBridge])
 
   useEffect(() => {
     const timeout = setTimeout(() => {

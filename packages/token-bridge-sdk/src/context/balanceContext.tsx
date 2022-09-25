@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, PropsWithChildren } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  PropsWithChildren
+} from 'react'
 import { BigNumber } from 'ethers'
 
 type Balance = {
@@ -14,20 +20,23 @@ type SetBalanceParams = {
 }
 const BalanceContext = createContext<
   [State, (params: SetBalanceParams) => void]
->([{}, ({ walletAddress, balance }: SetBalanceParams) => {}])
+>([{}, () => {}])
 
 function BalanceContextProvider({ children }: PropsWithChildren<{}>) {
   const [balances, setBalances] = useState<State>({})
 
-  const setBalance = ({ walletAddress, balance }: SetBalanceParams) => {
-    setBalances(oldBalances => ({
-      ...oldBalances,
-      [walletAddress]: {
-        ...oldBalances[walletAddress],
-        ...balance
-      }
-    }))
-  }
+  const setBalance = useCallback(
+    ({ walletAddress, balance }: SetBalanceParams) => {
+      setBalances(oldBalances => ({
+        ...oldBalances,
+        [walletAddress]: {
+          ...oldBalances[walletAddress],
+          ...balance
+        }
+      }))
+    },
+    []
+  )
 
   return (
     <BalanceContext.Provider value={[balances, setBalance]}>

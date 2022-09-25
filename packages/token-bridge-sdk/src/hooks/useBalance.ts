@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useBalanceContext } from '../context/balanceContext'
+import { BigNumber } from 'ethers'
 
 const useBalance = ({
   provider,
@@ -10,16 +11,16 @@ const useBalance = ({
   walletAddress: string
 }) => {
   const [balances, setBalances] = useBalanceContext()
-  const balance = balances[walletAddress]?.[provider.network.chainId] ?? null
+  const balance =
+    balances[walletAddress]?.[provider.network?.chainId] ?? BigNumber.from(0)
 
   const updateBalance = useCallback(async () => {
     const newBalance = await provider.getBalance(walletAddress)
-
     setBalances({
-      walletAddress: walletAddress,
+      walletAddress,
       balance: { [provider.network.chainId]: newBalance }
     })
-  }, [provider, setBalances, walletAddress])
+  }, [walletAddress, setBalances, provider])
 
   return [balance, updateBalance] as const
 }

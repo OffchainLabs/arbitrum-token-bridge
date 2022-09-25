@@ -221,6 +221,7 @@ function ETHBalance({
 
   const [l1Balance] = useBalance({ provider: l1.provider, walletAddress })
   const [l2Balance] = useBalance({ provider: l2.provider, walletAddress })
+
   const balance = on === 'ethereum' ? l1Balance : l2Balance
 
   if (!balance) {
@@ -305,8 +306,8 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
-  const [l1Balance] = useBalance({ provider: l1.provider, walletAddress })
-  const [l2Balance] = useBalance({ provider: l2.provider, walletAddress })
+  const [ethL1Balance] = useBalance({ provider: l1.provider, walletAddress })
+  const [ethL2Balance] = useBalance({ provider: l2.provider, walletAddress })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
@@ -337,7 +338,7 @@ export function TransferPanelMain({
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode ? l1Balance : l2Balance
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
     const tokenBalance = isDepositMode
       ? tokenBalances.ethereum
       : tokenBalances.arbitrum
@@ -355,7 +356,7 @@ export function TransferPanelMain({
     }
 
     return !ethBalance.isZero()
-  }, [l1Balance, l2Balance, tokenBalances, selectedToken, isDepositMode])
+  }, [ethL1Balance, ethL2Balance, tokenBalances, selectedToken, isDepositMode])
 
   const errorMessageText = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
@@ -517,7 +518,7 @@ export function TransferPanelMain({
   }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
 
   async function setMaxAmount() {
-    const ethBalance = isDepositMode ? l1Balance : l2Balance
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
     const tokenBalance = isDepositMode
       ? tokenBalances.ethereum

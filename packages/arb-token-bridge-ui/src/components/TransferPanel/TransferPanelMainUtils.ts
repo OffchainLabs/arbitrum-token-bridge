@@ -4,7 +4,6 @@ import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance } from 'token-bridge-sdk'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,

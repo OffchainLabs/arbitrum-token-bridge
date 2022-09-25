@@ -154,9 +154,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
-
   const { provider: library } = useWallet()
-
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
@@ -182,6 +180,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
       }
 
+      console.info('SETTING NEW TOKEN')
       setTokenBridgeParams({
         walletAddress: l1Address,
         l1: {
@@ -205,6 +204,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   // Listen for account and network changes
   useEffect(() => {
+    console.info('NETWORK CHANGED')
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)

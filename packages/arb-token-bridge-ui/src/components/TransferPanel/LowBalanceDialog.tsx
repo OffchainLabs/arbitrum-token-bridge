@@ -93,7 +93,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
       return BigNumber.from(0)
     }
 
-    return ethBalance || BigNumber.from(0)
+    return ethBalance
   }, [ethBalance, app.arbTokenBridge])
 
   const balanceNumber = useMemo(
