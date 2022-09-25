@@ -998,7 +998,6 @@ export const useArbTokenBridge = (
   )
 
   const updateEthBalances = async () => {
-    console.info('UPDATE BALANCE')
     Promise.all([updateL1Balance(), updateL2Balance()])
   }
 
