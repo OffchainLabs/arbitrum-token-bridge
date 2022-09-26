@@ -39,6 +39,7 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -101,6 +102,16 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
+  const [
+    ,
+    {
+      addTransaction,
+      addTransactions,
+      setTransactionFailure,
+      setTransactionSuccess,
+      updateTransaction
+    }
+  ] = useTransactions()
   const { provider, account } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
@@ -446,7 +457,9 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
-              }
+              },
+              addTransaction,
+              updateTransaction
             }
           })
         }

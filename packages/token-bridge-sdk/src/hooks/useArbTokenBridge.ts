@@ -169,19 +169,12 @@ export const useArbTokenBridge = (
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
   const [
-    transactions,
+    ,
     {
       addTransaction,
-      addTransactions,
       setTransactionFailure,
-      clearPendingTransactions,
-      setTransactionConfirmed,
       setTransactionSuccess,
-      updateTransaction,
-      removeTransaction,
-      addFailedTransaction,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateEthDepositMessageStatus
+      updateTransaction
     }
   ] = useTransactions()
 
@@ -364,41 +357,46 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
+
+      if (txLifecycle?.addTransaction) {
+        txLifecycle?.addTransaction({
+          type: 'deposit-l1',
+          status: 'pending',
+          value: utils.formatEther(amount),
+          txID: tx.hash,
+          assetName: 'ETH',
+          assetType: AssetType.ETH,
+          sender: walletAddress,
+          l1NetworkID,
+          l2NetworkID
+        })
+      }
+
+      const receipt = await tx.wait()
+
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
+      }
+
+      const [ethDepositMessage] = await receipt.getEthDepositMessages(
+        l2.provider
+      )
+
+      const l1ToL2MsgData: L1ToL2MessageData = {
+        fetchingUpdate: false,
+        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
+        l2TxID: undefined
+      }
+
+      if (txLifecycle?.updateTransaction) {
+        txLifecycle.updateTransaction(receipt, tx, l1ToL2MsgData)
+      }
+
+      updateEthBalances()
     } catch (error: any) {
       return alert(error.message)
     }
-
-    // TODO -> refactor usage
-    addTransaction({
-      type: 'deposit-l1',
-      status: 'pending',
-      value: utils.formatEther(amount),
-      txID: tx.hash,
-      assetName: 'ETH',
-      assetType: AssetType.ETH,
-      sender: walletAddress,
-      l1NetworkID,
-      l2NetworkID
-    })
-
-    const receipt = await tx.wait()
-
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(receipt)
-    }
-
-    const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.provider)
-
-    const l1ToL2MsgData: L1ToL2MessageData = {
-      fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      l2TxID: undefined
-    }
-
-    // TODO -> refactor usage
-    updateTransaction(receipt, tx, l1ToL2MsgData)
-    updateEthBalances()
   }
 
   async function depositEthEstimateGas({
@@ -1119,7 +1117,7 @@ export const useArbTokenBridge = (
 
     const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
 
-    // TODO -> refator usage
+    // TODO -> refactor usage
     addTransaction({
       status: 'pending',
       type: 'outbox',
@@ -1136,7 +1134,7 @@ export const useArbTokenBridge = (
       const rec = await res.wait()
 
       if (rec.status === 1) {
-        // TODO -> refator usage
+        // TODO -> refactor usage
         setTransactionSuccess(rec.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -1145,7 +1143,7 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        // TODO -> refator usage
+        // TODO -> refactor usage
         setTransactionFailure(rec.transactionHash)
       }
 
@@ -1178,7 +1176,7 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
-    // TODO -> refator usage
+    // TODO -> refactor usage
     addTransaction({
       status: 'pending',
       type: 'outbox',
@@ -1195,7 +1193,7 @@ export const useArbTokenBridge = (
       const rec = await res.wait()
 
       if (rec.status === 1) {
-        // TODO -> refator usage
+        // TODO -> refactor usage
         setTransactionSuccess(rec.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -1204,7 +1202,7 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        // TODO -> refator usage
+        // TODO -> refactor usage
         setTransactionFailure(rec.transactionHash)
       }
 

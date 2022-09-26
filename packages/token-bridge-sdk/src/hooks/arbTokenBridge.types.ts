@@ -49,6 +49,12 @@ export enum AssetType {
 export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
   onTxSubmit: (tx: Tx) => void
   onTxConfirm: (txReceipt: TxReceipt) => void
+  addTransaction: (transaction: NewTransaction) => void
+  updateTransaction: (
+    txReceipt: TransactionReceipt,
+    tx?: ethers.ContractTransaction,
+    l1ToL2MsgData?: L1ToL2MessageData
+  ) => void
 }>
 
 export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
