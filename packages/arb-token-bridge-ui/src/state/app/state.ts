@@ -21,6 +21,7 @@ import {
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 export enum WhiteListState {
   VERIFYING,
@@ -136,7 +137,8 @@ export const defaultState: AppState = {
   selectedToken: null,
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
-    const transactions = s.arbTokenBridge?.transactions?.transactions || []
+    const [txns] = useTransactions()
+    const transactions = txns || []
     return [...transactions]
       .filter(tx => tx.sender === s.arbTokenBridge.walletAddress)
       .filter(tx => {
