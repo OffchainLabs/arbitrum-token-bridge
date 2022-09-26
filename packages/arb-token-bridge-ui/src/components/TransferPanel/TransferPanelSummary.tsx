@@ -11,7 +11,7 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { tokenRequiresApprovalOnL2 } from './useL2Approve'
+import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -130,7 +130,12 @@ export function useGasSummary(
             }
 
             // TODO: Update, as this only handles LPT
-            if (tokenRequiresApprovalOnL2(token.address)) {
+            if (
+              tokenRequiresApprovalOnL2(
+                token.address,
+                latestNetworksAndSigners.current.l2.network.chainID
+              )
+            ) {
               estimateGasResult = {
                 estimatedL1Gas: BigNumber.from(5_000),
                 estimatedL2Gas: BigNumber.from(10_000)

@@ -605,16 +605,18 @@ export const useArbTokenBridge = (
   }
 
   const approveTokenL2 = async ({
-    erc20L1Address
+    erc20L1Address,
+    l2Signer,
   }: {
-    erc20L1Address: string
+    erc20L1Address: string,
+    l2Signer: Signer
   }) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
-    const contract = await ERC20__factory.connect(l2Address, l2.provider)
+    const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const tokenData =
       searchTokenFromList(erc20L1Address) ||
