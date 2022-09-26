@@ -17,6 +17,7 @@ import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { Dialog, useDialog } from '../common/Dialog'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -330,6 +331,8 @@ export function TransferPanelMain({
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
+  const [, setQueryParams] = useArbQueryParams()
+
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum
       ? externalFrom.chainID
@@ -339,11 +342,13 @@ export function TransferPanelMain({
     setTo(externalTo)
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
-    history.replace({
-      pathname: '/',
-      search: `?l2ChainId=${l2ChainId}`
-    })
+    setQueryParams({ l2ChainId })
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
+
+  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  useEffect(() => {
+    setQueryParams({ amount })
+  }, [amount])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -446,10 +451,7 @@ export function TransferPanelMain({
     const options = getListboxOptionsFromL1Network(l1.network)
 
     function updatePreferredL2Chain(l2ChainId: number) {
-      history.replace({
-        pathname: '/',
-        search: `?l2ChainId=${l2ChainId}`
-      })
+      setQueryParams({ l2ChainId })
     }
 
     if (isDepositMode) {

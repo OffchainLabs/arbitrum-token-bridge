@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useBalanceContext } from '../context/balanceContext'
 import { BigNumber } from 'ethers'
