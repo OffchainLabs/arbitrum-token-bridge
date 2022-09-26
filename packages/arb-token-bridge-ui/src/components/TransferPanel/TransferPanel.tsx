@@ -137,8 +137,12 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
-  const [ethBalanceL1] = useBalance({ provider: l1Provider, walletAddress })
-  const [ethBalanceL2] = useBalance({ provider: l2Provider, walletAddress })
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1Provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2Provider, walletAddress })
 
   // The amount of funds to bridge over, represented as a floating point number
   const amount = useMemo(() => {
@@ -150,8 +154,8 @@ export function TransferPanel() {
   }, [isDepositMode, l1Amount, l2Amount])
 
   const ethBalance = useMemo(() => {
-    return isDepositMode ? ethBalanceL1 : ethBalanceL2
-  }, [ethBalanceL1, ethBalanceL2, isDepositMode])
+    return isDepositMode ? ethL1Balance : ethL2Balance
+  }, [ethL1Balance, ethL2Balance, isDepositMode])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -204,18 +208,18 @@ export function TransferPanel() {
     }
 
     if (typeof arbTokenBridge.balances !== 'undefined') {
-      if (!ethBalanceL1) {
+      if (!ethL1Balance) {
         return
       }
 
-      const isLowBalance = ethBalanceL1.lte(utils.parseEther('0.005'))
+      const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
 
       if (isMainnet && isDepositMode && isLowBalance) {
         openLowBalanceDialog()
       }
     }
   }, [
-    ethBalanceL1,
+    ethL1Balance,
     account,
     isMainnet,
     isDepositMode,
@@ -236,11 +240,11 @@ export function TransferPanel() {
       return utils.formatUnits(balanceL1, decimals)
     }
 
-    if (!ethBalanceL1) {
+    if (!ethL1Balance) {
       return null
     }
-    return utils.formatUnits(ethBalanceL1, 18)
-  }, [ethBalanceL1, selectedToken, arbTokenBridge])
+    return utils.formatUnits(ethL1Balance, 18)
+  }, [ethL1Balance, selectedToken, arbTokenBridge])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
@@ -253,11 +257,11 @@ export function TransferPanel() {
       return utils.formatUnits(balanceL2, decimals)
     }
 
-    if (!ethBalanceL2) {
+    if (!ethL2Balance) {
       return null
     }
-    return utils.formatUnits(ethBalanceL2, 18)
-  }, [ethBalanceL2, selectedToken, arbTokenBridge])
+    return utils.formatUnits(ethL2Balance, 18)
+  }, [ethL2Balance, selectedToken, arbTokenBridge])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'

@@ -80,7 +80,9 @@ export function LowBalanceDialog(props: UseDialogProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const { isMainnet } = isNetwork(l1.network)
-  const [ethBalance] = useBalance({
+  const {
+    eth: [ethBalance]
+  } = useBalance({
     provider: l1.provider,
     walletAddress: app.arbTokenBridge.walletAddress
   })

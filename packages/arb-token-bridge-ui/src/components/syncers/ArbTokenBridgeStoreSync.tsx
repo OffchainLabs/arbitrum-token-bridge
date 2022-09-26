@@ -1,10 +1,5 @@
 import { useEffect } from 'react'
-import useSWR from 'swr'
-import {
-  useArbTokenBridge,
-  useBalance,
-  TokenBridgeParams
-} from 'token-bridge-sdk'
+import { useArbTokenBridge, TokenBridgeParams } from 'token-bridge-sdk'
 
 import { useActions } from '../../state'
 
@@ -16,28 +11,6 @@ export function ArbTokenBridgeStoreSync({
 }): JSX.Element {
   const actions = useActions()
   const arbTokenBridge = useArbTokenBridge(tokenBridgeParams, false)
-  const {
-    walletAddress,
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider }
-  } = tokenBridgeParams
-
-  const [, updateL1Balance] = useBalance({
-    provider: L1Provider,
-    walletAddress
-  })
-  const [, updateL2Balance] = useBalance({
-    provider: L2Provider,
-    walletAddress
-  })
-
-  // Refresh balance every 5 secondes
-  useSWR(walletAddress + L1Provider.network.chainId, () => updateL1Balance(), {
-    refreshInterval: 5000
-  })
-  useSWR(walletAddress + L2Provider.network.chainId, () => updateL2Balance(), {
-    refreshInterval: 5000
-  })
 
   useEffect(() => {
     actions.app.setArbTokenBridge(arbTokenBridge)

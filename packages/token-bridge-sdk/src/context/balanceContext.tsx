@@ -8,7 +8,9 @@ import {
 import { BigNumber } from 'ethers'
 
 type Balance = {
-  [chainId: string]: BigNumber | null
+  [chainId: string]: {
+    eth: BigNumber | null
+  }
 }
 type State = {
   [walletAddress: string]: Balance
@@ -16,7 +18,9 @@ type State = {
 
 type SetBalanceParams = {
   walletAddress: string
-  balance: Balance
+  chainId: number
+  type: 'eth'
+  balance: BigNumber
 }
 const BalanceContext = createContext<
   [State, (params: SetBalanceParams) => void]
@@ -26,14 +30,19 @@ function BalanceContextProvider({ children }: PropsWithChildren<{}>) {
   const [balances, setBalances] = useState<State>({})
 
   const setBalance = useCallback(
-    ({ walletAddress, balance }: SetBalanceParams) => {
-      setBalances(oldBalances => ({
-        ...oldBalances,
-        [walletAddress]: {
-          ...oldBalances[walletAddress],
-          ...balance
+    ({ walletAddress, chainId, type, balance }: SetBalanceParams) => {
+      setBalances(oldBalances => {
+        return {
+          ...oldBalances,
+          [walletAddress]: {
+            ...oldBalances[walletAddress],
+            [chainId]: {
+              ...oldBalances[walletAddress]?.[chainId],
+              [type]: balance
+            }
+          }
         }
-      }))
+      })
     },
     []
   )

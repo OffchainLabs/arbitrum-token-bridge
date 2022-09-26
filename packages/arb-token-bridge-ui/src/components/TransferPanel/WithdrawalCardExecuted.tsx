@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
-import { BigNumber } from 'ethers'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -11,7 +10,7 @@ import {
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
 import { formatBigNumber } from '../../util/NumberUtils'
-import { useNetworksAndSigners } from 'src/hooks/useNetworksAndSigners'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
@@ -21,7 +20,9 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const dispatch = useAppContextDispatch()
   const { l1 } = useNetworksAndSigners()
   const { walletAddress } = arbTokenBridge
-  const [ethBalance] = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethBalance]
+  } = useBalance({ provider: l1.provider, walletAddress })
 
   useEffect(() => {
     // Add token to bridge just in case

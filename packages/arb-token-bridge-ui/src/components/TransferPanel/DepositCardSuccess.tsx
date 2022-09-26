@@ -10,7 +10,7 @@ import {
 } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
 import { formatBigNumber } from '../../util/NumberUtils'
-import { useNetworksAndSigners } from 'src/hooks/useNetworksAndSigners'
+import { useNetworksAndSigners } from '../../hooks//useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
@@ -24,7 +24,9 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     isConnectedToArbitrum
   } = useNetworksAndSigners()
 
-  const [ethBalance] = useBalance({
+  const {
+    eth: [ethBalance]
+  } = useBalance({
     provider: isConnectedToArbitrum ? L2Provider : L1Provider,
     walletAddress: arbTokenBridge.walletAddress
   })

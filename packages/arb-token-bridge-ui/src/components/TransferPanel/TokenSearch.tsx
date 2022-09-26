@@ -24,7 +24,7 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ArbTokenBridge, useBalance } from 'token-bridge-sdk'
+import { useBalance } from 'token-bridge-sdk'
 
 enum Panel {
   TOKENS,
@@ -71,8 +71,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
 
-  const [ethL1Balance] = useBalance({ provider: l1Provider, walletAddress })
-  const [ethL2Balance] = useBalance({ provider: l2Provider, walletAddress })
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1Provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2Provider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -329,8 +333,12 @@ function TokensPanel({
     l2: { provider: L2Provider }
   } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
-  const [ethL1Balance] = useBalance({ provider: L1Provider, walletAddress })
-  const [ethL2Balance] = useBalance({ provider: L2Provider, walletAddress })
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: L1Provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: L2Provider, walletAddress })
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()

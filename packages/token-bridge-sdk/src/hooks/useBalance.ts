@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useBalanceContext } from '../context/balanceContext'
 import { BigNumber } from 'ethers'
+import useSWR from 'swr'
 
 const useBalance = ({
   provider,
@@ -10,19 +11,32 @@ const useBalance = ({
   provider: JsonRpcProvider
   walletAddress: string
 }) => {
-  const [balances, setBalances] = useBalanceContext()
-  const balance =
-    balances[walletAddress]?.[provider.network?.chainId] ?? BigNumber.from(0)
+  const [allBalances, setBalances] = useBalanceContext()
+  const balances = allBalances[walletAddress]?.[provider.network?.chainId] || {
+    eth: BigNumber.from(0)
+  }
 
-  const updateBalance = useCallback(async () => {
-    const newBalance = await provider.getBalance(walletAddress)
-    setBalances({
-      walletAddress,
-      balance: { [provider.network.chainId]: newBalance }
-    })
-  }, [walletAddress, setBalances, provider])
+  const { mutate } = useSWR(
+    walletAddress && provider.network?.chainId
+      ? [walletAddress, provider.network.chainId]
+      : null,
+    async (walletAddress, chainId) => {
+      const newBalance = await provider.getBalance(walletAddress)
+      setBalances({
+        walletAddress,
+        chainId,
+        type: 'eth',
+        balance: newBalance
+      })
+    },
+    {
+      refreshInterval: 5000
+    }
+  )
 
-  return [balance, updateBalance] as const
+  return {
+    eth: [balances.eth ?? BigNumber.from(0), mutate] as const
+  }
 }
 
 export { useBalance }

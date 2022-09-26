@@ -219,8 +219,12 @@ function ETHBalance({
   const { l1, l2 } = networksAndSigners
   const walletAddress = arbTokenBridge.walletAddress
 
-  const [ethL1Balance] = useBalance({ provider: l1.provider, walletAddress })
-  const [ethL2Balance] = useBalance({ provider: l2.provider, walletAddress })
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2.provider, walletAddress })
 
   const balance = on === 'ethereum' ? ethL1Balance : ethL2Balance
 
@@ -306,8 +310,12 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
-  const [ethL1Balance] = useBalance({ provider: l1.provider, walletAddress })
-  const [ethL2Balance] = useBalance({ provider: l2.provider, walletAddress })
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2.provider, walletAddress })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
