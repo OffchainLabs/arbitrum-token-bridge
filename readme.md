@@ -44,9 +44,9 @@
 
 2. Set env vars:
 
-   1. At this repository's root, `touch ./packages/arb-token-bridge-ui/.e2e.env`
+   1. At this repository's root, `cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env`
 
-   2. In `.e2e-env`, add `SECRET_WORDS="your, seed, phrase, for, your, e2e, test, metamask, extension"`
+   2. In the newly created file, `.e2e-env`, update your `SECRET_WORDS, ADDRESS and NETWORK_NAME` in the format mentioned in the file.
 
 3. `cd ./packages/arb-token-bridge-ui/ && yarn e2e:run`
 
