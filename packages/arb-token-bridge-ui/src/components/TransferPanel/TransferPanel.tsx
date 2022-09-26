@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
@@ -20,6 +19,7 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
@@ -58,10 +58,7 @@ const isAllowedL2 = async (
 }
 
 function useTokenFromSearchParams(): string | undefined {
-  const { search } = useLocation()
-
-  const searchParams = new URLSearchParams(search)
-  const tokenFromSearchParams = searchParams.get('token')?.toLowerCase()
+  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
 
   if (!tokenFromSearchParams) {
     return undefined
@@ -96,7 +93,7 @@ export function TransferPanel() {
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token, bridgeTokens, walletAddress },
+      arbTokenBridge: { eth, token, walletAddress },
       arbTokenBridge,
       warningTokens
     }
@@ -108,7 +105,7 @@ export function TransferPanel() {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network },
-    l2: { network: l2Network, signer: l2Signer }
+    l2: { network: l2Network }
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
@@ -120,10 +117,18 @@ export function TransferPanel() {
 
   const [transferring, setTransferring] = useState(false)
 
-  const [l1Amount, setL1AmountState] = useState<string>('')
-  const [l2Amount, setL2AmountState] = useState<string>('')
-
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+
+  // Link the amount state directly to the amount in query params -  no need of useState
+  // Both `amount` getter and setter will internally be useing useArbQueryParams functions
+  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const amountNum = parseFloat(amount) // just a numerical variant of amount
+  const setAmount = useCallback(
+    (newAmount: string) => {
+      setQueryParams({ amount: newAmount })
+    },
+    [setQueryParams]
+  )
 
   const [
     lowBalanceDialogProps,
@@ -136,15 +141,6 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
-
-  // The amount of funds to bridge over, represented as a floating point number
-  const amount = useMemo(() => {
-    if (isDepositMode) {
-      return parseFloat(l1Amount || '0')
-    }
-
-    return parseFloat(l2Amount || '0')
-  }, [isDepositMode, l1Amount, l2Amount])
 
   const ethBalance = useMemo(() => {
     if (!arbTokenBridge || !arbTokenBridge.balances) {
@@ -168,19 +164,6 @@ export function TransferPanel() {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus])
-
-  const setl1Amount = (amount: string) => {
-    const amountNum = +amount
-    return setL1AmountState(
-      Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
-    )
-  }
-  const setl2Amount = (amount: string) => {
-    const amountNum = +amount
-    return setL2AmountState(
-      Number.isNaN(amountNum) || amountNum < 0 ? '0' : amount
-    )
-  }
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -242,7 +225,7 @@ export function TransferPanel() {
       return null
     }
     return utils.formatUnits(ethBalanceL1, 18)
-  }, [selectedToken, arbTokenBridge, bridgeTokens])
+  }, [selectedToken, arbTokenBridge])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
@@ -259,7 +242,7 @@ export function TransferPanel() {
       return null
     }
     return utils.formatUnits(ethBalanceL2, 18)
-  }, [selectedToken, arbTokenBridge, bridgeTokens])
+  }, [selectedToken, arbTokenBridge])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -331,8 +314,6 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const amount = isDepositMode ? l1Amount : l2Amount
-
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -545,22 +526,19 @@ export function TransferPanel() {
 
   const amountBigNumber = useMemo(() => {
     try {
-      return utils.parseUnits(
-        isDepositMode ? l1Amount || '0' : l2Amount || '0',
-        selectedToken?.decimals || 18
-      )
+      return utils.parseUnits(amount || '0', selectedToken?.decimals || 18)
     } catch (error) {
       return BigNumber.from(0)
     }
-  }, [isDepositMode, l1Amount, l2Amount, selectedToken])
+  }, [amount, selectedToken])
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
   const shouldRunGasEstimation = useMemo(
     () =>
       isDepositMode
-        ? Number(l1Amount) <= Number(l1Balance)
-        : Number(l2Amount) <= Number(l2Balance),
-    [isDepositMode, l1Amount, l1Balance, l2Amount, l2Balance]
+        ? Number(amount) <= Number(l1Balance)
+        : Number(amount) <= Number(l2Balance),
+    [isDepositMode, l1Balance, amount, l2Balance]
   )
 
   const gasSummary = useGasSummary(
@@ -629,8 +607,6 @@ export function TransferPanel() {
   )
 
   const disableDeposit = useMemo(() => {
-    const l1AmountNum = +l1Amount
-
     if (
       isDepositMode &&
       selectedToken &&
@@ -641,16 +617,24 @@ export function TransferPanel() {
 
     return (
       transferring ||
-      l1Amount.trim() === '' ||
+      !amountNum ||
       (isDepositMode &&
         !isBridgingANewStandardToken &&
-        (!l1AmountNum || !l1Balance || l1AmountNum > +l1Balance)) ||
+        (!amountNum || !l1Balance || amountNum > +l1Balance)) ||
       // allow 0-amount deposits when bridging new token
       (isDepositMode &&
         isBridgingANewStandardToken &&
-        (l1Balance === null || l1AmountNum > +l1Balance))
+        (l1Balance === null || amountNum > +l1Balance))
     )
-  }, [transferring, isDepositMode, l2Network, l1Amount, l1Balance])
+  }, [
+    transferring,
+    isDepositMode,
+    l2Network,
+    amountNum,
+    l1Balance,
+    isBridgingANewStandardToken,
+    selectedToken
+  ])
 
   // TODO: Refactor this and the property above
   const disableDepositV2 = useMemo(() => {
@@ -665,21 +649,10 @@ export function TransferPanel() {
       return gasSummary.estimatedTotalGasFees > ethBalanceFloat
     }
 
-    return (
-      Number(l1Amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
-    )
-  }, [
-    ethBalance,
-    disableDeposit,
-    selectedToken,
-    gasSummary,
-    l1Amount,
-    l1Balance
-  ])
+    return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
+  }, [ethBalance, disableDeposit, selectedToken, gasSummary, amount, l1Balance])
 
   const disableWithdrawal = useMemo(() => {
-    const l2AmountNum = +l2Amount
-
     return (
       (selectedToken &&
         selectedToken.address &&
@@ -690,10 +663,9 @@ export function TransferPanel() {
         selectedToken.address.toLowerCase() ===
           '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
       transferring ||
-      (!isDepositMode &&
-        (!l2AmountNum || !l2Balance || l2AmountNum > +l2Balance))
+      (!isDepositMode && (!amountNum || !l2Balance || amountNum > +l2Balance))
     )
-  }, [transferring, isDepositMode, l2Amount, l2Balance, selectedToken])
+  }, [transferring, isDepositMode, amountNum, l2Balance, selectedToken])
 
   // TODO: Refactor this and the property above
   const disableWithdrawalV2 = useMemo(() => {
@@ -708,15 +680,13 @@ export function TransferPanel() {
       return gasSummary.estimatedTotalGasFees > ethBalanceFloat
     }
 
-    return (
-      Number(l2Amount) + gasSummary.estimatedTotalGasFees > Number(l2Balance)
-    )
+    return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l2Balance)
   }, [
     ethBalance,
     disableWithdrawal,
     selectedToken,
     gasSummary,
-    l2Amount,
+    amount,
     l2Balance
   ])
 
@@ -748,24 +718,24 @@ export function TransferPanel() {
 
       <WithdrawalConfirmationDialog
         {...withdrawalConfirmationDialogProps}
-        amount={isDepositMode ? l1Amount : l2Amount}
+        amount={amount}
       />
 
       <DepositConfirmationDialog
         {...depositConfirmationDialogProps}
-        amount={isDepositMode ? l1Amount : l2Amount}
+        amount={amount}
       />
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <TransferPanelMain
-          amount={isDepositMode ? l1Amount : l2Amount}
-          setAmount={isDepositMode ? setl1Amount : setl2Amount}
+          amount={amount}
+          setAmount={setAmount}
           errorMessage={
             isDepositMode
-              ? getErrorMessage(l1Amount, l1Balance)
-              : getErrorMessage(l2Amount, l2Balance)
+              ? getErrorMessage(amount, l1Balance)
+              : getErrorMessage(amount, l2Balance)
           }
         />
 
@@ -791,7 +761,7 @@ export function TransferPanel() {
 
           {isSummaryVisible ? (
             <TransferPanelSummary
-              amount={amount}
+              amount={amountNum}
               token={selectedToken}
               gasSummary={gasSummary}
             />
