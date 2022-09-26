@@ -121,12 +121,14 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be useing useArbQueryParams functions
-  const [{ amount: queryAmount }, setQueryParams] = useArbQueryParams()
-  const amount = queryAmount && !isNaN(+queryAmount) ? queryAmount : '0'
-  const amountNum = parseFloat(amount) // just a numerical variant of amount which passes down in input component
-  const setAmount = useCallback((newAmount: string) => {
-    setQueryParams({ amount: newAmount })
-  }, [setQueryParams])
+  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const amountNum = parseFloat(amount) // just a numerical variant of amount
+  const setAmount = useCallback(
+    (newAmount: string) => {
+      setQueryParams({ amount: newAmount })
+    },
+    [setQueryParams]
+  )
 
   const [
     lowBalanceDialogProps,
