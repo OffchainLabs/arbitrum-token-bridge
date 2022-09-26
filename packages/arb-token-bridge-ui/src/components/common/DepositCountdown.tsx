@@ -28,8 +28,8 @@ export function DepositCountdown({
     depositStatus === DepositStatus.L1_PENDING ||
     depositStatus === DepositStatus.L2_PENDING
   ) {
-    // We expect the deposit to be completed within 10 minutes in most cases, so we subtract the diff from 10 minutes
-    const minutesRemaining = 10 - now.diff(whenCreated, 'minutes')
+    // We expect the deposit to be completed within 15 minutes in most cases, so we subtract the diff from 10 minutes
+    const minutesRemaining = 15 - now.diff(whenCreated, 'minutes')
     return <span>{getMinutesRemainingText(minutesRemaining)}</span>
   }
 
