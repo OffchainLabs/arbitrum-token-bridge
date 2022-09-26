@@ -43,9 +43,8 @@ const AmountQueryParam = {
   decode: (amountStr: string | (string | null)[] | null | undefined) => {
     // if (amountStr === 'MAX') return 'MAX' // commenting out, handling for a future case
     if (!amountStr || isNaN(+amountStr) || typeof amountStr === 'object') {
-      return '0'
+      return ''
     }
     return amountStr
-  },
-  default: '0'
+  }
 }
