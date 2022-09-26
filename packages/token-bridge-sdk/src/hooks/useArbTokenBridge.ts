@@ -1079,8 +1079,6 @@ export const useArbTokenBridge = (
 
     const { tokenAddress, value } = event
 
-    // TODO: is getOutboxAddress a callback here?
-    // It's not working with v3. Safe to remove?
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
 
     const res = await messageWriter.execute(l2.provider)
