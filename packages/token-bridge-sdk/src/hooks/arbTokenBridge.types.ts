@@ -284,19 +284,6 @@ export interface TransactionActions {
   ) => void
 }
 
-export type ArbTokenBridgeTransactions = {
-  transactions: Transaction[]
-} & Pick<
-  TransactionActions,
-  | 'addTransaction'
-  | 'clearPendingTransactions'
-  | 'setTransactionConfirmed'
-  | 'updateTransaction'
-  | 'addTransactions'
-  | 'fetchAndUpdateL1ToL2MsgStatus'
-  | 'fetchAndUpdateEthDepositMessageStatus'
->
-
 export interface ArbTokenBridge {
   walletAddress: string
   bridgeTokens: ContractStorage<ERC20BridgeToken>
@@ -304,7 +291,6 @@ export interface ArbTokenBridge {
   cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
-  transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
   setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
 }
