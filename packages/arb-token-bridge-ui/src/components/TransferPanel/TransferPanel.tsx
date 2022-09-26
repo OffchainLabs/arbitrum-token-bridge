@@ -21,7 +21,6 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import useL2Approve from './useL2Approve'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { ArbTokenBridge } from 'token-bridge-sdk'
@@ -40,6 +39,7 @@ import {
 } from './TransferPanelMain'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
+import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -125,7 +125,6 @@ export function TransferPanel() {
   const [l2Amount, setL2AmountState] = useState<string>('')
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
-  const { shouldRequireApprove } = useL2Approve()
 
   const [
     lowBalanceDialogProps,
@@ -485,7 +484,10 @@ export function TransferPanel() {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          if (shouldRequireApprove && selectedToken.l2Address) {
+          if (
+            tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
+            selectedToken.l2Address
+          ) {
             const allowed = await isAllowedL2(
               arbTokenBridge,
               selectedToken.address,
@@ -496,7 +498,8 @@ export function TransferPanel() {
             )
             if (!allowed) {
               await latestToken.current.approveL2({
-                erc20L1Address: selectedToken.address
+                erc20L1Address: selectedToken.address,
+                l2Signer: latestNetworksAndSigners.current.l2.signer
               })
             }
           }
@@ -746,7 +749,10 @@ export function TransferPanel() {
         amount={isDepositMode ? l1Amount : l2Amount}
       />
 
-      <DepositConfirmationDialog {...depositConfirmationDialogProps} />
+      <DepositConfirmationDialog
+        {...depositConfirmationDialogProps}
+        amount={isDepositMode ? l1Amount : l2Amount}
+      />
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 

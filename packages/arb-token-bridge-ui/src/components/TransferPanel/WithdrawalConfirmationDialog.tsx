@@ -48,7 +48,8 @@ export function WithdrawalConfirmationDialog(
   const fastBridges = getFastBridges(
     from.chainID,
     to.chainID,
-    selectedToken?.symbol
+    selectedToken?.symbol,
+    props.amount
   )
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
