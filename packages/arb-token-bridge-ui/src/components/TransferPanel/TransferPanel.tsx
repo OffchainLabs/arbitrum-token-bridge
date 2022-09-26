@@ -124,9 +124,9 @@ export function TransferPanel() {
   const [{ amount: queryAmount }, setQueryParams] = useArbQueryParams()
   const amount = queryAmount && !isNaN(+queryAmount) ? queryAmount : '0'
   const amountNum = parseFloat(amount) // just a numerical variant of amount which passes down in input component
-  const setAmount = (newAmount: string) => {
+  const setAmount = useCallback((newAmount: string) => {
     setQueryParams({ amount: newAmount })
-  }
+  }, [setQueryParams])
 
   const [
     lowBalanceDialogProps,
