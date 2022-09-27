@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -11,7 +11,6 @@ import {
   EthBridger,
   Erc20Bridger,
   MultiCaller,
-  L1ToL2MessageStatus,
   L2ToL1Message,
   L2ToL1MessageReader,
   L2TransactionReceipt
