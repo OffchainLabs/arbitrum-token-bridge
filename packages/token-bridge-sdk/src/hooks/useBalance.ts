@@ -1,6 +1,5 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useBalanceContext } from '../context/balanceContext'
-import { BigNumber } from 'ethers'
 import useSWR from 'swr'
 
 const useBalance = ({
@@ -12,14 +11,15 @@ const useBalance = ({
 }) => {
   const [allBalances, setBalances] = useBalanceContext()
   const balances = allBalances[walletAddress]?.[provider.network?.chainId] || {
-    eth: BigNumber.from(0)
+    eth: null
   }
 
   const { mutate } = useSWR(
-    walletAddress && provider.network?.chainId
-      ? [walletAddress, provider.network.chainId]
-      : null,
+    [walletAddress, provider.network?.chainId],
     async (walletAddress, chainId) => {
+      if (!walletAddress) {
+        return
+      }
       const newBalance = await provider.getBalance(walletAddress)
       setBalances({
         walletAddress,
@@ -34,7 +34,7 @@ const useBalance = ({
   )
 
   return {
-    eth: [balances.eth ?? BigNumber.from(0), mutate] as const
+    eth: [balances.eth, mutate] as const
   }
 }
 

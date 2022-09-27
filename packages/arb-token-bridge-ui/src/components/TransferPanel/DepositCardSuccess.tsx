@@ -19,15 +19,13 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   } = useAppState()
   const dispatch = useAppContextDispatch()
   const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider },
-    isConnectedToArbitrum
+    l2: { provider: L2Provider }
   } = useNetworksAndSigners()
 
   const {
     eth: [ethBalance]
   } = useBalance({
-    provider: isConnectedToArbitrum ? L2Provider : L1Provider,
+    provider: L2Provider,
     walletAddress: arbTokenBridge.walletAddress
   })
 

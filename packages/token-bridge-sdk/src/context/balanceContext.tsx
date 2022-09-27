@@ -57,7 +57,7 @@ function BalanceContextProvider({ children }: PropsWithChildren<{}>) {
 function useBalanceContext() {
   const context = useContext(BalanceContext)
 
-  if (context === undefined) {
+  if (typeof context === 'undefined') {
     throw new Error(
       'useBalanceContext must be used within a BalanceContextProvider'
     )
