@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.10",
-    "@arbitrum/sdk": "3.0.0-rc.1",
+    "@arbitrum/sdk": "3.0.0-rc.2",
     "@rehooks/local-storage": "^2.3.0",
     "@uniswap/token-lists": "^1.0.0-beta.27",
     "ajv": "^8.6.3",
