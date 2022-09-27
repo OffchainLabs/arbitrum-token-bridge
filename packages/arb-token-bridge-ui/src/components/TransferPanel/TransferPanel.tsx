@@ -5,6 +5,7 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
+import { useBalance } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -107,8 +108,8 @@ export function TransferPanel() {
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
+    l1: { network: l1Network, provider: l1Provider },
+    l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
@@ -144,16 +145,16 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1Provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2Provider, walletAddress })
 
   const ethBalance = useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
-      return null
-    }
-
-    return isDepositMode
-      ? arbTokenBridge.balances.eth.balance
-      : arbTokenBridge.balances.eth.arbChainBalance
-  }, [isDepositMode, arbTokenBridge])
+    return isDepositMode ? ethL1Balance : ethL2Balance
+  }, [ethL1Balance, ethL2Balance, isDepositMode])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -193,17 +194,18 @@ export function TransferPanel() {
     }
 
     if (typeof arbTokenBridge.balances !== 'undefined') {
-      const ethBalance = arbTokenBridge.balances.eth.balance
+      if (!ethL1Balance) {
+        return
+      }
 
-      if (ethBalance) {
-        const isLowBalance = ethBalance.lte(utils.parseEther('0.005'))
+      const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
 
-        if (isMainnet && isDepositMode && isLowBalance) {
-          openLowBalanceDialog()
-        }
+      if (isMainnet && isDepositMode && isLowBalance) {
+        openLowBalanceDialog()
       }
     }
   }, [
+    ethL1Balance,
     account,
     isMainnet,
     isDepositMode,
@@ -223,12 +225,12 @@ export function TransferPanel() {
       }
       return utils.formatUnits(balanceL1, decimals)
     }
-    const ethBalanceL1 = arbTokenBridge?.balances?.eth?.balance
-    if (!ethBalanceL1) {
+
+    if (!ethL1Balance) {
       return null
     }
-    return utils.formatUnits(ethBalanceL1, 18)
-  }, [selectedToken, arbTokenBridge])
+    return utils.formatUnits(ethL1Balance, 18)
+  }, [ethL1Balance, selectedToken, arbTokenBridge])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
@@ -240,12 +242,12 @@ export function TransferPanel() {
       }
       return utils.formatUnits(balanceL2, decimals)
     }
-    const ethBalanceL2 = arbTokenBridge?.balances?.eth?.arbChainBalance
-    if (!ethBalanceL2) {
+
+    if (!ethL2Balance) {
       return null
     }
-    return utils.formatUnits(ethBalanceL2, 18)
-  }, [selectedToken, arbTokenBridge])
+    return utils.formatUnits(ethL2Balance, 18)
+  }, [ethL2Balance, selectedToken, arbTokenBridge])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'

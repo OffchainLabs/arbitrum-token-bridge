@@ -16,6 +16,7 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
+import { useBalance } from 'token-bridge-sdk'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -79,6 +80,12 @@ export function LowBalanceDialog(props: UseDialogProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const { isMainnet } = isNetwork(l1.network)
+  const {
+    eth: [ethBalance]
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: app.arbTokenBridge.walletAddress
+  })
 
   const balance = useMemo(() => {
     if (
@@ -88,8 +95,8 @@ export function LowBalanceDialog(props: UseDialogProps) {
       return BigNumber.from(0)
     }
 
-    return app.arbTokenBridge.balances.eth.balance || BigNumber.from(0)
-  }, [app.arbTokenBridge])
+    return ethBalance ?? BigNumber.from(0)
+  }, [ethBalance, app.arbTokenBridge])
 
   const balanceNumber = useMemo(
     () => parseFloat(utils.formatEther(balance)),
