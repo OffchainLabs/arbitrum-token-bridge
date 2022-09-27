@@ -37,7 +37,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
       // TODO: Review this new change.
-      if (depositTx.asset === 'ETH') {
+      if (depositTx.asset === AssetType.ETH) {
         const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
         const status = await ethDepositMessage.status()
 
