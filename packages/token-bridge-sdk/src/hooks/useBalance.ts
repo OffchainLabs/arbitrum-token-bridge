@@ -10,29 +10,36 @@ const useBalance = ({
   walletAddress: string | undefined
 }) => {
   const [allBalances, setBalances] = useBalanceContext()
-  const balances =
-    walletAddress && provider.network?.chainId
-      ? allBalances[walletAddress][provider.network.chainId]
-      : {
-          eth: null
-        }
+  let balances
+  // While refreshing the page, provider.network is undefined, so chainId might be undefined
+  if (walletAddress && provider.network?.chainId) {
+    balances = allBalances[walletAddress]?.[provider.network.chainId]
+  }
+  balances = balances || { eth: null }
 
   const { mutate } = useSWR(
     [walletAddress, provider.network?.chainId],
     async (walletAddress, chainId) => {
-      if (!walletAddress) {
+      if (!walletAddress || !chainId) {
         return
       }
-      const newBalance = await provider.getBalance(walletAddress)
-      setBalances({
-        walletAddress,
-        chainId,
-        type: 'eth',
-        balance: newBalance
-      })
+
+      try {
+        const newBalance = await provider.getBalance(walletAddress)
+
+        setBalances({
+          walletAddress,
+          chainId,
+          type: 'eth',
+          balance: newBalance
+        })
+      } catch (error) {
+        // Do nothing, balances is kept to previous state
+      }
     },
     {
-      refreshInterval: 5000
+      refreshInterval: 5000,
+      shouldRetryOnError: false
     }
   )
 
