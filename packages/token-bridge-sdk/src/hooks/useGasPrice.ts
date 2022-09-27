@@ -2,18 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { BigNumber, providers } from 'ethers'
 import useSWR from 'swr'
 
-async function tryFetchGasPrice({
-  provider
-}: {
-  provider: providers.Provider
-}) {
-  try {
-    return await provider.getGasPrice()
-  } catch (error) {
-    return BigNumber.from(0)
-  }
-}
-
 export function useGasPrice({
   provider
 }: {
@@ -40,7 +28,7 @@ export function useGasPrice({
 
   const { data: gasPrice = BigNumber.from(0) } = useSWR(
     queryKey,
-    () => tryFetchGasPrice({ provider }),
+    () => provider.getGasPrice(),
     {
       refreshInterval: 30_000,
       shouldRetryOnError: true,
