@@ -44,7 +44,8 @@ export function useGasPrice({
     {
       refreshInterval: 30_000,
       shouldRetryOnError: true,
-      errorRetryCount: 2
+      errorRetryCount: 2,
+      errorRetryInterval: 5_000
     }
   )
 
