@@ -435,7 +435,7 @@ export function TransferPanel() {
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
-                  value: utils.formatUnits(amount, decimals),
+                  value: utils.formatUnits(amountRaw, decimals),
                   txID: tx.hash,
                   assetName: symbol,
                   assetType: AssetType.ERC20,
@@ -474,7 +474,7 @@ export function TransferPanel() {
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
-                  value: utils.formatEther(amount),
+                  value: utils.formatEther(amountRaw),
                   txID: tx.hash,
                   assetName: 'ETH',
                   assetType: AssetType.ETH,
@@ -588,7 +588,7 @@ export function TransferPanel() {
                 transactions.addTransaction({
                   type: 'withdraw',
                   status: 'pending',
-                  value: utils.formatUnits(amount, decimals),
+                  value: utils.formatUnits(amountRaw, decimals),
                   txID: tx.hash,
                   assetName: symbol,
                   assetType: AssetType.ERC20,
@@ -618,7 +618,7 @@ export function TransferPanel() {
                 transactions.addTransaction({
                   type: 'withdraw',
                   status: 'pending',
-                  value: utils.formatEther(amount),
+                  value: utils.formatEther(amountRaw),
                   txID: tx.hash,
                   assetName: 'ETH',
                   assetType: AssetType.ETH,
