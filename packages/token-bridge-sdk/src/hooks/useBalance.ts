@@ -7,12 +7,15 @@ const useBalance = ({
   walletAddress
 }: {
   provider: JsonRpcProvider
-  walletAddress: string
+  walletAddress: string | undefined
 }) => {
   const [allBalances, setBalances] = useBalanceContext()
-  const balances = allBalances[walletAddress]?.[provider.network?.chainId] || {
-    eth: null
-  }
+  const balances =
+    walletAddress && provider.network?.chainId
+      ? allBalances[walletAddress][provider.network.chainId]
+      : {
+          eth: null
+        }
 
   const { mutate } = useSWR(
     [walletAddress, provider.network?.chainId],
