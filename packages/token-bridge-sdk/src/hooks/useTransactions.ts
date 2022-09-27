@@ -342,6 +342,9 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     // It's ok to bail here, as the RetryableTxnsIncluder will pick it up
     const res = await ethDepositMessage.wait(undefined, 500)
 
+    // TODO: Do we need to restructure this to return EthDepositStatus instead?
+    // If yes, do we need to call a new function instead of updateTxnL1ToL2MsgData.
+    // New function meaning so that instead of passing L1ToL2MessageData we pass eth message data?
     function getStatus(): L1ToL2MessageStatus {
       if (!res) {
         return L1ToL2MessageStatus.NOT_YET_CREATED
