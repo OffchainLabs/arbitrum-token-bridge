@@ -6,15 +6,13 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-  useLocation
-} from 'react-router-dom'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
+import { QueryParamProvider } from 'use-query-params'
+import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
+import { parse, stringify } from 'query-string'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
-import { TokenBridgeParams } from 'token-bridge-sdk'
+import { BalanceContextProvider, TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
@@ -63,6 +61,7 @@ import {
   isNetwork,
   rpcURLs
 } from '../../util/networks'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -361,55 +360,55 @@ function Routes() {
 
   return (
     <Router>
-      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-      <Switch>
-        <Route path="/tos" exact>
-          <TermsOfService />
-        </Route>
+      <QueryParamProvider
+        adapter={ReactRouter5Adapter}
+        options={{
+          searchStringToObject: parse,
+          objectToSearchString: stringify,
+          updateType: 'replaceIn' // replace just a single parameter when updating query-state, leaving the rest as is
+        }}
+      >
+        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+        <Switch>
+          <Route path="/tos" exact>
+            <TermsOfService />
+          </Route>
 
-        <Route path="/" exact>
-          <NetworkReady>
-            <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
-            </AppContextProvider>
-          </NetworkReady>
-        </Route>
+          <Route path="/" exact>
+            <NetworkReady>
+              <AppContextProvider>
+                <BalanceContextProvider>
+                  <Injector>{isTosAccepted && <AppContent />}</Injector>
+                </BalanceContextProvider>
+              </AppContextProvider>
+            </NetworkReady>
+          </Route>
 
-        <Route path="*">
-          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-            <span className="text-8xl text-white">404</span>
-            <p className="text-3xl text-white">
-              Page not found in this solar system
-            </p>
-            <img
-              src="/images/arbinaut-fixing-spaceship.png"
-              alt="Arbinaut fixing a spaceship"
-              className="lg:max-w-md"
-            />
-          </div>
-        </Route>
-      </Switch>
+          <Route path="*">
+            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+              <span className="text-8xl text-white">404</span>
+              <p className="text-3xl text-white">
+                Page not found in this solar system
+              </p>
+              <img
+                src="/images/arbinaut-fixing-spaceship.png"
+                alt="Arbinaut fixing a spaceship"
+                className="lg:max-w-md"
+              />
+            </div>
+          </Route>
+        </Switch>
+      </QueryParamProvider>
     </Router>
   )
 }
 
 function NetworkReady({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation()
-
-  const selectedL2ChainId = useMemo(() => {
-    const searchParams = new URLSearchParams(search)
-    const selectedL2ChainIdSearchParam = searchParams.get('l2ChainId')
-
-    if (!selectedL2ChainIdSearchParam) {
-      return undefined
-    }
-
-    return parseInt(selectedL2ChainIdSearchParam) || undefined
-  }, [search])
+  const [{ l2ChainId }] = useArbQueryParams()
 
   return (
     <NetworksAndSignersProvider
-      selectedL2ChainId={selectedL2ChainId}
+      selectedL2ChainId={l2ChainId || undefined}
       fallback={status => <ConnectionFallback status={status} />}
     >
       {children}

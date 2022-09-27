@@ -49,7 +49,7 @@ import {
   L1ContractCallTransactionLifecycle,
   L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
-
+import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
 import { fetchETHWithdrawalsFromEventLogs } from '../withdrawals/fetchETHWithdrawalsFromEventLogs'
 import {
@@ -109,29 +109,28 @@ export const useArbTokenBridge = (
   autoLoadCache = true
 ): ArbTokenBridge => {
   const { walletAddress, l1, l2 } = params
-
-  const defaultBalance = {
-    balance: null,
-    arbChainBalance: null
-  }
-
-  const [ethBalances, setEthBalances] = useState<BridgeBalance>(defaultBalance)
-
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken>
   >({})
 
-  const balanceIsEmpty = (balance: BridgeBalance) =>
-    balance['balance'] === defaultBalance['balance'] &&
-    balance['arbChainBalance'] === defaultBalance['arbChainBalance']
+  const {
+    eth: [, updateEthL1Balance]
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress
+  })
+  const {
+    eth: [, updateEthL2Balance]
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress
+  })
 
   const [erc20Balances, setErc20Balances] = useState<
     ContractStorage<BridgeBalance>
   >({})
 
-  const [erc721Balances, setErc721Balances] = useState<
-    ContractStorage<ERC721Balance>
-  >({})
+  const [erc721Balances] = useState<ContractStorage<ERC721Balance>>({})
 
   const defaultTokenList: string[] = []
 
@@ -144,27 +143,21 @@ export const useArbTokenBridge = (
     React.Dispatch<void>
   ]
 
-  const [ERC721Cache, setERC721Cache, clearERC721Cache] = useLocalStorage<
-    string[]
-  >('ERC721Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
+  const [ERC721Cache, , clearERC721Cache] = useLocalStorage<string[]>(
+    'ERC721Cache',
+    []
+  ) as [string[], React.Dispatch<string[]>, React.Dispatch<void>]
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
 
-  const [
-    executedMessagesCache,
-    setExecutedMessagesCache,
-    clearExecutedMessagesCache
-  ] = useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
-    ExecutedMessagesCache,
-    React.Dispatch<ExecutedMessagesCache>,
-    React.Dispatch<void>
-  ]
+  const [executedMessagesCache, setExecutedMessagesCache] =
+    useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
+      ExecutedMessagesCache,
+      React.Dispatch<ExecutedMessagesCache>,
+      React.Dispatch<void>
+    ]
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
@@ -178,8 +171,6 @@ export const useArbTokenBridge = (
       setTransactionConfirmed,
       setTransactionSuccess,
       updateTransaction,
-      removeTransaction,
-      addFailedTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
@@ -562,9 +553,9 @@ export const useArbTokenBridge = (
 
   const approveTokenL2 = async ({
     erc20L1Address,
-    l2Signer,
+    l2Signer
   }: {
-    erc20L1Address: string,
+    erc20L1Address: string
     l2Signer: Signer
   }) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
@@ -985,16 +976,6 @@ export const useArbTokenBridge = (
     }
   }, [])
 
-  async function updateEthBalances() {
-    const l1Balance = await l1.provider.getBalance(walletAddress)
-    const l2Balance = await l2.provider.getBalance(walletAddress)
-
-    setEthBalances({
-      balance: l1Balance,
-      arbChainBalance: l2Balance
-    })
-  }
-
   const updateTokenData = useCallback(
     async (l1Address: string) => {
       const bridgeToken = bridgeTokens[l1Address]
@@ -1021,6 +1002,10 @@ export const useArbTokenBridge = (
     },
     [setErc20Balances, bridgeTokens, setBridgeTokens]
   )
+
+  const updateEthBalances = async () => {
+    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+  }
 
   const updateTokenBalances = async (
     bridgeTokens: ContractStorage<BridgeToken>
@@ -1489,7 +1474,6 @@ export const useArbTokenBridge = (
     walletAddress,
     bridgeTokens: bridgeTokens,
     balances: {
-      eth: ethBalances,
       erc20: erc20Balances,
       erc721: erc721Balances
     },
@@ -1503,8 +1487,7 @@ export const useArbTokenBridge = (
       depositEstimateGas: depositEthEstimateGas,
       withdraw: withdrawEth,
       withdrawEstimateGas: withdrawEthEstimateGas,
-      triggerOutbox: triggerOutboxEth,
-      updateBalances: updateEthBalances
+      triggerOutbox: triggerOutboxEth
     },
     token: {
       add: addToken,
