@@ -1,6 +1,6 @@
 import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { BigNumber, ContractReceipt, ethers } from 'ethers'
+import { BigNumber, ContractReceipt, ContractTransaction, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import {
   L1ToL2MessageStatus,
@@ -47,13 +47,14 @@ export enum AssetType {
 }
 
 export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
-  onTxSubmit: (tx: Tx) => void
-  onTxConfirm: (txReceipt: TxReceipt) => void
-  addTransaction: (transaction: NewTransaction) => void
-  updateTransaction: (
-    txReceipt: TransactionReceipt,
-    tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: L1ToL2MessageData
+  onTxSubmit: (tx: Tx, symbol?: string) => void
+  onTxConfirm: (
+    tx: Tx,
+    txReceipt: TxReceipt,
+    message?: {
+      l1Tol2Message?: IL1ToL2MessageReader
+      ethDepositMessage?: EthDepositMessage
+    }
   ) => void
 }>
 
@@ -70,6 +71,11 @@ export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
 export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
   L2ContractTransaction,
   L2TransactionReceipt
+>
+
+export type ContractTransactionLifecycle = TransactionLifecycle<
+  ContractTransaction,
+  ContractReceipt
 >
 
 export type NodeBlockDeadlineStatus =
@@ -184,6 +190,23 @@ export type DepositGasEstimates = GasEstimates & {
   estimatedL2SubmissionCost: BigNumber
 }
 
+export type AppStateTransactions = {
+  transactions: Transaction[]
+} & Pick<
+  TransactionActions,
+  | 'addTransaction'
+  | 'addTransactions'
+  | 'setTransactionSuccess'
+  | 'setTransactionFailure'
+  | 'clearPendingTransactions'
+  | 'setTransactionConfirmed'
+  | 'updateTransaction'
+  | 'removeTransaction'
+  | 'addFailedTransaction'
+  | 'fetchAndUpdateL1ToL2MsgStatus'
+  | 'fetchAndUpdateEthDepositMessageStatus'
+>
+
 export interface ArbTokenBridgeEth {
   deposit: (params: {
     amount: BigNumber
@@ -206,6 +229,7 @@ export interface ArbTokenBridgeEth {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
+    transactions: AppStateTransactions
   }) => Promise<void | ContractReceipt>
   updateBalances: () => Promise<void>
 }
@@ -224,11 +248,13 @@ export interface ArbTokenBridgeToken {
   approve: (params: {
     erc20L1Address: string
     l1Signer: Signer
+    txLifecycle: ContractTransactionLifecycle
   }) => Promise<void>
   approveEstimateGas: (params: { erc20L1Address: string }) => Promise<BigNumber>
   approveL2: (params: {
     erc20L1Address: string
     l2Signer: Signer
+    txLifecycle: ContractTransactionLifecycle
   }) => Promise<void>
   deposit: (params: {
     erc20L1Address: string
@@ -255,6 +281,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
+    transactions: AppStateTransactions
   }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>

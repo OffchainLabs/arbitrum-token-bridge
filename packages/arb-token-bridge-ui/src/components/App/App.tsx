@@ -57,6 +57,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { TransactionsSync } from '../syncers/TransactionsSync'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -325,6 +326,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
+      <TransactionsSync />
       {children}
     </>
   )

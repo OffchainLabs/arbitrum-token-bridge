@@ -5,7 +5,6 @@ import { AssetType } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
@@ -15,17 +14,8 @@ export function RetryableTxnsIncluder(): JSX.Element {
   } = useNetworksAndSigners()
 
   const {
-    app: { arbTokenBridgeLoaded }
+    app: { arbTokenBridgeLoaded, transactions }
   } = useAppState()
-
-  const [
-    ,
-    {
-      addTransactions,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateEthDepositMessageStatus
-    }
-  ] = useTransactions()
 
   const checkAndUpdateFailedRetryables = useCallback(async () => {
     const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
@@ -45,7 +35,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const status = await l1ToL2Msg.status()
 
       if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
-        fetchAndUpdateL1ToL2MsgStatus(
+        transactions.fetchAndUpdateL1ToL2MsgStatus(
           depositTx.txId,
           l1ToL2Msg,
           depositTx.asset === 'eth',
@@ -53,7 +43,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     }
-  }, [addTransactions, l1Provider, l2Provider])
+  }, [actions.app, l1Provider, l2Provider])
 
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
@@ -79,15 +69,23 @@ export function RetryableTxnsIncluder(): JSX.Element {
           l2Provider
         )
 
-        fetchAndUpdateEthDepositMessageStatus(depositTx.txID, ethDepositMessage)
+        transactions.fetchAndUpdateEthDepositMessageStatus(
+          depositTx.txID,
+          ethDepositMessage
+        )
       } else {
         const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
         const status = await l1ToL2Msg.status()
 
-        fetchAndUpdateL1ToL2MsgStatus(depositTx.txID, l1ToL2Msg, false, status)
+        transactions.fetchAndUpdateL1ToL2MsgStatus(
+          depositTx.txID,
+          l1ToL2Msg,
+          false,
+          status
+        )
       }
     }
-  }, [addTransactions, l1Provider, l2Provider])
+  }, [actions.app, l1Provider, l2Provider])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messagges,
@@ -100,10 +98,16 @@ export function RetryableTxnsIncluder(): JSX.Element {
   )
 
   useEffect(() => {
-    // force trigger update each time loaded change happens
-    forceTriggerUpdate()
-    forceTriggerUpdateFailedRetryables()
-  }, [arbTokenBridgeLoaded])
+    if (arbTokenBridgeLoaded) {
+      // force trigger update each time loaded change happens
+      forceTriggerUpdate()
+      forceTriggerUpdateFailedRetryables()
+    }
+  }, [
+    arbTokenBridgeLoaded,
+    forceTriggerUpdate,
+    forceTriggerUpdateFailedRetryables
+  ])
 
   return <></>
 }

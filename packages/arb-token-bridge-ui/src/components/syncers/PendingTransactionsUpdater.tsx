@@ -6,7 +6,6 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -14,10 +13,9 @@ export function PendingTransactionsUpdater(): JSX.Element {
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
   } = useNetworksAndSigners()
-  const [, { updateTransaction }] = useTransactions()
 
   const {
-    app: { arbTokenBridge, arbTokenBridgeLoaded }
+    app: { transactions, arbTokenBridgeLoaded }
   } = useAppState()
 
   const getTransactionReceipt = useCallback(
@@ -48,12 +46,12 @@ export function PendingTransactionsUpdater(): JSX.Element {
               pendingTransactions[i].txID
             )
           } else {
-            updateTransaction(txReceipt)
+            transactions.updateTransaction(txReceipt)
           }
         })
       })
     }
-  }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
+  }, [arbTokenBridgeLoaded, actions.app, getTransactionReceipt])
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndUpdatePendingTransactions,
     4000

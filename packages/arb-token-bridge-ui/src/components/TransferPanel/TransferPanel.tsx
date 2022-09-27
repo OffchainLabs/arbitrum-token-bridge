@@ -22,7 +22,8 @@ import {
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { ArbTokenBridge } from 'token-bridge-sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { ArbTokenBridge, AssetType } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -39,7 +40,7 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
+import { L1ToL2MessageData } from 'token-bridge-sdk/dist/hooks/useTransactions'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -96,19 +97,10 @@ export function TransferPanel() {
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, walletAddress },
       arbTokenBridge,
+      transactions,
       warningTokens
     }
   } = useAppState()
-  const [
-    ,
-    {
-      addTransaction,
-      addTransactions,
-      setTransactionFailure,
-      setTransactionSuccess,
-      updateTransaction
-    }
-  ] = useTransactions()
   const { provider, account } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
@@ -400,7 +392,25 @@ export function TransferPanel() {
 
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
-              l1Signer: latestNetworksAndSigners.current.l1.signer
+              l1Signer: latestNetworksAndSigners.current.l1.signer,
+              txLifecycle: {
+                onTxSubmit: (tx, symbol) => {
+                  if (!symbol) return
+                  transactions.addTransaction({
+                    type: 'approve',
+                    status: 'pending',
+                    value: null,
+                    txID: tx.hash,
+                    assetName: symbol,
+                    assetType: AssetType.ERC20,
+                    sender: walletAddress,
+                    l1NetworkID: l1Network.chainID.toString()
+                  })
+                },
+                onTxConfirm: (tx, txReceipt) => {
+                  transactions.updateTransaction(txReceipt, tx)
+                }
+              }
             })
           }
 
@@ -418,11 +428,36 @@ export function TransferPanel() {
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
-              onTxSubmit: () => {
+              onTxSubmit: (tx, symbol) => {
+                if (!symbol) return
+                transactions.addTransaction({
+                  type: 'deposit-l1',
+                  status: 'pending',
+                  value: utils.formatUnits(amount, decimals),
+                  txID: tx.hash,
+                  assetName: symbol,
+                  assetType: AssetType.ERC20,
+                  tokenAddress: selectedToken.address,
+                  sender: walletAddress,
+                  l1NetworkID: l1Network.chainID.toString(),
+                  l2NetworkID: l2Network.chainID.toString()
+                })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+              },
+              onTxConfirm: (tx, txReceipt, msg) => {
+                if (!msg) return
+                const { l1Tol2Message } = msg
+                if (!l1Tol2Message) return
+                const l1ToL2MsgData: L1ToL2MessageData = {
+                  fetchingUpdate: false,
+                  status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
+                  retryableCreationTxID: l1Tol2Message.retryableCreationId,
+                  l2TxID: undefined
+                }
+                transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
               }
             }
           })
@@ -433,14 +468,35 @@ export function TransferPanel() {
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
-              onTxSubmit: () => {
+              onTxSubmit: tx => {
+                transactions.addTransaction({
+                  type: 'deposit-l1',
+                  status: 'pending',
+                  value: utils.formatEther(amount),
+                  txID: tx.hash,
+                  assetName: 'ETH',
+                  assetType: AssetType.ETH,
+                  sender: walletAddress,
+                  l1NetworkID: l1Network.chainID.toString(),
+                  l2NetworkID: l2Network.chainID.toString()
+                })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
               },
-              addTransaction,
-              updateTransaction
+              onTxConfirm: (tx, receipt, message) => {
+                if (!message) return
+                const { ethDepositMessage } = message
+                if (!ethDepositMessage) return
+                const l1ToL2MsgData: L1ToL2MessageData = {
+                  fetchingUpdate: false,
+                  status: L1ToL2MessageStatus.NOT_YET_CREATED,
+                  retryableCreationTxID: ethDepositMessage?.l2DepositTxHash,
+                  l2TxID: undefined
+                }
+                transactions.updateTransaction(receipt, tx, l1ToL2MsgData)
+              }
             }
           })
         }
@@ -495,7 +551,27 @@ export function TransferPanel() {
             if (!allowed) {
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
-                l2Signer: latestNetworksAndSigners.current.l2.signer
+                l2Signer: latestNetworksAndSigners.current.l2.signer,
+                txLifecycle: {
+                  onTxSubmit: (tx, symbol) => {
+                    if (!symbol) return
+                    transactions.addTransaction({
+                      type: 'approve-l2',
+                      status: 'pending',
+                      value: null,
+                      txID: tx.hash,
+                      assetName: symbol,
+                      assetType: AssetType.ERC20,
+                      sender: walletAddress,
+                      blockNumber: tx.blockNumber,
+                      l1NetworkID: l1Network.chainID.toString(),
+                      l2NetworkID: l2Network.chainID.toString()
+                    })
+                  },
+                  onTxConfirm: (tx, txReceipt) => {
+                    transactions.updateTransaction(txReceipt, tx)
+                  }
+                }
               })
             }
           }
@@ -505,11 +581,27 @@ export function TransferPanel() {
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
-              onTxSubmit: () => {
+              onTxSubmit: (tx, symbol) => {
+                if (!symbol) return
+                transactions.addTransaction({
+                  type: 'withdraw',
+                  status: 'pending',
+                  value: utils.formatUnits(amount, decimals),
+                  txID: tx.hash,
+                  assetName: symbol,
+                  assetType: AssetType.ERC20,
+                  sender: walletAddress,
+                  blockNumber: tx.blockNumber,
+                  l1NetworkID: l1Network.chainID.toString(),
+                  l2NetworkID: l2Network.chainID.toString()
+                })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+              },
+              onTxConfirm: (tx, receipt) => {
+                transactions.updateTransaction(receipt, tx)
               }
             }
           })
@@ -520,11 +612,26 @@ export function TransferPanel() {
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
-              onTxSubmit: () => {
+              onTxSubmit: tx => {
+                transactions.addTransaction({
+                  type: 'withdraw',
+                  status: 'pending',
+                  value: utils.formatEther(amount),
+                  txID: tx.hash,
+                  assetName: 'ETH',
+                  assetType: AssetType.ETH,
+                  sender: walletAddress,
+                  blockNumber: tx.blockNumber,
+                  l1NetworkID: l1Network.chainID.toString(),
+                  l2NetworkID: l2Network.chainID.toString()
+                })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+              },
+              onTxConfirm: (tx, receipt) => {
+                transactions.updateTransaction(receipt, tx)
               }
             }
           })

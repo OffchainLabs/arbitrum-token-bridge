@@ -4,6 +4,7 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
+import { AppStateTransactions } from '../../components/syncers/TransactionsSync'
 
 export const setConnectionState = (
   { state }: Context,
@@ -95,6 +96,13 @@ export const setArbTokenBridge = (
   if (atb && !state.app.arbTokenBridgeLoaded) {
     actions.app.setArbTokenBridgeLoaded(true)
   }
+}
+
+export const setTransactions = (
+  { state }: Context,
+  transactions: AppStateTransactions
+) => {
+  state.app.transactions = transactions
 }
 
 export const getPendingTransactions = ({ state }: Context) => {

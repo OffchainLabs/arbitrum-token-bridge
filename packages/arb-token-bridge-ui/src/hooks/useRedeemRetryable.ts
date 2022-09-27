@@ -4,7 +4,7 @@ import { IL1ToL2MessageWriter, L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
+import { useAppState } from '../state'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -13,10 +13,12 @@ export type UseRedeemRetryableResult = {
 
 export function useRedeemRetryable(): UseRedeemRetryableResult {
   const {
+    app: { transactions }
+  } = useAppState()
+  const {
     l1: { provider: l1Provider },
     l2: { signer: l2Signer }
   } = useNetworksAndSigners()
-  const [, { fetchAndUpdateL1ToL2MsgStatus }] = useTransactions()
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -55,7 +57,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     }
 
     // update in store
-    fetchAndUpdateL1ToL2MsgStatus(
+    transactions.fetchAndUpdateL1ToL2MsgStatus(
       tx.txId,
       retryableTicket,
       tx.asset === 'eth',

@@ -11,7 +11,7 @@ export type UseClaimWithdrawalResult = {
 
 export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, transactions }
   } = useAppState()
   const { l1 } = useNetworksAndSigners()
   const { signer: l1Signer } = l1
@@ -35,12 +35,14 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (tx.asset === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer
+          l1Signer,
+          transactions
         })
       } else {
         res = await arbTokenBridge.token.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer
+          l1Signer,
+          transactions
         })
       }
     } catch (error: any) {

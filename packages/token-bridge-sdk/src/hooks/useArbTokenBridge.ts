@@ -25,7 +25,6 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { getL2Network as getClassicL2Network } from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
 
-import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   AddressToSymbol,
   AddressToDecimals,
@@ -47,7 +46,9 @@ import {
   NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle
+  L2ContractCallTransactionLifecycle,
+  AppStateTransactions,
+  ContractTransactionLifecycle
 } from './arbTokenBridge.types'
 
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -168,15 +169,6 @@ export const useArbTokenBridge = (
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
-  const [
-    ,
-    {
-      addTransaction,
-      setTransactionFailure,
-      setTransactionSuccess,
-      updateTransaction
-    }
-  ] = useTransactions()
 
   const isArbitrumOne = l2.network.chainID === 42161
   const isArbitrumRinkeby = l2.network.chainID === 421611
@@ -358,39 +350,14 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      if (txLifecycle?.addTransaction) {
-        txLifecycle?.addTransaction({
-          type: 'deposit-l1',
-          status: 'pending',
-          value: utils.formatEther(amount),
-          txID: tx.hash,
-          assetName: 'ETH',
-          assetType: AssetType.ETH,
-          sender: walletAddress,
-          l1NetworkID,
-          l2NetworkID
-        })
-      }
-
       const receipt = await tx.wait()
-
-      if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
-      }
 
       const [ethDepositMessage] = await receipt.getEthDepositMessages(
         l2.provider
       )
 
-      const l1ToL2MsgData: L1ToL2MessageData = {
-        fetchingUpdate: false,
-        status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-        l2TxID: undefined
-      }
-
-      if (txLifecycle?.updateTransaction) {
-        txLifecycle.updateTransaction(receipt, tx, l1ToL2MsgData)
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(tx, receipt, { ethDepositMessage })
       }
 
       updateEthBalances()
@@ -439,28 +406,12 @@ export const useArbTokenBridge = (
     }
 
     try {
-      // TODO -> refactor usage
-      addTransaction({
-        type: 'withdraw',
-        status: 'pending',
-        value: utils.formatEther(amount),
-        txID: tx.hash,
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: walletAddress,
-        blockNumber: tx.blockNumber,
-        l1NetworkID,
-        l2NetworkID
-      })
-
       const receipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
+        txLifecycle.onTxConfirm(tx, receipt)
       }
 
-      // TODO -> refactor usage
-      updateTransaction(receipt, tx)
       updateEthBalances()
 
       const l2ToL1Events = receipt.getL2ToL1Events()
@@ -516,34 +467,29 @@ export const useArbTokenBridge = (
 
   const approveToken = async ({
     erc20L1Address,
-    l1Signer
+    l1Signer,
+    txLifecycle
   }: {
     erc20L1Address: string
     l1Signer: Signer
+    txLifecycle: ContractTransactionLifecycle
   }) => {
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
       l1Signer
     })
 
-    const tokenData = await getL1TokenData(erc20L1Address)
+    const { symbol } = await getL1TokenData(erc20L1Address)
 
-    // TODO -> refactor usage
-    addTransaction({
-      type: 'approve',
-      status: 'pending',
-      value: null,
-      txID: tx.hash,
-      assetName: tokenData.symbol,
-      assetType: AssetType.ERC20,
-      sender: walletAddress,
-      l1NetworkID
-    })
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx, symbol)
+    }
 
     const receipt = await tx.wait()
 
-    // TODO -> refactor usage
-    updateTransaction(receipt, tx)
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(tx, receipt)
+    }
     updateTokenData(erc20L1Address)
   }
 
@@ -566,10 +512,12 @@ export const useArbTokenBridge = (
 
   const approveTokenL2 = async ({
     erc20L1Address,
-    l2Signer
+    l2Signer,
+    txLifecycle
   }: {
     erc20L1Address: string
     l2Signer: Signer
+    txLifecycle: ContractTransactionLifecycle
   }) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
@@ -578,26 +526,17 @@ export const useArbTokenBridge = (
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const tokenData = await getL1TokenData(erc20L1Address)
+    const { symbol } = await getL1TokenData(erc20L1Address)
 
-    // TODO -> refactor usage
-    addTransaction({
-      type: 'approve-l2',
-      status: 'pending',
-      value: null,
-      txID: tx.hash,
-      assetName: tokenData.symbol,
-      assetType: AssetType.ERC20,
-      sender: walletAddress,
-      blockNumber: tx.blockNumber,
-      l1NetworkID,
-      l2NetworkID
-    })
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx, symbol)
+    }
 
     const receipt = await tx.wait()
 
-    // TODO -> refactor usage
-    updateTransaction(receipt, tx)
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(tx, receipt)
+    }
     updateTokenData(erc20L1Address)
   }
 
@@ -612,7 +551,7 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
   }) {
-    const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+    const { symbol } = await getL1TokenData(erc20L1Address)
 
     const tx = await erc20Bridger.deposit({
       l1Signer,
@@ -622,40 +561,15 @@ export const useArbTokenBridge = (
     })
 
     if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
+      txLifecycle.onTxSubmit(tx, symbol)
     }
-
-    // TODO -> refactor usage
-    addTransaction({
-      type: 'deposit-l1',
-      status: 'pending',
-      value: utils.formatUnits(amount, decimals),
-      txID: tx.hash,
-      assetName: symbol,
-      assetType: AssetType.ERC20,
-      tokenAddress: erc20L1Address,
-      sender: walletAddress,
-      l1NetworkID,
-      l2NetworkID
-    })
 
     const receipt = await tx.wait()
 
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(receipt)
-    }
-
     const l1ToL2Msg = await receipt.getL1ToL2Message(l2.provider)
-
-    const l1ToL2MsgData: L1ToL2MessageData = {
-      fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-      l2TxID: undefined
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(tx, receipt, { l1Tol2Message: l1ToL2Msg })
     }
-
-    // TODO -> refactor usage
-    updateTransaction(receipt, tx, l1ToL2MsgData)
     updateTokenData(erc20L1Address)
 
     return receipt
@@ -719,29 +633,12 @@ export const useArbTokenBridge = (
       txLifecycle.onTxSubmit(tx)
     }
 
-    // TODO -> refactor usage
-    addTransaction({
-      type: 'withdraw',
-      status: 'pending',
-      value: utils.formatUnits(amount, decimals),
-      txID: tx.hash,
-      assetName: symbol,
-      assetType: AssetType.ERC20,
-      sender: walletAddress,
-      blockNumber: tx.blockNumber,
-      l1NetworkID,
-      l2NetworkID
-    })
-
     try {
       const receipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
+        txLifecycle.onTxConfirm(tx, receipt)
       }
-
-      // TODO -> refactor usage
-      updateTransaction(receipt, tx)
 
       const l2ToL1Events = receipt.getL2ToL1Events()
 
@@ -1094,10 +991,12 @@ export const useArbTokenBridge = (
 
   async function triggerOutboxToken({
     id,
-    l1Signer
+    l1Signer,
+    transactions
   }: {
     id: string
     l1Signer: Signer
+    transactions: AppStateTransactions
   }) {
     const event = pendingWithdrawalsMap[id]
 
@@ -1118,7 +1017,7 @@ export const useArbTokenBridge = (
     const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
 
     // TODO -> refactor usage
-    addTransaction({
+    transactions.addTransaction({
       status: 'pending',
       type: 'outbox',
       value: utils.formatUnits(value, decimals),
@@ -1135,7 +1034,7 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         // TODO -> refactor usage
-        setTransactionSuccess(rec.transactionHash)
+        transactions.setTransactionSuccess(rec.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1144,7 +1043,7 @@ export const useArbTokenBridge = (
         })
       } else {
         // TODO -> refactor usage
-        setTransactionFailure(rec.transactionHash)
+        transactions.setTransactionFailure(rec.transactionHash)
       }
 
       return rec
@@ -1155,10 +1054,12 @@ export const useArbTokenBridge = (
 
   async function triggerOutboxEth({
     id,
-    l1Signer
+    l1Signer,
+    transactions
   }: {
     id: string
     l1Signer: Signer
+    transactions: AppStateTransactions
   }) {
     const event = pendingWithdrawalsMap[id]
 
@@ -1177,7 +1078,7 @@ export const useArbTokenBridge = (
     const res = await messageWriter.execute(l2.provider)
 
     // TODO -> refactor usage
-    addTransaction({
+    transactions.addTransaction({
       status: 'pending',
       type: 'outbox',
       value: utils.formatEther(value),
@@ -1194,7 +1095,7 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         // TODO -> refactor usage
-        setTransactionSuccess(rec.transactionHash)
+        transactions.setTransactionSuccess(rec.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1203,7 +1104,7 @@ export const useArbTokenBridge = (
         })
       } else {
         // TODO -> refactor usage
-        setTransactionFailure(rec.transactionHash)
+        transactions.setTransactionFailure(rec.transactionHash)
       }
 
       return rec
