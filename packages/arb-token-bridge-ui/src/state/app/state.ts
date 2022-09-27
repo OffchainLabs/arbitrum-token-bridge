@@ -21,7 +21,7 @@ import {
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { AppStateTransactions } from '../../components/syncers/TransactionsSync'
+import { AppStateTransactions } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 export enum WhiteListState {
   VERIFYING,

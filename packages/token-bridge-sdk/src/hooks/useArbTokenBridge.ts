@@ -47,8 +47,8 @@ import {
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
   L2ContractCallTransactionLifecycle,
-  AppStateTransactions,
-  ContractTransactionLifecycle
+  ContractTransactionLifecycle,
+  TriggerOutboxTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -979,11 +979,11 @@ export const useArbTokenBridge = (
   async function triggerOutboxToken({
     id,
     l1Signer,
-    transactions
+    txLifecycle
   }: {
     id: string
     l1Signer: Signer
-    transactions: AppStateTransactions
+    txLifecycle: TriggerOutboxTransactionLifecycle
   }) {
     const event = pendingWithdrawalsMap[id]
 
@@ -991,37 +991,24 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
-    const { tokenAddress, value } = event
-
-    const messageWriter = L2ToL1Message.fromEvent(
-      l1Signer,
-      event,
-      await getOutboxAddress(event)
-    )
-
-    const res = await messageWriter.execute(l2.provider)
-
-    const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
-
-    // TODO -> refactor usage
-    transactions.addTransaction({
-      status: 'pending',
-      type: 'outbox',
-      value: utils.formatUnits(value, decimals),
-      assetName: symbol,
-      assetType: AssetType.ERC20,
-      sender: walletAddress,
-      txID: res.hash,
-      l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
-
     try {
-      const rec = await res.wait()
+      const messageWriter = L2ToL1Message.fromEvent(
+        l1Signer,
+        event,
+        await getOutboxAddress(event)
+      )
+      const tx = await messageWriter.execute(l2.provider)
 
-      if (rec.status === 1) {
-        // TODO -> refactor usage
-        transactions.setTransactionSuccess(rec.transactionHash)
+      const tokenData = await getL1TokenData(event.tokenAddress as string)
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx, event, tokenData)
+      }
+      const receipt = await tx.wait()
+
+      if (receipt.status === 1) {
+        if (txLifecycle?.onTxSuccess) {
+          txLifecycle.onTxSuccess(receipt.transactionHash)
+        }
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1029,11 +1016,12 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        // TODO -> refactor usage
-        transactions.setTransactionFailure(rec.transactionHash)
+        if (txLifecycle?.onTxFailure) {
+          txLifecycle.onTxFailure(receipt.transactionHash)
+        }
       }
 
-      return rec
+      return receipt
     } catch (err) {
       console.warn('WARNING: token outbox execute failed:', err)
     }
@@ -1042,11 +1030,11 @@ export const useArbTokenBridge = (
   async function triggerOutboxEth({
     id,
     l1Signer,
-    transactions
+    txLifecycle
   }: {
     id: string
     l1Signer: Signer
-    transactions: AppStateTransactions
+    txLifecycle: TriggerOutboxTransactionLifecycle
   }) {
     const event = pendingWithdrawalsMap[id]
 
@@ -1054,35 +1042,25 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
-    const { value } = event
-
     const messageWriter = L2ToL1Message.fromEvent(
       l1Signer,
       event,
       await getOutboxAddress(event)
     )
 
-    const res = await messageWriter.execute(l2.provider)
+    const tx = await messageWriter.execute(l2.provider)
 
-    // TODO -> refactor usage
-    transactions.addTransaction({
-      status: 'pending',
-      type: 'outbox',
-      value: utils.formatEther(value),
-      assetName: 'ETH',
-      assetType: AssetType.ETH,
-      sender: walletAddress,
-      txID: res.hash,
-      l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
+    if (txLifecycle?.onTxSubmit) {
+      txLifecycle.onTxSubmit(tx, event)
+    }
 
     try {
-      const rec = await res.wait()
+      const receipt = await tx.wait()
 
-      if (rec.status === 1) {
-        // TODO -> refactor usage
-        transactions.setTransactionSuccess(rec.transactionHash)
+      if (receipt.status === 1) {
+        if (txLifecycle?.onTxSuccess) {
+          txLifecycle.onTxSuccess(receipt.transactionHash)
+        }
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1090,11 +1068,12 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        // TODO -> refactor usage
-        transactions.setTransactionFailure(rec.transactionHash)
+        if (txLifecycle?.onTxFailure) {
+          txLifecycle.onTxFailure(receipt.transactionHash)
+        }
       }
 
-      return rec
+      return receipt
     } catch (err) {
       console.warn('WARNING: ETH outbox execute failed:', err)
     }

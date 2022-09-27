@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { AssetType, getUniqueIdOrHashFromEvent } from 'token-bridge-sdk'
+import { utils } from 'ethers'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -11,7 +13,10 @@ export type UseClaimWithdrawalResult = {
 
 export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
-    app: { arbTokenBridge, transactions }
+    app: {
+      arbTokenBridge: { eth, token, walletAddress },
+      transactions
+    }
   } = useAppState()
   const { l1 } = useNetworksAndSigners()
   const { signer: l1Signer } = l1
@@ -33,16 +38,57 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
 
     try {
       if (tx.asset === 'eth') {
-        res = await arbTokenBridge.eth.triggerOutbox({
+        res = await eth.triggerOutbox({
           id: tx.uniqueId.toString(),
           l1Signer,
-          transactions
+          txLifecycle: {
+            onTxSubmit: (tx, event) => {
+              transactions.addTransaction({
+                status: 'pending',
+                type: 'outbox',
+                value: utils.formatEther(event.value),
+                assetName: 'ETH',
+                assetType: AssetType.ETH,
+                sender: walletAddress,
+                txID: tx.hash,
+                l1NetworkID: l1.network.chainID.toString(),
+                l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
+              })
+            },
+            onTxSuccess: txHash => {
+              transactions.setTransactionSuccess(txHash)
+            },
+            onTxFailure: txHash => {
+              transactions.setTransactionFailure(txHash)
+            }
+          }
         })
       } else {
-        res = await arbTokenBridge.token.triggerOutbox({
+        res = await token.triggerOutbox({
           id: tx.uniqueId.toString(),
           l1Signer,
-          transactions
+          txLifecycle: {
+            onTxSubmit: (tx, event, tokenData) => {
+              if (!tokenData) return
+              transactions.addTransaction({
+                status: 'pending',
+                type: 'outbox',
+                value: utils.formatUnits(event.value, tokenData.decimals),
+                assetName: tokenData.symbol,
+                assetType: AssetType.ERC20,
+                sender: walletAddress,
+                txID: tx.hash,
+                l1NetworkID: l1.network.chainID.toString(),
+                l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
+              })
+            },
+            onTxSuccess: txHash => {
+              transactions.setTransactionSuccess(txHash)
+            },
+            onTxFailure: txHash => {
+              transactions.setTransactionFailure(txHash)
+            }
+          }
         })
       }
     } catch (error: any) {

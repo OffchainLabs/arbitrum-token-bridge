@@ -43,7 +43,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     }
-  }, [actions.app, l1Provider, l2Provider])
+  }, [actions.app, l1Provider, l2Provider, transactions])
 
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
@@ -85,7 +85,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     }
-  }, [actions.app, l1Provider, l2Provider])
+  }, [actions.app, l1Provider, l2Provider, transactions])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messagges,
@@ -98,11 +98,9 @@ export function RetryableTxnsIncluder(): JSX.Element {
   )
 
   useEffect(() => {
-    if (arbTokenBridgeLoaded) {
-      // force trigger update each time loaded change happens
-      forceTriggerUpdate()
-      forceTriggerUpdateFailedRetryables()
-    }
+    // force trigger update each time loaded change happens
+    forceTriggerUpdate()
+    forceTriggerUpdateFailedRetryables()
   }, [
     arbTokenBridgeLoaded,
     forceTriggerUpdate,

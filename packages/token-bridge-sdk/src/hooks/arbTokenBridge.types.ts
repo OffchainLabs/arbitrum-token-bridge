@@ -78,6 +78,16 @@ export type ContractTransactionLifecycle = TransactionLifecycle<
   ContractReceipt
 >
 
+export type TriggerOutboxTransactionLifecycle = Partial<{
+  onTxSubmit: (
+    tx: ContractTransaction,
+    event: L2ToL1EventResultPlus,
+    tokenData?: L1TokenData
+  ) => void
+  onTxSuccess: (txHash: string) => void
+  onTxFailure: (txHash: string) => void
+}>
+
 export type NodeBlockDeadlineStatus =
   | number
   | 'NODE_NOT_CREATED'
@@ -228,7 +238,7 @@ export interface ArbTokenBridgeEth {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
-    transactions: AppStateTransactions
+    txLifecycle: TriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
 }
 
@@ -279,7 +289,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
-    transactions: AppStateTransactions
+    txLifecycle: TriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
