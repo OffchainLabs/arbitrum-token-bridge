@@ -21,7 +21,18 @@ Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN,
   release: Package.version,
   integrations: [new BrowserTracing()],
-  tracesSampleRate: 0.15
+  tracesSampleRate: 0.15,
+  beforeSend: event => {
+    if (
+      event.message &&
+      // Ignore events related to failed `eth_gasPrice` calls
+      event.message.match(/eth_gasPrice/i)
+    ) {
+      return null
+    }
+
+    return event
+  }
 })
 
 ReactDOM.render(<App />, document.getElementById('root'))
