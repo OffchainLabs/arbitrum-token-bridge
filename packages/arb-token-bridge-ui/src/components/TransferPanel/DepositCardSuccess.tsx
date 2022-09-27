@@ -10,12 +10,24 @@ import {
 } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
 import { formatBigNumber } from '../../util/NumberUtils'
+import { useNetworksAndSigners } from '../../hooks//useNetworksAndSigners'
+import { useBalance } from 'token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
     app: { arbTokenBridge, selectedToken }
   } = useAppState()
   const dispatch = useAppContextDispatch()
+  const {
+    l2: { provider: L2Provider }
+  } = useNetworksAndSigners()
+
+  const {
+    eth: [ethBalance]
+  } = useBalance({
+    provider: L2Provider,
+    walletAddress: arbTokenBridge.walletAddress
+  })
 
   useEffect(() => {
     // Add token to bridge just in case the user navigated away while the deposit was in-flight
@@ -30,7 +42,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     }
 
     if (tx.asset === 'eth') {
-      return arbTokenBridge.balances.eth.arbChainBalance
+      return ethBalance
     }
 
     if (!tx.tokenAddress) {
@@ -38,7 +50,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     }
 
     return arbTokenBridge.balances.erc20[tx.tokenAddress]?.arbChainBalance
-  }, [tx, arbTokenBridge])
+  }, [ethBalance, tx, arbTokenBridge])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
