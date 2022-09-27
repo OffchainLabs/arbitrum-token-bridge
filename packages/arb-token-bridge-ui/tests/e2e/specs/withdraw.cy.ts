@@ -1,33 +1,11 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
-import { formatBigNumber } from '../../../src/util/NumberUtils'
-
-async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
-  const goerliProvider = new JsonRpcProvider(rpcURL)
-  return await goerliProvider.getBalance(Cypress.env('ADDRESS'))
-}
-
-const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env('INFURA_KEY')}`
-const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
-
 /**
  * When user wants to bridge ETH from L1 to L2
  */
 describe('Withdraw ETH', () => {
   // Happy Path
-  context('user has some ETH and is on L2', () => {
-    let l1ETHbal
-    let l2ETHbal
-
+  context('user has some ETH and is on L1', () => {
+    // log in to metamask before withdrawal
     before(() => {
-      cy.clearLocalStorageSnapshot()
-      getInitialETHBalance(goerliRPC).then(
-        val => (l1ETHbal = formatBigNumber(val, 18, 5))
-      )
-      getInitialETHBalance(arbitrumGoerliRPC).then(
-        val => (l2ETHbal = formatBigNumber(val, 18, 5))
-      )
-      cy.disconnectMetamaskWalletFromAllDapps()
       cy.login()
     })
 
@@ -43,11 +21,6 @@ describe('Withdraw ETH', () => {
       // or else we have to visit the page every test which will be much slower
       // https://docs.cypress.io/api/commands/clearlocalstorage
       cy.saveLocalStorage()
-    })
-
-    it('should show L1 and L2 ETH balances correctly', () => {
-      cy.findByText(`Balance: ${l1ETHbal} ETH`).should('be.visible')
-      cy.findByText(`Balance: ${l2ETHbal} ETH`).should('be.visible')
     })
 
     it('should switch to L2 network correctly', () => {
@@ -66,10 +39,6 @@ describe('Withdraw ETH', () => {
             .should('be.visible')
             .should('be.disabled')
         })
-    })
-
-    it('should show empty bridging summary', () => {
-      cy.findByText('Bridging summary will appear here.').should('be.visible')
     })
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {

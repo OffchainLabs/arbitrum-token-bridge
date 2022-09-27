@@ -25,6 +25,9 @@ import '@testing-library/cypress/add-commands'
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 export function login() {
+  cy.clearLocalStorageSnapshot()
+  cy.disconnectMetamaskWalletFromAllDapps()
+
   cy.visit(`/`)
   cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
