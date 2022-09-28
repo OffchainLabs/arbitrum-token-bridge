@@ -48,7 +48,8 @@ import {
   TriggerOutboxTransactionLifecycle,
   TokenL1ContractCallTransactionLifecycle,
   TokenContractTransactionLifecycle,
-  TokenL2ContractCallTransactionLifecycle
+  TokenL2ContractCallTransactionLifecycle,
+  TokenTriggerOutboxTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -983,7 +984,7 @@ export const useArbTokenBridge = (
   }: {
     id: string
     l1Signer: Signer
-    txLifecycle: TriggerOutboxTransactionLifecycle
+    txLifecycle: TokenTriggerOutboxTransactionLifecycle
   }) {
     const event = pendingWithdrawalsMap[id]
 
