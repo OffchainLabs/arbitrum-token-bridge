@@ -23,12 +23,15 @@ Sentry.init({
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
   beforeSend: event => {
-    if (
-      event.message &&
-      // Ignore events related to failed `eth_gasPrice` calls
-      event.message.match(/eth_gasPrice/i)
-    ) {
-      return null
+    if (event.message) {
+      if (
+        // Ignore events related to failed `eth_gasPrice` calls
+        event.message.match(/eth_gasPrice/i) ||
+        // Ignore events related to failed `eth_getBalance` calls
+        event.message.match(/eth_getBalance/i)
+      ) {
+        return null
+      }
     }
 
     return event
