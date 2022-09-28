@@ -3,10 +3,11 @@
  */
 describe('Withdraw ETH', () => {
   // Happy Path
-  context('user has some ETH and is on L1', () => {
+  context('user has some ETH and is on L2', () => {
     // log in to metamask before withdrawal
     before(() => {
-      cy.login()
+      // login to L2 chain for Arb Goerli network
+      cy.login(true)
     })
 
     beforeEach(() => {
@@ -23,22 +24,17 @@ describe('Withdraw ETH', () => {
       cy.saveLocalStorage()
     })
 
-    it('should switch to L2 network correctly', () => {
-      cy.findByRole('button', { name: /Switch Networks/i })
-        .should('be.visible')
-        .click({ scrollBehavior: false })
-        .then(() => {
-          cy.findByRole('button', { name: /From: Arbitrum Goerli/i }).should(
-            'be.visible'
-          )
-          cy.findByRole('button', { name: /To: Goerli/i }).should('be.visible')
+    it('should show form fields correctly', () => {
+      cy.findByRole('button', { name: /From: Arbitrum Goerli/i }).should(
+        'be.visible'
+      )
+      cy.findByRole('button', { name: /To: Goerli/i }).should('be.visible')
 
-          cy.findByRole('button', {
-            name: /Move funds to Goerli/i
-          })
-            .should('be.visible')
-            .should('be.disabled')
-        })
+      cy.findByRole('button', {
+        name: /Move funds to Goerli/i
+      })
+        .should('be.visible')
+        .should('be.disabled')
     })
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
@@ -77,7 +73,7 @@ describe('Withdraw ETH', () => {
           })
       })
 
-      it('withdraw button should be clickable', () => {
+      it('should show a clickable withdraw button', () => {
         cy.findByRole('button', {
           name: /Move funds to Goerli/i
         })
@@ -87,36 +83,36 @@ describe('Withdraw ETH', () => {
       })
 
       it('should show withdrawal confirmation', () => {
-        cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
-          // approve network switch
+        // cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
+        // approve network switch
 
-          cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
+        cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
 
-          // the Continue withdrawal button should be disabled at first
-          cy.findByRole('button', {
-            name: /Continue/i
-          }).should('be.disabled')
+        // the Continue withdrawal button should be disabled at first
+        cy.findByRole('button', {
+          name: /Continue/i
+        }).should('be.disabled')
 
-          cy.findByRole('switch', {
-            name: /before I can claim my funds/i
-          })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-
-          cy.findByRole('switch', {
-            name: /after claiming my funds/i
-          })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-            .then(() => {
-              // the Continue withdrawal button should not be disabled now
-              cy.findByRole('button', {
-                name: /Continue/i
-              })
-                .should('not.be.disabled')
-                .click({ scrollBehavior: false })
-            })
+        cy.findByRole('switch', {
+          name: /before I can claim my funds/i
         })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+
+        cy.findByRole('switch', {
+          name: /after claiming my funds/i
+        })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+          .then(() => {
+            // the Continue withdrawal button should not be disabled now
+            cy.findByRole('button', {
+              name: /Continue/i
+            })
+              .should('not.be.disabled')
+              .click({ scrollBehavior: false })
+          })
+        // })
       })
 
       it('should withdraw successfully', () => {

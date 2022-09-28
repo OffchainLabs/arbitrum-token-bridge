@@ -1,6 +1,5 @@
 import '@synthetixio/synpress/support/index.d.ts'
 import { login } from '../support/commands'
-
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -8,7 +7,7 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      login(): typeof login
+      login(isL2Network?: boolean): typeof login
     }
   }
 }
