@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
 import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,
@@ -29,22 +29,6 @@ export function calculateEstimatedL2GasFees(
 export type Balances = {
   ethereum: BigNumber | null
   arbitrum: BigNumber | null
-}
-
-export function useETHBalances(): Balances {
-  const { app } = useAppState()
-  const { arbTokenBridge } = app
-
-  return useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
-      return { ethereum: null, arbitrum: null }
-    }
-
-    return {
-      ethereum: arbTokenBridge.balances.eth.balance,
-      arbitrum: arbTokenBridge.balances.eth.arbChainBalance
-    }
-  }, [arbTokenBridge])
 }
 
 export function useTokenBalances(erc20L1Address?: string): Balances {
@@ -80,22 +64,18 @@ export function useIsSwitchingL2Chain() {
   const { isDepositMode } = app
 
   const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
-
-  const { search } = useLocation()
-  const searchParams = new URLSearchParams(search)
-  const l2ChainIdSearchParam = searchParams.get('l2ChainId')
+  const [{ l2ChainId: l2ChainIdSearchParam }] = useArbQueryParams()
 
   return useMemo(() => {
     if (isConnectedToArbitrum || !isDepositMode) {
       return false
     }
 
-    const parsedL2ChainId = parseInt(l2ChainIdSearchParam || '')
-
-    if (isNaN(parsedL2ChainId)) {
+    // if l2ChainId url param is either null, undefined, blank, 0 or invalid number
+    if (!l2ChainIdSearchParam || isNaN(l2ChainIdSearchParam)) {
       return false
     }
 
-    return l2.network.chainID !== parsedL2ChainId
+    return l2.network.chainID !== l2ChainIdSearchParam
   }, [isConnectedToArbitrum, isDepositMode, l2, l2ChainIdSearchParam])
 }

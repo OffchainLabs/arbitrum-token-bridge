@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { useLatest } from 'react-use'
+import { useGasPrice } from 'token-bridge-sdk'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
@@ -36,10 +36,13 @@ export function useGasSummary(
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-  const { l1GasPrice, l2GasPrice } = useGasPrice()
 
   const networksAndSigners = useNetworksAndSigners()
+  const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
+
+  const l1GasPrice = useGasPrice({ provider: l1.provider })
+  const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1500)

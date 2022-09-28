@@ -165,7 +165,6 @@ export interface AddressToDecimals {
   [tokenAddress: string]: number
 }
 export interface ArbTokenBridgeBalances {
-  eth: BridgeBalance
   erc20: ContractStorage<BridgeBalance>
   erc721: ContractStorage<ERC721Balance>
 }
@@ -198,7 +197,6 @@ export interface ArbTokenBridgeEth {
     id: string
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
-  updateBalances: () => Promise<void>
 }
 
 export interface ArbTokenBridgeCache {

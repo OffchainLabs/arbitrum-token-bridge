@@ -24,8 +24,7 @@ import {
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
-import { useLatest } from 'react-use'
-import { useHistory } from 'react-router-dom'
+import { useArbQueryParams } from './useArbQueryParams'
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
@@ -127,11 +126,11 @@ export function NetworksAndSignersProvider(
 ): JSX.Element {
   const { selectedL2ChainId } = props
   const { provider, account, network, connect } = useWallet()
-  const history = useHistory()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
-  const latestResult = useLatest(result)
+
+  const [, setQueryParams] = useArbQueryParams()
 
   // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
@@ -190,9 +189,11 @@ export function NetworksAndSignersProvider(
 
       // Case 2: L2 is not supported by provider
       if (!providerSupportedL2.includes(_selectedL2ChainId)) {
-        history.replace({
-          pathname: '/'
+        // remove the l2chainId, keeping the rest of the params intact
+        setQueryParams({
+          l2ChainId: undefined
         })
+
         return
       }
 
@@ -228,7 +229,7 @@ export function NetworksAndSignersProvider(
         })
         .catch(() => {
           // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
-          if (providerChainId != _selectedL2ChainId) {
+          if (providerChainId !== _selectedL2ChainId) {
             // Make sure the L2 provider chainid match the selected chainid
             setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
             return
@@ -265,7 +266,7 @@ export function NetworksAndSignersProvider(
             })
         })
     },
-    [latestResult, selectedL2ChainId, history]
+    [selectedL2ChainId, setQueryParams]
   )
 
   useEffect(() => {
