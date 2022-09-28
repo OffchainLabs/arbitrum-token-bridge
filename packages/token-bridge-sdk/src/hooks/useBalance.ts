@@ -40,7 +40,6 @@ const useBalance = ({
   const { mutate } = useSWR(
     queryKey,
     async (_, _chainId: number, _walletAddress: string) => {
-      console.log('refetching')
       const newBalance = await provider.getBalance(_walletAddress)
 
       setBalances({
