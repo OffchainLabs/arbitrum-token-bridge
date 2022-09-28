@@ -17,8 +17,10 @@ describe('Login Account', () => {
     getInitialETHBalance(arbitrumGoerliRPC).then(
       val => (l2ETHbal = formatBigNumber(val, 18, 5))
     )
+  })
 
-    cy.disconnectMetamaskWalletFromAllDapps()
+  after(() => {
+    cy.resetMetamask()
   })
 
   it('should show connect wallet if not logged in', () => {

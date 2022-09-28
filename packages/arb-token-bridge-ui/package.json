@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@craco/craco": "6.2.0",
-    "@synthetixio/synpress": "^2.3.3-beta.0",
+    "@synthetixio/synpress": "^2.3.3",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",
     "@types/react": "^17.0.18",

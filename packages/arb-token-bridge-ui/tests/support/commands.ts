@@ -24,22 +24,31 @@ import '@testing-library/cypress/add-commands'
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+const l2networkConfig = {
+  networkName: 'arbitrum goerli',
+  rpcUrl: 'https://goerli-rollup.arbitrum.io/rpc',
+  chainId: '421613',
+  symbol: 'ETH',
+  blockExplorer: 'https://goerli-rollup-explorer.arbitrum.io',
+  isTestnet: true
+}
+
 export function login(isL2Network?: boolean) {
   const setupMetamask = isL2Network => {
-    return cy.setupMetamask(
-      Cypress.env('SECRET_WORDS'),
-      isL2Network
-        ? {
-            networkName: 'arbitrum goerli',
-            rpcUrl: 'https://goerli-rollup.arbitrum.io/rpc',
-            chainId: '421613',
-            symbol: 'ETH',
-            blockExplorer: 'https://goerli-rollup-explorer.arbitrum.io',
-            isTestnet: true
-          }
-        : 'goerli',
-      Cypress.env('METAMASK_PASSWORD')
-    )
+    return cy
+      .setupMetamask(
+        Cypress.env('SECRET_WORDS'),
+        'goerli',
+        Cypress.env('METAMASK_PASSWORD')
+      )
+      .then(() => {
+        if (isL2Network) {
+          cy.addMetamaskNetwork(l2networkConfig)
+        } else {
+          cy.changeMetamaskNetwork('goerli')
+        }
+      })
   }
 
   const startWebApp = () => {
@@ -52,13 +61,21 @@ export function login(isL2Network?: boolean) {
     })
   }
 
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    cy.clearLocalStorageSnapshot().then(() => {
-      setupMetamask(isL2Network).then(() => {
-        startWebApp()
+  setupMetamask(isL2Network).then(() => {
+    startWebApp()
+  })
+}
+
+export const resetMetamask = () => {
+  cy.switchToCypressWindow().then(() => {
+    cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+      cy.clearLocalStorage().then(() => {
+        cy.switchToCypressWindow().then(() => {
+          cy.resetMetamaskAccount()
+        })
       })
     })
   })
 }
 
-Cypress.Commands.add('login', login)
+Cypress.Commands.addAll({ login, resetMetamask })

@@ -9,6 +9,10 @@ describe('Deposit ETH', () => {
       cy.login()
     })
 
+    after(() => {
+      cy.resetMetamask()
+    })
+
     beforeEach(() => {
       // restore local storage from first test
       cy.restoreLocalStorage()

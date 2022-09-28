@@ -10,6 +10,10 @@ describe('Withdraw ETH', () => {
       cy.login(true)
     })
 
+    after(() => {
+      cy.resetMetamask()
+    })
+
     beforeEach(() => {
       // restore local storage from first test
       cy.restoreLocalStorage()
