@@ -230,20 +230,7 @@ export type DepositGasEstimates = GasEstimates & {
 
 export type AppStateTransactions = {
   transactions: Transaction[]
-} & Pick<
-  TransactionActions,
-  | 'addTransaction'
-  | 'addTransactions'
-  | 'setTransactionSuccess'
-  | 'setTransactionFailure'
-  | 'clearPendingTransactions'
-  | 'setTransactionConfirmed'
-  | 'updateTransaction'
-  | 'removeTransaction'
-  | 'addFailedTransaction'
-  | 'fetchAndUpdateL1ToL2MsgStatus'
-  | 'fetchAndUpdateEthDepositMessageStatus'
->
+} & TransactionActions
 
 export interface ArbTokenBridgeEth {
   deposit: (params: {

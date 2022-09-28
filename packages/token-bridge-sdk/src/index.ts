@@ -1,6 +1,7 @@
 export * from './hooks/useArbTokenBridge'
 export type {
   ArbTokenBridge,
+  AppStateTransactions,
   BridgeBalance,
   L2ToL1EventResult,
   L2ToL1EventResultPlus,

@@ -1,10 +1,13 @@
-import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
+import {
+  AppStateTransactions,
+  ArbTokenBridge,
+  ERC20BridgeToken
+} from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
-import { AppStateTransactions } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 export const setConnectionState = (
   { state }: Context,

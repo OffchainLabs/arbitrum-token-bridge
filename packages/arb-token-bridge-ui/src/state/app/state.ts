@@ -16,12 +16,12 @@ import {
   NodeBlockDeadlineStatus,
   L1ToL2MessageData,
   L2ToL1MessageData,
-  getUniqueIdOrHashFromEvent
+  getUniqueIdOrHashFromEvent,
+  AppStateTransactions
 } from 'token-bridge-sdk'
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { AppStateTransactions } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 export enum WhiteListState {
   VERIFYING,
