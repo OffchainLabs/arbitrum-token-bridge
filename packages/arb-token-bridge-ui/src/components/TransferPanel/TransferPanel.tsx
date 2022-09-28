@@ -119,6 +119,9 @@ export function TransferPanel() {
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
 
+  const l1NetworkID = useMemo(() => String(l1Network.chainID), [l1Network])
+  const l2NetworkID = useMemo(() => String(l2Network.chainID), [l2Network])
+
   const [transferring, setTransferring] = useState(false)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
@@ -405,7 +408,7 @@ export function TransferPanel() {
                     assetName: symbol,
                     assetType: AssetType.ERC20,
                     sender: walletAddress,
-                    l1NetworkID: l1Network.chainID.toString()
+                    l1NetworkID
                   })
                 },
                 onTxConfirm: (tx, txReceipt) => {
@@ -439,8 +442,8 @@ export function TransferPanel() {
                   assetType: AssetType.ERC20,
                   tokenAddress: selectedToken.address,
                   sender: walletAddress,
-                  l1NetworkID: l1Network.chainID.toString(),
-                  l2NetworkID: l2Network.chainID.toString()
+                  l1NetworkID,
+                  l2NetworkID
                 })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
@@ -474,8 +477,8 @@ export function TransferPanel() {
                   assetName: 'ETH',
                   assetType: AssetType.ETH,
                   sender: walletAddress,
-                  l1NetworkID: l1Network.chainID.toString(),
-                  l2NetworkID: l2Network.chainID.toString()
+                  l1NetworkID,
+                  l2NetworkID
                 })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
@@ -557,8 +560,8 @@ export function TransferPanel() {
                       assetType: AssetType.ERC20,
                       sender: walletAddress,
                       blockNumber: tx.blockNumber,
-                      l1NetworkID: l1Network.chainID.toString(),
-                      l2NetworkID: l2Network.chainID.toString()
+                      l1NetworkID,
+                      l2NetworkID
                     })
                   },
                   onTxConfirm: (tx, txReceipt) => {
@@ -584,8 +587,8 @@ export function TransferPanel() {
                   assetType: AssetType.ERC20,
                   sender: walletAddress,
                   blockNumber: tx.blockNumber,
-                  l1NetworkID: l1Network.chainID.toString(),
-                  l2NetworkID: l2Network.chainID.toString()
+                  l1NetworkID,
+                  l2NetworkID
                 })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
@@ -614,8 +617,8 @@ export function TransferPanel() {
                   assetType: AssetType.ETH,
                   sender: walletAddress,
                   blockNumber: tx.blockNumber,
-                  l1NetworkID: l1Network.chainID.toString(),
-                  l2NetworkID: l2Network.chainID.toString()
+                  l1NetworkID,
+                  l2NetworkID
                 })
                 dispatch({
                   type: 'layout.set_is_transfer_panel_visible',
