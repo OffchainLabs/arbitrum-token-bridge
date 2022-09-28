@@ -40,13 +40,11 @@ const useBalance = ({
   const { mutate } = useSWR(
     queryKey,
     async (_, _chainId: number, _walletAddress: string) => {
-      const newBalance = await provider.getBalance(_walletAddress)
-
       setBalances({
         walletAddress: _walletAddress,
         chainId: _chainId,
         type: 'eth',
-        balance: newBalance
+        balance: await provider.getBalance(_walletAddress)
       })
     },
     {
