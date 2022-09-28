@@ -1,50 +1,65 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { useBalanceContext } from '../context/balanceContext'
+import { useMemo } from 'react'
+import { BigNumber, providers } from 'ethers'
 import useSWR from 'swr'
+
+import { useChainId } from './useChainId'
+import { useBalanceContext } from '../context/balanceContext'
+
+const defaultBalance = {
+  eth: null
+}
 
 const useBalance = ({
   provider,
   walletAddress
 }: {
-  provider: JsonRpcProvider
+  provider: providers.Provider
   walletAddress: string | undefined
 }) => {
-  const [allBalances, setBalances] = useBalanceContext()
-  let balances
-  // While refreshing the page, provider.network is undefined, so chainId might be undefined
-  if (walletAddress && provider.network?.chainId) {
-    balances = allBalances[walletAddress]?.[provider.network.chainId]
+  const chainId = useChainId({ provider })
+  const [balances, setBalances] = useBalanceContext()
+
+  let safeBalance: { eth: BigNumber | null } = defaultBalance
+
+  if (typeof walletAddress !== 'undefined' && typeof chainId !== 'undefined') {
+    safeBalance = balances[walletAddress]?.[chainId] ?? defaultBalance
   }
-  balances = balances || { eth: null }
+
+  const queryKey = useMemo(() => {
+    if (
+      typeof chainId === 'undefined' ||
+      typeof walletAddress === 'undefined'
+    ) {
+      // Don't fetch
+      return null
+    }
+
+    return ['ethBalance', chainId, walletAddress.toLowerCase()]
+  }, [chainId, walletAddress])
 
   const { mutate } = useSWR(
-    [walletAddress, provider.network?.chainId],
-    async (walletAddress, chainId) => {
-      if (!walletAddress || !chainId) {
-        return
-      }
+    queryKey,
+    async (_, _chainId: number, _walletAddress: string) => {
+      console.log('refetching')
+      const newBalance = await provider.getBalance(_walletAddress)
 
-      try {
-        const newBalance = await provider.getBalance(walletAddress)
-
-        setBalances({
-          walletAddress,
-          chainId,
-          type: 'eth',
-          balance: newBalance
-        })
-      } catch (error) {
-        // Do nothing, balances is kept to previous state
-      }
+      setBalances({
+        walletAddress: _walletAddress,
+        chainId: _chainId,
+        type: 'eth',
+        balance: newBalance
+      })
     },
     {
-      refreshInterval: 5000,
-      shouldRetryOnError: false
+      refreshInterval: 5_000,
+      shouldRetryOnError: true,
+      errorRetryCount: 1,
+      errorRetryInterval: 1_000
     }
   )
 
   return {
-    eth: [balances.eth, mutate] as const
+    eth: [safeBalance.eth, mutate] as const
   }
 }
 
