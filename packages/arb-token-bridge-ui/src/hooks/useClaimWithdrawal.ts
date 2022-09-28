@@ -69,7 +69,6 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           l1Signer,
           txLifecycle: {
             onTxSubmit: (tx, event, tokenData) => {
-              if (!tokenData) return
               transactions.addTransaction({
                 status: 'pending',
                 type: 'outbox',

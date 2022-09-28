@@ -44,10 +44,11 @@ import {
   L2ToL1EventResult,
   NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
-  L1ContractCallTransactionLifecycle,
   L2ContractCallTransactionLifecycle,
-  ContractTransactionLifecycle,
-  TriggerOutboxTransactionLifecycle
+  TriggerOutboxTransactionLifecycle,
+  TokenL1ContractCallTransactionLifecycle,
+  TokenContractTransactionLifecycle,
+  TokenL2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -349,7 +350,7 @@ export const useArbTokenBridge = (
       )
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(tx, receipt, { ethDepositMessage })
+        txLifecycle.onTxConfirm(tx, receipt, ethDepositMessage)
       }
 
       updateEthBalances()
@@ -464,7 +465,7 @@ export const useArbTokenBridge = (
   }: {
     erc20L1Address: string
     l1Signer: Signer
-    txLifecycle: ContractTransactionLifecycle
+    txLifecycle: TokenContractTransactionLifecycle
   }) => {
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
@@ -509,7 +510,7 @@ export const useArbTokenBridge = (
   }: {
     erc20L1Address: string
     l2Signer: Signer
-    txLifecycle: ContractTransactionLifecycle
+    txLifecycle: TokenContractTransactionLifecycle
   }) => {
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
@@ -541,7 +542,7 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
+    txLifecycle?: TokenL1ContractCallTransactionLifecycle
   }) {
     const { symbol } = await getL1TokenData(erc20L1Address)
 
@@ -558,9 +559,9 @@ export const useArbTokenBridge = (
 
     const receipt = await tx.wait()
 
-    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.provider)
+    const l1Tol2Message = await receipt.getL1ToL2Message(l2.provider)
     if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(tx, receipt, { l1Tol2Message: l1ToL2Msg })
+      txLifecycle.onTxConfirm(tx, receipt, l1Tol2Message)
     }
     updateTokenData(erc20L1Address)
 
@@ -601,7 +602,7 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    txLifecycle?: TokenL2ContractCallTransactionLifecycle
   }) {
     const bridgeToken = bridgeTokens[erc20L1Address]
 
@@ -622,7 +623,7 @@ export const useArbTokenBridge = (
     })
 
     if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
+      txLifecycle.onTxSubmit(tx, symbol)
     }
 
     try {

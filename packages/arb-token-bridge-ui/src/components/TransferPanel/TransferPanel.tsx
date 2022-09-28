@@ -397,7 +397,6 @@ export function TransferPanel() {
               l1Signer: latestNetworksAndSigners.current.l1.signer,
               txLifecycle: {
                 onTxSubmit: (tx, symbol) => {
-                  if (!symbol) return
                   transactions.addTransaction({
                     type: 'approve',
                     status: 'pending',
@@ -431,7 +430,6 @@ export function TransferPanel() {
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
               onTxSubmit: (tx, symbol) => {
-                if (!symbol) return
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
@@ -449,10 +447,7 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onTxConfirm: (tx, txReceipt, msg) => {
-                if (!msg) return
-                const { l1Tol2Message } = msg
-                if (!l1Tol2Message) return
+              onTxConfirm: (tx, txReceipt, l1Tol2Message) => {
                 const l1ToL2MsgData: L1ToL2MessageData = {
                   fetchingUpdate: false,
                   status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
@@ -487,14 +482,11 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onTxConfirm: (tx, receipt, message) => {
-                if (!message) return
-                const { ethDepositMessage } = message
-                if (!ethDepositMessage) return
+              onTxConfirm: (tx, receipt, ethDepositMessage) => {
                 const l1ToL2MsgData: L1ToL2MessageData = {
                   fetchingUpdate: false,
                   status: L1ToL2MessageStatus.NOT_YET_CREATED,
-                  retryableCreationTxID: ethDepositMessage?.l2DepositTxHash,
+                  retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
                   l2TxID: undefined
                 }
                 transactions.updateTransaction(receipt, tx, l1ToL2MsgData)
@@ -556,7 +548,6 @@ export function TransferPanel() {
                 l2Signer: latestNetworksAndSigners.current.l2.signer,
                 txLifecycle: {
                   onTxSubmit: (tx, symbol) => {
-                    if (!symbol) return
                     transactions.addTransaction({
                       type: 'approve-l2',
                       status: 'pending',
@@ -584,7 +575,6 @@ export function TransferPanel() {
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
               onTxSubmit: (tx, symbol) => {
-                if (!symbol) return
                 transactions.addTransaction({
                   type: 'withdraw',
                   status: 'pending',

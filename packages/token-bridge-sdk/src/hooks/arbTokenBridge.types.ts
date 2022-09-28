@@ -47,46 +47,75 @@ export enum AssetType {
 }
 
 export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
-  onTxSubmit: (tx: Tx, symbol?: string) => void
-  onTxConfirm: (
-    tx: Tx,
-    txReceipt: TxReceipt,
-    message?: {
-      l1Tol2Message?: IL1ToL2MessageReader
-      ethDepositMessage?: EthDepositMessage
-    }
-  ) => void
+  onTxSubmit: (tx: Tx) => void
+  onTxConfirm: (tx: Tx, txReceipt: TxReceipt) => void
 }>
 
-export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt
->
+export type TokenTransactionLifecycle<Tx, TxReceipt> = Pick<
+  TransactionLifecycle<Tx, TxReceipt>,
+  'onTxConfirm'
+> &
+  Partial<{
+    onTxSubmit: (tx: Tx, symbol: string) => void
+  }>
 
-export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
->
+export type L1EthDepositTransactionLifecycle = Pick<
+  TransactionLifecycle<L1EthDepositTransaction, L1EthDepositTransactionReceipt>,
+  'onTxSubmit'
+> & {
+  onTxConfirm: (
+    tx: L1EthDepositTransaction,
+    txReceipt: L1EthDepositTransactionReceipt,
+    ethDepositMessage: EthDepositMessage
+  ) => void
+}
+
+export type TokenL1ContractCallTransactionLifecycle = Pick<
+  TokenTransactionLifecycle<
+    L1ContractCallTransaction,
+    L1ContractCallTransactionReceipt
+  >,
+  'onTxSubmit'
+> & {
+  onTxConfirm: (
+    tx: L1ContractCallTransaction,
+    txReceipt: L1ContractCallTransactionReceipt,
+    l1Tol2Message: IL1ToL2MessageReader
+  ) => void
+}
 
 export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
   L2ContractTransaction,
   L2TransactionReceipt
 >
 
-export type ContractTransactionLifecycle = TransactionLifecycle<
+export type TokenL2ContractCallTransactionLifecycle = TokenTransactionLifecycle<
+  L2ContractTransaction,
+  L2TransactionReceipt
+>
+
+export type TokenContractTransactionLifecycle = TokenTransactionLifecycle<
   ContractTransaction,
   ContractReceipt
 >
 
 export type TriggerOutboxTransactionLifecycle = Partial<{
-  onTxSubmit: (
-    tx: ContractTransaction,
-    event: L2ToL1EventResultPlus,
-    tokenData?: L1TokenData
-  ) => void
+  onTxSubmit: (tx: ContractTransaction, event: L2ToL1EventResultPlus) => void
   onTxSuccess: (txHash: string) => void
   onTxFailure: (txHash: string) => void
 }>
+
+export type TokenTriggerOutboxTransactionLifecycle = Omit<
+  TriggerOutboxTransactionLifecycle,
+  'onTxSubmit'
+> &
+  Partial<{
+    onTxSubmit: (
+      tx: ContractTransaction,
+      event: L2ToL1EventResultPlus,
+      tokenData: L1TokenData
+    ) => void
+  }>
 
 export type NodeBlockDeadlineStatus =
   | number
@@ -256,19 +285,19 @@ export interface ArbTokenBridgeToken {
   approve: (params: {
     erc20L1Address: string
     l1Signer: Signer
-    txLifecycle: ContractTransactionLifecycle
+    txLifecycle: TokenContractTransactionLifecycle
   }) => Promise<void>
   approveEstimateGas: (params: { erc20L1Address: string }) => Promise<BigNumber>
   approveL2: (params: {
     erc20L1Address: string
     l2Signer: Signer
-    txLifecycle: ContractTransactionLifecycle
+    txLifecycle: TokenContractTransactionLifecycle
   }) => Promise<void>
   deposit: (params: {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
+    txLifecycle?: TokenL1ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     erc20L1Address: string
@@ -279,7 +308,7 @@ export interface ArbTokenBridgeToken {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    txLifecycle?: TokenL2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     erc20L1Address: string
@@ -289,7 +318,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
-    txLifecycle: TriggerOutboxTransactionLifecycle
+    txLifecycle: TokenTriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
