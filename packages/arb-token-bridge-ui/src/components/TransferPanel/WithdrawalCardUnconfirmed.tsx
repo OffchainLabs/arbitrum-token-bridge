@@ -13,7 +13,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   return (
     <WithdrawalCardContainer tx={tx}>
       <span className="animate-pulse text-2xl text-blue-arbitrum">
-        {`Moving ${tx.value} ${tx.asset.toUpperCase()} to ${networkName}...`}
+        Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}...
       </span>
 
       <span className="animate-pulse text-4xl font-semibold text-blue-arbitrum">
