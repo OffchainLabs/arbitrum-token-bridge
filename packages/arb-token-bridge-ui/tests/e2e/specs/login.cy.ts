@@ -20,7 +20,8 @@ describe('Login Account', () => {
   })
 
   after(() => {
-    cy.resetMetamask()
+    // after all assertions are executed, logout and reset the account
+    cy.logout()
   })
 
   it('should show connect wallet if not logged in', () => {

@@ -1,5 +1,5 @@
 import '@synthetixio/synpress/support/index.d.ts'
-import { login, resetMetamask } from '../support/commands'
+import { login, logout } from '../support/commands'
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -8,7 +8,7 @@ declare global {
        * @example cy.login()
        */
       login(isL2Network?: boolean): typeof login
-      resetMetamask(): typeof resetMetamask
+      logout(): typeof logout
     }
   }
 }

@@ -10,7 +10,8 @@ describe('Deposit ETH', () => {
     })
 
     after(() => {
-      cy.resetMetamask()
+      // after all assertions are executed, logout and reset the account
+      cy.logout()
     })
 
     beforeEach(() => {

@@ -11,7 +11,8 @@ describe('Withdraw ETH', () => {
     })
 
     after(() => {
-      cy.resetMetamask()
+      // after all assertions are executed, logout and reset the account
+      cy.logout()
     })
 
     beforeEach(() => {
@@ -87,9 +88,6 @@ describe('Withdraw ETH', () => {
       })
 
       it('should show withdrawal confirmation', () => {
-        // cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
-        // approve network switch
-
         cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
 
         // the Continue withdrawal button should be disabled at first
@@ -116,7 +114,6 @@ describe('Withdraw ETH', () => {
               .should('not.be.disabled')
               .click({ scrollBehavior: false })
           })
-        // })
       })
 
       it('should withdraw successfully', () => {

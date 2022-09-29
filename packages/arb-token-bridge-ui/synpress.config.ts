@@ -35,6 +35,6 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'tests/support/index.ts',
-    testIsolation: 'strict'
+    testIsolation: 'strict' // this will ensure all tests are properly isolated, clearing session context everytime
   }
 })
