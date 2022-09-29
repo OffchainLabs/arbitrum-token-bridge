@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { providers } from 'ethers'
 import useSWR from 'swr'
 
@@ -17,35 +17,27 @@ const useBalance = ({
     [walletAddress]
   )
 
-  const queryKey = useCallback(
-    (type: 'eth' | 'erc20') => {
-      if (
-        typeof chainId === 'undefined' ||
-        typeof walletAddressLowercased === 'undefined'
-      ) {
-        // Don't fetch
-        return null
-      }
+  const queryKey = useMemo(() => {
+    if (
+      typeof chainId === 'undefined' ||
+      typeof walletAddressLowercased === 'undefined'
+    ) {
+      // Don't fetch
+      return null
+    }
 
-      return [type, chainId, walletAddressLowercased, 'balance']
-    },
-    [chainId, walletAddressLowercased]
-  )
+    return [chainId, walletAddressLowercased, 'ethBalance']
+  }, [chainId, walletAddressLowercased])
 
-  const config = useMemo(
-    () => ({
+  const { data: dataEth, mutate: mutateEth } = useSWR(
+    queryKey,
+    async (_, _walletAddress: string) => provider.getBalance(_walletAddress),
+    {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000
-    }),
-    []
-  )
-
-  const { data: dataEth, mutate: mutateEth } = useSWR(
-    queryKey('eth'),
-    (_, __, _walletAddress: string) => provider.getBalance(_walletAddress),
-    config
+    }
   )
 
   return {
