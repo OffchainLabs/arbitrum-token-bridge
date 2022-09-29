@@ -629,7 +629,10 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
-        <SwitchNetworksButton onClick={switchNetworks} />
+        <SwitchNetworksButton
+          onClick={switchNetworks}
+          aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
+        />
       </div>
 
       <NetworkContainer network={to}>
