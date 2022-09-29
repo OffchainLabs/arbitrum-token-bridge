@@ -2,9 +2,15 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import { formatBigNumber } from '../../../src/util/NumberUtils'
+import {
+  arbitrumGoerliRPC,
+  customERC20TokenAddressL2,
+  getInitialERC20Balance,
+  zeroToLessThanOneETH
+} from '../../support/common'
 
-describe('Withdraw ETH', () => {
+describe('Withdraw Custom ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
@@ -16,9 +22,15 @@ describe('Withdraw ETH', () => {
   })
 
   // Happy Path
-  context('user has some ETH and is on L2', () => {
+  context('User has some ERC20 and is on L2', () => {
+    let l2ERC20bal
+
     // log in to metamask before withdrawal
     before(() => {
+      getInitialERC20Balance(customERC20TokenAddressL2, arbitrumGoerliRPC).then(
+        val => (l2ERC20bal = formatBigNumber(val, 18, 5))
+      )
+
       // login to L2 chain for Arb Goerli network
       cy.login('L2')
     })
@@ -39,9 +51,44 @@ describe('Withdraw ETH', () => {
       })
         .should('be.visible')
         .should('be.disabled')
+
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', 'ETH')
     })
 
-    context("bridge amount is lower than user's L2 ETH balance value", () => {
+    it('should should add custom ERC20 token correctly', () => {
+      // Click on the ETH dropdown (Select token button)
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', 'ETH')
+        .click({ scrollBehavior: false })
+
+      // open the Select Token popup
+      cy.findByPlaceholderText(/Search by token name/i)
+        .should('be.visible')
+        .type(customERC20TokenAddressL2, { scrollBehavior: false })
+        .then(() => {
+          // Click on the Add new token button
+          cy.findByRole('button', { name: 'Add New Token' })
+            .should('be.visible')
+            .click({ scrollBehavior: false })
+
+          // Select the LINK token
+          cy.findByText('ChainLink Token').click({ scrollBehavior: false })
+
+          // LINK token should be selected now and popup should be closed after selection
+          cy.findByRole('button', { name: 'Select Token' })
+            .should('be.visible')
+            .should('have.text', 'LINK')
+        })
+    })
+
+    it('should show ERC20 balance correctly', () => {
+      cy.findByText(`Balance: ${l2ERC20bal} LINK`).should('be.visible')
+    })
+
+    context("bridge amount is lower than user's L2 ERC20 balance value", () => {
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
           .type('0.0001', { scrollBehavior: false })
@@ -49,9 +96,9 @@ describe('Withdraw ETH', () => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains('0.0001 ETH')
+              .contains('0.0001 LINK')
               .should('be.visible')
-            cy.findByText('You’ll pay in gas fees')
+            cy.findByText(/You’ll pay in gas/i)
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
@@ -68,11 +115,6 @@ describe('Withdraw ETH', () => {
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('Total amount')
-              .siblings()
-              .last()
-              .contains(/(\d*)(\.\d+)*( ETH)/)
-              .should('be.visible')
           })
       })
 
@@ -85,7 +127,7 @@ describe('Withdraw ETH', () => {
           .click({ scrollBehavior: false })
       })
 
-      it('should show withdrawal confirmation', () => {
+      it('should show withdraw successfully', () => {
         cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
 
         // the Continue withdrawal button should be disabled at first
@@ -111,29 +153,29 @@ describe('Withdraw ETH', () => {
             })
               .should('be.enabled')
               .click({ scrollBehavior: false })
-          })
-      })
 
-      it('should withdraw successfully', () => {
-        cy.confirmMetamaskTransaction().then(() => {
-          cy.findAllByText(/Moving 0.0001 ETH to Goerli/i).should('be.visible')
-        })
+            cy.confirmMetamaskTransaction().then(() => {
+              cy.findAllByText(/Moving 0.0001 LINK to Goerli/i).should(
+                'be.visible'
+              )
+            })
+          })
       })
     })
 
-    // TODO => test for bridge amount higher than user's L2 ETH balance
+    // TODO => test for bridge amount higher than user's L2 ERC20 balance
   })
 
   // TODO - will have both cases:
   // 1. Arbitrum network is not added to metamask yet (add + switch)
   // 2. Arbitrum network already configured in metamask (only switch)
-  context('user has some ETH and is on L1', () => {})
+  context('user has some L2-ERC20 and is on L1', () => {})
   // TODO
-  context('user has some ETH and is on wrong chain', () => {})
+  context('user has some L2-ERC20 and is on wrong chain', () => {})
   // TODO
-  context('user has 0 ETH and is on L1', () => {})
+  context('user has 0 L2-ERC20 and is on L1', () => {})
   // TODO
-  context('user has 0 ETH and is on L2', () => {})
+  context('user has 0 L2-ERC20 and is on L2', () => {})
   // TODO
-  context('user has 0 ETH and is on wrong chain', () => {})
+  context('user has 0 L2-ERC20 and is on wrong chain', () => {})
 })

@@ -20,7 +20,7 @@ export default defineConfig({
   env: {
     coverage: false
   },
-  defaultCommandTimeout: 30000,
+  defaultCommandTimeout: 45000,
   pageLoadTimeout: 30000,
   requestTimeout: 30000,
   e2e: {
@@ -35,10 +35,12 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
-      'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
-      'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
-      'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
-      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
+      // 'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
+      // 'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
+      // 'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
+      // 'tests/e2e/specs/**/depositCustomERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
+      'tests/e2e/specs/**/withdrawCustomERC20.cy.{js,jsx,ts,tsx}' // withdraw ERC20
+      // 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'
   }

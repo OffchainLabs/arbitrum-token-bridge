@@ -2,6 +2,8 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
+import { zeroToLessThanOneETH } from '../../support/common'
+
 describe('Deposit ETH', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
@@ -33,7 +35,6 @@ describe('Deposit ETH', () => {
     })
 
     context("bridge amount is lower than user's L1 ETH balance value", () => {
-      const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
           // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
