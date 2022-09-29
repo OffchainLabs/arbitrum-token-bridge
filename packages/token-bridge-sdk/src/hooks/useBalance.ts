@@ -48,10 +48,10 @@ const useBalance = ({
       })
     },
     {
-      refreshInterval: 5_000,
+      refreshInterval: 15_000,
       shouldRetryOnError: true,
-      errorRetryCount: 1,
-      errorRetryInterval: 1_000
+      errorRetryCount: 2,
+      errorRetryInterval: 3_000
     }
   )
 
