@@ -21,21 +21,29 @@ const useBalance = ({
 
   let safeBalance: { eth: BigNumber | null } = defaultBalance
 
-  if (typeof walletAddress !== 'undefined' && typeof chainId !== 'undefined') {
-    safeBalance = balances[walletAddress]?.[chainId] ?? defaultBalance
-  }
+  const walletAddressLowercased = useMemo(
+    () => walletAddress?.toLowerCase(),
+    [walletAddress]
+  )
 
   const queryKey = useMemo(() => {
     if (
       typeof chainId === 'undefined' ||
-      typeof walletAddress === 'undefined'
+      typeof walletAddressLowercased === 'undefined'
     ) {
       // Don't fetch
       return null
     }
 
-    return ['ethBalance', chainId, walletAddress.toLowerCase()]
-  }, [chainId, walletAddress])
+    return ['ethBalance', chainId, walletAddressLowercased]
+  }, [chainId, walletAddressLowercased])
+
+  if (
+    typeof walletAddressLowercased !== 'undefined' &&
+    typeof chainId !== 'undefined'
+  ) {
+    safeBalance = balances[walletAddressLowercased]?.[chainId] ?? defaultBalance
+  }
 
   const { mutate } = useSWR(
     queryKey,
