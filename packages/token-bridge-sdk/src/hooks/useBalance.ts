@@ -31,7 +31,7 @@ const useBalance = ({
 
   const { data: dataEth, mutate: mutateEth } = useSWR(
     queryKey,
-    async (_, _walletAddress: string) => provider.getBalance(_walletAddress),
+    (_, _walletAddress: string) => provider.getBalance(_walletAddress),
     {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
