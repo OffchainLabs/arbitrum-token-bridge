@@ -31,22 +31,6 @@ export type Balances = {
   arbitrum: BigNumber | null
 }
 
-export function useETHBalances(): Balances {
-  const { app } = useAppState()
-  const { arbTokenBridge } = app
-
-  return useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
-      return { ethereum: null, arbitrum: null }
-    }
-
-    return {
-      ethereum: arbTokenBridge.balances.eth.balance,
-      arbitrum: arbTokenBridge.balances.eth.arbChainBalance
-    }
-  }, [arbTokenBridge])
-}
-
 export function useTokenBalances(erc20L1Address?: string): Balances {
   const { app } = useAppState()
   const { arbTokenBridge } = app
