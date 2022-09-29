@@ -22,6 +22,7 @@ export const logout = () => {
     // disconnect-metamask-wallet hangs if already not connected to metamask,
     // so we do it while logout instead of before login.
     cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+      cy.clearLocalStorageSnapshot()
       cy.clearLocalStorage().then(() => {
         cy.switchToCypressWindow().then(() => {
           cy.resetMetamaskAccount()

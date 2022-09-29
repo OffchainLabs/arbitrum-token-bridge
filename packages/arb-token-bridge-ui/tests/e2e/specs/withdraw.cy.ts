@@ -84,7 +84,7 @@ describe('Withdraw ETH', () => {
           name: /Move funds to Goerli/i
         })
           .should('be.visible')
-          .should('not.be.disabled')
+          .should('be.enabled')
           .click({ scrollBehavior: false })
       })
 
@@ -112,7 +112,7 @@ describe('Withdraw ETH', () => {
             cy.findByRole('button', {
               name: /Continue/i
             })
-              .should('not.be.disabled')
+              .should('be.enabled')
               .click({ scrollBehavior: false })
           })
       })

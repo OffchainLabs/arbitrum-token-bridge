@@ -9,8 +9,14 @@ export class SeenTransactionsCache {
   public static get(): L1TxHash[] {
     const seenTxs = localStorage.getItem(this.dataKey)
 
+    // even during first loads, seenTxs was getting fetched as "[]" (non-null) in ls during automation, so cache timestamp didn't get set properly
+    // which caused all pending txns to be seen on first load as well
+    // reason - during automation, when app resets it's state during metamask re-connection, instead of this reset method, update([]) function is called which sets the ls state to non-null "[]"
+    const seenTxsParsed =
+      !seenTxs || seenTxs === '[]' ? [] : JSON.parse(seenTxs)
+
     // The first time the user visits the Bridge UI, mark all previous txs from the local cache as seen
-    if (!seenTxs) {
+    if (!seenTxsParsed?.length) {
       let initialState: L1TxHash[]
       const cachedTxsStringified = localStorage.getItem('arbTransactions')
 
@@ -27,7 +33,7 @@ export class SeenTransactionsCache {
       return initialState
     }
 
-    return JSON.parse(seenTxs)
+    return seenTxsParsed
   }
 
   public static getCreationTimestamp(): Date | null {
