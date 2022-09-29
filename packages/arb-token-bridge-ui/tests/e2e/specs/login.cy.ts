@@ -14,7 +14,6 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(() => {
-    cy.clearLocalStorageSnapshot()
     getInitialETHBalance(goerliRPC).then(
       val => (l1ETHbal = formatBigNumber(val, 18, 5))
     )

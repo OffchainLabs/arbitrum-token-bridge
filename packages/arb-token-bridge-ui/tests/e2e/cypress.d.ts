@@ -1,5 +1,10 @@
 import '@synthetixio/synpress/support/index.d.ts'
-import { login, logout } from '../support/commands'
+import {
+  login,
+  logout,
+  restoreAppState,
+  saveAppState
+} from '../support/commands'
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -9,6 +14,8 @@ declare global {
        */
       login(isL2Network?: boolean): typeof login
       logout(): typeof logout
+      restoreAppState(): typeof restoreAppState
+      saveAppState(): typeof saveAppState
     }
   }
 }

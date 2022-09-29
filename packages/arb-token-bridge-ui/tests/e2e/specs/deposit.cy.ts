@@ -3,6 +3,16 @@
  */
 
 describe('Deposit ETH', () => {
+  // when all of our tests need to run in a logged-in state
+  // we have to make sure we preserve a healthy LocalStorage state
+  // because it is cleared between each `it` cypress test
+  beforeEach(() => {
+    cy.restoreAppState()
+  })
+  afterEach(() => {
+    cy.saveAppState()
+  })
+
   // Happy Path
   context('User has some ETH and is on L1', () => {
     // log in to metamask before deposit
@@ -13,20 +23,6 @@ describe('Deposit ETH', () => {
     after(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
-    })
-
-    beforeEach(() => {
-      // restore local storage from first test
-      cy.restoreLocalStorage()
-    })
-
-    afterEach(() => {
-      // cypress clears local storage between tests
-      // so in order to preserve local storage on the page between tests
-      // we need to use the cypress-localstorage-commands plugin
-      // or else we have to visit the page every test which will be much slower
-      // https://docs.cypress.io/api/commands/clearlocalstorage
-      cy.saveLocalStorage()
     })
 
     it('should show L1 and L2 chains correctly', () => {

@@ -40,7 +40,6 @@ export default defineConfig({
       'tests/e2e/specs/**/withdraw.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
-    supportFile: 'tests/support/index.ts',
-    testIsolation: 'strict' // this will ensure all tests are properly isolated, clearing session context everytime
+    supportFile: 'tests/support/index.ts'
   }
 })
