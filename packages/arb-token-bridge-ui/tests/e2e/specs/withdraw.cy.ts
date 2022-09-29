@@ -1,6 +1,7 @@
 /**
  * When user wants to bridge ETH from L1 to L2
  */
+
 describe('Withdraw ETH', () => {
   // Happy Path
   context('user has some ETH and is on L2', () => {

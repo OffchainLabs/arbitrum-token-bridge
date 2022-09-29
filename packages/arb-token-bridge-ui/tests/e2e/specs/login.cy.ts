@@ -1,3 +1,7 @@
+/**
+ * Test case suite for Login and balance check flow
+ */
+
 import { formatBigNumber } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,

@@ -27,25 +27,15 @@ export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
 }
 
 export const setupMetamask = (isL2Network: boolean) => {
-  // we want complete control over the metamask flow before our web app starts (because we might want to start from an L2 network)
-  // hence we are not bootstrapping metamask from.env anymore
-
-  // start with bootstrapping from default l1 network
-  return cy
-    .setupMetamask(
-      Cypress.env('SECRET_WORDS'),
-      l1NetworkConfig,
-      Cypress.env('METAMASK_PASSWORD')
-    )
-    .then(() => {
-      // if we wanted to start with l2 network, add and switch to it
-      if (isL2Network) {
-        cy.addMetamaskNetwork(l2NetworkConfig)
-      } else {
-        //else, stick to the original l1 network
-        cy.changeMetamaskNetwork(l1NetworkConfig)
-      }
-    })
+  // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
+  // hence this additional network switch-check before actually starting the app
+  if (isL2Network) {
+    // add and switch to Arbitrum goerli network
+    return cy.addMetamaskNetwork(l2NetworkConfig)
+  } else {
+    //else, stick to the original l1 network
+    return cy.changeMetamaskNetwork(l1NetworkConfig)
+  }
 }
 
 export const startWebApp = () => {
