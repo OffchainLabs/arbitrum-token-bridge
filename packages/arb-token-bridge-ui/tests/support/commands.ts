@@ -8,10 +8,10 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { setupMetamask, startWebApp } from './common'
+import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
 
-export function login(isL2Network?: boolean) {
-  setupMetamask(isL2Network).then(() => {
+export function login(networkType: NetworkType) {
+  setupMetamaskNetwork(networkType).then(() => {
     startWebApp()
   })
 }

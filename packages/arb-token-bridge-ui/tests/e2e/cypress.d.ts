@@ -5,6 +5,7 @@ import {
   restoreAppState,
   saveAppState
 } from '../support/commands'
+import { NetworkType } from '../support/common'
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -12,7 +13,7 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      login(isL2Network?: boolean): typeof login
+      login(networkType?: NetworkType): typeof login
       logout(): typeof logout
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState

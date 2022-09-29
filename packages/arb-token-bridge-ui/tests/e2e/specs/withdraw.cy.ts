@@ -18,7 +18,7 @@ describe('Withdraw ETH', () => {
     // log in to metamask before withdrawal
     before(() => {
       // login to L2 chain for Arb Goerli network
-      cy.login(true)
+      cy.login('L2')
     })
 
     after(() => {
@@ -123,7 +123,9 @@ describe('Withdraw ETH', () => {
     // TODO => test for bridge amount higher than user's L2 ETH balance
   })
 
-  // TODO
+  // TODO - will have both cases:
+  // 1. Arbitrum network is not added to metamask yet (add + switch)
+  // 2. Arbitrum network already configured in metamask (only switch)
   context('user has some ETH and is on L1', () => {})
   // TODO
   context('user has some ETH and is on wrong chain', () => {})

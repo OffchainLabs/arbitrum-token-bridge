@@ -5,6 +5,8 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 
+export type NetworkType = 'L1' | 'L2'
+
 export const l1NetworkConfig = 'goerli'
 
 export const l2NetworkConfig = {
@@ -22,14 +24,14 @@ export const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env(
 export const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
 
 export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
-  const goerliProvider = new JsonRpcProvider(rpcURL)
-  return await goerliProvider.getBalance(Cypress.env('ADDRESS'))
+  const provider = new JsonRpcProvider(rpcURL)
+  return await provider.getBalance(Cypress.env('ADDRESS'))
 }
 
-export const setupMetamask = (isL2Network: boolean) => {
+export const setupMetamaskNetwork = (networkType: NetworkType) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
-  if (isL2Network) {
+  if (networkType === 'L2') {
     // add and switch to Arbitrum goerli network
     return cy.addMetamaskNetwork(l2NetworkConfig)
   } else {

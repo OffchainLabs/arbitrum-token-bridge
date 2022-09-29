@@ -17,7 +17,7 @@ describe('Deposit ETH', () => {
   context('User has some ETH and is on L1', () => {
     // log in to metamask before deposit
     before(() => {
-      cy.login()
+      cy.login('L1')
     })
 
     after(() => {
