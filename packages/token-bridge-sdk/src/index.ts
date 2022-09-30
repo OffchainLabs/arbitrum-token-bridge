@@ -20,6 +20,12 @@ export {
   OutgoingMessageState
 } from './hooks/arbTokenBridge.types'
 
+export { useBalance } from './hooks/useBalance'
+export {
+  useBalanceContext,
+  BalanceContextProvider
+} from './context/balanceContext'
+
 export type {
   Transaction,
   TxnStatus,
@@ -45,3 +51,5 @@ export {
   listIdsToNames,
   BRIDGE_TOKEN_LISTS
 } from './util/token'
+
+export { useGasPrice } from './hooks/useGasPrice'

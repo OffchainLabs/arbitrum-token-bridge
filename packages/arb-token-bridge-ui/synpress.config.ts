@@ -33,7 +33,13 @@ export default defineConfig({
       return config
     },
     baseUrl: 'http://localhost:3000',
-    specPattern: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}',
+    specPattern: [
+      // order of running the tests...
+      'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
+      'tests/e2e/specs/**/deposit.cy.{js,jsx,ts,tsx}', // deposit ETH
+      'tests/e2e/specs/**/withdraw.cy.{js,jsx,ts,tsx}', // withdraw ETH
+      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
+    ],
     supportFile: 'tests/support/index.ts'
   }
 })
