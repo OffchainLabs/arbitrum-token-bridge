@@ -2,12 +2,19 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import { resetSeenTimeStampCache } from '../../support/commands'
+import { gasConfig, zeroToLessThanOneETH } from '../../support/common'
 
 describe('Deposit ETH', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+  before(() => {
+    // before this spec, make sure the cache is fresh
+    // otherwise pending transactions from last ran specs will leak in this
+    resetSeenTimeStampCache()
+  })
+
   beforeEach(() => {
     cy.restoreAppState()
   })
@@ -90,7 +97,7 @@ describe('Deposit ETH', () => {
         // because the element is already in view and does not require scrolling
         // https://github.com/cypress-io/cypress/issues/23898
 
-        cy.confirmMetamaskTransaction().then(() => {
+        cy.confirmMetamaskTransaction(gasConfig).then(() => {
           cy.findByText('Moving 0.0001 ETH to Arbitrum Goerli...').should(
             'be.visible'
           )

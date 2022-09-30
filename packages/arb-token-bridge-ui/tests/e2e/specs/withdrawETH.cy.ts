@@ -2,12 +2,19 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { zeroToLessThanOneETH } from '../../support/common'
+import { resetSeenTimeStampCache } from '../../support/commands'
+import { gasConfig, zeroToLessThanOneETH } from '../../support/common'
 
 describe('Withdraw ETH', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+  before(() => {
+    // before this spec, make sure the cache is fresh
+    // otherwise pending transactions from last ran specs will leak in this
+    resetSeenTimeStampCache()
+  })
+
   beforeEach(() => {
     cy.restoreAppState()
   })
@@ -20,7 +27,7 @@ describe('Withdraw ETH', () => {
     // log in to metamask before withdrawal
     before(() => {
       // login to L2 chain for Arb Goerli network
-      cy.login('L2')
+      cy.login('L2', true) // add new L2 network
     })
 
     after(() => {
@@ -115,7 +122,7 @@ describe('Withdraw ETH', () => {
       })
 
       it('should withdraw successfully', () => {
-        cy.confirmMetamaskTransaction().then(() => {
+        cy.confirmMetamaskTransaction(gasConfig).then(() => {
           cy.findAllByText(/Moving 0.0001 ETH to Goerli/i).should('be.visible')
         })
       })

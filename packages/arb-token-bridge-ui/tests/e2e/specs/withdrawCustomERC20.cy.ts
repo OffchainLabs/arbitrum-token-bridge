@@ -3,9 +3,11 @@
  */
 
 import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   arbitrumGoerliRPC,
   customERC20TokenAddressL2,
+  gasConfig,
   getInitialERC20Balance,
   zeroToLessThanOneETH
 } from '../../support/common'
@@ -14,6 +16,12 @@ describe('Withdraw Custom ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+  before(() => {
+    // before this spec, make sure the cache is fresh
+    // otherwise pending transactions from last ran specs will leak in this
+    resetSeenTimeStampCache()
+  })
+
   beforeEach(() => {
     cy.restoreAppState()
   })
@@ -32,7 +40,7 @@ describe('Withdraw Custom ERC20 Token', () => {
       )
 
       // login to L2 chain for Arb Goerli network
-      cy.login('L2')
+      cy.login('L2', false) // don't add new network, switch to exisiting
     })
 
     after(() => {
@@ -154,7 +162,7 @@ describe('Withdraw Custom ERC20 Token', () => {
               .should('be.enabled')
               .click({ scrollBehavior: false })
 
-            cy.confirmMetamaskTransaction().then(() => {
+            cy.confirmMetamaskTransaction(gasConfig).then(() => {
               cy.findAllByText(/Moving 0.0001 LINK to Goerli/i).should(
                 'be.visible'
               )

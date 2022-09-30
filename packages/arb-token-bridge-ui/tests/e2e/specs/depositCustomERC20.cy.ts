@@ -3,8 +3,10 @@
  */
 
 import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   customERC20TokenAddressL1,
+  gasConfig,
   getInitialERC20Balance,
   goerliRPC,
   zeroToLessThanOneETH
@@ -14,6 +16,13 @@ describe('Deposit Custom ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+
+  before(() => {
+    // before this spec, make sure the cache is fresh
+    // otherwise pending transactions from last ran specs will leak in this
+    resetSeenTimeStampCache()
+  })
+
   beforeEach(() => {
     cy.restoreAppState()
   })
@@ -114,7 +123,7 @@ describe('Deposit Custom ERC20 Token', () => {
           name: 'Move funds to Arbitrum Goerli'
         }).click({ scrollBehavior: false })
 
-        cy.confirmMetamaskTransaction().then(() => {
+        cy.confirmMetamaskTransaction(gasConfig).then(() => {
           cy.findByText(/Moving 0.0001 LINK to Arbitrum Goerli.../i).should(
             'be.visible'
           )

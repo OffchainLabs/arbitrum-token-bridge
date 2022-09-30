@@ -4,7 +4,7 @@
 
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import { MultiCaller, Erc20Bridger } from '@arbitrum/sdk'
+import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 
@@ -32,6 +32,8 @@ export const customERC20TokenAddressL2 =
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
+export const gasConfig = { gasFee: 100, gasLimit: 1000000 } // a high gas config to ensure transactions ALWAYS succeed
+
 export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
   const provider = new JsonRpcProvider(rpcURL)
   return await provider.getBalance(Cypress.env('ADDRESS'))
@@ -50,12 +52,21 @@ export async function getInitialERC20Balance(
   return await tokenData.balance
 }
 
-export const setupMetamaskNetwork = (networkType: NetworkType) => {
+export const setupMetamaskNetwork = (
+  networkType: NetworkType,
+  addNewNetwork?: boolean
+) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
   if (networkType === 'L2') {
-    // add and switch to Arbitrum goerli network
-    return cy.addMetamaskNetwork(l2NetworkConfig)
+    if (addNewNetwork) {
+      // add and switch to Arbitrum goerli network
+      return cy.addMetamaskNetwork(l2NetworkConfig)
+    } else {
+      // L2 network already added
+      // switch to Arbitrum goerli network
+      return cy.changeMetamaskNetwork(l2NetworkConfig.networkName)
+    }
   } else {
     //else, stick to the original l1 network
     return cy.changeMetamaskNetwork(l1NetworkConfig)
