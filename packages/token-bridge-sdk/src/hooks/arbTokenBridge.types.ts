@@ -59,15 +59,31 @@ export type TokenTransactionLifecycle<Tx, TxReceipt> = Pick<
     onTxSubmit: (tx: Tx, symbol: string) => void
   }>
 
-export type L1EthDepositTransactionLifecycle = Pick<
-  TransactionLifecycle<L1EthDepositTransaction, L1EthDepositTransactionReceipt>,
-  'onTxSubmit'
-> & {
-  onTxConfirm: (
-    tx: L1EthDepositTransaction,
-    txReceipt: L1EthDepositTransactionReceipt,
+export type EthDepositTransactionLifecycle = {
+  onL1TxSubmit: ({ 
+    tx 
+  }: { 
+    tx: L1EthDepositTransaction 
+  }) => void
+  onL1TxSuccess: ({ 
+    tx, 
+    txReceipt 
+  }: { 
+    tx: L1EthDepositTransaction, 
+    txReceipt: L1EthDepositTransactionReceipt 
+  }) => void
+  onL1TxFailure: ({ 
+    tx, 
+    txReceipt 
+  }: { 
+    tx: L1EthDepositTransaction, 
+    txReceipt: L1EthDepositTransactionReceipt 
+  }) => void
+  onEthDepositMessage: ({
+    ethDepositMessage
+  }: {
     ethDepositMessage: EthDepositMessage
-  ) => void
+  }) => void
 }
 
 export type TokenL1ContractCallTransactionLifecycle = Pick<
