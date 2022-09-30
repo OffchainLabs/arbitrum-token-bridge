@@ -27,10 +27,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.0"
 
-"@arbitrum/sdk@3.0.0-rc.2":
-  version "3.0.0-rc.2"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.0.0-rc.2.tgz#32263a2fddf3795a04e8982fa71bda636e641b14"
-  integrity sha512-pTsEyf/Pwbh67WRwWgOqO21ZSXjObgVTCXib0mjKwWeYo/CQKev0bBjaQO/6c5uIz+1UFoGou+yKRt2a03k2GQ==
+"@arbitrum/sdk@3.0.0-rc.3":
+  version "3.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.0.0-rc.3.tgz#98ecbb16ab6c92cc471afaa7ef353dea2d8eb15a"
+  integrity sha512-VVSYNwIT52HJMVxEomOujPNkwfkPhEehk4bBzCG7kHwgoBuxqJHaJHnjgIU0BRnGKcYegbsPxInkqPOoskG1sA==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -2820,7 +2820,7 @@
     penpal "3.0.7"
     pocket-js-core "0.0.3"
 
-"@rehooks/local-storage@2.4.0", "@rehooks/local-storage@^2.3.0":
+"@rehooks/local-storage@^2.3.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@rehooks/local-storage/-/local-storage-2.4.0.tgz#fb884b2b657cad5f77aa6ab60bb3532f0e0725d2"
   integrity sha512-LoXDbEHsuIckVgBsFAv8SuU/M7memjyfWut9Zf36TQXqqCHBRFv8bweg9PymQCa1aWIMjNrZQflFdo55FDlXYg==
