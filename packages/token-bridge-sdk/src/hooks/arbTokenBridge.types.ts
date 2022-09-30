@@ -60,30 +60,17 @@ export type TokenTransactionLifecycle<Tx, TxReceipt> = Pick<
   }>
 
 export type EthDepositTransactionLifecycle = {
-  onL1TxSubmit: ({ 
-    tx 
-  }: { 
-    tx: L1EthDepositTransaction 
-  }) => void
-  onL1TxSuccess: ({ 
-    tx, 
-    txReceipt 
-  }: { 
-    tx: L1EthDepositTransaction, 
-    txReceipt: L1EthDepositTransactionReceipt 
-  }) => void
-  onL1TxFailure: ({ 
-    tx, 
-    txReceipt 
-  }: { 
-    tx: L1EthDepositTransaction, 
-    txReceipt: L1EthDepositTransactionReceipt 
-  }) => void
-  onEthDepositMessage: ({
+  onL1TxSubmit: ({ tx }: { tx: L1EthDepositTransaction }) => void
+  onL1TxSuccess: ({
+    tx,
+    txReceipt,
     ethDepositMessage
   }: {
+    tx: L1EthDepositTransaction
+    txReceipt: L1EthDepositTransactionReceipt
     ethDepositMessage: EthDepositMessage
   }) => void
+  onL1TxFailure: (txHash: string) => void
 }
 
 export type TokenL1ContractCallTransactionLifecycle = Pick<
@@ -252,7 +239,7 @@ export interface ArbTokenBridgeEth {
   deposit: (params: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    txLifecycle: EthDepositTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     amount: BigNumber

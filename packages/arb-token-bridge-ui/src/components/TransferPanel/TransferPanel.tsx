@@ -42,6 +42,7 @@ import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { L1ToL2MessageData } from 'token-bridge-sdk/dist/hooks/useTransactions'
+import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -468,7 +469,7 @@ export function TransferPanel() {
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
-              onTxSubmit: tx => {
+              onL1TxSubmit: ({ tx }) => {
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
@@ -485,14 +486,17 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onTxConfirm: (tx, receipt, ethDepositMessage) => {
+              onL1TxSuccess: ({ tx, txReceipt, ethDepositMessage }) => {
                 const l1ToL2MsgData: L1ToL2MessageData = {
                   fetchingUpdate: false,
                   status: L1ToL2MessageStatus.NOT_YET_CREATED,
                   retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
                   l2TxID: undefined
                 }
-                transactions.updateTransaction(receipt, tx, l1ToL2MsgData)
+                transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
+              },
+              onL1TxFailure: txHash => {
+                transactions.setTransactionFailure(txHash)
               }
             }
           })

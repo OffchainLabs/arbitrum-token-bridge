@@ -43,7 +43,7 @@ import {
   WithdrawalInitiated,
   L2ToL1EventResult,
   NodeBlockDeadlineStatus,
-  L1EthDepositTransactionLifecycle,
+  EthDepositTransactionLifecycle,
   L2ContractCallTransactionLifecycle,
   TriggerOutboxTransactionLifecycle,
   TokenL1ContractCallTransactionLifecycle,
@@ -61,6 +61,7 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { isTxSuccessful } from '../util'
 
 const { Zero } = constants
 
@@ -329,7 +330,7 @@ export const useArbTokenBridge = (
   }: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    txLifecycle: EthDepositTransactionLifecycle
   }) => {
     let tx: L1EthDepositTransaction
 
@@ -340,18 +341,18 @@ export const useArbTokenBridge = (
         l2Provider: l2.provider
       })
 
-      if (txLifecycle?.onTxSubmit) {
-        txLifecycle.onTxSubmit(tx)
-      }
+      txLifecycle.onL1TxSubmit({ tx })
 
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
-      const [ethDepositMessage] = await receipt.getEthDepositMessages(
+      const [ethDepositMessage] = await txReceipt.getEthDepositMessages(
         l2.provider
       )
 
-      if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(tx, receipt, ethDepositMessage)
+      if (isTxSuccessful(txReceipt)) {
+        txLifecycle.onL1TxSuccess({ tx, txReceipt, ethDepositMessage })
+      } else {
+        txLifecycle.onL1TxFailure(txReceipt.transactionHash)
       }
 
       updateEthBalances()
