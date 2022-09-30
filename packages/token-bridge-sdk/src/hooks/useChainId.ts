@@ -6,7 +6,7 @@ export function useChainId({ provider }: { provider: providers.Provider }) {
 
   useEffect(() => {
     async function updateChainId() {
-      setChainId((await provider.getNetwork()).chainId)
+      setChainId((await provider.getNetwork())?.chainId)
     }
 
     updateChainId()
