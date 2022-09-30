@@ -46,19 +46,6 @@ export enum AssetType {
   ETH = 'ETH'
 }
 
-export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
-  onTxSubmit: (tx: Tx) => void
-  onTxConfirm: (tx: Tx, txReceipt: TxReceipt) => void
-}>
-
-export type TokenTransactionLifecycle<Tx, TxReceipt> = Pick<
-  TransactionLifecycle<Tx, TxReceipt>,
-  'onTxConfirm'
-> &
-  Partial<{
-    onTxSubmit: (tx: Tx, symbol: string) => void
-  }>
-
 export type EthDepositTransactionLifecycle = {
   onL1TxSubmit: ({ tx }: { tx: L1EthDepositTransaction }) => void
   onL1TxSuccess: ({
@@ -73,52 +60,99 @@ export type EthDepositTransactionLifecycle = {
   onL1TxFailure: (txHash: string) => void
 }
 
-export type TokenL1ContractCallTransactionLifecycle = Pick<
-  TokenTransactionLifecycle<
-    L1ContractCallTransaction,
-    L1ContractCallTransactionReceipt
-  >,
-  'onTxSubmit'
-> & {
-  onTxConfirm: (
-    tx: L1ContractCallTransaction,
-    txReceipt: L1ContractCallTransactionReceipt,
+export type TokenDepositTransactionLifecycle = {
+  onL1TxSubmit: ({
+    tx,
+    symbol
+  }: {
+    tx: L1ContractCallTransaction
+    symbol: string
+  }) => void
+  onL1TxSuccess: ({
+    tx,
+    txReceipt,
+    l1Tol2Message
+  }: {
+    tx: L1ContractCallTransaction
+    txReceipt: L1ContractCallTransactionReceipt
     l1Tol2Message: IL1ToL2MessageReader
-  ) => void
+  }) => void
+  onL1TxFailure: (txHash: string) => void
 }
 
-export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
-  L2ContractTransaction,
-  L2TransactionReceipt
->
+export type EthWithdrawTransactionLifecycle = {
+  onL2TxSubmit: ({ tx }: { tx: L2ContractTransaction }) => void
+  onL2TxSuccess: ({
+    tx,
+    txReceipt
+  }: {
+    tx: L2ContractTransaction
+    txReceipt: L2TransactionReceipt
+  }) => void
+  onL2TxFailure: (txHash: string) => void
+}
 
-export type TokenL2ContractCallTransactionLifecycle = TokenTransactionLifecycle<
-  L2ContractTransaction,
-  L2TransactionReceipt
->
+export type TokenWithdrawTransactionLifecycle = {
+  onL2TxSubmit: ({
+    tx,
+    symbol
+  }: {
+    tx: L2ContractTransaction
+    symbol: string
+  }) => void
+  onL2TxSuccess: ({
+    tx,
+    txReceipt
+  }: {
+    tx: L2ContractTransaction
+    txReceipt: L2TransactionReceipt
+  }) => void
+  onL2TxFailure: (txHash: string) => void
+}
 
-export type TokenContractTransactionLifecycle = TokenTransactionLifecycle<
-  ContractTransaction,
-  ContractReceipt
->
-
-export type TriggerOutboxTransactionLifecycle = Partial<{
-  onTxSubmit: (tx: ContractTransaction, event: L2ToL1EventResultPlus) => void
-  onTxSuccess: (txHash: string) => void
+export type TokenContractTransactionLifecycle = {
+  onTxSubmit: ({
+    tx,
+    symbol
+  }: {
+    tx: ContractTransaction
+    symbol: string
+  }) => void
+  onTxSuccess: ({
+    tx,
+    txReceipt
+  }: {
+    tx: ContractTransaction
+    txReceipt: ContractReceipt
+  }) => void
   onTxFailure: (txHash: string) => void
-}>
+}
 
-export type TokenTriggerOutboxTransactionLifecycle = Omit<
-  TriggerOutboxTransactionLifecycle,
-  'onTxSubmit'
-> &
-  Partial<{
-    onTxSubmit: (
-      tx: ContractTransaction,
-      event: L2ToL1EventResultPlus,
-      tokenData: L1TokenData
-    ) => void
-  }>
+export type TriggerOutboxTransactionLifecycle = {
+  onL1TxSubmit: ({
+    tx,
+    event
+  }: {
+    tx: ContractTransaction
+    event: L2ToL1EventResultPlus
+  }) => void
+  onL1TxSuccess: (txHash: string) => void
+  onL1TxFailure: (txHash: string) => void
+}
+
+export type TokenTriggerOutboxTransactionLifecycle = {
+  onL1TxSubmit: ({
+    tx,
+    event,
+    tokenData
+  }: {
+    tx: ContractTransaction
+    event: L2ToL1EventResultPlus
+    tokenData: L1TokenData
+  }) => void
+  onL1TxSuccess: (txHash: string) => void
+  onL1TxFailure: (txHash: string) => void
+}
 
 export type NodeBlockDeadlineStatus =
   | number
@@ -248,7 +282,7 @@ export interface ArbTokenBridgeEth {
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    txLifecycle: EthWithdrawTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     amount: BigNumber
@@ -287,7 +321,7 @@ export interface ArbTokenBridgeToken {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: TokenL1ContractCallTransactionLifecycle
+    txLifecycle: TokenDepositTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     erc20L1Address: string
@@ -298,7 +332,7 @@ export interface ArbTokenBridgeToken {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: TokenL2ContractCallTransactionLifecycle
+    txLifecycle: TokenWithdrawTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     erc20L1Address: string

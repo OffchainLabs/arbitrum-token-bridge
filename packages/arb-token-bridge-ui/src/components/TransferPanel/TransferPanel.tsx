@@ -42,7 +42,6 @@ import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { L1ToL2MessageData } from 'token-bridge-sdk/dist/hooks/useTransactions'
-import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -126,6 +125,13 @@ export function TransferPanel() {
   const [transferring, setTransferring] = useState(false)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+
+  const txLifecycleOnTxFailure = useCallback(
+    (txHash: string) => {
+      transactions.setTransactionFailure(txHash)
+    },
+    [transactions]
+  )
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be useing useArbQueryParams functions
@@ -400,7 +406,7 @@ export function TransferPanel() {
               erc20L1Address: selectedToken.address,
               l1Signer: latestNetworksAndSigners.current.l1.signer,
               txLifecycle: {
-                onTxSubmit: (tx, symbol) => {
+                onTxSubmit: ({ tx, symbol }) => {
                   transactions.addTransaction({
                     type: 'approve',
                     status: 'pending',
@@ -412,9 +418,10 @@ export function TransferPanel() {
                     l1NetworkID
                   })
                 },
-                onTxConfirm: (tx, txReceipt) => {
+                onTxSuccess: ({ tx, txReceipt }) => {
                   transactions.updateTransaction(txReceipt, tx)
-                }
+                },
+                onTxFailure: txHash => txLifecycleOnTxFailure(txHash)
               }
             })
           }
@@ -433,7 +440,7 @@ export function TransferPanel() {
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
-              onTxSubmit: (tx, symbol) => {
+              onL1TxSubmit: ({ tx, symbol }) => {
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
@@ -451,7 +458,7 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onTxConfirm: (tx, txReceipt, l1Tol2Message) => {
+              onL1TxSuccess: ({ tx, txReceipt, l1Tol2Message }) => {
                 const l1ToL2MsgData: L1ToL2MessageData = {
                   fetchingUpdate: false,
                   status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
@@ -459,7 +466,8 @@ export function TransferPanel() {
                   l2TxID: undefined
                 }
                 transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
-              }
+              },
+              onL1TxFailure: txHash => txLifecycleOnTxFailure(txHash)
             }
           })
         } else {
@@ -495,9 +503,7 @@ export function TransferPanel() {
                 }
                 transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
               },
-              onL1TxFailure: txHash => {
-                transactions.setTransactionFailure(txHash)
-              }
+              onL1TxFailure: txHash => txLifecycleOnTxFailure(txHash)
             }
           })
         }
@@ -554,7 +560,7 @@ export function TransferPanel() {
                 erc20L1Address: selectedToken.address,
                 l2Signer: latestNetworksAndSigners.current.l2.signer,
                 txLifecycle: {
-                  onTxSubmit: (tx, symbol) => {
+                  onTxSubmit: ({ tx, symbol }) => {
                     transactions.addTransaction({
                       type: 'approve-l2',
                       status: 'pending',
@@ -568,9 +574,10 @@ export function TransferPanel() {
                       l2NetworkID
                     })
                   },
-                  onTxConfirm: (tx, txReceipt) => {
+                  onTxSuccess: ({ tx, txReceipt }) => {
                     transactions.updateTransaction(txReceipt, tx)
-                  }
+                  },
+                  onTxFailure: txHash => txLifecycleOnTxFailure(txHash)
                 }
               })
             }
@@ -581,7 +588,7 @@ export function TransferPanel() {
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
-              onTxSubmit: (tx, symbol) => {
+              onL2TxSubmit: ({ tx, symbol }) => {
                 transactions.addTransaction({
                   type: 'withdraw',
                   status: 'pending',
@@ -599,9 +606,10 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onTxConfirm: (tx, receipt) => {
-                transactions.updateTransaction(receipt, tx)
-              }
+              onL2TxSuccess: ({ tx, txReceipt }) => {
+                transactions.updateTransaction(txReceipt, tx)
+              },
+              onL2TxFailure: txHash => txLifecycleOnTxFailure(txHash)
             }
           })
         } else {
@@ -611,7 +619,7 @@ export function TransferPanel() {
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
-              onTxSubmit: tx => {
+              onL2TxSubmit: ({ tx }) => {
                 transactions.addTransaction({
                   type: 'withdraw',
                   status: 'pending',
@@ -629,9 +637,10 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onTxConfirm: (tx, receipt) => {
-                transactions.updateTransaction(receipt, tx)
-              }
+              onL2TxSuccess: ({ tx, txReceipt }) => {
+                transactions.updateTransaction(txReceipt, tx)
+              },
+              onL2TxFailure: txHash => txLifecycleOnTxFailure(txHash)
             }
           })
         }

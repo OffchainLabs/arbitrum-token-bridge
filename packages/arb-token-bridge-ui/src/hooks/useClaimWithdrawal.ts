@@ -42,7 +42,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           id: tx.uniqueId.toString(),
           l1Signer,
           txLifecycle: {
-            onTxSubmit: (tx, event) => {
+            onL1TxSubmit: ({ tx, event }) => {
               transactions.addTransaction({
                 status: 'pending',
                 type: 'outbox',
@@ -55,10 +55,10 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
                 l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
               })
             },
-            onTxSuccess: txHash => {
+            onL1TxSuccess: txHash => {
               transactions.setTransactionSuccess(txHash)
             },
-            onTxFailure: txHash => {
+            onL1TxFailure: txHash => {
               transactions.setTransactionFailure(txHash)
             }
           }
@@ -68,7 +68,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           id: tx.uniqueId.toString(),
           l1Signer,
           txLifecycle: {
-            onTxSubmit: (tx, event, tokenData) => {
+            onL1TxSubmit: ({ tx, event, tokenData }) => {
               transactions.addTransaction({
                 status: 'pending',
                 type: 'outbox',
@@ -81,10 +81,10 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
                 l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
               })
             },
-            onTxSuccess: txHash => {
+            onL1TxSuccess: txHash => {
               transactions.setTransactionSuccess(txHash)
             },
-            onTxFailure: txHash => {
+            onL1TxFailure: txHash => {
               transactions.setTransactionFailure(txHash)
             }
           }

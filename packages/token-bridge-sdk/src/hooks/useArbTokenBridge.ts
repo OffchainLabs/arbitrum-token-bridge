@@ -44,12 +44,12 @@ import {
   L2ToL1EventResult,
   NodeBlockDeadlineStatus,
   EthDepositTransactionLifecycle,
-  L2ContractCallTransactionLifecycle,
   TriggerOutboxTransactionLifecycle,
-  TokenL1ContractCallTransactionLifecycle,
   TokenContractTransactionLifecycle,
-  TokenL2ContractCallTransactionLifecycle,
-  TokenTriggerOutboxTransactionLifecycle
+  TokenWithdrawTransactionLifecycle,
+  TokenTriggerOutboxTransactionLifecycle,
+  EthWithdrawTransactionLifecycle,
+  TokenDepositTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -389,27 +389,23 @@ export const useArbTokenBridge = (
   }: {
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    txLifecycle: EthWithdrawTransactionLifecycle
   }) {
     const tx = await ethBridger.withdraw({
       amount,
       l2Signer
     })
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
-    }
+    txLifecycle.onL2TxSubmit({ tx })
 
     try {
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
-      if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(tx, receipt)
-      }
+      txLifecycle.onL2TxSuccess({ tx, txReceipt })
 
       updateEthBalances()
 
-      const l2ToL1Events = receipt.getL2ToL1Events()
+      const l2ToL1Events = txReceipt.getL2ToL1Events()
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventResult = l2ToL1Events[0]
@@ -437,7 +433,7 @@ export const useArbTokenBridge = (
         })
       }
 
-      return receipt
+      return txReceipt
     } catch (e) {
       console.error('withdrawEth err', e)
     }
@@ -476,15 +472,11 @@ export const useArbTokenBridge = (
 
     const { symbol } = await getL1TokenData(erc20L1Address)
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx, symbol)
-    }
+    txLifecycle.onTxSubmit({ tx, symbol })
 
-    const receipt = await tx.wait()
+    const txReceipt = await tx.wait()
 
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(tx, receipt)
-    }
+    txLifecycle.onTxSuccess({ tx, txReceipt })
     updateTokenData(erc20L1Address)
   }
 
@@ -523,15 +515,11 @@ export const useArbTokenBridge = (
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const { symbol } = await getL1TokenData(erc20L1Address)
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx, symbol)
-    }
+    txLifecycle.onTxSubmit({ tx, symbol })
 
-    const receipt = await tx.wait()
+    const txReceipt = await tx.wait()
 
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(tx, receipt)
-    }
+    txLifecycle.onTxSuccess({ tx, txReceipt })
     updateTokenData(erc20L1Address)
   }
 
@@ -544,7 +532,7 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: TokenL1ContractCallTransactionLifecycle
+    txLifecycle: TokenDepositTransactionLifecycle
   }) {
     const { symbol } = await getL1TokenData(erc20L1Address)
 
@@ -555,19 +543,20 @@ export const useArbTokenBridge = (
       amount
     })
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx, symbol)
+    txLifecycle.onL1TxSubmit({ tx, symbol })
+
+    const txReceipt = await tx.wait()
+
+    if (isTxSuccessful(txReceipt)) {
+      const l1Tol2Message = await txReceipt.getL1ToL2Message(l2.provider)
+      txLifecycle.onL1TxSuccess({ tx, txReceipt, l1Tol2Message })
+
+      updateTokenData(erc20L1Address)
+    } else {
+      txLifecycle?.onL1TxFailure(txReceipt.transactionHash)
     }
 
-    const receipt = await tx.wait()
-
-    const l1Tol2Message = await receipt.getL1ToL2Message(l2.provider)
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(tx, receipt, l1Tol2Message)
-    }
-    updateTokenData(erc20L1Address)
-
-    return receipt
+    return txReceipt
   }
 
   async function depositTokenEstimateGas({
@@ -604,7 +593,7 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: TokenL2ContractCallTransactionLifecycle
+    txLifecycle: TokenWithdrawTransactionLifecycle
   }) {
     const bridgeToken = bridgeTokens[erc20L1Address]
 
@@ -624,18 +613,14 @@ export const useArbTokenBridge = (
       amount
     })
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx, symbol)
-    }
+    txLifecycle.onL2TxSubmit({ tx, symbol })
 
     try {
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
-      if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(tx, receipt)
-      }
+      txLifecycle.onL2TxSuccess({ tx, txReceipt })
 
-      const l2ToL1Events = receipt.getL2ToL1Events()
+      const l2ToL1Events = txReceipt.getL2ToL1Events()
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
@@ -661,7 +646,7 @@ export const useArbTokenBridge = (
         })
       }
       updateTokenData(erc20L1Address)
-      return receipt
+      return txReceipt
     } catch (err) {
       console.warn('withdraw token err', err)
     }
@@ -1002,15 +987,11 @@ export const useArbTokenBridge = (
       const tx = await messageWriter.execute(l2.provider)
 
       const tokenData = await getL1TokenData(event.tokenAddress as string)
-      if (txLifecycle?.onTxSubmit) {
-        txLifecycle.onTxSubmit(tx, event, tokenData)
-      }
+      txLifecycle.onL1TxSubmit({ tx, event, tokenData })
       const receipt = await tx.wait()
 
       if (receipt.status === 1) {
-        if (txLifecycle?.onTxSuccess) {
-          txLifecycle.onTxSuccess(receipt.transactionHash)
-        }
+        txLifecycle.onL1TxSuccess(receipt.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1018,9 +999,7 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        if (txLifecycle?.onTxFailure) {
-          txLifecycle.onTxFailure(receipt.transactionHash)
-        }
+        txLifecycle.onL1TxFailure(receipt.transactionHash)
       }
 
       return receipt
@@ -1052,17 +1031,13 @@ export const useArbTokenBridge = (
 
     const tx = await messageWriter.execute(l2.provider)
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx, event)
-    }
+    txLifecycle.onL1TxSubmit({ tx, event })
 
     try {
       const receipt = await tx.wait()
 
       if (receipt.status === 1) {
-        if (txLifecycle?.onTxSuccess) {
-          txLifecycle.onTxSuccess(receipt.transactionHash)
-        }
+        txLifecycle.onL1TxSuccess(receipt.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1070,9 +1045,7 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        if (txLifecycle?.onTxFailure) {
-          txLifecycle.onTxFailure(receipt.transactionHash)
-        }
+        txLifecycle.onL1TxFailure(receipt.transactionHash)
       }
 
       return receipt
