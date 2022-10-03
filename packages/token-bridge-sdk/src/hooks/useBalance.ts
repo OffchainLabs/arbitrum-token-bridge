@@ -29,7 +29,7 @@ const useBalance = ({
     return [chainId, walletAddressLowercased, 'ethBalance']
   }, [chainId, walletAddressLowercased])
 
-  const { data: dataEth, mutate: mutateEth } = useSWR(
+  const { data: dataEth = null, mutate: mutateEth } = useSWR(
     queryKey,
     (_, _walletAddress: string) => provider.getBalance(_walletAddress),
     {
@@ -41,7 +41,7 @@ const useBalance = ({
   )
 
   return {
-    eth: [dataEth ?? null, mutateEth] as const
+    eth: [dataEth, mutateEth] as const
   }
 }
 
