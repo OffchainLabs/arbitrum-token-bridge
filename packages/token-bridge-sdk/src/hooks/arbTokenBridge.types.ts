@@ -110,6 +110,10 @@ export type TokenWithdrawTransactionLifecycle = {
   onL2TxFailure: (txHash: string) => void
 }
 
+/**
+ * used in `approve` (L1) and `approveL2` (L2 for LPT)
+ * so the method names are not layer-specific
+ */
 export type TokenContractTransactionLifecycle = {
   onTxSubmit: ({
     tx,
