@@ -1,50 +1,47 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { useBalanceContext } from '../context/balanceContext'
+import { useMemo } from 'react'
+import { providers } from 'ethers'
 import useSWR from 'swr'
+
+import { useChainId } from './useChainId'
 
 const useBalance = ({
   provider,
   walletAddress
 }: {
-  provider: JsonRpcProvider
+  provider: providers.Provider
   walletAddress: string | undefined
 }) => {
-  const [allBalances, setBalances] = useBalanceContext()
-  let balances
-  // While refreshing the page, provider.network is undefined, so chainId might be undefined
-  if (walletAddress && provider.network?.chainId) {
-    balances = allBalances[walletAddress]?.[provider.network.chainId]
-  }
-  balances = balances || { eth: null }
+  const chainId = useChainId({ provider })
+  const walletAddressLowercased = useMemo(
+    () => walletAddress?.toLowerCase(),
+    [walletAddress]
+  )
 
-  const { mutate } = useSWR(
-    [walletAddress, provider.network?.chainId],
-    async (walletAddress, chainId) => {
-      if (!walletAddress || !chainId) {
-        return
-      }
+  const queryKey = useMemo(() => {
+    if (
+      typeof chainId === 'undefined' ||
+      typeof walletAddressLowercased === 'undefined'
+    ) {
+      // Don't fetch
+      return null
+    }
 
-      try {
-        const newBalance = await provider.getBalance(walletAddress)
+    return [chainId, walletAddressLowercased, 'ethBalance']
+  }, [chainId, walletAddressLowercased])
 
-        setBalances({
-          walletAddress,
-          chainId,
-          type: 'eth',
-          balance: newBalance
-        })
-      } catch (error) {
-        // Do nothing, balances is kept to previous state
-      }
-    },
+  const { data: dataEth = null, mutate: mutateEth } = useSWR(
+    queryKey,
+    (_, _walletAddress: string) => provider.getBalance(_walletAddress),
     {
-      refreshInterval: 5000,
-      shouldRetryOnError: false
+      refreshInterval: 15_000,
+      shouldRetryOnError: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 3_000
     }
   )
 
   return {
-    eth: [balances.eth, mutate] as const
+    eth: [dataEth, mutateEth] as const
   }
 }
 

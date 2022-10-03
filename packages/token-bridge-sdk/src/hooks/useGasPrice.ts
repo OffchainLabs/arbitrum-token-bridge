@@ -1,24 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { BigNumber, providers } from 'ethers'
 import useSWR from 'swr'
+
+import { useChainId } from './useChainId'
 
 export function useGasPrice({
   provider
 }: {
   provider: providers.Provider
 }): BigNumber {
-  const [chainId, setChainId] = useState<number | null>(null)
-
-  useEffect(() => {
-    async function updateChainId() {
-      setChainId((await provider.getNetwork()).chainId)
-    }
-
-    updateChainId()
-  }, [provider])
+  const chainId = useChainId({ provider })
 
   const queryKey = useMemo(() => {
-    if (chainId === null) {
+    if (typeof chainId === 'undefined') {
       // Don't fetch
       return null
     }

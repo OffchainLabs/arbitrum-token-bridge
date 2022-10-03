@@ -1,48 +1,28 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
-import { formatBigNumber } from '../../../src/util/NumberUtils'
-
-async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
-  const goerliProvider = new JsonRpcProvider(rpcURL)
-  return await goerliProvider.getBalance(Cypress.env('ADDRESS'))
-}
-
-const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env('INFURA_KEY')}`
-const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
-
 /**
  * When user wants to bridge ETH from L1 to L2
  */
+
 describe('Deposit ETH', () => {
+  // when all of our tests need to run in a logged-in state
+  // we have to make sure we preserve a healthy LocalStorage state
+  // because it is cleared between each `it` cypress test
+  beforeEach(() => {
+    cy.restoreAppState()
+  })
+  afterEach(() => {
+    cy.saveAppState()
+  })
+
   // Happy Path
-  context('user has some ETH and is on L1', () => {
-    let l1ETHbal
-    let l2ETHbal
-
+  context('User has some ETH and is on L1', () => {
+    // log in to metamask before deposit
     before(() => {
-      cy.clearLocalStorageSnapshot()
-      getInitialETHBalance(goerliRPC).then(
-        val => (l1ETHbal = formatBigNumber(val, 18, 5))
-      )
-      getInitialETHBalance(arbitrumGoerliRPC).then(
-        val => (l2ETHbal = formatBigNumber(val, 18, 5))
-      )
-      cy.disconnectMetamaskWalletFromAllDapps()
-      cy.login()
+      cy.login('L1')
     })
 
-    beforeEach(() => {
-      // restore local storage from first test
-      cy.restoreLocalStorage()
-    })
-
-    afterEach(() => {
-      // cypress clears local storage between tests
-      // so in order to preserve local storage on the page between tests
-      // we need to use the cypress-localstorage-commands plugin
-      // or else we have to visit the page every test which will be much slower
-      // https://docs.cypress.io/api/commands/clearlocalstorage
-      cy.saveLocalStorage()
+    after(() => {
+      // after all assertions are executed, logout and reset the account
+      cy.logout()
     })
 
     it('should show L1 and L2 chains correctly', () => {
@@ -50,15 +30,6 @@ describe('Deposit ETH', () => {
       cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
         'be.visible'
       )
-    })
-
-    it('should show L1 and L2 ETH balances correctly', () => {
-      cy.findByText(`Balance: ${l1ETHbal} ETH`).should('be.visible')
-      cy.findByText(`Balance: ${l2ETHbal} ETH`).should('be.visible')
-    })
-
-    it('should show empty bridging summary', () => {
-      cy.findByText('Bridging summary will appear here.').should('be.visible')
     })
 
     context("bridge amount is lower than user's L1 ETH balance value", () => {
