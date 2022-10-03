@@ -64,7 +64,10 @@ export function TokenButton(): JSX.Element {
       )}
 
       <Popover className="h-full">
-        <Popover.Button className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-gray-2" aria-label='Select Token'>
+        <Popover.Button
+          className="arb-hover h-full w-max rounded-tl-xl rounded-bl-xl bg-white px-3 hover:bg-gray-2"
+          aria-label="Select Token"
+        >
           <div className="flex items-center space-x-2">
             {tokenLogo && (
               <img

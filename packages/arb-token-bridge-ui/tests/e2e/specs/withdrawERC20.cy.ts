@@ -39,7 +39,7 @@ describe('Withdraw ERC20 Token', () => {
       )
 
       // login to L2 chain for Arb Goerli network
-      cy.login('L2', false) // don't add new network, switch to exisiting
+      cy.login('L2', false, true) // don't add new network, switch to exisiting
     })
 
     after(() => {

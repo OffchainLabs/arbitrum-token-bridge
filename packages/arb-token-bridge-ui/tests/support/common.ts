@@ -5,6 +5,7 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
+import { PW_LOADED_INDENTIFIER } from '../../src/constants'
 
 export type NetworkType = 'L1' | 'L2'
 
@@ -24,10 +25,8 @@ export const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env(
 )}`
 export const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
 
-export const ERC20TokenAddressL1 =
-  '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-export const ERC20TokenAddressL2 =
-  '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
+export const ERC20TokenAddressL1 = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
+export const ERC20TokenAddressL2 = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
@@ -73,9 +72,13 @@ export const setupMetamaskNetwork = (
   }
 }
 
-export const startWebApp = () => {
+export const startWebApp = skipBackgroundSetup => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit(`/`)
+  cy.visit(`/`, {
+    onBeforeLoad(win) {
+      cy.stub(win.console, 'log').as('consoleLog')
+    }
+  })
 
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()
@@ -83,5 +86,10 @@ export const startWebApp = () => {
   cy.findByText('Connect to your MetaMask Wallet').click()
   cy.acceptMetamaskAccess().then(() => {
     cy.switchToCypressWindow().should('be.true')
+
+    // make sure all the pending rpc calls to launch app are loaded first
+    if (!skipBackgroundSetup) {
+      cy.get('@consoleLog').should('be.calledWith', PW_LOADED_INDENTIFIER)
+    }
   })
 }

@@ -27,7 +27,7 @@ describe('Withdraw ETH', () => {
     // log in to metamask before withdrawal
     before(() => {
       // login to L2 chain for Arb Goerli network
-      cy.login('L2', true) // add new L2 network
+      cy.login('L2', true, true) // add new L2 network
     })
 
     after(() => {

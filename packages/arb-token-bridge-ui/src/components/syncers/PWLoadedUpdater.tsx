@@ -11,6 +11,7 @@ import {
   l2wstETHGatewayAddresses,
   l2LptGatewayAddresses
 } from '../../util/networks'
+import { PW_LOADED_INDENTIFIER } from '../../constants'
 
 // Loads pending withdrawals on page load
 export function PWLoadedUpdater(): JSX.Element {
@@ -71,6 +72,8 @@ export function PWLoadedUpdater(): JSX.Element {
             console.info('Setting withdrawals to ready state')
 
             actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
+
+            console.log(PW_LOADED_INDENTIFIER) // do not delete, used in automation testing
           })
           .catch(ex => {
             console.warn('error getting setInitialPendingWithdrawals', ex)

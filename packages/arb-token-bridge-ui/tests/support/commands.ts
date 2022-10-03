@@ -15,9 +15,13 @@ import {
   startWebApp
 } from './common'
 
-export function login(networkType: NetworkType, addNewNetwork?: boolean) {
+export function login(
+  networkType: NetworkType,
+  addNewNetwork?: boolean,
+  skipBackgroundSetup = true
+) {
   setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-    startWebApp()
+    startWebApp(skipBackgroundSetup)
   })
 }
 
