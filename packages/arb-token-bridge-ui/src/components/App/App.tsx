@@ -58,6 +58,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useTransactionsInApp } from '../../hooks/useTransactionsInApp'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -156,6 +157,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     useState<TokenBridgeParams | null>(null)
 
   const { provider: library } = useWallet()
+
+  useTransactionsInApp()
 
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
@@ -326,7 +329,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       {tokenBridgeParams && (
         <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
       )}
-      <TransactionsSync />
       {children}
     </>
   )

@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
 import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
+import { useActions } from '../state'
 
-import { useActions } from '../../state'
-
-// Syncs the Transactions data with the global store, so we dont have to drill with props but use store hooks to get data
-export function TransactionsSync(): JSX.Element {
+export const useTransactionsInApp = () => {
   const {
     app: { setTransactions }
   } = useActions()
@@ -17,6 +15,4 @@ export function TransactionsSync(): JSX.Element {
       ...transactionActions
     })
   }, [setTransactions, transactionActions, transactions, transactionsObject])
-
-  return <></>
 }
