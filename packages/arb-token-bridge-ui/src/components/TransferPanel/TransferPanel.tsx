@@ -42,6 +42,7 @@ import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { L1ToL2MessageData } from 'token-bridge-sdk/dist/hooks/useTransactions'
+import { TokenSymbol } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -474,7 +475,7 @@ export function TransferPanel() {
                   status: 'pending',
                   value: utils.formatEther(amountRaw),
                   txID: tx.hash,
-                  assetName: 'ETH',
+                  assetName: TokenSymbol.ETH,
                   assetType: AssetType.ETH,
                   sender: walletAddress,
                   l1NetworkID,
@@ -613,7 +614,7 @@ export function TransferPanel() {
                   status: 'pending',
                   value: utils.formatEther(amountRaw),
                   txID: tx.hash,
-                  assetName: 'ETH',
+                  assetName: TokenSymbol.ETH,
                   assetType: AssetType.ETH,
                   sender: walletAddress,
                   blockNumber: tx.blockNumber,
@@ -933,7 +934,7 @@ export function TransferPanel() {
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}
           type={tokenDepositCheckDialogType}
-          symbol={selectedToken ? selectedToken.symbol : 'ETH'}
+          symbol={selectedToken ? selectedToken.symbol : TokenSymbol.ETH}
         />
       </div>
     </>

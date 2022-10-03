@@ -5,6 +5,7 @@ import { utils } from 'ethers'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { TokenSymbol } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -65,7 +66,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
                 status: 'pending',
                 type: 'outbox',
                 value: utils.formatEther(event.value),
-                assetName: 'ETH',
+                assetName: TokenSymbol.ETH,
                 assetType: AssetType.ETH,
                 sender,
                 txID: tx.hash,

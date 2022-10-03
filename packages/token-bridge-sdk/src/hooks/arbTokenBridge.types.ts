@@ -46,6 +46,10 @@ export enum AssetType {
   ETH = 'ETH'
 }
 
+export enum TokenSymbol {
+  ETH = 'ETH'
+}
+
 export type EthDepositTransactionLifecycle = {
   onL1TxSubmit: ({ tx }: { tx: L1EthDepositTransaction }) => void
   onL1TxConfirm: ({

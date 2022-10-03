@@ -49,7 +49,8 @@ import {
   TokenWithdrawTransactionLifecycle,
   TokenTriggerOutboxTransactionLifecycle,
   EthWithdrawTransactionLifecycle,
-  TokenDepositTransactionLifecycle
+  TokenDepositTransactionLifecycle,
+  TokenSymbol
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -415,7 +416,7 @@ export const useArbTokenBridge = (
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
-          symbol: 'ETH',
+          symbol: TokenSymbol.ETH,
           decimals: 18,
           nodeBlockDeadline: 'NODE_NOT_CREATED',
           l2TxHash: tx.hash
@@ -1092,7 +1093,7 @@ export const useArbTokenBridge = (
       ...event,
       type: AssetType.ETH,
       value: callvalue,
-      symbol: 'ETH',
+      symbol: TokenSymbol.ETH,
       outgoingMessageState,
       decimals: 18,
       l2TxHash: event.l2TxHash || event.transactionHash
