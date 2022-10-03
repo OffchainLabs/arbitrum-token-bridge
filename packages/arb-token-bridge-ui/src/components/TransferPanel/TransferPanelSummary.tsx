@@ -111,16 +111,14 @@ export function useGasSummary(
             const estimateGasResult =
               await arbTokenBridge.token.depositEstimateGas({
                 erc20L1Address: token.address,
-                amount: amountDebounced,
-                l1Signer: latestNetworksAndSigners.current.l1.signer
+                amount: amountDebounced
               })
 
             setResult(estimateGasResult)
           } else {
             const estimateGasResult =
               await arbTokenBridge.eth.depositEstimateGas({
-                amount: amountDebounced,
-                l1Signer: latestNetworksAndSigners.current.l1.signer
+                amount: amountDebounced
               })
 
             setResult(estimateGasResult)
@@ -147,8 +145,7 @@ export function useGasSummary(
               estimateGasResult =
                 await arbTokenBridge.token.withdrawEstimateGas({
                   erc20L1Address: token.address,
-                  amount: amountDebounced,
-                  l2Signer: latestNetworksAndSigners.current.l2.signer
+                  amount: amountDebounced
                 })
             }
 
@@ -159,8 +156,7 @@ export function useGasSummary(
           } else {
             const estimateGasResult =
               await arbTokenBridge.eth.withdrawEstimateGas({
-                amount: amountDebounced,
-                l2Signer: latestNetworksAndSigners.current.l2.signer
+                amount: amountDebounced
               })
 
             setResult({
