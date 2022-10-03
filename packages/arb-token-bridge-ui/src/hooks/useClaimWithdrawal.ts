@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { AssetType, getUniqueIdOrHashFromEvent } from 'token-bridge-sdk'
 import { utils } from 'ethers'
 
@@ -23,6 +23,20 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
 
   const [isClaiming, setIsClaiming] = useState(false)
 
+  const onL1TxSuccess = useCallback(
+    (txHash: string) => {
+      transactions.setTransactionSuccess(txHash)
+    },
+    [transactions]
+  )
+
+  const onL1TxFailure = useCallback(
+    (txHash: string) => {
+      transactions.setTransactionFailure(txHash)
+    },
+    [transactions]
+  )
+
   async function claim(tx: MergedTransaction) {
     if (isClaiming) {
       return
@@ -32,6 +46,10 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       return alert("Can't find withdrawal")
     }
 
+    const sender = walletAddress
+    const id = tx.uniqueId.toString()
+    const l1NetworkID = l1.network.chainID.toString()
+
     let res, err
 
     setIsClaiming(true)
@@ -39,7 +57,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     try {
       if (tx.asset === 'eth') {
         res = await eth.triggerOutbox({
-          id: tx.uniqueId.toString(),
+          id,
           l1Signer,
           txLifecycle: {
             onL1TxSubmit: ({ tx, event }) => {
@@ -49,23 +67,19 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
                 value: utils.formatEther(event.value),
                 assetName: 'ETH',
                 assetType: AssetType.ETH,
-                sender: walletAddress,
+                sender,
                 txID: tx.hash,
-                l1NetworkID: l1.network.chainID.toString(),
+                l1NetworkID,
                 l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
               })
             },
-            onL1TxSuccess: txHash => {
-              transactions.setTransactionSuccess(txHash)
-            },
-            onL1TxFailure: txHash => {
-              transactions.setTransactionFailure(txHash)
-            }
+            onL1TxSuccess,
+            onL1TxFailure
           }
         })
       } else {
         res = await token.triggerOutbox({
-          id: tx.uniqueId.toString(),
+          id,
           l1Signer,
           txLifecycle: {
             onL1TxSubmit: ({ tx, event, tokenData }) => {
@@ -75,18 +89,14 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
                 value: utils.formatUnits(event.value, tokenData.decimals),
                 assetName: tokenData.symbol,
                 assetType: AssetType.ERC20,
-                sender: walletAddress,
+                sender,
                 txID: tx.hash,
-                l1NetworkID: l1.network.chainID.toString(),
+                l1NetworkID,
                 l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
               })
             },
-            onL1TxSuccess: txHash => {
-              transactions.setTransactionSuccess(txHash)
-            },
-            onL1TxFailure: txHash => {
-              transactions.setTransactionFailure(txHash)
-            }
+            onL1TxSuccess,
+            onL1TxFailure
           }
         })
       }
