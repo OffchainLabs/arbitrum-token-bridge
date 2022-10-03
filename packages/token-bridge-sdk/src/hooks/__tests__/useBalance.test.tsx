@@ -58,9 +58,9 @@ describe('useBalance', () => {
     )
 
     // @ts-ignore
-    jest.spyOn(provider, 'getNetwork').mockImplementation(() => {
-      return null
-    })
+    jest.spyOn(provider, 'getNetwork').mockImplementation(() => ({
+      chainId: undefined
+    }))
     // This should not be called. It's here to avoid false positive
     jest
       .spyOn(provider, 'getBalance')
