@@ -3,7 +3,7 @@
  */
 
 import { resetSeenTimeStampCache } from '../../support/commands'
-import { gasConfig, zeroToLessThanOneETH } from '../../support/common'
+import { zeroToLessThanOneETH } from '../../support/common'
 
 describe('Withdraw ETH', () => {
   // when all of our tests need to run in a logged-in state
@@ -122,7 +122,7 @@ describe('Withdraw ETH', () => {
       })
 
       it('should withdraw successfully', () => {
-        cy.confirmMetamaskTransaction(gasConfig).then(() => {
+        cy.confirmMetamaskTransaction().then(() => {
           cy.findAllByText(/Moving 0.0001 ETH to Goerli/i).should('be.visible')
         })
       })

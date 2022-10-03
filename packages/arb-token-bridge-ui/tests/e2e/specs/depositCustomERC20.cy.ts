@@ -6,7 +6,6 @@ import { formatBigNumber } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   customERC20TokenAddressL1,
-  gasConfig,
   getInitialERC20Balance,
   goerliRPC,
   zeroToLessThanOneETH
@@ -70,6 +69,7 @@ describe('Deposit Custom ERC20 Token', () => {
         .type(customERC20TokenAddressL1, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
+
           cy.findByRole('button', { name: 'Add New Token' })
             .should('be.visible')
             .click({ scrollBehavior: false })
@@ -121,13 +121,15 @@ describe('Deposit Custom ERC20 Token', () => {
       it('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Goerli'
-        }).click({ scrollBehavior: false })
-
-        cy.confirmMetamaskTransaction(gasConfig).then(() => {
-          cy.findByText(/Moving 0.0001 LINK to Arbitrum Goerli.../i).should(
-            'be.visible'
-          )
         })
+          .click({ scrollBehavior: false })
+          .then(() => {
+            cy.confirmMetamaskTransaction().then(() => {
+              cy.findByText(/Moving 0.0001 LINK to Arbitrum Goerli.../i).should(
+                'be.visible'
+              )
+            })
+          })
       })
     })
 

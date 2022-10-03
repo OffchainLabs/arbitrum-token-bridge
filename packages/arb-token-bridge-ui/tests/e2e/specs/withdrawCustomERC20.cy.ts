@@ -7,7 +7,6 @@ import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   arbitrumGoerliRPC,
   customERC20TokenAddressL2,
-  gasConfig,
   getInitialERC20Balance,
   zeroToLessThanOneETH
 } from '../../support/common'
@@ -162,7 +161,7 @@ describe('Withdraw Custom ERC20 Token', () => {
               .should('be.enabled')
               .click({ scrollBehavior: false })
 
-            cy.confirmMetamaskTransaction(gasConfig).then(() => {
+            cy.confirmMetamaskTransaction().then(() => {
               cy.findAllByText(/Moving 0.0001 LINK to Goerli/i).should(
                 'be.visible'
               )
