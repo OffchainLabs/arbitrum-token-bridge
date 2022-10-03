@@ -20,10 +20,6 @@ export {
 } from './hooks/arbTokenBridge.types'
 
 export { useBalance } from './hooks/useBalance'
-export {
-  useBalanceContext,
-  BalanceContextProvider
-} from './context/balanceContext'
 
 export type {
   Transaction,
