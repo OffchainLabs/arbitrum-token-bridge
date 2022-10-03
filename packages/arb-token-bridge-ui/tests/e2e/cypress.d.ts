@@ -1,5 +1,11 @@
 import '@synthetixio/synpress/support/index.d.ts'
-import { login } from '../support/commands'
+import {
+  login,
+  logout,
+  restoreAppState,
+  saveAppState
+} from '../support/commands'
+import { NetworkType } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -8,7 +14,10 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      login(): typeof login
+      login(networkType: NetworkType): typeof login
+      logout(): typeof logout
+      restoreAppState(): typeof restoreAppState
+      saveAppState(): typeof saveAppState
     }
   }
 }
