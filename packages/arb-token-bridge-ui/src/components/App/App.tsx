@@ -35,7 +35,6 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { TransactionsSync } from '../syncers/TransactionsSync'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
