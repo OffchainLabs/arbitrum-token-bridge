@@ -988,10 +988,10 @@ export const useArbTokenBridge = (
 
       const tokenData = await getL1TokenData(event.tokenAddress as string)
       txLifecycle.onL1TxSubmit({ tx, event, tokenData })
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
-      if (receipt.status === 1) {
-        txLifecycle.onL1TxSuccess(receipt.transactionHash)
+      if (isTxSuccessful(txReceipt)) {
+        txLifecycle.onL1TxSuccess(txReceipt.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -999,10 +999,10 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        txLifecycle.onL1TxFailure(receipt.transactionHash)
+        txLifecycle.onL1TxFailure(txReceipt.transactionHash)
       }
 
-      return receipt
+      return txReceipt
     } catch (err) {
       console.warn('WARNING: token outbox execute failed:', err)
     }
@@ -1034,10 +1034,10 @@ export const useArbTokenBridge = (
     txLifecycle.onL1TxSubmit({ tx, event })
 
     try {
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
-      if (receipt.status === 1) {
-        txLifecycle.onL1TxSuccess(receipt.transactionHash)
+      if (isTxSuccessful(txReceipt)) {
+        txLifecycle.onL1TxSuccess(txReceipt.transactionHash)
         addToExecutedMessagesCache(event)
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
@@ -1045,10 +1045,10 @@ export const useArbTokenBridge = (
           return newPendingWithdrawalsMap
         })
       } else {
-        txLifecycle.onL1TxFailure(receipt.transactionHash)
+        txLifecycle.onL1TxFailure(txReceipt.transactionHash)
       }
 
-      return receipt
+      return txReceipt
     } catch (err) {
       console.warn('WARNING: ETH outbox execute failed:', err)
     }
