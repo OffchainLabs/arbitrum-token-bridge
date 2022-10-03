@@ -24,9 +24,9 @@ export const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env(
 )}`
 export const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
 
-export const customERC20TokenAddressL1 =
+export const ERC20TokenAddressL1 =
   '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-export const customERC20TokenAddressL2 =
+export const ERC20TokenAddressL2 =
   '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/

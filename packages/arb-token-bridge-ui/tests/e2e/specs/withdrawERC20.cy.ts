@@ -6,12 +6,12 @@ import { formatBigNumber } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   arbitrumGoerliRPC,
-  customERC20TokenAddressL2,
+  ERC20TokenAddressL2,
   getInitialERC20Balance,
   zeroToLessThanOneETH
 } from '../../support/common'
 
-describe('Withdraw Custom ERC20 Token', () => {
+describe('Withdraw ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
@@ -34,7 +34,7 @@ describe('Withdraw Custom ERC20 Token', () => {
 
     // log in to metamask before withdrawal
     before(() => {
-      getInitialERC20Balance(customERC20TokenAddressL2, arbitrumGoerliRPC).then(
+      getInitialERC20Balance(ERC20TokenAddressL2, arbitrumGoerliRPC).then(
         val => (l2ERC20bal = formatBigNumber(val, 18, 5))
       )
 
@@ -64,7 +64,7 @@ describe('Withdraw Custom ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should should add custom ERC20 token correctly', () => {
+    it('should should add ERC20 token correctly', () => {
       // Click on the ETH dropdown (Select token button)
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
@@ -74,7 +74,7 @@ describe('Withdraw Custom ERC20 Token', () => {
       // open the Select Token popup
       cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
-        .type(customERC20TokenAddressL2, { scrollBehavior: false })
+        .type(ERC20TokenAddressL2, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
           cy.findByRole('button', { name: 'Add New Token' })
