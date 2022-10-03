@@ -48,7 +48,7 @@ export enum AssetType {
 
 export type EthDepositTransactionLifecycle = {
   onL1TxSubmit: ({ tx }: { tx: L1EthDepositTransaction }) => void
-  onL1TxSuccess: ({
+  onL1TxConfirm: ({
     tx,
     txReceipt,
     ethDepositMessage
@@ -57,7 +57,6 @@ export type EthDepositTransactionLifecycle = {
     txReceipt: L1EthDepositTransactionReceipt
     ethDepositMessage: EthDepositMessage
   }) => void
-  onL1TxFailure: (txHash: string) => void
 }
 
 export type TokenDepositTransactionLifecycle = {
@@ -68,7 +67,7 @@ export type TokenDepositTransactionLifecycle = {
     tx: L1ContractCallTransaction
     symbol: string
   }) => void
-  onL1TxSuccess: ({
+  onL1TxConfirm: ({
     tx,
     txReceipt,
     l1Tol2Message
@@ -77,19 +76,17 @@ export type TokenDepositTransactionLifecycle = {
     txReceipt: L1ContractCallTransactionReceipt
     l1Tol2Message: IL1ToL2MessageReader
   }) => void
-  onL1TxFailure: (txHash: string) => void
 }
 
 export type EthWithdrawTransactionLifecycle = {
   onL2TxSubmit: ({ tx }: { tx: L2ContractTransaction }) => void
-  onL2TxSuccess: ({
+  onL2TxConfirm: ({
     tx,
     txReceipt
   }: {
     tx: L2ContractTransaction
     txReceipt: L2TransactionReceipt
   }) => void
-  onL2TxFailure: (txHash: string) => void
 }
 
 export type TokenWithdrawTransactionLifecycle = {
@@ -100,14 +97,13 @@ export type TokenWithdrawTransactionLifecycle = {
     tx: L2ContractTransaction
     symbol: string
   }) => void
-  onL2TxSuccess: ({
+  onL2TxConfirm: ({
     tx,
     txReceipt
   }: {
     tx: L2ContractTransaction
     txReceipt: L2TransactionReceipt
   }) => void
-  onL2TxFailure: (txHash: string) => void
 }
 
 /**
@@ -122,14 +118,13 @@ export type TokenContractTransactionLifecycle = {
     tx: ContractTransaction
     symbol: string
   }) => void
-  onTxSuccess: ({
+  onTxConfirm: ({
     tx,
     txReceipt
   }: {
     tx: ContractTransaction
     txReceipt: ContractReceipt
   }) => void
-  onTxFailure: (txHash: string) => void
 }
 
 export type TriggerOutboxTransactionLifecycle = {

@@ -349,11 +349,7 @@ export const useArbTokenBridge = (
         l2.provider
       )
 
-      if (isTxSuccessful(txReceipt)) {
-        txLifecycle.onL1TxSuccess({ tx, txReceipt, ethDepositMessage })
-      } else {
-        txLifecycle.onL1TxFailure(txReceipt.transactionHash)
-      }
+      txLifecycle.onL1TxConfirm({ tx, txReceipt, ethDepositMessage })
 
       updateEthBalances()
     } catch (error: any) {
@@ -401,7 +397,7 @@ export const useArbTokenBridge = (
     try {
       const txReceipt = await tx.wait()
 
-      txLifecycle.onL2TxSuccess({ tx, txReceipt })
+      txLifecycle.onL2TxConfirm({ tx, txReceipt })
 
       updateEthBalances()
 
@@ -476,7 +472,7 @@ export const useArbTokenBridge = (
 
     const txReceipt = await tx.wait()
 
-    txLifecycle.onTxSuccess({ tx, txReceipt })
+    txLifecycle.onTxConfirm({ tx, txReceipt })
     updateTokenData(erc20L1Address)
   }
 
@@ -519,7 +515,7 @@ export const useArbTokenBridge = (
 
     const txReceipt = await tx.wait()
 
-    txLifecycle.onTxSuccess({ tx, txReceipt })
+    txLifecycle.onTxConfirm({ tx, txReceipt })
     updateTokenData(erc20L1Address)
   }
 
@@ -547,14 +543,10 @@ export const useArbTokenBridge = (
 
     const txReceipt = await tx.wait()
 
-    if (isTxSuccessful(txReceipt)) {
-      const l1Tol2Message = await txReceipt.getL1ToL2Message(l2.provider)
-      txLifecycle.onL1TxSuccess({ tx, txReceipt, l1Tol2Message })
+    const l1Tol2Message = await txReceipt.getL1ToL2Message(l2.provider)
+    txLifecycle.onL1TxConfirm({ tx, txReceipt, l1Tol2Message })
 
-      updateTokenData(erc20L1Address)
-    } else {
-      txLifecycle?.onL1TxFailure(txReceipt.transactionHash)
-    }
+    updateTokenData(erc20L1Address)
 
     return txReceipt
   }
@@ -618,7 +610,7 @@ export const useArbTokenBridge = (
     try {
       const txReceipt = await tx.wait()
 
-      txLifecycle.onL2TxSuccess({ tx, txReceipt })
+      txLifecycle.onL2TxConfirm({ tx, txReceipt })
 
       const l2ToL1Events = txReceipt.getL2ToL1Events()
 

@@ -126,13 +126,6 @@ export function TransferPanel() {
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const txLifecycleOnTxFailure = useCallback(
-    (txHash: string) => {
-      transactions.setTransactionFailure(txHash)
-    },
-    [transactions]
-  )
-
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be useing useArbQueryParams functions
   const [{ amount }, setQueryParams] = useArbQueryParams()
@@ -418,10 +411,9 @@ export function TransferPanel() {
                     l1NetworkID
                   })
                 },
-                onTxSuccess: ({ tx, txReceipt }) => {
+                onTxConfirm: ({ tx, txReceipt }) => {
                   transactions.updateTransaction(txReceipt, tx)
-                },
-                onTxFailure: txHash => txLifecycleOnTxFailure(txHash)
+                }
               }
             })
           }
@@ -458,7 +450,7 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL1TxSuccess: ({ tx, txReceipt, l1Tol2Message }) => {
+              onL1TxConfirm: ({ tx, txReceipt, l1Tol2Message }) => {
                 const l1ToL2MsgData: L1ToL2MessageData = {
                   fetchingUpdate: false,
                   status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
@@ -466,8 +458,7 @@ export function TransferPanel() {
                   l2TxID: undefined
                 }
                 transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
-              },
-              onL1TxFailure: txHash => txLifecycleOnTxFailure(txHash)
+              }
             }
           })
         } else {
@@ -494,7 +485,7 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL1TxSuccess: ({ tx, txReceipt, ethDepositMessage }) => {
+              onL1TxConfirm: ({ tx, txReceipt, ethDepositMessage }) => {
                 const l1ToL2MsgData: L1ToL2MessageData = {
                   fetchingUpdate: false,
                   status: L1ToL2MessageStatus.NOT_YET_CREATED,
@@ -502,8 +493,7 @@ export function TransferPanel() {
                   l2TxID: undefined
                 }
                 transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
-              },
-              onL1TxFailure: txHash => txLifecycleOnTxFailure(txHash)
+              }
             }
           })
         }
@@ -574,10 +564,9 @@ export function TransferPanel() {
                       l2NetworkID
                     })
                   },
-                  onTxSuccess: ({ tx, txReceipt }) => {
+                  onTxConfirm: ({ tx, txReceipt }) => {
                     transactions.updateTransaction(txReceipt, tx)
-                  },
-                  onTxFailure: txHash => txLifecycleOnTxFailure(txHash)
+                  }
                 }
               })
             }
@@ -606,10 +595,9 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL2TxSuccess: ({ tx, txReceipt }) => {
+              onL2TxConfirm: ({ tx, txReceipt }) => {
                 transactions.updateTransaction(txReceipt, tx)
-              },
-              onL2TxFailure: txHash => txLifecycleOnTxFailure(txHash)
+              }
             }
           })
         } else {
@@ -637,10 +625,9 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL2TxSuccess: ({ tx, txReceipt }) => {
+              onL2TxConfirm: ({ tx, txReceipt }) => {
                 transactions.updateTransaction(txReceipt, tx)
-              },
-              onL2TxFailure: txHash => txLifecycleOnTxFailure(txHash)
+              }
             }
           })
         }
