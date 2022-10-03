@@ -7,7 +7,7 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken, useBalance } from 'token-bridge-sdk'
+import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
@@ -15,7 +15,6 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { Dialog, useDialog } from '../common/Dialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
@@ -305,8 +304,11 @@ export function TransferPanelMain({
 }) {
   const history = useHistory()
   const actions = useActions()
-  const { l1GasPrice, l2GasPrice } = useGasPrice()
+
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+
+  const l1GasPrice = useGasPrice({ provider: l1.provider })
+  const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
@@ -628,7 +630,10 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
-        <SwitchNetworksButton onClick={switchNetworks} />
+        <SwitchNetworksButton
+          onClick={switchNetworks}
+          aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
+        />
       </div>
 
       <NetworkContainer network={to}>
