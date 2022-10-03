@@ -350,7 +350,11 @@ export function TransferPanelMain({
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
-  }, [amount])
+
+    if (amount.toLowerCase() === 'max') {
+      setMaxAmount()
+    }
+  }, [amount, setMaxAmount, setQueryParams])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance

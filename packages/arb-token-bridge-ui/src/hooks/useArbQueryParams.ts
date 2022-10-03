@@ -36,15 +36,14 @@ export const useArbQueryParams = () => {
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 const AmountQueryParam = {
   encode: (amount: number | string | null | undefined) => {
-    // if (amount === 'MAX') return 'MAX' // commenting out, handling for a future case
     if (typeof amount === 'number') return amount.toString()
     return amount
   },
   decode: (amountStr: string | (string | null)[] | null | undefined) => {
-    // if (amountStr === 'MAX') return 'MAX' // commenting out, handling for a future case
     if (
       !amountStr ||
-      isNaN(Number(amountStr)) ||
+      (isNaN(Number(amountStr)) &&
+        amountStr.toString().toLowerCase() !== 'max') ||
       typeof amountStr === 'object'
     ) {
       return ''
