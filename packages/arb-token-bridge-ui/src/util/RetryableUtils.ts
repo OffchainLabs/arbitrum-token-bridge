@@ -1,4 +1,7 @@
-import { L1TransactionReceipt, IL1ToL2MessageWriter } from '@arbitrum/sdk'
+import {
+  L1TransactionReceipt,
+  L1ToL2MessageWriter as IL1ToL2MessageWriter
+} from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
 import dayjs from 'dayjs'
@@ -65,7 +68,7 @@ export const getRetryableTicketExpiration = async ({
   try {
     const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
     const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-    const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
+    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
 
     const now = dayjs()
 

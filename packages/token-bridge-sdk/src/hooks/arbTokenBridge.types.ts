@@ -8,12 +8,13 @@ import {
 } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  IL1ToL2MessageReader
-} from '@arbitrum/sdk/dist/lib/utils/migration_types'
+  L1ToL2MessageReader as IL1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 
 import {
   L1EthDepositTransaction,
@@ -175,7 +176,7 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
 }
 
-export type WithdrawalInitiated = WithdrawalInitiatedEvent['args'] & {
+export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
 }
 
@@ -280,17 +281,13 @@ export interface ArbTokenBridgeEth {
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     amount: BigNumber
-    l1Signer: Signer
   }) => Promise<DepositGasEstimates>
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle: EthWithdrawTransactionLifecycle
   }) => Promise<void | ContractReceipt>
-  withdrawEstimateGas: (params: {
-    amount: BigNumber
-    l2Signer: Signer
-  }) => Promise<GasEstimates>
+  withdrawEstimateGas: (params: { amount: BigNumber }) => Promise<GasEstimates>
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
@@ -329,7 +326,6 @@ export interface ArbTokenBridgeToken {
   depositEstimateGas: (params: {
     erc20L1Address: string
     amount: BigNumber
-    l1Signer: Signer
   }) => Promise<DepositGasEstimates>
   withdraw: (params: {
     erc20L1Address: string
@@ -338,9 +334,8 @@ export interface ArbTokenBridgeToken {
     txLifecycle: TokenWithdrawTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
-    erc20L1Address: string
     amount: BigNumber
-    l2Signer: Signer
+    erc20L1Address: string
   }) => Promise<GasEstimates>
   triggerOutbox: (params: {
     id: string

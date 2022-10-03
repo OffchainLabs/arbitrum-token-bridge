@@ -6,7 +6,7 @@ import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 
@@ -429,16 +429,14 @@ export function TransferPanelMain({
   }> {
     if (isDepositMode) {
       const result = await arbTokenBridge.eth.depositEstimateGas({
-        amount: weiValue,
-        l1Signer: l1.signer
+        amount: weiValue
       })
 
       return result
     }
 
     const result = await arbTokenBridge.eth.withdrawEstimateGas({
-      amount: weiValue,
-      l2Signer: l2.signer
+      amount: weiValue
     })
 
     return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }

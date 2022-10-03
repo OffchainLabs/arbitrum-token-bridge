@@ -290,7 +290,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       symbol: 'ETH',
                       decimals: 18
                     },
-                    rpcUrls: [network.rpcURL || rpcURLs[network.chainID]],
+                    rpcUrls: [rpcURLs[network.chainID]],
                     blockExplorerUrls: [network.explorerUrl]
                   }
                 ]
