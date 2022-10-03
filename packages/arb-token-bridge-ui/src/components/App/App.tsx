@@ -358,7 +358,8 @@ function Routes() {
         options={{
           searchStringToObject: parse,
           objectToSearchString: stringify,
-          updateType: 'replaceIn' // replace just a single parameter when updating query-state, leaving the rest as is
+          updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
+          removeDefaultsFromUrl: true
         }}
       >
         <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />

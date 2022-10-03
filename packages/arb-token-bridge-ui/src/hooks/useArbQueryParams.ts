@@ -14,7 +14,12 @@
 
 */
 
-import { NumberParam, StringParam, useQueryParams } from 'use-query-params'
+import {
+  NumberParam,
+  StringParam,
+  useQueryParams,
+  withDefault
+} from 'use-query-params'
 
 export const useArbQueryParams = () => {
   /*
@@ -25,7 +30,7 @@ export const useArbQueryParams = () => {
 
   */
   return useQueryParams({
-    amount: AmountQueryParam, // amount which is filled in Transfer panel
+    amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam // import a new token using a Dialog Box
   })
