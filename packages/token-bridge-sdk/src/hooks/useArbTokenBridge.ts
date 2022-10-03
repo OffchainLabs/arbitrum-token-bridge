@@ -201,6 +201,8 @@ export const useArbTokenBridge = (
       balanceOf: { account: walletAddress },
       allowance: { owner: walletAddress, spender: l1GatewayAddress },
       decimals: true,
+      name: true,
+      symbol: true
     })
 
     if (typeof tokenData.balance === 'undefined') {
