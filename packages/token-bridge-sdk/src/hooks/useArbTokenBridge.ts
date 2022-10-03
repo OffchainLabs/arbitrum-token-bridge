@@ -17,13 +17,8 @@ import {
   L2TransactionReceipt
 } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import {
-  DepositWithdrawEstimator,
-  getOutboxAddr as getClassicOutboxAddress
-} from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-import { getL2Network as getClassicL2Network } from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -185,11 +180,6 @@ export const useArbTokenBridge = (
   const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
   const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
 
-  const gasEstimator = useMemo(
-    () => new DepositWithdrawEstimator(l2.network),
-    [l2.network]
-  )
-
   /**
    * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
    * @param erc20L1Address
@@ -199,41 +189,11 @@ export const useArbTokenBridge = (
     erc20L1Address: string,
     throwOnInvalidERC20 = true
   ): Promise<L1TokenData> {
-    type GetL1TokenDataOverrides = {
-      params: { name?: true; symbol?: true }
-      result: { name?: string; symbol?: string }
-    }
-
-    function getOverrides(): GetL1TokenDataOverrides {
-      const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
-
-      const overrides: {
-        [erc20L1Address: string]: GetL1TokenDataOverrides
-      } = {
-        '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': {
-          // Don't query for name & symbol
-          params: {},
-          result: { name: 'Maker', symbol: 'MKR' }
-        }
-      }
-
-      if (typeof overrides[erc20L1AddressLowercased] !== 'undefined') {
-        return overrides[erc20L1AddressLowercased]
-      }
-
-      return {
-        // By default query for name & symbol
-        params: { name: true, symbol: true },
-        result: {}
-      }
-    }
-
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1.provider
     )
 
-    const overrides = getOverrides()
     const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
 
     const multiCaller = await MultiCaller.fromProvider(l1.provider)
@@ -241,7 +201,8 @@ export const useArbTokenBridge = (
       balanceOf: { account: walletAddress },
       allowance: { owner: walletAddress, spender: l1GatewayAddress },
       decimals: true,
-      ...overrides.params
+      name: true,
+      symbol: true
     })
 
     if (typeof tokenData.balance === 'undefined') {
@@ -264,7 +225,6 @@ export const useArbTokenBridge = (
       balance: tokenData.balance || BigNumber.from(0),
       allowance: tokenData.allowance || BigNumber.from(0),
       decimals: tokenData.decimals || 0,
-      ...overrides.result,
       contract
     }
   }
@@ -348,8 +308,7 @@ export const useArbTokenBridge = (
     try {
       tx = await ethBridger.deposit({
         amount,
-        l1Signer,
-        l2Provider: l2.provider
+        l1Signer
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -377,7 +336,7 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const [ethDepositMessage] = await receipt.getEthDepositMessages(l2.provider)
+    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -390,24 +349,18 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function depositEthEstimateGas({
-    amount,
-    l1Signer
-  }: {
-    amount: BigNumber
-    l1Signer: Signer
-  }) {
-    const estimatedL1Gas = await gasEstimator.ethDepositL1Gas({
+  async function depositEthEstimateGas({ amount }: { amount: BigNumber }) {
+    const depositRequest = await ethBridger.getDepositRequest({
       amount,
-      l1Signer,
-      l2Provider: l2.provider
+      from: walletAddress
     })
 
-    const {
-      maxGas: estimatedL2Gas,
-      maxSubmissionCost: estimatedL2SubmissionCost
-    } = await gasEstimator.ethDepositL2Gas(l2.provider)
+    const estimatedL1Gas = await l1.provider.estimateGas(
+      depositRequest.txRequest
+    )
 
+    const estimatedL2Gas = BigNumber.from(0)
+    const estimatedL2SubmissionCost = BigNumber.from(0)
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
@@ -422,7 +375,9 @@ export const useArbTokenBridge = (
   }) {
     const tx = await ethBridger.withdraw({
       amount,
-      l2Signer
+      l2Signer,
+      destinationAddress: walletAddress,
+      from: walletAddress
     })
 
     if (txLifecycle?.onTxSubmit) {
@@ -456,7 +411,6 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventResult = l2ToL1Events[0]
-        console.info('withdraw event data:', l2ToL1EventResult)
 
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
 
@@ -486,19 +440,19 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function withdrawEthEstimateGas({
-    amount,
-    l2Signer
-  }: {
-    amount: BigNumber
-    l2Signer: Signer
-  }) {
-    const estimatedL1Gas = await gasEstimator.ethWithdrawalL1Gas(l2.provider)
-
-    const estimatedL2Gas = await gasEstimator.ethWithdrawalL2Gas({
+  async function withdrawEthEstimateGas({ amount }: { amount: BigNumber }) {
+    const withdrawalRequest = await ethBridger.getWithdrawalRequest({
       amount,
-      l2Signer
+      destinationAddress: walletAddress,
+      from: walletAddress
     })
+
+    // Can't do this atm. Hardcoded to 130_000.
+    const estimatedL1Gas = BigNumber.from(130_000)
+
+    const estimatedL2Gas = await l2.provider.estimateGas(
+      withdrawalRequest.txRequest
+    )
 
     return { estimatedL1Gas, estimatedL2Gas }
   }
@@ -628,7 +582,7 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const l1ToL2Msg = await receipt.getL1ToL2Message(l2.provider)
+    const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -645,26 +599,26 @@ export const useArbTokenBridge = (
 
   async function depositTokenEstimateGas({
     erc20L1Address,
-    amount,
-    l1Signer
+    amount
   }: {
     erc20L1Address: string
     amount: BigNumber
-    l1Signer: Signer
   }) {
-    // We're hardcoding the L1 gas cost for a token deposit, as the estimation might fail due to no allowance.
-    const estimatedL1Gas = BigNumber.from(240000)
-
-    const {
-      maxGas: estimatedL2Gas,
-      maxSubmissionCost: estimatedL2SubmissionCost
-    } = await gasEstimator.erc20DepositL2Gas({
-      l1Signer,
-      l2Provider: l2.provider,
+    const depositRequest = await erc20Bridger.getDepositRequest({
+      amount,
+      from: walletAddress,
       erc20L1Address,
-      amount
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
     })
 
+    const estimatedL1Gas = await l1.provider.estimateGas(
+      depositRequest.txRequest
+    )
+
+    const estimatedL2Gas = depositRequest.retryableData.gasLimit
+    const estimatedL2SubmissionCost =
+      depositRequest.retryableData.maxSubmissionCost
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
@@ -694,6 +648,7 @@ export const useArbTokenBridge = (
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
+      destinationAddress: walletAddress,
       amount
     })
 
@@ -756,21 +711,24 @@ export const useArbTokenBridge = (
   }
 
   async function withdrawTokenEstimateGas({
-    erc20L1Address,
     amount,
-    l2Signer
+    erc20L1Address
   }: {
-    erc20L1Address: string
     amount: BigNumber
-    l2Signer: Signer
+    erc20L1Address: string
   }) {
-    const estimatedL1Gas = await gasEstimator.erc20WithdrawalL1Gas(l2.provider)
+    const estimatedL1Gas = BigNumber.from(160_000)
 
-    const estimatedL2Gas = await gasEstimator.erc20WithdrawalL2Gas({
-      l2Signer,
+    const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
+      amount,
+      destinationAddress: walletAddress,
       erc20l1Address: erc20L1Address,
-      amount
+      from: walletAddress
     })
+
+    const estimatedL2Gas = await l2.provider.estimateGas(
+      withdrawalRequest.txRequest
+    )
 
     return { estimatedL1Gas, estimatedL2Gas }
   }
@@ -1081,11 +1039,7 @@ export const useArbTokenBridge = (
 
     const { tokenAddress, value } = event
 
-    const messageWriter = L2ToL1Message.fromEvent(
-      l1Signer,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
 
     const res = await messageWriter.execute(l2.provider)
 
@@ -1139,11 +1093,7 @@ export const useArbTokenBridge = (
 
     const { value } = event
 
-    const messageWriter = L2ToL1Message.fromEvent(
-      l1Signer,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
 
     const res = await messageWriter.execute(l2.provider)
 
@@ -1284,11 +1234,7 @@ export const useArbTokenBridge = (
       return event
     }
 
-    const messageReader = L2ToL1MessageReader.fromEvent(
-      l1.provider,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageReader = L2ToL1MessageReader.fromEvent(l1.provider, event)
 
     try {
       const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
@@ -1413,27 +1359,12 @@ export const useArbTokenBridge = (
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
-  async function getOutboxAddress(event: L2ToL1EventResult) {
-    if (isClassicEvent(event)) {
-      const batchNumber = (event as any).batchNumber as BigNumber
-      const classicL2Network = await getClassicL2Network(l2.provider)
-
-      return getClassicOutboxAddress(classicL2Network, batchNumber.toNumber())
-    }
-
-    return l2.network.ethBridge.outbox
-  }
-
   async function getOutgoingMessageState(event: L2ToL1EventResult) {
     if (executedMessagesCache[getExecutedMessagesCacheKey(event)]) {
       return OutgoingMessageState.EXECUTED
     }
 
-    const messageReader = new L2ToL1MessageReader(
-      l1.provider,
-      event,
-      await getOutboxAddress(event)
-    )
+    const messageReader = new L2ToL1MessageReader(l1.provider, event)
 
     try {
       const status = await messageReader.status(l2.provider)
