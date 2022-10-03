@@ -1,13 +1,8 @@
 import { useMemo } from 'react'
-import { BigNumber, providers } from 'ethers'
+import { providers } from 'ethers'
 import useSWR from 'swr'
 
 import { useChainId } from './useChainId'
-import { useBalanceContext } from '../context/balanceContext'
-
-const defaultBalance = {
-  eth: null
-}
 
 const useBalance = ({
   provider,
@@ -17,10 +12,6 @@ const useBalance = ({
   walletAddress: string | undefined
 }) => {
   const chainId = useChainId({ provider })
-  const [balances, setBalances] = useBalanceContext()
-
-  let safeBalance: { eth: BigNumber | null } = defaultBalance
-
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),
     [walletAddress]
@@ -35,26 +26,12 @@ const useBalance = ({
       return null
     }
 
-    return ['ethBalance', chainId, walletAddressLowercased]
+    return [chainId, walletAddressLowercased, 'ethBalance']
   }, [chainId, walletAddressLowercased])
 
-  if (
-    typeof walletAddressLowercased !== 'undefined' &&
-    typeof chainId !== 'undefined'
-  ) {
-    safeBalance = balances[walletAddressLowercased]?.[chainId] ?? defaultBalance
-  }
-
-  const { mutate } = useSWR(
+  const { data: dataEth = null, mutate: mutateEth } = useSWR(
     queryKey,
-    async (_, _chainId: number, _walletAddress: string) => {
-      setBalances({
-        walletAddress: _walletAddress,
-        chainId: _chainId,
-        type: 'eth',
-        balance: await provider.getBalance(_walletAddress)
-      })
-    },
+    (_, _walletAddress: string) => provider.getBalance(_walletAddress),
     {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
@@ -64,7 +41,7 @@ const useBalance = ({
   )
 
   return {
-    eth: [safeBalance.eth, mutate] as const
+    eth: [dataEth, mutateEth] as const
   }
 }
 
