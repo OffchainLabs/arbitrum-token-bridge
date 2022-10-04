@@ -5,7 +5,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
-import { PW_LOADED_INDENTIFIER } from '../../src/constants'
 
 export type NetworkType = 'L1' | 'L2'
 
@@ -72,13 +71,9 @@ export const setupMetamaskNetwork = (
   }
 }
 
-export const startWebApp = skipBackgroundSetup => {
+export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit(`/`, {
-    onBeforeLoad(win) {
-      cy.stub(win.console, 'log').as('consoleLog')
-    }
-  })
+  cy.visit(`/`)
 
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()
@@ -86,10 +81,5 @@ export const startWebApp = skipBackgroundSetup => {
   cy.findByText('Connect to your MetaMask Wallet').click()
   cy.acceptMetamaskAccess().then(() => {
     cy.switchToCypressWindow().should('be.true')
-
-    // make sure all the pending rpc calls to launch app are loaded first
-    if (!skipBackgroundSetup) {
-      cy.get('@consoleLog').should('be.calledWith', PW_LOADED_INDENTIFIER)
-    }
   })
 }
