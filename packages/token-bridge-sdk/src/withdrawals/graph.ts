@@ -1,9 +1,37 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
-const rinkebyL2SubgraphClient = new ApolloClient({
-  uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-rinkeby',
-  cache: new InMemoryCache()
-})
+const L2SubgraphClient = {
+  ArbitrumOne: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-arb1',
+    cache: new InMemoryCache()
+  }),
+  ArbitrumRinkeby: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-rinkeby',
+    cache: new InMemoryCache()
+  }),
+  ArbitrumGoerli: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-goerli',
+    cache: new InMemoryCache()
+  })
+}
+
+export function getL2SubgraphClient(l2NetworkId: number) {
+  switch (l2NetworkId) {
+    case 42161:
+      return L2SubgraphClient.ArbitrumOne
+
+    case 421611:
+      return L2SubgraphClient.ArbitrumRinkeby
+
+    case 421613:
+      return L2SubgraphClient.ArbitrumGoerli
+
+    default:
+      throw new Error(
+        `[getL2SubgraphClient] Unsupported network: ${l2NetworkId}`
+      )
+  }
+}
 
 // TODO: Codegen types
 type FetchL2BlockNumberFromSubgraphQueryResult = {
@@ -33,16 +61,4 @@ export async function fetchL2BlockNumberFromSubgraph(
     })
 
   return queryResult.data._meta.block.number
-}
-
-export function getL2SubgraphClient(l2NetworkId: number) {
-  switch (l2NetworkId) {
-    case 421611:
-      return rinkebyL2SubgraphClient
-
-    default:
-      throw new Error(
-        `[getL2SubgraphClient] Unsupported network: ${l2NetworkId}`
-      )
-  }
 }
