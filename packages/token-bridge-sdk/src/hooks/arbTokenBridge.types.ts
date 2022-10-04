@@ -25,6 +25,7 @@ import {
   L2ContractTransaction,
   L2TransactionReceipt
 } from '@arbitrum/sdk/dist/lib/message/L2Transaction'
+import { TokenBridgeParams } from 'index'
 
 import {
   FailedTransaction,
@@ -248,8 +249,14 @@ export interface ArbTokenBridgeToken {
     id: string
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
-  getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
-  getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
+  getL1TokenData: (
+    erc20L1Address: string,
+    params: TokenBridgeParams
+  ) => Promise<L1TokenData>
+  getL2TokenData: (
+    erc20L2Address: string,
+    params: TokenBridgeParams
+  ) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
   getL2GatewayAddress: (erc20L1Address: string) => Promise<string>

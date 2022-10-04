@@ -22,7 +22,6 @@ import {
   getOutboxAddr as getClassicOutboxAddress
 } from '@arbitrum/sdk/dist/lib/utils/migration_types'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { getL2Network as getClassicL2Network } from '@arbitrum/sdk-classic/dist/lib/dataEntities/networks'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
@@ -39,7 +38,6 @@ import {
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
   TokenType,
-  L1TokenData,
   L2TokenData,
   OutgoingMessageState,
   WithdrawalInitiated,
@@ -59,6 +57,7 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { getL1TokenData, getL2TokenData } from '../util'
 
 const { Zero } = constants
 
@@ -74,24 +73,6 @@ class TokenDisabledError extends Error {
     super(msg)
     this.name = 'TokenDisabledError'
   }
-}
-
-function getDefaultTokenName(address: string) {
-  const lowercased = address.toLowerCase()
-  return (
-    lowercased.substring(0, 5) +
-    '...' +
-    lowercased.substring(lowercased.length - 3)
-  )
-}
-
-function getDefaultTokenSymbol(address: string) {
-  const lowercased = address.toLowerCase()
-  return (
-    lowercased.substring(0, 5) +
-    '...' +
-    lowercased.substring(lowercased.length - 3)
-  )
 }
 
 export interface TokenBridgeParams {
@@ -189,113 +170,6 @@ export const useArbTokenBridge = (
     () => new DepositWithdrawEstimator(l2.network),
     [l2.network]
   )
-
-  /**
-   * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
-   * @param erc20L1Address
-   * @returns
-   */
-  async function getL1TokenData(
-    erc20L1Address: string,
-    throwOnInvalidERC20 = true
-  ): Promise<L1TokenData> {
-    type GetL1TokenDataOverrides = {
-      params: { name?: true; symbol?: true }
-      result: { name?: string; symbol?: string }
-    }
-
-    function getOverrides(): GetL1TokenDataOverrides {
-      const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
-
-      const overrides: {
-        [erc20L1Address: string]: GetL1TokenDataOverrides
-      } = {
-        '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': {
-          // Don't query for name & symbol
-          params: {},
-          result: { name: 'Maker', symbol: 'MKR' }
-        }
-      }
-
-      if (typeof overrides[erc20L1AddressLowercased] !== 'undefined') {
-        return overrides[erc20L1AddressLowercased]
-      }
-
-      return {
-        // By default query for name & symbol
-        params: { name: true, symbol: true },
-        result: {}
-      }
-    }
-
-    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-      erc20L1Address,
-      l1.provider
-    )
-
-    const overrides = getOverrides()
-    const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
-
-    const multiCaller = await MultiCaller.fromProvider(l1.provider)
-    const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
-      balanceOf: { account: walletAddress },
-      allowance: { owner: walletAddress, spender: l1GatewayAddress },
-      decimals: true,
-      ...overrides.params
-    })
-
-    if (typeof tokenData.balance === 'undefined') {
-      if (throwOnInvalidERC20)
-        throw new Error(
-          `getL1TokenData: No balance method available for ${erc20L1Address}`
-        )
-    }
-
-    if (typeof tokenData.allowance === 'undefined') {
-      if (throwOnInvalidERC20)
-        throw new Error(
-          `getL1TokenData: No allowance method available for ${erc20L1Address}`
-        )
-    }
-
-    return {
-      name: tokenData.name || getDefaultTokenName(erc20L1Address),
-      symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
-      balance: tokenData.balance || BigNumber.from(0),
-      allowance: tokenData.allowance || BigNumber.from(0),
-      decimals: tokenData.decimals || 0,
-      ...overrides.result,
-      contract
-    }
-  }
-
-  /**
-   * Retrieves data about an ERC-20 token using its L2 address. Throws if fails to retrieve balance.
-   * @param erc20L2Address
-   * @returns
-   */
-  async function getL2TokenData(erc20L2Address: string): Promise<L2TokenData> {
-    const contract = StandardArbERC20__factory.connect(
-      erc20L2Address,
-      l2.provider
-    )
-
-    const multiCaller = await MultiCaller.fromProvider(l2.provider)
-    const [tokenData] = await multiCaller.getTokenData([erc20L2Address], {
-      balanceOf: { account: walletAddress }
-    })
-
-    if (typeof tokenData.balance === 'undefined') {
-      throw new Error(
-        `getL2TokenData: No balance method available for ${erc20L2Address}`
-      )
-    }
-
-    return {
-      balance: tokenData.balance,
-      contract
-    }
-  }
 
   async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
     return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider)
@@ -515,7 +389,7 @@ export const useArbTokenBridge = (
       l1Signer
     })
 
-    const tokenData = await getL1TokenData(erc20L1Address)
+    const tokenData = await getL1TokenData(erc20L1Address, params)
 
     addTransaction({
       type: 'approve',
@@ -565,7 +439,7 @@ export const useArbTokenBridge = (
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const tokenData = await getL1TokenData(erc20L1Address)
+    const tokenData = await getL1TokenData(erc20L1Address, params)
 
     addTransaction({
       type: 'approve-l2',
@@ -596,7 +470,7 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
   }) {
-    const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+    const { symbol, decimals } = await getL1TokenData(erc20L1Address, params)
 
     const tx = await erc20Bridger.deposit({
       l1Signer,
@@ -686,7 +560,7 @@ export const useArbTokenBridge = (
         const { symbol, decimals } = bridgeToken
         return { symbol, decimals }
       }
-      const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+      const { symbol, decimals } = await getL1TokenData(erc20L1Address, params)
       addToken(erc20L1Address)
       return { symbol, decimals }
     })()
@@ -910,13 +784,16 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const { name, symbol, balance, decimals } = await getL1TokenData(l1Address)
+    const { name, symbol, balance, decimals } = await getL1TokenData(
+      l1Address,
+      params
+    )
 
     l1TokenBalance = balance
 
     try {
       // check if token is deployed at l2 address; if not this will throw
-      const { balance } = await getL2TokenData(l2Address)
+      const { balance } = await getL2TokenData(l2Address, params)
       l2TokenBalance = balance
     } catch (error) {
       console.info(`no L2 token for ${l1Address} (which is fine)`)
@@ -983,9 +860,9 @@ export const useArbTokenBridge = (
         return
       }
       const { l2Address } = bridgeToken
-      const l1Data = await getL1TokenData(l1Address)
+      const l1Data = await getL1TokenData(l1Address, params)
       const l2Data =
-        (l2Address && (await getL2TokenData(l2Address))) || undefined
+        (l2Address && (await getL2TokenData(l2Address, params))) || undefined
       const erc20TokenBalance: BridgeBalance = {
         balance: l1Data.balance,
         arbChainBalance: l2Data?.balance || Zero
@@ -1089,7 +966,10 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
-    const { symbol, decimals } = await getL1TokenData(tokenAddress as string)
+    const { symbol, decimals } = await getL1TokenData(
+      tokenAddress as string,
+      params
+    )
 
     addTransaction({
       status: 'pending',
@@ -1188,7 +1068,7 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { symbol } = await getL1TokenData(l1Address, false)
+      const { symbol } = await getL1TokenData(l1Address, params, false)
       addressToSymbol[l1Address] = symbol
       return symbol
     } catch (err) {
@@ -1205,7 +1085,7 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { decimals } = await getL1TokenData(l1Address, false)
+      const { decimals } = await getL1TokenData(l1Address, params, false)
       addressToDecimals[l1Address] = decimals
       return decimals
     } catch (err) {
