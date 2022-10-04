@@ -30,8 +30,7 @@ import {
 import {
   FailedTransaction,
   NewTransaction,
-  Transaction,
-  L1ToL2MessageData
+  Transaction
 } from './useTransactions'
 
 export { OutgoingMessageState }
@@ -53,39 +52,58 @@ export enum TokenSymbol {
 
 export type EthDepositTransactionLifecycle = {
   onL1TxSubmit: ({ tx }: { tx: L1EthDepositTransaction }) => void
-  onL1TxConfirm: ({
+  onL1TxSuccess: ({
     tx,
     txReceipt,
-    ethDepositMessage
+    retryableCreationTxID
   }: {
     tx: L1EthDepositTransaction
     txReceipt: L1EthDepositTransactionReceipt
-    ethDepositMessage: EthDepositMessage
+    retryableCreationTxID: string
+  }) => void
+  onL1TxFailure: ({
+    tx,
+    txReceipt,
+    retryableCreationTxID
+  }: {
+    tx: L1EthDepositTransaction
+    txReceipt: L1EthDepositTransactionReceipt
+    retryableCreationTxID: string
   }) => void
 }
 
 export type TokenDepositTransactionLifecycle = {
-  onL1TxSubmit: ({
-    tx,
-    symbol
-  }: {
-    tx: L1ContractCallTransaction
-    symbol: string
-  }) => void
-  onL1TxConfirm: ({
+  onL1TxSubmit: ({ tx }: { tx: L1ContractCallTransaction }) => void
+  onL1TxSuccess: ({
     tx,
     txReceipt,
-    l1Tol2Message
+    retryableCreationTxID
   }: {
     tx: L1ContractCallTransaction
     txReceipt: L1ContractCallTransactionReceipt
-    l1Tol2Message: IL1ToL2MessageReader
+    retryableCreationTxID: string
+  }) => void
+  onL1TxFailure: ({
+    tx,
+    txReceipt,
+    retryableCreationTxID
+  }: {
+    tx: L1ContractCallTransaction
+    txReceipt: L1ContractCallTransactionReceipt
+    retryableCreationTxID: string
   }) => void
 }
 
 export type EthWithdrawTransactionLifecycle = {
   onL2TxSubmit: ({ tx }: { tx: L2ContractTransaction }) => void
-  onL2TxConfirm: ({
+  onL2TxSuccess: ({
+    tx,
+    txReceipt
+  }: {
+    tx: L2ContractTransaction
+    txReceipt: L2TransactionReceipt
+  }) => void
+  onL2TxFailure: ({
     tx,
     txReceipt
   }: {
@@ -95,14 +113,15 @@ export type EthWithdrawTransactionLifecycle = {
 }
 
 export type TokenWithdrawTransactionLifecycle = {
-  onL2TxSubmit: ({
+  onL2TxSubmit: ({ tx }: { tx: L2ContractTransaction }) => void
+  onL2TxSuccess: ({
     tx,
-    symbol
+    txReceipt
   }: {
     tx: L2ContractTransaction
-    symbol: string
+    txReceipt: L2TransactionReceipt
   }) => void
-  onL2TxConfirm: ({
+  onL2TxFailure: ({
     tx,
     txReceipt
   }: {
@@ -116,14 +135,15 @@ export type TokenWithdrawTransactionLifecycle = {
  * so the method names are not layer-specific
  */
 export type TokenContractTransactionLifecycle = {
-  onTxSubmit: ({
+  onTxSubmit: ({ tx }: { tx: ContractTransaction }) => void
+  onTxSuccess: ({
     tx,
-    symbol
+    txReceipt
   }: {
     tx: ContractTransaction
-    symbol: string
+    txReceipt: ContractReceipt
   }) => void
-  onTxConfirm: ({
+  onTxFailure: ({
     tx,
     txReceipt
   }: {
@@ -277,7 +297,7 @@ export interface ArbTokenBridgeEth {
   deposit: (params: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle: EthDepositTransactionLifecycle
+    txLifecycle?: EthDepositTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     amount: BigNumber
@@ -285,13 +305,13 @@ export interface ArbTokenBridgeEth {
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle: EthWithdrawTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
+    txLifecycle?: EthWithdrawTransactionLifecycle | undefined
+  }) => Promise<ContractReceipt | void>
   withdrawEstimateGas: (params: { amount: BigNumber }) => Promise<GasEstimates>
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
-    txLifecycle: TriggerOutboxTransactionLifecycle
+    txLifecycle?: TriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
 }
 
@@ -309,19 +329,19 @@ export interface ArbTokenBridgeToken {
   approve: (params: {
     erc20L1Address: string
     l1Signer: Signer
-    txLifecycle: TokenContractTransactionLifecycle
+    txLifecycle?: TokenContractTransactionLifecycle
   }) => Promise<void>
   approveEstimateGas: (params: { erc20L1Address: string }) => Promise<BigNumber>
   approveL2: (params: {
     erc20L1Address: string
     l2Signer: Signer
-    txLifecycle: TokenContractTransactionLifecycle
+    txLifecycle?: TokenContractTransactionLifecycle
   }) => Promise<void>
   deposit: (params: {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle: TokenDepositTransactionLifecycle
+    txLifecycle?: TokenDepositTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     erc20L1Address: string
@@ -331,7 +351,7 @@ export interface ArbTokenBridgeToken {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle: TokenWithdrawTransactionLifecycle
+    txLifecycle?: TokenWithdrawTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     amount: BigNumber
@@ -340,7 +360,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
-    txLifecycle: TokenTriggerOutboxTransactionLifecycle
+    txLifecycle?: TokenTriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
@@ -362,7 +382,7 @@ export interface TransactionActions {
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: L1ToL2MessageData
+    retryableCreationTxID?: string
   ) => void
   fetchAndUpdateL1ToL2MsgStatus: (
     txID: string,

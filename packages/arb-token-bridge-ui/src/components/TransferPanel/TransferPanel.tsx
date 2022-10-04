@@ -365,7 +365,7 @@ export function TransferPanel() {
           return alert('Network connection issue; contact support')
         }
         if (selectedToken) {
-          const { decimals } = selectedToken
+          const { symbol, decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
           // check that a registration is not currently in progress
@@ -400,7 +400,7 @@ export function TransferPanel() {
               erc20L1Address: selectedToken.address,
               l1Signer: latestNetworksAndSigners.current.l1.signer,
               txLifecycle: {
-                onTxSubmit: ({ tx, symbol }) => {
+                onTxSubmit: ({ tx }) => {
                   transactions.addTransaction({
                     type: 'approve',
                     status: 'pending',
@@ -412,7 +412,12 @@ export function TransferPanel() {
                     l1NetworkID
                   })
                 },
-                onTxConfirm: ({ tx, txReceipt }) => {
+                onTxSuccess: ({ tx, txReceipt }) => {
+                  transactions.setTransactionSuccess(tx.hash)
+                  transactions.updateTransaction(txReceipt, tx)
+                },
+                onTxFailure: ({ tx, txReceipt }) => {
+                  transactions.setTransactionFailure(tx.hash)
                   transactions.updateTransaction(txReceipt, tx)
                 }
               }
@@ -433,7 +438,7 @@ export function TransferPanel() {
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
-              onL1TxSubmit: ({ tx, symbol }) => {
+              onL1TxSubmit: ({ tx }) => {
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
@@ -451,14 +456,21 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL1TxConfirm: ({ tx, txReceipt, l1Tol2Message }) => {
-                const l1ToL2MsgData: L1ToL2MessageData = {
-                  fetchingUpdate: false,
-                  status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
-                  retryableCreationTxID: l1Tol2Message.retryableCreationId,
-                  l2TxID: undefined
-                }
-                transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
+              onL1TxSuccess: ({ tx, txReceipt, retryableCreationTxID }) => {
+                transactions.setTransactionSuccess(tx.hash)
+                transactions.updateTransaction(
+                  txReceipt,
+                  tx,
+                  retryableCreationTxID
+                )
+              },
+              onL1TxFailure: ({ tx, txReceipt, retryableCreationTxID }) => {
+                transactions.setTransactionFailure(tx.hash)
+                transactions.updateTransaction(
+                  txReceipt,
+                  tx,
+                  retryableCreationTxID
+                )
               }
             }
           })
@@ -486,14 +498,21 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL1TxConfirm: ({ tx, txReceipt, ethDepositMessage }) => {
-                const l1ToL2MsgData: L1ToL2MessageData = {
-                  fetchingUpdate: false,
-                  status: L1ToL2MessageStatus.NOT_YET_CREATED,
-                  retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-                  l2TxID: undefined
-                }
-                transactions.updateTransaction(txReceipt, tx, l1ToL2MsgData)
+              onL1TxSuccess: ({ tx, txReceipt, retryableCreationTxID }) => {
+                transactions.setTransactionSuccess(tx.hash)
+                transactions.updateTransaction(
+                  txReceipt,
+                  tx,
+                  retryableCreationTxID
+                )
+              },
+              onL1TxFailure: ({ tx, txReceipt, retryableCreationTxID }) => {
+                transactions.setTransactionFailure(tx.hash)
+                transactions.updateTransaction(
+                  txReceipt,
+                  tx,
+                  retryableCreationTxID
+                )
               }
             }
           })
@@ -531,7 +550,7 @@ export function TransferPanel() {
         }
 
         if (selectedToken) {
-          const { decimals } = selectedToken
+          const { symbol, decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
           if (
@@ -551,7 +570,7 @@ export function TransferPanel() {
                 erc20L1Address: selectedToken.address,
                 l2Signer: latestNetworksAndSigners.current.l2.signer,
                 txLifecycle: {
-                  onTxSubmit: ({ tx, symbol }) => {
+                  onTxSubmit: ({ tx }) => {
                     transactions.addTransaction({
                       type: 'approve-l2',
                       status: 'pending',
@@ -565,7 +584,12 @@ export function TransferPanel() {
                       l2NetworkID
                     })
                   },
-                  onTxConfirm: ({ tx, txReceipt }) => {
+                  onTxSuccess: ({ tx, txReceipt }) => {
+                    transactions.setTransactionSuccess(tx.hash)
+                    transactions.updateTransaction(txReceipt, tx)
+                  },
+                  onTxFailure: ({ tx, txReceipt }) => {
+                    transactions.setTransactionFailure(tx.hash)
                     transactions.updateTransaction(txReceipt, tx)
                   }
                 }
@@ -578,7 +602,7 @@ export function TransferPanel() {
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
-              onL2TxSubmit: ({ tx, symbol }) => {
+              onL2TxSubmit: ({ tx }) => {
                 transactions.addTransaction({
                   type: 'withdraw',
                   status: 'pending',
@@ -596,7 +620,12 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL2TxConfirm: ({ tx, txReceipt }) => {
+              onL2TxSuccess: ({ tx, txReceipt }) => {
+                transactions.setTransactionSuccess(tx.hash)
+                transactions.updateTransaction(txReceipt, tx)
+              },
+              onL2TxFailure: ({ tx, txReceipt }) => {
+                transactions.setTransactionFailure(tx.hash)
                 transactions.updateTransaction(txReceipt, tx)
               }
             }
@@ -626,7 +655,12 @@ export function TransferPanel() {
                   payload: false
                 })
               },
-              onL2TxConfirm: ({ tx, txReceipt }) => {
+              onL2TxSuccess: ({ tx, txReceipt }) => {
+                transactions.setTransactionSuccess(tx.hash)
+                transactions.updateTransaction(txReceipt, tx)
+              },
+              onL2TxFailure: ({ tx, txReceipt }) => {
+                transactions.setTransactionFailure(tx.hash)
                 transactions.updateTransaction(txReceipt, tx)
               }
             }

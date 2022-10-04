@@ -443,25 +443,15 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const updateTransaction = (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: L1ToL2MessageData
+    retryableCreationTxID?: string
   ) => {
     if (!txReceipt.transactionHash) {
       return console.warn(
         '*** TransactionHash not included in transaction receipt (???) *** '
       )
     }
-    switch (txReceipt.status) {
-      case 0: {
-        setTransactionFailure(txReceipt.transactionHash)
-        break
-      }
-      case 1: {
-        setTransactionSuccess(txReceipt.transactionHash)
-        break
-      }
-      default:
-        console.warn('*** Status not included in transaction receipt *** ')
-        break
+    if (typeof txReceipt.status === 'undefined') {
+      console.warn('*** Status not included in transaction receipt *** ')
     }
     console.log('TX for update', tx)
     if (tx?.blockNumber) {
@@ -470,8 +460,13 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     if (tx) {
       setResolvedTimestamp(txReceipt.transactionHash, new Date().toISOString())
     }
-    if (l1ToL2MsgData) {
-      updateTxnL1ToL2MsgData(txReceipt.transactionHash, l1ToL2MsgData)
+    if (retryableCreationTxID) {
+      updateTxnL1ToL2MsgData(txReceipt.transactionHash, {
+        fetchingUpdate: false,
+        status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
+        retryableCreationTxID,
+        l2TxID: undefined
+      })
     }
   }
 
