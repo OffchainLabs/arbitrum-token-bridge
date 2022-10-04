@@ -53,6 +53,7 @@ import {
 } from '../withdrawals/fetchTokenWithdrawalsFromSubgraph'
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
+import { isClassicEvent } from '../util'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { fetchL2BlockNumberFromSubgraph } from '../withdrawals/graph'
 
@@ -94,11 +95,6 @@ export interface TokenBridgeParams {
   walletAddress: string
   l1: { provider: JsonRpcProvider; network: L1Network }
   l2: { provider: JsonRpcProvider; network: L2Network }
-}
-
-function isClassicEvent(event: L2ToL1EventResult) {
-  // Using `batchNumber` as it's neither present in results from the event logs nor the subgraph
-  return typeof (event as any).batchNumber !== 'undefined'
 }
 
 export const useArbTokenBridge = (
@@ -172,9 +168,6 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
-
-  const isArbitrumOne = l2.network.chainID === 42161
-  const isArbitrumRinkeby = l2.network.chainID === 421611
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
