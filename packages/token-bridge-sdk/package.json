@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.10",
-    "@arbitrum/sdk": "2.0.14",
+    "@arbitrum/sdk": "3.0.0",
     "@rehooks/local-storage": "^2.3.0",
     "@uniswap/token-lists": "^1.0.0-beta.27",
     "ajv": "^8.6.3",
@@ -41,6 +41,7 @@
     "extends": "react-app"
   },
   "devDependencies": {
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^27.4.1",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.19",
