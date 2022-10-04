@@ -97,6 +97,7 @@ export interface TokenBridgeParams {
 }
 
 function isClassicEvent(event: L2ToL1EventResult) {
+  // Using `batchNumber` as it's neither present in results from the event logs nor the subgraph
   return typeof (event as any).batchNumber !== 'undefined'
 }
 
@@ -1377,18 +1378,14 @@ export const useArbTokenBridge = (
   function getExecutedMessagesCacheKey(event: L2ToL1EventResult) {
     const anyEvent = event as any
 
-    // Nitro
-    if (anyEvent.position) {
-      const position = anyEvent.position as BigNumber
-
-      return `${position.toString()},${l2NetworkID}`
+    if (isClassicEvent(event)) {
+      const batchNumber = anyEvent.batchNumber as BigNumber
+      const indexInBatch = anyEvent.indexInBatch as BigNumber
+      return `${batchNumber.toString()},${indexInBatch.toString()},${l2NetworkID}`
     }
 
-    // Classic
-    const batchNumber = anyEvent.batchNumber as BigNumber
-    const indexInBatch = anyEvent.indexInBatch as BigNumber
-
-    return `${batchNumber.toString()},${indexInBatch.toString()},${l1NetworkID}`
+    const position = anyEvent.position as BigNumber
+    return `${position.toString()},${l2NetworkID}`
   }
 
   function addToExecutedMessagesCache(event: L2ToL1EventResult) {

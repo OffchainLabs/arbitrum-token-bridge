@@ -49,6 +49,7 @@ export async function fetchETHWithdrawalsFromSubgraph({
         l1BlockNum
         l2Timestamp
         l1Callvalue
+        isClassic
       }
     }`
   })
@@ -59,19 +60,23 @@ export async function fetchETHWithdrawalsFromSubgraph({
       l2TxHash,
       l2From,
       l1To,
-      batchNumber: optionalBatchNumber,
-      indexInBatch,
+      batchNumber: maybeBatchNumber,
+      indexInBatch: stringifiedIndexInBatch,
       l2BlockNum,
       l1BlockNum,
       l2Timestamp,
       l1Callvalue,
-      l1Calldata
+      l1Calldata,
+      isClassic
     } = eventData
 
-    const batchNumber =
-      optionalBatchNumber !== null
-        ? BigNumber.from(optionalBatchNumber)
-        : undefined
+    const batchNumber = isClassic ? BigNumber.from(maybeBatchNumber) : undefined
+    const indexInBatch = BigNumber.from(stringifiedIndexInBatch)
+
+    // `position` is in the `indexInBatch` property for Nitro
+    //
+    // https://github.com/OffchainLabs/arbitrum-subgraphs/blob/nitro-support/packages/layer2-token-gateway/schema.graphql#L121
+    const position = isClassic ? undefined : indexInBatch
 
     return {
       uniqueId: BigNumber.from(uniqueId),
@@ -79,7 +84,8 @@ export async function fetchETHWithdrawalsFromSubgraph({
       caller: l2From,
       destination: l1To,
       batchNumber,
-      indexInBatch: BigNumber.from(indexInBatch),
+      indexInBatch,
+      position,
       arbBlockNum: BigNumber.from(l2BlockNum),
       ethBlockNum: BigNumber.from(l1BlockNum),
       timestamp: l2Timestamp,
