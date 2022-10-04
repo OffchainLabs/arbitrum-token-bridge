@@ -7,9 +7,6 @@ import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
-import { QueryParamProvider } from 'use-query-params'
-import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
-import { parse, stringify } from 'query-string'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -57,6 +54,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { ArbQueryParamProvider } from './ArbQueryParamProvider'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -353,15 +351,7 @@ function Routes() {
 
   return (
     <Router>
-      <QueryParamProvider
-        adapter={ReactRouter5Adapter}
-        options={{
-          searchStringToObject: parse,
-          objectToSearchString: stringify,
-          updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
-          removeDefaultsFromUrl: true
-        }}
-      >
+      <ArbQueryParamProvider>
         <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
         <Switch>
           <Route path="/tos" exact>
@@ -390,7 +380,7 @@ function Routes() {
             </div>
           </Route>
         </Switch>
-      </QueryParamProvider>
+      </ArbQueryParamProvider>
     </Router>
   )
 }

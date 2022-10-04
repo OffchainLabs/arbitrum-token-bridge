@@ -21,6 +21,10 @@ import {
   withDefault
 } from 'use-query-params'
 
+export enum AmountQueryParamEnum {
+  MAX = 'max'
+}
+
 export const useArbQueryParams = () => {
   /*
   returns [ 
@@ -40,19 +44,19 @@ export const useArbQueryParams = () => {
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 const AmountQueryParam = {
-  encode: (amount: number | string | null | undefined) => {
-    if (typeof amount === 'number') return amount.toString()
-    return amount
-  },
-  decode: (amountStr: string | (string | null)[] | null | undefined) => {
-    if (
-      !amountStr ||
-      (isNaN(Number(amountStr)) &&
-        amountStr.toString().toLowerCase() !== 'max') ||
-      typeof amountStr === 'object'
-    ) {
+  // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
+  encode: (amount: string | null | undefined) => amount,
+  decode: (amount: string | (string | null)[] | null | undefined) => {
+    const amountStr = amount?.toString()
+
+    // to catch random string like `amount=asdf` from the URL
+    if (isNaN(Number(amountStr))) {
+      if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
+        return amountStr
+      }
       return ''
     }
-    return amountStr
+
+    return amountStr ?? ''
   }
 }

@@ -16,7 +16,10 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -351,7 +354,7 @@ export function TransferPanelMain({
   useEffect(() => {
     setQueryParams({ amount })
 
-    if (amount.toLowerCase() === 'max') {
+    if (amount.toLowerCase() === AmountQueryParamEnum.MAX) {
       setMaxAmount()
     }
   }, [amount, setMaxAmount, setQueryParams])
