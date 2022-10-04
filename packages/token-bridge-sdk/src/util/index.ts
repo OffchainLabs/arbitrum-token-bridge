@@ -34,13 +34,13 @@ export async function getL1TokenData(
   params: TokenBridgeParams,
   throwOnInvalidERC20 = true
 ): Promise<L1TokenData> {
-  type GetL1TokenDataOverrides = {
-    params: { name?: true; symbol?: true }
-    result: { name?: string; symbol?: string }
-  }
-
   const { l1, l2, walletAddress } = params
   const erc20Bridger = new Erc20Bridger(l2.network)
+
+  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+    erc20L1Address,
+    l1.provider
+  )
 
   function getDefaultTokenName(address: string) {
     const lowercased = address.toLowerCase()
@@ -60,36 +60,6 @@ export async function getL1TokenData(
     )
   }
 
-  function getOverrides(): GetL1TokenDataOverrides {
-    const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
-
-    const overrides: {
-      [erc20L1Address: string]: GetL1TokenDataOverrides
-    } = {
-      '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': {
-        // Don't query for name & symbol
-        params: {},
-        result: { name: 'Maker', symbol: 'MKR' }
-      }
-    }
-
-    if (typeof overrides[erc20L1AddressLowercased] !== 'undefined') {
-      return overrides[erc20L1AddressLowercased]
-    }
-
-    return {
-      // By default query for name & symbol
-      params: { name: true, symbol: true },
-      result: {}
-    }
-  }
-
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-    erc20L1Address,
-    l1.provider
-  )
-
-  const overrides = getOverrides()
   const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
 
   const multiCaller = await MultiCaller.fromProvider(l1.provider)
@@ -97,7 +67,8 @@ export async function getL1TokenData(
     balanceOf: { account: walletAddress },
     allowance: { owner: walletAddress, spender: l1GatewayAddress },
     decimals: true,
-    ...overrides.params
+    name: true,
+    symbol: true
   })
 
   if (typeof tokenData.balance === 'undefined') {
@@ -120,7 +91,6 @@ export async function getL1TokenData(
     balance: tokenData.balance || BigNumber.from(0),
     allowance: tokenData.allowance || BigNumber.from(0),
     decimals: tokenData.decimals || 0,
-    ...overrides.result,
     contract
   }
 }
