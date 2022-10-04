@@ -91,6 +91,25 @@ function getDefaultTokenSymbol(address: string) {
   )
 }
 
+function getExecutedMessagesCacheKey({
+  event,
+  l2ChainId
+}: {
+  event: L2ToL1EventResult
+  l2ChainId: number
+}) {
+  const anyEvent = event as any
+
+  if (isClassicEvent(event)) {
+    const batchNumber = anyEvent.batchNumber as BigNumber
+    const indexInBatch = anyEvent.indexInBatch as BigNumber
+    return `l2ChainId:${l2ChainId}, batchNumber:${batchNumber.toString()}, indexInBatch:${indexInBatch.toString()}`
+  }
+
+  const position = anyEvent.position as BigNumber
+  return `l2ChainId:${l2ChainId}, position:${position.toString()}`
+}
+
 export interface TokenBridgeParams {
   walletAddress: string
   l1: { provider: JsonRpcProvider; network: L1Network }
@@ -146,7 +165,10 @@ export const useArbTokenBridge = (
   }
 
   const [executedMessagesCache, setExecutedMessagesCache] =
-    useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
+    useLocalStorage<ExecutedMessagesCache>(
+      'arbitrum:bridge:executed-messages',
+      {}
+    ) as [
       ExecutedMessagesCache,
       React.Dispatch<ExecutedMessagesCache>,
       React.Dispatch<void>
@@ -1057,7 +1079,7 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache(event)
+        addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
@@ -1109,7 +1131,7 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache(event)
+        addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
@@ -1345,45 +1367,46 @@ export const useArbTokenBridge = (
       pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event
     }
 
+    const executedMessages = l2ToL1Txns.filter(
+      tx => tx.outgoingMessageState === OutgoingMessageState.EXECUTED
+    )
+
+    addToExecutedMessagesCache(executedMessages)
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
   async function getOutgoingMessageState(event: L2ToL1EventResult) {
-    if (executedMessagesCache[getExecutedMessagesCacheKey(event)]) {
+    const cacheKey = getExecutedMessagesCacheKey({
+      event,
+      l2ChainId: l2.network.chainID
+    })
+
+    if (executedMessagesCache[cacheKey]) {
       return OutgoingMessageState.EXECUTED
     }
 
     const messageReader = new L2ToL1MessageReader(l1.provider, event)
 
     try {
-      const status = await messageReader.status(l2.provider)
-
-      if (status === OutgoingMessageState.EXECUTED) {
-        addToExecutedMessagesCache(event)
-      }
-
-      return status
+      return await messageReader.status(l2.provider)
     } catch (error) {
       return OutgoingMessageState.UNCONFIRMED
     }
   }
 
-  function getExecutedMessagesCacheKey(event: L2ToL1EventResult) {
-    const anyEvent = event as any
+  function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
+    const added: { [cacheKey: string]: boolean } = {}
 
-    if (isClassicEvent(event)) {
-      const batchNumber = anyEvent.batchNumber as BigNumber
-      const indexInBatch = anyEvent.indexInBatch as BigNumber
-      return `${batchNumber.toString()},${indexInBatch.toString()},${l2NetworkID}`
-    }
+    events.forEach((event: L2ToL1EventResult) => {
+      const cacheKey = getExecutedMessagesCacheKey({
+        event,
+        l2ChainId: l2.network.chainID
+      })
 
-    const position = anyEvent.position as BigNumber
-    return `${position.toString()},${l2NetworkID}`
-  }
+      added[cacheKey] = true
+    })
 
-  function addToExecutedMessagesCache(event: L2ToL1EventResult) {
-    const cacheKey = getExecutedMessagesCacheKey(event)
-    setExecutedMessagesCache({ ...executedMessagesCache, [cacheKey]: true })
+    setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
   return {
