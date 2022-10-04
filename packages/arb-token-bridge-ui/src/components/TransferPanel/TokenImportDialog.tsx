@@ -42,13 +42,11 @@ export function TokenImportDialog({
 }: TokenImportDialogProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token },
+      arbTokenBridge: { bridgeTokens, token, walletAddress },
       selectedToken
     }
   } = useAppState()
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -102,12 +100,20 @@ export function TokenImportDialog({
       const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return token.getL1TokenData(addressOnL1)
+        return token.getL1TokenData(addressOnL1, {
+          walletAddress,
+          l1,
+          l2
+        })
       } else {
-        return token.getL1TokenData(eitherL1OrL2Address)
+        return token.getL1TokenData(eitherL1OrL2Address, {
+          walletAddress,
+          l1,
+          l2
+        })
       }
     },
-    [token]
+    [l1, l2, walletAddress, token]
   )
 
   const searchForTokenInLists = useCallback(
@@ -330,7 +336,7 @@ export function TokenImportDialog({
           <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
           <span className="mt-0 mb-4">{tokenToImport?.name}</span>
           <a
-            href={`${l1Network?.explorerUrl}/token/${tokenToImport?.address}`}
+            href={`${l1.network?.explorerUrl}/token/${tokenToImport?.address}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}

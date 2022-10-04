@@ -51,7 +51,7 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, getL2TokenData } from '../util'
+import { getL1TokenData, getL2TokenData } from '../util/index'
 
 const { Zero } = constants
 

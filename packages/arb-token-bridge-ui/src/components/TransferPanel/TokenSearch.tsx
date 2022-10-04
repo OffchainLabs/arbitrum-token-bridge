@@ -538,12 +538,13 @@ export function TokenSearch({
 }) {
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens, walletAddress }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
+  const { l1, l2 } = useNetworksAndSigners()
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -566,7 +567,11 @@ export function TokenSearch({
         return
       }
 
-      const data = await token?.getL1TokenData(_token.address)
+      const data = await token?.getL1TokenData(_token.address, {
+        walletAddress,
+        l1,
+        l2
+      })
 
       if (data) {
         token.updateTokenData(_token.address)

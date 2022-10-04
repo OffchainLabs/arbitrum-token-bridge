@@ -105,6 +105,8 @@ export function TransferPanel() {
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
+    l1,
+    l2,
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
@@ -378,7 +380,8 @@ export function TransferPanel() {
           }
 
           const { allowance } = await arbTokenBridge.token.getL1TokenData(
-            selectedToken.address
+            selectedToken.address,
+            { l1, l2, walletAddress }
           )
 
           if (!allowance.gte(amountRaw)) {
