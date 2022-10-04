@@ -474,17 +474,36 @@ function ConnectionFallback({
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
       return (
-        <div className="flex w-full justify-center">
-          <span className="py-24 text-2xl font-light text-blue-link text-white">
-            You are on the wrong network.{' '}
-            <ExternalLink
-              href="https://arbitrum.io/bridge-tutorial"
-              className="arb-hover underline"
-            >
-              Read our tutorial
-            </ExternalLink>{' '}
-            on how to switch networks.
-          </span>
+        <div className="flex flex-col items-center space-y-8 py-24 px-12">
+          <div className="flex w-full justify-center">
+            <span className="center py-4 text-center text-3xl font-medium text-white">
+              Oops! You’re connected to the wrong network.
+            </span>
+          </div>
+
+          <Button
+            variant="primary"
+            onClick={() => {}}
+            className={'text-md bg-blue-arbitrum py-3'}
+          >
+            Switch to Arbitrum One
+          </Button>
+
+          <Button
+            variant="primary"
+            onClick={() => {}}
+            className={'text-md bg-brick-dark py-3'}
+          >
+            Switch to Arbitrum Nova
+          </Button>
+
+          <Button
+            variant="primary"
+            onClick={() => {}}
+            className={'text-md bg-blue-arbitrum py-3'}
+          >
+            Switch to Ethereum Mainnet
+          </Button>
         </div>
       )
   }
