@@ -31,7 +31,8 @@ function getCalendarUrl(
 ) {
   const title = `${amount} ${token} Withdrawal from ${networkName}`
 
-  const withdrawalDate = dayjs().add(confirmationHours, 'hour')
+  // Add 1 extra hour to account for remaining minutes
+  const withdrawalDate = dayjs().add(confirmationHours + 1, 'hour')
   // Google event date format: YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS
   const parsedWithdrawalDate = withdrawalDate.format(
     'YYYYMMDD[T]HH[0000%2F]YYYYMMDD[T]HH[0000]'
