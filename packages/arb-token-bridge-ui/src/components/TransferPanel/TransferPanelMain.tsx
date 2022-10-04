@@ -6,8 +6,8 @@ import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
@@ -15,15 +15,14 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { Dialog, useDialog } from '../common/Dialog'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
   calculateEstimatedL2GasFees,
   useIsSwitchingL2Chain,
-  useETHBalances,
   useTokenBalances
 } from './TransferPanelMainUtils'
 
@@ -213,8 +212,21 @@ function ETHBalance({
   on: 'ethereum' | 'arbitrum'
   prefix?: string
 }) {
-  const balances = useETHBalances()
-  const balance = balances[on]
+  const {
+    app: { arbTokenBridge }
+  } = useAppState()
+  const networksAndSigners = useNetworksAndSigners()
+  const { l1, l2 } = networksAndSigners
+  const walletAddress = arbTokenBridge.walletAddress
+
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2.provider, walletAddress })
+
+  const balance = on === 'ethereum' ? ethL1Balance : ethL2Balance
 
   if (!balance) {
     return <StyledLoader />
@@ -291,15 +303,25 @@ export function TransferPanelMain({
 }) {
   const history = useHistory()
   const actions = useActions()
-  const { l1GasPrice, l2GasPrice } = useGasPrice()
+
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+
+  const l1GasPrice = useGasPrice({ provider: l1.provider })
+  const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
+  const { walletAddress } = arbTokenBridge
+
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2.provider, walletAddress })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const ethBalances = useETHBalances()
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
@@ -311,6 +333,8 @@ export function TransferPanelMain({
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
+  const [, setQueryParams] = useArbQueryParams()
+
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum
       ? externalFrom.chainID
@@ -320,17 +344,16 @@ export function TransferPanelMain({
     setTo(externalTo)
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
-    history.replace({
-      pathname: '/',
-      search: `?l2ChainId=${l2ChainId}`
-    })
+    setQueryParams({ l2ChainId })
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
-  const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode
-      ? ethBalances.ethereum
-      : ethBalances.arbitrum
+  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  useEffect(() => {
+    setQueryParams({ amount })
+  }, [amount])
 
+  const maxButtonVisible = useMemo(() => {
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
     const tokenBalance = isDepositMode
       ? tokenBalances.ethereum
       : tokenBalances.arbitrum
@@ -348,7 +371,7 @@ export function TransferPanelMain({
     }
 
     return !ethBalance.isZero()
-  }, [ethBalances, tokenBalances, selectedToken, isDepositMode])
+  }, [ethL1Balance, ethL2Balance, tokenBalances, selectedToken, isDepositMode])
 
   const errorMessageText = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
@@ -406,16 +429,14 @@ export function TransferPanelMain({
   }> {
     if (isDepositMode) {
       const result = await arbTokenBridge.eth.depositEstimateGas({
-        amount: weiValue,
-        l1Signer: l1.signer
+        amount: weiValue
       })
 
       return result
     }
 
     const result = await arbTokenBridge.eth.withdrawEstimateGas({
-      amount: weiValue,
-      l2Signer: l2.signer
+      amount: weiValue
     })
 
     return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
@@ -430,10 +451,7 @@ export function TransferPanelMain({
     const options = getListboxOptionsFromL1Network(l1.network)
 
     function updatePreferredL2Chain(l2ChainId: number) {
-      history.replace({
-        pathname: '/',
-        search: `?l2ChainId=${l2ChainId}`
-      })
+      setQueryParams({ l2ChainId })
     }
 
     if (isDepositMode) {
@@ -510,9 +528,7 @@ export function TransferPanelMain({
   }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
 
   async function setMaxAmount() {
-    const ethBalance = isDepositMode
-      ? ethBalances.ethereum
-      : ethBalances.arbitrum
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
     const tokenBalance = isDepositMode
       ? tokenBalances.ethereum
@@ -611,7 +627,10 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
-        <SwitchNetworksButton onClick={switchNetworks} />
+        <SwitchNetworksButton
+          onClick={switchNetworks}
+          aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
+        />
       </div>
 
       <NetworkContainer network={to}>
