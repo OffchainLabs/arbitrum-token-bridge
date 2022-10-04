@@ -73,7 +73,7 @@ export const setupMetamaskNetwork = (
 
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit(`/`)
+  cy.visit(`/?skipLoadingHistory=1`)
 
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()

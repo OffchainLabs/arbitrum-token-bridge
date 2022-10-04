@@ -75,6 +75,8 @@ const AppContent = (): JSX.Element => {
     app: { connectionState }
   } = useAppState()
 
+  const [{ skipLoadingHistory }] = useArbQueryParams()
+
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
@@ -137,7 +139,7 @@ const AppContent = (): JSX.Element => {
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
-      <PWLoadedUpdater />
+      {!skipLoadingHistory && <PWLoadedUpdater />}
 
       <Notifications />
       <MainContent />
