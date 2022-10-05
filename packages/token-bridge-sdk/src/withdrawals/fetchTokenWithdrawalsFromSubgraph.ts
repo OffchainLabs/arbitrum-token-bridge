@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client'
 import { utils, BigNumber } from 'ethers'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import { L2TransactionReceipt } from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 
@@ -42,17 +42,16 @@ export async function fetchTokenWithdrawalsFromSubgraph({
   address: string
   fromBlock: number
   toBlock: number
-  l2Provider: JsonRpcProvider
+  l2Provider: Provider
 }): Promise<FetchTokenWithdrawalsFromSubgraphResult[]> {
   if (fromBlock === 0 && toBlock === 0) {
     return []
   }
 
-  const l2NetworkId = (await l2Provider.getNetwork()).chainId
+  const l2ChainId = (await l2Provider.getNetwork()).chainId
 
-  const queryResult: QueryResult = await getL2SubgraphClient(l2NetworkId).query(
-    {
-      query: gql`
+  const queryResult: QueryResult = await getL2SubgraphClient(l2ChainId).query({
+    query: gql`
         {
           gatewayWithdrawalDatas(
             where: {
@@ -66,8 +65,7 @@ export async function fetchTokenWithdrawalsFromSubgraph({
           }
         }
       `
-    }
-  )
+  })
 
   const result: FetchTokenWithdrawalsFromSubgraphResult[] = await Promise.all(
     queryResult.data.gatewayWithdrawalDatas.map(async data => {
