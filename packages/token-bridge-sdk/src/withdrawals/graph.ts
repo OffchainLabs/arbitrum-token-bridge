@@ -15,8 +15,8 @@ const L2SubgraphClient = {
   })
 }
 
-export function getL2SubgraphClient(l2NetworkId: number) {
-  switch (l2NetworkId) {
+export function getL2SubgraphClient(l2ChainId: number) {
+  switch (l2ChainId) {
     case 42161:
       return L2SubgraphClient.ArbitrumOne
 
@@ -27,9 +27,7 @@ export function getL2SubgraphClient(l2NetworkId: number) {
       return L2SubgraphClient.ArbitrumGoerli
 
     default:
-      throw new Error(
-        `[getL2SubgraphClient] Unsupported network: ${l2NetworkId}`
-      )
+      throw new Error(`[getL2SubgraphClient] Unsupported network: ${l2ChainId}`)
   }
 }
 
@@ -45,10 +43,10 @@ type FetchL2BlockNumberFromSubgraphQueryResult = {
 }
 
 export async function fetchL2BlockNumberFromSubgraph(
-  l2NetworkId: number
+  l2ChainId: number
 ): Promise<number> {
   const queryResult: FetchL2BlockNumberFromSubgraphQueryResult =
-    await getL2SubgraphClient(l2NetworkId).query({
+    await getL2SubgraphClient(l2ChainId).query({
       query: gql`
         {
           _meta {
