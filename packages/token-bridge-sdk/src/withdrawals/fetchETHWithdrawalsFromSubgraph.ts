@@ -79,7 +79,7 @@ export async function fetchETHWithdrawalsFromSubgraph({
     // `position` is in the `indexInBatch` property for Nitro
     // `hash` is in the `uniqueId` property for Nitro
     //
-    // https://github.com/OffchainLabs/arbitrum-subgraphs/blob/nitro-support/packages/layer2-token-gateway/schema.graphql#L121
+    // https://github.com/OffchainLabs/arbitrum-subgraphs/blob/nitro-support/packages/layer2-token-gateway/schema.graphql#L101
     const position = isClassic ? undefined : BigNumber.from(indexInBatchStr)
     const hash = isClassic ? undefined : BigNumber.from(uniqueIdStr)
 
