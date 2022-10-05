@@ -6,6 +6,7 @@ import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
+import { isL1Network } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
@@ -459,19 +460,32 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          disabled: true,
-          options: [from],
+          options: [l1.network, ...options],
           value: from,
-          onChange: () => {}
+          onChange: async network => {
+            // Selecting the same chain or L1 network
+            if (from.chainID === network.chainID || isL1Network(network)) {
+              return
+            }
+
+            // If L2 selected, change to withdraw mode and set new selections
+            switchNetworks()
+            setFrom(network)
+            setTo(l1.network)
+          }
         },
         to: {
-          disabled: false,
-          options,
+          options: [l1.network, ...options],
           value: to,
           onChange: async network => {
             // Selecting the same chain
             if (to.chainID === network.chainID) {
               return
+            }
+
+            // Switch networks if selecting L1 network
+            if (isL1Network(network)) {
+              return switchNetworks()
             }
 
             if (isConnectedToArbitrum) {
@@ -499,13 +513,17 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled: false,
-        options,
+        options: [l1.network, ...options],
         value: from,
         onChange: async network => {
           // Selecting the same chain
           if (from.chainID === network.chainID) {
             return
+          }
+
+          // Switch networks if selecting L1 network
+          if (isL1Network(network)) {
+            return switchNetworks()
           }
 
           // In withdraw mode we always switch to the L2 network
@@ -521,10 +539,30 @@ export function TransferPanelMain({
         }
       },
       to: {
-        disabled: true,
-        options: [to],
+        options: [l1.network, ...options],
         value: to,
-        onChange: () => {}
+        onChange: async network => {
+          // Selecting the same chain or L1 network
+          if (to.chainID === network.chainID || isL1Network(network)) {
+            return
+          }
+
+          // Destination network is L2, connect to L1
+          try {
+            await app.changeNetwork?.(l1.network)
+            updatePreferredL2Chain(network.chainID)
+          } catch (error: any) {
+            // 4001 - User rejected the request
+            if (error.code !== 4001) {
+              Sentry.captureException(error)
+            }
+          }
+
+          // Change to withdraw mode and set new selections
+          switchNetworks()
+          setFrom(l1.network)
+          setTo(network)
+        }
       }
     }
   }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
