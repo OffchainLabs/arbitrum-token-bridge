@@ -622,7 +622,8 @@ export const useArbTokenBridge = (
     amount: BigNumber
   }) {
     const depositRequest = await erc20Bridger.getDepositRequest({
-      amount,
+      // Setting `amount` to zero so it doesn't fail on not enough allowance
+      amount: BigNumber.from(0),
       from: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
