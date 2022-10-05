@@ -59,7 +59,7 @@ export async function fetchETHWithdrawalsFromSubgraph({
 
   return res.data.l2ToL1Transactions.map((eventData: any) => {
     const {
-      uniqueId,
+      uniqueId: uniqueIdStr,
       l2TxHash,
       l2From,
       l1To,
@@ -77,12 +77,15 @@ export async function fetchETHWithdrawalsFromSubgraph({
     const indexInBatch = isClassic ? BigNumber.from(indexInBatchStr) : undefined
 
     // `position` is in the `indexInBatch` property for Nitro
+    // `hash` is in the `uniqueId` property for Nitro
     //
     // https://github.com/OffchainLabs/arbitrum-subgraphs/blob/nitro-support/packages/layer2-token-gateway/schema.graphql#L121
     const position = isClassic ? undefined : BigNumber.from(indexInBatchStr)
+    const hash = isClassic ? undefined : BigNumber.from(uniqueIdStr)
 
     return {
-      uniqueId: BigNumber.from(uniqueId),
+      uniqueId: BigNumber.from(uniqueIdStr),
+      hash,
       l2TxHash,
       caller: l2From,
       destination: l1To,
@@ -93,7 +96,7 @@ export async function fetchETHWithdrawalsFromSubgraph({
       ethBlockNum: BigNumber.from(l1BlockNum),
       timestamp: l2Timestamp,
       callvalue: BigNumber.from(l1Callvalue),
-      data: l1Calldata
+      data: l1Calldata ?? '0x'
     }
   })
 }
