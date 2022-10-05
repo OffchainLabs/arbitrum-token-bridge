@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Provider } from '@ethersproject/providers'
 
 import { getL2SubgraphClient } from './graph'
 import { L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
@@ -17,18 +18,20 @@ export async function fetchETHWithdrawalsFromSubgraph({
   address,
   fromBlock,
   toBlock,
-  l2NetworkId
+  l2Provider
 }: {
   address: string
   fromBlock: number
   toBlock: number
-  l2NetworkId: number
+  l2Provider: Provider
 }): Promise<(L2ToL1EventResult & { l2TxHash: string })[]> {
   if (fromBlock === 0 && toBlock === 0) {
     return []
   }
 
-  const res = await getL2SubgraphClient(l2NetworkId).query({
+  const l2ChainId = (await l2Provider.getNetwork()).chainId
+
+  const res = await getL2SubgraphClient(l2ChainId).query({
     query: gql`{
       l2ToL1Transactions(
         where: {

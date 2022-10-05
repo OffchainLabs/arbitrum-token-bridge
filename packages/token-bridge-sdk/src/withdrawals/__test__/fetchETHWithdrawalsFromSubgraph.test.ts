@@ -1,4 +1,8 @@
+import { JsonRpcProvider } from '@ethersproject/providers'
+
 import { fetchETHWithdrawalsFromSubgraph } from '../fetchETHWithdrawalsFromSubgraph'
+
+const l2Provider = new JsonRpcProvider('https://rinkeby.arbitrum.io/rpc')
 
 describe('fetchETHWithdrawalsFromSubgraph', () => {
   it('fetches no ETH withdrawals from subgraph pre-nitro', async () => {
@@ -6,7 +10,7 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
       address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
       fromBlock: 0,
       toBlock: 11110000,
-      l2NetworkId: 421611
+      l2Provider
     })
 
     expect(result).toHaveLength(0)
@@ -17,7 +21,7 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
       address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
       fromBlock: 11110000,
       toBlock: 12055296,
-      l2NetworkId: 421611
+      l2Provider
     })
 
     expect(result).toHaveLength(5)
@@ -52,7 +56,7 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
       address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
       fromBlock: 13744993,
       toBlock: 13956985,
-      l2NetworkId: 421611
+      l2Provider
     })
 
     expect(result).toHaveLength(5)

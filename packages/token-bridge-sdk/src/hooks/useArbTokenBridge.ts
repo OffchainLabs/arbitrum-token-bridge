@@ -1312,7 +1312,7 @@ export const useArbTokenBridge = (
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l2NetworkId: l2.network.chainID
+        l2Provider: l2.provider
       }),
       fetchETHWithdrawalsFromEventLogs({
         address: walletAddress,
