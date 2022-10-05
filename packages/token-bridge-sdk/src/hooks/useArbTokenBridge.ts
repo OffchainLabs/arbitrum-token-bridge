@@ -1331,7 +1331,6 @@ export const useArbTokenBridge = (
         address: walletAddress,
         fromBlock: latestSubgraphBlockNumber + 1,
         toBlock: 'latest',
-        l2Network: l2.network,
         l2Provider: l2.provider,
         l2GatewayAddresses: gatewayAddresses
       })
