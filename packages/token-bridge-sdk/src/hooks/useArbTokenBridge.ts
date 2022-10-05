@@ -355,18 +355,18 @@ export const useArbTokenBridge = (
     l2Signer: Signer
     txLifecycle?: WithdrawTransactionLifecycle
   }) => {
-    const tx = await ethBridger.withdraw({
-      amount,
-      l2Signer,
-      destinationAddress: walletAddress,
-      from: walletAddress
-    })
-
-    if (txLifecycle?.onL2TxSubmit) {
-      txLifecycle.onL2TxSubmit({ tx })
-    }
-
     try {
+      const tx = await ethBridger.withdraw({
+        amount,
+        l2Signer,
+        destinationAddress: walletAddress,
+        from: walletAddress
+      })
+
+      if (txLifecycle?.onL2TxSubmit) {
+        txLifecycle.onL2TxSubmit({ tx })
+      }
+
       const txReceipt = await tx.wait()
 
       if (isTxSuccessful(txReceipt)) {
@@ -446,33 +446,37 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: TokenContractTransactionLifecycle
   }) => {
-    const tx = await erc20Bridger.approveToken({
-      erc20L1Address,
-      l1Signer
-    })
+    try {
+      const tx = await erc20Bridger.approveToken({
+        erc20L1Address,
+        l1Signer
+      })
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit({ tx })
-    }
-
-    const txReceipt = await tx.wait()
-
-    if (isTxSuccessful(txReceipt)) {
-      if (txLifecycle?.onTxSuccess) {
-        txLifecycle.onTxSuccess({
-          tx,
-          txReceipt
-        })
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit({ tx })
       }
-    } else {
-      if (txLifecycle?.onTxFailure) {
-        txLifecycle.onTxFailure({
-          tx,
-          txReceipt
-        })
+
+      const txReceipt = await tx.wait()
+
+      if (isTxSuccessful(txReceipt)) {
+        if (txLifecycle?.onTxSuccess) {
+          txLifecycle.onTxSuccess({
+            tx,
+            txReceipt
+          })
+        }
+      } else {
+        if (txLifecycle?.onTxFailure) {
+          txLifecycle.onTxFailure({
+            tx,
+            txReceipt
+          })
+        }
       }
+      updateTokenData(erc20L1Address)
+    } catch (error: any) {
+      return alert(error.message)
     }
-    updateTokenData(erc20L1Address)
   }
 
   const approveTokenEstimateGas = async ({
@@ -501,36 +505,40 @@ export const useArbTokenBridge = (
     l2Signer: Signer
     txLifecycle?: TokenContractTransactionLifecycle
   }) => {
-    const bridgeToken = bridgeTokens[erc20L1Address]
-    if (!bridgeToken) throw new Error('Bridge token not found')
-    const { l2Address } = bridgeToken
-    if (!l2Address) throw new Error('L2 address not found')
-    const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
-    const contract = await ERC20__factory.connect(l2Address, l2Signer)
-    const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
+    try {
+      const bridgeToken = bridgeTokens[erc20L1Address]
+      if (!bridgeToken) throw new Error('Bridge token not found')
+      const { l2Address } = bridgeToken
+      if (!l2Address) throw new Error('L2 address not found')
+      const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
+      const contract = await ERC20__factory.connect(l2Address, l2Signer)
+      const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit({ tx })
-    }
-
-    const txReceipt = await tx.wait()
-
-    if (isTxSuccessful(txReceipt)) {
-      if (txLifecycle?.onTxSuccess) {
-        txLifecycle.onTxSuccess({
-          tx,
-          txReceipt
-        })
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit({ tx })
       }
-    } else {
-      if (txLifecycle?.onTxFailure) {
-        txLifecycle.onTxFailure({
-          tx,
-          txReceipt
-        })
+
+      const txReceipt = await tx.wait()
+
+      if (isTxSuccessful(txReceipt)) {
+        if (txLifecycle?.onTxSuccess) {
+          txLifecycle.onTxSuccess({
+            tx,
+            txReceipt
+          })
+        }
+      } else {
+        if (txLifecycle?.onTxFailure) {
+          txLifecycle.onTxFailure({
+            tx,
+            txReceipt
+          })
+        }
       }
+      updateTokenData(erc20L1Address)
+    } catch (error: any) {
+      return alert(error.message)
     }
-    updateTokenData(erc20L1Address)
   }
 
   async function depositToken({
@@ -544,42 +552,46 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: TokenDepositTransactionLifecycle
   }) {
-    const tx = await erc20Bridger.deposit({
-      l1Signer,
-      l2Provider: l2.provider,
-      erc20L1Address,
-      amount
-    })
+    try {
+      const tx = await erc20Bridger.deposit({
+        l1Signer,
+        l2Provider: l2.provider,
+        erc20L1Address,
+        amount
+      })
 
-    if (txLifecycle?.onL1TxSubmit) {
-      txLifecycle.onL1TxSubmit({ tx })
-    }
-
-    const txReceipt = await tx.wait()
-
-    const [l1ToL2Msg] = await txReceipt.getL1ToL2Messages(l2.provider)
-
-    if (isTxSuccessful(txReceipt)) {
-      if (txLifecycle?.onL1TxSuccess) {
-        txLifecycle.onL1TxSuccess({
-          tx,
-          txReceipt,
-          retryableCreationTxID: l1ToL2Msg.retryableCreationId
-        })
+      if (txLifecycle?.onL1TxSubmit) {
+        txLifecycle.onL1TxSubmit({ tx })
       }
-    } else {
-      if (txLifecycle?.onL1TxFailure) {
-        txLifecycle.onL1TxFailure({
-          tx,
-          txReceipt,
-          retryableCreationTxID: l1ToL2Msg.retryableCreationId
-        })
+
+      const txReceipt = await tx.wait()
+
+      const [l1ToL2Msg] = await txReceipt.getL1ToL2Messages(l2.provider)
+
+      if (isTxSuccessful(txReceipt)) {
+        if (txLifecycle?.onL1TxSuccess) {
+          txLifecycle.onL1TxSuccess({
+            tx,
+            txReceipt,
+            retryableCreationTxID: l1ToL2Msg.retryableCreationId
+          })
+        }
+      } else {
+        if (txLifecycle?.onL1TxFailure) {
+          txLifecycle.onL1TxFailure({
+            tx,
+            txReceipt,
+            retryableCreationTxID: l1ToL2Msg.retryableCreationId
+          })
+        }
       }
+
+      updateTokenData(erc20L1Address)
+
+      return txReceipt
+    } catch (error: any) {
+      return alert(error.message)
     }
-
-    updateTokenData(erc20L1Address)
-
-    return txReceipt
   }
 
   async function depositTokenEstimateGas({
@@ -619,30 +631,29 @@ export const useArbTokenBridge = (
     l2Signer: Signer
     txLifecycle?: WithdrawTransactionLifecycle
   }) {
-    const bridgeToken = bridgeTokens[erc20L1Address]
-
-    const { symbol, decimals } = await (async () => {
-      if (bridgeToken) {
-        const { symbol, decimals } = bridgeToken
-        return { symbol, decimals }
-      }
-      const { symbol, decimals } = await getL1TokenData(erc20L1Address)
-      addToken(erc20L1Address)
-      return { symbol, decimals }
-    })()
-
-    const tx = await erc20Bridger.withdraw({
-      l2Signer,
-      erc20l1Address: erc20L1Address,
-      destinationAddress: walletAddress,
-      amount
-    })
-
-    if (txLifecycle?.onL2TxSubmit) {
-      txLifecycle.onL2TxSubmit({ tx })
-    }
-
     try {
+      const bridgeToken = bridgeTokens[erc20L1Address]
+
+      const { symbol, decimals } = await (async () => {
+        if (bridgeToken) {
+          const { symbol, decimals } = bridgeToken
+          return { symbol, decimals }
+        }
+        const { symbol, decimals } = await getL1TokenData(erc20L1Address)
+        addToken(erc20L1Address)
+        return { symbol, decimals }
+      })()
+
+      const tx = await erc20Bridger.withdraw({
+        l2Signer,
+        erc20l1Address: erc20L1Address,
+        destinationAddress: walletAddress,
+        amount
+      })
+
+      if (txLifecycle?.onL2TxSubmit) {
+        txLifecycle.onL2TxSubmit({ tx })
+      }
       const txReceipt = await tx.wait()
 
       if (isTxSuccessful(txReceipt)) {
@@ -1065,13 +1076,13 @@ export const useArbTokenBridge = (
 
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
 
-    const tx = await messageWriter.execute(l2.provider)
-
-    if (txLifecycle?.onL1TxSubmit) {
-      txLifecycle.onL1TxSubmit({ tx, event })
-    }
-
     try {
+      const tx = await messageWriter.execute(l2.provider)
+
+      if (txLifecycle?.onL1TxSubmit) {
+        txLifecycle.onL1TxSubmit({ tx, event })
+      }
+
       const txReceipt = await tx.wait()
 
       if (isTxSuccessful(txReceipt)) {
