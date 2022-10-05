@@ -16,7 +16,10 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -350,7 +353,11 @@ export function TransferPanelMain({
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
-  }, [amount])
+
+    if (amount.toLowerCase() === AmountQueryParamEnum.MAX) {
+      setMaxAmount()
+    }
+  }, [amount, setMaxAmount, setQueryParams])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
