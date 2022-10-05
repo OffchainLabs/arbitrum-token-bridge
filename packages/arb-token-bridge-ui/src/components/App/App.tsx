@@ -53,8 +53,10 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { ArbQueryParamProvider } from './ArbQueryParamProvider'
+import {
+  ArbQueryParamProvider,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
