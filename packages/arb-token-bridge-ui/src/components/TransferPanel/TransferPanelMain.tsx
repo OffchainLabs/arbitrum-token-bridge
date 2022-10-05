@@ -140,7 +140,7 @@ function NetworkListbox({
             <img
               src={getOptionImageSrc(option)}
               alt={`${getNetworkName(option)} logo`}
-              className="w-8"
+              className="w-8 max-h-10"
             />
             <span>{getNetworkName(option)}</span>
           </Listbox.Option>
@@ -470,6 +470,16 @@ export function TransferPanelMain({
             // Selecting the same chain or L1 network
             if (from.chainID === network.chainID || isL1Network(network)) {
               return
+            }
+
+            try {
+              await app.changeNetwork?.(network)
+              updatePreferredL2Chain(network.chainID)
+            } catch (error: any) {
+              // 4001 - User rejected the request
+              if (error.code !== 4001) {
+                Sentry.captureException(error)
+              }
             }
 
             // If L2 selected, change to withdraw mode and set new selections
