@@ -164,20 +164,6 @@ export type TriggerOutboxTransactionLifecycle = {
   onL1TxFailure: (txHash: string) => void
 }
 
-export type TokenTriggerOutboxTransactionLifecycle = {
-  onL1TxSubmit: ({
-    tx,
-    event,
-    tokenData
-  }: {
-    tx: ContractTransaction
-    event: L2ToL1EventResultPlus
-    tokenData: L1TokenData
-  }) => void
-  onL1TxSuccess: (txHash: string) => void
-  onL1TxFailure: (txHash: string) => void
-}
-
 export type NodeBlockDeadlineStatus =
   | number
   | 'NODE_NOT_CREATED'
@@ -360,7 +346,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
-    txLifecycle?: TokenTriggerOutboxTransactionLifecycle
+    txLifecycle?: TriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
   getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>

@@ -61,7 +61,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           id,
           l1Signer,
           txLifecycle: {
-            onL1TxSubmit: ({ tx, event }) => {
+            onL1TxSubmit: ({ tx: l1tx, event }) => {
               transactions.addTransaction({
                 status: 'pending',
                 type: 'outbox',
@@ -69,7 +69,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
                 assetName: TokenSymbol.ETH,
                 assetType: AssetType.ETH,
                 sender,
-                txID: tx.hash,
+                txID: l1tx.hash,
                 l1NetworkID,
                 l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
               })
@@ -83,15 +83,15 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           id,
           l1Signer,
           txLifecycle: {
-            onL1TxSubmit: ({ tx, event, tokenData }) => {
+            onL1TxSubmit: ({ tx: l1tx, event }) => {
               transactions.addTransaction({
                 status: 'pending',
                 type: 'outbox',
-                value: utils.formatUnits(event.value, tokenData.decimals),
-                assetName: tokenData.symbol,
+                value: utils.formatUnits(event.value, event.decimals),
+                assetName: event.symbol,
                 assetType: AssetType.ERC20,
                 sender,
-                txID: tx.hash,
+                txID: l1tx.hash,
                 l1NetworkID,
                 l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
               })

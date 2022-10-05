@@ -42,7 +42,6 @@ import {
   TriggerOutboxTransactionLifecycle,
   TokenContractTransactionLifecycle,
   TokenWithdrawTransactionLifecycle,
-  TokenTriggerOutboxTransactionLifecycle,
   EthWithdrawTransactionLifecycle,
   TokenDepositTransactionLifecycle,
   TokenSymbol
@@ -1010,7 +1009,7 @@ export const useArbTokenBridge = (
   }: {
     id: string
     l1Signer: Signer
-    txLifecycle?: TokenTriggerOutboxTransactionLifecycle
+    txLifecycle?: TriggerOutboxTransactionLifecycle
   }) => {
     const event = pendingWithdrawalsMap[id]
 
@@ -1023,9 +1022,8 @@ export const useArbTokenBridge = (
 
       const tx = await messageWriter.execute(l2.provider)
 
-      const tokenData = await getL1TokenData(event.tokenAddress as string)
       if (txLifecycle?.onL1TxSubmit) {
-        txLifecycle.onL1TxSubmit({ tx, event, tokenData })
+        txLifecycle.onL1TxSubmit({ tx, event })
       }
       const txReceipt = await tx.wait()
 
