@@ -327,7 +327,7 @@ export const useArbTokenBridge = (
 
       updateEthBalances()
     } catch (error: any) {
-      return alert(error.message)
+      return console.error(error.message)
     }
   }
 
@@ -475,7 +475,7 @@ export const useArbTokenBridge = (
       }
       updateTokenData(erc20L1Address)
     } catch (error: any) {
-      return alert(error.message)
+      return console.error(error.message)
     }
   }
 
@@ -537,7 +537,7 @@ export const useArbTokenBridge = (
       }
       updateTokenData(erc20L1Address)
     } catch (error: any) {
-      return alert(error.message)
+      return console.error(error.message)
     }
   }
 
@@ -590,7 +590,7 @@ export const useArbTokenBridge = (
 
       return txReceipt
     } catch (error: any) {
-      return alert(error.message)
+      return console.error(error.message)
     }
   }
 
