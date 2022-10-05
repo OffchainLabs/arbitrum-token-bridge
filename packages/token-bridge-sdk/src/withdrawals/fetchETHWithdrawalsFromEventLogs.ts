@@ -21,7 +21,7 @@ export function fetchETHWithdrawalsFromEventLogs({
   toBlock: BlockTag
   l2Provider: Provider
 }) {
-  return L2ToL1MessageReader.getEventLogs(
+  return L2ToL1MessageReader.getL2ToL1Events(
     l2Provider,
     { fromBlock, toBlock },
     undefined,

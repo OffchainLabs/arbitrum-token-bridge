@@ -6,12 +6,7 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-  useLocation
-} from 'react-router-dom'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -58,6 +53,10 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
+import {
+  ArbQueryParamProvider,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -288,7 +287,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       symbol: 'ETH',
                       decimals: 18
                     },
-                    rpcUrls: [network.rpcURL || rpcURLs[network.chainID]],
+                    rpcUrls: [rpcURLs[network.chainID]],
                     blockExplorerUrls: [network.explorerUrl]
                   }
                 ]
@@ -354,55 +353,46 @@ function Routes() {
 
   return (
     <Router>
-      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-      <Switch>
-        <Route path="/tos" exact>
-          <TermsOfService />
-        </Route>
+      <ArbQueryParamProvider>
+        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+        <Switch>
+          <Route path="/tos" exact>
+            <TermsOfService />
+          </Route>
 
-        <Route path="/" exact>
-          <NetworkReady>
-            <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
-            </AppContextProvider>
-          </NetworkReady>
-        </Route>
+          <Route path="/" exact>
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </AppContextProvider>
+            </NetworkReady>
+          </Route>
 
-        <Route path="*">
-          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-            <span className="text-8xl text-white">404</span>
-            <p className="text-3xl text-white">
-              Page not found in this solar system
-            </p>
-            <img
-              src="/images/arbinaut-fixing-spaceship.png"
-              alt="Arbinaut fixing a spaceship"
-              className="lg:max-w-md"
-            />
-          </div>
-        </Route>
-      </Switch>
+          <Route path="*">
+            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+              <span className="text-8xl text-white">404</span>
+              <p className="text-3xl text-white">
+                Page not found in this solar system
+              </p>
+              <img
+                src="/images/arbinaut-fixing-spaceship.png"
+                alt="Arbinaut fixing a spaceship"
+                className="lg:max-w-md"
+              />
+            </div>
+          </Route>
+        </Switch>
+      </ArbQueryParamProvider>
     </Router>
   )
 }
 
 function NetworkReady({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation()
-
-  const selectedL2ChainId = useMemo(() => {
-    const searchParams = new URLSearchParams(search)
-    const selectedL2ChainIdSearchParam = searchParams.get('l2ChainId')
-
-    if (!selectedL2ChainIdSearchParam) {
-      return undefined
-    }
-
-    return parseInt(selectedL2ChainIdSearchParam) || undefined
-  }, [search])
+  const [{ l2ChainId }] = useArbQueryParams()
 
   return (
     <NetworksAndSignersProvider
-      selectedL2ChainId={selectedL2ChainId}
+      selectedL2ChainId={l2ChainId || undefined}
       fallback={status => <ConnectionFallback status={status} />}
     >
       {children}
