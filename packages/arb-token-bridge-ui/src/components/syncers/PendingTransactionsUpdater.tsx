@@ -6,6 +6,7 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { isTxSuccessful } from 'token-bridge-sdk/dist/util'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -46,6 +47,11 @@ export function PendingTransactionsUpdater(): JSX.Element {
               pendingTransactions[i].txID
             )
           } else {
+            if (isTxSuccessful(txReceipt)) {
+              transactions.setTransactionSuccess(txReceipt.transactionHash)
+            } else {
+              transactions.setTransactionFailure(txReceipt.transactionHash)
+            }
             transactions.updateTransaction(txReceipt)
           }
         })
