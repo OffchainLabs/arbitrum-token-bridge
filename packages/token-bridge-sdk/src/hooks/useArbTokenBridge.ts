@@ -41,10 +41,9 @@ import {
   EthDepositTransactionLifecycle,
   TriggerOutboxTransactionLifecycle,
   TokenContractTransactionLifecycle,
-  TokenWithdrawTransactionLifecycle,
-  EthWithdrawTransactionLifecycle,
   TokenDepositTransactionLifecycle,
-  TokenSymbol
+  TokenSymbol,
+  WithdrawTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
@@ -354,7 +353,7 @@ export const useArbTokenBridge = (
   }: {
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: EthWithdrawTransactionLifecycle | undefined
+    txLifecycle?: WithdrawTransactionLifecycle
   }) => {
     const tx = await ethBridger.withdraw({
       amount,
@@ -618,7 +617,7 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: TokenWithdrawTransactionLifecycle
+    txLifecycle?: WithdrawTransactionLifecycle
   }) {
     const bridgeToken = bridgeTokens[erc20L1Address]
 

@@ -50,15 +50,15 @@ export enum TokenSymbol {
   ETH = 'ETH'
 }
 
-export type EthDepositTransactionLifecycle = {
-  onL1TxSubmit: ({ tx }: { tx: L1EthDepositTransaction }) => void
+export type DepositTransactionLifecycle<Tx, TxReceipt> = {
+  onL1TxSubmit: ({ tx }: { tx: Tx }) => void
   onL1TxSuccess: ({
     tx,
     txReceipt,
     retryableCreationTxID
   }: {
-    tx: L1EthDepositTransaction
-    txReceipt: L1EthDepositTransactionReceipt
+    tx: Tx
+    txReceipt: TxReceipt
     retryableCreationTxID: string
   }) => void
   onL1TxFailure: ({
@@ -66,53 +66,23 @@ export type EthDepositTransactionLifecycle = {
     txReceipt,
     retryableCreationTxID
   }: {
-    tx: L1EthDepositTransaction
-    txReceipt: L1EthDepositTransactionReceipt
+    tx: Tx
+    txReceipt: TxReceipt
     retryableCreationTxID: string
   }) => void
 }
 
-export type TokenDepositTransactionLifecycle = {
-  onL1TxSubmit: ({ tx }: { tx: L1ContractCallTransaction }) => void
-  onL1TxSuccess: ({
-    tx,
-    txReceipt,
-    retryableCreationTxID
-  }: {
-    tx: L1ContractCallTransaction
-    txReceipt: L1ContractCallTransactionReceipt
-    retryableCreationTxID: string
-  }) => void
-  onL1TxFailure: ({
-    tx,
-    txReceipt,
-    retryableCreationTxID
-  }: {
-    tx: L1ContractCallTransaction
-    txReceipt: L1ContractCallTransactionReceipt
-    retryableCreationTxID: string
-  }) => void
-}
+export type EthDepositTransactionLifecycle = DepositTransactionLifecycle<
+  L1EthDepositTransaction,
+  L1EthDepositTransactionReceipt
+>
 
-export type EthWithdrawTransactionLifecycle = {
-  onL2TxSubmit: ({ tx }: { tx: L2ContractTransaction }) => void
-  onL2TxSuccess: ({
-    tx,
-    txReceipt
-  }: {
-    tx: L2ContractTransaction
-    txReceipt: L2TransactionReceipt
-  }) => void
-  onL2TxFailure: ({
-    tx,
-    txReceipt
-  }: {
-    tx: L2ContractTransaction
-    txReceipt: L2TransactionReceipt
-  }) => void
-}
+export type TokenDepositTransactionLifecycle = DepositTransactionLifecycle<
+  L1ContractCallTransaction,
+  L1ContractCallTransactionReceipt
+>
 
-export type TokenWithdrawTransactionLifecycle = {
+export type WithdrawTransactionLifecycle = {
   onL2TxSubmit: ({ tx }: { tx: L2ContractTransaction }) => void
   onL2TxSuccess: ({
     tx,
@@ -291,7 +261,7 @@ export interface ArbTokenBridgeEth {
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: EthWithdrawTransactionLifecycle | undefined
+    txLifecycle?: WithdrawTransactionLifecycle
   }) => Promise<ContractReceipt | void>
   withdrawEstimateGas: (params: { amount: BigNumber }) => Promise<GasEstimates>
   triggerOutbox: (params: {
@@ -337,7 +307,7 @@ export interface ArbTokenBridgeToken {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
-    txLifecycle?: TokenWithdrawTransactionLifecycle
+    txLifecycle?: WithdrawTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     amount: BigNumber
