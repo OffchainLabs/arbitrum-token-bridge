@@ -98,15 +98,13 @@ function getExecutedMessagesCacheKey({
   event: L2ToL1EventResult
   l2ChainId: number
 }) {
-  const anyEvent = event as any
-
   if (isClassicEvent(event)) {
-    const batchNumber = anyEvent.batchNumber as BigNumber
-    const indexInBatch = anyEvent.indexInBatch as BigNumber
+    const batchNumber = event.batchNumber
+    const indexInBatch = event.indexInBatch
     return `l2ChainId: ${l2ChainId}, batchNumber: ${batchNumber.toString()}, indexInBatch: ${indexInBatch.toString()}`
   }
 
-  const position = anyEvent.position as BigNumber
+  const position = event.position
   return `l2ChainId: ${l2ChainId}, position: ${position.toString()}`
 }
 
