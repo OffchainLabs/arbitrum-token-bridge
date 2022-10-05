@@ -98,14 +98,9 @@ function getExecutedMessagesCacheKey({
   event: L2ToL1EventResult
   l2ChainId: number
 }) {
-  if (isClassicEvent(event)) {
-    const batchNumber = event.batchNumber
-    const indexInBatch = event.indexInBatch
-    return `l2ChainId: ${l2ChainId}, batchNumber: ${batchNumber.toString()}, indexInBatch: ${indexInBatch.toString()}`
-  }
-
-  const position = event.position
-  return `l2ChainId: ${l2ChainId}, position: ${position.toString()}`
+  return isClassicEvent(event)
+    ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
+    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
 export interface TokenBridgeParams {
