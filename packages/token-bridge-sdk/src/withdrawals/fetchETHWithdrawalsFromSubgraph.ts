@@ -12,7 +12,7 @@ import { L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
  * @param query.address Account address
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
- * @param query.l2NetworkId Chain id for the corresponding L2 network
+ * @param query.l2Provider Provider for the L2 network
  */
 export async function fetchETHWithdrawalsFromSubgraph({
   address,
