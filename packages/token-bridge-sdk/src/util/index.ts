@@ -24,6 +24,24 @@ export const validateTokenList = (tokenList: TokenList) => {
   return validate(tokenList)
 }
 
+export function getDefaultTokenName(address: string) {
+  const lowercased = address.toLowerCase()
+  return (
+    lowercased.substring(0, 5) +
+    '...' +
+    lowercased.substring(lowercased.length - 3)
+  )
+}
+
+export function getDefaultTokenSymbol(address: string) {
+  const lowercased = address.toLowerCase()
+  return (
+    lowercased.substring(0, 5) +
+    '...' +
+    lowercased.substring(lowercased.length - 3)
+  )
+}
+
 /**
  * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
  * @param erc20L1Address
@@ -41,24 +59,6 @@ export async function getL1TokenData(
     erc20L1Address,
     l1.provider
   )
-
-  function getDefaultTokenName(address: string) {
-    const lowercased = address.toLowerCase()
-    return (
-      lowercased.substring(0, 5) +
-      '...' +
-      lowercased.substring(lowercased.length - 3)
-    )
-  }
-
-  function getDefaultTokenSymbol(address: string) {
-    const lowercased = address.toLowerCase()
-    return (
-      lowercased.substring(0, 5) +
-      '...' +
-      lowercased.substring(lowercased.length - 3)
-    )
-  }
 
   const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
 
