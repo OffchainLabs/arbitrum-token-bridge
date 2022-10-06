@@ -13,13 +13,21 @@
     `setQueryParams(newAmount)`
 
 */
-
+import React from 'react'
+import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
+import { parse, stringify } from 'query-string'
 import {
-  BooleanParam,
   NumberParam,
+  BooleanParam,
+  QueryParamProvider,
   StringParam,
-  useQueryParams
+  useQueryParams,
+  withDefault
 } from 'use-query-params'
+
+export enum AmountQueryParamEnum {
+  MAX = 'max'
+}
 
 export const useArbQueryParams = () => {
   /*
@@ -30,7 +38,7 @@ export const useArbQueryParams = () => {
 
   */
   return useQueryParams({
-    amount: AmountQueryParam, // amount which is filled in Transfer panel
+    amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
     skipLoadingHistory: BooleanParam // internal - to not show pending transactions that spike our network calls during e2e tests
@@ -41,20 +49,39 @@ export const useArbQueryParams = () => {
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 const AmountQueryParam = {
-  encode: (amount: number | string | null | undefined) => {
-    // if (amount === 'MAX') return 'MAX' // commenting out, handling for a future case
-    if (typeof amount === 'number') return amount.toString()
-    return amount
-  },
-  decode: (amountStr: string | (string | null)[] | null | undefined) => {
-    // if (amountStr === 'MAX') return 'MAX' // commenting out, handling for a future case
-    if (
-      !amountStr ||
-      isNaN(Number(amountStr)) ||
-      typeof amountStr === 'object'
-    ) {
+  // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
+  encode: (amount: string | null | undefined) => amount,
+  decode: (amount: string | (string | null)[] | null | undefined) => {
+    const amountStr = amount?.toString()
+
+    // to catch random string like `amount=asdf` from the URL
+    if (isNaN(Number(amountStr))) {
+      if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
+        return amountStr
+      }
       return ''
     }
-    return amountStr
+
+    return amountStr ?? ''
   }
+}
+
+export function ArbQueryParamProvider({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <QueryParamProvider
+      adapter={ReactRouter5Adapter}
+      options={{
+        searchStringToObject: parse,
+        objectToSearchString: stringify,
+        updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
+        removeDefaultsFromUrl: true
+      }}
+    >
+      {children}
+    </QueryParamProvider>
+  )
 }
