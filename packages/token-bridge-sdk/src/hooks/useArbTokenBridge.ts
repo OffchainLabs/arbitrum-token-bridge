@@ -55,7 +55,7 @@ import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWit
 
 import { isClassicEvent } from '../util'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { fetchL2BlockNumberFromSubgraph } from '../withdrawals/graph'
+import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
 const { Zero } = constants
 

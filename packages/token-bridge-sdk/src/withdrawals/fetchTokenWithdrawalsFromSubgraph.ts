@@ -4,7 +4,7 @@ import { Provider } from '@ethersproject/providers'
 import { L2TransactionReceipt } from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 
-import { getL2SubgraphClient } from './graph'
+import { getL2SubgraphClient } from '../util/subgraph'
 
 // TODO: Codegen types
 type GatewayWithdrawalData = {
