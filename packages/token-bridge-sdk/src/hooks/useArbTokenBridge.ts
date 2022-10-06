@@ -128,7 +128,7 @@ export const useArbTokenBridge = (
   })
   const {
     eth: [, updateEthL2Balance],
-    erc20: [erc20L2Balance]
+    erc20: [erc20L2Balance, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
     walletAddress,

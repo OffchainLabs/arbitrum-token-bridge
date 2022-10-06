@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { BigNumber, providers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import useSWR, { useSWRConfig } from 'swr'
+import useSWR, { useSWRConfig, unstable_serialize, Middleware } from 'swr'
 
 import { MultiCaller } from '@arbitrum/sdk'
 
@@ -9,6 +9,23 @@ import { useChainId } from './useChainId'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
+}
+
+const merge: Middleware = useSWRNext => {
+  return (key, fetcher, config) => {
+    const { cache } = useSWRConfig()
+
+    const extendedFetcher = async (...args) => {
+      const newBalances = await fetcher(...args)
+      const oldData = cache.get(unstable_serialize(key))
+      return {
+        ...oldData,
+        ...newBalances
+      }
+    }
+
+    return useSWRNext(key, extendedFetcher, config)
+  }
 }
 
 const useBalance = ({
@@ -20,7 +37,6 @@ const useBalance = ({
   walletAddress: string | undefined
   erc20Addresses?: string[]
 }) => {
-  const { mutate } = useSWRConfig()
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),
@@ -41,29 +57,6 @@ const useBalance = ({
     },
     [chainId, walletAddressLowercased]
   )
-  const queryKeyWithAddresses = useMemo(() => {
-    const key = queryKey('erc20')
-    if (!key) {
-      return null
-    }
-
-    return [...key, erc20Addresses]
-  }, [queryKey, erc20Addresses])
-
-  const updateCache = useCallback(
-    (newBalances: Erc20Balances) => {
-      return mutate(queryKey('erc20'), newBalances, {
-        populateCache(newData, currentData) {
-          // Merge new data with previous one under erc20 query key
-          return {
-            ...currentData,
-            ...newData
-          }
-        }
-      })
-    },
-    [mutate, queryKey]
-  )
   const fetchErc20 = useCallback(async () => {
     if (!queryKey('erc20') || !erc20Addresses) {
       return {}
@@ -79,8 +72,8 @@ const useBalance = ({
       return acc
     }, {} as { [address: string]: BigNumber | undefined })
 
-    return updateCache(balances)
-  }, [updateCache, queryKey, erc20Addresses, provider, walletAddressLowercased])
+    return balances
+  }, [queryKey, erc20Addresses, provider, walletAddressLowercased])
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
@@ -93,23 +86,40 @@ const useBalance = ({
     }
   )
 
-  const { data } = useSWR(
-    // Add addresses to the query key to trigger refetch whenever addresses changes
-    queryKeyWithAddresses,
+  const { data = null, mutate: mutateErc20 } = useSWR(
+    queryKey('erc20'),
     fetchErc20,
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
-      errorRetryInterval: 3_000
+      errorRetryInterval: 3_000,
+      use: [merge]
     }
   )
 
   const updateErc20 = useCallback(
-    (balances: Erc20Balances) => {
-      updateCache(balances)
+    async (balances: Erc20Balances) => {
+      return mutateErc20(balances, {
+        populateCache(result, currentData) {
+          return {
+            ...currentData,
+            ...result
+          }
+        }
+      })
     },
-    [updateCache]
+    [mutateErc20]
   )
+
+  // Refetch whenever erc20Addresses change
+  useEffect(() => {
+    const refetchErc20 = async () => {
+      const newBalances = await fetchErc20()
+      updateErc20(newBalances)
+    }
+
+    refetchErc20()
+  }, [updateErc20, fetchErc20, erc20Addresses])
 
   return {
     eth: [dataEth, updateEthBalance] as const,
