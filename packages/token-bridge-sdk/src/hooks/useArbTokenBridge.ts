@@ -53,7 +53,7 @@ import {
   FetchTokenWithdrawalsFromSubgraphResult
 } from '../withdrawals'
 
-import { isClassicEvent } from '../util'
+import { isClassicL2ToL1TransactionEvent } from '../util'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
@@ -98,7 +98,7 @@ function getExecutedMessagesCacheKey({
   event: L2ToL1EventResult
   l2ChainId: number
 }) {
-  return isClassicEvent(event)
+  return isClassicL2ToL1TransactionEvent(event)
     ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
     : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }

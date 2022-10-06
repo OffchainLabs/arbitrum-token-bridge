@@ -18,7 +18,7 @@ export const validateTokenList = (tokenList: TokenList) => {
   return validate(tokenList)
 }
 
-export function isClassicEvent(
+export function isClassicL2ToL1TransactionEvent(
   event: L2ToL1TransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
