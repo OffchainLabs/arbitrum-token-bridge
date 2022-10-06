@@ -2,7 +2,7 @@
   All the utility functions and configs related to our testing
 */
 
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 
@@ -30,10 +30,8 @@ export const ERC20TokenAddressL2 = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
-export const gasConfig = { gasFee: 100, gasLimit: 1000000 } // a high gas config to ensure transactions ALWAYS succeed
-
 export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
-  const provider = new JsonRpcProvider(rpcURL)
+  const provider = new StaticJsonRpcProvider(rpcURL)
   return await provider.getBalance(Cypress.env('ADDRESS'))
 }
 
@@ -41,13 +39,12 @@ export async function getInitialERC20Balance(
   tokenAddress: string,
   rpcURL: string
 ): Promise<BigNumber> {
-  const provider = new JsonRpcProvider(rpcURL)
+  const provider = new StaticJsonRpcProvider(rpcURL)
   const multiCaller = await MultiCaller.fromProvider(provider)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
-    balanceOf: { account: Cypress.env('ADDRESS') },
-    decimals: true
+    balanceOf: { account: Cypress.env('ADDRESS') }
   })
-  return await tokenData.balance
+  return tokenData.balance
 }
 
 export const setupMetamaskNetwork = (
@@ -73,7 +70,7 @@ export const setupMetamaskNetwork = (
 
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit(`/?skipLoadingHistory=1`)
+  cy.visit(`/`)
 
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()

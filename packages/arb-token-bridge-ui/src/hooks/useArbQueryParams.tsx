@@ -18,7 +18,6 @@ import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
 import { parse, stringify } from 'query-string'
 import {
   NumberParam,
-  BooleanParam,
   QueryParamProvider,
   StringParam,
   useQueryParams,
@@ -40,8 +39,7 @@ export const useArbQueryParams = () => {
   return useQueryParams({
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
-    token: StringParam, // import a new token using a Dialog Box
-    skipLoadingHistory: BooleanParam // internal - to not show pending transactions that spike our network calls during e2e tests
+    token: StringParam // import a new token using a Dialog Box
   })
 }
 

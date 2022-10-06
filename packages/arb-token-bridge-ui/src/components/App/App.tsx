@@ -69,13 +69,17 @@ async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
 }
 
+declare global {
+  interface Window {
+    Cypress?: any
+  }
+}
+
 const AppContent = (): JSX.Element => {
   const { l1 } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
-
-  const [{ skipLoadingHistory }] = useArbQueryParams()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
@@ -126,6 +130,8 @@ const AppContent = (): JSX.Element => {
     )
   }
 
+  const isTestingEnvironment = !!window.Cypress
+
   return (
     <>
       <HeaderOverrides {...headerOverridesProps} />
@@ -139,7 +145,7 @@ const AppContent = (): JSX.Element => {
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
-      {!skipLoadingHistory && <PWLoadedUpdater />}
+      {!isTestingEnvironment && <PWLoadedUpdater />}
 
       <Notifications />
       <MainContent />
