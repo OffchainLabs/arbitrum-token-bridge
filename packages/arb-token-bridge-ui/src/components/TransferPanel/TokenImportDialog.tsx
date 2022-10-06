@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import {
+  ERC20BridgeToken,
+  getL1TokenData as getL1TokenDataFromSdk
+} from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
@@ -100,17 +103,19 @@ export function TokenImportDialog({
       const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return token.getL1TokenData(addressOnL1, {
+        return getL1TokenDataFromSdk(
           walletAddress,
-          l1,
-          l2
-        })
+          addressOnL1,
+          l1.provider,
+          l2.provider
+        )
       } else {
-        return token.getL1TokenData(eitherL1OrL2Address, {
+        return getL1TokenDataFromSdk(
           walletAddress,
-          l1,
-          l2
-        })
+          eitherL1OrL2Address,
+          l1.provider,
+          l2.provider
+        )
       }
     },
     [l1, l2, walletAddress, token]

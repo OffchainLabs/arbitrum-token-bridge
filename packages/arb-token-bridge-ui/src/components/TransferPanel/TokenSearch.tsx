@@ -4,7 +4,6 @@ import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
-import { BigNumber } from 'ethers'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -24,7 +23,7 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 
 enum Panel {
   TOKENS,
@@ -567,7 +566,7 @@ export function TokenSearch({
         return
       }
 
-      const data = await token?.getL1TokenData(
+      const data = await getL1TokenData(
         walletAddress,
         _token.address,
         l1.provider,

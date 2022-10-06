@@ -5,7 +5,7 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -379,7 +379,7 @@ export function TransferPanel() {
             return
           }
 
-          const { allowance } = await arbTokenBridge.token.getL1TokenData(
+          const { allowance } = await getL1TokenData(
             walletAddress,
             selectedToken.address,
             l1.provider,
