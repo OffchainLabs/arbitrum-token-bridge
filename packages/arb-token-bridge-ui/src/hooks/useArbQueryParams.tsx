@@ -53,7 +53,8 @@ const AmountQueryParam = {
     const amountStr = amount?.toString()
 
     // to catch random string like `amount=asdf` from the URL
-    if (isNaN(Number(amountStr))) {
+    // to catch zero / negative number
+    if (isNaN(Number(amountStr)) || Number(amountStr) <= 0) {
       if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
         return amountStr
       }
