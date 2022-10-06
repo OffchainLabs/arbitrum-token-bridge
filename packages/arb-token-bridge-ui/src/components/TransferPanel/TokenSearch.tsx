@@ -95,9 +95,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
-    return isDepositMode
-      ? balances?.erc20[token.address]?.balance
-      : balances?.erc20[token.address]?.arbChainBalance
+    return isDepositMode ? BigNumber.from(5) : BigNumber.from(10)
   }, [ethL1Balance, ethL2Balance, token, isDepositMode, balances])
 
   const tokenListInfo = useMemo(() => {
@@ -355,16 +353,13 @@ function TokensPanel({
         return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
-      return isDepositMode
-        ? balances?.erc20[address]?.balance
-        : balances?.erc20[address]?.arbChainBalance
+      return isDepositMode ? BigNumber.from(5) : BigNumber.from(11)
     },
     [ethL1Balance, ethL2Balance, isDepositMode, balances]
   )
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-
     return [
       ETH_IDENTIFIER,
       // Deduplicate addresses
@@ -383,7 +378,8 @@ function TokensPanel({
 
           const balance = getBalance(address)
           // Only show tokens with a balance greater than zero
-          return balance && balance.gt(0)
+          return true
+          // return balance && balance.gt(0)
         }
 
         if (address === ETH_IDENTIFIER) {

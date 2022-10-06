@@ -10,7 +10,7 @@ export function ArbTokenBridgeStoreSync({
   tokenBridgeParams: TokenBridgeParams
 }): JSX.Element {
   const actions = useActions()
-  const arbTokenBridge = useArbTokenBridge(tokenBridgeParams, false)
+  const arbTokenBridge = useArbTokenBridge(tokenBridgeParams)
 
   useEffect(() => {
     actions.app.setArbTokenBridge(arbTokenBridge)

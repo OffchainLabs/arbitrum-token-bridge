@@ -8,6 +8,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
+import { MultiCaller } from '@arbitrum/sdk'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<{}>) => (
@@ -88,7 +89,7 @@ describe('useBalance', () => {
     expect(ethBalance).toBeNull()
   })
 
-  it('getter return balance for valid tuple (walletAddress, chainId)', async () => {
+  it('getter return ETH balance for valid tuple (walletAddress, chainId)', async () => {
     const provider = new StaticJsonRpcProvider(
       process.env.REACT_APP_ETHEREUM_RPC_URL,
       1
@@ -118,7 +119,7 @@ describe('useBalance', () => {
     expect(ethBalance?.toNumber()).toEqual(10)
   })
 
-  it('setter update balance ', async () => {
+  it('setter update ETH balance ', async () => {
     const provider = new StaticJsonRpcProvider(
       process.env.REACT_APP_ETHEREUM_RPC_URL,
       1
@@ -158,4 +159,64 @@ describe('useBalance', () => {
 
     expect(ethBalanceUpdated?.toNumber()).toBe(40)
   })
+
+  // it('getter return ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
+  //   const provider = new StaticJsonRpcProvider(
+  //     process.env.REACT_APP_ETHEREUM_RPC_URL,
+  //     1
+  //   )
+  //   jest
+  //     .spyOn(MultiCaller.prototype, 'getTokenData')
+  //     .mockImplementationOnce(() => Promise.resolve(BigNumber.from(30)))
+  //     .mockImplementationOnce(() => Promise.resolve(BigNumber.from(40)))
+
+  //   const { result, waitForNextUpdate } = await renderHook(
+  //     () =>
+  //       useBalance({
+  //         provider,
+  //         walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239'
+  //       }),
+  //     { wrapper: Container }
+  //   )
+  // })
+
+  // it('setter update ERC20 balance', async () => {
+  //   const provider = new StaticJsonRpcProvider(
+  //     process.env.REACT_APP_ETHEREUM_RPC_URL,
+  //     1
+  //   )
+  //   jest
+  //     .spyOn(MultiCaller.prototype, 'getTokenData')
+  //     .mockImplementationOnce(() => Promise.resolve(BigNumber.from(30)))
+  //     .mockImplementationOnce(() => Promise.resolve(BigNumber.from(40)))
+
+  //   const { result, waitForNextUpdate } = await renderHook(
+  //     () =>
+  //       useBalance({
+  //         provider,
+  //         walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239'
+  //       }),
+  //     { wrapper: Container }
+  //   )
+  // })
+
+  // it('setter update ERC20 balance without erasing previous data', async () => {
+  //   const provider = new StaticJsonRpcProvider(
+  //     process.env.REACT_APP_ETHEREUM_RPC_URL,
+  //     1
+  //   )
+  //   jest
+  //     .spyOn(MultiCaller.prototype, 'getTokenData')
+  //     .mockImplementationOnce(() => Promise.resolve(BigNumber.from(30)))
+  //     .mockImplementationOnce(() => Promise.resolve(BigNumber.from(40)))
+
+  //   const { result, waitForNextUpdate } = await renderHook(
+  //     () =>
+  //       useBalance({
+  //         provider,
+  //         walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239'
+  //       }),
+  //     { wrapper: Container }
+  //   )
+  // })
 })

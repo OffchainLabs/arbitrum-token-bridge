@@ -46,7 +46,10 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       return defaultResult
     }
 
-    const tokenBalances = arbTokenBridge.balances.erc20[erc20L1Address]
+    const tokenBalances = {
+      balance: BigNumber.from(5),
+      arbChainBalance: BigNumber.from(11)
+    }
 
     if (typeof tokenBalances === 'undefined') {
       return defaultResult

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, useMemo } from 'react'
-import { BigNumber, constants, utils } from 'ethers'
+import { useCallback, useState, useMemo, useEffect } from 'react'
+import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -26,8 +26,6 @@ import {
   AddressToDecimals,
   ArbTokenBridge,
   AssetType,
-  BridgeBalance,
-  BridgeToken,
   ContractStorage,
   ERC20BridgeToken,
   ERC721Balance,
@@ -54,8 +52,6 @@ import {
 import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-
-const { Zero } = constants
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -95,53 +91,51 @@ export interface TokenBridgeParams {
   l2: { provider: JsonRpcProvider; network: L2Network }
 }
 
-function isClassicEvent(event: L2ToL1EventResult) {
-  return typeof (event as any).indexInBatch !== 'undefined'
-}
-
 export const useArbTokenBridge = (
-  params: TokenBridgeParams,
-  autoLoadCache = true
+  params: TokenBridgeParams
 ): ArbTokenBridge => {
   const { walletAddress, l1, l2 } = params
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken>
   >({})
 
+  const { tokenL2Addresses, tokenL1Addresses } = useMemo(() => {
+    const tokenL1Addresses = []
+    const tokenL2Addresses = []
+    for (const tokenAddress in bridgeTokens) {
+      const { address } = bridgeTokens[tokenAddress]!
+      const { l2Address } = bridgeTokens[tokenAddress]!
+      if (address) {
+        tokenL1Addresses.push(address)
+      }
+      if (l2Address) {
+        tokenL2Addresses.push(l2Address)
+      }
+    }
+    return {
+      tokenL1Addresses,
+      tokenL2Addresses
+    }
+  }, [bridgeTokens])
+
   const {
-    eth: [, updateEthL1Balance]
+    eth: [, updateEthL1Balance],
+    erc20: [erc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress
+    walletAddress,
+    erc20Addresses: tokenL1Addresses
   })
   const {
-    eth: [, updateEthL2Balance]
+    eth: [, updateEthL2Balance],
+    erc20: [erc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress
+    walletAddress,
+    erc20Addresses: tokenL2Addresses
   })
 
-  const [erc20Balances, setErc20Balances] = useState<
-    ContractStorage<BridgeBalance>
-  >({})
-
   const [erc721Balances] = useState<ContractStorage<ERC721Balance>>({})
-
-  const defaultTokenList: string[] = []
-
-  const tokenBlackList: string[] = []
-  const [ERC20Cache, setERC20Cache, clearERC20Cache] = useLocalStorage<
-    string[]
-  >('ERC20Cache', []) as [
-    string[],
-    React.Dispatch<string[]>,
-    React.Dispatch<void>
-  ]
-
-  const [ERC721Cache, , clearERC721Cache] = useLocalStorage<string[]>(
-    'ERC721Cache',
-    []
-  ) as [string[], React.Dispatch<string[]>, React.Dispatch<void>]
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
@@ -840,21 +834,15 @@ export const useArbTokenBridge = (
       }
     }
 
-    setBridgeTokens(oldBridgeTokens => {
-      const newBridgeTokens = {
-        ...oldBridgeTokens,
-        ...bridgeTokensToAdd
-      }
-      updateTokenBalances(newBridgeTokens)
-      return newBridgeTokens
-    })
+    setBridgeTokens(oldBridgeTokens => ({
+      ...oldBridgeTokens,
+      ...bridgeTokensToAdd
+    }))
   }
 
   async function addToken(erc20L1orL2Address: string) {
     let l1Address: string
     let l2Address: string | undefined
-    let l1TokenBalance: BigNumber | null = null
-    let l2TokenBalance: BigNumber | null = null
 
     const maybeL1Address = await getL1ERC20Address(erc20L1orL2Address)
 
@@ -869,19 +857,7 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const { name, symbol, balance, decimals } = await getL1TokenData(l1Address)
-
-    l1TokenBalance = balance
-
-    try {
-      // check if token is deployed at l2 address; if not this will throw
-      const { balance } = await getL2TokenData(l2Address)
-      l2TokenBalance = balance
-    } catch (error) {
-      console.info(`no L2 token for ${l1Address} (which is fine)`)
-
-      l2Address = undefined
-    }
+    const { name, symbol, decimals } = await getL1TokenData(l1Address)
 
     const isDisabled = await l1TokenIsDisabled(l1Address)
 
@@ -900,40 +876,8 @@ export const useArbTokenBridge = (
     setBridgeTokens(oldBridgeTokens => {
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
-    setErc20Balances(oldBridgeBalances => {
-      const newBal = {
-        [l1Address]: {
-          balance: l1TokenBalance,
-          arbChainBalance: l2TokenBalance
-        }
-      }
-      return { ...oldBridgeBalances, ...newBal }
-    })
     return l1Address
   }
-
-  const expireCache = (): void => {
-    clearERC20Cache()
-    clearERC721Cache()
-  }
-
-  useEffect(() => {
-    const tokensToAdd = [
-      ...new Set([...defaultTokenList].map(t => t.toLocaleLowerCase()))
-    ].filter(tokenAddress => !tokenBlackList.includes(tokenAddress))
-    if (autoLoadCache) {
-      Promise.all(
-        tokensToAdd.map(address => {
-          return addToken(address).catch(err => {
-            console.warn(`invalid cache entry erc20 ${address}`)
-            console.warn(err)
-          })
-        })
-      ).then(values => {
-        setERC20Cache(values.filter((val): val is string => !!val))
-      })
-    }
-  }, [])
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
@@ -941,88 +885,16 @@ export const useArbTokenBridge = (
       if (!bridgeToken) {
         return
       }
-      const { l2Address } = bridgeToken
-      const l1Data = await getL1TokenData(l1Address)
-      const l2Data =
-        (l2Address && (await getL2TokenData(l2Address))) || undefined
-      const erc20TokenBalance: BridgeBalance = {
-        balance: l1Data.balance,
-        arbChainBalance: l2Data?.balance || Zero
-      }
-
-      setErc20Balances(oldErc20Balances => ({
-        ...oldErc20Balances,
-        [l1Address]: erc20TokenBalance
-      }))
       const newBridgeTokens = { [l1Address]: bridgeToken }
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })
     },
-    [setErc20Balances, bridgeTokens, setBridgeTokens]
+    [bridgeTokens, setBridgeTokens]
   )
 
   const updateEthBalances = async () => {
     Promise.all([updateEthL1Balance(), updateEthL2Balance()])
-  }
-
-  const updateTokenBalances = async (
-    bridgeTokens: ContractStorage<BridgeToken>
-  ) => {
-    const l1MultiCaller = await MultiCaller.fromProvider(l1.provider)
-    const l2MultiCaller = await MultiCaller.fromProvider(l2.provider)
-
-    const l1Addresses = Object.keys(bridgeTokens)
-    const l1AddressesBalances = await l1MultiCaller.getTokenData(l1Addresses, {
-      balanceOf: { account: walletAddress }
-    })
-    const l1Balances = l1Addresses.map((address: string, index: number) => ({
-      tokenAddr: address,
-      balance: l1AddressesBalances[index].balance
-    }))
-
-    const l2Addresses = l1Addresses
-      .map(l1Address => {
-        return (bridgeTokens[l1Address] as ERC20BridgeToken).l2Address
-      })
-      .filter((val): val is string => !!val)
-    const l2AddressesBalances = await l2MultiCaller.getTokenData(l2Addresses, {
-      balanceOf: { account: walletAddress }
-    })
-    const l2Balances = l2Addresses.map((address: string, index: number) => ({
-      tokenAddr: address,
-      balance: l2AddressesBalances[index].balance
-    }))
-
-    const l2AddressToBalanceMap: {
-      [l2Address: string]: BigNumber | undefined
-    } = l2Balances.reduce((acc, l1Address) => {
-      const { tokenAddr, balance } = l1Address
-      return { ...acc, [tokenAddr]: balance }
-    }, {})
-
-    setErc20Balances(oldERC20Balances => {
-      const newERC20Balances: ContractStorage<BridgeBalance> =
-        l1Balances.reduce(
-          (acc, { tokenAddr: l1TokenAddress, balance: l1Balance }) => {
-            const l2Address = (bridgeTokens[l1TokenAddress] as ERC20BridgeToken)
-              .l2Address
-
-            return {
-              ...acc,
-              [l1TokenAddress]: {
-                balance: l1Balance,
-                arbChainBalance: l2Address
-                  ? l2AddressToBalanceMap[l2Address]
-                  : undefined
-              }
-            }
-          },
-          {}
-        )
-
-      return { ...oldERC20Balances, ...newERC20Balances }
-    })
   }
 
   async function triggerOutboxToken({
@@ -1406,13 +1278,7 @@ export const useArbTokenBridge = (
     walletAddress,
     bridgeTokens: bridgeTokens,
     balances: {
-      erc20: erc20Balances,
       erc721: erc721Balances
-    },
-    cache: {
-      erc20: ERC20Cache,
-      erc721: ERC721Cache,
-      expire: expireCache
     },
     eth: {
       deposit: depositEth,

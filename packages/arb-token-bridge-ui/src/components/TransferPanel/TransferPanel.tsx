@@ -214,8 +214,7 @@ export function TransferPanel() {
 
   const l1Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL1 =
-        arbTokenBridge?.balances?.erc20[selectedToken.address]?.balance
+      const balanceL1 = BigNumber.from(10)
       const { decimals } = selectedToken
       if (!balanceL1 || !decimals) {
         return null
@@ -231,8 +230,7 @@ export function TransferPanel() {
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL2 =
-        arbTokenBridge?.balances?.erc20[selectedToken.address]?.arbChainBalance
+      const balanceL2 = BigNumber.from(11)
       const { decimals } = selectedToken
       if (!balanceL2) {
         return null

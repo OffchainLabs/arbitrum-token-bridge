@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
+import { BigNumber } from 'ethers'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -49,7 +50,8 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    return arbTokenBridge.balances.erc20[tx.tokenAddress]?.arbChainBalance
+    // return arbTokenBridge.balances.erc20[tx.tokenAddress]?.arbChainBalance
+    return BigNumber.from(0)
   }, [ethBalance, tx, arbTokenBridge])
 
   useEffect(() => {
