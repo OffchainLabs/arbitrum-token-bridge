@@ -45,13 +45,13 @@ import {
   L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
-import { fetchETHWithdrawalsFromEventLogs } from '../withdrawals/fetchETHWithdrawalsFromEventLogs'
 import {
+  fetchETHWithdrawalsFromEventLogs,
+  fetchETHWithdrawalsFromSubgraph,
+  fetchTokenWithdrawalsFromEventLogs,
   fetchTokenWithdrawalsFromSubgraph,
   FetchTokenWithdrawalsFromSubgraphResult
-} from '../withdrawals/fetchTokenWithdrawalsFromSubgraph'
-import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
+} from '../withdrawals'
 
 import { isClassicEvent } from '../util'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
