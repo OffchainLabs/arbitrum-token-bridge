@@ -380,8 +380,10 @@ export function TransferPanel() {
           }
 
           const { allowance } = await arbTokenBridge.token.getL1TokenData(
+            walletAddress,
             selectedToken.address,
-            { l1, l2, walletAddress }
+            l1.provider,
+            l2.provider
           )
 
           if (!allowance.gte(amountRaw)) {

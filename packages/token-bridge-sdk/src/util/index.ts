@@ -1,14 +1,10 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import {
-  ERC20__factory,
-  L1TokenData,
-  L2TokenData,
-  TokenBridgeParams
-} from 'index'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { ERC20__factory, L1TokenData, L2TokenData } from 'index'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
+import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
 import { BigNumber } from 'ethers'
 
 export function assertNever(x: never, message = 'Unexpected object'): never {
@@ -48,24 +44,26 @@ export function getDefaultTokenSymbol(address: string) {
  * @returns
  */
 export async function getL1TokenData(
+  account: string,
   erc20L1Address: string,
-  params: TokenBridgeParams,
+  l1Provider: JsonRpcProvider,
+  l2Provider: JsonRpcProvider,
   throwOnInvalidERC20 = true
 ): Promise<L1TokenData> {
-  const { l1, l2, walletAddress } = params
-  const erc20Bridger = new Erc20Bridger(l2.network)
+  const l2Network = await getL2Network(l2Provider)
+  const erc20Bridger = new Erc20Bridger(l2Network)
 
   const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
     erc20L1Address,
-    l1.provider
+    l1Provider
   )
 
-  const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
+  const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
 
-  const multiCaller = await MultiCaller.fromProvider(l1.provider)
+  const multiCaller = await MultiCaller.fromProvider(l1Provider)
   const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
-    balanceOf: { account: walletAddress },
-    allowance: { owner: walletAddress, spender: l1GatewayAddress },
+    balanceOf: { account },
+    allowance: { owner: account, spender: l1GatewayAddress },
     decimals: true,
     name: true,
     symbol: true
@@ -101,19 +99,15 @@ export async function getL1TokenData(
  * @returns
  */
 export async function getL2TokenData(
+  account: string,
   erc20L2Address: string,
-  params: TokenBridgeParams
+  l2Provider: JsonRpcProvider
 ): Promise<L2TokenData> {
-  const { l2, walletAddress } = params
+  const contract = StandardArbERC20__factory.connect(erc20L2Address, l2Provider)
 
-  const contract = StandardArbERC20__factory.connect(
-    erc20L2Address,
-    l2.provider
-  )
-
-  const multiCaller = await MultiCaller.fromProvider(l2.provider)
+  const multiCaller = await MultiCaller.fromProvider(l2Provider)
   const [tokenData] = await multiCaller.getTokenData([erc20L2Address], {
-    balanceOf: { account: walletAddress }
+    balanceOf: { account }
   })
 
   if (typeof tokenData.balance === 'undefined') {

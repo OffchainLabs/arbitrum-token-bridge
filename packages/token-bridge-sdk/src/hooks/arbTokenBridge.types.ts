@@ -2,6 +2,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import {
   L1ToL2MessageStatus,
   L2ToL1MessageStatus as OutgoingMessageState
@@ -245,12 +246,16 @@ export interface ArbTokenBridgeToken {
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
   getL1TokenData: (
+    account: string,
     erc20L1Address: string,
-    params: TokenBridgeParams
+    l1Provider: JsonRpcProvider,
+    l2Provider: JsonRpcProvider,
+    throwOnInvalidERC20?: boolean
   ) => Promise<L1TokenData>
   getL2TokenData: (
+    account: string,
     erc20L2Address: string,
-    params: TokenBridgeParams
+    l2Provider: JsonRpcProvider
   ) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
