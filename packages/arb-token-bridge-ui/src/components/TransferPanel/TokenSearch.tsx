@@ -566,12 +566,12 @@ export function TokenSearch({
         return
       }
 
-      const data = await getL1TokenData(
-        walletAddress,
-        _token.address,
-        l1.provider,
-        l2.provider
-      )
+      const data = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: _token.address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
 
       if (data) {
         token.updateTokenData(_token.address)

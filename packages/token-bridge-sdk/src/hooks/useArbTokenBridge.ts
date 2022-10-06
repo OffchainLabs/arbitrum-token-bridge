@@ -372,12 +372,12 @@ export const useArbTokenBridge = (
       l1Signer
     })
 
-    const tokenData = await getL1TokenData(
-      walletAddress,
+    const tokenData = await getL1TokenData({
+      account: walletAddress,
       erc20L1Address,
-      l1.provider,
-      l2.provider
-    )
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     addTransaction({
       type: 'approve',
@@ -427,12 +427,12 @@ export const useArbTokenBridge = (
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const tokenData = await getL1TokenData(
-      walletAddress,
+    const tokenData = await getL1TokenData({
+      account: walletAddress,
       erc20L1Address,
-      l1.provider,
-      l2.provider
-    )
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     addTransaction({
       type: 'approve-l2',
@@ -463,12 +463,12 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
   }) {
-    const { symbol, decimals } = await getL1TokenData(
-      walletAddress,
+    const { symbol, decimals } = await getL1TokenData({
+      account: walletAddress,
       erc20L1Address,
-      l1.provider,
-      l2.provider
-    )
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     const tx = await erc20Bridger.deposit({
       l1Signer,
@@ -559,12 +559,12 @@ export const useArbTokenBridge = (
         const { symbol, decimals } = bridgeToken
         return { symbol, decimals }
       }
-      const { symbol, decimals } = await getL1TokenData(
-        walletAddress,
+      const { symbol, decimals } = await getL1TokenData({
+        account: walletAddress,
         erc20L1Address,
-        l1.provider,
-        l2.provider
-      )
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
       addToken(erc20L1Address)
       return { symbol, decimals }
     })()
@@ -792,22 +792,22 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const { name, symbol, balance, decimals } = await getL1TokenData(
-      walletAddress,
-      l2Address,
-      l1.provider,
-      l2.provider
-    )
+    const { name, symbol, balance, decimals } = await getL1TokenData({
+      account: walletAddress,
+      erc20L1Address: l1Address,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     l1TokenBalance = balance
 
     try {
       // check if token is deployed at l2 address; if not this will throw
-      const { balance } = await getL2TokenData(
-        walletAddress,
-        l2Address,
-        l2.provider
-      )
+      const { balance } = await getL2TokenData({
+        account: walletAddress,
+        erc20L2Address: l2Address,
+        l2Provider: l2.provider
+      })
       l2TokenBalance = balance
     } catch (error) {
       console.info(`no L2 token for ${l1Address} (which is fine)`)
@@ -874,15 +874,19 @@ export const useArbTokenBridge = (
         return
       }
       const { l2Address } = bridgeToken
-      const l1Data = await getL1TokenData(
-        walletAddress,
-        l1Address,
-        l1.provider,
-        l2.provider
-      )
+      const l1Data = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: l1Address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
       const l2Data =
         (l2Address &&
-          (await getL2TokenData(walletAddress, l2Address, l2.provider))) ||
+          (await getL2TokenData({
+            account: walletAddress,
+            erc20L2Address: l2Address,
+            l2Provider: l2.provider
+          }))) ||
         undefined
       const erc20TokenBalance: BridgeBalance = {
         balance: l1Data.balance,
@@ -983,12 +987,12 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
-    const { symbol, decimals } = await getL1TokenData(
-      walletAddress,
-      tokenAddress as string,
-      l1.provider,
-      l2.provider
-    )
+    const { symbol, decimals } = await getL1TokenData({
+      account: walletAddress,
+      erc20L1Address: tokenAddress as string,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     addTransaction({
       status: 'pending',
@@ -1083,13 +1087,13 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { symbol } = await getL1TokenData(
-        walletAddress,
-        l1Address,
-        l1.provider,
-        l2.provider,
-        false
-      )
+      const { symbol } = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: l1Address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider,
+        throwOnInvalidERC20: false
+      })
       addressToSymbol[l1Address] = symbol
       return symbol
     } catch (err) {
@@ -1106,13 +1110,13 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const { decimals } = await getL1TokenData(
-        walletAddress,
-        l1Address,
-        l1.provider,
-        l2.provider,
-        false
-      )
+      const { decimals } = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: l1Address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider,
+        throwOnInvalidERC20: false
+      })
       addressToDecimals[l1Address] = decimals
       return decimals
     } catch (err) {

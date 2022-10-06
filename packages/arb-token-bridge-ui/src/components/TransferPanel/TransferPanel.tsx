@@ -105,8 +105,6 @@ export function TransferPanel() {
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
-    l1,
-    l2,
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
@@ -379,12 +377,12 @@ export function TransferPanel() {
             return
           }
 
-          const { allowance } = await getL1TokenData(
-            walletAddress,
-            selectedToken.address,
-            l1.provider,
-            l2.provider
-          )
+          const { allowance } = await getL1TokenData({
+            account: walletAddress,
+            erc20L1Address: selectedToken.address,
+            l1Provider: l1Provider,
+            l2Provider: l2Provider
+          })
 
           if (!allowance.gte(amountRaw)) {
             const waitForInput = openTokenApprovalDialog()

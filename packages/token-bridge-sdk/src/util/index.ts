@@ -43,13 +43,19 @@ export function getDefaultTokenSymbol(address: string) {
  * @param erc20L1Address
  * @returns
  */
-export async function getL1TokenData(
-  account: string,
-  erc20L1Address: string,
-  l1Provider: JsonRpcProvider,
-  l2Provider: JsonRpcProvider,
+export async function getL1TokenData({
+  account,
+  erc20L1Address,
+  l1Provider,
+  l2Provider,
   throwOnInvalidERC20 = true
-): Promise<L1TokenData> {
+}: {
+  account: string
+  erc20L1Address: string
+  l1Provider: JsonRpcProvider
+  l2Provider: JsonRpcProvider
+  throwOnInvalidERC20?: boolean
+}): Promise<L1TokenData> {
   const l2Network = await getL2Network(l2Provider)
   const erc20Bridger = new Erc20Bridger(l2Network)
 
@@ -98,11 +104,15 @@ export async function getL1TokenData(
  * @param erc20L2Address
  * @returns
  */
-export async function getL2TokenData(
-  account: string,
-  erc20L2Address: string,
+export async function getL2TokenData({
+  account,
+  erc20L2Address,
+  l2Provider
+}: {
+  account: string
+  erc20L2Address: string
   l2Provider: JsonRpcProvider
-): Promise<L2TokenData> {
+}): Promise<L2TokenData> {
   const contract = StandardArbERC20__factory.connect(erc20L2Address, l2Provider)
 
   const multiCaller = await MultiCaller.fromProvider(l2Provider)

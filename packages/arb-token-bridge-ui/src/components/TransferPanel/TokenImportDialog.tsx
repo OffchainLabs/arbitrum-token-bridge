@@ -103,19 +103,19 @@ export function TokenImportDialog({
       const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return getL1TokenDataFromSdk(
-          walletAddress,
-          addressOnL1,
-          l1.provider,
-          l2.provider
-        )
+        return getL1TokenDataFromSdk({
+          account: walletAddress,
+          erc20L1Address: addressOnL1,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
       } else {
-        return getL1TokenDataFromSdk(
-          walletAddress,
-          eitherL1OrL2Address,
-          l1.provider,
-          l2.provider
-        )
+        return getL1TokenDataFromSdk({
+          account: walletAddress,
+          erc20L1Address: eitherL1OrL2Address,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
       }
     },
     [l1, l2, walletAddress, token]
@@ -183,6 +183,8 @@ export function TokenImportDialog({
         if (data) {
           const addressOnL1 = data.contract.address.toLowerCase()
           const searchResult2 = searchForTokenInLists(addressOnL1)
+
+          console.log('searchresult2', searchResult2)
 
           if (searchResult2.found) {
             // The address provided was an L2 address, and we found the corresponding L1 address within our lists
