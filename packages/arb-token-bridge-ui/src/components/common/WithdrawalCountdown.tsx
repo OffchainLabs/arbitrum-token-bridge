@@ -25,8 +25,12 @@ export function WithdrawalCountdown({
   }
 
   if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
-    const { isMainnet, isArbitrumRinkeby, isArbitrumGoerliRollup } = isNetwork(l1Network)
-    const remainingTime = isMainnet ? '1 week' : isArbitrumRinkeby || isArbitrumGoerliRollup ? '4 hours' : '1 day'
+    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1Network)
+    const remainingTime = isMainnet
+      ? '1 week'
+      : isRinkeby || isGoerli
+      ? '4 hours'
+      : '1 day'
     return <span>~{remainingTime} remaining</span>
   }
 
