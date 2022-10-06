@@ -58,6 +58,12 @@ import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
+import EthereumLogo from '../../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
+import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
+import { NetworkListbox } from '../TransferPanel/TransferPanelMain'
+
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
   isImToken?: boolean
@@ -141,6 +147,9 @@ const AppContent = (): JSX.Element => {
 
       <Notifications />
       <MainContent />
+
+
+      <UnsupportedNetworkFallback />
     </>
   )
 }
@@ -473,39 +482,7 @@ function ConnectionFallback({
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      return (
-        <div className="flex flex-col items-center space-y-8 py-24 px-12">
-          <div className="flex w-full justify-center">
-            <span className="center py-4 text-center text-3xl font-medium text-white">
-              Oops! You’re connected to the wrong network.
-            </span>
-          </div>
-
-          <Button
-            variant="primary"
-            onClick={() => {}}
-            className={'text-md bg-blue-arbitrum py-3'}
-          >
-            Switch to Arbitrum One
-          </Button>
-
-          <Button
-            variant="primary"
-            onClick={() => {}}
-            className={'text-md bg-brick-dark py-3'}
-          >
-            Switch to Arbitrum Nova
-          </Button>
-
-          <Button
-            variant="primary"
-            onClick={() => {}}
-            className={'text-md bg-blue-arbitrum py-3'}
-          >
-            Switch to Ethereum Mainnet
-          </Button>
-        </div>
-      )
+      return <UnsupportedNetworkFallback />
   }
 }
 
@@ -518,5 +495,74 @@ export default function App() {
         <Routes />
       </Layout>
     </Provider>
+  )
+}
+
+const UnsupportedNetworkFallback = () => {
+  const { l1, l2 } = useNetworksAndSigners()
+
+  return (
+    <>
+      <HeaderContent>
+        <HeaderNetworkNotSupported />
+      </HeaderContent>
+
+      <div className="flex flex-col items-center space-y-8 py-24 px-12">
+        <div className="flex w-full justify-center">
+          <span className="center py-4 text-center text-3xl font-medium text-white">
+            Oops! You’re connected to the wrong network.
+          </span>
+        </div>
+        <Button
+          variant="primary"
+          onClick={() => {}}
+          className={'text-md bg-blue-arbitrum py-3'}
+        >
+          <div className="flex flex-row items-center justify-center space-x-3">
+            <img
+              src={ArbitrumOneLogo}
+              alt={`${'ArbitrumOne'} logo`}
+              className="max-w-8 max-h-8"
+            />
+            <span> Switch to Arbitrum One</span>
+          </div>
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => {}}
+          className={'text-md bg-brick-dark py-3'}
+        >
+          <div className="flex flex-row items-center justify-center space-x-3">
+            <img
+              src={ArbitrumNovaLogo}
+              alt={`${'ArbitrumNova'} logo`}
+              className="max-w-8 max-h-8"
+            />
+            <span>Switch to Arbitrum Nova</span>
+          </div>
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => {}}
+          className={'text-md bg-blue-arbitrum py-3'}
+        >
+          <div className="flex flex-row items-center justify-center space-x-3">
+            <img
+              src={EthereumLogo}
+              alt={`${'Ethereum'} logo`}
+              className="max-w-8 max-h-8"
+            />
+            <span>Switch to Ethereum Mainnet</span>
+          </div>
+        </Button>
+        xxx
+        <NetworkListbox
+          options={[l1.network, l2.network]}
+          value={l1.network}
+          label=""
+          onChange={() => {}}
+        />{' '}
+      </div>
+    </>
   )
 }

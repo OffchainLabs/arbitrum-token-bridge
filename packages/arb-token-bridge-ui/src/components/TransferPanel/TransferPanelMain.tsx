@@ -56,7 +56,7 @@ type NetworkListboxProps = {
   onChange: (value: L1Network | L2Network) => void
 }
 
-function NetworkListbox({
+export function NetworkListbox({
   disabled = false,
   label,
   options,
