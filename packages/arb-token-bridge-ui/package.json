@@ -52,9 +52,6 @@
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
     "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts"
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
