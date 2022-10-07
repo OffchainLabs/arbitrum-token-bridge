@@ -148,7 +148,7 @@ describe('Deposit ERC20 Token', () => {
   context('user has 0 L1-ERC20 and is on wrong chain', () => {})
   // TODO
   context(
-    'user has some LPT tokens which require token approval permission and is on L1',
+    'user has some ERC-20 tokens which require token approval permission and is on L1',
     () => {}
   )
 })
