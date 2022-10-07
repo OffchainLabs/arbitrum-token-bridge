@@ -187,7 +187,8 @@ describe('Withdraw ERC20 Token', () => {
   context('user has 0 L2-ERC20 and is on wrong chain', () => {})
   // TODO
   context(
-    'user has some LPT tokens which require token approval permission and is on L2',
+    'user has ERC20 tokens which require token approval permission and is on L2',
+    //eg. LPT tokens
     () => {}
   )
 })
