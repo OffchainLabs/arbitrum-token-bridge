@@ -46,15 +46,17 @@ import {
   L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { fetchETHWithdrawalsFromSubgraph } from '../withdrawals/fetchETHWithdrawalsFromSubgraph'
-import { fetchETHWithdrawalsFromEventLogs } from '../withdrawals/fetchETHWithdrawalsFromEventLogs'
 import {
+  fetchETHWithdrawalsFromEventLogs,
+  fetchETHWithdrawalsFromSubgraph,
+  fetchTokenWithdrawalsFromEventLogs,
   fetchTokenWithdrawalsFromSubgraph,
   FetchTokenWithdrawalsFromSubgraphResult
-} from '../withdrawals/fetchTokenWithdrawalsFromSubgraph'
-import { fetchTokenWithdrawalsFromEventLogs } from '../withdrawals/fetchTokenWithdrawalsFromEventLogs'
+} from '../withdrawals'
 
+import { isClassicL2ToL1TransactionEvent } from '../util'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
 const { Zero } = constants
 
@@ -90,14 +92,22 @@ function getDefaultTokenSymbol(address: string) {
   )
 }
 
+function getExecutedMessagesCacheKey({
+  event,
+  l2ChainId
+}: {
+  event: L2ToL1EventResult
+  l2ChainId: number
+}) {
+  return isClassicL2ToL1TransactionEvent(event)
+    ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
+    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
+}
+
 export interface TokenBridgeParams {
   walletAddress: string
   l1: { provider: JsonRpcProvider; network: L1Network }
   l2: { provider: JsonRpcProvider; network: L2Network }
-}
-
-function isClassicEvent(event: L2ToL1EventResult) {
-  return typeof (event as any).indexInBatch !== 'undefined'
 }
 
 export const useArbTokenBridge = (
@@ -149,7 +159,10 @@ export const useArbTokenBridge = (
   }
 
   const [executedMessagesCache, setExecutedMessagesCache] =
-    useLocalStorage<ExecutedMessagesCache>('executedMessagesCache', {}) as [
+    useLocalStorage<ExecutedMessagesCache>(
+      'arbitrum:bridge:executed-messages',
+      {}
+    ) as [
       ExecutedMessagesCache,
       React.Dispatch<ExecutedMessagesCache>,
       React.Dispatch<void>
@@ -171,9 +184,6 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
-
-  const isArbitrumOne = l2.network.chainID === 42161
-  const isArbitrumRinkeby = l2.network.chainID === 421611
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
@@ -1102,7 +1112,7 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache(event)
+        addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
@@ -1154,7 +1164,7 @@ export const useArbTokenBridge = (
 
       if (rec.status === 1) {
         setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache(event)
+        addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
           delete newPendingWithdrawalsMap[id]
@@ -1226,15 +1236,14 @@ export const useArbTokenBridge = (
   async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
     result: FetchTokenWithdrawalsFromSubgraphResult
   ): Promise<L2ToL1EventResultPlus> {
-    const symbol = await getTokenSymbol(result.otherData.tokenAddress)
-    const decimals = await getTokenDecimals(result.otherData.tokenAddress)
-    const outgoingMessageState = await getOutgoingMessageState(
-      result.l2ToL1Event
-    )
+    const symbol = await getTokenSymbol(result.tokenAddress)
+    const decimals = await getTokenDecimals(result.tokenAddress)
+    const outgoingMessageState = await getOutgoingMessageState(result)
 
     return {
-      ...result.l2ToL1Event,
-      ...result.otherData,
+      ...result,
+      value: result.amount,
+      type: AssetType.ERC20,
       symbol,
       decimals,
       outgoingMessageState
@@ -1309,25 +1318,27 @@ export const useArbTokenBridge = (
     }
   }
 
-  function getLatestSubgraphBlockNumber() {
-    if (isArbitrumOne) {
-      return 22202305
+  async function tryFetchLatestSubgraphBlockNumber(): Promise<number> {
+    try {
+      return await fetchL2BlockNumberFromSubgraph(l2.network.chainID)
+    } catch (error) {
+      // In case the subgraph is not supported or down, fall back to fetching everything through event logs
+      return 0
     }
-
-    if (isArbitrumRinkeby) {
-      return 13919178
-    }
-
-    // Currently no subgraphs for other networks
-    return 0
   }
 
   const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
     const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
-    const latestSubgraphBlockNumber = getLatestSubgraphBlockNumber()
 
     console.log('*** Getting initial pending withdrawal data ***')
+
+    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber()
+
+    console.log(
+      'Latest block number on L2 from subgraph:',
+      latestSubgraphBlockNumber
+    )
 
     const [
       ethWithdrawalsFromSubgraph,
@@ -1340,7 +1351,7 @@ export const useArbTokenBridge = (
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l1NetworkId: l1.network.chainID
+        l2Provider: l2.provider
       }),
       fetchETHWithdrawalsFromEventLogs({
         address: walletAddress,
@@ -1353,13 +1364,12 @@ export const useArbTokenBridge = (
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l1NetworkId: l1.network.chainID
+        l2Provider: l2.provider
       }),
       fetchTokenWithdrawalsFromEventLogs({
         address: walletAddress,
         fromBlock: latestSubgraphBlockNumber + 1,
         toBlock: 'latest',
-        l2Network: l2.network,
         l2Provider: l2.provider,
         l2GatewayAddresses: gatewayAddresses
       })
@@ -1396,49 +1406,46 @@ export const useArbTokenBridge = (
       pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event
     }
 
+    const executedMessages = l2ToL1Txns.filter(
+      tx => tx.outgoingMessageState === OutgoingMessageState.EXECUTED
+    )
+
+    addToExecutedMessagesCache(executedMessages)
     setPendingWithdrawalMap(pendingWithdrawals)
   }
 
   async function getOutgoingMessageState(event: L2ToL1EventResult) {
-    if (executedMessagesCache[getExecutedMessagesCacheKey(event)]) {
+    const cacheKey = getExecutedMessagesCacheKey({
+      event,
+      l2ChainId: l2.network.chainID
+    })
+
+    if (executedMessagesCache[cacheKey]) {
       return OutgoingMessageState.EXECUTED
     }
 
     const messageReader = new L2ToL1MessageReader(l1.provider, event)
 
     try {
-      const status = await messageReader.status(l2.provider)
-
-      if (status === OutgoingMessageState.EXECUTED) {
-        addToExecutedMessagesCache(event)
-      }
-
-      return status
+      return await messageReader.status(l2.provider)
     } catch (error) {
       return OutgoingMessageState.UNCONFIRMED
     }
   }
 
-  function getExecutedMessagesCacheKey(event: L2ToL1EventResult) {
-    const anyEvent = event as any
+  function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
+    const added: { [cacheKey: string]: boolean } = {}
 
-    // Nitro
-    if (anyEvent.position) {
-      const position = anyEvent.position as BigNumber
+    events.forEach((event: L2ToL1EventResult) => {
+      const cacheKey = getExecutedMessagesCacheKey({
+        event,
+        l2ChainId: l2.network.chainID
+      })
 
-      return `${position.toString()},${l2NetworkID}`
-    }
+      added[cacheKey] = true
+    })
 
-    // Classic
-    const batchNumber = anyEvent.batchNumber as BigNumber
-    const indexInBatch = anyEvent.indexInBatch as BigNumber
-
-    return `${batchNumber.toString()},${indexInBatch.toString()},${l1NetworkID}`
-  }
-
-  function addToExecutedMessagesCache(event: L2ToL1EventResult) {
-    const cacheKey = getExecutedMessagesCacheKey(event)
-    setExecutedMessagesCache({ ...executedMessagesCache, [cacheKey]: true })
+    setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
   return {
