@@ -606,12 +606,14 @@ export const useArbTokenBridge = (
     amount: BigNumber
   }) {
     const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
+    const lptMainnetAddressLowercased =
+      '0x58b6a8a3302369daec383334672404ee733ab239'.toLowerCase()
 
     if (
       // LPT: L1 gateway reverts on zero amount transfers
       //
       // https://github.com/livepeer/arbitrum-lpt-bridge/blob/170e937724c21ff9971a9b0198cb8fcc947a4ea1/contracts/L1/gateway/L1LPTGateway.sol#L97
-      erc20L1AddressLowercased === '0x58b6a8a3302369daec383334672404ee733ab239'
+      erc20L1AddressLowercased === lptMainnetAddressLowercased
     ) {
       const l1BaseFee = await l1.provider.getGasPrice()
 
