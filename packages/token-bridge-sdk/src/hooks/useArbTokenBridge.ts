@@ -17,6 +17,7 @@ import {
   L2TransactionReceipt
 } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 
@@ -614,6 +615,44 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
   }) {
+    const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
+    const lptMainnetAddressLowercased =
+      '0x58b6a8a3302369daec383334672404ee733ab239'.toLowerCase()
+
+    if (
+      // LPT: L1 gateway reverts on zero amount transfers
+      //
+      // https://github.com/livepeer/arbitrum-lpt-bridge/blob/170e937724c21ff9971a9b0198cb8fcc947a4ea1/contracts/L1/gateway/L1LPTGateway.sol#L97
+      erc20L1AddressLowercased === lptMainnetAddressLowercased
+    ) {
+      const l1BaseFee = await l1.provider.getGasPrice()
+
+      const inbox = Inbox__factory.connect(
+        l2.network.ethBridge.inbox,
+        l1.provider
+      )
+
+      const estimatedL2SubmissionCost =
+        await inbox.calculateRetryableSubmissionFee(
+          // Actual data length was 704 but we added some padding
+          //
+          // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
+          BigNumber.from(1000),
+          // We do the same percent increase in the SDK
+          //
+          // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
+          l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
+        )
+
+      return {
+        // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
+        estimatedL1Gas: BigNumber.from(200_000),
+        // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
+        estimatedL2Gas: BigNumber.from(100_000),
+        estimatedL2SubmissionCost
+      }
+    }
+
     const depositRequest = await erc20Bridger.getDepositRequest({
       // Setting `amount` to zero so it doesn't fail on not enough allowance
       amount: BigNumber.from(0),
