@@ -1318,15 +1318,22 @@ export const useArbTokenBridge = (
     }
   }
 
+  async function tryFetchLatestSubgraphBlockNumber(): Promise<number> {
+    try {
+      return await fetchL2BlockNumberFromSubgraph(l2.network.chainID)
+    } catch (error) {
+      // In case the subgraph is not supported or down, fall back to fetching everything through event logs
+      return 0
+    }
+  }
+
   const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
     const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
 
     console.log('*** Getting initial pending withdrawal data ***')
 
-    const latestSubgraphBlockNumber = await fetchL2BlockNumberFromSubgraph(
-      l2.network.chainID
-    )
+    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber()
 
     console.log(
       'Latest block number on L2 from subgraph:',
