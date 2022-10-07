@@ -7,10 +7,10 @@ module.exports = {
     "prettier",
   ],
   extends: ["airbnb-typescript", "prettier", "plugin:prettier/recommended"],
-  parserOptions: {
-    project: ["./packages/*/tsconfig.json"],
-  },
   parser: "@typescript-eslint/parser",
+  parserOptions: {
+    project: ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"],
+  },
   rules: {
     "prettier/prettier": "error",
     "no-param-reassign": "off",
@@ -26,7 +26,7 @@ module.exports = {
     "react/react-in-jsx-scope": "off",
     "consistent-return": "off",
     "react/jsx-no-bind": "off",
-    //not needed in nextjs
+    // not needed in nextjs
     "react/no-array-index-key": "off",
     "react/jsx-props-no-spreading": "off",
     "import/no-extraneous-dependencies": "off",
