@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { BigNumber, providers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import useSWR, { useSWRConfig, unstable_serialize, Middleware } from 'swr'
-
 import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
@@ -15,8 +14,8 @@ const merge: Middleware = useSWRNext => {
   return (key, fetcher, config) => {
     const { cache } = useSWRConfig()
 
-    const extendedFetcher = async (...args) => {
-      const newBalances = await fetcher(...args)
+    const extendedFetcher = async () => {
+      const newBalances = await fetcher!()
       const oldData = cache.get(unstable_serialize(key))
       return {
         ...oldData,
@@ -85,7 +84,6 @@ const useBalance = ({
       errorRetryInterval: 3_000
     }
   )
-
   const { data = null, mutate: mutateErc20 } = useSWR(
     queryKey('erc20'),
     fetchErc20,
@@ -98,16 +96,15 @@ const useBalance = ({
   )
 
   const updateErc20 = useCallback(
-    async (balances: Erc20Balances) => {
-      return mutateErc20(balances, {
+    (balances: Erc20Balances) =>
+      mutateErc20(balances, {
         populateCache(result, currentData) {
           return {
             ...currentData,
             ...result
           }
         }
-      })
-    },
+      }),
     [mutateErc20]
   )
 
