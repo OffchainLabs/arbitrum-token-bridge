@@ -245,28 +245,6 @@ export interface ArbTokenBridgeToken {
     id: string
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
-  getL1TokenData: ({
-    account,
-    erc20L1Address,
-    l1Provider,
-    l2Provider,
-    throwOnInvalidERC20
-  }: {
-    account: string
-    erc20L1Address: string
-    l1Provider: JsonRpcProvider
-    l2Provider: JsonRpcProvider
-    throwOnInvalidERC20?: boolean
-  }) => Promise<L1TokenData>
-  getL2TokenData: ({
-    account,
-    erc20L2Address,
-    l2Provider
-  }: {
-    account: string
-    erc20L2Address: string
-    l2Provider: JsonRpcProvider
-  }) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
   getL2GatewayAddress: (erc20L1Address: string) => Promise<string>

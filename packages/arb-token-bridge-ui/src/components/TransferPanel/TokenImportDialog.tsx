@@ -184,8 +184,6 @@ export function TokenImportDialog({
           const addressOnL1 = data.contract.address.toLowerCase()
           const searchResult2 = searchForTokenInLists(addressOnL1)
 
-          console.log('searchresult2', searchResult2)
-
           if (searchResult2.found) {
             // The address provided was an L2 address, and we found the corresponding L1 address within our lists
             setStatus(searchResult2.status)

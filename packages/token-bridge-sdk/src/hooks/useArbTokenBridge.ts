@@ -1394,8 +1394,6 @@ export const useArbTokenBridge = (
       withdraw: withdrawToken,
       withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken,
-      getL1TokenData,
-      getL2TokenData,
       getL1ERC20Address,
       getL2ERC20Address,
       getL2GatewayAddress

@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
@@ -52,8 +52,8 @@ export async function getL1TokenData({
 }: {
   account: string
   erc20L1Address: string
-  l1Provider: JsonRpcProvider
-  l2Provider: JsonRpcProvider
+  l1Provider: Provider
+  l2Provider: Provider
   throwOnInvalidERC20?: boolean
 }): Promise<L1TokenData> {
   const l2Network = await getL2Network(l2Provider)
@@ -111,7 +111,7 @@ export async function getL2TokenData({
 }: {
   account: string
   erc20L2Address: string
-  l2Provider: JsonRpcProvider
+  l2Provider: Provider
 }): Promise<L2TokenData> {
   const contract = StandardArbERC20__factory.connect(erc20L2Address, l2Provider)
 
