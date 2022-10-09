@@ -103,7 +103,8 @@ const useBalance = ({
             ...currentData,
             ...result
           }
-        }
+        },
+        revalidate: false
       }),
     [mutateErc20]
   )
