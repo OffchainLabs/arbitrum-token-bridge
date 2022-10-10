@@ -1,9 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
-import {
-  ERC20BridgeToken,
-  getL1TokenData as getL1TokenDataFromSdk
-} from 'token-bridge-sdk'
+import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
@@ -94,7 +91,7 @@ export function TokenImportDialog({
     return false
   }, [bridgeTokens])
 
-  const getL1TokenData = useCallback(
+  const getL1TokenDataFromL1OrL2Address = useCallback(
     async (eitherL1OrL2Address: string) => {
       if (typeof token === 'undefined') {
         return
@@ -103,14 +100,14 @@ export function TokenImportDialog({
       const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return getL1TokenDataFromSdk({
+        return getL1TokenData({
           account: walletAddress,
           erc20L1Address: addressOnL1,
           l1Provider: l1.provider,
           l2Provider: l2.provider
         })
       } else {
-        return getL1TokenDataFromSdk({
+        return getL1TokenData({
           account: walletAddress,
           erc20L1Address: eitherL1OrL2Address,
           l1Provider: l1.provider,
@@ -178,7 +175,7 @@ export function TokenImportDialog({
     }
 
     // Can't find the address provided, so we look further
-    getL1TokenData(address)
+    getL1TokenDataFromL1OrL2Address(address)
       .then(data => {
         if (data) {
           const addressOnL1 = data.contract.address.toLowerCase()
@@ -204,7 +201,7 @@ export function TokenImportDialog({
     address,
     bridgeTokens,
     searchForTokenInLists,
-    getL1TokenData
+    getL1TokenDataFromL1OrL2Address
   ])
 
   useEffect(() => {
