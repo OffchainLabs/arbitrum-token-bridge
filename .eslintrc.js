@@ -10,9 +10,11 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"],
+    tsconfigRootDir: __dirname,
+    sourceType: "module",
   },
   rules: {
-    "prettier/prettier": "error",
+    "prettier/prettier": "warn",
     "no-param-reassign": "off",
     "import/no-cycle": "off",
     "no-await-in-loop": "off",

@@ -1,0 +1,7 @@
+node_modules
+dist
+synpress.config.ts
+tailwind.config.js
+
+packages/arb-token-bridge/craco.config.js
+packages/arb-token-bridge/prettier.config.js
