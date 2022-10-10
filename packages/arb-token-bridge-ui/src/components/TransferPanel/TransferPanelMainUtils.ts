@@ -57,7 +57,7 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
     const l2Balance = erc20L2Address ? erc20L2Balances?.[erc20L2Address] : null
 
     return {
-      ethereum: erc20L1Balances?.[erc20L1Address] || null,
+      ethereum: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
       arbitrum: l2Balance || null
     }
   }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
