@@ -516,10 +516,14 @@ export function TransferPanelMain({
       return disabledDirections[selectedChainId] || []
     }
 
+    const fromOptions = getOptionsWithoutSelection(from.chainID)
+    const toOptions = getOptionsWithoutSelection(to.chainID)
+
     if (isDepositMode) {
       return {
         from: {
-          options: getOptionsWithoutSelection(from.chainID),
+          disabled: !fromOptions.length,
+          options: fromOptions,
           disabledChainIds: getDisabledOptions(to.chainID),
           value: from,
           otherSelectedNetwork: to,
@@ -546,7 +550,8 @@ export function TransferPanelMain({
           }
         },
         to: {
-          options: getOptionsWithoutSelection(to.chainID),
+          disabled: !toOptions.length,
+          options: toOptions,
           disabledChainIds: getDisabledOptions(from.chainID),
           value: to,
           otherSelectedNetwork: from,
@@ -586,7 +591,8 @@ export function TransferPanelMain({
 
     return {
       from: {
-        options: getOptionsWithoutSelection(from.chainID),
+        disabled: !fromOptions.length,
+        options: fromOptions,
         disabledChainIds: getDisabledOptions(to.chainID),
         value: from,
         otherSelectedNetwork: to,
@@ -614,7 +620,8 @@ export function TransferPanelMain({
         }
       },
       to: {
-        options: getOptionsWithoutSelection(to.chainID),
+        disabled: !toOptions.length,
+        options: toOptions,
         disabledChainIds: getDisabledOptions(from.chainID),
         value: to,
         otherSelectedNetwork: from,
