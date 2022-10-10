@@ -4,9 +4,8 @@ module.exports = {
     "react",
     "react-hooks",
     "better-styled-components",
-    "prettier",
   ],
-  extends: ["airbnb-typescript", "prettier", "plugin:prettier/recommended"],
+  extends: ["airbnb-typescript", "plugin:prettier/recommended"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"],
@@ -14,7 +13,6 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
-    "prettier/prettier": "warn",
     "no-param-reassign": "off",
     "import/no-cycle": "off",
     "no-await-in-loop": "off",
