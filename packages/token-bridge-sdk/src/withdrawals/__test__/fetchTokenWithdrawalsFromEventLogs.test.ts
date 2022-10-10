@@ -23,7 +23,6 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
       address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
       fromBlock: 0,
       toBlock: 11110000,
-      l2Network,
       l2Provider,
       l2GatewayAddresses
     })
@@ -36,7 +35,6 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
       address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
       fromBlock: 11110000,
       toBlock: 12055296,
-      l2Network,
       l2Provider,
       l2GatewayAddresses
     })
@@ -65,7 +63,6 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
       address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
       fromBlock: 13910741,
       toBlock: 13927058,
-      l2Network,
       l2Provider,
       l2GatewayAddresses
     })
