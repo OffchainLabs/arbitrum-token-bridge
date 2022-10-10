@@ -46,7 +46,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    return erc20L1Balances?.[tx.tokenAddress]
+    return erc20L1Balances?.[tx.tokenAddress.toLowerCase()]
   }, [erc20L1Balances, ethL1Balance, tx])
 
   useEffect(() => {

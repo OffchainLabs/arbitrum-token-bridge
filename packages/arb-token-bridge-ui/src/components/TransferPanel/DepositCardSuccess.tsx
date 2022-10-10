@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
-import { BigNumber } from 'ethers'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'

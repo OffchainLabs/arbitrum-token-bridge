@@ -151,12 +151,6 @@ export const useArbTokenBridge = (
 
   const [erc721Balances] = useState<ContractStorage<ERC721Balance>>({})
 
-  useEffect(() => {
-    console.log(tokenL1Addresses)
-  }, [tokenL1Addresses])
-  useEffect(() => {
-    console.log(tokenL2Addresses)
-  }, [tokenL2Addresses])
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
@@ -857,7 +851,7 @@ export const useArbTokenBridge = (
           type: TokenType.ERC20,
           symbol,
           address: l1Address,
-          l2Address: address.toLocaleLowerCase(),
+          l2Address: address.toLowerCase(),
           decimals,
           logoURI,
           listID
@@ -928,7 +922,7 @@ export const useArbTokenBridge = (
       type: TokenType.ERC20,
       symbol,
       address: l1Address,
-      l2Address: l2Address.toLocaleLowerCase(),
+      l2Address: l2Address.toLowerCase(),
       decimals
     }
     setBridgeTokens(oldBridgeTokens => {
@@ -1328,6 +1322,10 @@ export const useArbTokenBridge = (
 
     setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
+
+  useEffect(() => {
+    console.log(bridgeTokens)
+  }, [bridgeTokens])
 
   return {
     walletAddress,

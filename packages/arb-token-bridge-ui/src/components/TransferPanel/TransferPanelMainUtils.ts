@@ -53,8 +53,10 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       return defaultResult
     }
 
-    const erc20L2Address = bridgeTokens[erc20L1Address]?.l2Address
-    const l2Balance = erc20L2Address ? erc20L2Balances?.[erc20L2Address] : null
+    const erc20L2Address = bridgeTokens[erc20L1Address.toLowerCase()]?.l2Address
+    const l2Balance = erc20L2Address
+      ? erc20L2Balances?.[erc20L2Address.toLowerCase()]
+      : null
 
     return {
       ethereum: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,

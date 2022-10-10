@@ -98,14 +98,14 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     }
 
     if (isDepositMode) {
-      return erc20L1Balances?.[token.address]
+      return erc20L1Balances?.[token.address.toLowerCase()]
     }
 
     if (!token.l2Address) {
       return BigNumber.from(0)
     }
 
-    return erc20L2Balances?.[token.l2Address] ?? BigNumber.from(0)
+    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? BigNumber.from(0)
   }, [
     ethL1Balance,
     ethL2Balance,
@@ -373,11 +373,11 @@ function TokensPanel({
       }
 
       if (isDepositMode) {
-        return erc20L1Balances?.[address]
+        return erc20L1Balances?.[address.toLowerCase()]
       }
 
-      const l2Address = bridgeTokens[address]?.l2Address
-      return l2Address ? erc20L2Balances?.[l2Address] : null
+      const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
+      return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
     [
       bridgeTokens,
