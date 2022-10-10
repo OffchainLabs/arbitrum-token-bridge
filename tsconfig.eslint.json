@@ -10,6 +10,7 @@
     // adding eslintrc here fixes eslint from throwing an error
     // https://stackoverflow.com/questions/63118405/how-to-fix-eslintrc-the-file-does-not-match-your-project-config
     ".eslintrc.js",
-    "./packages/arb-token-bridge-ui/craco.config.js"
+    "./packages/arb-token-bridge-ui/craco.config.js",
+    "./packages/arb-token-bridge/tests/**/*.ts"
   ]
 }

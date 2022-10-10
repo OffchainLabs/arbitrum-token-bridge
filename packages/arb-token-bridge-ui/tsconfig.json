@@ -3,5 +3,6 @@
   "include": ["src"],
   "compilerOptions": {
     "noEmit": true
-  }
+  },
+  "exclude": ["./packages/arb-token-bridge-ui/build/static/js/*.js"]
 }
