@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { IL1ToL2MessageWriter, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  L1ToL2MessageWriter as IL1ToL2MessageWriter,
+  L1ToL2MessageStatus
+} from '@arbitrum/sdk'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'

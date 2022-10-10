@@ -1,5 +1,4 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
-import * as NitroNetworks from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -35,16 +34,6 @@ export const rpcURLs: { [chainId in ChainId]: string } = {
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://rinkeby.arbitrum.io/rpc',
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
-}
-
-if (NitroNetworks.l1Networks[1]) {
-  NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
-}
-if (NitroNetworks.l1Networks[4]) {
-  NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
-}
-if (NitroNetworks.l1Networks[5]) {
-  NitroNetworks.l1Networks[5].rpcURL = rpcURLs[5]
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
@@ -92,8 +81,11 @@ export function registerLocalNetwork() {
     const customL1Network = localNetwork.l1Network
     const customL2Network = localNetwork.l2Network
 
-    rpcURLs[customL1Network.chainID as ChainId] = customL1Network.rpcURL
-    rpcURLs[customL2Network.chainID as ChainId] = customL2Network.rpcURL
+    rpcURLs[customL1Network.chainID as ChainId] =
+      process.env.REACT_APP_LOCAL_ETHEREUM_RPC_URL || ''
+    rpcURLs[customL2Network.chainID as ChainId] =
+      process.env.REACT_APP_LOCAL_ARBITRUM_RPC_URL || ''
+
     chainIdToDefaultL2ChainId[customL1Network.chainID] = [
       customL2Network.chainID
     ]

@@ -1,5 +1,9 @@
 import { useCallback, useEffect } from 'react'
-import { L1TransactionReceipt, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  L1TransactionReceipt,
+  L1ToL2MessageStatus,
+  EthDepositStatus
+} from '@arbitrum/sdk'
 import { AssetType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
@@ -31,16 +35,29 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-      const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
-      const status = await l1ToL2Msg.status()
 
-      if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
-        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
-          depositTx.txId,
-          l1ToL2Msg,
-          depositTx.asset === 'eth',
-          status
-        )
+      if (depositTx.asset === AssetType.ETH) {
+        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+        const status = await ethDepositMessage.status()
+
+        if (status !== EthDepositStatus.DEPOSITED) {
+          arbTokenBridge?.transactions.fetchAndUpdateEthDepositMessageStatus(
+            depositTx.txId,
+            ethDepositMessage
+          )
+        }
+      } else {
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+        const status = await l1ToL2Msg.status()
+
+        if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
+          arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
+            depositTx.txId,
+            l1ToL2Msg,
+            false,
+            status
+          )
+        }
       }
     }
   }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
@@ -65,9 +82,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
       if (depositTx.assetType === AssetType.ETH) {
-        const [ethDepositMessage] = await l1TxReceipt.getEthDepositMessages(
-          l2Provider
-        )
+        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
         if (!ethDepositMessage) {
           return
@@ -78,7 +93,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
           ethDepositMessage
         )
       } else {
-        const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Provider)
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
         const status = await l1ToL2Msg.status()
 
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(

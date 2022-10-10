@@ -7,12 +7,9 @@ import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
-import { QueryParamProvider } from 'use-query-params'
-import { ReactRouter5Adapter } from 'use-query-params/adapters/react-router-5'
-import { parse, stringify } from 'query-string'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
-import { BalanceContextProvider, TokenBridgeParams } from 'token-bridge-sdk'
+import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
@@ -61,7 +58,10 @@ import {
   isNetwork,
   rpcURLs
 } from '../../util/networks'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  ArbQueryParamProvider,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -72,6 +72,12 @@ const isSwitchChainSupported = (provider: Web3Provider) =>
 
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
+}
+
+declare global {
+  interface Window {
+    Cypress?: any
+  }
 }
 
 const AppContent = (): JSX.Element => {
@@ -129,6 +135,8 @@ const AppContent = (): JSX.Element => {
     )
   }
 
+  const isTestingEnvironment = !!window.Cypress
+
   return (
     <>
       <HeaderOverrides {...headerOverridesProps} />
@@ -142,7 +150,7 @@ const AppContent = (): JSX.Element => {
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
-      <PWLoadedUpdater />
+      {!isTestingEnvironment && <PWLoadedUpdater />}
 
       <Notifications />
       <MainContent />
@@ -292,9 +300,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       symbol: 'ETH',
                       decimals: 18
                     },
-                    rpcUrls: [
-                      network.rpcURL || rpcURLs[network.chainID as ChainId]
-                    ],
+                    rpcUrls: [rpcURLs[network.chainID as ChainId]],
                     blockExplorerUrls: [network.explorerUrl]
                   }
                 ]
@@ -360,14 +366,7 @@ function Routes() {
 
   return (
     <Router>
-      <QueryParamProvider
-        adapter={ReactRouter5Adapter}
-        options={{
-          searchStringToObject: parse,
-          objectToSearchString: stringify,
-          updateType: 'replaceIn' // replace just a single parameter when updating query-state, leaving the rest as is
-        }}
-      >
+      <ArbQueryParamProvider>
         <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
         <Switch>
           <Route path="/tos" exact>
@@ -377,9 +376,7 @@ function Routes() {
           <Route path="/" exact>
             <NetworkReady>
               <AppContextProvider>
-                <BalanceContextProvider>
-                  <Injector>{isTosAccepted && <AppContent />}</Injector>
-                </BalanceContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
               </AppContextProvider>
             </NetworkReady>
           </Route>
@@ -398,7 +395,7 @@ function Routes() {
             </div>
           </Route>
         </Switch>
-      </QueryParamProvider>
+      </ArbQueryParamProvider>
     </Router>
   )
 }
