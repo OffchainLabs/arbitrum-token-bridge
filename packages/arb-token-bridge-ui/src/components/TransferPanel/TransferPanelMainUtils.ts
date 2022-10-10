@@ -35,7 +35,7 @@ export type Balances = {
 export function useTokenBalances(erc20L1Address?: string): Balances {
   const {
     app: {
-      arbTokenBridge: { walletAddress }
+      arbTokenBridge: { walletAddress, bridgeTokens }
     }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
@@ -53,11 +53,14 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       return defaultResult
     }
 
+    const erc20L2Address = bridgeTokens[erc20L1Address]?.l2Address
+    const l2Balance = erc20L2Address ? erc20L2Balances?.[erc20L2Address] : null
+
     return {
       ethereum: erc20L1Balances?.[erc20L1Address] || null,
-      arbitrum: erc20L2Balances?.[erc20L1Address] || null
+      arbitrum: l2Balance || null
     }
-  }, [erc20L1Balances, erc20L2Balances, erc20L1Address])
+  }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
 }
 
 export function useIsSwitchingL2Chain() {

@@ -18,6 +18,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
     app: { arbTokenBridge, selectedToken }
   } = useAppState()
+  const { walletAddress, bridgeTokens, token } = arbTokenBridge
   const dispatch = useAppContextDispatch()
   const {
     l2: { provider: L2Provider }
@@ -28,13 +29,13 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     erc20: [erc20Balances]
   } = useBalance({
     provider: L2Provider,
-    walletAddress: arbTokenBridge.walletAddress
+    walletAddress: walletAddress
   })
 
   useEffect(() => {
     // Add token to bridge just in case the user navigated away while the deposit was in-flight
-    if (tx.tokenAddress && !arbTokenBridge.bridgeTokens[tx.tokenAddress]) {
-      arbTokenBridge.token.add(tx.tokenAddress)
+    if (tx.tokenAddress && !bridgeTokens[tx.tokenAddress]) {
+      token.add(tx.tokenAddress)
     }
   }, [])
 
@@ -51,8 +52,14 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    return erc20Balances?.[tx.tokenAddress]
-  }, [erc20Balances, ethBalance, tx])
+    const l2Address = bridgeTokens[tx.tokenAddress]?.l2Address
+
+    if (!l2Address) {
+      return null
+    }
+
+    return erc20Balances?.[l2Address]
+  }, [bridgeTokens, erc20Balances, ethBalance, tx])
 
   useEffect(() => {
     const timeout = setTimeout(() => {

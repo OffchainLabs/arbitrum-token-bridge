@@ -232,7 +232,9 @@ export function TransferPanel() {
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL2 = erc20L2Balances?.[selectedToken.address]
+      const balanceL2 = selectedToken.l2Address
+        ? erc20L2Balances?.[selectedToken.l2Address]
+        : undefined
       const { decimals } = selectedToken
       if (!balanceL2) {
         return null

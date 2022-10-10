@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState, useMemo, useEffect } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -106,12 +106,13 @@ export const useArbTokenBridge = (
       const { address } = bridgeTokens[tokenAddress]!
       const { l2Address } = bridgeTokens[tokenAddress]!
       if (address) {
-        tokenL1Addresses.push(address)
+        tokenL1Addresses.push(address.toLowerCase())
       }
       if (l2Address) {
-        tokenL2Addresses.push(l2Address)
+        tokenL2Addresses.push(l2Address.toLowerCase())
       }
     }
+
     return {
       tokenL1Addresses,
       tokenL2Addresses
@@ -135,6 +136,12 @@ export const useArbTokenBridge = (
 
   const [erc721Balances] = useState<ContractStorage<ERC721Balance>>({})
 
+  useEffect(() => {
+    console.log(tokenL1Addresses)
+  }, [tokenL1Addresses])
+  useEffect(() => {
+    console.log(tokenL2Addresses)
+  }, [tokenL2Addresses])
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
@@ -797,7 +804,7 @@ export const useArbTokenBridge = (
           type: TokenType.ERC20,
           symbol,
           address: l1Address,
-          l2Address: address,
+          l2Address: address.toLocaleLowerCase(),
           decimals,
           logoURI,
           listID
@@ -868,7 +875,7 @@ export const useArbTokenBridge = (
       type: TokenType.ERC20,
       symbol,
       address: l1Address,
-      l2Address,
+      l2Address: l2Address.toLocaleLowerCase(),
       decimals
     }
     setBridgeTokens(oldBridgeTokens => {
@@ -1274,7 +1281,7 @@ export const useArbTokenBridge = (
 
   return {
     walletAddress,
-    bridgeTokens: bridgeTokens,
+    bridgeTokens,
     balances: {
       erc721: erc721Balances
     },

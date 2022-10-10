@@ -97,9 +97,15 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
-    return isDepositMode
-      ? erc20L1Balances?.[token.address]
-      : erc20L2Balances?.[token.address]
+    if (isDepositMode) {
+      return erc20L1Balances?.[token.address]
+    }
+
+    if (!token.l2Address) {
+      return BigNumber.from(0)
+    }
+
+    return erc20L2Balances?.[token.l2Address] ?? BigNumber.from(0)
   }, [
     ethL1Balance,
     ethL2Balance,
@@ -333,7 +339,7 @@ function TokensPanel({
 }): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { token, walletAddress },
+      arbTokenBridge: { token, walletAddress, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -366,22 +372,26 @@ function TokensPanel({
         return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
-      return isDepositMode
-        ? erc20L1Balances?.[address]
-        : erc20L2Balances?.[address]
+      if (isDepositMode) {
+        return erc20L1Balances?.[address]
+      }
+
+      const l2Address = bridgeTokens[address]?.l2Address
+      return l2Address ? erc20L2Balances?.[l2Address] : null
     },
     [
+      bridgeTokens,
+      erc20L1Balances,
+      erc20L2Balances,
       ethL1Balance,
       ethL2Balance,
-      isDepositMode,
-      erc20L1Balances,
-      erc20L2Balances
+      isDepositMode
     ]
   )
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-    return [
+    const tokens = [
       ETH_IDENTIFIER,
       // Deduplicate addresses
       ...new Set([
@@ -389,7 +399,8 @@ function TokensPanel({
         ...Object.keys(tokensFromLists)
       ])
     ]
-      .filter((address: string) => {
+    return tokens
+      .filter((address, index) => {
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH
