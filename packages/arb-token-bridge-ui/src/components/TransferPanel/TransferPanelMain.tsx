@@ -6,16 +6,20 @@ import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { isL1Network, l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import {
+  isL1Network,
+  l2Networks
+} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
+import { Tooltip } from '../common/Tooltip'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -55,7 +59,9 @@ type NetworkListboxProps = {
   disabled?: boolean
   label: string
   options: (L1Network | L2Network)[]
+  disabledChainIds: ChainId[]
   value: L1Network | L2Network
+  otherSelectedNetwork: L1Network | L2Network
   onChange: (value: L1Network | L2Network) => void
 }
 
@@ -63,7 +69,9 @@ function NetworkListbox({
   disabled = false,
   label,
   options,
+  disabledChainIds,
   value,
+  otherSelectedNetwork,
   onChange
 }: NetworkListboxProps) {
   const buttonClassName = useMemo(() => {
@@ -109,6 +117,22 @@ function NetworkListbox({
     [options.length]
   )
 
+  const isOptionDisabled = useCallback(
+    (optionChainId: ChainId) => {
+      return disabledChainIds.includes(optionChainId)
+    },
+    [disabledChainIds]
+  )
+
+  const getDisabledNetworkPairTooltip = useCallback(
+    (option: L1Network | L2Network) => {
+      return (
+        <span>{`${option.name} <> ${otherSelectedNetwork.name} transfers aren't enabled yet`}</span>
+      )
+    },
+    [otherSelectedNetwork]
+  )
+
   return (
     <Listbox
       as="div"
@@ -128,23 +152,36 @@ function NetworkListbox({
       </Listbox.Button>
 
       <Listbox.Options className="absolute z-20 mt-2 rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {options.map((option, index) => (
-          <Listbox.Option
-            key={option.chainID}
-            value={option}
-            className={twMerge(
-              'flex h-12 cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
-              getOptionClassName(index)
-            )}
-          >
-            <img
-              src={getOptionImageSrc(option)}
-              alt={`${getNetworkName(option)} logo`}
-              className="w-8 max-h-10"
-            />
-            <span>{getNetworkName(option)}</span>
-          </Listbox.Option>
-        ))}
+        {options.map((option, index) => {
+          const isDisabled = isOptionDisabled(option.chainID)
+
+          return (
+            <Tooltip
+              show={isDisabled}
+              content={getDisabledNetworkPairTooltip(option)}
+              wrapperClassName="w-full"
+              theme="dark"
+            >
+              <Listbox.Option
+                key={option.chainID}
+                value={option}
+                className={twMerge(
+                  'flex h-12 cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+                  getOptionClassName(index),
+                  isDisabled ? 'pointer-events-none opacity-40' : ''
+                )}
+                disabled={isDisabled}
+              >
+                <img
+                  src={getOptionImageSrc(option)}
+                  alt={`${getNetworkName(option)} logo`}
+                  className="max-h-10 w-8"
+                />
+                <span>{getNetworkName(option)}</span>
+              </Listbox.Option>
+            </Tooltip>
+          )
+        })}
       </Listbox.Options>
     </Listbox>
   )
@@ -461,11 +498,31 @@ export function TransferPanelMain({
       setQueryParams({ l2ChainId })
     }
 
+    function getOptionsWithoutSelection(selectedChainId: ChainId) {
+      return [l1.network, ...options].filter(
+        option => option.chainID !== selectedChainId
+      )
+    }
+
+    function getDisabledOptions(selectedChainId: ChainId) {
+      const disabledDirections: {
+        [chainId in ChainId]?: ChainId[]
+      } = {
+        // One<>Nova bridge is currently disabled.
+        [ChainId.ArbitrumOne]: [ChainId.ArbitrumNova],
+        [ChainId.ArbitrumNova]: [ChainId.ArbitrumOne]
+      }
+
+      return disabledDirections[selectedChainId] || []
+    }
+
     if (isDepositMode) {
       return {
         from: {
-          options: [l1.network, ...options],
+          options: getOptionsWithoutSelection(from.chainID),
+          disabledChainIds: getDisabledOptions(to.chainID),
           value: from,
+          otherSelectedNetwork: to,
           onChange: async network => {
             // Selecting the same chain or L1 network
             if (from.chainID === network.chainID || isL1Network(network)) {
@@ -489,8 +546,10 @@ export function TransferPanelMain({
           }
         },
         to: {
-          options: [l1.network, ...options],
+          options: getOptionsWithoutSelection(to.chainID),
+          disabledChainIds: getDisabledOptions(from.chainID),
           value: to,
+          otherSelectedNetwork: from,
           onChange: async network => {
             // Selecting the same chain
             if (to.chainID === network.chainID) {
@@ -527,8 +586,10 @@ export function TransferPanelMain({
 
     return {
       from: {
-        options: [l1.network, ...options],
+        options: getOptionsWithoutSelection(from.chainID),
+        disabledChainIds: getDisabledOptions(to.chainID),
         value: from,
+        otherSelectedNetwork: to,
         onChange: async network => {
           // Selecting the same chain
           if (from.chainID === network.chainID) {
@@ -553,8 +614,10 @@ export function TransferPanelMain({
         }
       },
       to: {
-        options: [l1.network, ...options],
+        options: getOptionsWithoutSelection(to.chainID),
+        disabledChainIds: getDisabledOptions(from.chainID),
         value: to,
+        otherSelectedNetwork: from,
         onChange: async network => {
           // Selecting the same chain or L1 network
           if (to.chainID === network.chainID || isL1Network(network)) {
