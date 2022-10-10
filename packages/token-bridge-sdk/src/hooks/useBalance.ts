@@ -67,7 +67,7 @@ const useBalance = ({
     })
 
     const balances = erc20Addresses.reduce((acc, address, index) => {
-      acc[address] = addressesBalances[index].balance
+      acc[address.toLowerCase()] = addressesBalances[index].balance
       return acc
     }, {} as { [address: string]: BigNumber | undefined })
 
@@ -96,8 +96,12 @@ const useBalance = ({
   )
 
   const updateErc20 = useCallback(
-    (balances: Erc20Balances) =>
-      mutateErc20(balances, {
+    (balances: Erc20Balances) => {
+      const lowerCasedBalances: Erc20Balances = {}
+      for (let balance in balances) {
+        lowerCasedBalances[balance.toLowerCase()] = balances[balance]
+      }
+      return mutateErc20(lowerCasedBalances, {
         populateCache(result, currentData) {
           return {
             ...currentData,
@@ -105,7 +109,8 @@ const useBalance = ({
           }
         },
         revalidate: false
-      }),
+      })
+    },
     [mutateErc20]
   )
 

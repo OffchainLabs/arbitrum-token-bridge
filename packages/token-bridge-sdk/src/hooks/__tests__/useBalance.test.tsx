@@ -223,7 +223,7 @@ describe('useBalance', () => {
     })
   })
 
-  it('setter update ERC20 balance and merge data', async () => {
+  it.only('getter update ERC20 balance and merge data', async () => {
     const provider = new StaticJsonRpcProvider(
       process.env.REACT_APP_ETHEREUM_RPC_URL,
       1
@@ -240,8 +240,8 @@ describe('useBalance', () => {
     )
 
     const erc20 = [
-      '0x0000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000001'
+      '0xABCdef0000000000000000000000000000000000',
+      '0xAAADDD0000000000000000000000000000000001'
     ]
     const { result, waitForValueToChange } = renderHook(
       () =>
@@ -262,14 +262,14 @@ describe('useBalance', () => {
     } = result
 
     expect(erc20Balances).toEqual({
-      '0x0000000000000000000000000000000000000000': BigNumber.from(11),
-      '0x0000000000000000000000000000000000000001': BigNumber.from(22)
+      '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
+      '0xaaaddd0000000000000000000000000000000001': BigNumber.from(22)
     })
 
     await act(async () => {
       updateErc20Balances({
-        '0x0000000000000000000000000000000000000001': BigNumber.from(25),
-        '0x0000000000000000000000000000000000000002': BigNumber.from(33)
+        '0xAaADDD0000000000000000000000000000000001': BigNumber.from(25),
+        '0xAAAAAA0000000000000000000000000000000002': BigNumber.from(33)
       })
       await waitForValueToChange(() => result.current.erc20, { timeout: 500 })
 
@@ -277,11 +277,13 @@ describe('useBalance', () => {
        * 0x..0 is untouched
        * 0x..1 is updated
        * 0x..2 is added
+       *
+       * All balances are stored in lowercase
        */
       expect(result.current.erc20[0]).toEqual({
-        '0x0000000000000000000000000000000000000000': BigNumber.from(11),
-        '0x0000000000000000000000000000000000000001': BigNumber.from(25),
-        '0x0000000000000000000000000000000000000002': BigNumber.from(33)
+        '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
+        '0xaaaddd0000000000000000000000000000000001': BigNumber.from(25),
+        '0xaaaaaa0000000000000000000000000000000002': BigNumber.from(33)
       })
     })
   })
