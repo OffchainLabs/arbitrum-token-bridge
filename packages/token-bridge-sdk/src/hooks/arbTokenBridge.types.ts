@@ -2,7 +2,6 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import {
   L1ToL2MessageStatus,
   L2ToL1MessageStatus as OutgoingMessageState
@@ -27,7 +26,6 @@ import {
   L2ContractTransaction,
   L2TransactionReceipt
 } from '@arbitrum/sdk/dist/lib/message/L2Transaction'
-import { TokenBridgeParams } from 'index'
 
 import {
   FailedTransaction,
