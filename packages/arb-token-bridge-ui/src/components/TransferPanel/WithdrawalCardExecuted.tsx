@@ -22,7 +22,8 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
   const { walletAddress } = arbTokenBridge
   const {
-    eth: [ethBalance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: l1.provider, walletAddress })
 
   useEffect(() => {
@@ -33,21 +34,20 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   }, [])
 
   const balance = useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
+    if (!ethL1Balance || !erc20L1Balances) {
       return null
     }
 
     if (tx.asset === 'eth') {
-      return ethBalance
+      return ethL1Balance
     }
 
     if (!tx.tokenAddress) {
       return null
     }
 
-    // return arbTokenBridge.balances.erc20[tx.tokenAddress]?.balance
-    return BigNumber.from(0)
-  }, [ethBalance, tx, arbTokenBridge])
+    return erc20L1Balances?.[tx.tokenAddress]
+  }, [erc20L1Balances, ethL1Balance, tx])
 
   useEffect(() => {
     const timeout = setTimeout(() => {

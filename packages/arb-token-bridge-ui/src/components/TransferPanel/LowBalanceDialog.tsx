@@ -87,16 +87,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
     walletAddress: app.arbTokenBridge.walletAddress
   })
 
-  const balance = useMemo(() => {
-    if (
-      typeof app.arbTokenBridge === 'undefined' ||
-      typeof app.arbTokenBridge.balances === 'undefined'
-    ) {
-      return BigNumber.from(0)
-    }
-
-    return ethBalance ?? BigNumber.from(0)
-  }, [ethBalance, app.arbTokenBridge])
+  const balance = useMemo(() => ethBalance ?? BigNumber.from(0), [ethBalance])
 
   const balanceNumber = useMemo(
     () => parseFloat(utils.formatEther(balance)),

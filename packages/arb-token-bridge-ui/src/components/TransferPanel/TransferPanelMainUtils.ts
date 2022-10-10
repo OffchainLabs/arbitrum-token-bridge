@@ -4,6 +4,7 @@ import { BigNumber, utils } from 'ethers'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useBalance } from 'token-bridge-sdk'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,
@@ -32,8 +33,18 @@ export type Balances = {
 }
 
 export function useTokenBalances(erc20L1Address?: string): Balances {
-  const { app } = useAppState()
-  const { arbTokenBridge } = app
+  const {
+    app: {
+      arbTokenBridge: { walletAddress }
+    }
+  } = useAppState()
+  const { l1, l2 } = useNetworksAndSigners()
+  const {
+    erc20: [erc20L1Balances]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    erc20: [erc20L2Balances]
+  } = useBalance({ provider: l2.provider, walletAddress })
 
   return useMemo(() => {
     const defaultResult = { ethereum: null, arbitrum: null }
@@ -42,24 +53,11 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       return defaultResult
     }
 
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
-      return defaultResult
-    }
-
-    const tokenBalances = {
-      balance: BigNumber.from(5),
-      arbChainBalance: BigNumber.from(11)
-    }
-
-    if (typeof tokenBalances === 'undefined') {
-      return defaultResult
-    }
-
     return {
-      ethereum: tokenBalances.balance,
-      arbitrum: tokenBalances.arbChainBalance
+      ethereum: erc20L1Balances?.[erc20L1Address] || null,
+      arbitrum: erc20L2Balances?.[erc20L1Address] || null
     }
-  }, [arbTokenBridge, erc20L1Address])
+  }, [erc20L1Balances, erc20L2Balances, erc20L1Address])
 }
 
 export function useIsSwitchingL2Chain() {

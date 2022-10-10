@@ -24,7 +24,8 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   } = useNetworksAndSigners()
 
   const {
-    eth: [ethBalance]
+    eth: [ethBalance],
+    erc20: [erc20Balances]
   } = useBalance({
     provider: L2Provider,
     walletAddress: arbTokenBridge.walletAddress
@@ -38,7 +39,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   }, [])
 
   const balance = useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
+    if (!ethBalance || !erc20Balances) {
       return null
     }
 
@@ -50,9 +51,8 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    // return arbTokenBridge.balances.erc20[tx.tokenAddress]?.arbChainBalance
-    return BigNumber.from(0)
-  }, [ethBalance, tx, arbTokenBridge])
+    return erc20Balances?.[tx.tokenAddress]
+  }, [erc20Balances, ethBalance, tx])
 
   useEffect(() => {
     const timeout = setTimeout(() => {

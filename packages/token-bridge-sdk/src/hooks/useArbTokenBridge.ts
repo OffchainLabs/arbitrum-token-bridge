@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useEffect } from 'react'
+import { useCallback, useState, useMemo } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'

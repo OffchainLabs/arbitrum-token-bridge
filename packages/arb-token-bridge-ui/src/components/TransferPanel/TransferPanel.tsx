@@ -143,10 +143,12 @@ export function TransferPanel() {
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: l1Provider, walletAddress })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
   const ethBalance = useMemo(() => {
@@ -214,7 +216,7 @@ export function TransferPanel() {
 
   const l1Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL1 = BigNumber.from(10)
+      const balanceL1 = erc20L1Balances?.[selectedToken.address]
       const { decimals } = selectedToken
       if (!balanceL1 || !decimals) {
         return null
@@ -226,11 +228,11 @@ export function TransferPanel() {
       return null
     }
     return utils.formatUnits(ethL1Balance, 18)
-  }, [ethL1Balance, selectedToken, arbTokenBridge])
+  }, [ethL1Balance, erc20L1Balances, selectedToken])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL2 = BigNumber.from(11)
+      const balanceL2 = erc20L2Balances?.[selectedToken.address]
       const { decimals } = selectedToken
       if (!balanceL2) {
         return null
@@ -242,7 +244,7 @@ export function TransferPanel() {
       return null
     }
     return utils.formatUnits(ethL2Balance, 18)
-  }, [ethL2Balance, selectedToken, arbTokenBridge])
+  }, [ethL2Balance, erc20L2Balances, selectedToken])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
