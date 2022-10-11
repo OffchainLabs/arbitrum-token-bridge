@@ -157,13 +157,13 @@ function NetworkListbox({
 
           return (
             <Tooltip
+              key={option.chainID}
               show={isDisabled}
               content={getDisabledNetworkPairTooltip(option)}
               wrapperClassName="w-full"
               theme="dark"
             >
               <Listbox.Option
-                key={option.chainID}
                 value={option}
                 className={twMerge(
                   'flex h-12 cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
