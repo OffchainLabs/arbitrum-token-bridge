@@ -4,7 +4,6 @@ import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
-import { BigNumber } from 'ethers'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -14,7 +13,6 @@ import {
   addBridgeTokenListToBridge
 } from '../../tokenLists'
 import { formatBigNumber } from '../../util/NumberUtils'
-import { sanitizeImageSrc } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -87,7 +85,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return undefined
     }
 
-    return sanitizeImageSrc(token.logoURI)
+    return token.logoURI
   }, [token])
 
   const tokenBalance = useMemo(() => {
@@ -515,7 +513,7 @@ function TokensPanel({
 
                 return (
                   <TokenRow
-                    key={virtualizedProps.key}
+                    key={address}
                     style={virtualizedProps.style}
                     onClick={() => onTokenSelected(token)}
                     token={token}
