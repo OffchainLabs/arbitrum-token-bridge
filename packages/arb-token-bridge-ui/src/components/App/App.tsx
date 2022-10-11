@@ -70,6 +70,12 @@ async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
 }
 
+declare global {
+  interface Window {
+    Cypress?: any
+  }
+}
+
 const AppContent = (): JSX.Element => {
   const { l1 } = useNetworksAndSigners()
   const {
@@ -125,6 +131,8 @@ const AppContent = (): JSX.Element => {
     )
   }
 
+  const isTestingEnvironment = !!window.Cypress
+
   return (
     <>
       <HeaderOverrides {...headerOverridesProps} />
@@ -138,7 +146,7 @@ const AppContent = (): JSX.Element => {
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
-      <PWLoadedUpdater />
+      {!isTestingEnvironment && <PWLoadedUpdater />}
 
       <Notifications />
       <MainContent />
