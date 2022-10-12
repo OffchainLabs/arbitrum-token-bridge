@@ -1,17 +1,11 @@
-import { L1Network, L2Network } from '@arbitrum/sdk'
 import { useAppState } from '../../state'
-import {  networksListArray, networkStyleMap } from '../../util/networks'
+import { networksListArray, networkStyleMap } from '../../util/networks'
 import { Button } from './Button'
-
 
 export const UnsupportedNetworkContent = () => {
   const {
     app: { changeNetwork }
   } = useAppState()
-
-  const switchNetwork = async (network: L1Network | L2Network) => {
-    await changeNetwork?.(network)
-  }
 
   return (
     <div className="flex flex-col items-center space-y-8 py-24 px-12">
@@ -24,8 +18,8 @@ export const UnsupportedNetworkContent = () => {
       {networksListArray.map(network => (
         <Button
           variant="primary"
-          onClick={() => {
-            switchNetwork(network)
+          onClick={async () => {
+            await changeNetwork?.(network)
           }}
           key={network.chainID}
           className={`text-md ${

@@ -1,6 +1,5 @@
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { Popover, Transition } from '@headlessui/react'
-import * as Sentry from '@sentry/react'
 import { useAppState } from '../../state'
 import { networksListArray, networkStyleMap } from '../../util/networks'
 
@@ -14,17 +13,6 @@ export const NetworkSelectionContainer = ({
   const {
     app: { changeNetwork }
   } = useAppState()
-
-  const switchNetwork = async (network: L1Network | L2Network) => {
-    try {
-      await changeNetwork?.(network)
-    } catch (error: any) {
-      // 4001 - User rejected the request
-      if (error.code !== 4001) {
-        Sentry.captureException(error)
-      }
-    }
-  }
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -40,8 +28,8 @@ export const NetworkSelectionContainer = ({
               <div
                 key={network.chainID}
                 className="flex h-12 cursor-pointer flex-nowrap items-center space-x-3 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]"
-                onClick={() => {
-                  switchNetwork(network)
+                onClick={async () => {
+                  await changeNetwork?.(network)
                 }}
               >
                 <img
