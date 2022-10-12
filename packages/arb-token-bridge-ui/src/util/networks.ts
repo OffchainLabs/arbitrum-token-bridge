@@ -1,4 +1,7 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import EthereumLogo from '../../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -254,3 +257,20 @@ export const networksList: { [chainId: number]: L1Network | L2Network } = {
 export const networksListArray = Object.keys(networksList)
   .map((chainId: string) => networksList[Number(chainId)])
   .sort((a, b) => (a.isArbitrum > b.isArbitrum ? -1 : 1)) // sort l2 networks together, before l1
+
+export const networkStyleMap: {
+  [chainId: number]: { img: string; btnThemeClass: string }
+} = {
+  [ChainId.Mainnet]: {
+    img: EthereumLogo,
+    btnThemeClass: 'bg-blue-arbitrum'
+  },
+  [ChainId.ArbitrumOne]: {
+    img: ArbitrumOneLogo,
+    btnThemeClass: 'bg-blue-arbitrum'
+  },
+  [ChainId.ArbitrumNova]: {
+    img: ArbitrumNovaLogo,
+    btnThemeClass: 'bg-brick-dark'
+  }
+}

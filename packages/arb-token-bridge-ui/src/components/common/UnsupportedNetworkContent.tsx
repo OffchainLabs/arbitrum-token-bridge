@@ -1,28 +1,8 @@
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { useAppState } from '../../state'
-import { ChainId, networksListArray } from '../../util/networks'
+import {  networksListArray, networkStyleMap } from '../../util/networks'
 import { Button } from './Button'
 
-import EthereumLogo from '../../assets/EthereumLogo.png'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
-
-const networkStyleMap: {
-  [chainId: number]: { img: string; btnThemeClass: string }
-} = {
-  [ChainId.Mainnet]: {
-    img: EthereumLogo,
-    btnThemeClass: 'bg-blue-arbitrum'
-  },
-  [ChainId.ArbitrumOne]: {
-    img: ArbitrumOneLogo,
-    btnThemeClass: 'bg-blue-arbitrum'
-  },
-  [ChainId.ArbitrumNova]: {
-    img: ArbitrumNovaLogo,
-    btnThemeClass: 'bg-brick-dark'
-  }
-}
 
 export const UnsupportedNetworkContent = () => {
   const {
@@ -47,6 +27,7 @@ export const UnsupportedNetworkContent = () => {
           onClick={() => {
             switchNetwork(network)
           }}
+          key={network.chainID}
           className={`text-md ${
             networkStyleMap[network.chainID]['btnThemeClass']
           } py-3`}

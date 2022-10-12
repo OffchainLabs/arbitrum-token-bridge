@@ -59,6 +59,7 @@ import {
 } from '../../hooks/useArbQueryParams'
 import { UnsupportedNetworkContent } from '../common/UnsupportedNetworkContent'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
+import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -139,7 +140,10 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <HeaderNetworkInformation />
+        <NetworkSelectionContainer>
+          <HeaderNetworkInformation />
+        </NetworkSelectionContainer>
+
         <HeaderAccountPopover />
       </HeaderContent>
 
@@ -479,7 +483,9 @@ function ConnectionFallback({
       return (
         <>
           <HeaderContent>
-            <HeaderNetworkNotSupported />
+            <NetworkSelectionContainer>
+              <HeaderNetworkNotSupported />
+            </NetworkSelectionContainer>
           </HeaderContent>
 
           <ConnectionFallbackContainer>
