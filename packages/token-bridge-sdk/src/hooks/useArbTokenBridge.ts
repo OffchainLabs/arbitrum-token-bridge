@@ -518,7 +518,7 @@ export const useArbTokenBridge = (
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
+      status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
       retryableCreationTxID: l1ToL2Msg.retryableCreationId,
       l2TxID: undefined
     }
