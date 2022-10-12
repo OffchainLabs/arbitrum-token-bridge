@@ -14,6 +14,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
+import { ChainId } from '../../util/networks'
 
 enum ImportStatus {
   LOADING,
@@ -85,11 +86,16 @@ export function TokenImportDialog({
     }
 
     if (Object.keys(bridgeTokens).length === 0) {
+      // We currently don't have a token list for Arbitrum Goerli
+      if (l2.network.chainID === ChainId.ArbitrumGoerli) {
+        return false
+      }
+
       return true
     }
 
     return false
-  }, [bridgeTokens])
+  }, [bridgeTokens, l2.network])
 
   const getL1TokenDataFromL1OrL2Address = useCallback(
     async (eitherL1OrL2Address: string) => {
