@@ -1,7 +1,7 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
-import EthereumLogo from '../../assets/EthereumLogo.png'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
+import EthereumLogo from '../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
