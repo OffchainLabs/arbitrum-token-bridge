@@ -54,10 +54,11 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         <div className="h-full border-r border-gray-4" />
         <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="\d*"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-9 sm:text-3xl"
-            min="0"
             {...rest}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
