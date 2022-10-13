@@ -48,7 +48,8 @@ export const useArbQueryParams = () => {
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | null | undefined) => amount,
+  encode: (amount: string | null | undefined) =>
+    Number(amount) >= 0 ? amount : '',
   decode: (amount: string | (string | null)[] | null | undefined) => {
     const amountStr = amount?.toString()
 
