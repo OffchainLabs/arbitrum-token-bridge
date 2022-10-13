@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
-import { useAppState } from '../state'
+import { useActions, useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { PendingWithdrawalsLoadedState } from '../util'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -13,6 +14,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
+  const actions = useActions()
   const { l1 } = useNetworksAndSigners()
   const { signer: l1Signer } = l1
 
@@ -43,6 +45,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           l1Signer
         })
       }
+      // Re-fetch pending withdrawals after success
+      actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.LOADING)
     } catch (error: any) {
       err = error
       console.warn(err)

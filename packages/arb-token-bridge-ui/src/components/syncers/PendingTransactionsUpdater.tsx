@@ -6,7 +6,6 @@ import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { PendingWithdrawalsLoadedState } from '../../util'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -48,8 +47,6 @@ export function PendingTransactionsUpdater(): JSX.Element {
             )
           } else {
             arbTokenBridge?.transactions?.updateTransaction(txReceipt)
-            // Re-fetch pending withdrawals after success
-            actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.LOADING)
           }
         })
       })
