@@ -1,10 +1,5 @@
 module.exports = {
-  plugins: [
-    "@typescript-eslint",
-    "react",
-    "react-hooks",
-    "better-styled-components",
-  ],
+  plugins: ["@typescript-eslint", "react", "react-hooks"],
   extends: ["airbnb-typescript", "plugin:prettier/recommended"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -30,7 +25,6 @@ module.exports = {
     "react/no-array-index-key": "off",
     "react/jsx-props-no-spreading": "off",
     "import/no-extraneous-dependencies": "off",
-    "better-styled-components/sort-declarations-alphabetically": 2,
     "react/self-closing-comp": "off",
     "react/prop-types": "off",
     "no-nested-ternary": "off",
