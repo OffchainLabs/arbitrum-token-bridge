@@ -8,10 +8,15 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
+import {
+  l1NetworkConfig,
+  NetworkType,
+  setupMetamaskNetwork,
+  startWebApp
+} from './common'
 
-export function login(networkType: NetworkType) {
-  setupMetamaskNetwork(networkType).then(() => {
+export function login(networkType: NetworkType, addNewNetwork?: boolean) {
+  setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
     startWebApp()
   })
 }
@@ -19,14 +24,26 @@ export function login(networkType: NetworkType) {
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
   cy.switchToCypressWindow().then(() => {
-    // disconnect-metamask-wallet hangs if already not connected to metamask,
-    // so we do it while logout instead of before login.
-    cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-      cy.switchToCypressWindow().then(() => {
-        cy.resetMetamaskAccount()
+    cy.changeMetamaskNetwork(l1NetworkConfig).then(() => {
+      // disconnect-metamask-wallet hangs if already not connected to metamask,
+      // so we do it while logout instead of before login.
+      cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+        cy.switchToCypressWindow().then(() => {
+          cy.resetMetamaskAccount()
+        })
       })
     })
   })
+}
+
+export const resetSeenTimeStampCache = () => {
+  const dataKey = 'arbitrum:bridge:seen-txs'
+  const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
+
+  cy.setLocalStorage(dataKey, JSON.stringify([]))
+  cy.setLocalStorage(timestampKey, new Date().toISOString())
+
+  cy.saveLocalStorage()
 }
 
 export const restoreAppState = () => {
@@ -34,14 +51,12 @@ export const restoreAppState = () => {
 
   cy.restoreLocalStorage().then(() => {
     // check if there are proper values of cache timestamp
-    const dataKey = 'arbitrum:bridge:seen-txs'
     const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
 
     cy.getLocalStorage(timestampKey).then(cacheSeenTimeStamp => {
       // if proper value of cache-timestamp are not found between tests, set it
       if (!cacheSeenTimeStamp) {
-        cy.setLocalStorage(dataKey, JSON.stringify([]))
-        cy.setLocalStorage(timestampKey, new Date().toISOString())
+        resetSeenTimeStampCache()
       }
     })
   })

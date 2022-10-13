@@ -1,11 +1,15 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { Provider } from '@ethersproject/providers'
-import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
-import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
 import { BigNumber } from 'ethers'
+import { Provider } from '@ethersproject/providers'
+import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
+import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+
+import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
 
 export function assertNever(x: never, message = 'Unexpected object'): never {
   console.error(message, x)
@@ -130,4 +134,10 @@ export async function getL2TokenData({
     balance: tokenData.balance,
     contract
   }
+}
+
+export function isClassicL2ToL1TransactionEvent(
+  event: L2ToL1TransactionEvent
+): event is EventArgs<ClassicL2ToL1TransactionEvent> {
+  return typeof (event as any).batchNumber !== 'undefined'
 }
