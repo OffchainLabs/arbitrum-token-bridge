@@ -1,6 +1,8 @@
 import React, { Fragment } from 'react'
 import { Transition as HeadlessUITransition } from '@headlessui/react'
 
+import { UnreachableCaseError } from '../../util'
+
 type TransitionDuration = 'fast' | 'normal'
 
 function getDurationNumbers(
@@ -12,6 +14,9 @@ function getDurationNumbers(
 
     case 'normal':
       return [300, 200]
+
+    default:
+      throw new UnreachableCaseError(duration)
   }
 }
 

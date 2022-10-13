@@ -9,13 +9,13 @@ import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
-import { PendingWithdrawalsLoadedState } from '../../util'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
+import { PendingWithdrawalsLoadedState, UnreachableCaseError } from '../../util'
 import {
   TransactionsTable,
   TransactionsDataStatus
@@ -42,6 +42,9 @@ function getTransactionsDataStatus(
 
     case PendingWithdrawalsLoadedState.READY:
       return 'success'
+
+    default:
+      throw new UnreachableCaseError(pwLoadedState)
   }
 }
 

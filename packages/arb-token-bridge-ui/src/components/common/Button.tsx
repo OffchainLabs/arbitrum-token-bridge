@@ -2,6 +2,8 @@ import React, { forwardRef } from 'react'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 
+import { UnreachableCaseError } from '../../util'
+
 type ButtonVariant = 'primary' | 'secondary'
 
 function getClassNameForVariant(variant: ButtonVariant) {
@@ -11,6 +13,9 @@ function getClassNameForVariant(variant: ButtonVariant) {
 
     case 'secondary':
       return 'bg-transparent text-dark'
+
+    default:
+      throw new UnreachableCaseError(variant)
   }
 }
 

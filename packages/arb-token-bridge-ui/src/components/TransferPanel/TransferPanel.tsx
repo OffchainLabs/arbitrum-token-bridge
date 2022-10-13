@@ -7,7 +7,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
-import { ConnectionState } from '../../util'
+import { ConnectionState, UnreachableCaseError } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
@@ -23,7 +23,6 @@ import {
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -606,6 +605,8 @@ export function TransferPanel() {
 
           return undefined
         }
+        default:
+          throw new UnreachableCaseError(gasSummary.status)
       }
     },
     [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]

@@ -20,7 +20,11 @@ import {
 } from 'token-bridge-sdk'
 import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
 
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import {
+  ConnectionState,
+  PendingWithdrawalsLoadedState,
+  UnreachableCaseError
+} from '../../util'
 
 export enum WhiteListState {
   VERIFYING,
@@ -67,6 +71,8 @@ const getDepositStatus = (tx: Transaction) => {
     }
     case L1ToL2MessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
+    default:
+      throw new UnreachableCaseError(l1ToL2MsgData.status)
   }
 }
 

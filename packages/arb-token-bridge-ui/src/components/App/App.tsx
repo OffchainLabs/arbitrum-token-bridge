@@ -493,6 +493,9 @@ function ConnectionFallback({
           </span>
         </div>
       )
+
+    default:
+      throw new UnreachableCaseError(status)
   }
 }
 
