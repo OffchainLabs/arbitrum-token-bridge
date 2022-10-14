@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "rm -rf ./dist && tsc && cp -R src/assets dist && yarn build:tailwind",
-    "build:tailwind": "tailwindcss build src/styles/tailwind.css -o dist/index.css -c tailwind.config.js --minify"
+    "build:tailwind": "tailwindcss build -i src/styles/tailwind.css -o dist/index.css -c tailwind.config.js --minify"
   },
   "peerDependencies": {
     "react": "^17.0.2",
