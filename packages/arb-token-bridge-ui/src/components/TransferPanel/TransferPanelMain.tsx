@@ -352,10 +352,11 @@ export function TransferPanelMain({
   }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
   useEffect(() => {
+    setAmount(amount)
     if (amount.toLowerCase() === AmountQueryParamEnum.MAX) {
       setMaxAmount()
     }
-  }, [amount, setMaxAmount])
+  }, [amount, setAmount, setMaxAmount])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
