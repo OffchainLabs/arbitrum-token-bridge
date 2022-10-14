@@ -48,14 +48,16 @@ export const useArbQueryParams = () => {
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | null | undefined) =>
-    Number(amount) >= 0 ? amount : '',
+  encode: (amount: string | null | undefined) => {
+    const amountRegex = new RegExp(/^\d*(\.\d*)?$/)
+    return amountRegex.test(amount ?? '') ? amount : ''
+  },
   decode: (amount: string | (string | null)[] | null | undefined) => {
     const amountStr = amount?.toString()
 
     // to catch random string like `amount=asdf` from the URL
-    // to catch zero / negative number
-    if (isNaN(Number(amountStr)) || Number(amountStr) <= 0) {
+    // to catch negative number
+    if (isNaN(Number(amountStr)) || Number(amountStr) < 0) {
       if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
         return amountStr
       }

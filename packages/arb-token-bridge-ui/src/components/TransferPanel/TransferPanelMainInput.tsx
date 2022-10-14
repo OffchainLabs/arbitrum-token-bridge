@@ -56,7 +56,6 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
           <input
             type="text"
             inputMode="numeric"
-            pattern="\d*"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-9 sm:text-3xl"
             {...rest}
