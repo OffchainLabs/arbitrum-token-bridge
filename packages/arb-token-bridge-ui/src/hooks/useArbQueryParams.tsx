@@ -43,13 +43,19 @@ export const useArbQueryParams = () => {
   })
 }
 
+const isMax = (amount: string | null | undefined) =>
+  amount?.toLowerCase() === AmountQueryParamEnum.MAX
+
 // Our custom query param type for Amount field - will be parsed and returned as a string,
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
   encode: (amount: string | null | undefined) => {
-    const amountRegex = new RegExp(/^\d*(\.\d*)?$|MAX/i)
+    const amountRegex = new RegExp(/^\d*(\.\d*)?$/)
+    if (isMax(amount)) {
+      return amount
+    }
     return amountRegex.test(amount ?? '') ? amount : ''
   },
   decode: (amount: string | (string | null)[] | null | undefined) => {
@@ -58,7 +64,7 @@ const AmountQueryParam = {
     // to catch random string like `amount=asdf` from the URL
     // to catch negative number
     if (isNaN(Number(amountStr)) || Number(amountStr) < 0) {
-      if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
+      if (isMax(amountStr)) {
         return amountStr
       }
       return ''
