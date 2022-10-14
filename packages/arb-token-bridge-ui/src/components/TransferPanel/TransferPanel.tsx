@@ -125,8 +125,8 @@ export function TransferPanel() {
   const [{ amount }, setQueryParams] = useArbQueryParams()
   const amountNum = parseFloat(amount) // just a numerical variant of amount
   const setAmount = useCallback(
-    (amount: string) => {
-      setQueryParams({ amount })
+    (newAmount: string) => {
+      setQueryParams({ amount: newAmount })
     },
     [setQueryParams]
   )

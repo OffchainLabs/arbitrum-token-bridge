@@ -54,8 +54,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         <div className="h-full border-r border-gray-4" />
         <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
           <input
-            type="text"
-            inputMode="numeric"
+            type="number"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-9 sm:text-3xl"
             {...rest}

@@ -49,7 +49,7 @@ export const useArbQueryParams = () => {
 const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
   encode: (amount: string | null | undefined) => {
-    const amountRegex = new RegExp(/^\d*(\.\d*)?$/)
+    const amountRegex = new RegExp(/^\d*(\.\d*)?$|MAX/i)
     return amountRegex.test(amount ?? '') ? amount : ''
   },
   decode: (amount: string | (string | null)[] | null | undefined) => {
