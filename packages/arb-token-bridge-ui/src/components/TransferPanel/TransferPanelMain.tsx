@@ -252,8 +252,7 @@ function TokenBalance({
   on: 'ethereum' | 'arbitrum'
   prefix?: string
 }) {
-  const balances = useTokenBalances(forToken?.address)
-  const balance = balances[on]
+  const balance = useTokenBalances(forToken?.address)[on]
 
   if (!forToken) {
     return null

@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
+import { constants } from 'ethers'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -15,7 +16,7 @@ import { useBalance } from 'token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
-    app: { arbTokenBridge, selectedToken }
+    app: { arbTokenBridge }
   } = useAppState()
   const { walletAddress, bridgeTokens, token } = arbTokenBridge
   const dispatch = useAppContextDispatch()
@@ -54,7 +55,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     const l2Address = bridgeTokens[tx.tokenAddress]?.l2Address
 
     if (!l2Address) {
-      return null
+      return constants.Zero
     }
 
     return erc20Balances?.[l2Address]
@@ -72,6 +73,18 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
   }, [tx.txId])
 
+  const decimals = useMemo(() => {
+    if (typeof bridgeTokens === 'undefined') {
+      return 18
+    }
+
+    if (!tx.tokenAddress) {
+      return 18
+    }
+
+    return bridgeTokens[tx.tokenAddress]?.decimals || 18
+  }, [bridgeTokens, tx.tokenAddress])
+
   return (
     <DepositCardContainer tx={tx} dismissable>
       <span className="text-4xl font-semibold text-blue-arbitrum">
@@ -86,8 +99,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
           <span className="font-medium">New balance:</span>
           {balance ? (
             <span className="font-medium">
-              {formatBigNumber(balance, selectedToken?.decimals || 18)}{' '}
-              {tx.asset.toUpperCase()}
+              {formatBigNumber(balance, decimals)} {tx.asset.toUpperCase()}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />

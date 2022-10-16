@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -53,14 +53,18 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       return defaultResult
     }
 
+    // bridgeTokens is undefined when switching network
+    if (typeof bridgeTokens === 'undefined') {
+      return defaultResult
+    }
+
     const erc20L2Address = bridgeTokens[erc20L1Address.toLowerCase()]?.l2Address
-    const l2Balance = erc20L2Address
-      ? erc20L2Balances?.[erc20L2Address.toLowerCase()]
-      : null
+    const l2Balance =
+      erc20L2Balances?.[(erc20L2Address || '').toLowerCase()] || null
 
     return {
       ethereum: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
-      arbitrum: l2Balance || null
+      arbitrum: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
     }
   }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
 }

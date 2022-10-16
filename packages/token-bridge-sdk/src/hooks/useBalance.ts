@@ -69,7 +69,7 @@ const useBalance = ({
     return erc20Addresses.reduce((acc, address, index) => {
       acc[address.toLowerCase()] = addressesBalances[index].balance
       return acc
-    }, {} as { [address: string]: BigNumber | undefined })
+    }, {} as Erc20Balances)
   }, [queryKey, erc20Addresses, provider, walletAddressLowercased])
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
@@ -82,7 +82,7 @@ const useBalance = ({
       errorRetryInterval: 3_000
     }
   )
-  const { data = null, mutate: mutateErc20 } = useSWR(
+  const { data: dataErc20 = null, mutate: mutateErc20 } = useSWR(
     queryKey('erc20'),
     fetchErc20,
     {
@@ -124,7 +124,7 @@ const useBalance = ({
 
   return {
     eth: [dataEth, updateEthBalance] as const,
-    erc20: [data, updateErc20] as const
+    erc20: [dataErc20, updateErc20] as const
   }
 }
 

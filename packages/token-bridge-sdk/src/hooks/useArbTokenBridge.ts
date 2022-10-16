@@ -914,9 +914,9 @@ export const useArbTokenBridge = (
       updateErcL1Balance({
         [l1Address]: l1Data.balance
       })
-      if (l2Data) {
+      if (l2Data && l2Address) {
         updateErcL2Balance({
-          [l1Address]: l2Data.balance || Zero
+          [l2Address]: l2Data.balance || Zero
         })
       }
       const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken }
