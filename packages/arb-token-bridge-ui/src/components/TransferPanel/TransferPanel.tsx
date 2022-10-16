@@ -5,7 +5,7 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -379,9 +379,12 @@ export function TransferPanel() {
             return
           }
 
-          const { allowance } = await arbTokenBridge.token.getL1TokenData(
-            selectedToken.address
-          )
+          const { allowance } = await getL1TokenData({
+            account: walletAddress,
+            erc20L1Address: selectedToken.address,
+            l1Provider: l1Provider,
+            l2Provider: l2Provider
+          })
 
           if (!allowance.gte(amountRaw)) {
             const waitForInput = openTokenApprovalDialog()

@@ -24,7 +24,7 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 
 enum Panel {
   TOKENS,
@@ -566,12 +566,13 @@ export function TokenSearch({
 }) {
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens, walletAddress }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
+  const { l1, l2 } = useNetworksAndSigners()
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -594,7 +595,12 @@ export function TokenSearch({
         return
       }
 
-      const data = await token?.getL1TokenData(_token.address)
+      const data = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: _token.address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
 
       if (data) {
         token.updateTokenData(_token.address)
