@@ -8,7 +8,9 @@
 
 3. `cd ./packages/use-wallet && yarn build`
 
-4. Set env vars:
+4. `cd ./packages/shared-ui && yarn build`
+
+5. Set env vars:
 
    1. `touch ./packages/arb-token-bridge-ui/.env`
 
