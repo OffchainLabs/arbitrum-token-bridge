@@ -71,12 +71,5 @@ export const setupMetamaskNetwork = (
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   cy.visit(`/`)
-
-  // initial modal prompts which come in the web-app
-  cy.findByText('Agree to terms').should('be.visible').click()
-  cy.findByText('MetaMask').should('be.visible')
-  cy.findByText('Connect to your MetaMask Wallet').click()
-  cy.acceptMetamaskAccess().then(() => {
-    cy.switchToCypressWindow().should('be.true')
-  })
+  cy.connectToApp()
 }

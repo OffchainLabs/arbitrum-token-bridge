@@ -71,4 +71,20 @@ export const saveAppState = () => {
   cy.saveLocalStorage()
 }
 
-Cypress.Commands.addAll({ login, logout, restoreAppState, saveAppState })
+export const connectToApp = () => {
+  // initial modal prompts which come in the web-app
+  cy.findByText('Agree to terms').should('be.visible').click()
+  cy.findByText('MetaMask').should('be.visible')
+  cy.findByText('Connect to your MetaMask Wallet').click()
+  cy.acceptMetamaskAccess().then(() => {
+    cy.switchToCypressWindow().should('be.true')
+  })
+}
+
+Cypress.Commands.addAll({
+  login,
+  logout,
+  restoreAppState,
+  saveAppState,
+  connectToApp
+})
