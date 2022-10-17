@@ -11,8 +11,8 @@ import Package from '../package.json'
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 
-import './styles/tailwind.css'
 import '@arbitrum/shared-ui/dist/index.css'
+import './styles/tailwind.css'
 
 if (process.env.NODE_ENV === 'development') {
   registerLocalNetwork()
