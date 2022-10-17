@@ -400,7 +400,7 @@ function TokensPanel({
       ])
     ]
     return tokens
-      .filter((address, index) => {
+      .filter(address => {
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH
