@@ -45,7 +45,7 @@ import {
 import {
   HeaderContent,
   HeaderOverrides,
-  HeaderOverridesProps,
+  HeaderOverridesProps
 } from '@arbitrum/shared-ui'
 import { Layout } from '../common/Layout'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'

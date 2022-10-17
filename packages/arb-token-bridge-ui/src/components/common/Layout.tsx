@@ -3,7 +3,7 @@ import { useWindowSize } from 'react-use'
 import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
 import HeaderArbitrumLogoMainnet from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoMainnet.png'
-import { GET_HELP_LINK } from 'src/constants'
+import { GET_HELP_LINK } from '../../constants'
 
 import { Footer, Header } from '@arbitrum/shared-ui'
 
