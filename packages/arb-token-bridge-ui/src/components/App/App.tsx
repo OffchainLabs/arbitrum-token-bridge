@@ -1,30 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { JsonRpcSigner } from '@ethersproject/providers/lib/json-rpc-provider'
 import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-  useLocation
-} from 'react-router-dom'
 import { useLocalStorage, useWindowSize } from 'react-use'
 import { motion, useViewportScroll, useTransform } from 'framer-motion'
-import { ConnectionState } from 'src/util/index'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
+import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { ExternalProvider } from '@ethersproject/providers'
+import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoMainnet.png'
 import HeaderArbitrumLogoRinkeby from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoRinkeby.png'
 import HeaderArbitrumLogoGoerli from '@arbitrum/shared-ui/dist/assets/HeaderArbitrumLogoGoerli.png'
-import { GET_HELP_LINK } from 'src/constants'
 
 import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
@@ -46,7 +39,8 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
   UseNetworksAndSignersLoadingOrErrorStatus,
-  NetworksAndSignersProvider
+  NetworksAndSignersProvider,
+  UseNetworksAndSignersConnectedResult
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
@@ -60,6 +54,10 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
+import {
+  ArbQueryParamProvider,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -68,8 +66,14 @@ type Web3Provider = ExternalProvider & {
 const isSwitchChainSupported = (provider: Web3Provider) =>
   provider && (provider.isMetaMask || provider.isImToken)
 
-async function addressIsEOA(_address: string, _signer: JsonRpcSigner) {
-  return (await _signer.provider.getCode(_address)).length <= 2
+async function addressIsEOA(address: string, provider: JsonRpcProvider) {
+  return (await provider.getCode(address)).length <= 2
+}
+
+declare global {
+  interface Window {
+    Cypress?: any
+  }
 }
 
 const AppContent = (): JSX.Element => {
@@ -127,6 +131,8 @@ const AppContent = (): JSX.Element => {
     )
   }
 
+  const isTestingEnvironment = !!window.Cypress
+
   return (
     <>
       <HeaderOverrides {...headerOverridesProps} />
@@ -140,7 +146,7 @@ const AppContent = (): JSX.Element => {
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
-      <PWLoadedUpdater />
+      {!isTestingEnvironment && <PWLoadedUpdater />}
 
       <Notifications />
       <MainContent />
@@ -160,27 +166,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { provider: library } = useWallet()
 
   const initBridge = useCallback(
-    async (params: {
-      l1: {
-        signer: JsonRpcSigner
-        network: L1Network
-      }
-      l2: {
-        signer: JsonRpcSigner
-        network: L2Network
-      }
-    }) => {
-      const {
-        l1: { signer: l1Signer },
-        l2: { signer: l2Signer }
-      } = params
+    async (params: UseNetworksAndSignersConnectedResult) => {
+      const { l1, l2 } = params
+      const { signer: l1Signer, provider: l1Provider } = l1
+      const { signer: l2Signer, provider: l2Provider } = l2
 
       const l1Address = await l1Signer.getAddress()
       const l2Address = await l2Signer.getAddress()
 
       try {
-        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Signer)
-        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Signer)
+        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Provider)
+        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Provider)
 
         if (!l1AddressIsEOA || !l2AddressIsEOA) {
           actions.app.setConnectionState(ConnectionState.NOT_EOA)
@@ -194,7 +190,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
       }
 
-      setTokenBridgeParams({ walletAddress: l1Address, ...params })
+      setTokenBridgeParams({
+        walletAddress: l1Address,
+        l1: {
+          network: l1.network,
+          provider: l1.provider
+        },
+        l2: {
+          network: l2.network,
+          provider: l2.provider
+        }
+      })
     },
     []
   )
@@ -290,13 +296,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       symbol: 'ETH',
                       decimals: 18
                     },
-                    rpcUrls: [network.rpcURL || rpcURLs[network.chainID]],
+                    rpcUrls: [rpcURLs[network.chainID]],
                     blockExplorerUrls: [network.explorerUrl]
                   }
                 ]
               })
             } else {
-              throw new Error(err)
+              throw err
             }
           }
         } else {
@@ -373,55 +379,46 @@ function Routes() {
 
   return (
     <Router>
-      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-      <Switch>
-        <Route path="/tos" exact>
-          <TermsOfService />
-        </Route>
+      <ArbQueryParamProvider>
+        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+        <Switch>
+          <Route path="/tos" exact>
+            <TermsOfService />
+          </Route>
 
-        <Route path="/" exact>
-          <NetworkReady>
-            <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
-            </AppContextProvider>
-          </NetworkReady>
-        </Route>
+          <Route path="/" exact>
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </AppContextProvider>
+            </NetworkReady>
+          </Route>
 
-        <Route path="*">
-          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-            <span className="text-8xl text-white">404</span>
-            <p className="text-3xl text-white">
-              Page not found in this solar system
-            </p>
-            <img
-              src="/images/arbinaut-fixing-spaceship.png"
-              alt="Arbinaut fixing a spaceship"
-              className="lg:max-w-md"
-            />
-          </div>
-        </Route>
-      </Switch>
+          <Route path="*">
+            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
+              <span className="text-8xl text-white">404</span>
+              <p className="text-3xl text-white">
+                Page not found in this solar system
+              </p>
+              <img
+                src="/images/arbinaut-fixing-spaceship.png"
+                alt="Arbinaut fixing a spaceship"
+                className="lg:max-w-md"
+              />
+            </div>
+          </Route>
+        </Switch>
+      </ArbQueryParamProvider>
     </Router>
   )
 }
 
 function NetworkReady({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation()
-
-  const selectedL2ChainId = useMemo(() => {
-    const searchParams = new URLSearchParams(search)
-    const selectedL2ChainIdSearchParam = searchParams.get('l2ChainId')
-
-    if (!selectedL2ChainIdSearchParam) {
-      return undefined
-    }
-
-    return parseInt(selectedL2ChainIdSearchParam) || undefined
-  }, [search])
+  const [{ l2ChainId }] = useArbQueryParams()
 
   return (
     <NetworksAndSignersProvider
-      selectedL2ChainId={selectedL2ChainId}
+      selectedL2ChainId={l2ChainId || undefined}
       fallback={status => <ConnectionFallback status={status} />}
     >
       {children}

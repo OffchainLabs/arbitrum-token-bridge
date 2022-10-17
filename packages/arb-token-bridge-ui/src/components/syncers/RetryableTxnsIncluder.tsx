@@ -1,5 +1,9 @@
 import { useCallback, useEffect } from 'react'
-import { L1TransactionReceipt, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  L1TransactionReceipt,
+  L1ToL2MessageStatus,
+  EthDepositStatus
+} from '@arbitrum/sdk'
 import { AssetType } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
@@ -9,8 +13,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
   const {
-    l1: { signer: l1Signer },
-    l2: { signer: l2Signer }
+    l1: { provider: l1Provider },
+    l2: { provider: l2Provider }
   } = useNetworksAndSigners()
 
   const {
@@ -21,7 +25,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
     const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
 
     for (let depositTx of failedRetryablesToRedeem) {
-      const depositTxReceipt = await l1Signer.provider.getTransactionReceipt(
+      const depositTxReceipt = await l1Provider.getTransactionReceipt(
         depositTx.txId
       )
 
@@ -31,19 +35,32 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-      const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Signer.provider)
-      const status = await l1ToL2Msg.status()
 
-      if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
-        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
-          depositTx.txId,
-          l1ToL2Msg,
-          depositTx.asset === 'eth',
-          status
-        )
+      if (depositTx.asset === AssetType.ETH) {
+        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+        const status = await ethDepositMessage.status()
+
+        if (status !== EthDepositStatus.DEPOSITED) {
+          arbTokenBridge?.transactions.fetchAndUpdateEthDepositMessageStatus(
+            depositTx.txId,
+            ethDepositMessage
+          )
+        }
+      } else {
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+        const status = await l1ToL2Msg.status()
+
+        if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
+          arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
+            depositTx.txId,
+            l1ToL2Msg,
+            false,
+            status
+          )
+        }
       }
     }
-  }, [arbTokenBridge?.transactions?.addTransactions, l1Signer, l2Signer])
+  }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
 
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
@@ -53,7 +70,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       actions.app.l1DepositsWithUntrackedL2Messages()
 
     for (let depositTx of l1DepositsWithUntrackedL2Messages) {
-      const depositTxReceipt = await l1Signer.provider.getTransactionReceipt(
+      const depositTxReceipt = await l1Provider.getTransactionReceipt(
         depositTx.txID
       )
 
@@ -65,16 +82,14 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
       if (depositTx.assetType === AssetType.ETH) {
-        const [ethDepositMessage] = await l1TxReceipt.getEthDepositMessages(
-          l2Signer.provider
-        )
+        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
         arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
           depositTx.txID,
           ethDepositMessage
         )
       } else {
-        const l1ToL2Msg = await l1TxReceipt.getL1ToL2Message(l2Signer)
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
         const status = await l1ToL2Msg.status()
 
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
@@ -85,7 +100,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     }
-  }, [arbTokenBridge?.transactions?.addTransactions, l1Signer, l2Signer])
+  }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messagges,

@@ -4,6 +4,7 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
 import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
@@ -24,6 +25,9 @@ import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
+
+type UDInfo = { name: string | null }
+const udInfoDefaults: UDInfo = { name: null }
 
 function getTransactionsDataStatus(
   pwLoadedState: PendingWithdrawalsLoadedState
@@ -55,7 +59,33 @@ function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
-async function tryLookupAddress(
+async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
+  const UDresolution = Resolution.fromEthersProvider({
+    uns: {
+      // TODO => remove Layer2 config when UD lib supports our use case
+      // Layer2 (polygon) is required in the object type but we only want to use Layer1
+      // This is a hack to only support Ethereum Mainnet UD names
+      // https://github.com/unstoppabledomains/resolution/issues/229
+      locations: {
+        Layer1: {
+          network: 'mainnet',
+          provider
+        },
+        Layer2: {
+          network: 'mainnet',
+          provider
+        }
+      }
+    }
+  })
+  try {
+    return await UDresolution.reverse(address)
+  } catch (error) {
+    return null
+  }
+}
+
+async function tryLookupENSName(
   provider: JsonRpcProvider,
   address: string
 ): Promise<string | null> {
@@ -66,7 +96,7 @@ async function tryLookupAddress(
   }
 }
 
-async function tryGetAvatar(
+async function tryLookupENSAvatar(
   provider: JsonRpcProvider,
   address: string
 ): Promise<string | null> {
@@ -80,6 +110,7 @@ async function tryGetAvatar(
 export function HeaderAccountPopover() {
   const { disconnect, account, web3Modal } = useWallet()
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
   const {
     app: { mergedTransactions, pwLoadedState }
@@ -87,21 +118,23 @@ export function HeaderAccountPopover() {
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
+  const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
 
   useEffect(() => {
-    async function resolveENSInfo() {
-      if (account && l1.signer) {
-        const [name, avatar] = await Promise.all([
-          tryLookupAddress(l1.signer.provider, account),
-          tryGetAvatar(l1.signer.provider, account)
+    async function resolveNameServiceInfo() {
+      if (account) {
+        const [ensName, avatar, udName] = await Promise.all([
+          tryLookupENSName(l1Provider, account),
+          tryLookupENSAvatar(l1Provider, account),
+          tryLookupUDName(l1Provider, account)
         ])
-
-        setENSInfo({ name, avatar })
+        setENSInfo({ name: ensName, avatar })
+        setUDInfo({ name: udName })
       }
     }
 
-    resolveENSInfo()
-  }, [account, l1.signer])
+    resolveNameServiceInfo()
+  }, [account, l1Provider])
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
@@ -159,7 +192,7 @@ export function HeaderAccountPopover() {
               fallback={<CustomBoringAvatar size={32} name={account} />}
             />
             <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-              {ensInfo.name || accountShort}
+              {ensInfo.name ?? udInfo.name ?? accountShort}
             </span>
           </div>
         </div>
@@ -175,7 +208,9 @@ export function HeaderAccountPopover() {
               </Transition>
               <button
                 className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
-                onClick={() => copy(ensInfo.name || account || '')}
+                onClick={() =>
+                  copy(ensInfo.name ?? udInfo.name ?? account ?? '')
+                }
               >
                 <SafeImage
                   src={ensInfo.avatar || undefined}
@@ -184,7 +219,7 @@ export function HeaderAccountPopover() {
                 />
                 <div className="flex flex-row items-center space-x-3">
                   <span className="text-2xl font-normal text-white">
-                    {ensInfo.name || accountShort}
+                    {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
                   <CustomClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
@@ -216,8 +251,11 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-gray-1`
+                      className={`${
+                        !selected ? 'arb-hover' : ''
+                      } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
+                        selected &&
+                        `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
                       }`}
                     >
                       Deposits
@@ -227,8 +265,11 @@ export function HeaderAccountPopover() {
                 <Tab as={Fragment}>
                   {({ selected }) => (
                     <button
-                      className={`arb-hover rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected && `bg-gray-1`
+                      className={`${
+                        !selected ? 'arb-hover' : ''
+                      } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
+                        selected &&
+                        `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
                       }`}
                     >
                       Withdrawals
@@ -241,13 +282,14 @@ export function HeaderAccountPopover() {
                   // Currently we load deposit history from local cache, so it's always a success
                   status="success"
                   transactions={deposits}
+                  className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
                 />
               </Tab.Panel>
               <Tab.Panel>
                 <TransactionsTable
                   status={getTransactionsDataStatus(pwLoadedState)}
                   transactions={withdrawals}
-                  className="rounded-tl-lg"
+                  className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
                 />
               </Tab.Panel>
             </Tab.Group>

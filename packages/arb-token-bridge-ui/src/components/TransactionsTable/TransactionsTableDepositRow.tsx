@@ -53,8 +53,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
     case DepositStatus.EXPIRED:
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="yellow">Expired</StatusBadge>
+          <StatusBadge variant="red">Failed</StatusBadge>
         </div>
       )
 
@@ -121,7 +120,10 @@ export function TransactionsTableDepositRow({
   const { redeem, isRedeeming } = useRedeemRetryable()
 
   const isError = useMemo(() => {
-    if (tx.depositStatus === DepositStatus.L1_FAILURE) {
+    if (
+      tx.depositStatus === DepositStatus.L1_FAILURE ||
+      tx.depositStatus === DepositStatus.EXPIRED
+    ) {
       return true
     }
 
@@ -135,6 +137,11 @@ export function TransactionsTableDepositRow({
 
   const showRedeemRetryableButton = useMemo(
     () => tx.depositStatus === DepositStatus.L2_FAILURE,
+    [tx]
+  )
+
+  const showRetryableExpiredText = useMemo(
+    () => tx.depositStatus === DepositStatus.EXPIRED,
     [tx]
   )
 
@@ -176,6 +183,21 @@ export function TransactionsTableDepositRow({
             >
               Re-execute
             </Button>
+          </Tooltip>
+        )}
+
+        {showRetryableExpiredText && (
+          <Tooltip
+            content={
+              <span>
+                When an L2 tx fails, you have 7 days to re-execute. After that
+                time period, the tx is no longer recoverable.
+              </span>
+            }
+          >
+            <span className="text-md font-normal uppercase text-brick-dark">
+              Expired
+            </span>
           </Tooltip>
         )}
       </td>

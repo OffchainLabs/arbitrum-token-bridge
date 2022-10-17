@@ -139,9 +139,17 @@ export const defaultState: AppState = {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
     return [...transactions]
       .filter(tx => tx.sender === s.arbTokenBridge.walletAddress)
-      .filter(
-        tx => !tx.l1NetworkID || tx.l1NetworkID === String(s.l1NetworkChainId)
-      )
+      .filter(tx => {
+        const matchesL1 = tx.l1NetworkID === String(s.l1NetworkChainId)
+        const matchesL2 = tx.l2NetworkID === String(s.l2NetworkChainId)
+
+        // The `l2NetworkID` field was added later, so not all transactions will have it
+        if (typeof tx.l2NetworkID === 'undefined') {
+          return matchesL1
+        }
+
+        return matchesL1 && matchesL2
+      })
       .reverse()
   }),
   pendingTransactions: derived((s: AppState) => {

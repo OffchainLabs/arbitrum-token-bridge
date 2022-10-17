@@ -1,5 +1,4 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
-import * as NitroNetworks from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -19,10 +18,16 @@ export enum ChainId {
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Mainnet]:
+    process.env.REACT_APP_ETHEREUM_RPC_URL ||
+    `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   // L1 Testnets
-  [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
-  [ChainId.Goerli]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Rinkeby]:
+    process.env.REACT_APP_RINKEBY_RPC_URL ||
+    `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+  [ChainId.Goerli]:
+    process.env.REACT_APP_GOERLI_RPC_URL ||
+    `https://goerli.infura.io/v3/${INFURA_KEY}`,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
@@ -31,14 +36,30 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
-NitroNetworks.l1Networks[1].rpcURL = rpcURLs[1]
-NitroNetworks.l1Networks[4].rpcURL = rpcURLs[4]
-NitroNetworks.l1Networks[5].rpcURL = rpcURLs[5]
-
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
   [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F',
   [ChainId.ArbitrumRinkeby]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
+}
+
+export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumRinkeby]: '0x65321bf24210b81500230dcece14faa70a9f50a7',
+  [ChainId.ArbitrumOne]: '0x07d4692291b9e30e326fd31706f686f83f331b82'
+}
+
+export const l2LptGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
+}
+
+// Default L2 Chain to use for a certain chainId
+export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
+  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli],
+  [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
+  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
+  [ChainId.ArbitrumRinkeby]: [ChainId.ArbitrumRinkeby],
+  [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
+  [ChainId.Mainnet]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
+  [ChainId.Rinkeby]: [ChainId.ArbitrumRinkeby]
 }
 
 export function registerLocalNetwork() {
@@ -60,8 +81,17 @@ export function registerLocalNetwork() {
     const customL1Network = localNetwork.l1Network
     const customL2Network = localNetwork.l2Network
 
-    rpcURLs[customL1Network.chainID] = customL1Network.rpcURL
-    rpcURLs[customL2Network.chainID] = customL2Network.rpcURL
+    rpcURLs[customL1Network.chainID] =
+      process.env.REACT_APP_LOCAL_ETHEREUM_RPC_URL || ''
+    rpcURLs[customL2Network.chainID] =
+      process.env.REACT_APP_LOCAL_ARBITRUM_RPC_URL || ''
+
+    chainIdToDefaultL2ChainId[customL1Network.chainID] = [
+      customL2Network.chainID
+    ]
+    chainIdToDefaultL2ChainId[customL2Network.chainID] = [
+      customL2Network.chainID
+    ]
 
     addCustomNetwork({ customL1Network, customL2Network })
   } catch (error: any) {

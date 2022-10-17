@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { BigNumber, utils } from 'ethers'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -9,7 +9,6 @@ import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
@@ -25,9 +24,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   } = useAppState()
 
   const { toUSD } = useETHPrice()
-  const { l1GasPrice } = useGasPrice()
+
   const { l1 } = useNetworksAndSigners()
   const { isMainnet } = isNetwork(l1.network)
+
+  const l1GasPrice = useGasPrice({ provider: l1.provider })
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(BigNumber.from(0))
@@ -52,7 +53,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     async function getEstimatedGas() {
       if (arbTokenBridge.token && token?.address) {
         setEstimatedGas(
-          await arbTokenBridge.token.approveEstimateGas(token.address)
+          await arbTokenBridge.token.approveEstimateGas({
+            erc20L1Address: token.address
+          })
         )
       }
     }

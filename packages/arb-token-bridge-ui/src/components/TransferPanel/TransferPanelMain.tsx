@@ -6,21 +6,26 @@ import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import { l2Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
+import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
-import { useGasPrice } from '../../hooks/useGasPrice'
+import { Dialog, useDialog } from '../common/Dialog'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
   calculateEstimatedL2GasFees,
-  useETHBalances,
+  useIsSwitchingL2Chain,
   useTokenBalances
 } from './TransferPanelMainUtils'
 
@@ -190,13 +195,17 @@ function NetworkContainer({
   return (
     <div className={`rounded-xl p-2 transition-colors ${backgroundClassName}`}>
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat px-4 py-1.5 sm:flex-row"
+        className="space-y-3.5 bg-contain bg-no-repeat p-1.5 sm:flex-row"
         style={{ backgroundImage }}
       >
         {children}
       </div>
     </div>
   )
+}
+
+function StyledLoader() {
+  return <Loader type="TailSpin" color="white" height={16} width={16} />
 }
 
 function ETHBalance({
@@ -206,11 +215,24 @@ function ETHBalance({
   on: 'ethereum' | 'arbitrum'
   prefix?: string
 }) {
-  const balances = useETHBalances()
-  const balance = balances[on]
+  const {
+    app: { arbTokenBridge }
+  } = useAppState()
+  const networksAndSigners = useNetworksAndSigners()
+  const { l1, l2 } = networksAndSigners
+  const walletAddress = arbTokenBridge.walletAddress
+
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2.provider, walletAddress })
+
+  const balance = on === 'ethereum' ? ethL1Balance : ethL2Balance
 
   if (!balance) {
-    return <Loader type="TailSpin" color="white" height={16} width={16} />
+    return <StyledLoader />
   }
 
   return (
@@ -238,7 +260,7 @@ function TokenBalance({
   }
 
   if (!balance) {
-    return <Loader type="TailSpin" color="white" height={16} width={16} />
+    return <StyledLoader />
   }
 
   return (
@@ -269,7 +291,8 @@ function NetworkListboxPlusBalancesContainer({
 
 export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
-  AMOUNT_TOO_LOW
+  GAS_ESTIMATION_FAILURE,
+  WITHDRAW_ONLY
 }
 
 export function TransferPanelMain({
@@ -283,13 +306,25 @@ export function TransferPanelMain({
 }) {
   const history = useHistory()
   const actions = useActions()
-  const { l1GasPrice, l2GasPrice } = useGasPrice()
+
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+
+  const l1GasPrice = useGasPrice({ provider: l1.provider })
+  const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
+  const { walletAddress } = arbTokenBridge
 
-  const ethBalances = useETHBalances()
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1.provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2.provider, walletAddress })
+
+  const isSwitchingL2Chain = useIsSwitchingL2Chain()
+
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
@@ -299,33 +334,33 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
+
+  const [, setQueryParams] = useArbQueryParams()
 
   useEffect(() => {
+    const l2ChainId = isConnectedToArbitrum
+      ? externalFrom.chainID
+      : externalTo.chainID
+
     setFrom(externalFrom)
     setTo(externalTo)
-  }, [externalFrom, externalTo])
 
-  const listboxOptions = useMemo(
-    () => getListboxOptionsFromL1Network(l1.network),
-    [l1.network]
-  )
+    // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
+    setQueryParams({ l2ChainId })
+  }, [isConnectedToArbitrum, externalFrom, externalTo, history])
 
-  // For now, we only want the `to` listbox to be enabled when connected to Mainnet, for switching between One and Nova.
-  const toListboxDisabled = useMemo(() => {
-    const { isMainnet } = isNetwork(l1.network)
+  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
+  useEffect(() => {
+    setQueryParams({ amount })
 
-    if (isConnectedToArbitrum || !isMainnet) {
-      return true
+    if (amount.toLowerCase() === AmountQueryParamEnum.MAX) {
+      setMaxAmount()
     }
-
-    return !app.isDepositMode
-  }, [isConnectedToArbitrum, l1.network, app.isDepositMode])
+  }, [amount, setMaxAmount, setQueryParams])
 
   const maxButtonVisible = useMemo(() => {
-    const ethBalance = isDepositMode
-      ? ethBalances.ethereum
-      : ethBalances.arbitrum
-
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
     const tokenBalance = isDepositMode
       ? tokenBalances.ethereum
       : tokenBalances.arbitrum
@@ -343,21 +378,46 @@ export function TransferPanelMain({
     }
 
     return !ethBalance.isZero()
-  }, [ethBalances, tokenBalances, selectedToken, isDepositMode])
+  }, [ethL1Balance, ethL2Balance, tokenBalances, selectedToken, isDepositMode])
 
   const errorMessageText = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
       return undefined
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.AMOUNT_TOO_LOW) {
-      return 'Sending ~$0 just to pay gas fees seems like a questionable life choice.'
+    if (errorMessage === TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE) {
+      return (
+        <span>
+          Gas estimation failed, join our{' '}
+          <ExternalLink
+            href="https://discord.com/invite/ZpZuw7p"
+            className="underline"
+          >
+            Discord
+          </ExternalLink>{' '}
+          and reach out in #support for assistance.
+        </span>
+      )
+    }
+
+    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
+      return (
+        <>
+          <span>This token can't be bridged over. </span>
+          <button
+            className="arb-hover underline"
+            onClick={openWithdrawOnlyDialog}
+          >
+            Learn more.
+          </button>
+        </>
+      )
     }
 
     return `Insufficient balance, please add more to ${
       isDepositMode ? 'L1' : 'L2'
     }.`
-  }, [errorMessage, isDepositMode])
+  }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
 
   function switchNetworks() {
     const newFrom = to
@@ -375,18 +435,107 @@ export function TransferPanelMain({
     estimatedL2SubmissionCost: BigNumber
   }> {
     if (isDepositMode) {
-      const result = await arbTokenBridge.eth.depositEstimateGas(weiValue)
+      const result = await arbTokenBridge.eth.depositEstimateGas({
+        amount: weiValue
+      })
+
       return result
     }
 
-    const result = await arbTokenBridge.eth.withdrawEstimateGas(weiValue)
+    const result = await arbTokenBridge.eth.withdrawEstimateGas({
+      amount: weiValue
+    })
+
     return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
   }
 
+  type NetworkListboxesProps = {
+    from: Omit<NetworkListboxProps, 'label'>
+    to: Omit<NetworkListboxProps, 'label'>
+  }
+
+  const networkListboxProps: NetworkListboxesProps = useMemo(() => {
+    const options = getListboxOptionsFromL1Network(l1.network)
+
+    function updatePreferredL2Chain(l2ChainId: number) {
+      setQueryParams({ l2ChainId })
+    }
+
+    if (isDepositMode) {
+      return {
+        from: {
+          disabled: true,
+          options: [from],
+          value: from,
+          onChange: () => {}
+        },
+        to: {
+          disabled: false,
+          options,
+          value: to,
+          onChange: async network => {
+            // Selecting the same chain
+            if (to.chainID === network.chainID) {
+              return
+            }
+
+            if (isConnectedToArbitrum) {
+              // In deposit mode, if we are connected to a different L2 network
+              //
+              // 1) Switch to the L1 network (to be able to initiate a deposit)
+              // 2) Select the preferred L2 network
+              try {
+                await app.changeNetwork?.(l1.network)
+                updatePreferredL2Chain(network.chainID)
+              } catch (error: any) {
+                // 4001 - User rejected the request
+                if (error.code !== 4001) {
+                  Sentry.captureException(error)
+                }
+              }
+            } else {
+              // If we are connected to an L1 network, we can just select the preferred L2 network
+              updatePreferredL2Chain(network.chainID)
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      from: {
+        disabled: false,
+        options,
+        value: from,
+        onChange: async network => {
+          // Selecting the same chain
+          if (from.chainID === network.chainID) {
+            return
+          }
+
+          // In withdraw mode we always switch to the L2 network
+          try {
+            await app.changeNetwork?.(network)
+            updatePreferredL2Chain(network.chainID)
+          } catch (error: any) {
+            // 4001 - User rejected the request
+            if (error.code !== 4001) {
+              Sentry.captureException(error)
+            }
+          }
+        }
+      },
+      to: {
+        disabled: true,
+        options: [to],
+        value: to,
+        onChange: () => {}
+      }
+    }
+  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
+
   async function setMaxAmount() {
-    const ethBalance = isDepositMode
-      ? ethBalances.ethereum
-      : ethBalances.arbitrum
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
     const tokenBalance = isDepositMode
       ? tokenBalances.ethereum
@@ -435,23 +584,23 @@ export function TransferPanelMain({
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox
-            disabled
-            label="From:"
-            options={[from]}
-            value={from}
-            onChange={() => {}}
-          />
+          <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
-            <TokenBalance
-              on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            <ETHBalance
-              on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
-              prefix={selectedToken ? '' : 'Balance: '}
-            />
+            {isSwitchingL2Chain ? (
+              <StyledLoader />
+            ) : (
+              <>
+                <TokenBalance
+                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  forToken={selectedToken}
+                  prefix={selectedToken ? 'Balance: ' : ''}
+                />
+                <ETHBalance
+                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  prefix={selectedToken ? '' : 'Balance: '}
+                />
+              </>
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
@@ -463,6 +612,7 @@ export function TransferPanelMain({
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageText}
+            disabled={isSwitchingL2Chain}
             value={amount}
             onChange={e => setAmount(e.target.value)}
           />
@@ -484,36 +634,48 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
-        <SwitchNetworksButton onClick={switchNetworks} />
+        <SwitchNetworksButton
+          onClick={switchNetworks}
+          aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
+        />
       </div>
 
       <NetworkContainer network={to}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox
-            disabled={toListboxDisabled}
-            label="To:"
-            options={listboxOptions}
-            value={to}
-            onChange={network => {
-              history.push({
-                pathname: '/',
-                search: `?l2ChainId=${network.chainID}`
-              })
-            }}
-          />
+          <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
-            <TokenBalance
-              on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
-              forToken={selectedToken}
-              prefix={selectedToken ? 'Balance: ' : ''}
-            />
-            <ETHBalance
-              on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
-              prefix={selectedToken ? '' : 'Balance: '}
-            />
+            {isSwitchingL2Chain ? (
+              <StyledLoader />
+            ) : (
+              <>
+                <TokenBalance
+                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  forToken={selectedToken}
+                  prefix={selectedToken ? 'Balance: ' : ''}
+                />
+                <ETHBalance
+                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  prefix={selectedToken ? '' : 'Balance: '}
+                />
+              </>
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
+
+      <Dialog
+        closeable
+        title="Token not supported"
+        cancelButtonProps={{ className: 'hidden' }}
+        actionButtonTitle="Close"
+        {...withdrawOnlyDialogProps}
+        className="md:max-w-[628px]"
+      >
+        <p>
+          The Arbitrum bridge does not currently support {selectedToken?.symbol}
+          , please ask the {selectedToken?.symbol} team for more info.
+        </p>
+      </Dialog>
     </div>
   )
 }

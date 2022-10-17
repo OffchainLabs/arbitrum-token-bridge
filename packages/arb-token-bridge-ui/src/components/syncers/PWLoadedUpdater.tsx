@@ -6,7 +6,11 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import { l2DaiGatewayAddresses } from '../../util/networks'
+import {
+  l2DaiGatewayAddresses,
+  l2wstETHGatewayAddresses,
+  l2LptGatewayAddresses
+} from '../../util/networks'
 
 // Loads pending withdrawals on page load
 export function PWLoadedUpdater(): JSX.Element {
@@ -36,9 +40,21 @@ export function PWLoadedUpdater(): JSX.Element {
 
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
 
+    // TODO: Refactor this
     const l2DaiGateway = l2DaiGatewayAddresses[l2.network.chainID]
+    const l2wstETHGateway = l2wstETHGatewayAddresses[l2.network.chainID]
+    const l2LptGateway = l2LptGatewayAddresses[l2.network.chainID]
+
     if (l2DaiGateway) {
       gatewaysToUse.push(l2DaiGateway)
+    }
+
+    if (l2wstETHGateway) {
+      gatewaysToUse.push(l2wstETHGateway)
+    }
+
+    if (l2LptGateway) {
+      gatewaysToUse.push(l2LptGateway)
     }
 
     console.log('**** setting initial pending withdrawals ****')
@@ -48,15 +64,9 @@ export function PWLoadedUpdater(): JSX.Element {
         console.log('Wallet has nonce of zero, no pending withdrawals to set')
         actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.READY)
       } else {
-        const bridgeUpdateBlockNumber = 0
+        console.log(`Nonce is ${nonce}`)
 
-        console.log(
-          `Nonce is ${nonce} and bridgeUpdateBlockNumber is ${bridgeUpdateBlockNumber}`
-        )
-
-        setInitialPendingWithdrawals(gatewaysToUse, {
-          fromBlock: bridgeUpdateBlockNumber
-        })
+        setInitialPendingWithdrawals(gatewaysToUse)
           .then(() => {
             console.info('Setting withdrawals to ready state')
 

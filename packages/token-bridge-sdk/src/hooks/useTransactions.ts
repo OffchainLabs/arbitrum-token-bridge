@@ -5,8 +5,9 @@ import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  IL1ToL2MessageReader
-} from '@arbitrum/sdk/dist/lib/utils/migration_types'
+  EthDepositStatus,
+  L1ToL2MessageReader as IL1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -87,6 +88,7 @@ type TransactionBase = {
   sender: string
   blockNumber?: number
   l1NetworkID: string
+  l2NetworkID?: string
   timestampResolved?: string // time when its status was changed
   timestampCreated?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
@@ -294,7 +296,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
   const addTransactions = (transactions: Transaction[]) => {
-    const timestampedTransactoins = transactions.map(txn => {
+    const timestampedTransactions = transactions.map(txn => {
       return {
         ...txn,
         timestampCreated: new Date().toISOString()
@@ -302,7 +304,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
     return dispatch({
       type: 'ADD_TRANSACTIONS',
-      transactions: timestampedTransactoins
+      transactions: timestampedTransactions
     })
   }
   const addFailedTransaction = (transaction: FailedTransaction) => {
@@ -338,25 +340,17 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       retryableCreationTxID: ethDepositMessage.l2DepositTxHash
     })
 
-    // It's ok to bail here, as the RetryableTxnsIncluder will pick it up
-    const res = await ethDepositMessage.wait(undefined, 500)
-
-    function getStatus(): L1ToL2MessageStatus {
-      if (!res) {
-        return L1ToL2MessageStatus.NOT_YET_CREATED
-      }
-
-      return res.status === 0
-        ? L1ToL2MessageStatus.CREATION_FAILED
-        : L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-    }
+    const status = await ethDepositMessage.status()
+    const isDeposited = status === EthDepositStatus.DEPOSITED
 
     updateTxnL1ToL2MsgData(txID, {
       fetchingUpdate: false,
-      status: getStatus(),
+      status: isDeposited
+        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        : L1ToL2MessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      // Only show `l2TxID` after we have the tx receipt
-      l2TxID: res !== null ? ethDepositMessage.l2DepositTxHash : undefined
+      // Only show `l2TxID` after the deposit is confirmed
+      l2TxID: isDeposited ? ethDepositMessage.l2DepositTxHash : undefined
     })
   }
 

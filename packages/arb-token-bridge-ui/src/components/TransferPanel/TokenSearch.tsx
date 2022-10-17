@@ -23,6 +23,7 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 
 enum Panel {
   TOKENS,
@@ -57,17 +58,24 @@ interface TokenRowProps {
 function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, balances },
+      arbTokenBridge: { bridgeTokens, balances, walletAddress },
       isDepositMode
     }
   } = useAppState()
   const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
+    l1: { network: l1Network, provider: l1Provider },
+    l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
+
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: l1Provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: l2Provider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -83,15 +91,13 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
   const tokenBalance = useMemo(() => {
     if (!token) {
-      return isDepositMode
-        ? balances?.eth.balance
-        : balances?.eth.arbChainBalance
+      return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
     return isDepositMode
       ? balances?.erc20[token.address]?.balance
       : balances?.erc20[token.address]?.arbChainBalance
-  }, [token, isDepositMode, balances])
+  }, [ethL1Balance, ethL2Balance, token, isDepositMode, balances])
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
@@ -317,17 +323,27 @@ function TokensPanel({
 }): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { balances, token },
+      arbTokenBridge: { balances, token, walletAddress },
       isDepositMode
     }
   } = useAppState()
-
+  const {
+    l1: { provider: L1Provider },
+    l2: { provider: L2Provider }
+  } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({ provider: L1Provider, walletAddress })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({ provider: L2Provider, walletAddress })
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
   const [newToken, setNewToken] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
 
   const numberOfRows = isLarge ? 5 : 3.5
@@ -335,16 +351,14 @@ function TokensPanel({
   const getBalance = useCallback(
     (address: string) => {
       if (address === ETH_IDENTIFIER) {
-        return isDepositMode
-          ? balances?.eth.balance
-          : balances?.eth.arbChainBalance
+        return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
       return isDepositMode
         ? balances?.erc20[address]?.balance
         : balances?.erc20[address]?.arbChainBalance
     },
-    [isDepositMode, balances]
+    [ethL1Balance, ethL2Balance, isDepositMode, balances]
   )
 
   const tokensToShow = useMemo(() => {
@@ -416,16 +430,19 @@ function TokensPanel({
 
   const storeNewToken = async () => {
     return token.add(newToken).catch((ex: Error) => {
-      console.log('Token not found on this network')
+      let error = 'Token not found on this network.'
 
       if (ex.name === 'TokenDisabledError') {
-        alert('This token is currently paused in the bridge')
+        error = 'This token is currently paused in the bridge.'
       }
+
+      setErrorMessage(error)
     })
   }
 
   const addNewToken: FormEventHandler = async e => {
     e.preventDefault()
+    setErrorMessage('')
 
     if (!isAddress(newToken) || isAddingToken) {
       return
@@ -449,7 +466,10 @@ function TokensPanel({
           <input
             id="newTokenAddress"
             value={newToken}
-            onChange={e => setNewToken(e.target.value)}
+            onChange={e => {
+              setErrorMessage('')
+              setNewToken(e.target.value)
+            }}
             placeholder="Search by token name, symbol, L1 or L2 address"
             className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
@@ -461,10 +481,12 @@ function TokensPanel({
             loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
             className="border border-gray-4 py-1 text-gray-9"
+            aria-label="Add New Token"
           >
             Add
           </Button>
         </div>
+        {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
       <div className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]">
         <AutoSizer disableHeight>
@@ -516,12 +538,13 @@ export function TokenSearch({
 }) {
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens, walletAddress }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
+  const { l1, l2 } = useNetworksAndSigners()
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -544,7 +567,12 @@ export function TokenSearch({
         return
       }
 
-      const data = await token?.getL1TokenData(_token.address)
+      const data = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: _token.address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
 
       if (data) {
         token.updateTokenData(_token.address)

@@ -1,30 +1,69 @@
 # Arbitrum Token Bridge Web UI
 
-### Local Dev Start
+## Run Locally
 
 1. `git clone https://github.com/OffchainLabs/arb-token-bridge`
 
-1. `cd ./arb-token-bridge && yarn install`
+2. `cd ./arb-token-bridge && yarn install`
 
-1. `cd ./packages/use-wallet && yarn build`
+3. `cd ./packages/use-wallet && yarn build`
 
-1. `cd ./packages/shared-ui && yarn build`
-
-1. Set infura key:
+4. Set env vars:
 
    1. `touch ./packages/arb-token-bridge-ui/.env`
 
-   1. In `.env`, add `REACT_APP_INFURA_KEY=my-infura-key`
+   2. In `.env`, add `REACT_APP_INFURA_KEY=my-infura-key`
 
-   1. (to use other rpc endpoint, set in `packages/arb-token-bridge-ui/src/util/networks.ts`)
+   3. For custom urls, set optional vars:
+
+   - `REACT_APP_ETHEREUM_RPC_URL=my-eth-node`
+   - `REACT_APP_RINKEBY_RPC_URL=my-rinkeby-node`
+   - `REACT_APP_GOERLI_RPC_URL=my-goerli-node`
+     (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
+     If no custom URL is provided, Infura will be used by default.
+
+#### Dev Build
 
 1. (back in root dir:) `yarn start_sdk`
 
-1. Open new terminal tab
+2. Open new terminal tab
 
-1. `yarn start_ui`
+3. `yarn start_ui`
 
-1. Visit `http://localhost:3000/`
+4. Visit `http://localhost:3000/`
+
+#### Local Production Build
+
+1. install `serve`: `npm install -g serve`
+2. (back in root dir:) `yarn build`
+3. `yarn serve`
+
+#### Run End-to-End Tests
+
+1. Run the token bridge UI locally
+
+2. Set env vars:
+
+   1. At this repository's root, `cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env`
+
+   2. In the newly created file, `.e2e-env`, update your `SECRET_WORDS, ADDRESS, etc` in the format mentioned in the file.
+
+3. `cd ./packages/arb-token-bridge-ui/ && yarn e2e:run`
+
+Read more about the setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
+
+### Development Tools
+
+We use a couple of tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
+
+- [Yarn](https://classic.yarnpkg.com) - Package manager
+  - Find Yarn install guide for your system [here](https://classic.yarnpkg.com/en/docs/install)
+- [Prettier](https://prettier.io) - Automatic code formatting
+  - Find Prettier integration for your code editor [here](https://prettier.io/docs/en/editors.html)
+- [EditorConfig](https://editorconfig.org) - Automatic file formatting
+  - Find EditorConfig integration for your code editor [here](https://editorconfig.org/#download)
+- [ESLint](https://eslint.org) - Static analysis for JavaScript
+  - Find ESLint integration for your code editor [here](https://eslint.org/docs/latest/user-guide/integrations#editors)
 
 ### Deposit Lifecycle
 

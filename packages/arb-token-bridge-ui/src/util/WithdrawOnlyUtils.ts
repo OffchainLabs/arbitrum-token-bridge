@@ -28,21 +28,9 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2Address: '0x488cc08935458403a0458e45E20c0159c8AB2c92'
     },
     {
-      symbol: 'wstETH',
-      l2CustomAddr: '',
-      l1Address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
-      l2Address: ''
-    },
-    {
       symbol: 'stETH',
       l2CustomAddr: '',
       l1Address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
-      l2Address: ''
-    },
-    {
-      symbol: 'LDO',
-      l2CustomAddr: '',
-      l1Address: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
       l2Address: ''
     },
     {
@@ -104,6 +92,18 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x641441c631e2f909700d2f41fd87f0aa6a6b4edb',
       l1Address: '0x0a5e677a6a24b2f1a2bf4f3bffc443231d2fdec8',
       l2Address: '0xcd14C3A2ba27819B352aae73414A26e2b366dC50'
+    },
+    {
+      symbol: 'SYN',
+      l2CustomAddr: '0x080f6aed32fc474dd5717105dba5ea57268f46eb',
+      l1Address: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
+      l2Address: '0x1bcfc0b4ee1471674cd6a9f6b363a034375ead84'
+    },
+    {
+      symbol: 'EMAX',
+      l2CustomAddr: '0x123389C2f0e9194d9bA98c21E63c375B67614108',
+      l1Address: '0x15874d65e649880c2614e7a480cb7c9A55787FF6',
+      l2Address: '0x94293e4e6ab410E898aa68318D0A964106Ff3257'
     }
   ],
   [ChainId.ArbitrumNova]: [
@@ -117,7 +117,7 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
 }
 
 export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
-  return withdrawOnlyTokens[chainId]
+  return (withdrawOnlyTokens[chainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }

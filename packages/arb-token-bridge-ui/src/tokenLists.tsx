@@ -60,7 +60,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
     id: 6,
     originChainID: '42170',
-    url: '/arbed_42170_uniswap_labs_default.json',
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI:
@@ -69,7 +69,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
     id: 7,
     originChainID: '42170',
-    url: '/arbed_42170_gemini_token_list.json',
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
     isDefault: true,
     logoURI: 'https://gemini.com/static/images/loader.png'

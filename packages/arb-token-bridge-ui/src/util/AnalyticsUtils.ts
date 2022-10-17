@@ -6,7 +6,12 @@ import {
   CEXName,
   FiatOnRampName
 } from '../components/TransferPanel/LowBalanceDialogContent'
-import { FastBridgeName } from '../components/TransferPanel/WithdrawalConfirmationDialog'
+import {
+  NonCanonicalTokenAddresses,
+  NonCanonicalTokenNames,
+  NonCanonicalTokenSupportedBridges,
+  FastBridgeNames
+} from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 
 declare global {
@@ -16,6 +21,12 @@ declare global {
     }
   }
 }
+
+type FastBridgeName = `${FastBridgeNames}`
+type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
+
+export type FathomEventNonCanonicalTokens =
+  | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
 export type FathomEvent =
   | `Connect Wallet Click: ${ProviderName}`
@@ -28,14 +39,17 @@ export type FathomEvent =
   | `Fiat On-Ramp Click: ${FiatOnRampName}`
   //
   | `Fast Bridge Click: ${FastBridgeName}`
+  | `${NonCanonicalTokenName}: Use Arbitrum Bridge Click`
+  | `${NonCanonicalTokenName}: Copy Bridge Link Click`
   //
   | `Slow Bridge Click`
   | `Move More Funds Click`
+  | `Add to Google Calendar Click`
   //
   | 'Switch Network and Transfer'
 
-const eventToEventId: {
-  [key in FathomEvent]: string
+const eventToEventId: { [key in FathomEvent]: string } & {
+  [key in FathomEventNonCanonicalTokens]: string
 } = {
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
@@ -54,6 +68,7 @@ const eventToEventId: {
   'Explore: DeFi Project Click: 1inch': 'DZBLQTEL',
   'Explore: DeFi Project Click: Beefy Finance': 'NDMROCKL',
   'Explore: DeFi Project Click: Yearn Finance': '32U989O7',
+  'Explore: DeFi Project Click: KyberSwap': 'RVW7KSNB',
   //
   'Explore: NFT Project Click: Arbibots': 'UKENMGHD',
   'Explore: NFT Project Click: Smol Brains': '7JMIH5HA',
@@ -99,14 +114,21 @@ const eventToEventId: {
   'Fast Bridge Click: Celer': 'JGSCWGST',
   'Fast Bridge Click: Connext': 'KFF7GMET',
   'Fast Bridge Click: Across': 'EZDV8TMY',
+  'Fast Bridge Click: Synapse': 'SKUFXFQR',
+  'Fast Bridge Click: Stargate': '6VZXVGEQ',
+  //
+  'FRAX: Fast Bridge Click: Celer': '6PZJPSBO',
+  'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
+  'FRAX: Copy Bridge Link Click': 'WWJ8WGXM',
   //
   'Slow Bridge Click': '9CEY3IGM',
   'Move More Funds Click': 'YE1OYTL4',
+  'Add to Google Calendar Click': 'CZTO23FP',
   //
   'Switch Network and Transfer': '4F5SKZRG'
 }
 
-export function trackEvent(event: FathomEvent) {
+export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {
   if (typeof window.fathom === 'undefined') {
     return
   }
