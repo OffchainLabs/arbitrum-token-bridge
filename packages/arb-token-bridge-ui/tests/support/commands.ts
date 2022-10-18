@@ -76,9 +76,6 @@ export const connectToApp = () => {
   cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
   cy.findByText('Connect to your MetaMask Wallet').click()
-  cy.acceptMetamaskAccess().then(() => {
-    cy.switchToCypressWindow().should('be.true')
-  })
 }
 
 Cypress.Commands.addAll({

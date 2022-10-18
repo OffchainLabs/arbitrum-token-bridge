@@ -68,8 +68,19 @@ export const setupMetamaskNetwork = (
   }
 }
 
+export const acceptMetamaskAccess = () => {
+  cy.acceptMetamaskAccess().then(() => {
+    cy.isCypressWindowActive().then(cyWindowIsActive => {
+      if (!cyWindowIsActive) {
+        cy.switchToCypressWindow().should('be.true')
+      }
+    })
+  })
+}
+
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   cy.visit(`/`)
   cy.connectToApp()
+  acceptMetamaskAccess()
 }

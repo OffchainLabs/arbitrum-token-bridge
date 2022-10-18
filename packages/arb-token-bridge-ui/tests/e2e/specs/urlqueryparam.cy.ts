@@ -12,8 +12,15 @@ describe('User enters site with query params on URL', () => {
     // before this spec, make sure the cache is fresh
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()
+    // log in to metamask before test
+    cy.login('L1')
+    // save state once otherwise `restoreAppState` in beforeEach would clear it
+    cy.saveAppState()
   })
-
+  after(() => {
+    // after all assertions are executed, logout and reset the account
+    cy.logout()
+  })
   beforeEach(() => {
     cy.restoreAppState()
   })
@@ -21,16 +28,6 @@ describe('User enters site with query params on URL', () => {
     cy.saveAppState()
   })
   context('Amount query param', () => {
-    // log in to metamask before test
-    before(() => {
-      cy.login('L1')
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
-    })
-
     // only ETH is supported for now so by default the following tests are assumed to be ETH
     it('?amount=max should set transfer panel amount to maximum amount possible based on balance', () => {
       cy.visit('/', {
@@ -38,12 +35,11 @@ describe('User enters site with query params on URL', () => {
           amount: 'max'
         }
       })
-      cy.connectToApp()
 
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'max')
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'MAX')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'max')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'MAX')
       // TODO -> get possible max value
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '')
+      // cy.findByPlaceholderText('Enter amount').should('have.value', '')
     })
     it('?amount=MAX should set transfer panel amount to maximum amount possible based on balance', () => {
       cy.visit('/', {
@@ -51,12 +47,12 @@ describe('User enters site with query params on URL', () => {
           amount: 'MAX'
         }
       })
-      cy.connectToApp()
+      // cy.connectToApp()
 
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'max')
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'MAX')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'max')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'MAX')
       // TODO -> get possible max value
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '')
+      // cy.findByPlaceholderText('Enter amount').should('have.value', '')
     })
     it('?amount=MaX should set transfer panel amount to maximum amount possible based on balance', () => {
       cy.visit('/', {
@@ -64,13 +60,13 @@ describe('User enters site with query params on URL', () => {
           amount: 'MaX'
         }
       })
-      cy.connectToApp()
+      // cy.connectToApp()
 
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'max')
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'MAX')
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.text', 'MaX')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'max')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'MAX')
+      cy.findByPlaceholderText('Enter amount').should('not.have.text', 'MaX')
       // TODO -> get possible max value
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '')
+      // cy.findByPlaceholderText('Enter amount').should('have.value', '')
     })
     it('?amount=56 should set transfer panel amount to 56', () => {
       cy.visit('/', {
@@ -78,26 +74,26 @@ describe('User enters site with query params on URL', () => {
           amount: '56'
         }
       })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '56')
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('have.value', '56')
     })
-    it('?amount=1.6678 should set transfer panel amount to 56', () => {
+    it('?amount=1.6678 should set transfer panel amount to 1.6678', () => {
       cy.visit('/', {
         qs: {
           amount: '1.6678'
         }
       })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '1.6678')
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('have.value', '1.6678')
     })
-    it('?amount=6 should set transfer panel amount to 56', () => {
+    it('?amount=6 should set transfer panel amount to 6', () => {
       cy.visit('/', {
         qs: {
           amount: '6'
         }
       })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '6')
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('have.value', '6')
     })
     it('?amount=0.123 should set transfer panel amount to 0.123', () => {
       cy.visit('/', {
@@ -105,8 +101,8 @@ describe('User enters site with query params on URL', () => {
           amount: '0.123'
         }
       })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '0.123')
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('have.value', '0.123')
     })
     it('?amount=-0.123 should not set transfer panel amount', () => {
       cy.visit('/', {
@@ -114,17 +110,8 @@ describe('User enters site with query params on URL', () => {
           amount: '-0.123'
         }
       })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.value')
-    })
-    it('?amount=0 should set transfer panel amount to 0', () => {
-      cy.visit('/', {
-        qs: {
-          amount: '0'
-        }
-      })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('have.value', '0')
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('not.have.value')
     })
     it('?amount=asdfs should not set transfer panel amount', () => {
       cy.visit('/', {
@@ -132,8 +119,17 @@ describe('User enters site with query params on URL', () => {
           amount: 'asdfs'
         }
       })
-      cy.connectToApp()
-      cy.findAllByPlaceholderText('Enter amount').should('not.have.value')
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('not.have.value')
+    })
+    it('?amount=0 should set transfer panel amount to 0', () => {
+      cy.visit('/', {
+        qs: {
+          amount: '0'
+        }
+      })
+      // cy.connectToApp()
+      cy.findByPlaceholderText('Enter amount').should('have.value', '0')
     })
   })
 })
