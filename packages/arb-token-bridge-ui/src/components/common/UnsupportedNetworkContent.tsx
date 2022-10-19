@@ -1,8 +1,12 @@
 import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useAppState } from '../../state'
-import { ChainId, getNetworkName, networkSelectionList } from '../../util/networks'
-import { changeNetworkBasic, networkStyleMap } from '../../util/NetworkUtils'
+import { ChainId, getNetworkName } from '../../util/networks'
+import {
+  changeNetworkBasic,
+  networkStyleMap,
+  networkSelectionList
+} from '../../util/NetworkUtils'
 import { Button } from './Button'
 
 export const UnsupportedNetworkContent = () => {
@@ -39,13 +43,11 @@ export const UnsupportedNetworkContent = () => {
       {networkSelectionList.map(chainId => (
         <Button
           variant="primary"
-          onClick={()=>{
+          onClick={() => {
             changeNetwork(chainId)
           }}
           key={chainId}
-          className={`text-md ${
-            networkStyleMap[chainId]['btnThemeClass']
-          } py-3`}
+          className={`text-md ${networkStyleMap[chainId]['btnThemeClass']} py-3`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">
             <img

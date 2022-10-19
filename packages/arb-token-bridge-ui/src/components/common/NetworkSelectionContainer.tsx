@@ -2,12 +2,12 @@ import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Transition } from '@headlessui/react'
 import { useAppState } from '../../state'
+import { ChainId, getNetworkName } from '../../util/networks'
 import {
-  ChainId,
-  getNetworkName,
+  changeNetworkBasic,
+  networkStyleMap,
   networkSelectionList
-} from '../../util/networks'
-import { changeNetworkBasic, networkStyleMap } from '../../util/NetworkUtils'
+} from '../../util/NetworkUtils'
 
 export const NetworkSelectionContainer = ({
   children,

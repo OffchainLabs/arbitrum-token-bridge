@@ -155,6 +155,3 @@ export function getNetworkName(
       return 'Unknown'
   }
 }
-
-// The list which will be available for network selection in navbar-dropdowns
-export const networkSelectionList = [ChainId.ArbitrumOne, ChainId.ArbitrumNova, ChainId.Mainnet];

@@ -7,7 +7,18 @@ import EthereumLogo from '../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
 
+/* 
+  The list which will be available for network selection in navbar-dropdowns
+ */
+export const networkSelectionList = [
+  ChainId.ArbitrumOne,
+  ChainId.ArbitrumNova,
+  ChainId.Mainnet
+]
 
+/* 
+  Icons and colors attached with our networks available for selection
+*/
 export const networkStyleMap: {
   [chainId: number]: { img: string; btnThemeClass: string }
 } = {
@@ -24,8 +35,6 @@ export const networkStyleMap: {
     btnThemeClass: 'bg-brick-dark'
   }
 }
-
-
 
 /*
   - A very basic variant of `changeNetwork` function present in App.tsx (which initializes after the app load)
