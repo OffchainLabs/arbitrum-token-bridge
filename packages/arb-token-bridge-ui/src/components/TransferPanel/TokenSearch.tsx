@@ -429,7 +429,7 @@ function TokensPanel({
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
   const storeNewToken = async () => {
-    return token.add(newToken).catch((ex: Error) => {
+    return token.add(newToken.toLowerCase()).catch((ex: Error) => {
       let error = 'Token not found on this network.'
 
       if (ex.name === 'TokenDisabledError') {
