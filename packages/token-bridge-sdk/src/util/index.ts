@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -79,14 +79,14 @@ export async function getL1TokenData({
     symbol: true
   })
 
-  if (typeof tokenData.balance === 'undefined') {
+  if (tokenData && typeof tokenData.balance === 'undefined') {
     if (throwOnInvalidERC20)
       throw new Error(
         `getL1TokenData: No balance method available for ${erc20L1Address}`
       )
   }
 
-  if (typeof tokenData.allowance === 'undefined') {
+  if (tokenData && typeof tokenData.allowance === 'undefined') {
     if (throwOnInvalidERC20)
       throw new Error(
         `getL1TokenData: No allowance method available for ${erc20L1Address}`
@@ -94,11 +94,11 @@ export async function getL1TokenData({
   }
 
   return {
-    name: tokenData.name || getDefaultTokenName(erc20L1Address),
-    symbol: tokenData.symbol || getDefaultTokenSymbol(erc20L1Address),
-    balance: tokenData.balance || BigNumber.from(0),
-    allowance: tokenData.allowance || BigNumber.from(0),
-    decimals: tokenData.decimals || 0,
+    name: tokenData?.name || getDefaultTokenName(erc20L1Address),
+    symbol: tokenData?.symbol || getDefaultTokenSymbol(erc20L1Address),
+    balance: tokenData?.balance || BigNumber.from(0),
+    allowance: tokenData?.allowance || BigNumber.from(0),
+    decimals: tokenData?.decimals || 0,
     contract
   }
 }
@@ -124,14 +124,14 @@ export async function getL2TokenData({
     balanceOf: { account }
   })
 
-  if (typeof tokenData.balance === 'undefined') {
+  if (tokenData && typeof tokenData.balance === 'undefined') {
     throw new Error(
       `getL2TokenData: No balance method available for ${erc20L2Address}`
     )
   }
 
   return {
-    balance: tokenData.balance,
+    balance: tokenData?.balance || constants.Zero,
     contract
   }
 }

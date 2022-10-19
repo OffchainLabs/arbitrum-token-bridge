@@ -523,6 +523,9 @@ export const useArbTokenBridge = (
     }
 
     const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
+    if (!l1ToL2Msg) {
+      return
+    }
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
