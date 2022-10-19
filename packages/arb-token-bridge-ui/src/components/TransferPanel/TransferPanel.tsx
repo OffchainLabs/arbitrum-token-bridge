@@ -5,7 +5,7 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -377,9 +377,12 @@ export function TransferPanel() {
             return
           }
 
-          const { allowance } = await arbTokenBridge.token.getL1TokenData(
-            selectedToken.address
-          )
+          const { allowance } = await getL1TokenData({
+            account: walletAddress,
+            erc20L1Address: selectedToken.address,
+            l1Provider: l1Provider,
+            l2Provider: l2Provider
+          })
 
           if (!allowance.gte(amountRaw)) {
             const waitForInput = openTokenApprovalDialog()
@@ -792,7 +795,7 @@ export function TransferPanel() {
                 isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
               )}
             >
-              Move funds to {getNetworkName(l2Network)}
+              Move funds to {getNetworkName(l2Network.chainID)}
             </Button>
           ) : (
             <Button
@@ -802,7 +805,7 @@ export function TransferPanel() {
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
-              Move funds to {getNetworkName(l1Network)}
+              Move funds to {getNetworkName(l1Network.chainID)}
             </Button>
           )}
         </div>

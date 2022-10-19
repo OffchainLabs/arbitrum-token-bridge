@@ -1,10 +1,10 @@
 {
   "name": "arb-token-bridge-ui",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "private": true,
   "dependencies": {
     "@ethersproject/providers": "^5.7.0",
-    "@headlessui/react": "^1.4.0",
+    "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^1.0.3",
     "@sentry/react": "^7.13.0",
     "@sentry/tracing": "^7.13.0",
