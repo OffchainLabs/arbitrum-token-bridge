@@ -8,7 +8,7 @@ import { Tooltip } from '../common/Tooltip'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l1.network)
+  const networkName = getNetworkName(l1.network.chainID)
 
   return (
     <WithdrawalCardContainer tx={tx}>
