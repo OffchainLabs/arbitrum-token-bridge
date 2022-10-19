@@ -1,8 +1,31 @@
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { hexValue } from 'ethers/lib/utils'
-import { getNetworkName, rpcURLs } from './networks'
+import { ChainId, getNetworkName, rpcURLs } from './networks'
 import { BigNumber } from 'ethers'
 import { Web3Provider } from '@ethersproject/providers'
+import EthereumLogo from '../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
+
+
+export const networkStyleMap: {
+  [chainId: number]: { img: string; btnThemeClass: string }
+} = {
+  [ChainId.Mainnet]: {
+    img: EthereumLogo,
+    btnThemeClass: 'bg-blue-arbitrum'
+  },
+  [ChainId.ArbitrumOne]: {
+    img: ArbitrumOneLogo,
+    btnThemeClass: 'bg-blue-arbitrum'
+  },
+  [ChainId.ArbitrumNova]: {
+    img: ArbitrumNovaLogo,
+    btnThemeClass: 'bg-brick-dark'
+  }
+}
+
+
 
 /*
   - A very basic variant of `changeNetwork` function present in App.tsx (which initializes after the app load)

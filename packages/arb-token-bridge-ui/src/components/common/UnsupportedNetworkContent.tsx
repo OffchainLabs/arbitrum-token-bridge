@@ -1,21 +1,30 @@
-import { L1Network, L2Network } from '@arbitrum/sdk'
+import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { useAppState } from '../../state'
-import { networksListArray, networkStyleMap } from '../../util/networks'
-import { changeNetworkBasic } from '../../util/NetworkUtils'
+import { ChainId, getNetworkName, networkSelectionList } from '../../util/networks'
+import { changeNetworkBasic, networkStyleMap } from '../../util/NetworkUtils'
 import { Button } from './Button'
 
 export const UnsupportedNetworkContent = () => {
   const { provider } = useWallet()
   const { app } = useAppState()
 
-  const changeNetwork = async (network: L1Network | L2Network) => {
-    if (app.changeNetwork) {
-      // if the rich app-injected version of changeNetwork is present, use that.
-      await app.changeNetwork(network)
-    } else {
-      // else use the basic network switching logic
-      await changeNetworkBasic(provider, network)
+  const changeNetwork = async (chainId: ChainId) => {
+    let network
+    try {
+      network = await getL2Network(chainId)
+    } catch {
+      network = await getL1Network(chainId)
+    }
+
+    if (network) {
+      if (app.changeNetwork) {
+        // if the rich app-injected version of changeNetwork is present, use that.
+        await app.changeNetwork(network)
+      } else {
+        // else use the basic network switching logic
+        await changeNetworkBasic(provider, network)
+      }
     }
   }
 
@@ -27,24 +36,24 @@ export const UnsupportedNetworkContent = () => {
         </span>
       </div>
 
-      {networksListArray.map(network => (
+      {networkSelectionList.map(chainId => (
         <Button
           variant="primary"
           onClick={()=>{
-            changeNetwork(network)
+            changeNetwork(chainId)
           }}
-          key={network.chainID}
+          key={chainId}
           className={`text-md ${
-            networkStyleMap[network.chainID]['btnThemeClass']
+            networkStyleMap[chainId]['btnThemeClass']
           } py-3`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">
             <img
-              src={networkStyleMap[network.chainID]['img']}
-              alt={`${network.name} logo`}
+              src={networkStyleMap[chainId]['img']}
+              alt={`${getNetworkName(chainId)} logo`}
               className="max-w-8 max-h-8"
             />
-            <span> {`Switch to ${network.name}`}</span>
+            <span> {`Switch to ${getNetworkName(chainId)}`}</span>
           </div>
         </Button>
       ))}
