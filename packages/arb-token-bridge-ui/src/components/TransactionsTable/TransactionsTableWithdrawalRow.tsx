@@ -127,7 +127,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       <span className="text-dark">
         L1:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l1.network)}/tx/${matchingL1Tx.txId}`}
+          href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(matchingL1Tx.txId)}
@@ -141,7 +141,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       <span className="text-dark">
         L2:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l2.network)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}

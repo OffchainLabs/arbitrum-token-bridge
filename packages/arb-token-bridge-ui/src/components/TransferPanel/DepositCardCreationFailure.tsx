@@ -31,9 +31,9 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${getExplorerUrl(l1.network)}/tx/${
+            `L1 transaction: ${getExplorerUrl(l1.network.chainID)}/tx/${
               tx.txId
-            }\nL2 transaction: ${getExplorerUrl(l2.network)}/tx/${
+            }\nL2 transaction: ${getExplorerUrl(l2.network.chainID)}/tx/${
               tx.l1ToL2MsgData?.retryableCreationTxID
             }`
           )

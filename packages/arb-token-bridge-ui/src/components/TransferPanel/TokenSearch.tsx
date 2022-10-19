@@ -181,7 +181,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${getExplorerUrl(l1Network)}/token/${token.address}`}
+                  href={`${getExplorerUrl(l1Network.chainID)}/token/${
+                    token.address
+                  }`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-link underline"
@@ -193,7 +195,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${getExplorerUrl(l2Network)}/token/${token.l2Address}`}
+                      href={`${getExplorerUrl(l2Network.chainID)}/token/${
+                        token.l2Address
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-link underline"

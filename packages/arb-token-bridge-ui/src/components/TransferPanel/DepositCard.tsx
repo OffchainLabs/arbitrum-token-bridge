@@ -33,7 +33,7 @@ export function DepositL1TxStatus({
     case DepositStatus.EXPIRED:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(l1.network)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -60,7 +60,9 @@ export function DepositL2TxStatus({
     case DepositStatus.L2_SUCCESS:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(l2.network)}/tx/${tx.l1ToL2MsgData?.l2TxID}`}
+          href={`${getExplorerUrl(l2.network.chainID)}/tx/${
+            tx.l1ToL2MsgData?.l2TxID
+          }`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}

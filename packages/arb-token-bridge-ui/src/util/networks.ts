@@ -47,11 +47,11 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://testnet.arbiscan.io',
-  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup-explorer.arbitrum.io'
+  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
 }
 
-export const getExplorerUrl = (network: L1Network | L2Network | undefined) => {
-  return network ? explorerUrls[network.chainID] : ''
+export const getExplorerUrl = (chainId: ChainId | undefined) => {
+  return chainId ? explorerUrls[chainId] : ''
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {

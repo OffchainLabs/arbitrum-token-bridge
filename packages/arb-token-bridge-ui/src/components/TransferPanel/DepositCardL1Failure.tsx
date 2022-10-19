@@ -30,7 +30,9 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${getExplorerUrl(l1.network)}/tx/${tx.txId}`
+            `L1 transaction: ${getExplorerUrl(l1.network.chainID)}/tx/${
+              tx.txId
+            }`
           )
         }}
       >

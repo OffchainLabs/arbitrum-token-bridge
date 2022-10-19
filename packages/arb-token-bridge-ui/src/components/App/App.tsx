@@ -301,7 +301,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       decimals: 18
                     },
                     rpcUrls: [rpcURLs[network.chainID]],
-                    blockExplorerUrls: [getExplorerUrl(network)]
+                    blockExplorerUrls: [getExplorerUrl(network.chainID)]
                   }
                 ]
               })
