@@ -38,7 +38,7 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const networkName = getNetworkName(l1.network)
+  const networkName = getNetworkName(l1.network.chainID)
   const {
     app: { selectedToken }
   } = useAppState()
@@ -189,7 +189,7 @@ export function WithdrawalConfirmationDialog(
                         confirmationDays,
                         props.amount,
                         selectedToken?.symbol || 'ETH',
-                        getNetworkName(l2.network)
+                        getNetworkName(l2.network.chainID)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"
