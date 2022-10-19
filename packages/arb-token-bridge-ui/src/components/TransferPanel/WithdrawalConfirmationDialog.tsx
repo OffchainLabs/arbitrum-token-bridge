@@ -38,7 +38,7 @@ function getCalendarUrl(
     'YYYYMMDD[T]HH[0000%2F]YYYYMMDD[T]HH[0000]'
   )
 
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${parsedWithdrawalDate}`
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${parsedWithdrawalDate}&details=Withdrawn+on+%3Ca%20href=%22https://bridge.arbitrum.io%22%3Ehttps://bridge.arbitrum.io%3C/a%3E`
 }
 
 export function WithdrawalConfirmationDialog(
