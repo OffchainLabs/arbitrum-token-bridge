@@ -27,14 +27,13 @@ export const NetworkSelectionContainer = ({
       network = await getL1Network(chainId)
     }
 
-    if (network) {
-      if (app.changeNetwork) {
-        // if the rich app-injected version of changeNetwork is present, use that.
-        await app.changeNetwork(network)
-      } else {
-        // else use the basic network switching logic
-        await changeNetworkBasic(provider, network)
-      }
+    if (!network) return
+    if (app.changeNetwork) {
+      // if the rich app-injected version of changeNetwork is present, use that.
+      await app.changeNetwork(network)
+    } else {
+      // else use the basic network switching logic
+      await changeNetworkBasic(provider, network)
     }
   }
 
