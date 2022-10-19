@@ -196,7 +196,6 @@ describe('User enters site with query params on URL', () => {
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
-      cy.pause()
     })
   })
 })
