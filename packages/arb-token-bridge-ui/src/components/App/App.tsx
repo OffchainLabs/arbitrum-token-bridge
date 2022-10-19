@@ -269,7 +269,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const changeNetwork = async (network: L1Network | L2Network) => {
         const chainId = network.chainID
         const hexChainId = hexValue(BigNumber.from(chainId))
-        const networkName = getNetworkName(network)
+        const networkName = getNetworkName(chainId)
         const provider = library?.provider
 
         if (isSwitchChainSupported(provider)) {

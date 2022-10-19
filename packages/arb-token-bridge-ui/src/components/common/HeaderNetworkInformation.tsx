@@ -34,7 +34,7 @@ export function HeaderNetworkInformation() {
     return ArbitrumOneLogo
   }, [network])
 
-  const networkName = getNetworkName(network)
+  const networkName = getNetworkName(network.chainID)
 
   return (
     <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2 text-white">
