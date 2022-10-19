@@ -32,13 +32,13 @@ export const NetworkSelectionContainer = ({
       </Popover.Button>
 
       <Transition>
-        <Popover.Panel className="relative flex flex-col rounded-md bg-white lg:absolute lg:mt-4 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+        <Popover.Panel className="relative flex flex-col rounded-md lg:bg-white lg:absolute lg:mt-4 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {networksListArray
             .filter(network => filterNetworks?.(network) || true)
             .map(network => (
               <div
                 key={network.chainID}
-                className="flex h-12 cursor-pointer flex-nowrap items-center space-x-3 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]"
+                className="flex h-12 cursor-pointer flex-nowrap lg:justify-start lg:text-dark lg:font-normal justify-center font-light text-white items-center space-x-3 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]"
                 onClick={()=>{
                   changeNetwork(network)
                 }}

@@ -6,6 +6,7 @@ import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 
 export function HeaderNetworkInformation() {
   const {
@@ -36,15 +37,17 @@ export function HeaderNetworkInformation() {
   const networkName = getNetworkName(network)
 
   return (
-    <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2">
+    <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2 text-white">
       <img
         src={logoSrc}
         alt={`${networkName} logo`}
         className="max-w-8 max-h-8"
       />
-      <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
+      <span className="text-2xl font-medium  lg:text-base lg:font-normal">
         {networkName}
       </span>
+
+      <ChevronDownIcon className="h-4 w-4" />
     </div>
   )
 }
