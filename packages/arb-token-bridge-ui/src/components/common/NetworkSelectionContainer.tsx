@@ -13,7 +13,7 @@ export const NetworkSelectionContainer = ({
   children,
   filterNetworks
 }: {
-  children: JSX.Element | null
+  children: React.ReactNode
   filterNetworks?: (networkId: ChainId) => boolean
 }) => {
   const { provider } = useWallet()
@@ -56,11 +56,13 @@ export const NetworkSelectionContainer = ({
                   changeNetwork(chainId)
                 }}
               >
-                <img
-                  src={networkStyleMap[chainId]['img']}
-                  alt={`${getNetworkName(chainId)} logo`}
-                  className="max-w-8 max-h-8"
-                />
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <img
+                    src={networkStyleMap[chainId]['img']}
+                    alt={`${getNetworkName(chainId)} logo`}
+                    className="max-w-8 max-h-8"
+                  />
+                </div>
                 <span className="whitespace-nowrap">
                   {getNetworkName(chainId)}
                 </span>
