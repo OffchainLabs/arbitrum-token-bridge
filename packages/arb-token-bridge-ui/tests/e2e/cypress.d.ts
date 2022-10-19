@@ -14,7 +14,7 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
-      login(networkType: NetworkType): typeof login
+      login(networkType: NetworkType, addNewNetwork?: boolean): typeof login
       logout(): typeof logout
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
