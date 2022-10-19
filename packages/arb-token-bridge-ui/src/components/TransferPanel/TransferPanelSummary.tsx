@@ -281,7 +281,8 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span className="text-dark">
-            {formatNumber(amount, 4)} {token?.symbol || 'ETH'}
+            {formatNumber({ value: amount, decimals: 4 })}{' '}
+            {token?.symbol || 'ETH'}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (
@@ -296,9 +297,9 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">
           You’ll pay in gas fees
         </span>
-        <div className="flex flex w-3/5 justify-between">
+        <div className="flex w-3/5 justify-between">
           <span className="text-dark">
-            {formatNumber(estimatedTotalGasFees, 4)} ETH
+            {formatNumber({ value: estimatedTotalGasFees, decimals: 4 })} ETH
           </span>
           {isMainnet && (
             <span className="font-medium text-dark">
@@ -318,7 +319,7 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL1GasFees, 4)} ETH
+              {formatNumber({ value: estimatedL1GasFees, decimals: 4 })} ETH
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
@@ -336,7 +337,7 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL2GasFees, 4)} ETH
+              {formatNumber({ value: estimatedL2GasFees, decimals: 4 })} ETH
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
@@ -358,7 +359,11 @@ export function TransferPanelSummary({
             <span className="w-2/5 font-light text-dark">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">
               <span className="text-dark">
-                {formatNumber(amount + estimatedTotalGasFees, 4)} ETH
+                {formatNumber({
+                  value: amount + estimatedTotalGasFees,
+                  decimals: 4
+                })}{' '}
+                ETH
               </span>
               {isMainnet && (
                 <span className="font-medium text-dark">
