@@ -17,8 +17,10 @@ export const NetworkSelectionContainer = ({
 
   const changeNetwork = async (network: L1Network | L2Network) => {
     if (app.changeNetwork) {
+      // if the rich app-injected version of changeNetwork is present, use that.
       await app.changeNetwork(network)
     } else {
+       // else use the basic network switching logic
       await changeNetworkBasic(provider, network)
     }
   }
