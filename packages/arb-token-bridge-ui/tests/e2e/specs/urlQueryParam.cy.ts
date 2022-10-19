@@ -58,8 +58,7 @@ describe('User enters site with query params on URL', () => {
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         .invoke('val')
         .then(value => {
-          const inputValue = Number(value)
-          cy.wrap(inputValue).should('be.lt', l1ETHbal)
+          cy.wrap(Number(value)).should('be.lt', l1ETHbal)
         })
     })
     it('?amount=MAX should set transfer panel amount to maximum amount possible based on balance', () => {
@@ -83,8 +82,7 @@ describe('User enters site with query params on URL', () => {
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         .invoke('val')
         .then(value => {
-          const inputValue = Number(value)
-          cy.wrap(inputValue).should('be.lt', l1ETHbal)
+          cy.wrap(Number(value)).should('be.lt', l1ETHbal)
         })
     })
     it('?amount=MaX should set transfer panel amount to maximum amount possible based on balance', () => {
@@ -109,8 +107,7 @@ describe('User enters site with query params on URL', () => {
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         .invoke('val')
         .then(value => {
-          const inputValue = Number(value)
-          cy.wrap(inputValue).should('be.lt', l1ETHbal)
+          cy.wrap(Number(value)).should('be.lt', l1ETHbal)
         })
     })
     it('?amount=56 should set transfer panel amount to 56', () => {
