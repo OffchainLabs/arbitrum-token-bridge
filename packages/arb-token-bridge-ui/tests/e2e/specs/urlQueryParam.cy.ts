@@ -179,5 +179,24 @@ describe('User enters site with query params on URL', () => {
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })
+    it('?amount=123,3,43 should not set transfer panel amount', () => {
+      cy.visit('/', {
+        qs: {
+          amount: '123,3,43'
+        }
+      })
+
+      cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
+    })
+    it('?amount=0, 123.222, 0.3 should not set transfer panel amount', () => {
+      cy.visit('/', {
+        qs: {
+          amount: '0, 123.222, 0.3'
+        }
+      })
+
+      cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
+      cy.pause()
+    })
   })
 })
