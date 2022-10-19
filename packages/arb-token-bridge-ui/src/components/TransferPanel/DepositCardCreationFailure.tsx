@@ -7,6 +7,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DepositCardContainer } from './DepositCard'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { GET_HELP_LINK } from '../../constants'
+import { getExplorerUrl } from '../../util/networks'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
@@ -30,7 +31,11 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${l1.network?.explorerUrl}/tx/${tx.txId}\nL2 transaction: ${l2.network?.explorerUrl}/tx/${tx.l1ToL2MsgData?.retryableCreationTxID}`
+            `L1 transaction: ${getExplorerUrl(l1.network)}/tx/${
+              tx.txId
+            }\nL2 transaction: ${getExplorerUrl(l2.network)}/tx/${
+              tx.l1ToL2MsgData?.retryableCreationTxID
+            }`
           )
         }}
       >

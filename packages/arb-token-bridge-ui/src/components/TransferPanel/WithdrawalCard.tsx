@@ -12,6 +12,7 @@ import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { getExplorerUrl } from '../../util/networks'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -35,7 +36,7 @@ export function WithdrawalL2TxStatus({
 
   return (
     <ExternalLink
-      href={`${l2Network.explorerUrl}/tx/${tx.txId}`}
+      href={`${getExplorerUrl(l2Network)}/tx/${tx.txId}`}
       className="arb-hover text-blue-link"
     >
       {shortenTxHash(tx.txId)}
@@ -79,7 +80,7 @@ export function WithdrawalL1TxStatus({
 
   return (
     <ExternalLink
-      href={`${l1Network.explorerUrl}/tx/${l1Tx.txId}`}
+      href={`${getExplorerUrl(l1Network)}/tx/${l1Tx.txId}`}
       className="arb-hover text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}
