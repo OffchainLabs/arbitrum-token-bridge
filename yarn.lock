@@ -3143,10 +3143,10 @@
     synthetix "2.41.0"
     web3-utils "1.2.11"
 
-"@synthetixio/synpress@^2.4.1-beta.4":
-  version "2.4.1-beta.4"
-  resolved "https://registry.yarnpkg.com/@synthetixio/synpress/-/synpress-2.4.1-beta.4.tgz#faa800525aadd9e79e4b4e0c3838fb1b58b7b7f7"
-  integrity sha512-M3IBi/dZ5pNO51MPcP2fRxATWcmcFNJ+re9iWZqBq9AyIleKXptWxxaci78WlGc/ZAdr0HcmEgY7lZx4YuETrw==
+"@synthetixio/synpress@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@synthetixio/synpress/-/synpress-2.4.1.tgz#b1a942685b476f1f361eebf7085ea5cec3713455"
+  integrity sha512-0ziEV6F4GsUvDUd4hpE+QaPXzpwIEC7fQunOcL5cH93IAOemtZ8/ReACkbypkp0sioC9O7mVfXlGCoFA8KotDw==
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-dev-server" "^2.3.0"
