@@ -13,7 +13,7 @@ import * as Sentry from '@sentry/react'
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { formatBigNumber } from '../../util/NumberUtils'
+import { formatTokenBalance } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import {
@@ -238,7 +238,7 @@ function ETHBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatBigNumber(balance, 18, 5)} ETH
+      {formatTokenBalance({ balance, decimals: 18, symbol: 'ETH' })} ETH
     </span>
   )
 }
@@ -266,7 +266,12 @@ function TokenBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatBigNumber(balance, forToken.decimals, 5)} {forToken.symbol}
+      {formatTokenBalance({
+        balance,
+        decimals: forToken.decimals,
+        symbol: forToken.symbol
+      })}{' '}
+      {forToken.symbol}
     </span>
   )
 }
