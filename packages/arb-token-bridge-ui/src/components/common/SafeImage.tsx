@@ -7,25 +7,31 @@ export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
 }
 
 export function SafeImage(props: SafeImageProps) {
-  const { fallback = null } = props
+  const { fallback = null, src, ...imgProps } = props
   const [validImageSrc, setValidImageSrc] = useState<false | string>(false)
 
   useEffect(() => {
-    if (typeof props.src === 'undefined') {
+    const image = new Image()
+
+    if (typeof src === 'undefined') {
       setValidImageSrc(false)
     } else {
-      const sanitizedImageSrc = sanitizeImageSrc(props.src)
+      const sanitizedImageSrc = sanitizeImageSrc(src)
 
-      const image = new Image()
       image.onerror = () => setValidImageSrc(false)
       image.onload = () => setValidImageSrc(sanitizedImageSrc)
       image.src = sanitizedImageSrc
     }
-  }, [props.src])
+
+    return function cleanup() {
+      // Abort previous loading
+      image.src = ''
+    }
+  }, [src])
 
   if (!validImageSrc) {
     return fallback
   }
 
-  return <img {...props} src={validImageSrc} alt={props.alt || ''} />
+  return <img {...imgProps} src={validImageSrc} alt={props.alt || ''} />
 }

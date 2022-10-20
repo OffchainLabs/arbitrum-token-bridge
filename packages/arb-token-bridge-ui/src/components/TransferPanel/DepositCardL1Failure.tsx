@@ -7,6 +7,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCardContainer } from './DepositCard'
 import { GET_HELP_LINK } from '../../constants'
+import { getExplorerUrl } from '../../util/networks'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
@@ -29,7 +30,9 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${l1.network?.explorerUrl}/tx/${tx.txId}`
+            `L1 transaction: ${getExplorerUrl(l1.network.chainID)}/tx/${
+              tx.txId
+            }`
           )
         }}
       >
