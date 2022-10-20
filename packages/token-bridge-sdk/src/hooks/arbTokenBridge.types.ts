@@ -318,8 +318,6 @@ export interface ArbTokenBridgeToken {
     l1Signer: Signer
     txLifecycle?: TriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
-  getL1TokenData: (erc20L1Address: string) => Promise<L1TokenData>
-  getL2TokenData: (erc20L2Address: string) => Promise<L2TokenData>
   getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
   getL2GatewayAddress: (erc20L1Address: string) => Promise<string>

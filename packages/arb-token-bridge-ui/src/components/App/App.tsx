@@ -52,7 +52,12 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork,
+  rpcURLs
+} from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -266,7 +271,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const changeNetwork = async (network: L1Network | L2Network) => {
         const chainId = network.chainID
         const hexChainId = hexValue(BigNumber.from(chainId))
-        const networkName = getNetworkName(network)
+        const networkName = getNetworkName(chainId)
         const provider = library?.provider
 
         if (isSwitchChainSupported(provider)) {
@@ -299,7 +304,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       decimals: 18
                     },
                     rpcUrls: [rpcURLs[network.chainID]],
-                    blockExplorerUrls: [network.explorerUrl]
+                    blockExplorerUrls: [getExplorerUrl(network.chainID)]
                   }
                 ]
               })

@@ -36,7 +36,13 @@ export type {
 
 export { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
-export { validateTokenList } from './util/index'
+export {
+  validateTokenList,
+  getDefaultTokenName,
+  getDefaultTokenSymbol,
+  getL1TokenData,
+  getL2TokenData
+} from './util/index'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
 
 export { useGasPrice } from './hooks/useGasPrice'

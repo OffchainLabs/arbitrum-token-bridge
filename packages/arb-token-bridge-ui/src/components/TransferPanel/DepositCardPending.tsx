@@ -10,7 +10,7 @@ import {
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l2 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network)
+  const networkName = getNetworkName(l2.network.chainID)
 
   return (
     <DepositCardContainer tx={tx}>
