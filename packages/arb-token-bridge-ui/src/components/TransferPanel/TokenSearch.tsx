@@ -23,6 +23,7 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { getExplorerUrl } from '../../util/networks'
 
 enum Panel {
   TOKENS,
@@ -179,7 +180,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${l1Network?.explorerUrl}/token/${token.address}`}
+                  href={`${getExplorerUrl(l1Network.chainID)}/token/${
+                    token.address
+                  }`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-link underline"
@@ -191,7 +194,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${l2Network?.explorerUrl}/token/${token.l2Address}`}
+                      href={`${getExplorerUrl(l2Network.chainID)}/token/${
+                        token.l2Address
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-link underline"
