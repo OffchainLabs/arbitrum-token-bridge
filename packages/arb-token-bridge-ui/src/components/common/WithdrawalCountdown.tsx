@@ -3,15 +3,12 @@ import { NodeBlockDeadlineStatus } from 'token-bridge-sdk'
 import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
 
 export function WithdrawalCountdown({
   nodeBlockDeadline
 }: {
   nodeBlockDeadline: NodeBlockDeadlineStatus
 }): JSX.Element {
-  dayjs.extend(relativeTime)
-
   const {
     l1: { network: l1Network },
     l2: { network: l2Network }
