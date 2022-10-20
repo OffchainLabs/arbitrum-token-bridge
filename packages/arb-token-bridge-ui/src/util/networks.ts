@@ -36,6 +36,24 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
+export const explorerUrls: { [chainId: number]: string } = {
+  // L1
+  [ChainId.Mainnet]: 'https://etherscan.io',
+  // L1 Testnets
+  [ChainId.Goerli]: 'https://goerli.etherscan.io',
+  [ChainId.Rinkeby]: 'https://rinkeby.etherscan.io',
+  //L2
+  [ChainId.ArbitrumNova]: 'https://nova-explorer.arbitrum.io',
+  [ChainId.ArbitrumOne]: 'https://arbiscan.io',
+  // L2 Testnets
+  [ChainId.ArbitrumRinkeby]: 'https://testnet.arbiscan.io',
+  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
+}
+
+export const getExplorerUrl = (chainId: ChainId) => {
+  return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet] //defaults to etherscan
+}
+
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
   [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F',
@@ -118,17 +136,7 @@ export function isNetwork(network: L1Network | L2Network) {
   }
 }
 
-export function getNetworkName(
-  chainIdOrNetwork: number | L1Network | L2Network
-) {
-  let chainId: number
-
-  if (typeof chainIdOrNetwork === 'number') {
-    chainId = chainIdOrNetwork
-  } else {
-    chainId = chainIdOrNetwork.chainID
-  }
-
+export function getNetworkName(chainId: number) {
   switch (chainId) {
     case ChainId.Mainnet:
       return 'Mainnet'
