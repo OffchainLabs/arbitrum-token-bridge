@@ -1005,7 +1005,7 @@ export const useArbTokenBridge = (
     })
     const l2Balances = l2Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l2AddressesBalances[index]?.balance || 0
+      balance: l2AddressesBalances[index]?.balance || constants.Zero
     }))
 
     const l2AddressToBalanceMap: {
