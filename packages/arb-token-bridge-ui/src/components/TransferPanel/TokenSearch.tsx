@@ -4,7 +4,6 @@ import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
-import { BigNumber } from 'ethers'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -14,7 +13,6 @@ import {
   addBridgeTokenListToBridge
 } from '../../tokenLists'
 import { formatBigNumber } from '../../util/NumberUtils'
-import { sanitizeImageSrc } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -24,7 +22,8 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { getExplorerUrl } from '../../util/networks'
 
 enum Panel {
   TOKENS,
@@ -87,7 +86,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return undefined
     }
 
-    return sanitizeImageSrc(token.logoURI)
+    return token.logoURI
   }, [token])
 
   const tokenBalance = useMemo(() => {
@@ -181,7 +180,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${l1Network?.explorerUrl}/token/${token.address}`}
+                  href={`${getExplorerUrl(l1Network.chainID)}/token/${
+                    token.address
+                  }`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-link underline"
@@ -193,7 +194,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${l2Network?.explorerUrl}/token/${token.l2Address}`}
+                      href={`${getExplorerUrl(l2Network.chainID)}/token/${
+                        token.l2Address
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-link underline"
@@ -482,6 +485,7 @@ function TokensPanel({
             loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
             className="border border-gray-4 py-1 text-gray-9"
+            aria-label="Add New Token"
           >
             Add
           </Button>
@@ -514,7 +518,7 @@ function TokensPanel({
 
                 return (
                   <TokenRow
-                    key={virtualizedProps.key}
+                    key={address}
                     style={virtualizedProps.style}
                     onClick={() => onTokenSelected(token)}
                     token={token}
@@ -538,12 +542,13 @@ export function TokenSearch({
 }) {
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens, walletAddress }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
+  const { l1, l2 } = useNetworksAndSigners()
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -566,7 +571,12 @@ export function TokenSearch({
         return
       }
 
-      const data = await token?.getL1TokenData(_token.address)
+      const data = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address: _token.address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
 
       if (data) {
         token.updateTokenData(_token.address)

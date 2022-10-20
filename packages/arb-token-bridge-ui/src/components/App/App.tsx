@@ -52,7 +52,12 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork,
+  rpcURLs
+} from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -67,6 +72,12 @@ const isSwitchChainSupported = (provider: Web3Provider) =>
 
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
+}
+
+declare global {
+  interface Window {
+    Cypress?: any
+  }
 }
 
 const AppContent = (): JSX.Element => {
@@ -124,6 +135,8 @@ const AppContent = (): JSX.Element => {
     )
   }
 
+  const isTestingEnvironment = !!window.Cypress
+
   return (
     <>
       <HeaderOverrides {...headerOverridesProps} />
@@ -137,7 +150,7 @@ const AppContent = (): JSX.Element => {
       <RetryableTxnsIncluder />
       <TokenListSyncer />
       <BalanceUpdater />
-      <PWLoadedUpdater />
+      {!isTestingEnvironment && <PWLoadedUpdater />}
 
       <Notifications />
       <MainContent />
@@ -255,7 +268,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const changeNetwork = async (network: L1Network | L2Network) => {
         const chainId = network.chainID
         const hexChainId = hexValue(BigNumber.from(chainId))
-        const networkName = getNetworkName(network)
+        const networkName = getNetworkName(chainId)
         const provider = library?.provider
 
         if (isSwitchChainSupported(provider)) {
@@ -288,7 +301,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       decimals: 18
                     },
                     rpcUrls: [rpcURLs[network.chainID]],
-                    blockExplorerUrls: [network.explorerUrl]
+                    blockExplorerUrls: [getExplorerUrl(network.chainID)]
                   }
                 ]
               })

@@ -146,7 +146,7 @@ function NetworkListbox({
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
       >
         <span>
-          {label} {getNetworkName(value)}
+          {label} {getNetworkName(value.chainID)}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
@@ -177,7 +177,7 @@ function NetworkListbox({
                   alt={`${getNetworkName(option)} logo`}
                   className="max-h-10 w-8"
                 />
-                <span>{getNetworkName(option)}</span>
+                <span>{getNetworkName(option.chainID)}</span>
               </Listbox.Option>
             </Tooltip>
           )
