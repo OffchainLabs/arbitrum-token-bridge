@@ -226,12 +226,15 @@ export function HeaderAccountPopover() {
                 </div>
               </button>
               <div className="flex w-full flex-row justify-between px-6 lg:flex-col lg:items-end lg:px-0">
+                currentNetwork && typeof currentNetwork.chainID === 'number' &&
+                (
                 <ExternalLink
                   href={`${getExplorerUrl(
-                    currentNetwork?.chainID as ChainId
+                    currentNetwork?.chainID ?? -1
                   )}/address/${account}`}
                   className="arb-hover flex flex-row items-center space-x-1 font-light text-white hover:underline"
                 >
+                  )
                   <ExternalLinkIcon className="h-4 w-4 text-white" />
                   <span>View on explorer</span>
                 </ExternalLink>

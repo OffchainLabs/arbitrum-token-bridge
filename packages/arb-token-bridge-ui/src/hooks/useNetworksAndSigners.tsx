@@ -203,14 +203,14 @@ export function NetworksAndSignersProvider(
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
           const l2Provider = new StaticJsonRpcProvider(
-            rpcURLs[_selectedL2ChainId as ChainId]
+            rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
           )
           const l2Network = await getL2Network(l2Provider)
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
           const l1Provider = new StaticJsonRpcProvider(
-            rpcURLs[l1Network.chainID as ChainId]
+            rpcURLs[l1Network.chainID]
           )
 
           setResult({

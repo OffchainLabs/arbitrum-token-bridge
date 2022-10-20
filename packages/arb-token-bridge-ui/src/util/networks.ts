@@ -16,7 +16,7 @@ export enum ChainId {
   ArbitrumGoerli = 421613
 }
 
-export const rpcURLs: { [chainId in ChainId]: string } = {
+export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Mainnet]:
     process.env.REACT_APP_ETHEREUM_RPC_URL ||
