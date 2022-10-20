@@ -1236,7 +1236,7 @@ export const useArbTokenBridge = (
 
   async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     result: WithdrawalInitiated
-  ): Promise<L2ToL1EventResultPlus> {
+  ): Promise<L2ToL1EventResultPlus | undefined> {
     const symbol = await getTokenSymbol(result.l1Token)
     const decimals = await getTokenDecimals(result.l1Token)
 
@@ -1246,10 +1246,14 @@ export const useArbTokenBridge = (
     // TODO: length != 1
     const [event] = l2TxReceipt.getL2ToL1Events()
 
-    const outgoingMessageState = await getOutgoingMessageState(event!)
+    if (!event) {
+      return
+    }
+
+    const outgoingMessageState = await getOutgoingMessageState(event)
 
     return {
-      ...event!,
+      ...event,
       type: AssetType.ERC20,
       value: result._amount,
       tokenAddress: result.l1Token,
@@ -1375,7 +1379,9 @@ export const useArbTokenBridge = (
           mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
         )
       ])
-    ).sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+    )
+      .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
+      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
     console.log(
       `*** done getting pending withdrawals, took ${
