@@ -1086,7 +1086,8 @@ export const useArbTokenBridge = (
         addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          delete newPendingWithdrawalsMap[id]
+          newPendingWithdrawalsMap[id].outgoingMessageState =
+            OutgoingMessageState.EXECUTED
           return newPendingWithdrawalsMap
         })
       } else {
@@ -1138,7 +1139,8 @@ export const useArbTokenBridge = (
         addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          delete newPendingWithdrawalsMap[id]
+          newPendingWithdrawalsMap[id].outgoingMessageState =
+            OutgoingMessageState.EXECUTED
           return newPendingWithdrawalsMap
         })
       } else {
