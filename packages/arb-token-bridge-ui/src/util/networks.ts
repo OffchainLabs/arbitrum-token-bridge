@@ -50,7 +50,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
 }
 
-export const getExplorerUrl = (chainId: ChainId | undefined) => {
+export const getExplorerUrl = (chainId: ChainId) => {
   return chainId ? explorerUrls[chainId] : ''
 }
 
