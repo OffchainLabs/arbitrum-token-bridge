@@ -24,21 +24,28 @@ const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
 
 function getCalendarUrl(
-  confirmationDays: number,
+  confirmationHours: number,
   amount: string,
   token: string,
   networkName: string
 ) {
   const title = `${amount} ${token} Withdrawal from ${networkName}`
-  const withdrawalDate = dayjs().add(confirmationDays, 'day').format('YYYYMMDD')
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${withdrawalDate}%2F${withdrawalDate}`
+
+  // Add 1 extra hour to account for remaining minutes
+  const withdrawalDate = dayjs().add(confirmationHours + 1, 'hour')
+  // Google event date format: YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS
+  const parsedWithdrawalDate = withdrawalDate.format(
+    'YYYYMMDD[T]HH[0000%2F]YYYYMMDD[T]HH[0000]'
+  )
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${parsedWithdrawalDate}&details=Withdrawn+on+%3Ca%20href=%22https://bridge.arbitrum.io%22%3Ehttps://bridge.arbitrum.io%3C/a%3E`
 }
 
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const networkName = getNetworkName(l1.network)
+  const networkName = getNetworkName(l1.network.chainID)
   const {
     app: { selectedToken }
   } = useAppState()
@@ -60,13 +67,13 @@ export function WithdrawalConfirmationDialog(
     l1.network.blockTime * l2.network.confirmPeriodBlocks
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
+  const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
 
   if (confirmationDays >= 2) {
     confirmationPeriod = `${confirmationDays} day${
       confirmationDays > 1 ? 's' : ''
     }`
   } else {
-    const confirmationHours = Math.round(confirmationSeconds / SECONDS_IN_HOUR)
     confirmationPeriod = `${confirmationHours} hour${
       confirmationHours > 1 ? 's' : ''
     }`
@@ -186,10 +193,10 @@ export function WithdrawalConfirmationDialog(
                   <div className="flex justify-center">
                     <ExternalLink
                       href={getCalendarUrl(
-                        confirmationDays,
+                        confirmationHours,
                         props.amount,
                         selectedToken?.symbol || 'ETH',
-                        getNetworkName(l2.network)
+                        getNetworkName(l2.network.chainID)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"

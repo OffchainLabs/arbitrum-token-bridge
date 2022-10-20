@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
+import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
@@ -14,6 +14,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
+import { ChainId, getExplorerUrl } from '../../util/networks'
 
 enum ImportStatus {
   LOADING,
@@ -42,13 +43,11 @@ export function TokenImportDialog({
 }: TokenImportDialogProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token },
+      arbTokenBridge: { bridgeTokens, token, walletAddress },
       selectedToken
     }
   } = useAppState()
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -87,13 +86,18 @@ export function TokenImportDialog({
     }
 
     if (Object.keys(bridgeTokens).length === 0) {
+      // We currently don't have a token list for Arbitrum Goerli
+      if (l2.network.chainID === ChainId.ArbitrumGoerli) {
+        return false
+      }
+
       return true
     }
 
     return false
-  }, [bridgeTokens])
+  }, [bridgeTokens, l2.network])
 
-  const getL1TokenData = useCallback(
+  const getL1TokenDataFromL1OrL2Address = useCallback(
     async (eitherL1OrL2Address: string) => {
       if (typeof token === 'undefined') {
         return
@@ -102,12 +106,22 @@ export function TokenImportDialog({
       const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
 
       if (addressOnL1) {
-        return token.getL1TokenData(addressOnL1)
+        return getL1TokenData({
+          account: walletAddress,
+          erc20L1Address: addressOnL1,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
       } else {
-        return token.getL1TokenData(eitherL1OrL2Address)
+        return getL1TokenData({
+          account: walletAddress,
+          erc20L1Address: eitherL1OrL2Address,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
       }
     },
-    [token]
+    [l1, l2, walletAddress, token]
   )
 
   const searchForTokenInLists = useCallback(
@@ -167,7 +181,7 @@ export function TokenImportDialog({
     }
 
     // Can't find the address provided, so we look further
-    getL1TokenData(address)
+    getL1TokenDataFromL1OrL2Address(address)
       .then(data => {
         if (data) {
           const addressOnL1 = data.contract.address.toLowerCase()
@@ -193,7 +207,7 @@ export function TokenImportDialog({
     address,
     bridgeTokens,
     searchForTokenInLists,
-    getL1TokenData
+    getL1TokenDataFromL1OrL2Address
   ])
 
   useEffect(() => {
@@ -330,7 +344,9 @@ export function TokenImportDialog({
           <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
           <span className="mt-0 mb-4">{tokenToImport?.name}</span>
           <a
-            href={`${l1Network?.explorerUrl}/token/${tokenToImport?.address}`}
+            href={`${getExplorerUrl(l1.network.chainID)}/token/${
+              tokenToImport?.address
+            }`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}
