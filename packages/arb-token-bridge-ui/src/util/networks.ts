@@ -51,7 +51,7 @@ export const explorerUrls: { [chainId: number]: string } = {
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
-  return chainId ? explorerUrls[chainId] : ''
+  return explorerUrls[chainId] ?? ''
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
