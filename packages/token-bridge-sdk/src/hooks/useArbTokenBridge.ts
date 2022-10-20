@@ -790,12 +790,10 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Network = bridgeInfo[l1NetworkID]
-        if (!l1Network) {
+        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress
+        if (!l1Address) {
           return
         }
-
-        const l1Address = l1Network.tokenAddress
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
