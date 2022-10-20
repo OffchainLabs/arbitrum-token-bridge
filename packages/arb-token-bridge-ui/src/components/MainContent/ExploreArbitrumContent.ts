@@ -90,7 +90,8 @@ export const ExploreArbitrumContent = {
     },
     {
       name: 'KyberSwap',
-      description: 'Multichain Aggregator with efficient swap rates & yield farming on Arbitrum, code audited. Free pro trading tools.',
+      description:
+        'Multichain Aggregator with efficient swap rates & yield farming on Arbitrum, code audited. Free pro trading tools.',
       href: 'https://kyberswap.com',
       imageSrc: '/images/explore-arbitrum/defi/kyberswap.png'
     }
