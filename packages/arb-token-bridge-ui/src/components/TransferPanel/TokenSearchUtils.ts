@@ -93,10 +93,10 @@ function tokenListsToSearchableTokenStorage(
           }
 
           // acc[address] was defined in the if/else above
-          const tokenLists = accAddress!.tokenLists
+          const tokenLists = acc[address]!.tokenLists
 
           if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
-            accAddress!.tokenLists.push(tokenList.bridgeTokenListId)
+            acc[address]!.tokenLists.push(tokenList.bridgeTokenListId)
           }
         } else if (stringifiedChainId === l2ChainId) {
           // The token is an L2 token
