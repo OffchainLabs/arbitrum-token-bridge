@@ -14,7 +14,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
-import { ChainId } from '../../util/networks'
+import { ChainId, getExplorerUrl } from '../../util/networks'
 
 enum ImportStatus {
   LOADING,
@@ -344,7 +344,9 @@ export function TokenImportDialog({
           <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
           <span className="mt-0 mb-4">{tokenToImport?.name}</span>
           <a
-            href={`${l1.network?.explorerUrl}/token/${tokenToImport?.address}`}
+            href={`${getExplorerUrl(l1.network.chainID)}/token/${
+              tokenToImport?.address
+            }`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}
