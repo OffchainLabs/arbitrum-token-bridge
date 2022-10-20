@@ -136,17 +136,7 @@ export function isNetwork(network: L1Network | L2Network) {
   }
 }
 
-export function getNetworkName(
-  chainIdOrNetwork: number | L1Network | L2Network
-) {
-  let chainId: number
-
-  if (typeof chainIdOrNetwork === 'number') {
-    chainId = chainIdOrNetwork
-  } else {
-    chainId = chainIdOrNetwork.chainID
-  }
-
+export function getNetworkName(chainId: number) {
   switch (chainId) {
     case ChainId.Mainnet:
       return 'Mainnet'

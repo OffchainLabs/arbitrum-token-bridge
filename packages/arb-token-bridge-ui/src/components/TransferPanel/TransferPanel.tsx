@@ -795,7 +795,7 @@ export function TransferPanel() {
                 isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
               )}
             >
-              Move funds to {getNetworkName(l2Network)}
+              Move funds to {getNetworkName(l2Network.chainID)}
             </Button>
           ) : (
             <Button
@@ -805,7 +805,7 @@ export function TransferPanel() {
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
-              Move funds to {getNetworkName(l1Network)}
+              Move funds to {getNetworkName(l1Network.chainID)}
             </Button>
           )}
         </div>
