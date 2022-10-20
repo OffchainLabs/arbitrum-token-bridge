@@ -1,0 +1,22 @@
+name: Setup
+description: "Check out repo and run yarn install with cache if found"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version-file: '.nvmrc'
+        check-latest: true
+        cache: "yarn"
+
+    - uses: actions/cache@v3
+      id: install-cache
+      with:
+        path: "**/node_modules/"
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+    - if: steps.install-cache.outputs.cache-hit != 'true'
+      run: yarn install --frozen-lockfile
+      shell: bash

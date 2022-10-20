@@ -9,6 +9,7 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
+import { getExplorerUrl } from '../../util/networks'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -87,7 +88,7 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       <span className="text-dark">
         L1:{' '}
         <ExternalLink
-          href={`${l1.network?.explorerUrl}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -98,7 +99,7 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         <span className="text-dark">
           L2:{' '}
           <ExternalLink
-            href={`${l2.network?.explorerUrl}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(l2.network.chainID)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
