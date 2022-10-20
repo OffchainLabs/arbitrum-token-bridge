@@ -45,8 +45,6 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
           l1Signer
         })
       }
-      // Re-fetch pending withdrawals after success
-      actions.app.setPWLoadingState(PendingWithdrawalsLoadedState.LOADING)
     } catch (error: any) {
       err = error
       console.warn(err)
