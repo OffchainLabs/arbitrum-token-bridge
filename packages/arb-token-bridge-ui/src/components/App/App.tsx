@@ -54,6 +54,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import {
   ChainId,
+  getExplorerUrl,
   getNetworkName,
   isNetwork,
   rpcURLs
@@ -301,7 +302,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
                       decimals: 18
                     },
                     rpcUrls: [rpcURLs[network.chainID as ChainId]],
-                    blockExplorerUrls: [network.explorerUrl]
+                    blockExplorerUrls: [getExplorerUrl(network.chainID)]
                   }
                 ]
               })
