@@ -50,7 +50,7 @@ export const changeNetworkBasic = async (
 ) => {
   const chainId = network.chainID
   const hexChainId = hexValue(BigNumber.from(chainId))
-  const networkName = getNetworkName(network)
+  const networkName = getNetworkName(chainId)
 
   if (provider) {
     console.log('Attempting to switch to chain', chainId)

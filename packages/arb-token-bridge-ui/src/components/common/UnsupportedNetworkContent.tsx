@@ -47,12 +47,12 @@ export const UnsupportedNetworkContent = () => {
             changeNetwork(chainId)
           }}
           key={chainId}
-          className={`text-md ${networkStyleMap[chainId]['btnThemeClass']} w-6/12 py-3`}
+          className={`text-md ${networkStyleMap?.[chainId]?.['btnThemeClass']} w-6/12 py-3`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center">
               <img
-                src={networkStyleMap[chainId]['img']}
+                src={networkStyleMap?.[chainId]?.['img']}
                 alt={`${getNetworkName(chainId)} logo`}
                 className="max-w-8 max-h-8"
               />

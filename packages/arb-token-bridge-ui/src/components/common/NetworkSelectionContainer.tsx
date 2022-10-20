@@ -57,7 +57,7 @@ export const NetworkSelectionContainer = ({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <img
-                    src={networkStyleMap[chainId]['img']}
+                    src={networkStyleMap?.[chainId]?.['img']}
                     alt={`${getNetworkName(chainId)} logo`}
                     className="max-w-8 max-h-8"
                   />
