@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { useActions, useAppState } from '../state'
+import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { PendingWithdrawalsLoadedState } from '../util'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -14,7 +13,6 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const actions = useActions()
   const { l1 } = useNetworksAndSigners()
   const { signer: l1Signer } = l1
 
