@@ -850,15 +850,16 @@ export const useArbTokenBridge = (
     let l1TokenBalance: BigNumber | null = null
     let l2TokenBalance: BigNumber | null = null
 
-    const maybeL1Address = await getL1ERC20Address(erc20L1orL2Address)
+    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
+    const maybeL1Address = await getL1ERC20Address(lowercasedErc20L1orL2Address)
 
     if (maybeL1Address) {
       // looks like l2 address was provided
       l1Address = maybeL1Address
-      l2Address = erc20L1orL2Address
+      l2Address = lowercasedErc20L1orL2Address
     } else {
       // looks like l1 address was provided
-      l1Address = erc20L1orL2Address
+      l1Address = lowercasedErc20L1orL2Address
       l2Address = await getL2ERC20Address(l1Address)
     }
 
