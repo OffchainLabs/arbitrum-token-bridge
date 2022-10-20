@@ -51,7 +51,7 @@ export const explorerUrls: { [chainId: number]: string } = {
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
-  return explorerUrls[chainId] ?? ''
+  return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet] //defaults to etherscan
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
