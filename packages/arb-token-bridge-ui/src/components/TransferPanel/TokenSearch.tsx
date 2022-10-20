@@ -13,7 +13,6 @@ import {
   addBridgeTokenListToBridge
 } from '../../tokenLists'
 import { formatBigNumber } from '../../util/NumberUtils'
-import { sanitizeImageSrc } from '../../util'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -24,6 +23,7 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { getExplorerUrl } from '../../util/networks'
 
 enum Panel {
   TOKENS,
@@ -86,7 +86,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return undefined
     }
 
-    return sanitizeImageSrc(token.logoURI)
+    return token.logoURI
   }, [token])
 
   const tokenBalance = useMemo(() => {
@@ -180,7 +180,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${l1Network?.explorerUrl}/token/${token.address}`}
+                  href={`${getExplorerUrl(l1Network.chainID)}/token/${
+                    token.address
+                  }`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-link underline"
@@ -192,7 +194,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${l2Network?.explorerUrl}/token/${token.l2Address}`}
+                      href={`${getExplorerUrl(l2Network.chainID)}/token/${
+                        token.l2Address
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-link underline"
@@ -514,7 +518,7 @@ function TokensPanel({
 
                 return (
                   <TokenRow
-                    key={virtualizedProps.key}
+                    key={address}
                     style={virtualizedProps.style}
                     onClick={() => onTokenSelected(token)}
                     token={token}

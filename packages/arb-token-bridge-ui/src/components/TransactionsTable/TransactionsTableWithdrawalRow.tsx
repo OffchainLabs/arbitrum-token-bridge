@@ -10,6 +10,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
+import { getExplorerUrl } from '../../util/networks'
 
 function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -126,7 +127,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       <span className="text-dark">
         L1:{' '}
         <ExternalLink
-          href={`${l1.network?.explorerUrl}/tx/${matchingL1Tx.txId}`}
+          href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(matchingL1Tx.txId)}
@@ -140,7 +141,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       <span className="text-dark">
         L2:{' '}
         <ExternalLink
-          href={`${l2.network?.explorerUrl}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
