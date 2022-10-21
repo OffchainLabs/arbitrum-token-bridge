@@ -22,7 +22,7 @@ import {
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
-import { ChainId, getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl } from '../../util/networks'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -228,7 +228,7 @@ export function HeaderAccountPopover() {
               <div className="flex w-full flex-row justify-between px-6 lg:flex-col lg:items-end lg:px-0">
                 <ExternalLink
                   href={`${getExplorerUrl(
-                    currentNetwork?.chainID as ChainId
+                    currentNetwork?.chainID ?? -1
                   )}/address/${account}`}
                   className="arb-hover flex flex-row items-center space-x-1 font-light text-white hover:underline"
                 >
