@@ -4,10 +4,10 @@ import {
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
 
+import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { useAppState } from '../state'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
