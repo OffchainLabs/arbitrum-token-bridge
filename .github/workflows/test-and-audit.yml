@@ -17,7 +17,7 @@ jobs:
         id: cache
         uses: martijnhols/actions-cache/restore@v3
         with:
-          path: node_modules
+          path: "**/node_modules"
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: ${{ runner.os }}-node_modules
 
@@ -29,7 +29,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: martijnhols/actions-cache/save@v3
         with:
-          path: node_modules
+          path: "**/node_modules"
           key: ${{ steps.cache.outputs.primary-key }}
 
   test-sdk:
@@ -41,7 +41,7 @@ jobs:
       - name: Restore "node_modules" from cache
         uses: martijnhols/actions-cache/restore@v3
         with:
-          path: node_modules
+          path: "**/node_modules"
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           # Fail when the cache could not be found (this should never happen unless you have a misconfiguration)
           required: true
@@ -58,7 +58,7 @@ jobs:
       - name: Restore "node_modules" from cache
         uses: martijnhols/actions-cache/restore@v3
         with:
-          path: node_modules
+          path: "**/node_modules"
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           # Fail when the cache could not be found (this should never happen unless you have a misconfiguration)
           required: true
