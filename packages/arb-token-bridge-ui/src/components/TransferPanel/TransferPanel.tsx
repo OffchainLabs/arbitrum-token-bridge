@@ -5,7 +5,7 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData, ArbTokenBridge } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState, UnreachableCaseError } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
