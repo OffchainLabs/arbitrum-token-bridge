@@ -25,7 +25,7 @@ import {
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 
-import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
@@ -239,12 +239,12 @@ export function NetworksAndSignersProvider(
             .then(async l2Network => {
               const l1NetworkChainId = l2Network.partnerChainID
               const l1Provider = new StaticJsonRpcProvider(
-                rpcURLs[l1NetworkChainId as ChainId]
+                rpcURLs[l1NetworkChainId]
               )
               const l1Network = await getL1Network(l1Provider)
 
               const l2Provider = new StaticJsonRpcProvider(
-                rpcURLs[l2Network.chainID as ChainId]
+                rpcURLs[l2Network.chainID]
               )
 
               setResult({
