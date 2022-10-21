@@ -13,13 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Restore "node_modules" from cache
+      - name: Check if "node_modules" is cached
         id: cache
-        uses: martijnhols/actions-cache/restore@v3
+        uses: martijnhols/actions-cache/check@v3
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: ${{ runner.os }}-node_modules
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
