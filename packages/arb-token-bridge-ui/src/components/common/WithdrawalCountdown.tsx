@@ -25,7 +25,7 @@ export function WithdrawalCountdown({
   }
 
   if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
-    const { isMainnet } = isNetwork(l1Network)
+    const { isMainnet } = isNetwork(l1Network.chainID)
     return <span>{isMainnet ? '~1 week' : '~1 day'} remaining</span>
   }
 
