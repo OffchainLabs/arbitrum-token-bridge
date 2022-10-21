@@ -126,7 +126,10 @@ export function isNetwork(chainId: ChainId) {
     isGoerli: chainId === ChainId.Goerli,
     // L2
     isArbitrum:
-      chainId === ChainId.ArbitrumOne || chainId === ChainId.ArbitrumNova,
+      chainId === ChainId.ArbitrumOne ||
+      chainId === ChainId.ArbitrumNova ||
+      chainId === ChainId.ArbitrumGoerli ||
+      chainId === ChainId.ArbitrumRinkeby,
     isArbitrumOne: chainId === ChainId.ArbitrumOne,
     isArbitrumNova: chainId === ChainId.ArbitrumNova,
     // L2 Testnets
