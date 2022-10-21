@@ -17,7 +17,7 @@ jobs:
           node-version-file: ".nvmrc"
           check-latest: true
           cache: "yarn"
-      - uses: actions/cache@v3
+      - uses: martijnhols/actions-cache@v3
         id: install-cache
         with:
           path: "**/node_modules/"
@@ -31,7 +31,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: martijnhols/actions-cache@v3
         with:
           path: "**/node_modules/"
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -43,7 +43,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - uses: martijnhols/actions-cache@v3
         with:
           path: "**/node_modules/"
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
