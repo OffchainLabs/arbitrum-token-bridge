@@ -61,6 +61,8 @@ const AmountQueryParam = {
   decode: (amount: string | (string | null)[] | null | undefined) => {
     const amountStr = amount?.toString()
 
+    // return original string if it is `max` (case-insensitive)
+    // if this check is removed, it'll satisfy the `isNaN` condition to return an empty string
     if (isMax(amountStr)) {
       return amountStr
     }
