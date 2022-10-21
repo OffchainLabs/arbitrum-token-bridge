@@ -44,7 +44,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
           if (!txReceipt) {
             console.info(
               'Transaction receipt not yet found:',
-              pendingTransactions[i].txID
+              pendingTransactions[i]?.txID
             )
           } else {
             if (isTxSuccessful(txReceipt)) {
