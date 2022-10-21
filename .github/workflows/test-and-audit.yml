@@ -1,4 +1,4 @@
-name: Test SDK and Audit
+name: Build, Test
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Check if "node_modules" is cached
+      - name: Check cache for "node_modules"
         id: cache
         uses: martijnhols/actions-cache/check@v3
         with:
