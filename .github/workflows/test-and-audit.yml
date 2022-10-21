@@ -8,18 +8,34 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-sdk:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+          check-latest: true
+          cache: "yarn"
+      - uses: actions/cache@v3
+        id: install-cache
+        with:
+          path: "**/node_modules/"
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+      - if: steps.install-cache.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile
+        shell: bash
+
+  test-sdk:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Run tests
         run: yarn test:ci:sdk
 
   audit:
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
       - name: Run audit
         run: yarn audit:ci
