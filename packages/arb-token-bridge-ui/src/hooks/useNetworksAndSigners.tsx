@@ -24,8 +24,9 @@ import {
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
-import { useArbQueryParams } from './useArbQueryParams'
+
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
@@ -177,7 +178,7 @@ export function NetworksAndSignersProvider(
        * Case 3: selectedChainId is defined and supported, continue
        */
       let _selectedL2ChainId = selectedL2ChainId
-      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]
+      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
       // Case 1: use a default L2 based on the connected provider chainid
       _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
@@ -202,14 +203,14 @@ export function NetworksAndSignersProvider(
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
           const l2Provider = new StaticJsonRpcProvider(
-            rpcURLs[_selectedL2ChainId!]
+            rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
           )
           const l2Network = await getL2Network(l2Provider)
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
           const l1Provider = new StaticJsonRpcProvider(
-            rpcURLs[l1Network.chainID!]
+            rpcURLs[l1Network.chainID]
           )
 
           setResult({
@@ -243,7 +244,7 @@ export function NetworksAndSignersProvider(
               const l1Network = await getL1Network(l1Provider)
 
               const l2Provider = new StaticJsonRpcProvider(
-                rpcURLs[l2Network.chainID!]
+                rpcURLs[l2Network.chainID]
               )
 
               setResult({
