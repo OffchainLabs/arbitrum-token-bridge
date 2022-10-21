@@ -99,9 +99,9 @@ export function registerLocalNetwork() {
     const customL1Network = localNetwork.l1Network
     const customL2Network = localNetwork.l2Network
 
-    rpcURLs[customL1Network.chainID as ChainId] =
+    rpcURLs[customL1Network.chainID] =
       process.env.REACT_APP_LOCAL_ETHEREUM_RPC_URL || ''
-    rpcURLs[customL2Network.chainID as ChainId] =
+    rpcURLs[customL2Network.chainID] =
       process.env.REACT_APP_LOCAL_ARBITRUM_RPC_URL || ''
 
     chainIdToDefaultL2ChainId[customL1Network.chainID] = [

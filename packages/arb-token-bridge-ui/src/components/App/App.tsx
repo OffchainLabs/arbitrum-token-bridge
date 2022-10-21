@@ -53,7 +53,6 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import {
-  ChainId,
   getExplorerUrl,
   getNetworkName,
   isNetwork,
