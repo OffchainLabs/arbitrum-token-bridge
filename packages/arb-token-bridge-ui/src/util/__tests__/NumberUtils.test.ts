@@ -4,11 +4,7 @@ import { formatTokenBalance } from '../NumberUtils'
 describe('formatTokenBalance', () => {
   describe('for short token symbol', () => {
     const getResult = (value: string) =>
-      formatTokenBalance({
-        symbol: 'ETH',
-        balance: BigNumber.from(value),
-        decimals: 6
-      })
+      formatTokenBalance(BigNumber.from(value), 6, 'ETH')
 
     it('should return 0 for value = 0', () => {
       expect(getResult('0')).toBe('0')
@@ -50,11 +46,7 @@ describe('formatTokenBalance', () => {
 
   describe('for long token name', () => {
     const getResult = (value: string) =>
-      formatTokenBalance({
-        symbol: 'ETHPOW',
-        balance: BigNumber.from(value),
-        decimals: 6
-      })
+      formatTokenBalance(BigNumber.from(value), 6, 'ETHPOW')
 
     it('should return 0 for value = 0', () => {
       expect(getResult('0')).toBe('0')

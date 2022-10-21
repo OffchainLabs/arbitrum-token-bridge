@@ -2,7 +2,7 @@
  * Test case suite for Login and balance check flow
  */
 
-import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { Decimals, formatBigNumber } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
   goerliRPC,
@@ -15,10 +15,10 @@ describe('Login Account', () => {
 
   before(() => {
     getInitialETHBalance(goerliRPC).then(
-      val => (l1ETHbal = formatBigNumber(val, 18, 5))
+      val => (l1ETHbal = formatBigNumber(val, Decimals.Token, 5))
     )
     getInitialETHBalance(arbitrumGoerliRPC).then(
-      val => (l2ETHbal = formatBigNumber(val, 18, 5))
+      val => (l2ETHbal = formatBigNumber(val, Decimals.Token, 5))
     )
   })
 

@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { Decimals, formatBigNumber } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   arbitrumGoerliRPC,
@@ -35,7 +35,7 @@ describe('Withdraw ERC20 Token', () => {
     // log in to metamask before withdrawal
     before(() => {
       getInitialERC20Balance(ERC20TokenAddressL2, arbitrumGoerliRPC).then(
-        val => (l2ERC20bal = formatBigNumber(val, 18, 5))
+        val => (l2ERC20bal = formatBigNumber(val, Decimals.Token, 5))
       )
 
       // login to L2 chain for Arb Goerli network
