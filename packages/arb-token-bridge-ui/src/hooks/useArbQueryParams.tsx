@@ -49,7 +49,7 @@ const isMax = (amount: string | undefined) =>
 // Our custom query param type for Amount field - will be parsed and returned as a string,
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
-const AmountQueryParam = {
+export const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
   encode: (amount: string | undefined = '') => {
     const amountRegex = new RegExp(/^\d*(\.\d*)?$/)
