@@ -11,6 +11,7 @@ describe('formatTokenBalance', () => {
     })
 
     it('should return the full number with 5 decimals for value lower than 1', () => {
+      expect(getResult('30')).toBe('0.00003')
       expect(getResult('123456')).toBe('0.12346')
     })
 
@@ -53,6 +54,7 @@ describe('formatTokenBalance', () => {
     })
 
     it('should return the full number with 4 decimals for value lower than 1', () => {
+      expect(getResult('300')).toBe('0.0003')
       expect(getResult('123456')).toBe('0.1235')
     })
 
