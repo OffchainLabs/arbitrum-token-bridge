@@ -18,7 +18,7 @@ jobs:
         uses: martijnhols/actions-cache/restore@v3
         with:
           path: node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}--test
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: ${{ runner.os }}-node_modules
 
       - name: Install dependencies
