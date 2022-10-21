@@ -37,13 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Restore "node_modules" from cache
-        uses: martijnhols/actions-cache/restore@v3
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          # Fail when the cache could not be found (this should never happen unless you have a misconfiguration)
-          required: true
+      - uses: ./.github/actions/restore-cache
 
       - name: Run tests
         run: yarn test:ci:sdk
@@ -54,13 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Restore "node_modules" from cache
-        uses: martijnhols/actions-cache/restore@v3
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          # Fail when the cache could not be found (this should never happen unless you have a misconfiguration)
-          required: true
+      - uses: ./.github/actions/restore-cache
 
       - name: Run audit
         run: yarn audit:ci
