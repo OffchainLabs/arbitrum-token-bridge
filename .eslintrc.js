@@ -70,8 +70,5 @@ module.exports = {
         message: "Unexpected property on console object was called",
       },
     ],
-    "@typescript-eslint/no-use-before-define": ["warn"],
-    "prefer-template": "warn",
-    "no-underscore-dangle": "warn",
   },
 };
