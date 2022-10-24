@@ -123,6 +123,7 @@ export function isNetwork(network: L1Network | L2Network) {
   return {
     // L1
     isMainnet: chainId === ChainId.Mainnet,
+    isEthereum: !Boolean((network as any).isArbitrum),
     // L1 Testnets
     isRinkeby: chainId === ChainId.Rinkeby,
     isGoerli: chainId === ChainId.Goerli,

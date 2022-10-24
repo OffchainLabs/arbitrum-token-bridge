@@ -6,10 +6,7 @@ import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
-import {
-  isL1Network,
-  l2Networks
-} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 
@@ -528,8 +525,10 @@ export function TransferPanelMain({
           value: from,
           otherSelectedNetwork: to,
           onChange: async network => {
+            const { isEthereum } = isNetwork(network)
+
             // Selecting the same chain or L1 network
-            if (from.chainID === network.chainID || isL1Network(network)) {
+            if (from.chainID === network.chainID || isEthereum) {
               return
             }
 
@@ -561,8 +560,10 @@ export function TransferPanelMain({
               return
             }
 
+            const { isEthereum } = isNetwork(network)
+
             // Switch networks if selecting L1 network
-            if (isL1Network(network)) {
+            if (isEthereum) {
               return switchNetworks()
             }
 
@@ -602,8 +603,10 @@ export function TransferPanelMain({
             return
           }
 
+          const { isEthereum } = isNetwork(network)
+
           // Switch networks if selecting L1 network
-          if (isL1Network(network)) {
+          if (isEthereum) {
             return switchNetworks()
           }
 
@@ -626,8 +629,10 @@ export function TransferPanelMain({
         value: to,
         otherSelectedNetwork: from,
         onChange: async network => {
+          const { isEthereum } = isNetwork(network)
+          
           // Selecting the same chain or L1 network
-          if (to.chainID === network.chainID || isL1Network(network)) {
+          if (to.chainID === network.chainID || isEthereum) {
             return
           }
 
