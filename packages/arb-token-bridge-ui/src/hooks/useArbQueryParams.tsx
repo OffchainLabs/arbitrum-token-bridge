@@ -52,11 +52,14 @@ const isMax = (amount: string | undefined) =>
 export const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
   encode: (amount: string | undefined = '') => {
-    const amountRegex = new RegExp(/^\d*(\.\d*)?$/)
     if (isMax(amount)) {
       return amount
     }
-    return amountRegex.test(amount) ? amount : ''
+    // -0 would pass the check Number(amount) >= 0 so we need to catch it separately
+    if (amount === '-0') {
+      return ''
+    }
+    return Number(amount) >= 0 ? amount : ''
   },
   decode: (amount: string | (string | null)[] | null | undefined) => {
     const amountStr = amount?.toString()
@@ -65,6 +68,11 @@ export const AmountQueryParam = {
     // if this check is removed, it'll satisfy the `isNaN` condition to return an empty string
     if (isMax(amountStr)) {
       return amountStr
+    }
+
+    // -0 would be 0 in the checks below so we need to catch it separately
+    if (amountStr === '-0') {
+      return ''
     }
 
     // to catch random string like `amount=asdf` from the URL
