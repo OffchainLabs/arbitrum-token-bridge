@@ -874,11 +874,11 @@ export const useArbTokenBridge = (
       throw new TokenDisabledError('Token currently disabled')
     }
 
-    bridgeTokensToAdd[l1Address] = {
+    bridgeTokensToAdd[l1Address.toLowerCase()] = {
       name,
       type: TokenType.ERC20,
       symbol,
-      address: l1Address,
+      address: l1Address.toLowerCase(),
       l2Address,
       decimals
     }
@@ -887,7 +887,7 @@ export const useArbTokenBridge = (
     })
     setErc20Balances(oldBridgeBalances => {
       const newBal = {
-        [l1Address]: {
+        [l1Address.toLowerCase()]: {
           balance: l1TokenBalance,
           arbChainBalance: l2TokenBalance
         }
