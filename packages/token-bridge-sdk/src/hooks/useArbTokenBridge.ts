@@ -99,8 +99,8 @@ export const useArbTokenBridge = (
 ): ArbTokenBridge => {
   const { walletAddress, l1, l2 } = params
   const [bridgeTokens, setBridgeTokens] = useState<
-    ContractStorage<ERC20BridgeToken>
-  >({})
+    ContractStorage<ERC20BridgeToken> | undefined
+  >(undefined)
 
   const {
     eth: [, updateEthL1Balance]
@@ -434,6 +434,9 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     l2Signer: Signer
   }) => {
+    if (typeof bridgeTokens === 'undefined') {
+      return
+    }
     const bridgeToken = bridgeTokens[erc20L1Address]
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
@@ -604,6 +607,9 @@ export const useArbTokenBridge = (
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) {
+    if (typeof bridgeTokens === 'undefined') {
+      return
+    }
     const bridgeToken = bridgeTokens[erc20L1Address]
 
     const { symbol, decimals } = await (async () => {
@@ -922,6 +928,9 @@ export const useArbTokenBridge = (
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
       const bridgeToken = bridgeTokens[l1Address]
       if (!bridgeToken) {
         return

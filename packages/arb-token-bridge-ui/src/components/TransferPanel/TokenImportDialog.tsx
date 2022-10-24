@@ -85,15 +85,6 @@ export function TokenImportDialog({
       return true
     }
 
-    if (Object.keys(bridgeTokens).length === 0) {
-      // We currently don't have a token list for Arbitrum Goerli
-      if (l2.network.chainID === ChainId.ArbitrumGoerli) {
-        return false
-      }
-
-      return true
-    }
-
     return false
   }, [bridgeTokens, l2.network])
 
@@ -127,10 +118,16 @@ export function TokenImportDialog({
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
       // We found the token in an imported list
-      if (typeof latestBridgeTokens.current[erc20L1Address] !== 'undefined') {
+      const currentBridgeTokens = latestBridgeTokens.current
+      if (typeof currentBridgeTokens === 'undefined') {
+        return { found: false }
+      }
+
+      const l1Token = currentBridgeTokens[erc20L1Address]
+      if (typeof l1Token !== 'undefined') {
         return {
           found: true,
-          token: latestBridgeTokens.current[erc20L1Address]!,
+          token: l1Token,
           status: ImportStatus.KNOWN
         }
       }
@@ -162,6 +159,10 @@ export function TokenImportDialog({
     },
     [token, actions]
   )
+
+  useEffect(() => {
+    console.error('islaoding', isLoadingBridgeTokens)
+  }, [isLoadingBridgeTokens])
 
   useEffect(() => {
     if (!isOpen) {
@@ -240,6 +241,10 @@ export function TokenImportDialog({
   }
 
   function handleTokenImport() {
+    if (typeof bridgeTokens === 'undefined') {
+      return
+    }
+
     if (isImportingToken) {
       return
     }
@@ -259,6 +264,7 @@ export function TokenImportDialog({
   }
 
   if (status === ImportStatus.LOADING) {
+    console.error('LOAD')
     return (
       <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
         <div className="flex h-48 items-center justify-center md:min-w-[692px]">
