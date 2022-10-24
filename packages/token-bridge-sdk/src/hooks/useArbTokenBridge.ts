@@ -774,7 +774,7 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID].tokenAddress
+        const l1Address = bridgeInfo[l1NetworkID].tokenAddress.toLowerCase()
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -789,7 +789,7 @@ export const useArbTokenBridge = (
       // save potentially unbridged L1 tokens:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
       else if (arbTokenList.tokens.length < 1000) {
-        const l1Address = address
+        const l1Address = address.toLowerCase()
         candidateUnbridgedTokensToAdd.push({
           name,
           type: TokenType.ERC20,
