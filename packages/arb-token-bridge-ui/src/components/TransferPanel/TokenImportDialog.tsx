@@ -161,10 +161,6 @@ export function TokenImportDialog({
   )
 
   useEffect(() => {
-    console.error('islaoding', isLoadingBridgeTokens)
-  }, [isLoadingBridgeTokens])
-
-  useEffect(() => {
     if (!isOpen) {
       return
     }
@@ -264,7 +260,6 @@ export function TokenImportDialog({
   }
 
   if (status === ImportStatus.LOADING) {
-    console.error('LOAD')
     return (
       <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
         <div className="flex h-48 items-center justify-center md:min-w-[692px]">
