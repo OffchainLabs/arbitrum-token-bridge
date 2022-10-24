@@ -993,7 +993,7 @@ export const useArbTokenBridge = (
     })
     const l1Balances = l1Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l1AddressesBalances[index]?.balance || constants.Zero
+      balance: l1AddressesBalances[index]?.balance ?? constants.Zero
     }))
 
     const l2Addresses = l1Addresses
@@ -1006,7 +1006,7 @@ export const useArbTokenBridge = (
     })
     const l2Balances = l2Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l2AddressesBalances[index]?.balance || constants.Zero
+      balance: l2AddressesBalances[index]?.balance ?? constants.Zero
     }))
 
     const l2AddressToBalanceMap: {
@@ -1258,7 +1258,7 @@ export const useArbTokenBridge = (
     const [event] = l2TxReceipt.getL2ToL1Events()
 
     if (!event) {
-      return
+      return undefined
     }
 
     const outgoingMessageState = await getOutgoingMessageState(event)

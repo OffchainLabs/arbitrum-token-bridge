@@ -77,9 +77,11 @@ export async function fetchTokenWithdrawalsFromSubgraph({
         const l2TxReceipt = new L2TransactionReceipt(txReceipt)
 
         const [l2ToL1Event] = l2TxReceipt.getL2ToL1Events()
+
         if (!l2ToL1Event) {
           return null
         }
+
         const tokenAddress = utils.hexDataSlice(l2ToL1Event.data, 16, 36)
 
         return {
