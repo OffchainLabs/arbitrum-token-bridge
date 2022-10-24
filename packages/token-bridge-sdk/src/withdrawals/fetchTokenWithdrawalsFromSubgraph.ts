@@ -68,18 +68,35 @@ export async function fetchTokenWithdrawalsFromSubgraph({
   })
 
   const result: FetchTokenWithdrawalsFromSubgraphResult[] = await Promise.all(
-    queryResult.data.gatewayWithdrawalDatas.map(async data => {
-      const { l2TxHash, amount: amountStringified } = data
-      const amount = BigNumber.from(amountStringified)
+    queryResult.data.gatewayWithdrawalDatas
+      .map(async data => {
+        const { l2TxHash, amount: amountStringified } = data
+        const amount = BigNumber.from(amountStringified)
 
-      const txReceipt = await l2Provider.getTransactionReceipt(l2TxHash)
-      const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+        const txReceipt = await l2Provider.getTransactionReceipt(l2TxHash)
+        const l2TxReceipt = new L2TransactionReceipt(txReceipt)
 
-      const [l2ToL1Event] = l2TxReceipt.getL2ToL1Events()
-      const tokenAddress = utils.hexDataSlice(l2ToL1Event.data, 16, 36)
+        const [l2ToL1Event] = l2TxReceipt.getL2ToL1Events()
 
-      return { ...l2ToL1Event, l2TxHash, amount, tokenAddress }
-    })
+        if (!l2ToL1Event) {
+          return null
+        }
+
+        const tokenAddress = utils.hexDataSlice(l2ToL1Event.data, 16, 36)
+
+        return {
+          ...l2ToL1Event,
+          l2TxHash,
+          amount,
+          tokenAddress
+        }
+      })
+      .filter(
+        (
+          promise
+        ): promise is Promise<FetchTokenWithdrawalsFromSubgraphResult> =>
+          promise !== null
+      )
   )
 
   return result

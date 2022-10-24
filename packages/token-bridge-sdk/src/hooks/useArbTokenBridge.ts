@@ -255,6 +255,10 @@ export const useArbTokenBridge = (
 
     const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
 
+    if (!ethDepositMessage) {
+      return
+    }
+
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED,
@@ -328,6 +332,10 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventResult = l2ToL1Events[0]
+
+        if (!l2ToL1EventResult) {
+          return
+        }
 
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
 
@@ -515,6 +523,9 @@ export const useArbTokenBridge = (
     }
 
     const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
+    if (!l1ToL2Msg) {
+      return
+    }
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
@@ -658,6 +669,11 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
+
+        if (!l2ToL1EventDataResult) {
+          return
+        }
+
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
@@ -774,7 +790,12 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID].tokenAddress.toLowerCase()
+        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+
+        if (!l1Address) {
+          return
+        }
+
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -974,7 +995,7 @@ export const useArbTokenBridge = (
     })
     const l1Balances = l1Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l1AddressesBalances[index].balance
+      balance: l1AddressesBalances[index]?.balance ?? constants.Zero
     }))
 
     const l2Addresses = l1Addresses
@@ -987,7 +1008,7 @@ export const useArbTokenBridge = (
     })
     const l2Balances = l2Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l2AddressesBalances[index].balance
+      balance: l2AddressesBalances[index]?.balance ?? constants.Zero
     }))
 
     const l2AddressToBalanceMap: {
@@ -1030,7 +1051,7 @@ export const useArbTokenBridge = (
   }) {
     const event = pendingWithdrawalsMap[id]
 
-    if (!pendingWithdrawalsMap[id]) {
+    if (!event) {
       throw new Error('Outbox message not found')
     }
 
@@ -1067,8 +1088,12 @@ export const useArbTokenBridge = (
         addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          newPendingWithdrawalsMap[id].outgoingMessageState =
-            OutgoingMessageState.EXECUTED
+          const pendingWithdrawal = newPendingWithdrawalsMap[id]
+          if (pendingWithdrawal) {
+            pendingWithdrawal.outgoingMessageState =
+              OutgoingMessageState.EXECUTED
+          }
+
           return newPendingWithdrawalsMap
         })
       } else {
@@ -1120,8 +1145,12 @@ export const useArbTokenBridge = (
         addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          newPendingWithdrawalsMap[id].outgoingMessageState =
-            OutgoingMessageState.EXECUTED
+          const pendingWithdrawal = newPendingWithdrawalsMap[id]
+          if (pendingWithdrawal) {
+            pendingWithdrawal.outgoingMessageState =
+              OutgoingMessageState.EXECUTED
+          }
+
           return newPendingWithdrawalsMap
         })
       } else {
@@ -1137,8 +1166,9 @@ export const useArbTokenBridge = (
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
 
-    if (addressToSymbol[l1Address]) {
-      return addressToSymbol[l1Address]
+    const l1Symbol = addressToSymbol[l1Address]
+    if (l1Symbol) {
+      return l1Symbol
     }
 
     try {
@@ -1160,8 +1190,9 @@ export const useArbTokenBridge = (
   const getTokenDecimals = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
 
-    if (addressToDecimals[l1Address]) {
-      return addressToDecimals[l1Address]
+    const l1Decimals = addressToDecimals[l1Address]
+    if (l1Decimals) {
+      return l1Decimals
     }
 
     try {
@@ -1218,7 +1249,7 @@ export const useArbTokenBridge = (
 
   async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     result: WithdrawalInitiated
-  ): Promise<L2ToL1EventResultPlus> {
+  ): Promise<L2ToL1EventResultPlus | undefined> {
     const symbol = await getTokenSymbol(result.l1Token)
     const decimals = await getTokenDecimals(result.l1Token)
 
@@ -1227,6 +1258,11 @@ export const useArbTokenBridge = (
 
     // TODO: length != 1
     const [event] = l2TxReceipt.getL2ToL1Events()
+
+    if (!event) {
+      return undefined
+    }
+
     const outgoingMessageState = await getOutgoingMessageState(event)
 
     return {
@@ -1356,7 +1392,9 @@ export const useArbTokenBridge = (
           mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
         )
       ])
-    ).sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+    )
+      .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
+      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
     console.log(
       `*** done getting pending withdrawals, took ${
