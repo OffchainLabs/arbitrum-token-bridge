@@ -790,10 +790,12 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress
+        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+
         if (!l1Address) {
           return
         }
+
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -808,7 +810,7 @@ export const useArbTokenBridge = (
       // save potentially unbridged L1 tokens:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
       else if (arbTokenList.tokens.length < 1000) {
-        const l1Address = address
+        const l1Address = address.toLowerCase()
         candidateUnbridgedTokensToAdd.push({
           name,
           type: TokenType.ERC20,
@@ -893,11 +895,11 @@ export const useArbTokenBridge = (
       throw new TokenDisabledError('Token currently disabled')
     }
 
-    bridgeTokensToAdd[l1Address] = {
+    bridgeTokensToAdd[l1Address.toLowerCase()] = {
       name,
       type: TokenType.ERC20,
       symbol,
-      address: l1Address,
+      address: l1Address.toLowerCase(),
       l2Address,
       decimals
     }
@@ -906,7 +908,7 @@ export const useArbTokenBridge = (
     })
     setErc20Balances(oldBridgeBalances => {
       const newBal = {
-        [l1Address]: {
+        [l1Address.toLowerCase()]: {
           balance: l1TokenBalance,
           arbChainBalance: l2TokenBalance
         }
