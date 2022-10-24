@@ -5,9 +5,9 @@ import { AmountQueryParam } from '../useArbQueryParams'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
-    // only digits, +, or - are allowed in input[type="number"]
+    // only digits, e, +, or - are allowed in input[type="number"]
     // but for +, the value returned by the input field is still without +
-    // we don't want to include those cases because we don't want to test the browser's native implementation
+    // we don't want to include the + cases because we don't want to test the browser's native implementation
 
     const getEncodeResult = (value: string) => AmountQueryParam.encode(value)
 
@@ -15,8 +15,11 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getEncodeResult('10234')).toBe('10234')
       expect(getEncodeResult('12')).toBe('12')
       expect(getEncodeResult('1.0234')).toBe('1.0234')
+      expect(getEncodeResult('1.0234e4')).toBe('1.0234e4')
+      expect(getEncodeResult('1e1')).toBe('1e1')
       expect(getEncodeResult('0.0234')).toBe('0.0234')
       expect(getEncodeResult('.0234')).toBe('.0234')
+      expect(getEncodeResult('1.0234e-4')).toBe('1.0234e-4')
       expect(getEncodeResult('max')).toBe('max')
       expect(getEncodeResult('mAx')).toBe('mAx')
       expect(getEncodeResult('MAX')).toBe('MAX')
@@ -43,9 +46,11 @@ describe('AmountQueryParam custom encoder and decoder', () => {
     it('should return the original value after decoding', () => {
       expect(getDecodeResult('10234')).toBe('10234')
       expect(getDecodeResult('12')).toBe('12')
-      expect(getDecodeResult('1.0234')).toBe('1.0234')
+      expect(getDecodeResult('1.0234e4')).toBe('1.0234e4')
+      expect(getDecodeResult('1e1')).toBe('1e1')
       expect(getDecodeResult('0.0234')).toBe('0.0234')
       expect(getDecodeResult('.0234')).toBe('.0234')
+      expect(getDecodeResult('1.0234e-4')).toBe('1.0234e-4')
       expect(getDecodeResult('0')).toBe('0')
       expect(getDecodeResult('max')).toBe('max')
       expect(getDecodeResult('mAx')).toBe('mAx')
