@@ -292,7 +292,7 @@ export function TransferPanel() {
     const dialogType = getDialogType()
 
     if (dialogType) {
-      if (!isTransferring) setTokenDepositCheckDialogType(dialogType)
+      setTokenDepositCheckDialogType(dialogType)
 
       const waitForInput = openTokenCheckDialog()
       const confirmed = await waitForInput()
