@@ -46,7 +46,7 @@ export const useArbQueryParams = () => {
 const isMax = (amount: string | undefined) =>
   amount?.toLowerCase() === AmountQueryParamEnum.MAX
 
-const amountQueryParamEncodeDecodeFunction = (amountStr: string) => {
+const sanitizeAmountQueryParam = (amountStr: string) => {
   const amountNum = Number(amountStr)
   // return original string if it is `max` (case-insensitive)
   // if this check is removed, it'll satisfy the `isNaN` condition to return an empty string
