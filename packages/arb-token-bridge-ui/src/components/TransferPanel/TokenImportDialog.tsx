@@ -14,7 +14,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
-import { ChainId, getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
 
 enum ImportStatus {
   LOADING,
@@ -49,6 +49,7 @@ export function TokenImportDialog({
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
   const actions = useActions()
+  const { isArbitrumGoerliRollup } = isNetwork(l2.network.chainID)
 
   const tokensFromUser = useTokensFromUser()
   const latestTokensFromUser = useLatest(tokensFromUser)
@@ -82,11 +83,12 @@ export function TokenImportDialog({
 
   const isLoadingBridgeTokens = useMemo(() => {
     if (typeof bridgeTokens === 'undefined') {
-      return true
+      // We currently don't have a token list for Arbitrum Goerli
+      return !isArbitrumGoerliRollup
     }
 
     return false
-  }, [bridgeTokens, l2.network])
+  }, [bridgeTokens, isArbitrumGoerliRollup])
 
   const getL1TokenDataFromL1OrL2Address = useCallback(
     async (eitherL1OrL2Address: string) => {
@@ -237,7 +239,14 @@ export function TokenImportDialog({
   }
 
   function handleTokenImport() {
+    // There is no token list for Arbitrum Goerli, so bridgeTokens is undefined at first
     if (typeof bridgeTokens === 'undefined') {
+      if (isArbitrumGoerliRollup) {
+        setIsImportingToken(true)
+        storeNewToken(address).catch(() => {
+          setStatus(ImportStatus.ERROR)
+        })
+      }
       return
     }
 
