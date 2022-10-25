@@ -128,7 +128,7 @@ export function ExploreArbitrum() {
   )
 
   const iframeDimensions = useMemo(() => {
-    const height = playImageHeights[playImageNumber]
+    const height = playImageHeights[playImageNumber] || 0
 
     if (width < 640) {
       const scale = 218 / 640
@@ -156,8 +156,8 @@ export function ExploreArbitrum() {
     )
   }
 
-  const defiProj = ExploreArbitrumContent.defi[defiProjectIndex]
-  const nftProj = ExploreArbitrumContent.nfts[nftProjectIndex]
+  const defiProj = ExploreArbitrumContent.defi[defiProjectIndex]!
+  const nftProj = ExploreArbitrumContent.nfts[nftProjectIndex]!
 
   return (
     <div className="w-full bg-white lg:rounded-xl">

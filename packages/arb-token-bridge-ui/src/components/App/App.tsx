@@ -90,7 +90,7 @@ const AppContent = (): JSX.Element => {
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
+    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network.chainID)
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
 
     if (isRinkeby) {

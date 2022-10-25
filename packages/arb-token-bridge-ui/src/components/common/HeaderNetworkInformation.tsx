@@ -21,7 +21,7 @@ export function HeaderNetworkInformation() {
   )
 
   const logoSrc = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network)
+    const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
 
     if (!isArbitrum) {
       return EthereumLogo

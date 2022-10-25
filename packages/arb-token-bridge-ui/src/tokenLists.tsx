@@ -73,6 +73,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Gemini List',
     isDefault: true,
     logoURI: 'https://gemini.com/static/images/loader.png'
+  },
+  {
+    id: 8,
+    originChainID: '421613',
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
+    name: 'Arbed CMC List',
+    isDefault: true,
+    logoURI:
+      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
   }
 ]
 
@@ -143,11 +152,18 @@ export function fetchTokenLists(): Promise<void> {
       const tokenListsWithBridgeTokenListId = responses
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
-        .map(({ data }, index) => ({
-          l2ChainId: BRIDGE_TOKEN_LISTS[index].originChainID,
-          bridgeTokenListId: BRIDGE_TOKEN_LISTS[index].id,
-          ...data
-        }))
+        .map(({ data }, index) => {
+          const token = BRIDGE_TOKEN_LISTS[index]
+          if (!token) {
+            return data
+          }
+
+          return {
+            l2ChainId: token.originChainID,
+            bridgeTokenListId: token.id,
+            ...data
+          }
+        })
 
       sessionStorage.setItem(
         STORAGE_KEY,
