@@ -11,7 +11,6 @@ export function SafeImage(props: SafeImageProps) {
   const [validImageSrc, setValidImageSrc] = useState<false | string>(false)
 
   useEffect(() => {
-    let isMounted = true
     const image = new Image()
 
     if (typeof src === 'undefined') {
@@ -19,15 +18,14 @@ export function SafeImage(props: SafeImageProps) {
     } else {
       const sanitizedImageSrc = sanitizeImageSrc(src)
 
-      if (isMounted) {
-        image.onerror = () => setValidImageSrc(false)
-        image.onload = () => setValidImageSrc(sanitizedImageSrc)
-        image.src = sanitizedImageSrc
-      }
+      image.onerror = () => setValidImageSrc(false)
+      image.onload = () => setValidImageSrc(sanitizedImageSrc)
+      image.src = sanitizedImageSrc
     }
 
-    return () => {
-      isMounted = false
+    return function cleanup() {
+      // Abort previous loading
+      image.src = ''
     }
   }, [src])
 
