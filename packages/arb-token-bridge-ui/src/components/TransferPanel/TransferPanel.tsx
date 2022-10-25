@@ -110,8 +110,8 @@ export function TransferPanel() {
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
-  const { isMainnet } = isNetwork(l1Network)
-  const { isArbitrumNova } = isNetwork(l2Network)
+  const { isMainnet } = isNetwork(l1Network.chainID)
+  const { isArbitrumNova } = isNetwork(l2Network.chainID)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -121,7 +121,7 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   // Link the amount state directly to the amount in query params -  no need of useState
-  // Both `amount` getter and setter will internally be useing useArbQueryParams functions
+  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }, setQueryParams] = useArbQueryParams()
   const amountNum = parseFloat(amount) // just a numerical variant of amount
   const setAmount = useCallback(

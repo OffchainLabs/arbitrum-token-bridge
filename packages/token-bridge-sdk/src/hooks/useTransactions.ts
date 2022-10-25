@@ -116,15 +116,17 @@ export interface DepositTransaction extends Transaction {
 function updateStatus(state: Transaction[], status: TxnStatus, txID: string) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
-  if (index === -1) {
+  const transaction = newState[index]
+
+  if (!transaction) {
     console.warn('transaction not found', txID)
     return state
   }
-  const newTxn = {
-    ...newState[index],
+
+  newState[index] = {
+    ...transaction,
     status
   }
-  newState[index] = newTxn
   return newState
 }
 
@@ -135,12 +137,15 @@ function updateBlockNumber(
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
-  if (index === -1) {
+  const transaction = newState[index]
+
+  if (!transaction) {
     console.warn('transaction not found', txID)
     return state
   }
+
   newState[index] = {
-    ...newState[index],
+    ...transaction,
     blockNumber
   }
   return newState
@@ -153,29 +158,34 @@ function updateTxnL1ToL2Msg(
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
-  if (index === -1) {
+  const transaction = newState[index]
+
+  if (!transaction) {
     console.warn('transaction not found', txID)
     return state
   }
-  const tx = newState[index]
 
-  if (!(tx.type === 'deposit' || tx.type === 'deposit-l1')) {
+  if (!(transaction.type === 'deposit' || transaction.type === 'deposit-l1')) {
     throw new Error(
       "Attempting to add a l1tol2msg to a tx that isn't a deposit:" + txID
     )
   }
 
-  const previousL1ToL2MsgData = newState[index].l1ToL2MsgData
+  const previousL1ToL2MsgData = transaction.l1ToL2MsgData
   if (!previousL1ToL2MsgData) {
-    newState[index].l1ToL2MsgData = {
-      status: l1ToL2MsgData.status,
-      retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
-      fetchingUpdate: false
+    newState[index] = {
+      ...transaction,
+      l1ToL2MsgData: {
+        status: l1ToL2MsgData.status,
+        retryableCreationTxID: l1ToL2MsgData.retryableCreationTxID,
+        fetchingUpdate: false
+      }
     }
     return newState
   }
+
   newState[index] = {
-    ...newState[index],
+    ...transaction,
     l1ToL2MsgData: { ...previousL1ToL2MsgData, ...l1ToL2MsgData }
   }
   return newState
@@ -188,14 +198,18 @@ function updateResolvedTimestamp(
 ) {
   const newState = [...state]
   const index = newState.findIndex(txn => txn.txID === txID)
-  if (index === -1) {
+  const transaction = newState[index]
+
+  if (!transaction) {
     console.warn('transaction not found', txID)
     return state
   }
+
   newState[index] = {
-    ...newState[index],
+    ...transaction,
     timestampResolved: timestamp
   }
+
   return newState
 }
 function reducer(state: Transaction[], action: Action) {

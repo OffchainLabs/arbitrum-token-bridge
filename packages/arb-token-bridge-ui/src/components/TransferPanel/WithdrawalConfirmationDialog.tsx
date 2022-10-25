@@ -79,7 +79,7 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  const { isArbitrumOne } = isNetwork(l2.network)
+  const { isArbitrumOne } = isNetwork(l2.network.chainID)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
