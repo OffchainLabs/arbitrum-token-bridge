@@ -45,6 +45,7 @@
     "start": "craco start",
     "build": "CI= craco build",
     "test": "craco test",
+    "test:ci": "craco test --ci",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
