@@ -44,7 +44,7 @@ export function TokenButton(): JSX.Element {
       return sanitizeImageSrc(logo)
     }
     return undefined
-  }, [selectedToken?.address, status, arbTokenBridgeLoaded])
+  }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
 
   function closeWithReset() {
     setTokenToImport(undefined)
