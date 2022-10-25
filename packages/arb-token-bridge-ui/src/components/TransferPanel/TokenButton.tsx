@@ -37,7 +37,7 @@ export function TokenButton(): JSX.Element {
       return undefined
     }
     if (typeof bridgeTokens === 'undefined') {
-      return
+      return undefined
     }
     const logo = bridgeTokens[selectedAddress]?.logoURI
     if (logo) {
