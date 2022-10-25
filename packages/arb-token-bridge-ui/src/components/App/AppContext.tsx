@@ -15,6 +15,7 @@ type AppContextState = {
   seenTransactions: string[]
   layout: {
     isTransferPanelVisible: boolean
+    isTransferring: boolean
   }
 }
 
@@ -22,7 +23,8 @@ const initialState: AppContextState = {
   currentL1BlockNumber: 0,
   seenTransactions: SeenTransactionsCache.get(),
   layout: {
-    isTransferPanelVisible: true
+    isTransferPanelVisible: true,
+    isTransferring: false
   }
 }
 
@@ -34,6 +36,7 @@ type Action =
   | { type: 'set_current_l1_block_number'; payload: number }
   | { type: 'set_tx_as_seen'; payload: string }
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
+  | { type: 'layout.set_is_transferring'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
@@ -55,6 +58,12 @@ function reducer(state: AppContextState, action: Action) {
       return {
         ...state,
         layout: { ...state.layout, isTransferPanelVisible: action.payload }
+      }
+
+    case 'layout.set_is_transferring':
+      return {
+        ...state,
+        layout: { ...state.layout, isTransferring: action.payload }
       }
 
     default:
