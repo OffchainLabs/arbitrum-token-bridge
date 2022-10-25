@@ -84,6 +84,7 @@
     "autoprefixer": "^9",
     "cross-env": "^7.0.3",
     "cypress-localstorage-commands": "^2.2.1",
+    "cypress-wait-until": "^1.7.2",
     "env-cmd": "^10.1.0",
     "eslint": "^7.27.0",
     "eslint-config-airbnb-typescript": "^12.3.1",

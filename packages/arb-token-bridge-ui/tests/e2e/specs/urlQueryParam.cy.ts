@@ -44,11 +44,6 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      // wait for input field value to be set
-      // tried with <2500 but the input field value would be 0
-      // because the gas estimation function takes some time
-      cy.wait(2500)
-
       cy.findByPlaceholderText(/Enter amount/i)
         .should('be.visible')
         .should('not.have.text', 'max')
@@ -57,8 +52,26 @@ describe('User enters site with query params on URL', () => {
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         .invoke('val')
-        .then(value => {
-          cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+        .then(initialValue => {
+          cy.waitUntil(
+            () =>
+              cy
+                .findByPlaceholderText(/Enter amount/i)
+                .then($el => $el.val() !== initialValue),
+            // optional timeouts and error messages
+            {
+              errorMsg:
+                'was expecting some other Value but got : ' + initialValue,
+              timeout: 2000,
+              interval: 500
+            }
+          ).then(() => {
+            cy.findByPlaceholderText(/Enter amount/i)
+              .invoke('val')
+              .then(value => {
+                cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+              })
+          })
         })
     })
     it('?amount=MAX should set transfer panel amount to maximum amount possible based on balance', () => {
@@ -68,11 +81,6 @@ describe('User enters site with query params on URL', () => {
         }
       })
 
-      // wait for input field value to be set
-      // tried with <2500 but the input field value would be 0
-      // because the gas estimation function takes some time
-      cy.wait(2500)
-
       cy.findByPlaceholderText(/Enter amount/i)
         .should('be.visible')
         .should('not.have.text', 'max')
@@ -81,8 +89,26 @@ describe('User enters site with query params on URL', () => {
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         .invoke('val')
-        .then(value => {
-          cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+        .then(initialValue => {
+          cy.waitUntil(
+            () =>
+              cy
+                .findByPlaceholderText(/Enter amount/i)
+                .then($el => $el.val() !== initialValue),
+            // optional timeouts and error messages
+            {
+              errorMsg:
+                'was expecting some other Value but got : ' + initialValue,
+              timeout: 2000,
+              interval: 500
+            }
+          ).then(() => {
+            cy.findByPlaceholderText(/Enter amount/i)
+              .invoke('val')
+              .then(value => {
+                cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+              })
+          })
         })
     })
     it('?amount=MaX should set transfer panel amount to maximum amount possible based on balance', () => {
@@ -91,11 +117,6 @@ describe('User enters site with query params on URL', () => {
           amount: 'MaX'
         }
       })
-
-      // wait for input field value to be set
-      // tried with <2500 but the input field value would be 0
-      // because the gas estimation function takes some time
-      cy.wait(2500)
 
       cy.findByPlaceholderText(/Enter amount/i)
         .should('be.visible')
@@ -106,8 +127,26 @@ describe('User enters site with query params on URL', () => {
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
         .invoke('val')
-        .then(value => {
-          cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+        .then(initialValue => {
+          cy.waitUntil(
+            () =>
+              cy
+                .findByPlaceholderText(/Enter amount/i)
+                .then($el => $el.val() !== initialValue),
+            // optional timeouts and error messages
+            {
+              errorMsg:
+                'was expecting some other Value but got : ' + initialValue,
+              timeout: 2000,
+              interval: 500
+            }
+          ).then(() => {
+            cy.findByPlaceholderText(/Enter amount/i)
+              .invoke('val')
+              .then(value => {
+                cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+              })
+          })
         })
     })
     it('?amount=56 should set transfer panel amount to 56', () => {
