@@ -8,11 +8,11 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 
 export function WelcomeDialog(props: UseDialogProps) {
   const confirmButtonRef = useRef(null)
-  const isTosRoute = useRouteMatch('/tos')
+  // const isTosRoute = useRouteMatch('/tos')
 
-  if (isTosRoute) {
-    return null
-  }
+  // if (isTosRoute) {
+  //   return null
+  // }
 
   return (
     <Dialog {...props} initialFocus={confirmButtonRef} isCustom>

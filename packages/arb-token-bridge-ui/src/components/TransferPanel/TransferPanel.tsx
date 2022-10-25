@@ -52,7 +52,7 @@ const isAllowedL2 = async (
 }
 
 function useTokenFromSearchParams(): string | undefined {
-  const { search } = useLocation()
+  const search = ''
 
   const searchParams = new URLSearchParams(search)
   const tokenFromSearchParams = searchParams.get('token')?.toLowerCase()

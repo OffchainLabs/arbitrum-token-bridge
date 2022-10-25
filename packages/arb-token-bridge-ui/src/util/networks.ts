@@ -2,7 +2,7 @@ import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 import { l1Networks } from '@arbitrum/sdk-nitro/dist/lib/dataEntities/networks'
 
 const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY as string
 
 if (!INFURA_KEY) {
   throw new Error('Infura API key not provided')

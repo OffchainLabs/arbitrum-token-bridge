@@ -7,12 +7,6 @@ import { BigNumber } from 'ethers'
 import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import {
-  Route,
-  BrowserRouter as Router,
-  Switch,
-  useLocation
-} from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from 'src/util/index'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -30,7 +24,6 @@ import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
-import { Layout } from '../common/Layout'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -38,7 +31,7 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
+import { TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
 import {
@@ -330,63 +323,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
-function Routes() {
-  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
-  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
-
-  return (
-    <Router>
-      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-      <Switch>
-        <Route path="/tos" exact>
-          <TermsOfService />
-        </Route>
-
-        <Route path="/" exact>
-          <NetworkReady>
-            <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
-            </AppContextProvider>
-          </NetworkReady>
-        </Route>
-
-        <Route path="*">
-          <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-            <span className="text-8xl text-white">404</span>
-            <p className="text-3xl text-white">
-              Page not found in this solar system
-            </p>
-            <img
-              src="/images/arbinaut-fixing-spaceship.png"
-              alt="Arbinaut fixing a spaceship"
-              className="lg:max-w-md"
-            />
-          </div>
-        </Route>
-      </Switch>
-    </Router>
-  )
-}
-
 function NetworkReady({ children }: { children: React.ReactNode }) {
-  const { search } = useLocation()
+  const search = ''
 
   const selectedL2ChainId = useMemo(() => {
     const searchParams = new URLSearchParams(search)
@@ -425,6 +363,20 @@ function ConnectionFallbackContainer({
         />
       </ExternalLink>
     </div>
+  )
+}
+
+export function Loading() {
+  return (
+    <>
+      <HeaderContent>
+        <HeaderNetworkLoadingIndicator />
+      </HeaderContent>
+
+      <ConnectionFallbackContainer>
+        <Loader type="TailSpin" color="white" height={44} width={44} />
+      </ConnectionFallbackContainer>
+    </>
   )
 }
 
@@ -491,13 +443,40 @@ function ConnectionFallback({
 }
 
 export default function App() {
+  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
+
+  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
+
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
+  const isTosAccepted = tosAccepted !== undefined
+
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  function onClose(confirmed: boolean) {
+    // Only close after confirming (agreeing to terms)
+    if (confirmed) {
+      setTosAccepted('true')
+      welcomeDialogProps.onClose(confirmed)
+    }
+  }
+
   return (
-    <Provider value={overmind}>
-      <Layout>
-        <Routes />
-      </Layout>
-    </Provider>
+    <>
+      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+
+      <Provider value={overmind}>
+        <NetworkReady>
+          <AppContextProvider>
+            <Injector>{isTosAccepted && <AppContent />}</Injector>
+          </AppContextProvider>
+        </NetworkReady>
+      </Provider>
+    </>
   )
 }
