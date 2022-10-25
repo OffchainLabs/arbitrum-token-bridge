@@ -37,12 +37,15 @@ export function HeaderNetworkInformation() {
   const networkName = getNetworkName(network.chainID)
 
   return (
-    <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 lg:bg-dark lg:py-2 text-white">
-      <img
-        src={logoSrc}
-        alt={`${networkName} logo`}
-        className="max-w-8 max-h-8"
-      />
+    <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 text-white lg:bg-dark lg:py-2">
+      <div className="flex h-8 w-8 items-center justify-center">
+        <img
+          src={logoSrc}
+          alt={`${networkName} logo`}
+          className="max-w-8 max-h-8"
+        />
+      </div>
+
       <span className="text-2xl font-medium  lg:text-base lg:font-normal">
         {networkName}
       </span>
