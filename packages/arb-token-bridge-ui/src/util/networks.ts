@@ -117,9 +117,7 @@ export function registerLocalNetwork() {
   }
 }
 
-export function isNetwork(network: L1Network | L2Network) {
-  const chainId = network.chainID
-
+export function isNetwork(chainId: ChainId) {
   return {
     // L1
     isMainnet: chainId === ChainId.Mainnet,
@@ -127,7 +125,11 @@ export function isNetwork(network: L1Network | L2Network) {
     isRinkeby: chainId === ChainId.Rinkeby,
     isGoerli: chainId === ChainId.Goerli,
     // L2
-    isArbitrum: Boolean((network as any).isArbitrum),
+    isArbitrum:
+      chainId === ChainId.ArbitrumOne ||
+      chainId === ChainId.ArbitrumNova ||
+      chainId === ChainId.ArbitrumGoerli ||
+      chainId === ChainId.ArbitrumRinkeby,
     isArbitrumOne: chainId === ChainId.ArbitrumOne,
     isArbitrumNova: chainId === ChainId.ArbitrumNova,
     // L2 Testnets

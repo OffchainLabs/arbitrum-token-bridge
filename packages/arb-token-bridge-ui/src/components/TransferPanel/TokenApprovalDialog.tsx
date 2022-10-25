@@ -26,7 +26,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { toUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet } = isNetwork(l1.network)
+  const { isMainnet } = isNetwork(l1.network.chainID)
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
 

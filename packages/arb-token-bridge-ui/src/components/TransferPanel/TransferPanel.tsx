@@ -109,8 +109,8 @@ export function TransferPanel() {
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
-  const { isMainnet } = isNetwork(l1Network)
-  const { isArbitrumNova } = isNetwork(l2Network)
+  const { isMainnet } = isNetwork(l1Network.chainID)
+  const { isArbitrumNova } = isNetwork(l2Network.chainID)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
