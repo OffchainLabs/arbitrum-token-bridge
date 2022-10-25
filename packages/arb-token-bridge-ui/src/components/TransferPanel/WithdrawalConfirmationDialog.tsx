@@ -18,6 +18,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import {
+  getBlockTime,
   getConfirmPeriodBlocks,
   getNetworkName,
   isNetwork
@@ -68,7 +69,7 @@ export function WithdrawalConfirmationDialog(
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
-    l1.network.blockTime * getConfirmPeriodBlocks(l2.network.chainID)
+    getBlockTime(l1.network.chainID) * getConfirmPeriodBlocks(l2.network.chainID)
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
   const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)

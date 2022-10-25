@@ -23,12 +23,8 @@ export function WithdrawalCountdown({
     return <span>Calculating...</span>
   }
 
-  const blockTime = getBlockTime(l1Network.chainID) || 15
+  const blockTime = getBlockTime(l1Network.chainID) ?? 15
   const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.chainID)
-
-  if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION' || !confirmPeriodBlocks) {
-    return <span>Failure</span>
-  }
 
   if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
     const withdrawalTimeInSeconds = confirmPeriodBlocks * blockTime
@@ -36,6 +32,10 @@ export function WithdrawalCountdown({
     const remainingTime = dayjs().to(withdrawalDate, true)
 
     return <span>~{remainingTime} remaining</span>
+  }
+
+  if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
+    return <span>Failure</span>
   }
 
   // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
