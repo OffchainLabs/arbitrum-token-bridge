@@ -313,7 +313,10 @@ export function TransferPanel() {
       return
     }
 
-    dispatch({ type: 'layout.set_is_transferring', payload: true })
+    const setTransferring = (payload: boolean) =>
+      dispatch({ type: 'layout.set_is_transferring', payload })
+
+    setTransferring(true)
 
     try {
       if (isDepositMode) {
@@ -417,6 +420,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -432,6 +436,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -502,6 +507,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -517,6 +523,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -525,7 +532,7 @@ export function TransferPanel() {
     } catch (ex) {
       console.log(ex)
     } finally {
-      dispatch({ type: 'layout.set_is_transferring', payload: false })
+      setTransferring(false)
     }
   }
 
