@@ -66,12 +66,11 @@ const sanitizeAmountQueryParam = (amountStr: string) => {
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 export const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | undefined = '') =>
-    amountQueryParamEncodeDecodeFunction(amount),
+  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
   decode: (amount: string | (string | null)[] | null | undefined) => {
     // toString() casts the potential string array into a string
     const amountStr = amount?.toString() ?? ''
-    return amountQueryParamEncodeDecodeFunction(amountStr)
+    return sanitizeAmountQueryParam(amountStr)
   }
 }
 
