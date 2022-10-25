@@ -46,42 +46,32 @@ export const useArbQueryParams = () => {
 const isMax = (amount: string | undefined) =>
   amount?.toLowerCase() === AmountQueryParamEnum.MAX
 
+const amountQueryParamEncodeDecodeFunction = (amountStr: string) => {
+  const amountNum = Number(amountStr)
+  // return original string if it is `max` (case-insensitive)
+  // if this check is removed, it'll satisfy the `isNaN` condition to return an empty string
+  if (isMax(amountStr)) {
+    return amountStr
+  }
+  // to catch random string like `amount=asdf` from the URL
+  // to catch negative number
+  if (isNaN(amountNum) || amountStr?.length === 0) {
+    return ''
+  }
+  return amountNum > 0 ? amountStr : String(Math.abs(amountNum))
+}
+
 // Our custom query param type for Amount field - will be parsed and returned as a string,
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
 export const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | undefined = '') => {
-    if (isMax(amount)) {
-      return amount
-    }
-    // -0 would pass the check Number(amount) >= 0 so we need to catch it separately
-    if (amount === '-0') {
-      return ''
-    }
-    return Number(amount) >= 0 ? amount : ''
-  },
+  encode: (amount: string | undefined = '') =>
+    amountQueryParamEncodeDecodeFunction(amount),
   decode: (amount: string | (string | null)[] | null | undefined) => {
-    const amountStr = amount?.toString()
-
-    // return original string if it is `max` (case-insensitive)
-    // if this check is removed, it'll satisfy the `isNaN` condition to return an empty string
-    if (isMax(amountStr)) {
-      return amountStr
-    }
-
-    // -0 would be 0 in the checks below so we need to catch it separately
-    if (amountStr === '-0') {
-      return ''
-    }
-
-    // to catch random string like `amount=asdf` from the URL
-    // to catch negative number
-    if (isNaN(Number(amountStr)) || Number(amountStr) < 0) {
-      return ''
-    }
-
-    return amountStr
+    // toString() casts the potential string array into a string
+    const amountStr = amount?.toString() ?? ''
+    return amountQueryParamEncodeDecodeFunction(amountStr)
   }
 }
 

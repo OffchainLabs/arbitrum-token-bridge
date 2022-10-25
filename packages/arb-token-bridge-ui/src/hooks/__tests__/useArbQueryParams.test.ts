@@ -26,6 +26,13 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getEncodeResult('MAx')).toBe('MAx')
     })
 
+    it('should return the absolute positive value after encoding', () => {
+      expect(getEncodeResult('-0')).toBe('0')
+      expect(getEncodeResult('-0.123123')).toBe('0.123123')
+      expect(getEncodeResult('-1')).toBe('1')
+      expect(getEncodeResult('-10')).toBe('10')
+    })
+
     it('should return an empty string after encoding', () => {
       expect(getEncodeResult('random')).toBe('')
       expect(getEncodeResult('1dfk')).toBe('')
@@ -33,9 +40,6 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getEncodeResult('12--32123-32')).toBe('')
       expect(getEncodeResult('null')).toBe('')
       expect(getEncodeResult('--10.23')).toBe('')
-      expect(getEncodeResult('-0')).toBe('')
-      expect(getEncodeResult('-0.123123')).toBe('')
-      expect(getEncodeResult('-1')).toBe('')
       expect(getEncodeResult('')).toBe('')
     })
   })
@@ -58,6 +62,13 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('MAx')).toBe('MAx')
     })
 
+    it('should return the absolute positive value after decoding', () => {
+      expect(getDecodeResult('-0')).toBe('0')
+      expect(getDecodeResult('-0.234')).toBe('0.234')
+      expect(getDecodeResult('-1')).toBe('1')
+      expect(getDecodeResult('-10')).toBe('10')
+    })
+
     it('should return an empty string after decoding', () => {
       expect(getDecodeResult('random')).toBe('')
       expect(getDecodeResult('1,234')).toBe('')
@@ -69,10 +80,6 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('0,null,123')).toBe('')
       expect(getDecodeResult('some, text')).toBe('')
       expect(getDecodeResult('--10.23')).toBe('')
-      expect(getDecodeResult('-0')).toBe('')
-      expect(getDecodeResult('-0.234')).toBe('')
-      expect(getDecodeResult('-1')).toBe('')
-      expect(getDecodeResult('-10')).toBe('')
       expect(getDecodeResult('-1,234')).toBe('')
       expect(getDecodeResult('')).toBe('')
     })
