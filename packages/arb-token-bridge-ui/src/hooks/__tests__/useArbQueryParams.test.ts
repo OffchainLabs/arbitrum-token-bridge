@@ -18,6 +18,9 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getEncodeResult('1.0234e4')).toBe('1.0234e4')
       expect(getEncodeResult('1e1')).toBe('1e1')
       expect(getEncodeResult('0.0234')).toBe('0.0234')
+      expect(getEncodeResult('-0')).toBe('-0')
+      expect(getEncodeResult('0.0')).toBe('0.0')
+      expect(getEncodeResult('0.000')).toBe('0.000')
       expect(getEncodeResult('.0234')).toBe('.0234')
       expect(getEncodeResult('1.0234e-4')).toBe('1.0234e-4')
       expect(getEncodeResult('max')).toBe('max')
@@ -27,7 +30,6 @@ describe('AmountQueryParam custom encoder and decoder', () => {
     })
 
     it('should return the absolute positive value after encoding', () => {
-      expect(getEncodeResult('-0')).toBe('0')
       expect(getEncodeResult('-0.123123')).toBe('0.123123')
       expect(getEncodeResult('-1')).toBe('1')
       expect(getEncodeResult('-10')).toBe('10')
@@ -53,6 +55,9 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('1.0234e4')).toBe('1.0234e4')
       expect(getDecodeResult('1e1')).toBe('1e1')
       expect(getDecodeResult('0.0234')).toBe('0.0234')
+      expect(getDecodeResult('-0')).toBe('-0')
+      expect(getDecodeResult('0.0')).toBe('0.0')
+      expect(getDecodeResult('0.000')).toBe('0.000')
       expect(getDecodeResult('.0234')).toBe('.0234')
       expect(getDecodeResult('1.0234e-4')).toBe('1.0234e-4')
       expect(getDecodeResult('0')).toBe('0')
@@ -63,7 +68,6 @@ describe('AmountQueryParam custom encoder and decoder', () => {
     })
 
     it('should return the absolute positive value after decoding', () => {
-      expect(getDecodeResult('-0')).toBe('0')
       expect(getDecodeResult('-0.234')).toBe('0.234')
       expect(getDecodeResult('-1')).toBe('1')
       expect(getDecodeResult('-10')).toBe('10')
