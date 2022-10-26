@@ -43,24 +43,39 @@ export const useArbQueryParams = () => {
   })
 }
 
+const isMax = (amount: string | undefined) =>
+  amount?.toLowerCase() === AmountQueryParamEnum.MAX
+
+const sanitizeAmountQueryParam = (amountStr: string) => {
+  const amountNum = Number(amountStr)
+  // return original string if it is `max` (case-insensitive)
+  // if this check is removed, it'll satisfy the `isNaN` condition to return an empty string
+  if (isMax(amountStr)) {
+    return amountStr
+  }
+  // to catch random string like `amount=asdf` from the URL
+  // to catch negative number
+  if (isNaN(amountNum) || amountStr?.length === 0) {
+    return ''
+  }
+  // for 0.0 / 0.00 ... that equals 0
+  if (amountNum === 0 && amountStr?.length > 0) {
+    return amountStr
+  }
+  // to reach here they must be a number
+  return amountNum > 0 ? amountStr : String(Math.abs(amountNum))
+}
+
 // Our custom query param type for Amount field - will be parsed and returned as a string,
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
-const AmountQueryParam = {
+export const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | null | undefined) => amount,
+  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
   decode: (amount: string | (string | null)[] | null | undefined) => {
-    const amountStr = amount?.toString()
-
-    // to catch random string like `amount=asdf` from the URL
-    if (isNaN(Number(amountStr))) {
-      if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
-        return amountStr
-      }
-      return ''
-    }
-
-    return amountStr ?? ''
+    // toString() casts the potential string array into a string
+    const amountStr = amount?.toString() ?? ''
+    return sanitizeAmountQueryParam(amountStr)
   }
 }
 
