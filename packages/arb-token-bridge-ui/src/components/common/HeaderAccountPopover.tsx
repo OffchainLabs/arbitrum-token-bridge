@@ -2,7 +2,11 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Tab } from '@headlessui/react'
-import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/outline'
+import {
+  ChevronDownIcon,
+  ExternalLinkIcon,
+  LogoutIcon
+} from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
@@ -195,6 +199,8 @@ export function HeaderAccountPopover() {
             <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
               {ensInfo.name ?? udInfo.name ?? accountShort}
             </span>
+
+            <ChevronDownIcon className="h-4 w-4 text-white" />
           </div>
         </div>
       </Popover.Button>
