@@ -213,7 +213,11 @@ export function TokenImportDialog({
       return
     }
 
-    const foundToken = tokensFromUser[address]
+    if (!tokenToImport?.address) {
+      return
+    }
+
+    const foundToken = tokensFromUser[tokenToImport.address]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -224,7 +228,14 @@ export function TokenImportDialog({
       onClose(true)
       selectToken(foundToken)
     }
-  }, [isOpen, tokensFromUser, address, selectedToken, selectToken, onClose])
+  }, [
+    tokenToImport,
+    isOpen,
+    tokensFromUser,
+    selectedToken,
+    selectToken,
+    onClose
+  ])
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
