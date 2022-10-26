@@ -58,6 +58,11 @@ const sanitizeAmountQueryParam = (amountStr: string) => {
   if (isNaN(amountNum) || amountStr?.length === 0) {
     return ''
   }
+  // for 0.0 / 0.00 ... that equals 0
+  if (amountNum === 0 && amountStr?.length > 0) {
+    return amountStr
+  }
+  // to reach here they must be a number
   return amountNum > 0 ? amountStr : String(Math.abs(amountNum))
 }
 
