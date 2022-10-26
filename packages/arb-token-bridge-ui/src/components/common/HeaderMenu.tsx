@@ -86,7 +86,9 @@ export function HeaderMenuMobile(
       {({ open }) => (
         <div className="w-full">
           <Disclosure.Button
-            className={`arb-hover w-full py-3 ${open && `bg-white`}`}
+            className={`arb-hover flex w-full items-center justify-center py-3 ${
+              open && `bg-white`
+            }`}
           >
             <span
               className={`text-2xl font-medium text-white ${
@@ -95,6 +97,10 @@ export function HeaderMenuMobile(
             >
               {props.children}
             </span>
+
+            {props.items?.length && (
+              <ChevronDownIcon className="ml-1 h-4 w-4 shrink-0 grow-0 text-gray-9" />
+            )}
           </Disclosure.Button>
           <Disclosure.Panel>
             <ul className="space-y-4 pt-4 pb-8">
