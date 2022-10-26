@@ -1,4 +1,8 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import {
+  l1Networks,
+  l2Networks
+} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -52,6 +56,24 @@ export const explorerUrls: { [chainId: number]: string } = {
 
 export const getExplorerUrl = (chainId: ChainId) => {
   return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet] //defaults to etherscan
+}
+
+export const getBlockTime = (chainId: ChainId) => {
+  const network = l1Networks[chainId]
+  if (!network) {
+    throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
+  }
+  return network.blockTime
+}
+
+export const getConfirmPeriodBlocks = (chainId: ChainId) => {
+  const network = l2Networks[chainId]
+  if (!network) {
+    throw new Error(
+      `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
+    )
+  }
+  return network.confirmPeriodBlocks
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
