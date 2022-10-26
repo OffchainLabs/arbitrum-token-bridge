@@ -1,6 +1,6 @@
-import { L1Network, L2Network } from '@arbitrum/sdk'
+import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { hexValue } from 'ethers/lib/utils'
-import { ChainId, getNetworkName, rpcURLs } from './networks'
+import { ChainId, getNetworkName, rpcURLs, getExplorerUrl } from './networks'
 import { BigNumber } from 'ethers'
 import { Web3Provider } from '@ethersproject/providers'
 import EthereumLogo from '../assets/EthereumLogo.png'
@@ -42,13 +42,38 @@ export const networkStyleMap: {
   - This lightweight function doesn't require a connected network - simply switches the metamask network
   - But it doesn't support very rich business logic as well, like showing custom alerts if user is connected to `Arbitrum` or not
 */
-export const changeNetworkBasic = async (
-  provider: Web3Provider | undefined,
-  network: L1Network | L2Network,
-  onSuccess?: () => void,
-  onError?: (err?: any) => void
-) => {
-  const chainId = network.chainID
+
+export type SwitchChainProps = {
+  chainId: ChainId
+  provider: Web3Provider
+  onSuccess?: () => void
+  onError?: (err?: Error) => void
+  onSwitchChainNotSupported?: () => void
+}
+
+const noop = () => {}
+export async function switchChain({
+  chainId,
+  provider,
+  onSuccess = noop,
+  onError = noop,
+  onSwitchChainNotSupported
+}: SwitchChainProps) {
+  // first check if it is a valid network
+  let network
+  try {
+    network = await getL2Network(chainId)
+  } catch {
+    network = await getL1Network(chainId)
+  }
+  if (!network) return
+
+  // then check if the onSwitchChainNotSupported is passed, that means the switching is not supported
+  if (typeof onSwitchChainNotSupported === 'function') {
+    return onSwitchChainNotSupported()
+  }
+
+  // if all the above conditions are satisfied go ahead and switch the network
   const hexChainId = hexValue(BigNumber.from(chainId))
   const networkName = getNetworkName(chainId)
 
@@ -74,8 +99,8 @@ export const changeNetworkBasic = async (
               symbol: 'ETH',
               decimals: 18
             },
-            rpcUrls: [rpcURLs[network.chainID]],
-            blockExplorerUrls: [network.explorerUrl]
+            rpcUrls: [rpcURLs[chainId]],
+            blockExplorerUrls: [getExplorerUrl(chainId)]
           }
         ])
 

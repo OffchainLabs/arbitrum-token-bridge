@@ -8,7 +8,7 @@ import { twMerge } from 'tailwind-merge'
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -339,7 +339,10 @@ export function TransferPanel() {
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
+          await changeNetwork?.({
+            chainId: latestNetworksAndSigners.current.l1.network
+              .chainID as ChainId
+          })
 
           while (
             latestNetworksAndSigners.current.isConnectedToArbitrum ||
@@ -444,7 +447,10 @@ export function TransferPanel() {
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
+          await changeNetwork?.({
+            chainId: latestNetworksAndSigners.current.l2.network
+              .chainID as ChainId
+          })
 
           while (
             !latestNetworksAndSigners.current.isConnectedToArbitrum ||

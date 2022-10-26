@@ -18,9 +18,12 @@ import {
   L2ToL1MessageData,
   getUniqueIdOrHashFromEvent
 } from 'token-bridge-sdk'
-import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import { ChainId } from '../../util/networks'
+import { Web3Provider } from '@ethersproject/providers'
+import { ChangeNetworkProps } from '../../components/App/App'
 
 export enum WhiteListState {
   VERIFYING,
@@ -123,7 +126,13 @@ export type AppState = {
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
 
-  changeNetwork: ((network: L1Network | L2Network) => Promise<void>) | null
+  changeNetwork:
+    | (({
+        chainId,
+        onSuccess,
+        onError
+      }: ChangeNetworkProps) => Promise<void>)
+    | null
 }
 
 export const defaultState: AppState = {

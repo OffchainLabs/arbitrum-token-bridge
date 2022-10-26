@@ -1,9 +1,9 @@
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
-import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
+import { ChangeNetworkProps } from '../../components/App/App'
 
 export const setConnectionState = (
   { state }: Context,
@@ -36,7 +36,7 @@ export const setSelectedToken = (
 
 export const setChangeNetwork = (
   { state }: Context,
-  func: (network: L1Network | L2Network) => Promise<void>
+  func: ({ chainId, onSuccess, onError }: ChangeNetworkProps) => Promise<void>
 ) => {
   state.app.changeNetwork = func
 }

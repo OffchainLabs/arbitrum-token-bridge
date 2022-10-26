@@ -12,7 +12,7 @@ import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
@@ -486,7 +486,9 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await app.changeNetwork?.(l1.network)
+                await app.changeNetwork?.({
+                  chainId: l1.network.chainID as ChainId
+                })
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
                 // 4001 - User rejected the request
@@ -516,7 +518,7 @@ export function TransferPanelMain({
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await app.changeNetwork?.(network)
+            await app.changeNetwork?.({ chainId: network.chainID as ChainId })
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
             // 4001 - User rejected the request

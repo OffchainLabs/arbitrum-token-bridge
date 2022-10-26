@@ -1,12 +1,11 @@
-import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover, Transition } from '@headlessui/react'
 import { useAppState } from '../../state'
 import { ChainId, getNetworkName } from '../../util/networks'
 import {
-  changeNetworkBasic,
   networkStyleMap,
-  networkSelectionList
+  networkSelectionList,
+  switchChain
 } from '../../util/NetworkUtils'
 
 export const NetworkSelectionContainer = ({
@@ -20,20 +19,12 @@ export const NetworkSelectionContainer = ({
   const { app } = useAppState()
 
   const changeNetwork = async (chainId: ChainId) => {
-    let network
-    try {
-      network = await getL2Network(chainId)
-    } catch {
-      network = await getL1Network(chainId)
-    }
-
-    if (!network) return
     if (app.changeNetwork) {
       // if the rich app-injected version of changeNetwork is present, use that.
-      await app.changeNetwork(network)
+      await app.changeNetwork({ chainId })
     } else {
       // else use the basic network switching logic
-      await changeNetworkBasic(provider, network)
+      await switchChain({ chainId, provider: provider! })
     }
   }
 

@@ -53,6 +53,7 @@ import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
 import {
+  ChainId,
   getExplorerUrl,
   getNetworkName,
   isNetwork,
@@ -65,6 +66,7 @@ import {
 import { UnsupportedNetworkContent } from '../common/UnsupportedNetworkContent'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
+import { switchChain, SwitchChainProps } from '../../util/NetworkUtils'
 
 type Web3Provider = ExternalProvider & {
   isMetaMask?: boolean
@@ -76,6 +78,11 @@ const isSwitchChainSupported = (provider: Web3Provider) =>
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
 }
+
+export type ChangeNetworkProps = Omit<
+  SwitchChainProps,
+  'provider' | 'onSwitchChainNotSupported'
+>
 
 declare global {
   interface Window {
@@ -271,67 +278,47 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         console.log('Gas price:', await library?.getGasPrice())
       }
 
-      const changeNetwork = async (network: L1Network | L2Network) => {
-        const chainId = network.chainID
-        const hexChainId = hexValue(BigNumber.from(chainId))
+      const onSwitchChainNotSupported = (chainId: ChainId) => {
+        // if no `wallet_switchEthereumChain` support
         const networkName = getNetworkName(chainId)
-        const provider = library?.provider
 
-        if (isSwitchChainSupported(provider)) {
-          console.log('Attempting to switch to chain', chainId)
-          try {
-            // @ts-ignore
-            await provider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [
-                {
-                  chainId: hexChainId
-                }
-              ]
-            })
-          } catch (err: any) {
-            if (err.code === 4902) {
-              console.log(
-                `Network ${chainId} not yet added to wallet; adding now:`
-              )
-              // @ts-ignore
-              await provider.request({
-                method: 'wallet_addEthereumChain',
-                params: [
-                  {
-                    chainId: hexChainId,
-                    chainName: networkName,
-                    nativeCurrency: {
-                      name: 'Ether',
-                      symbol: 'ETH',
-                      decimals: 18
-                    },
-                    rpcUrls: [rpcURLs[network.chainID]],
-                    blockExplorerUrls: [getExplorerUrl(network.chainID)]
-                  }
-                ]
-              })
-            } else {
-              throw err
-            }
-          }
-        } else {
-          // if no `wallet_switchEthereumChain` support
-          console.log(
-            'Not sure if current provider supports wallet_switchEthereumChain'
-          )
-          // TODO: show user a nice dialogue box instead of
-          // eslint-disable-next-line no-alert
-          const targetTxName = networksAndSigners.isConnectedToArbitrum
-            ? 'deposit'
-            : 'withdraw'
+        console.log(
+          'Not sure if current provider supports wallet_switchEthereumChain'
+        )
+        // TODO: show user a nice dialogue box instead of
+        // eslint-disable-next-line no-alert
+        const targetTxName = networksAndSigners.isConnectedToArbitrum
+          ? 'deposit'
+          : 'withdraw'
 
-          alert(
-            `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
-          )
+        alert(
+          `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
+        )
+        // TODO: reset state so user can attempt to press "Deposit" again
+      }
 
-          // TODO: reset state so user can attempt to press "Deposit" again
+      const provider = library?.provider as Web3Provider
+
+      const changeNetwork = async ({
+        chainId,
+        onSuccess,
+        onError
+      }: ChangeNetworkProps) => {
+        const params: SwitchChainProps = {
+          chainId,
+
+          //@ts-ignore : some provider-web3provider incompatibility
+          provider,
+          onSuccess,
+          onError,
+
+          // add `onSwitchChainNotSupported` to the props when `isSwitchChainSupported` is false
+          onSwitchChainNotSupported: isSwitchChainSupported(provider)
+            ? undefined
+            : () => onSwitchChainNotSupported(chainId)
         }
+
+        return await switchChain(params)
       }
 
       logGasPrice()
