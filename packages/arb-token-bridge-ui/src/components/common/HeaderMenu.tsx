@@ -99,7 +99,7 @@ export function HeaderMenuMobile(
             </span>
 
             {props.items?.length && (
-              <ChevronDownIcon className="ml-1 h-4 w-4 shrink-0 grow-0 text-white" />
+              <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 grow-0 text-white" />
             )}
           </Disclosure.Button>
           <Disclosure.Panel>
