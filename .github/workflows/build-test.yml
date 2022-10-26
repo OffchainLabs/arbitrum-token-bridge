@@ -9,6 +9,7 @@ on:
 
 jobs:
   install:
+    name: "Install"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +32,20 @@ jobs:
           path: "**/node_modules"
           key: ${{ steps.cache.outputs.primary-key }}
 
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/restore-cache
+
+      - name: Build
+        run: yarn build
+
   test-sdk:
+    name: "Test SDK"
     runs-on: ubuntu-latest
     needs: install
     steps:
@@ -43,6 +57,7 @@ jobs:
         run: yarn test:ci:sdk
 
   test-ui:
+    name: "Test UI"
     runs-on: ubuntu-latest
     needs: install
     steps:
@@ -54,6 +69,7 @@ jobs:
         run: yarn test:ci:ui
 
   audit:
+    name: "Audit"
     runs-on: ubuntu-latest
     needs: install
     steps:
