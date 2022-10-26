@@ -186,20 +186,15 @@ describe('User enters site with query params on URL', () => {
       cy.url().should('include', 'amount=0.123')
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
     })
-    // TODO -> uncomment when PR #460 is merged
-    // it('?amount=-0.123 should not set transfer panel amount', () => {
-    //   cy.visit('/', {
-    //     qs: {
-    //       amount: '-0.123'
-    //     }
-    //   })
+    it('?amount=-0.123 should set transfer panel amount to 0.123', () => {
+      cy.visit('/', {
+        qs: {
+          amount: '-0.123'
+        }
+      })
 
-    //   cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
-    //   cy.findByPlaceholderText(/Enter amount/i).should(
-    //     'not.have.value',
-    //     '-0.123'
-    //   )
-    // })
+      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
+    })
     it('?amount=asdfs should not set transfer panel amount', () => {
       cy.visit('/', {
         qs: {
