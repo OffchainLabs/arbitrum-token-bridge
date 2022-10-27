@@ -155,7 +155,10 @@ function NetworkListbox({
                 <img
                   src={getOptionImageSrc(option)}
                   alt={`${getNetworkName(option.chainID)} logo`}
-                  className="max-h-10 w-8"
+                  className={twMerge(
+                    'max-h-10 w-8',
+                    isNetwork(option.chainID).isEthereum ? 'px-1' : ''
+                  )}
                 />
                 <span>{getNetworkName(option.chainID)}</span>
               </Listbox.Option>
