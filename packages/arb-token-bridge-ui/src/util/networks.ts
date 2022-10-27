@@ -47,7 +47,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Goerli]: 'https://goerli.etherscan.io',
   [ChainId.Rinkeby]: 'https://rinkeby.etherscan.io',
   //L2
-  [ChainId.ArbitrumNova]: 'https://nova-explorer.arbitrum.io',
+  [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://testnet.arbiscan.io',
