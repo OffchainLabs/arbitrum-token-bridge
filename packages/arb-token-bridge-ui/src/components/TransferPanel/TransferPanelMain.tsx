@@ -528,17 +528,17 @@ export function TransferPanelMain({
             try {
               await app.changeNetwork?.(network)
               updatePreferredL2Chain(network.chainID)
+
+              // If L2 selected, change to withdraw mode and set new selections
+              switchNetworks()
+              setFrom(network)
+              setTo(l1.network)
             } catch (error: any) {
               // 4001 - User rejected the request
               if (error.code !== 4001) {
                 Sentry.captureException(error)
               }
             }
-
-            // If L2 selected, change to withdraw mode and set new selections
-            switchNetworks()
-            setFrom(network)
-            setTo(l1.network)
           }
         },
         to: {
@@ -627,17 +627,17 @@ export function TransferPanelMain({
           try {
             await app.changeNetwork?.(l1.network)
             updatePreferredL2Chain(network.chainID)
+
+            // Change to withdraw mode and set new selections
+            switchNetworks()
+            setFrom(l1.network)
+            setTo(network)
           } catch (error: any) {
             // 4001 - User rejected the request
             if (error.code !== 4001) {
               Sentry.captureException(error)
             }
           }
-
-          // Change to withdraw mode and set new selections
-          switchNetworks()
-          setFrom(l1.network)
-          setTo(network)
         }
       }
     }
