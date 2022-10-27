@@ -73,7 +73,7 @@ function NetworkListbox({
   onChange
 }: NetworkListboxProps) {
   const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value)
+    const { isArbitrum, isArbitrumNova } = isNetwork(value.chainID)
 
     if (!isArbitrum) {
       return 'bg-[rgba(118,121,145,0.8)]'
@@ -87,7 +87,7 @@ function NetworkListbox({
   }, [value])
 
   const getOptionImageSrc = useCallback((network: L1Network | L2Network) => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network)
+    const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
 
     if (!isArbitrum) {
       return EthereumLogo
@@ -171,8 +171,9 @@ function getListboxOptionsFromL1Network(network: L1Network) {
   let options: L2Network[] = []
 
   network.partnerChainIDs.forEach(chainId => {
-    if (l2Networks[chainId] && !options.includes(l2Networks[chainId])) {
-      options.push(l2Networks[chainId])
+    const l2Network = l2Networks[chainId]
+    if (l2Network && !options.includes(l2Network)) {
+      options.push(l2Network)
     }
   })
 
@@ -187,7 +188,7 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network)
+    const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
 
     if (!isArbitrum) {
       return {

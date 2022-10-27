@@ -219,7 +219,7 @@ export function Header() {
           <a href="/" className="arb-hover flex flex-col items-center">
             <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
           </a>
-          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
+          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
             <HeaderMenuDesktop
               items={[

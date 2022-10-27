@@ -79,7 +79,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const { isMainnet } = isNetwork(l1.network)
+  const { isMainnet } = isNetwork(l1.network.chainID)
   const {
     eth: [ethBalance]
   } = useBalance({
