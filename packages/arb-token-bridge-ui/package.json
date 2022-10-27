@@ -39,12 +39,10 @@
   },
   "scripts": {
     "analyze": "cross-env REACT_APP_INTERACTIVE_ANALYZE=1 $npm_execpath run build",
-    "build:tailwind": "tailwindcss build src/styles/tailwind.css -o src/styles/tailwind.output.css",
-    "prestart": "$npm_execpath run build:tailwind",
-    "prebuild": "$npm_execpath run build:tailwind",
     "start": "craco start",
     "build": "CI= craco build",
     "test": "craco test",
+    "test:ci": "craco test --ci",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}'",
     "lintfix": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",

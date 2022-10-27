@@ -30,7 +30,7 @@ import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import { useAppContextDispatch } from '../App/AppContext'
+import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
@@ -98,6 +98,8 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
+  const { layout } = useAppContextState()
+  const { isTransferring } = layout
   const { provider, account } = useWallet()
   const latestConnectedProvider = useLatest(provider)
 
@@ -115,12 +117,10 @@ export function TransferPanel() {
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
 
-  const [transferring, setTransferring] = useState(false)
-
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   // Link the amount state directly to the amount in query params -  no need of useState
-  // Both `amount` getter and setter will internally be useing useArbQueryParams functions
+  // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }, setQueryParams] = useArbQueryParams()
   const amountNum = parseFloat(amount) // just a numerical variant of amount
   const setAmount = useCallback(
@@ -312,6 +312,9 @@ export function TransferPanel() {
       return
     }
 
+    const setTransferring = (payload: boolean) =>
+      dispatch({ type: 'layout.set_is_transferring', payload })
+
     setTransferring(true)
 
     try {
@@ -416,6 +419,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -431,6 +435,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -501,6 +506,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -516,6 +522,7 @@ export function TransferPanel() {
                   type: 'layout.set_is_transfer_panel_visible',
                   payload: false
                 })
+                setTransferring(false)
               }
             }
           })
@@ -622,7 +629,7 @@ export function TransferPanel() {
     }
 
     return (
-      transferring ||
+      isTransferring ||
       !amountNum ||
       (isDepositMode &&
         !isBridgingANewStandardToken &&
@@ -633,7 +640,7 @@ export function TransferPanel() {
         (l1Balance === null || amountNum > +l1Balance))
     )
   }, [
-    transferring,
+    isTransferring,
     isDepositMode,
     l2Network,
     amountNum,
@@ -668,10 +675,10 @@ export function TransferPanel() {
         selectedToken.address &&
         selectedToken.address.toLowerCase() ===
           '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-      transferring ||
+      isTransferring ||
       (!isDepositMode && (!amountNum || !l2Balance || amountNum > +l2Balance))
     )
-  }, [transferring, isDepositMode, amountNum, l2Balance, selectedToken])
+  }, [isTransferring, isDepositMode, amountNum, l2Balance, selectedToken])
 
   // TODO: Refactor this and the property above
   const disableWithdrawalV2 = useMemo(() => {
@@ -701,7 +708,7 @@ export function TransferPanel() {
       return false
     }
 
-    if (transferring) {
+    if (isTransferring) {
       return true
     }
 
@@ -709,7 +716,7 @@ export function TransferPanel() {
   }, [
     isSwitchingL2Chain,
     gasEstimationStatus,
-    transferring,
+    isTransferring,
     isDepositMode,
     disableDeposit,
     disableWithdrawal
@@ -782,7 +789,7 @@ export function TransferPanel() {
           {isDepositMode ? (
             <Button
               variant="primary"
-              loading={transferring}
+              loading={isTransferring}
               disabled={isSwitchingL2Chain || disableDepositV2}
               onClick={() => {
                 if (selectedToken) {
@@ -801,7 +808,7 @@ export function TransferPanel() {
           ) : (
             <Button
               variant="primary"
-              loading={transferring}
+              loading={isTransferring}
               disabled={isSwitchingL2Chain || disableWithdrawalV2}
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
