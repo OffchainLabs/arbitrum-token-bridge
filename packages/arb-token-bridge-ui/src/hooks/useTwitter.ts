@@ -12,7 +12,7 @@ const useTwitter = () => {
       .split(' ')
       .join('%20')
   const handleClick = () => {
-    window.open('https://twi' + `tter.com/intent/tweet?text=${text}`)
+    window.open(`https://twitter.com/intent/tweet?text=${text}`)
   }
   return handleClick
 }

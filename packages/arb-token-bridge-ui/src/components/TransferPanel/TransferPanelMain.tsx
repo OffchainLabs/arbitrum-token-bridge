@@ -369,7 +369,7 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, history])
+  }, [isConnectedToArbitrum, externalFrom, externalTo, history, setQueryParams])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
