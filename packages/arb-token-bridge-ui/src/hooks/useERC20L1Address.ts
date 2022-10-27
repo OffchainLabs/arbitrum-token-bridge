@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 import { getL1ERC20Address } from 'token-bridge-sdk'
 
 /**
@@ -16,7 +16,7 @@ const useERC20L1Address = ({
   eitherL1OrL2Address: string
   l2Provider: Provider
 }) => {
-  const { data = null, isValidating } = useSWR(
+  const { data = null, isValidating } = useSWRImmutable(
     ['useERC20L1Address', eitherL1OrL2Address],
     async () => {
       const address =
