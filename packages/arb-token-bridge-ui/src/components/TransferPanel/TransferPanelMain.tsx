@@ -504,7 +504,7 @@ export function TransferPanelMain({
                   (from.chainID === ChainId.ArbitrumOne &&
                     option.chainID === ChainId.ArbitrumNova),
             // That's the only possible tooltip combination
-            disabledTooltip: 'One<>Nova bridge is currently disabled'
+            disabledTooltip: "One<>Nova transfers aren't enabled yet"
           }
         })
     }
