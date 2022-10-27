@@ -11,17 +11,19 @@ import { getL1ERC20Address } from 'token-bridge-sdk'
  */
 const useERC20L1Address = ({
   eitherL1OrL2Address,
-  provider
+  l2Provider
 }: {
   eitherL1OrL2Address: string
-  provider: Provider
+  l2Provider: Provider
 }) => {
   const { data = null, isValidating } = useSWR(
-    eitherL1OrL2Address,
+    ['useERC20L1Address', eitherL1OrL2Address],
     async () => {
       const address =
-        (await getL1ERC20Address(eitherL1OrL2Address, provider)) ||
-        eitherL1OrL2Address
+        (await getL1ERC20Address({
+          erc20L2Address: eitherL1OrL2Address,
+          l2Provider
+        })) ?? eitherL1OrL2Address
       return address.toLowerCase()
     },
     {

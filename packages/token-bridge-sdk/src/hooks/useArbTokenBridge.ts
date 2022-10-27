@@ -839,17 +839,16 @@ export const useArbTokenBridge = (
   }
 
   async function addToken(erc20L1orL2Address: string) {
-    console.error('ADD')
     let l1Address: string
     let l2Address: string | undefined
     let l1TokenBalance: BigNumber | null = null
     let l2TokenBalance: BigNumber | null = null
 
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
-    const maybeL1Address = await getL1ERC20Address(
-      lowercasedErc20L1orL2Address,
-      l2.provider
-    )
+    const maybeL1Address = await getL1ERC20Address({
+      erc20L2Address: lowercasedErc20L1orL2Address,
+      l2Provider: l2.provider
+    })
 
     if (maybeL1Address) {
       // looks like l2 address was provided

@@ -64,7 +64,7 @@ export function TokenImportDialog({
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: address,
-    provider: l2.provider
+    l2Provider: l2.provider
   })
 
   const modalTitle = useMemo(() => {
