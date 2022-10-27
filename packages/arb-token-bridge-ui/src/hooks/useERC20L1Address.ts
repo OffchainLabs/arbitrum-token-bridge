@@ -27,10 +27,7 @@ const useERC20L1Address = ({
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
-      errorRetryInterval: 1_000,
-      revalidateOnMount: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false
+      errorRetryInterval: 1_000
     }
   )
 
