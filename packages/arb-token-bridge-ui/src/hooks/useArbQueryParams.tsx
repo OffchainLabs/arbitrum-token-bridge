@@ -46,15 +46,39 @@ export const useArbQueryParams = () => {
 const isMax = (amount: string | undefined) =>
   amount?.toLowerCase() === AmountQueryParamEnum.MAX
 
+/**
+ * Sanitise amount value
+ * @param amount - transfer amount value from the input field or from the URL
+ * @returns sanitised value
+ */
 const sanitizeAmountQueryParam = (amount: string) => {
+  // no need to process empty string
+  if (amount.length === 0) {
+    return amount
+  }
+
   // to catch strings like `amount=asdf` from the URL
   if (isNaN(Number(amount))) {
     // return original string if the string is `max` (case-insensitive)
+    // it doesn't show on the input[type=number] field because it isn't in the allowed chars
     return isMax(amount) ? amount : ''
   }
+
   // to reach here they must be a number
   // check for negative sign at first char
-  return amount[0] === '-' ? String(Math.abs(Number(amount))) : amount
+  if (amount[0] === '-') {
+    return String(Math.abs(Number(amount)))
+  }
+
+  // add 0 to values starting with .
+  if (amount[0] === '.') {
+    return `0${amount}`
+  }
+
+  // replace leading zeros
+  // this regex finds 1 or more 0s before any digits including 0
+  // but the digits are not captured into the result string
+  return amount.replace(/^0+(?=\d)/, '')
 }
 
 // Our custom query param type for Amount field - will be parsed and returned as a string,
