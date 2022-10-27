@@ -3,6 +3,7 @@ import { Disclosure, Popover } from '@headlessui/react'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
+import { ChevronDownIcon } from '@heroicons/react/outline'
 
 export type HeaderMenuItem = {
   title: string
@@ -20,8 +21,12 @@ export function HeaderMenuDesktop(
   return (
     <Popover as="div" className="relative inline-block text-left">
       <div>
-        <Popover.Button className="arb-hover hidden rounded-md text-base text-white lg:inline-flex">
+        <Popover.Button className="arb-hover hidden items-center rounded-md text-base text-white lg:inline-flex lg:p-1">
           {props.children}
+
+          {props.items?.length && (
+            <ChevronDownIcon className="ml-1 h-4 w-4 shrink-0 grow-0 text-white" />
+          )}
         </Popover.Button>
       </div>
 
@@ -81,7 +86,9 @@ export function HeaderMenuMobile(
       {({ open }) => (
         <div className="w-full">
           <Disclosure.Button
-            className={`arb-hover w-full py-3 ${open && `bg-white`}`}
+            className={`arb-hover flex w-full items-center justify-center py-3 ${
+              open && `bg-white`
+            }`}
           >
             <span
               className={`text-2xl font-medium text-white ${
@@ -90,6 +97,10 @@ export function HeaderMenuMobile(
             >
               {props.children}
             </span>
+
+            {props.items?.length && (
+              <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 grow-0 text-white" />
+            )}
           </Disclosure.Button>
           <Disclosure.Panel>
             <ul className="space-y-4 pt-4 pb-8">
