@@ -66,12 +66,12 @@ const sanitizeAmountQueryParam = (amount: string) => {
 
   // to reach here they must be a number
   // check for negative sign at first char
-  if (amount[0] === '-') {
+  if (amount.startsWith('-')) {
     return String(Math.abs(Number(amount)))
   }
 
   // add 0 to values starting with .
-  if (amount[0] === '.') {
+  if (amount.startsWith('.')) {
     return `0${amount}`
   }
 
