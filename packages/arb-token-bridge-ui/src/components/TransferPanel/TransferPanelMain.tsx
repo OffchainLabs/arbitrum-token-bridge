@@ -516,7 +516,7 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
-            const { isEthereum } = isNetwork(network)
+            const { isEthereum } = isNetwork(network.chainID)
 
             // Selecting the same chain or L1 network
             if (from.chainID === network.chainID || isEthereum) {
@@ -549,7 +549,7 @@ export function TransferPanelMain({
               return
             }
 
-            const { isEthereum } = isNetwork(network)
+            const { isEthereum } = isNetwork(network.chainID)
 
             // Switch networks if selecting L1 network
             if (isEthereum) {
@@ -590,7 +590,7 @@ export function TransferPanelMain({
             return
           }
 
-          const { isEthereum } = isNetwork(network)
+          const { isEthereum } = isNetwork(network.chainID)
 
           // Switch networks if selecting L1 network
           if (isEthereum) {
@@ -614,8 +614,8 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereum } = isNetwork(network)
-          
+          const { isEthereum } = isNetwork(network.chainID)
+
           // Selecting the same chain or L1 network
           if (to.chainID === network.chainID || isEthereum) {
             return
