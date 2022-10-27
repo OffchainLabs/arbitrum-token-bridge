@@ -243,7 +243,6 @@ export interface ArbTokenBridgeToken {
     id: string
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
-  getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
   getL2GatewayAddress: (erc20L1Address: string) => Promise<string>
 }

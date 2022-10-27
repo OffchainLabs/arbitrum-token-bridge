@@ -20,6 +20,7 @@ import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transa
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
+import { getL1ERC20Address } from '../util/getL1ERC20Address'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   AddressToSymbol,
@@ -176,21 +177,6 @@ export const useArbTokenBridge = (
 
   async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
     return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider)
-  }
-
-  /**
-   * Retrieves the L1 address of an ERC-20 token using its L2 address.
-   * @param erc20L2Address
-   * @returns
-   */
-  async function getL1ERC20Address(
-    erc20L2Address: string
-  ): Promise<string | null> {
-    try {
-      return await erc20Bridger.getL1ERC20Address(erc20L2Address, l2.provider)
-    } catch (error) {
-      return null
-    }
   }
 
   /**
@@ -853,13 +839,17 @@ export const useArbTokenBridge = (
   }
 
   async function addToken(erc20L1orL2Address: string) {
+    console.error('ADD')
     let l1Address: string
     let l2Address: string | undefined
     let l1TokenBalance: BigNumber | null = null
     let l2TokenBalance: BigNumber | null = null
 
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
-    const maybeL1Address = await getL1ERC20Address(lowercasedErc20L1orL2Address)
+    const maybeL1Address = await getL1ERC20Address(
+      lowercasedErc20L1orL2Address,
+      l2.provider
+    )
 
     if (maybeL1Address) {
       // looks like l2 address was provided
@@ -909,6 +899,7 @@ export const useArbTokenBridge = (
       l2Address,
       decimals
     }
+
     setBridgeTokens(oldBridgeTokens => {
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
@@ -1493,7 +1484,6 @@ export const useArbTokenBridge = (
       withdraw: withdrawToken,
       withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken,
-      getL1ERC20Address,
       getL2ERC20Address,
       getL2GatewayAddress
     },
