@@ -103,11 +103,7 @@ const AppContent = (): JSX.Element => {
   }, [l1.network])
 
   if (isRinkeby || isArbitrumRinkeby) {
-    return (
-      <Alert type="red">
-        Rinkeby has been deprecated. Please use Goerli instead.
-      </Alert>
-    )
+    return <Notifications />
   }
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {

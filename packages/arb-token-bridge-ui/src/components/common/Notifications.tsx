@@ -40,12 +40,7 @@ function ArbitrumBetaNotification() {
 function RinkebyTestnetNotification() {
   return (
     <Notification>
-      <ExternalLink
-        href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
-        className="arb-hover underline"
-      >
-        What is Rinkeby Testnet?
-      </ExternalLink>
+      Rinkeby has been deprecated. Please use Goerli instead.
     </Notification>
   )
 }
