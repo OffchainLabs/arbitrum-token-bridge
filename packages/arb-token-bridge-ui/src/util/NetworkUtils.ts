@@ -54,8 +54,9 @@ export type SwitchChainProps = {
 const noop = () => {}
 
 const isSwitchChainSupported = (provider: Web3Provider) =>
+  provider?.provider &&
   //@ts-ignore
-  provider && (provider.isMetaMask || provider.isImToken)
+  (provider.provider.isMetaMask || provider.provider.isImToken)
 
 // typescript issue here
 const onSwitchChainNotSupported = (
