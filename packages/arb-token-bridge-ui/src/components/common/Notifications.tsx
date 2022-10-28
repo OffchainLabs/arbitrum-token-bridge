@@ -40,7 +40,13 @@ function ArbitrumBetaNotification() {
 function RinkebyTestnetNotification() {
   return (
     <Notification>
-      Rinkeby has been deprecated. Please use Goerli instead.
+      Rinkeby is being deprecated. Please use Goerli instead.{' '}
+      <ExternalLink
+        href="https://medium.com/offchainlabs/new-g%C3%B6rli-testnet-and-getting-rinkeby-ready-for-nitro-3ff590448053"
+        className="arb-hover underline"
+      >
+        Learn more.
+      </ExternalLink>
     </Notification>
   )
 }
