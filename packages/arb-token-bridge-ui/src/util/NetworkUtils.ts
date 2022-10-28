@@ -1,4 +1,3 @@
-import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { hexValue } from 'ethers/lib/utils'
 import { ChainId, getNetworkName, rpcURLs, getExplorerUrl } from './networks'
 import { BigNumber } from 'ethers'
@@ -6,11 +5,12 @@ import { Web3Provider } from '@ethersproject/providers'
 import EthereumLogo from '../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
+import { UseNetworksAndSignersConnectedResult } from '../hooks/useNetworksAndSigners'
 
 /* 
   The list which will be available for network selection in navbar-dropdowns
  */
-export const networkSelectionList = [
+export const supportedNetworks = [
   ChainId.ArbitrumOne,
   ChainId.ArbitrumNova,
   ChainId.Mainnet
@@ -52,32 +52,46 @@ export type SwitchChainProps = {
 }
 
 const noop = () => {}
+
+const isSwitchChainSupported = (provider: Web3Provider) =>
+  //@ts-ignore
+  provider && (provider.isMetaMask || provider.isImToken)
+
+// typescript issue here
+const onSwitchChainNotSupported = (
+  chainId: ChainId,
+  networksAndSigners: UseNetworksAndSignersConnectedResult
+) => {
+  // if no `wallet_switchEthereumChain` support
+  const networkName = getNetworkName(chainId)
+
+  console.log(
+    'Not sure if current provider supports wallet_switchEthereumChain'
+  )
+  // TODO: show user a nice dialogue box instead of
+  // eslint-disable-next-line no-alert
+  const targetTxName = networksAndSigners.isConnectedToArbitrum
+    ? 'deposit'
+    : 'withdraw'
+
+  alert(
+    `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
+  )
+  // TODO: reset state so user can attempt to press "Deposit" again
+}
+
 export async function switchChain({
   chainId,
   provider,
   onSuccess = noop,
   onError = noop,
-  onSwitchChainNotSupported
+  onSwitchChainNotSupported = noop
 }: SwitchChainProps) {
-  // first check if it is a valid network
-  let network
-  try {
-    network = await getL2Network(chainId)
-  } catch {
-    network = await getL1Network(chainId)
-  }
-  if (!network) return
+  if (isSwitchChainSupported(provider)) {
+    // if all the above conditions are satisfied go ahead and switch the network
+    const hexChainId = hexValue(BigNumber.from(chainId))
+    const networkName = getNetworkName(chainId)
 
-  // then check if the onSwitchChainNotSupported is passed, that means the switching is not supported
-  if (typeof onSwitchChainNotSupported === 'function') {
-    return onSwitchChainNotSupported()
-  }
-
-  // if all the above conditions are satisfied go ahead and switch the network
-  const hexChainId = hexValue(BigNumber.from(chainId))
-  const networkName = getNetworkName(chainId)
-
-  if (provider) {
     console.log('Attempting to switch to chain', chainId)
     try {
       await provider.send('wallet_switchEthereumChain', [
@@ -111,10 +125,6 @@ export async function switchChain({
       }
     }
   } else {
-    // if no `wallet_switchEthereumChain` support
-    console.log(
-      'Not sure if current provider supports wallet_switchEthereumChain'
-    )
-    onError?.()
+    onSwitchChainNotSupported?.()
   }
 }

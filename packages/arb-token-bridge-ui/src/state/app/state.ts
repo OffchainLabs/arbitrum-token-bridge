@@ -21,9 +21,6 @@ import {
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
-import { ChainId } from '../../util/networks'
-import { Web3Provider } from '@ethersproject/providers'
-import { ChangeNetworkProps } from '../../components/App/App'
 
 export enum WhiteListState {
   VERIFYING,
@@ -125,14 +122,6 @@ export type AppState = {
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
-
-  changeNetwork:
-    | (({
-        chainId,
-        onSuccess,
-        onError
-      }: ChangeNetworkProps) => Promise<void>)
-    | null
 }
 
 export const defaultState: AppState = {
@@ -252,8 +241,7 @@ export const defaultState: AppState = {
     )
   }),
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
-  arbTokenBridgeLoaded: false,
-  changeNetwork: null
+  arbTokenBridgeLoaded: false
 }
 export const state: AppState = {
   ...defaultState

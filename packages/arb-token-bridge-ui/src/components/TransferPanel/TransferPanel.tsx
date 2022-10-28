@@ -40,6 +40,7 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import { switchChain } from '../../util/NetworkUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -90,7 +91,6 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      changeNetwork,
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
@@ -339,9 +339,10 @@ export function TransferPanel() {
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await changeNetwork?.({
+          await switchChain({
             chainId: latestNetworksAndSigners.current.l1.network
-              .chainID as ChainId
+              .chainID as ChainId,
+            provider: latestConnectedProvider.current!
           })
 
           while (
@@ -447,9 +448,10 @@ export function TransferPanel() {
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await changeNetwork?.({
+          await switchChain({
             chainId: latestNetworksAndSigners.current.l2.network
-              .chainID as ChainId
+              .chainID as ChainId,
+            provider: latestConnectedProvider.current!
           })
 
           while (

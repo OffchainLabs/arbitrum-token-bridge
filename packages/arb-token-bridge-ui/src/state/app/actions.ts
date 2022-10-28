@@ -3,7 +3,6 @@ import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
-import { ChangeNetworkProps } from '../../components/App/App'
 
 export const setConnectionState = (
   { state }: Context,
@@ -32,13 +31,6 @@ export const setSelectedToken = (
   token: ERC20BridgeToken | null
 ) => {
   state.app.selectedToken = token ? { ...token } : null
-}
-
-export const setChangeNetwork = (
-  { state }: Context,
-  func: ({ chainId, onSuccess, onError }: ChangeNetworkProps) => Promise<void>
-) => {
-  state.app.changeNetwork = func
 }
 
 export const reset = ({ state }: Context, newChainId: number) => {

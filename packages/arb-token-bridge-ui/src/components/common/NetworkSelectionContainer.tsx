@@ -1,10 +1,10 @@
 import { useWallet } from '@arbitrum/use-wallet'
+import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
-import { useAppState } from '../../state'
 import { ChainId, getNetworkName } from '../../util/networks'
 import {
   networkStyleMap,
-  networkSelectionList,
+  supportedNetworks,
   switchChain
 } from '../../util/NetworkUtils'
 
@@ -16,17 +16,6 @@ export const NetworkSelectionContainer = ({
   filterNetworks?: (networkId: ChainId) => boolean
 }) => {
   const { provider } = useWallet()
-  const { app } = useAppState()
-
-  const changeNetwork = async (chainId: ChainId) => {
-    if (app.changeNetwork) {
-      // if the rich app-injected version of changeNetwork is present, use that.
-      await app.changeNetwork({ chainId })
-    } else {
-      // else use the basic network switching logic
-      await switchChain({ chainId, provider: provider! })
-    }
-  }
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -36,14 +25,14 @@ export const NetworkSelectionContainer = ({
 
       <Transition>
         <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:mt-4 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
-          {networkSelectionList
+          {supportedNetworks
             .filter(chainId => filterNetworks?.(chainId) || true)
             .map(chainId => (
               <div
                 key={chainId}
                 className="flex h-12 cursor-pointer flex-nowrap items-center justify-center space-x-3 px-4 font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:justify-start lg:font-normal lg:text-dark"
                 onClick={() => {
-                  changeNetwork(chainId)
+                  switchChain({ chainId, provider: provider as Web3Provider })
                 }}
               >
                 <div className="flex h-8 w-8 items-center justify-center">

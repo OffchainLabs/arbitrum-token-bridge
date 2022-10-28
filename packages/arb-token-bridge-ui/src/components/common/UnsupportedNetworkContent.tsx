@@ -1,26 +1,15 @@
 import { useWallet } from '@arbitrum/use-wallet'
-import { useAppState } from '../../state'
-import { ChainId, getNetworkName } from '../../util/networks'
+import { Web3Provider } from '@ethersproject/providers'
+import { getNetworkName } from '../../util/networks'
 import {
   networkStyleMap,
-  networkSelectionList,
+  supportedNetworks,
   switchChain
 } from '../../util/NetworkUtils'
 import { Button } from './Button'
 
 export const UnsupportedNetworkContent = () => {
   const { provider } = useWallet()
-  const { app } = useAppState()
-
-  const changeNetwork = async (chainId: ChainId) => {
-    if (app.changeNetwork) {
-      // if the rich app-injected version of changeNetwork is present, use that.
-      await app.changeNetwork({ chainId })
-    } else {
-      // else use the basic network switching logic
-      await switchChain({ chainId, provider: provider! })
-    }
-  }
 
   return (
     <div className="flex flex-col items-center space-y-8 py-24 px-12">
@@ -30,11 +19,11 @@ export const UnsupportedNetworkContent = () => {
         </span>
       </div>
 
-      {networkSelectionList.map(chainId => (
+      {supportedNetworks.map(chainId => (
         <Button
           variant="primary"
           onClick={() => {
-            changeNetwork(chainId)
+            switchChain({ chainId, provider: provider as Web3Provider })
           }}
           key={chainId}
           className={`text-md ${networkStyleMap?.[chainId]?.['btnThemeClass']} w-6/12 py-3`}
