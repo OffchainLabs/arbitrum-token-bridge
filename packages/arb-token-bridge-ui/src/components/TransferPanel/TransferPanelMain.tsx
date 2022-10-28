@@ -526,7 +526,7 @@ export function TransferPanelMain({
             }
 
             try {
-              await app.changeNetwork?.(network)
+              await app.changeNetwork?.({ chainId: network.chainID })
               updatePreferredL2Chain(network.chainID)
 
               // If L2 selected, change to withdraw mode and set new selections
@@ -627,7 +627,7 @@ export function TransferPanelMain({
 
           // Destination network is L2, connect to L1
           try {
-            await app.changeNetwork?.(l1.network)
+            await app.changeNetwork?.({chainId: l1.network.chainID})
             updatePreferredL2Chain(network.chainID)
 
             // Change to withdraw mode and set new selections
