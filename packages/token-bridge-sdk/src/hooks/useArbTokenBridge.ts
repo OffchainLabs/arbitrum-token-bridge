@@ -19,6 +19,7 @@ import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transa
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
+import { getL1ERC20Address } from '../util/getL1ERC20Address'
 import {
   AddressToSymbol,
   AddressToDecimals,
@@ -101,8 +102,8 @@ export const useArbTokenBridge = (
 ): ArbTokenBridge => {
   const { walletAddress, l1, l2 } = params
   const [bridgeTokens, setBridgeTokens] = useState<
-    ContractStorage<ERC20BridgeToken>
-  >({})
+    ContractStorage<ERC20BridgeToken> | undefined
+  >(undefined)
 
   const {
     eth: [, updateEthL1Balance]
@@ -167,21 +168,6 @@ export const useArbTokenBridge = (
   }
 
   /**
-   * Retrieves the L1 address of an ERC-20 token using its L2 address.
-   * @param erc20L2Address
-   * @returns
-   */
-  async function getL1ERC20Address(
-    erc20L2Address: string
-  ): Promise<string | null> {
-    try {
-      return await erc20Bridger.getL1ERC20Address(erc20L2Address, l2.provider)
-    } catch (error) {
-      return null
-    }
-  }
-
-  /**
    * Retrieves the L2 address of an ERC-20 token using its L1 address.
    * @param erc20L1Address
    * @returns
@@ -223,6 +209,10 @@ export const useArbTokenBridge = (
       const txReceipt = await tx.wait()
 
       const [ethDepositMessage] = await txReceipt.getEthDeposits(l2.provider)
+
+      if (!ethDepositMessage) {
+        return
+      }
 
       if (isTxSuccessful(txReceipt)) {
         if (txLifecycle?.onL1TxSuccess) {
@@ -308,6 +298,10 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventResult = l2ToL1Events[0]
+
+        if (!l2ToL1EventResult) {
+          return
+        }
 
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
 
@@ -423,6 +417,9 @@ export const useArbTokenBridge = (
     txLifecycle?: TokenContractTransactionLifecycle
   }) => {
     try {
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
       const bridgeToken = bridgeTokens[erc20L1Address]
       if (!bridgeToken) throw new Error('Bridge token not found')
       const { l2Address } = bridgeToken
@@ -484,6 +481,9 @@ export const useArbTokenBridge = (
       const txReceipt = await tx.wait()
 
       const [l1ToL2Msg] = await txReceipt.getL1ToL2Messages(l2.provider)
+      if (!l1ToL2Msg) {
+        return
+      }
 
       if (isTxSuccessful(txReceipt)) {
         if (txLifecycle?.onL1TxSuccess) {
@@ -587,6 +587,9 @@ export const useArbTokenBridge = (
     txLifecycle?: WithdrawTransactionLifecycle
   }) {
     try {
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
       const bridgeToken = bridgeTokens[erc20L1Address]
 
       const { symbol, decimals } = await (async () => {
@@ -630,6 +633,11 @@ export const useArbTokenBridge = (
 
       if (l2ToL1Events.length === 1) {
         const l2ToL1EventDataResult = l2ToL1Events[0]
+
+        if (!l2ToL1EventDataResult) {
+          return
+        }
+
         const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
@@ -746,7 +754,12 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID].tokenAddress
+        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+
+        if (!l1Address) {
+          return
+        }
+
         bridgeTokensToAdd[l1Address] = {
           name,
           type: TokenType.ERC20,
@@ -761,7 +774,7 @@ export const useArbTokenBridge = (
       // save potentially unbridged L1 tokens:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
       else if (arbTokenList.tokens.length < 1000) {
-        const l1Address = address
+        const l1Address = address.toLowerCase()
         candidateUnbridgedTokensToAdd.push({
           name,
           type: TokenType.ERC20,
@@ -804,7 +817,10 @@ export const useArbTokenBridge = (
     let l2TokenBalance: BigNumber | null = null
 
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
-    const maybeL1Address = await getL1ERC20Address(lowercasedErc20L1orL2Address)
+    const maybeL1Address = await getL1ERC20Address({
+      erc20L2Address: lowercasedErc20L1orL2Address,
+      l2Provider: l2.provider
+    })
 
     if (maybeL1Address) {
       // looks like l2 address was provided
@@ -846,20 +862,21 @@ export const useArbTokenBridge = (
       throw new TokenDisabledError('Token currently disabled')
     }
 
-    bridgeTokensToAdd[l1Address] = {
+    bridgeTokensToAdd[l1Address.toLowerCase()] = {
       name,
       type: TokenType.ERC20,
       symbol,
-      address: l1Address,
+      address: l1Address.toLowerCase(),
       l2Address,
       decimals
     }
+
     setBridgeTokens(oldBridgeTokens => {
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
     setErc20Balances(oldBridgeBalances => {
       const newBal = {
-        [l1Address]: {
+        [l1Address.toLowerCase()]: {
           balance: l1TokenBalance,
           arbChainBalance: l2TokenBalance
         }
@@ -894,6 +911,9 @@ export const useArbTokenBridge = (
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
       const bridgeToken = bridgeTokens[l1Address]
       if (!bridgeToken) {
         return
@@ -946,7 +966,7 @@ export const useArbTokenBridge = (
     })
     const l1Balances = l1Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l1AddressesBalances[index].balance
+      balance: l1AddressesBalances[index]?.balance ?? constants.Zero
     }))
 
     const l2Addresses = l1Addresses
@@ -959,7 +979,7 @@ export const useArbTokenBridge = (
     })
     const l2Balances = l2Addresses.map((address: string, index: number) => ({
       tokenAddr: address,
-      balance: l2AddressesBalances[index].balance
+      balance: l2AddressesBalances[index]?.balance ?? constants.Zero
     }))
 
     const l2AddressToBalanceMap: {
@@ -1004,7 +1024,7 @@ export const useArbTokenBridge = (
   }) => {
     const event = pendingWithdrawalsMap[id]
 
-    if (!pendingWithdrawalsMap[id]) {
+    if (!event) {
       throw new Error('Outbox message not found')
     }
 
@@ -1025,8 +1045,12 @@ export const useArbTokenBridge = (
         addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          newPendingWithdrawalsMap[id].outgoingMessageState =
-            OutgoingMessageState.EXECUTED
+          const pendingWithdrawal = newPendingWithdrawalsMap[id]
+          if (pendingWithdrawal) {
+            pendingWithdrawal.outgoingMessageState =
+              OutgoingMessageState.EXECUTED
+          }
+
           return newPendingWithdrawalsMap
         })
       } else {
@@ -1074,8 +1098,12 @@ export const useArbTokenBridge = (
         addToExecutedMessagesCache([event])
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
           const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          newPendingWithdrawalsMap[id].outgoingMessageState =
-            OutgoingMessageState.EXECUTED
+          const pendingWithdrawal = newPendingWithdrawalsMap[id]
+          if (pendingWithdrawal) {
+            pendingWithdrawal.outgoingMessageState =
+              OutgoingMessageState.EXECUTED
+          }
+
           return newPendingWithdrawalsMap
         })
       } else {
@@ -1093,8 +1121,9 @@ export const useArbTokenBridge = (
   const getTokenSymbol = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
 
-    if (addressToSymbol[l1Address]) {
-      return addressToSymbol[l1Address]
+    const l1Symbol = addressToSymbol[l1Address]
+    if (l1Symbol) {
+      return l1Symbol
     }
 
     try {
@@ -1116,8 +1145,9 @@ export const useArbTokenBridge = (
   const getTokenDecimals = async (_l1Address: string) => {
     const l1Address = _l1Address.toLocaleLowerCase()
 
-    if (addressToDecimals[l1Address]) {
-      return addressToDecimals[l1Address]
+    const l1Decimals = addressToDecimals[l1Address]
+    if (l1Decimals) {
+      return l1Decimals
     }
 
     try {
@@ -1174,7 +1204,7 @@ export const useArbTokenBridge = (
 
   async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     result: WithdrawalInitiated
-  ): Promise<L2ToL1EventResultPlus> {
+  ): Promise<L2ToL1EventResultPlus | undefined> {
     const symbol = await getTokenSymbol(result.l1Token)
     const decimals = await getTokenDecimals(result.l1Token)
 
@@ -1183,6 +1213,11 @@ export const useArbTokenBridge = (
 
     // TODO: length != 1
     const [event] = l2TxReceipt.getL2ToL1Events()
+
+    if (!event) {
+      return undefined
+    }
+
     const outgoingMessageState = await getOutgoingMessageState(event)
 
     return {
@@ -1312,7 +1347,9 @@ export const useArbTokenBridge = (
           mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
         )
       ])
-    ).sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+    )
+      .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
+      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
     console.log(
       `*** done getting pending withdrawals, took ${
@@ -1402,7 +1439,6 @@ export const useArbTokenBridge = (
       withdraw: withdrawToken,
       withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken,
-      getL1ERC20Address,
       getL2ERC20Address,
       getL2GatewayAddress
     },

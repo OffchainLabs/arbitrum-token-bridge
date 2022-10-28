@@ -17,7 +17,12 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getBlockTime,
+  getConfirmPeriodBlocks,
+  getNetworkName,
+  isNetwork
+} from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
 
 const SECONDS_IN_DAY = 86400
@@ -64,7 +69,7 @@ export function WithdrawalConfirmationDialog(
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
-    l1.network.blockTime * l2.network.confirmPeriodBlocks
+    getBlockTime(l1.network.chainID) * getConfirmPeriodBlocks(l2.network.chainID)
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
   const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
@@ -79,7 +84,7 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  const { isArbitrumOne } = isNetwork(l2.network)
+  const { isArbitrumOne } = isNetwork(l2.network.chainID)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)

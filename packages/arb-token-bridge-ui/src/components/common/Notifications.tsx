@@ -73,7 +73,7 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network)
+  const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network.chainID)
 
   return (
     <NotificationContainer>

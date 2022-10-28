@@ -318,7 +318,6 @@ export interface ArbTokenBridgeToken {
     l1Signer: Signer
     txLifecycle?: TriggerOutboxTransactionLifecycle
   }) => Promise<void | ContractReceipt>
-  getL1ERC20Address: (erc20L2Address: string) => Promise<string | null>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
   getL2GatewayAddress: (erc20L1Address: string) => Promise<string>
 }
@@ -352,7 +351,7 @@ export interface TransactionActions {
 
 export interface ArbTokenBridge {
   walletAddress: string
-  bridgeTokens: ContractStorage<ERC20BridgeToken>
+  bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   balances: ArbTokenBridgeBalances
   cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
