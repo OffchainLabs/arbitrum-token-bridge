@@ -13,9 +13,10 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
-import { ChainId, getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl } from '../../util/networks'
 
 enum ImportStatus {
   LOADING,
@@ -62,6 +63,10 @@ export function TokenImportDialog({
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
+  const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
+    eitherL1OrL2Address: address,
+    l2Provider: l2.provider
+  })
 
   const modalTitle = useMemo(() => {
     switch (status) {
@@ -83,57 +88,32 @@ export function TokenImportDialog({
     }
   }, [status])
 
-  const isLoadingBridgeTokens = useMemo(() => {
-    if (typeof bridgeTokens === 'undefined') {
-      return true
+  const getL1TokenDataFromL1Address = useCallback(async () => {
+    if (!l1Address) {
+      return
     }
 
-    if (Object.keys(bridgeTokens).length === 0) {
-      // We currently don't have a token list for Arbitrum Goerli
-      if (l2.network.chainID === ChainId.ArbitrumGoerli) {
-        return false
-      }
-
-      return true
-    }
-
-    return false
-  }, [bridgeTokens, l2.network])
-
-  const getL1TokenDataFromL1OrL2Address = useCallback(
-    async (eitherL1OrL2Address: string) => {
-      if (typeof token === 'undefined') {
-        return
-      }
-
-      const addressOnL1 = await token.getL1ERC20Address(eitherL1OrL2Address)
-
-      if (addressOnL1) {
-        return getL1TokenData({
-          account: walletAddress,
-          erc20L1Address: addressOnL1,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
-        })
-      } else {
-        return getL1TokenData({
-          account: walletAddress,
-          erc20L1Address: eitherL1OrL2Address,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
-        })
-      }
-    },
-    [l1, l2, walletAddress, token]
-  )
+    return getL1TokenData({
+      account: walletAddress,
+      erc20L1Address: l1Address,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
+  }, [l1, l2, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
       // We found the token in an imported list
-      if (typeof latestBridgeTokens.current[erc20L1Address] !== 'undefined') {
+      const currentBridgeTokens = latestBridgeTokens.current
+      if (typeof currentBridgeTokens === 'undefined') {
+        return { found: false }
+      }
+
+      const l1Token = currentBridgeTokens[erc20L1Address]
+      if (typeof l1Token !== 'undefined') {
         return {
           found: true,
-          token: latestBridgeTokens.current[erc20L1Address]!,
+          token: l1Token,
           status: ImportStatus.KNOWN
         }
       }
@@ -171,47 +151,48 @@ export function TokenImportDialog({
       return
     }
 
-    if (isLoadingBridgeTokens) {
+    if (typeof bridgeTokens === 'undefined') {
       return
     }
 
-    const searchResult1 = searchForTokenInLists(address)
-
-    if (searchResult1.found) {
-      setStatus(searchResult1.status)
-      setTokenToImport(searchResult1.token)
-
+    if (!isL1AddressLoading && !l1Address) {
+      setStatus(ImportStatus.ERROR)
       return
+    }
+
+    if (l1Address) {
+      const searchResult1 = searchForTokenInLists(l1Address)
+
+      if (searchResult1.found) {
+        setStatus(searchResult1.status)
+        setTokenToImport(searchResult1.token)
+
+        return
+      }
     }
 
     // Can't find the address provided, so we look further
-    getL1TokenDataFromL1OrL2Address(address)
+    getL1TokenDataFromL1Address()
       .then(data => {
-        if (data) {
-          const addressOnL1 = data.contract.address.toLowerCase()
-          const searchResult2 = searchForTokenInLists(addressOnL1)
-
-          if (searchResult2.found) {
-            // The address provided was an L2 address, and we found the corresponding L1 address within our lists
-            setStatus(searchResult2.status)
-            setTokenToImport(searchResult2.token)
-          } else {
-            // We couldn't find the address within our lists
-            setStatus(ImportStatus.UNKNOWN)
-            setTokenToImport(toERC20BridgeToken(data))
-          }
+        if (!data) {
+          return
         }
+
+        // We couldn't find the address within our lists
+        setStatus(ImportStatus.UNKNOWN)
+        setTokenToImport(toERC20BridgeToken(data))
       })
       .catch(() => {
         setStatus(ImportStatus.ERROR)
       })
   }, [
-    isOpen,
-    isLoadingBridgeTokens,
     address,
     bridgeTokens,
-    searchForTokenInLists,
-    getL1TokenDataFromL1OrL2Address
+    getL1TokenDataFromL1Address,
+    isL1AddressLoading,
+    isOpen,
+    l1Address,
+    searchForTokenInLists
   ])
 
   useEffect(() => {
@@ -219,7 +200,11 @@ export function TokenImportDialog({
       return
     }
 
-    const foundToken = tokensFromUser[address]
+    if (isL1AddressLoading && !l1Address) {
+      return
+    }
+
+    const foundToken = tokensFromUser[l1Address || address]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -230,7 +215,16 @@ export function TokenImportDialog({
       onClose(true)
       selectToken(foundToken)
     }
-  }, [isOpen, tokensFromUser, address, selectedToken, selectToken, onClose])
+  }, [
+    isL1AddressLoading,
+    address,
+    isOpen,
+    l1Address,
+    onClose,
+    selectToken,
+    selectedToken,
+    tokensFromUser
+  ])
 
   async function storeNewToken(newToken: string) {
     return token.add(newToken).catch((ex: Error) => {
@@ -243,19 +237,27 @@ export function TokenImportDialog({
   }
 
   function handleTokenImport() {
+    if (typeof bridgeTokens === 'undefined') {
+      return
+    }
+
     if (isImportingToken) {
       return
     }
 
     setIsImportingToken(true)
 
-    if (typeof bridgeTokens[address] !== 'undefined') {
+    if (!l1Address) {
+      return
+    }
+
+    if (typeof bridgeTokens[l1Address] !== 'undefined') {
       // Token is already added to the bridge
       onClose(true)
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
-      storeNewToken(address).catch(() => {
+      storeNewToken(l1Address).catch(() => {
         setStatus(ImportStatus.ERROR)
       })
     }
