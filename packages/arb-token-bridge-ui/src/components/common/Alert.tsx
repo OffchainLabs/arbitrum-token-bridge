@@ -17,7 +17,7 @@ const Alert = ({
 }) => {
   return (
     <div
-      className={`rounded-md bg-red-50 p-4 ${
+      className={`m-8 rounded-md bg-red-50 p-4 ${
         type === 'red'
           ? 'bg-red-50'
           : type === 'blue'

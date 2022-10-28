@@ -85,6 +85,7 @@ const AppContent = (): JSX.Element => {
   const {
     app: { connectionState }
   } = useAppState()
+  const { isRinkeby, isArbitrumRinkeby } = isNetwork(l1.network.chainID)
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network.chainID)
@@ -100,6 +101,14 @@ const AppContent = (): JSX.Element => {
 
     return { imageSrc: HeaderArbitrumLogoMainnet, className }
   }, [l1.network])
+
+  if (isRinkeby || isArbitrumRinkeby) {
+    return (
+      <Alert type="red">
+        Rinkeby has been deprecated. Please use Goerli instead.
+      </Alert>
+    )
+  }
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
