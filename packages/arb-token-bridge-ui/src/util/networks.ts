@@ -140,18 +140,21 @@ export function registerLocalNetwork() {
 }
 
 export function isNetwork(chainId: ChainId) {
+  const isArbitrum =
+    chainId === ChainId.ArbitrumOne ||
+    chainId === ChainId.ArbitrumNova ||
+    chainId === ChainId.ArbitrumGoerli ||
+    chainId === ChainId.ArbitrumRinkeby
+
   return {
     // L1
     isMainnet: chainId === ChainId.Mainnet,
+    isEthereum: !isArbitrum,
     // L1 Testnets
     isRinkeby: chainId === ChainId.Rinkeby,
     isGoerli: chainId === ChainId.Goerli,
     // L2
-    isArbitrum:
-      chainId === ChainId.ArbitrumOne ||
-      chainId === ChainId.ArbitrumNova ||
-      chainId === ChainId.ArbitrumGoerli ||
-      chainId === ChainId.ArbitrumRinkeby,
+    isArbitrum,
     isArbitrumOne: chainId === ChainId.ArbitrumOne,
     isArbitrumNova: chainId === ChainId.ArbitrumNova,
     // L2 Testnets
