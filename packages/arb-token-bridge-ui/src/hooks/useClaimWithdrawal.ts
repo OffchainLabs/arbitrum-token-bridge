@@ -1,11 +1,14 @@
 import { useCallback, useState } from 'react'
-import { AssetType, getUniqueIdOrHashFromEvent } from 'token-bridge-sdk'
+import {
+  AssetType,
+  getUniqueIdOrHashFromEvent,
+  TokenSymbol
+} from 'token-bridge-sdk'
 import { utils } from 'ethers'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { TokenSymbol } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void

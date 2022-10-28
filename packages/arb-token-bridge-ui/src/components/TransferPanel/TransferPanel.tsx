@@ -23,7 +23,7 @@ import {
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { ArbTokenBridge, AssetType } from 'token-bridge-sdk'
+import { ArbTokenBridge, AssetType, TokenSymbol } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -40,7 +40,6 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { TokenSymbol } from 'token-bridge-sdk/dist/hooks/arbTokenBridge.types'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
