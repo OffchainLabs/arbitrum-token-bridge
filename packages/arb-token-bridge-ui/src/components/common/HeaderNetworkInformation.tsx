@@ -37,7 +37,10 @@ export function HeaderNetworkInformation() {
   const networkName = getNetworkName(network.chainID)
 
   return (
-    <div className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 text-white lg:bg-dark lg:py-2">
+    <div
+      className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 text-white lg:bg-dark lg:py-2"
+      aria-label={`Selected Network : ${networkName}`}
+    >
       <div className="flex h-8 w-8 items-center justify-center">
         <img
           src={logoSrc}

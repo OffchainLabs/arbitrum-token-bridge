@@ -729,6 +729,9 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
+  const isTestingEnvironment = !!window.Cypress
+  
+
   return (
     <>
       <TokenApprovalDialog
@@ -746,7 +749,7 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <LowBalanceDialog {...lowBalanceDialogProps} />
+      {!isTestingEnvironment && <LowBalanceDialog {...lowBalanceDialogProps} />}
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <TransferPanelMain
