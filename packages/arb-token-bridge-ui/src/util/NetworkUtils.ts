@@ -5,22 +5,13 @@ import { Web3Provider } from '@ethersproject/providers'
 import EthereumLogo from '../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
-import { UseNetworksAndSignersConnectedResult } from '../hooks/useNetworksAndSigners'
 
 /* 
-  The list which will be available for network selection in navbar-dropdowns
- */
-export const supportedNetworks = [
-  ChainId.ArbitrumOne,
-  ChainId.ArbitrumNova,
-  ChainId.Mainnet
-]
-
-/* 
+  The list which will be available for network selection in navbar-dropdowns plus
   Icons and colors attached with our networks available for selection
 */
-export const networkStyleMap: {
-  [chainId: number]: { img: string; btnThemeClass: string }
+export const supportedNetworks: {
+  [key in ChainId]?: { img: string; btnThemeClass: string }
 } = {
   [ChainId.Mainnet]: {
     img: EthereumLogo,
@@ -35,13 +26,6 @@ export const networkStyleMap: {
     btnThemeClass: 'bg-brick-dark'
   }
 }
-
-/*
-  - A very basic variant of `changeNetwork` function present in App.tsx (which initializes after the app load)
-  - The original App-injected version requires a network connection already
-  - This lightweight function doesn't require a connected network - simply switches the metamask network
-  - But it doesn't support very rich business logic as well, like showing custom alerts if user is connected to `Arbitrum` or not
-*/
 
 export type SwitchChainProps = {
   chainId: ChainId
@@ -59,6 +43,7 @@ const isSwitchChainSupported = (provider: Web3Provider) =>
   (provider.provider.isMetaMask || provider.provider.isImToken)
 
 // typescript issue here
+/*
 const onSwitchChainNotSupported = (
   chainId: ChainId,
   networksAndSigners: UseNetworksAndSignersConnectedResult
@@ -66,9 +51,7 @@ const onSwitchChainNotSupported = (
   // if no `wallet_switchEthereumChain` support
   const networkName = getNetworkName(chainId)
 
-  console.log(
-    'Not sure if current provider supports wallet_switchEthereumChain'
-  )
+ 
   // TODO: show user a nice dialogue box instead of
   // eslint-disable-next-line no-alert
   const targetTxName = networksAndSigners.isConnectedToArbitrum
@@ -80,6 +63,7 @@ const onSwitchChainNotSupported = (
   )
   // TODO: reset state so user can attempt to press "Deposit" again
 }
+*/
 
 export async function switchChain({
   chainId,
@@ -93,7 +77,6 @@ export async function switchChain({
     const hexChainId = hexValue(BigNumber.from(chainId))
     const networkName = getNetworkName(chainId)
 
-    console.log('Attempting to switch to chain', chainId)
     try {
       await provider.send('wallet_switchEthereumChain', [
         {
@@ -104,7 +87,6 @@ export async function switchChain({
       onSuccess?.()
     } catch (err: any) {
       if (err.code === 4902) {
-        console.log(`Network ${chainId} not yet added to wallet; adding now:`)
         await provider.send('wallet_addEthereumChain', [
           {
             chainId: hexChainId,
@@ -122,7 +104,6 @@ export async function switchChain({
         onSuccess?.()
       } else {
         onError?.(err)
-        throw err
       }
     }
   } else {

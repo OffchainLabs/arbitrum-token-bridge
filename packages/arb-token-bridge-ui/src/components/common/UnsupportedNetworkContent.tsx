@@ -1,11 +1,7 @@
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
-import { getNetworkName } from '../../util/networks'
-import {
-  networkStyleMap,
-  supportedNetworks,
-  switchChain
-} from '../../util/NetworkUtils'
+import { ChainId, getNetworkName } from '../../util/networks'
+import { supportedNetworks, switchChain } from '../../util/NetworkUtils'
 import { Button } from './Button'
 
 export const UnsupportedNetworkContent = () => {
@@ -19,25 +15,30 @@ export const UnsupportedNetworkContent = () => {
         </span>
       </div>
 
-      {supportedNetworks.map(chainId => (
+      {Object.keys(supportedNetworks).map(chainId => (
         <Button
           variant="primary"
           onClick={() => {
-            switchChain({ chainId, provider: provider as Web3Provider })
+            switchChain({
+              chainId: Number(chainId) as ChainId,
+              provider: provider as Web3Provider
+            })
           }}
           key={chainId}
-          className={`text-md ${networkStyleMap?.[chainId]?.['btnThemeClass']} w-6/12 py-3`}
-          aria-label={`Switch to ${getNetworkName(chainId)}`}
+          className={`text-md ${
+            supportedNetworks?.[Number(chainId) as ChainId]?.['btnThemeClass']
+          } w-6/12 py-3`}
+          aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center">
               <img
-                src={networkStyleMap?.[chainId]?.['img']}
-                alt={`${getNetworkName(chainId)} logo`}
+                src={supportedNetworks[Number(chainId) as ChainId]?.['img']}
+                alt={`${getNetworkName(Number(chainId))} logo`}
                 className="max-w-8 max-h-8"
               />
             </div>
-            <span> {`Switch to ${getNetworkName(chainId)}`}</span>
+            <span> {`Switch to ${getNetworkName(Number(chainId))}`}</span>
           </div>
         </Button>
       ))}
