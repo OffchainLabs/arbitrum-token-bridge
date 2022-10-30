@@ -87,6 +87,8 @@ export async function switchChain({
       onSuccess?.()
     } catch (err: any) {
       if (err.code === 4902) {
+        // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
+        // This error code indicates that the chain has not been added to MetaMask.
         await provider.send('wallet_addEthereumChain', [
           {
             chainId: hexChainId,
