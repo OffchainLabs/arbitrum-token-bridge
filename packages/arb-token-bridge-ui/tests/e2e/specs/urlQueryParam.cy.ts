@@ -213,6 +213,15 @@ describe('User enters site with query params on URL', () => {
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })
+    it('?amount=0.00001 should set transfer panel amount to 0.00001', () => {
+      cy.visit('/', {
+        qs: {
+          amount: '0.00001'
+        }
+      })
+
+      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.00001')
+    })
     it('?amount=123,3,43 should not set transfer panel amount', () => {
       cy.visit('/', {
         qs: {
