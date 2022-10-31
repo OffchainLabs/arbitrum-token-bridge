@@ -216,26 +216,18 @@ export function getNetworkLogo(chainId: number) {
   switch (chainId) {
     // L1 networks
     case ChainId.Mainnet:
-      return EthereumLogo
-
     case ChainId.Rinkeby:
-      return EthereumLogo
-
     case ChainId.Goerli:
       return EthereumLogo
 
     // L2 networks
     case ChainId.ArbitrumOne:
+    case ChainId.ArbitrumRinkeby:
+    case ChainId.ArbitrumGoerli:
       return ArbitrumOneLogo
 
     case ChainId.ArbitrumNova:
       return ArbitrumNovaLogo
-
-    case ChainId.ArbitrumRinkeby:
-      return ArbitrumOneLogo
-
-    case ChainId.ArbitrumGoerli:
-      return ArbitrumOneLogo
 
     default:
       return EthereumLogo

@@ -40,6 +40,7 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import { isTestingEnvironment } from '../../util/CommonUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -725,8 +726,6 @@ export function TransferPanel() {
     disableDeposit,
     disableWithdrawal
   ])
-
-  const isTestingEnvironment = !!window.Cypress
 
   return (
     <>

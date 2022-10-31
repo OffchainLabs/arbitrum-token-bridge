@@ -58,6 +58,7 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
+import { isTestingEnvironment } from '../../util/CommonUtils'
 
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
@@ -123,8 +124,6 @@ const AppContent = (): JSX.Element => {
       </Alert>
     )
   }
-
-  const isTestingEnvironment = !!window.Cypress
 
   return (
     <>
