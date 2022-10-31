@@ -22,6 +22,7 @@ export enum ChainId {
   Mainnet = 1,
   Rinkeby = 4,
   Goerli = 5,
+  Sepolia = 11155111,
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
   ArbitrumRinkeby = 421611,
@@ -153,32 +154,38 @@ export function registerLocalNetwork() {
 }
 
 export function isNetwork(chainId: ChainId) {
+  const isMainnet = chainId === ChainId.Mainnet
+
+  const isRinkeby = chainId === ChainId.Rinkeby
+  const isGoerli = chainId === ChainId.Goerli
+  const isSepolia = chainId === ChainId.Sepolia
+
+  const isArbitrumOne = chainId === ChainId.ArbitrumOne
+  const isArbitrumNova = chainId === ChainId.ArbitrumNova
+  const isArbitrumGoerli = chainId === ChainId.ArbitrumGoerli
+  const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
+
   const isArbitrum =
-    chainId === ChainId.ArbitrumOne ||
-    chainId === ChainId.ArbitrumNova ||
-    chainId === ChainId.ArbitrumGoerli ||
-    chainId === ChainId.ArbitrumRinkeby
+    isArbitrumOne || isArbitrumNova || isArbitrumGoerli || isArbitrumRinkeby
 
   const isTestnet =
-    chainId === ChainId.Rinkeby ||
-    chainId === ChainId.Goerli ||
-    chainId === ChainId.ArbitrumGoerli ||
-    chainId === ChainId.ArbitrumRinkeby
+    isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
 
   return {
     // L1
-    isMainnet: chainId === ChainId.Mainnet,
+    isMainnet,
     isEthereum: !isArbitrum,
     // L1 Testnets
-    isRinkeby: chainId === ChainId.Rinkeby,
-    isGoerli: chainId === ChainId.Goerli,
+    isRinkeby,
+    isGoerli,
+    isSepolia,
     // L2
     isArbitrum,
-    isArbitrumOne: chainId === ChainId.ArbitrumOne,
-    isArbitrumNova: chainId === ChainId.ArbitrumNova,
+    isArbitrumOne,
+    isArbitrumNova,
     // L2 Testnets
-    isArbitrumRinkeby: chainId === ChainId.ArbitrumRinkeby,
-    isArbitrumGoerliRollup: chainId === ChainId.ArbitrumGoerli,
+    isArbitrumRinkeby,
+    isArbitrumGoerli,
     // Testnet
     isTestnet
   }
