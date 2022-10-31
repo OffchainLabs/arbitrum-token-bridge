@@ -12,10 +12,11 @@ import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
+import { Tooltip } from '../common/Tooltip'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -51,10 +52,15 @@ export function SwitchNetworksButton(
   )
 }
 
+type OptionsExtraProps = {
+  disabled?: boolean
+  disabledTooltip?: string
+}
+
 type NetworkListboxProps = {
   disabled?: boolean
   label: string
-  options: (L1Network | L2Network)[]
+  options: ((L1Network | L2Network) & OptionsExtraProps)[]
   value: L1Network | L2Network
   onChange: (value: L1Network | L2Network) => void
 }
@@ -128,23 +134,36 @@ function NetworkListbox({
       </Listbox.Button>
 
       <Listbox.Options className="absolute z-20 mt-2 rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {options.map((option, index) => (
-          <Listbox.Option
-            key={option.chainID}
-            value={option}
-            className={twMerge(
-              'flex h-12 cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
-              getOptionClassName(index)
-            )}
-          >
-            <img
-              src={getOptionImageSrc(option)}
-              alt={`${getNetworkName(option.chainID)} logo`}
-              className="w-8"
-            />
-            <span>{getNetworkName(option.chainID)}</span>
-          </Listbox.Option>
-        ))}
+        {options.map((option, index) => {
+          return (
+            <Tooltip
+              key={option.chainID}
+              show={option.disabled}
+              content={option.disabledTooltip}
+              wrapperClassName="w-full"
+              theme="dark"
+            >
+              <Listbox.Option
+                value={option}
+                className={twMerge(
+                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+                  getOptionClassName(index),
+                  option.disabled ? 'pointer-events-none opacity-40' : ''
+                )}
+                disabled={option.disabled}
+              >
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <img
+                    src={getOptionImageSrc(option)}
+                    alt={`${getNetworkName(option.chainID)} logo`}
+                    className="max-w-8 max-h-9"
+                  />
+                </div>
+                <span>{getNetworkName(option.chainID)}</span>
+              </Listbox.Option>
+            </Tooltip>
+          )
+        })}
       </Listbox.Options>
     </Listbox>
   )
@@ -462,22 +481,81 @@ export function TransferPanelMain({
       setQueryParams({ l2ChainId })
     }
 
+    function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
+      // Add L1 network to the list
+      return [l1.network, ...options]
+        .filter(option => {
+          // Remove selected network from the list
+          return option.chainID !== selectedChainId
+        })
+        .map(option => {
+          // Set disabled options (currently One<>Nova is disabled)
+          return {
+            ...option,
+            disabled:
+              direction === 'from'
+                ? (to.chainID === ChainId.ArbitrumNova &&
+                    option.chainID === ChainId.ArbitrumOne) ||
+                  (to.chainID === ChainId.ArbitrumOne &&
+                    option.chainID === ChainId.ArbitrumNova)
+                : (from.chainID === ChainId.ArbitrumNova &&
+                    option.chainID === ChainId.ArbitrumOne) ||
+                  (from.chainID === ChainId.ArbitrumOne &&
+                    option.chainID === ChainId.ArbitrumNova),
+            // That's the only possible tooltip combination
+            disabledTooltip: "One<>Nova transfers aren't enabled yet"
+          }
+        })
+    }
+
+    const fromOptions = modifyOptions(from.chainID, 'from')
+    const toOptions = modifyOptions(to.chainID, 'to')
+
     if (isDepositMode) {
       return {
         from: {
-          disabled: true,
-          options: [from],
+          disabled: !fromOptions.length,
+          options: fromOptions,
           value: from,
-          onChange: () => {}
+          onChange: async network => {
+            const { isEthereum } = isNetwork(network.chainID)
+
+            // Selecting the same chain or L1 network
+            if (from.chainID === network.chainID || isEthereum) {
+              return
+            }
+
+            try {
+              await app.changeNetwork?.(network)
+              updatePreferredL2Chain(network.chainID)
+
+              // If L2 selected, change to withdraw mode and set new selections
+              switchNetworks()
+              setFrom(network)
+              setTo(l1.network)
+            } catch (error: any) {
+              // 4001 - User rejected the request
+              if (error.code !== 4001) {
+                Sentry.captureException(error)
+              }
+            }
+          }
         },
         to: {
-          disabled: false,
-          options,
+          disabled: !toOptions.length,
+          options: toOptions,
           value: to,
           onChange: async network => {
             // Selecting the same chain
             if (to.chainID === network.chainID) {
               return
+            }
+
+            const { isEthereum } = isNetwork(network.chainID)
+
+            // Switch networks if selecting L1 network
+            if (isEthereum) {
+              return switchNetworks()
             }
 
             if (isConnectedToArbitrum) {
@@ -505,13 +583,20 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled: false,
-        options,
+        disabled: !fromOptions.length,
+        options: fromOptions,
         value: from,
         onChange: async network => {
           // Selecting the same chain
           if (from.chainID === network.chainID) {
             return
+          }
+
+          const { isEthereum } = isNetwork(network.chainID)
+
+          // Switch networks if selecting L1 network
+          if (isEthereum) {
+            return switchNetworks()
           }
 
           // In withdraw mode we always switch to the L2 network
@@ -527,10 +612,33 @@ export function TransferPanelMain({
         }
       },
       to: {
-        disabled: true,
-        options: [to],
+        disabled: !toOptions.length,
+        options: toOptions,
         value: to,
-        onChange: () => {}
+        onChange: async network => {
+          const { isEthereum } = isNetwork(network.chainID)
+
+          // Selecting the same chain or L1 network
+          if (to.chainID === network.chainID || isEthereum) {
+            return
+          }
+
+          // Destination network is L2, connect to L1
+          try {
+            await app.changeNetwork?.(l1.network)
+            updatePreferredL2Chain(network.chainID)
+
+            // Change to withdraw mode and set new selections
+            switchNetworks()
+            setFrom(l1.network)
+            setTo(network)
+          } catch (error: any) {
+            // 4001 - User rejected the request
+            if (error.code !== 4001) {
+              Sentry.captureException(error)
+            }
+          }
+        }
       }
     }
   }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
