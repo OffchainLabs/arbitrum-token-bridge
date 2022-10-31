@@ -325,12 +325,10 @@ export function TransferPanelMain({
   amount,
   setAmount,
   errorMessage,
-  onSwitchChainNotSupported
 }: {
   amount: string
   setAmount: (value: string) => void
   errorMessage?: TransferPanelMainErrorMessage
-  onSwitchChainNotSupported: () => void
 }) {
   const history = useHistory()
   const actions = useActions()
@@ -538,8 +536,7 @@ export function TransferPanelMain({
             try {
               await switchChain({
                 chainId: network.chainID,
-                provider: provider!,
-                onSwitchChainNotSupported
+                provider: provider!
               })
               updatePreferredL2Chain(network.chainID)
 
@@ -580,8 +577,7 @@ export function TransferPanelMain({
               try {
                 await switchChain({
                   chainId: l1.network.chainID,
-                  provider: provider!,
-                  onSwitchChainNotSupported
+                  provider: provider!
                 })
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
@@ -621,8 +617,7 @@ export function TransferPanelMain({
           try {
             await switchChain({
               chainId: network.chainID,
-              provider: provider!,
-              onSwitchChainNotSupported
+              provider: provider!
             })
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
@@ -649,8 +644,7 @@ export function TransferPanelMain({
           try {
             await switchChain({
               chainId: l1.network.chainID,
-              provider: provider!,
-              onSwitchChainNotSupported
+              provider: provider!
             })
             updatePreferredL2Chain(network.chainID)
 

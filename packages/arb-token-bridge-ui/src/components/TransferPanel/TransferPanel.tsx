@@ -340,8 +340,7 @@ export function TransferPanel() {
           trackEvent('Switch Network and Transfer')
           await switchChain({
             chainId: latestNetworksAndSigners.current.l1.network.chainID,
-            provider: latestConnectedProvider.current!,
-            onSwitchChainNotSupported
+            provider: latestConnectedProvider.current!
           })
 
           while (
@@ -449,8 +448,7 @@ export function TransferPanel() {
           trackEvent('Switch Network and Transfer')
           await switchChain({
             chainId: latestNetworksAndSigners.current.l2.network.chainID,
-            provider: latestConnectedProvider.current!,
-            onSwitchChainNotSupported
+            provider: latestConnectedProvider.current!
           })
 
           while (
@@ -728,24 +726,6 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
-  const onSwitchChainNotSupported = useCallback(() => {
-    // show an alert advising user to switch to correct network + wallet which supports network switching
-    const networkName = getNetworkName(
-      latestConnectedProvider.current?.network?.chainId!
-    )
-    const targetTxName = networksAndSigners.isConnectedToArbitrum
-      ? 'deposit'
-      : 'withdraw'
-
-    // TODO: show user a nice dialogue box instead of
-    // eslint-disable-next-line no-alert
-    alert(
-      `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
-    )
-
-    // TODO: reset state so user can attempt to press "Deposit" again
-  }, [networksAndSigners.isConnectedToArbitrum, latestConnectedProvider])
-
   return (
     <>
       <TokenApprovalDialog
@@ -774,7 +754,6 @@ export function TransferPanel() {
               ? getErrorMessage(amount, l1Balance)
               : getErrorMessage(amount, l2Balance)
           }
-          onSwitchChainNotSupported={onSwitchChainNotSupported}
         />
 
         <div className="border-r border-gray-3" />

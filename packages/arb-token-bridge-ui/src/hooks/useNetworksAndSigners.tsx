@@ -25,7 +25,7 @@ import {
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 
-import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
@@ -180,6 +180,19 @@ export function NetworksAndSignersProvider(
 
       // If provider is not supported, display warning message
       if (!(providerChainId in chainIdToDefaultL2ChainId)) {
+        console.error(`Provider chainId not supported: ${providerChainId}`)
+        setResult({
+          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+          chainId: providerChainId
+        })
+        return
+      }
+
+      // We are phasing out support for provider = Rinkeby or ArbRinkeby
+      if (
+        providerChainId === ChainId.Rinkeby ||
+        providerChainId === ChainId.ArbitrumRinkeby
+      ) {
         console.error(`Provider chainId not supported: ${providerChainId}`)
         setResult({
           status: UseNetworksAndSignersStatus.NOT_SUPPORTED,

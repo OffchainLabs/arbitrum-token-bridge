@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/react'
 import EthereumLogo from '../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
-import { Web3Provider } from '@ethersproject/providers'
+import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -31,8 +31,10 @@ export enum ChainId {
 }
 
 type ExtendedWeb3Provider = Web3Provider & {
-  isMetaMask?: boolean
-  isImToken?: boolean
+  provider: ExternalProvider & {
+    isMetaMask?: boolean
+    isImToken?: boolean
+  }
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -247,27 +249,38 @@ export type SwitchChainProps = {
   provider: ExtendedWeb3Provider
   onSuccess?: () => void
   onError?: (err?: Error) => void
-  onSwitchChainNotSupported?: () => void
+  onSwitchChainNotSupported?: (attemptedChainId: number) => void
 }
 
 const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
   const { provider: innerProvider } = provider
-  // @ts-ignore : `isImToken` is not exported by default in metamask
-  return innerProvider?.isMetaMask || innerProvider?.isImToken
+  return innerProvider.isMetaMask || innerProvider.isImToken
 }
 
 const noop = () => {}
+
+const onSwitchChainNotSupportedDefault = (attemptedChainId: number) => {
+  const isDeposit = isNetwork(attemptedChainId).isEthereum
+  const targetTxName = isDeposit ? 'deposit' : 'withdraw'
+  const networkName = getNetworkName(attemptedChainId)
+
+  // TODO: show user a nice dialogue box instead of
+  // eslint-disable-next-line no-alert
+  alert(
+    `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
+  )
+}
 
 export async function switchChain({
   chainId,
   provider,
   onSuccess = noop,
   onError = noop,
-  onSwitchChainNotSupported = noop
+  onSwitchChainNotSupported = onSwitchChainNotSupportedDefault
 }: SwitchChainProps) {
   // do an early return if switching-chains is not supported by provider
   if (!isSwitchChainSupported(provider)) {
-    onSwitchChainNotSupported?.()
+    onSwitchChainNotSupported?.(chainId)
     return
   }
 
