@@ -38,7 +38,8 @@ import {
   UseNetworksAndSignersLoadingOrErrorStatus,
   NetworksAndSignersProvider,
   UseNetworksAndSignersConnectedResult,
-  UseNetworksAndSignersNotSupportedStatus
+  UseNetworksAndSignersNotSupportedStatus,
+  FallbackProps
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
@@ -327,9 +328,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   return (
     <NetworksAndSignersProvider
       selectedL2ChainId={l2ChainId || undefined}
-      fallback={({ status, chainId }) => (
-        <ConnectionFallback status={status} chainId={chainId} />
-      )}
+      fallback={fallbackProps => <ConnectionFallback {...fallbackProps} />}
     >
       {children}
     </NetworksAndSignersProvider>
@@ -355,15 +354,7 @@ function ConnectionFallbackContainer({
   )
 }
 
-function ConnectionFallback({
-  status,
-  chainId
-}: {
-  status:
-    | UseNetworksAndSignersLoadingOrErrorStatus
-    | UseNetworksAndSignersNotSupportedStatus
-  chainId?: number
-}): JSX.Element {
+function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
 
   async function showConnectionModal() {
@@ -374,7 +365,7 @@ function ConnectionFallback({
     }
   }
 
-  switch (status) {
+  switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
         <>
@@ -406,7 +397,7 @@ function ConnectionFallback({
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = isNetwork(chainId!).isTestnet
+      const supportedNetworks = isNetwork(props.chainId).isTestnet
         ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
         : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 

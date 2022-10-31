@@ -95,12 +95,9 @@ export function useNetworksAndSigners() {
   return context
 }
 
-type FallbackProps = {
-  status:
-    | UseNetworksAndSignersLoadingOrErrorStatus
-    | UseNetworksAndSignersNotSupportedStatus
-  chainId?: number
-}
+export type FallbackProps =
+  | { status: UseNetworksAndSignersLoadingOrErrorStatus }
+  | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
 
 export type NetworksAndSignersProviderProps = {
   /**
@@ -308,13 +305,15 @@ export function NetworksAndSignersProvider(
   }, [provider, account, network, update])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
-    return props.fallback({
-      status: result.status,
-      chainId:
-        result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
-          ? result.chainId
-          : undefined
-    })
+    const fallbackProps =
+      result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
+        ? {
+            status: result.status,
+            chainId: result.chainId
+          }
+        : { status: result.status }
+
+    return props.fallback(fallbackProps)
   }
 
   return (

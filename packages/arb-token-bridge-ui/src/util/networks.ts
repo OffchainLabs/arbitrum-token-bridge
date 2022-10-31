@@ -287,19 +287,25 @@ export async function switchChain({
     if (err.code === 4902) {
       // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
       // This error code indicates that the chain has not been added to MetaMask.
-      await provider.send('wallet_addEthereumChain', [
-        {
-          chainId: hexChainId,
-          chainName: networkName,
-          nativeCurrency: {
-            name: 'Ether',
-            symbol: 'ETH',
-            decimals: 18
-          },
-          rpcUrls: [rpcURLs[chainId]],
-          blockExplorerUrls: [getExplorerUrl(chainId)]
-        }
-      ])
+
+      try {
+        await provider.send('wallet_addEthereumChain', [
+          {
+            chainId: hexChainId,
+            chainName: networkName,
+            nativeCurrency: {
+              name: 'Ether',
+              symbol: 'ETH',
+              decimals: 18
+            },
+            rpcUrls: [rpcURLs[chainId]],
+            blockExplorerUrls: [getExplorerUrl(chainId)]
+          }
+        ])
+      } catch (err: any) {
+        onError?.(err)
+        Sentry.captureException(err)
+      }
 
       onSuccess?.()
     } else {
