@@ -1,10 +1,10 @@
 import { BigNumber } from 'ethers'
-import { formatTokenBalance } from '../NumberUtils'
+import { formatAmount } from '../NumberUtils'
 
-describe('formatTokenBalance', () => {
+describe('formatAmount', () => {
   describe('for short token symbol', () => {
     const getResult = (value: string) =>
-      formatTokenBalance(BigNumber.from(value), 6, 'ETH')
+      formatAmount(BigNumber.from(value), 6, 'ETH')
 
     it('should return 0 for value = 0', () => {
       expect(getResult('0')).toBe('0')
@@ -47,7 +47,7 @@ describe('formatTokenBalance', () => {
 
   describe('for long token name', () => {
     const getResult = (value: string) =>
-      formatTokenBalance(BigNumber.from(value), 6, 'ETHPOW')
+      formatAmount(BigNumber.from(value), 6, 'ETHPOW')
 
     it('should return 0 for value = 0', () => {
       expect(getResult('0')).toBe('0')

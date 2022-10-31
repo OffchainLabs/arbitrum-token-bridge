@@ -9,20 +9,6 @@ export function formatUSD(value: number) {
   return `$${formattedValue}`
 }
 
-export const formatNumber = (
-  value: number,
-  decimals: number = 6,
-  options: {
-    notation: 'compact' | 'standard'
-  } = { notation: 'standard' }
-) => {
-  const formatter = Intl.NumberFormat('en', {
-    notation: options?.notation,
-    maximumFractionDigits: decimals
-  })
-  return formatter.format(value)
-}
-
 export enum Decimals {
   None = 0,
   Short = 1,
@@ -31,32 +17,35 @@ export enum Decimals {
   Long = 5,
   Token = 18
 }
-export function formatBigNumber(
-  value: BigNumber,
-  decimals: Decimals = Decimals.Token,
-  maximumFractionDigits?: number
-) {
-  if (value.isZero()) {
-    return '0'
-  }
+export const formatNumber = (
+  value: number | BigNumber,
+  decimals: number = 6,
+  options: {
+    notation: 'compact' | 'standard'
+  } = { notation: 'standard' }
+) => {
+  const num = BigNumber.isBigNumber(value)
+    ? parseFloat(utils.formatUnits(value, decimals))
+    : value
 
-  return formatNumber(
-    parseFloat(utils.formatUnits(value, decimals)),
-    maximumFractionDigits
-  )
+  return Intl.NumberFormat('en', {
+    notation: options?.notation,
+    maximumFractionDigits: decimals
+  }).format(num)
 }
 
-export function formatTokenBalance(
+export const formatAmount = (
   balance: BigNumber,
   decimals: number = Decimals.Token,
-  symbol: string
-) {
+  symbol?: string
+) => {
   const value = parseFloat(utils.formatUnits(balance, decimals))
-  const isShortSymbol = symbol.length < 5
 
   if (value === 0) {
     return '0'
   }
+
+  const isShortSymbol = symbol ? symbol.length < 5 : true
 
   // Small number, show 4 or 5 decimals based on token name length
   if (value < 1) {
