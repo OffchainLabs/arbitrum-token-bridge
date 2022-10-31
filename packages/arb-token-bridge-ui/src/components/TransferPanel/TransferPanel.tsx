@@ -758,7 +758,7 @@ export function TransferPanel() {
             isSummaryVisible
               ? {}
               : {
-                  background: `url(/images/ArbitrumFaded.png)`,
+                  background: `url(/images/ArbitrumFaded.webp)`,
                   backgroundSize: 'contain',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center'

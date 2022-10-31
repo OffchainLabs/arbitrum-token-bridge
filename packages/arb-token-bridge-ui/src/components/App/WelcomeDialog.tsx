@@ -24,7 +24,7 @@ export function WelcomeDialog(props: UseDialogProps) {
         <div className="flex flex-col items-center space-y-8 md:flex-row md:space-y-0 md:space-x-8">
           <div>
             <img
-              src="/images/arbinaut-flying.png"
+              src="/images/arbinaut-flying.webp"
               alt="An Astronaut in an Arbitrum space suit"
               className="w-64"
             />

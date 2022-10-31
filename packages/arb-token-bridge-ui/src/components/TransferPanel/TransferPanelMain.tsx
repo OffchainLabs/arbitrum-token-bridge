@@ -30,13 +30,13 @@ import {
   useTokenBalances
 } from './TransferPanelMainUtils'
 
-import EthereumLogo from '../../assets/EthereumLogo.png'
+import EthereumLogo from '../../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.webp'
 
-import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.png'
-import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.png'
-import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.png'
+import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.webp'
+import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.webp'
+import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.webp'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>

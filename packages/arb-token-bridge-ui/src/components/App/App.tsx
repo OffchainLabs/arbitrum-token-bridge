@@ -14,9 +14,9 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
-import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.png'
-import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.png'
+import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
+import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.webp'
+import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.webp'
 
 import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
@@ -388,7 +388,7 @@ function Routes() {
                 Page not found in this solar system
               </p>
               <img
-                src="/images/arbinaut-fixing-spaceship.png"
+                src="/images/arbinaut-fixing-spaceship.webp"
                 alt="Arbinaut fixing a spaceship"
                 className="lg:max-w-md"
               />
@@ -424,7 +424,7 @@ function ConnectionFallbackContainer({
       <ExternalLink href="https://metamask.io/download">
         <img
           className="sm:w-[420px]"
-          src="/images/three-arbinauts.png"
+          src="/images/three-arbinauts.webp"
           alt="Three Arbinauts"
         />
       </ExternalLink>
