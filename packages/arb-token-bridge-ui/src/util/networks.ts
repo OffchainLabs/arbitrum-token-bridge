@@ -4,6 +4,14 @@ import {
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
+import { hexValue } from 'ethers/lib/utils'
+import { BigNumber } from 'ethers'
+
+import EthereumLogo from '../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
+import { Web3Provider } from '@ethersproject/providers'
+
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
 if (!INFURA_KEY) {
@@ -146,6 +154,12 @@ export function isNetwork(chainId: ChainId) {
     chainId === ChainId.ArbitrumGoerli ||
     chainId === ChainId.ArbitrumRinkeby
 
+  const isTestnet =
+    chainId === ChainId.Rinkeby ||
+    chainId === ChainId.Goerli ||
+    chainId === ChainId.ArbitrumGoerli ||
+    chainId === ChainId.ArbitrumRinkeby
+
   return {
     // L1
     isMainnet: chainId === ChainId.Mainnet,
@@ -159,7 +173,9 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumNova: chainId === ChainId.ArbitrumNova,
     // L2 Testnets
     isArbitrumRinkeby: chainId === ChainId.ArbitrumRinkeby,
-    isArbitrumGoerliRollup: chainId === ChainId.ArbitrumGoerli
+    isArbitrumGoerliRollup: chainId === ChainId.ArbitrumGoerli,
+    // Testnet
+    isTestnet
   }
 }
 
@@ -188,5 +204,114 @@ export function getNetworkName(chainId: number) {
 
     default:
       return 'Unknown'
+  }
+}
+
+export function getNetworkLogo(chainId: number) {
+  switch (chainId) {
+    // L1 networks
+    case ChainId.Mainnet:
+      return EthereumLogo
+
+    case ChainId.Rinkeby:
+      return EthereumLogo
+
+    case ChainId.Goerli:
+      return EthereumLogo
+
+    // L2 networks
+    case ChainId.ArbitrumOne:
+      return ArbitrumOneLogo
+
+    case ChainId.ArbitrumNova:
+      return ArbitrumNovaLogo
+
+    case ChainId.ArbitrumRinkeby:
+      return ArbitrumOneLogo
+
+    case ChainId.ArbitrumGoerli:
+      return ArbitrumOneLogo
+
+    default:
+      return EthereumLogo
+  }
+}
+
+/* 
+  The list which will be available for network selection in navbar-dropdowns and unsupported-network-content
+*/
+
+type ExtendedWeb3Provider = Web3Provider & {
+  isMetaMask?: boolean
+  isImToken?: boolean
+}
+
+export const supportedNetworks = [
+  ChainId.ArbitrumOne,
+  ChainId.ArbitrumNova,
+  ChainId.Mainnet
+]
+
+export type SwitchChainProps = {
+  chainId: number
+  provider: ExtendedWeb3Provider
+  onSuccess?: () => void
+  onError?: (err?: Error) => void
+  onSwitchChainNotSupported?: () => void
+}
+
+const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
+  return provider?.provider?.isMetaMask || provider?.isImToken
+}
+
+const noop = () => {}
+
+export async function switchChain({
+  chainId,
+  provider,
+  onSuccess = noop,
+  onError = noop,
+  onSwitchChainNotSupported = noop
+}: SwitchChainProps) {
+  // do an early return if switching-chains is not supported by provider
+  if (!isSwitchChainSupported(provider)) {
+    onSwitchChainNotSupported?.()
+    return
+  }
+
+  // if all the above conditions are satisfied go ahead and switch the network
+  const hexChainId = hexValue(BigNumber.from(chainId))
+  const networkName = getNetworkName(chainId)
+
+  try {
+    await provider.send('wallet_switchEthereumChain', [
+      {
+        chainId: hexChainId
+      }
+    ])
+
+    onSuccess?.()
+  } catch (err: any) {
+    if (err.code === 4902) {
+      // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
+      // This error code indicates that the chain has not been added to MetaMask.
+      await provider.send('wallet_addEthereumChain', [
+        {
+          chainId: hexChainId,
+          chainName: networkName,
+          nativeCurrency: {
+            name: 'Ether',
+            symbol: 'ETH',
+            decimals: 18
+          },
+          rpcUrls: [rpcURLs[chainId]],
+          blockExplorerUrls: [getExplorerUrl(chainId)]
+        }
+      ])
+
+      onSuccess?.()
+    } else {
+      onError?.(err)
+    }
   }
 }

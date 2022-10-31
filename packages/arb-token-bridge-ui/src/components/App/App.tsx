@@ -49,7 +49,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork } from '../../util/networks'
+import { isNetwork, supportedNetworks } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -57,7 +57,6 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { supportedNetworks } from '../../util/NetworkUtils'
 
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2

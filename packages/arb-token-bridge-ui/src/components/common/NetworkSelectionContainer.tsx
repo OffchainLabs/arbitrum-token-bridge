@@ -1,12 +1,12 @@
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
-import { ChainId, getNetworkName } from '../../util/networks'
-import { switchChain } from '../../util/NetworkUtils'
-
-import EthereumLogo from '../../assets/EthereumLogo.png'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
+import {
+  ChainId,
+  getNetworkLogo,
+  getNetworkName,
+  switchChain
+} from '../../util/networks'
 
 export const NetworkSelectionContainer = ({
   supportedNetworks,
@@ -16,19 +16,6 @@ export const NetworkSelectionContainer = ({
   children: React.ReactNode
 }) => {
   const { provider } = useWallet()
-
-  // info about the logos in the network list
-  const networksLogoMap: { [key in ChainId]?: { img: string } } = {
-    [ChainId.Mainnet]: {
-      img: EthereumLogo
-    },
-    [ChainId.ArbitrumOne]: {
-      img: ArbitrumOneLogo
-    },
-    [ChainId.ArbitrumNova]: {
-      img: ArbitrumNovaLogo
-    }
-  }
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -55,7 +42,7 @@ export const NetworkSelectionContainer = ({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <img
-                    src={networksLogoMap[Number(chainId) as ChainId]?.['img']}
+                    src={getNetworkLogo(Number(chainId))}
                     alt={`${getNetworkName(Number(chainId))} logo`}
                     className="max-w-8 max-h-8"
                   />

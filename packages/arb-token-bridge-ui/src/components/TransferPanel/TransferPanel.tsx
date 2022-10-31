@@ -8,7 +8,7 @@ import { twMerge } from 'tailwind-merge'
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -40,7 +40,6 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { switchChain } from '../../util/NetworkUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,

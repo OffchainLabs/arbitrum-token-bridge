@@ -12,7 +12,12 @@ import * as Sentry from '@sentry/react'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  ChainId,
+  getNetworkName,
+  isNetwork,
+  switchChain
+} from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
@@ -37,7 +42,6 @@ import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.png'
 import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.png'
 import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.png'
-import { switchChain } from '../../util/NetworkUtils'
 import { useWallet } from '@arbitrum/use-wallet'
 
 export function SwitchNetworksButton(
