@@ -27,7 +27,7 @@ export const UnsupportedNetworkContent = () => {
           key={chainId}
           className={`text-md ${
             supportedNetworks?.[Number(chainId) as ChainId]?.['btnThemeClass']
-          } w-6/12 py-3`}
+          } w-6/12 min-w-max py-3`}
           aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">
