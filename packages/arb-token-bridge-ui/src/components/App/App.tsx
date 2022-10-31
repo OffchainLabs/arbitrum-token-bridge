@@ -35,10 +35,8 @@ import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
-  UseNetworksAndSignersLoadingOrErrorStatus,
   NetworksAndSignersProvider,
   UseNetworksAndSignersConnectedResult,
-  UseNetworksAndSignersNotSupportedStatus,
   FallbackProps
 } from '../../hooks/useNetworksAndSigners'
 import {

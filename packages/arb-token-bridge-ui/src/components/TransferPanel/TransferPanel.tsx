@@ -40,7 +40,6 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { isTestingEnvironment } from '../../util/CommonUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -744,7 +743,7 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      {!isTestingEnvironment && <LowBalanceDialog {...lowBalanceDialogProps} />}
+      <LowBalanceDialog {...lowBalanceDialogProps} />
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <TransferPanelMain
