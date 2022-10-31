@@ -237,20 +237,24 @@ export function getNetworkLogo(chainId: number) {
   }
 }
 
-/* 
-  The list which will be available for network selection in navbar-dropdowns and unsupported-network-content
-*/
-
 type ExtendedWeb3Provider = Web3Provider & {
   isMetaMask?: boolean
   isImToken?: boolean
 }
 
-export const supportedNetworks = [
-  ChainId.ArbitrumOne,
-  ChainId.ArbitrumNova,
-  ChainId.Mainnet
-]
+export const getSupportedNetworks = (chainId?: number) => {
+  // The list which will be available for network selection in navbar-dropdowns and unsupported-network-content
+  // If there is a chainId selected, it detects if it's a testnet and shows only those options
+
+  const mainNetworks = [
+    ChainId.ArbitrumOne,
+    ChainId.ArbitrumNova,
+    ChainId.Mainnet
+  ]
+  const testNetworks = [ChainId.ArbitrumGoerli, ChainId.Goerli]
+  const isTestnet = chainId ? isNetwork(chainId).isTestnet : false
+  return isTestnet ? testNetworks : mainNetworks
+}
 
 export type SwitchChainProps = {
   chainId: number

@@ -49,7 +49,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, supportedNetworks } from '../../util/networks'
+import { isNetwork, getSupportedNetworks } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -130,7 +130,7 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
+        <NetworkSelectionContainer supportedNetworks={getSupportedNetworks()}>
           <HeaderNetworkInformation />
         </NetworkSelectionContainer>
 
@@ -397,13 +397,17 @@ function ConnectionFallback({
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
+            <NetworkSelectionContainer
+              supportedNetworks={getSupportedNetworks()}
+            >
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
+            <MainNetworkNotSupported
+              supportedNetworks={getSupportedNetworks()}
+            />
           </ConnectionFallbackContainer>
         </>
       )
