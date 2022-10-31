@@ -95,6 +95,13 @@ export function useNetworksAndSigners() {
   return context
 }
 
+type FallbackProps = {
+  status:
+    | UseNetworksAndSignersLoadingOrErrorStatus
+    | UseNetworksAndSignersNotSupportedStatus
+  chainId?: number
+}
+
 export type NetworksAndSignersProviderProps = {
   /**
    * Chooses a specific L2 chain in a situation where multiple L2 chains are connected to a single L1 chain.
@@ -105,12 +112,7 @@ export type NetworksAndSignersProviderProps = {
    *
    * @see https://reactjs.org/docs/render-props.html
    */
-  fallback: (
-    status:
-      | UseNetworksAndSignersLoadingOrErrorStatus
-      | UseNetworksAndSignersNotSupportedStatus,
-    chainId?: number
-  ) => JSX.Element
+  fallback: (props: FallbackProps) => JSX.Element
   /**
    * Renders on successful connection.
    */
@@ -306,12 +308,13 @@ export function NetworksAndSignersProvider(
   }, [provider, account, network, update])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
-    return props.fallback(
-      result.status,
-      result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
-        ? result.chainId
-        : undefined
-    )
+    return props.fallback({
+      status: result.status,
+      chainId:
+        result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
+          ? result.chainId
+          : undefined
+    })
   }
 
   return (

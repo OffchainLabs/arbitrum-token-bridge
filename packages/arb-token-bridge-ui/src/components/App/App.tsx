@@ -50,7 +50,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, getSupportedNetworks } from '../../util/networks'
+import { isNetwork, ChainId } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -131,7 +131,11 @@ const AppContent = (): JSX.Element => {
 
       <HeaderContent>
         <NetworkSelectionContainer
-          supportedNetworks={getSupportedNetworks(chainId)}
+          supportedNetworks={
+            isNetwork(chainId).isTestnet
+              ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+              : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+          }
         >
           <HeaderNetworkInformation />
         </NetworkSelectionContainer>
@@ -323,7 +327,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   return (
     <NetworksAndSignersProvider
       selectedL2ChainId={l2ChainId || undefined}
-      fallback={(status, chainId) => (
+      fallback={({ status, chainId }) => (
         <ConnectionFallback status={status} chainId={chainId} />
       )}
     >
@@ -402,20 +406,20 @@ function ConnectionFallback({
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
+      const supportedNetworks = isNetwork(chainId!).isTestnet
+        ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+        : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer
-              supportedNetworks={getSupportedNetworks(chainId)}
-            >
+            <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <MainNetworkNotSupported
-              supportedNetworks={getSupportedNetworks(chainId)}
-            />
+            <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
           </ConnectionFallbackContainer>
         </>
       )

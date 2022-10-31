@@ -6,6 +6,7 @@ import {
 
 import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
+import * as Sentry from '@sentry/react'
 
 import EthereumLogo from '../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
@@ -241,20 +242,6 @@ export function getNetworkLogo(chainId: number) {
   }
 }
 
-export const getSupportedNetworks = (chainId?: number) => {
-  // The list which will be available for network selection in navbar-dropdowns and unsupported-network-content
-  // If there is a chainId selected, it detects if it's a testnet and shows only those options
-
-  const mainNetworks = [
-    ChainId.ArbitrumOne,
-    ChainId.ArbitrumNova,
-    ChainId.Mainnet
-  ]
-  const testNetworks = [ChainId.ArbitrumGoerli, ChainId.Goerli]
-  const isTestnet = chainId ? isNetwork(chainId).isTestnet : false
-  return isTestnet ? testNetworks : mainNetworks
-}
-
 export type SwitchChainProps = {
   chainId: number
   provider: ExtendedWeb3Provider
@@ -317,6 +304,7 @@ export async function switchChain({
       onSuccess?.()
     } else {
       onError?.(err)
+      Sentry.captureException(err)
     }
   }
 }
