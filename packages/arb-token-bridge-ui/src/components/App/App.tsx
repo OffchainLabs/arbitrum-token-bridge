@@ -37,7 +37,8 @@ import {
   UseNetworksAndSignersStatus,
   UseNetworksAndSignersLoadingOrErrorStatus,
   NetworksAndSignersProvider,
-  UseNetworksAndSignersConnectedResult
+  UseNetworksAndSignersConnectedResult,
+  UseNetworksAndSignersNotSupportedStatus
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
@@ -69,7 +70,7 @@ declare global {
 }
 
 const AppContent = (): JSX.Element => {
-  const { l1 } = useNetworksAndSigners()
+  const { l1, chainId } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
@@ -130,7 +131,9 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer supportedNetworks={getSupportedNetworks()}>
+        <NetworkSelectionContainer
+          supportedNetworks={getSupportedNetworks(chainId)}
+        >
           <HeaderNetworkInformation />
         </NetworkSelectionContainer>
 
@@ -321,7 +324,9 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   return (
     <NetworksAndSignersProvider
       selectedL2ChainId={l2ChainId || undefined}
-      fallback={status => <ConnectionFallback status={status} />}
+      fallback={(status, chainId) => (
+        <ConnectionFallback status={status} chainId={chainId} />
+      )}
     >
       {children}
     </NetworksAndSignersProvider>
@@ -348,9 +353,13 @@ function ConnectionFallbackContainer({
 }
 
 function ConnectionFallback({
-  status
+  status,
+  chainId
 }: {
-  status: UseNetworksAndSignersLoadingOrErrorStatus
+  status:
+    | UseNetworksAndSignersLoadingOrErrorStatus
+    | UseNetworksAndSignersNotSupportedStatus
+  chainId?: number
 }): JSX.Element {
   const { connect } = useWallet()
 
@@ -398,7 +407,7 @@ function ConnectionFallback({
         <>
           <HeaderContent>
             <NetworkSelectionContainer
-              supportedNetworks={getSupportedNetworks()}
+              supportedNetworks={getSupportedNetworks(chainId)}
             >
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
@@ -406,7 +415,7 @@ function ConnectionFallback({
 
           <ConnectionFallbackContainer>
             <MainNetworkNotSupported
-              supportedNetworks={getSupportedNetworks()}
+              supportedNetworks={getSupportedNetworks(chainId)}
             />
           </ConnectionFallbackContainer>
         </>

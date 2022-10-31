@@ -36,18 +36,21 @@ describe('Switch Networks', () => {
 
     context('Test Networks dropdown in Nav bar', () => {
       it('should show and open the networks dropdown', () => {
-        cy.findByRole('button', { name: /Selected Network : /i })
-          .should('be.visible')
-          .click({ scrollBehavior: false })
+        // to view the correct list of networks (and not testnets), first navigate to mainnet
+        cy.changeMetamaskNetwork('mainnet').then(() => {
+          cy.findByRole('button', { name: /Selected Network : /i })
+            .should('be.visible')
+            .click({ scrollBehavior: false })
 
-        cy.findByRole('button', { name: /Switch to Arbitrum One/i }).should(
-          'be.visible'
-        )
+          cy.findByRole('button', { name: /Switch to Arbitrum One/i }).should(
+            'be.visible'
+          )
 
-        //close the dropdown
-        cy.findByRole('button', { name: /Selected Network : /i })
-          .should('be.visible')
-          .click({ scrollBehavior: false })
+          //close the dropdown
+          cy.findByRole('button', { name: /Selected Network : /i })
+            .should('be.visible')
+            .click({ scrollBehavior: false })
+        })
       })
 
       it('should change network to Arbitrum One successfully', () => {

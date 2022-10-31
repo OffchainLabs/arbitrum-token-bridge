@@ -28,6 +28,11 @@ export enum ChainId {
   ArbitrumGoerli = 421613
 }
 
+type ExtendedWeb3Provider = Web3Provider & {
+  isMetaMask?: boolean
+  isImToken?: boolean
+}
+
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Mainnet]:
@@ -237,11 +242,6 @@ export function getNetworkLogo(chainId: number) {
   }
 }
 
-type ExtendedWeb3Provider = Web3Provider & {
-  isMetaMask?: boolean
-  isImToken?: boolean
-}
-
 export const getSupportedNetworks = (chainId?: number) => {
   // The list which will be available for network selection in navbar-dropdowns and unsupported-network-content
   // If there is a chainId selected, it detects if it's a testnet and shows only those options
@@ -265,7 +265,9 @@ export type SwitchChainProps = {
 }
 
 const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
-  return provider?.provider?.isMetaMask || provider?.isImToken
+  const { provider: innerProvider } = provider
+  // @ts-ignore : `isImToken` is not exported by default in metamask
+  return innerProvider?.isMetaMask || innerProvider?.isImToken
 }
 
 const noop = () => {}
