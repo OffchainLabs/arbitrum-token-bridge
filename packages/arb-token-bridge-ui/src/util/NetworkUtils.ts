@@ -19,7 +19,7 @@ export const supportedNetworks = [
 ]
 
 export type SwitchChainProps = {
-  chainId: ChainId
+  chainId: number
   provider: ExtendedWeb3Provider
   onSuccess?: () => void
   onError?: (err?: Error) => void
