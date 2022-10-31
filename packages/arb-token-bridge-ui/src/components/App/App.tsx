@@ -54,7 +54,7 @@ import {
   ArbQueryParamProvider,
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
-import { UnsupportedNetworkContent } from '../common/UnsupportedNetworkContent'
+import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 
@@ -403,7 +403,7 @@ function ConnectionFallback({
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <UnsupportedNetworkContent />
+            <MainNetworkNotSupported />
           </ConnectionFallbackContainer>
         </>
       )

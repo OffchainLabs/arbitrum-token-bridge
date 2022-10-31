@@ -4,7 +4,7 @@ import { ChainId, getNetworkName } from '../../util/networks'
 import { supportedNetworks, switchChain } from '../../util/NetworkUtils'
 import { Button } from './Button'
 
-export const UnsupportedNetworkContent = () => {
+export const MainNetworkNotSupported = () => {
   const { provider } = useWallet()
 
   return (
