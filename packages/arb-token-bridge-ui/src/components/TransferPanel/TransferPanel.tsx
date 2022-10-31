@@ -340,8 +340,7 @@ export function TransferPanel() {
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
           await switchChain({
-            chainId: latestNetworksAndSigners.current.l1.network
-              .chainID as ChainId,
+            chainId: latestNetworksAndSigners.current.l1.network.chainID,
             provider: latestConnectedProvider.current!
           })
 
@@ -449,8 +448,7 @@ export function TransferPanel() {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
           await switchChain({
-            chainId: latestNetworksAndSigners.current.l2.network
-              .chainID as ChainId,
+            chainId: latestNetworksAndSigners.current.l2.network.chainID,
             provider: latestConnectedProvider.current!
           })
 
@@ -730,7 +728,6 @@ export function TransferPanel() {
   ])
 
   const isTestingEnvironment = !!window.Cypress
-  
 
   return (
     <>

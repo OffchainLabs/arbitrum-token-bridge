@@ -8,7 +8,7 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
@@ -158,8 +158,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
 
-  const { provider: library } = useWallet()
-
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
@@ -249,15 +247,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         console.warn('Failed to fetch warning tokens:', err)
       })
   }, [])
-
-  useEffect(() => {
-    if (library) {
-      async function logGasPrice() {
-        console.log('Gas price:', await library?.getGasPrice())
-      }
-      logGasPrice()
-    }
-  }, [library, networksAndSigners.isConnectedToArbitrum])
 
   return (
     <>

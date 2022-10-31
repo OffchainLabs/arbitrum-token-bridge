@@ -26,7 +26,7 @@ export const NetworkSelectionContainer = ({
                 className="flex h-12 cursor-pointer flex-nowrap items-center justify-center space-x-3 px-4 font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:justify-start lg:font-normal lg:text-dark"
                 onClick={() => {
                   switchChain({
-                    chainId: Number(chainId) as ChainId,
+                    chainId: Number(chainId),
                     provider: provider as Web3Provider
                   })
                   close?.() //close the popover after option-click

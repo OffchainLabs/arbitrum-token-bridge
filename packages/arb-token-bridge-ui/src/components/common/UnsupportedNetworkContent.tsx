@@ -20,7 +20,7 @@ export const UnsupportedNetworkContent = () => {
           variant="primary"
           onClick={() => {
             switchChain({
-              chainId: Number(chainId) as ChainId,
+              chainId: Number(chainId),
               provider: provider as Web3Provider
             })
           }}

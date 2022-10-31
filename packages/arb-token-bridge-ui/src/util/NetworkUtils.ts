@@ -27,43 +27,24 @@ export const supportedNetworks: {
   }
 }
 
+type ExtendedWeb3Provider = Web3Provider & {
+  isMetaMask?: boolean
+  isImToken?: boolean
+}
+
 export type SwitchChainProps = {
   chainId: ChainId
-  provider: Web3Provider
+  provider: ExtendedWeb3Provider
   onSuccess?: () => void
   onError?: (err?: Error) => void
   onSwitchChainNotSupported?: () => void
 }
 
-const noop = () => {}
-
-const isSwitchChainSupported = (provider: Web3Provider) =>
-  provider?.provider &&
-  //@ts-ignore
-  (provider.provider.isMetaMask || provider.provider.isImToken)
-
-// typescript issue here
-/*
-const onSwitchChainNotSupported = (
-  chainId: ChainId,
-  networksAndSigners: UseNetworksAndSignersConnectedResult
-) => {
-  // if no `wallet_switchEthereumChain` support
-  const networkName = getNetworkName(chainId)
-
- 
-  // TODO: show user a nice dialogue box instead of
-  // eslint-disable-next-line no-alert
-  const targetTxName = networksAndSigners.isConnectedToArbitrum
-    ? 'deposit'
-    : 'withdraw'
-
-  alert(
-    `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
-  )
-  // TODO: reset state so user can attempt to press "Deposit" again
+const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
+  return provider.isMetaMask || provider.isImToken
 }
-*/
+
+const noop = () => {}
 
 export async function switchChain({
   chainId,
@@ -72,43 +53,45 @@ export async function switchChain({
   onError = noop,
   onSwitchChainNotSupported = noop
 }: SwitchChainProps) {
-  if (isSwitchChainSupported(provider)) {
-    // if all the above conditions are satisfied go ahead and switch the network
-    const hexChainId = hexValue(BigNumber.from(chainId))
-    const networkName = getNetworkName(chainId)
+  // do an early return if switching-chains is not supported by provider
+  if (!isSwitchChainSupported(provider)) {
+    onSwitchChainNotSupported?.()
+    return
+  }
 
-    try {
-      await provider.send('wallet_switchEthereumChain', [
+  // if all the above conditions are satisfied go ahead and switch the network
+  const hexChainId = hexValue(BigNumber.from(chainId))
+  const networkName = getNetworkName(chainId)
+
+  try {
+    await provider.send('wallet_switchEthereumChain', [
+      {
+        chainId: hexChainId
+      }
+    ])
+
+    onSuccess?.()
+  } catch (err: any) {
+    if (err.code === 4902) {
+      // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
+      // This error code indicates that the chain has not been added to MetaMask.
+      await provider.send('wallet_addEthereumChain', [
         {
-          chainId: hexChainId
+          chainId: hexChainId,
+          chainName: networkName,
+          nativeCurrency: {
+            name: 'Ether',
+            symbol: 'ETH',
+            decimals: 18
+          },
+          rpcUrls: [rpcURLs[chainId]],
+          blockExplorerUrls: [getExplorerUrl(chainId)]
         }
       ])
 
       onSuccess?.()
-    } catch (err: any) {
-      if (err.code === 4902) {
-        // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
-        // This error code indicates that the chain has not been added to MetaMask.
-        await provider.send('wallet_addEthereumChain', [
-          {
-            chainId: hexChainId,
-            chainName: networkName,
-            nativeCurrency: {
-              name: 'Ether',
-              symbol: 'ETH',
-              decimals: 18
-            },
-            rpcUrls: [rpcURLs[chainId]],
-            blockExplorerUrls: [getExplorerUrl(chainId)]
-          }
-        ])
-
-        onSuccess?.()
-      } else {
-        onError?.(err)
-      }
+    } else {
+      onError?.(err)
     }
-  } else {
-    onSwitchChainNotSupported?.()
   }
 }
