@@ -57,6 +57,7 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
+import { supportedNetworks } from '../../util/NetworkUtils'
 
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
@@ -130,7 +131,7 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer>
+        <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
           <HeaderNetworkInformation />
         </NetworkSelectionContainer>
 
@@ -397,13 +398,13 @@ function ConnectionFallback({
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer>
+            <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <MainNetworkNotSupported />
+            <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
           </ConnectionFallbackContainer>
         </>
       )

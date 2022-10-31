@@ -2,14 +2,33 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
 import { ChainId, getNetworkName } from '../../util/networks'
-import { supportedNetworks, switchChain } from '../../util/NetworkUtils'
+import { switchChain } from '../../util/NetworkUtils'
+
+import EthereumLogo from '../../assets/EthereumLogo.png'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
 
 export const NetworkSelectionContainer = ({
+  supportedNetworks,
   children
 }: {
+  supportedNetworks: ChainId[]
   children: React.ReactNode
 }) => {
   const { provider } = useWallet()
+
+  // info about the logos in the network list
+  const networksLogoMap: { [key in ChainId]?: { img: string } } = {
+    [ChainId.Mainnet]: {
+      img: EthereumLogo
+    },
+    [ChainId.ArbitrumOne]: {
+      img: ArbitrumOneLogo
+    },
+    [ChainId.ArbitrumNova]: {
+      img: ArbitrumNovaLogo
+    }
+  }
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -20,7 +39,7 @@ export const NetworkSelectionContainer = ({
       <Transition>
         <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:mt-4 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) =>
-            Object.keys(supportedNetworks).map(chainId => (
+            supportedNetworks?.map(chainId => (
               <div
                 key={chainId}
                 className="flex h-12 cursor-pointer flex-nowrap items-center justify-center space-x-3 px-4 font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:justify-start lg:font-normal lg:text-dark"
@@ -36,7 +55,7 @@ export const NetworkSelectionContainer = ({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <img
-                    src={supportedNetworks[Number(chainId) as ChainId]?.['img']}
+                    src={networksLogoMap[Number(chainId) as ChainId]?.['img']}
                     alt={`${getNetworkName(Number(chainId))} logo`}
                     className="max-w-8 max-h-8"
                   />

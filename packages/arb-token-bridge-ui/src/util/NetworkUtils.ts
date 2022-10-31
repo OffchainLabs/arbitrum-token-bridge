@@ -2,35 +2,21 @@ import { hexValue } from 'ethers/lib/utils'
 import { ChainId, getNetworkName, rpcURLs, getExplorerUrl } from './networks'
 import { BigNumber } from 'ethers'
 import { Web3Provider } from '@ethersproject/providers'
-import EthereumLogo from '../assets/EthereumLogo.png'
-import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
 
 /* 
-  The list which will be available for network selection in navbar-dropdowns plus
-  Icons and colors attached with our networks available for selection
+  The list which will be available for network selection in navbar-dropdowns and unsupported-network-content
 */
-export const supportedNetworks: {
-  [key in ChainId]?: { img: string; btnThemeClass: string }
-} = {
-  [ChainId.Mainnet]: {
-    img: EthereumLogo,
-    btnThemeClass: 'bg-blue-arbitrum'
-  },
-  [ChainId.ArbitrumOne]: {
-    img: ArbitrumOneLogo,
-    btnThemeClass: 'bg-blue-arbitrum'
-  },
-  [ChainId.ArbitrumNova]: {
-    img: ArbitrumNovaLogo,
-    btnThemeClass: 'bg-brick-dark'
-  }
-}
 
 type ExtendedWeb3Provider = Web3Provider & {
   isMetaMask?: boolean
   isImToken?: boolean
 }
+
+export const supportedNetworks = [
+  ChainId.ArbitrumOne,
+  ChainId.ArbitrumNova,
+  ChainId.Mainnet
+]
 
 export type SwitchChainProps = {
   chainId: ChainId
@@ -41,7 +27,7 @@ export type SwitchChainProps = {
 }
 
 const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
-  return provider.isMetaMask || provider.isImToken
+  return provider?.provider?.isMetaMask || provider?.isImToken
 }
 
 const noop = () => {}
