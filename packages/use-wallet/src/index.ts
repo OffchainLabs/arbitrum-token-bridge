@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
-import Web3Modal, { ICoreOptions } from 'web3modal';
-import { Network, Web3Provider } from '@ethersproject/providers';
-import create from 'zustand';
+import { useCallback } from "react";
+import Web3Modal, { ICoreOptions } from "web3modal";
+import { Network, Web3Provider } from "@ethersproject/providers";
+import create from "zustand";
 
 type State = {
   provider: Web3Provider;
@@ -11,7 +11,7 @@ type State = {
 };
 
 const useStore = create<Partial<State>>((_set) => ({
-  web3Modal: typeof window !== 'undefined' ? new Web3Modal() : undefined,
+  web3Modal: typeof window !== "undefined" ? new Web3Modal() : undefined,
 }));
 
 type Account = string;
@@ -35,7 +35,7 @@ export const useWallet: UseWallet = () => {
     const web3ModalProvider = await web3Modal.connect();
 
     // Set up Ethers provider and initial state with the response from the web3Modal
-    const initialProvider = new Web3Provider(web3ModalProvider, 'any');
+    const initialProvider = new Web3Provider(web3ModalProvider, "any");
     const getNetwork = () => initialProvider.getNetwork();
     const initialAccounts = await initialProvider.listAccounts();
     const initialNetwork = await getNetwork();
@@ -48,16 +48,16 @@ export const useWallet: UseWallet = () => {
     };
 
     // Set up event listeners to handle state changes
-    web3ModalProvider.on('accountsChanged', (accounts: string[]) => {
+    web3ModalProvider.on("accountsChanged", (accounts: string[]) => {
       useStore.setState({ account: accounts[0] });
     });
 
-    web3ModalProvider.on('chainChanged', async (_chainId: string) => {
+    web3ModalProvider.on("chainChanged", async (_chainId: string) => {
       const network = await getNetwork();
       useStore.setState({ network });
     });
 
-    web3ModalProvider.on('disconnect', () => {
+    web3ModalProvider.on("disconnect", () => {
       web3Modal.clearCachedProvider();
     });
 
