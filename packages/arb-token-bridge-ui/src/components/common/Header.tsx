@@ -79,6 +79,10 @@ const explorersMenuProps = toHeaderMenuProps([
 
 const chartsStatsMenuProps = toHeaderMenuProps([
   {
+    title: 'How much am I saving?',
+    link: 'https://gas.arbitrum.io/'
+  },
+  {
     title: 'What’s up with my retryable?',
     link: 'https://retryable-tx-panel.arbitrum.io'
   },
