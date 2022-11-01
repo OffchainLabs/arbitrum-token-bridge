@@ -324,7 +324,7 @@ export enum TransferPanelMainErrorMessage {
 export function TransferPanelMain({
   amount,
   setAmount,
-  errorMessage,
+  errorMessage
 }: {
   amount: string
   setAmount: (value: string) => void
