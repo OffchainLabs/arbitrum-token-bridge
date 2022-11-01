@@ -28,8 +28,8 @@ export function DepositConfirmationDialog(
     app: { selectedToken }
   } = useAppState()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network)
-  const { isArbitrumOne } = isNetwork(l2.network)
+  const networkName = getNetworkName(l2.network.chainID)
+  const { isArbitrumOne } = isNetwork(l2.network.chainID)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)

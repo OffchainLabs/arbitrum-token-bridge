@@ -11,7 +11,5 @@
     ],
     "outDir": "./output"
   },
-  "include": [
-    "**/*.*"
-  ]
+  "include": ["**/*.*"]
 }

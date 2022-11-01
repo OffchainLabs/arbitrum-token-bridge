@@ -43,24 +43,54 @@ export const useArbQueryParams = () => {
   })
 }
 
+const isMax = (amount: string | undefined) =>
+  amount?.toLowerCase() === AmountQueryParamEnum.MAX
+
+/**
+ * Sanitise amount value
+ * @param amount - transfer amount value from the input field or from the URL
+ * @returns sanitised value
+ */
+const sanitizeAmountQueryParam = (amount: string) => {
+  // no need to process empty string
+  if (amount.length === 0) {
+    return amount
+  }
+
+  // to catch strings like `amount=asdf` from the URL
+  if (isNaN(Number(amount))) {
+    // return original string if the string is `max` (case-insensitive)
+    // it doesn't show on the input[type=number] field because it isn't in the allowed chars
+    return isMax(amount) ? amount : ''
+  }
+
+  // to reach here they must be a number
+  // check for negative sign at first char
+  if (amount.startsWith('-')) {
+    return String(Math.abs(Number(amount)))
+  }
+
+  // add 0 to values starting with .
+  if (amount.startsWith('.')) {
+    return `0${amount}`
+  }
+
+  // replace leading zeros
+  // this regex finds 1 or more 0s before any digits including 0
+  // but the digits are not captured into the result string
+  return amount.replace(/^0+(?=\d)/, '')
+}
+
 // Our custom query param type for Amount field - will be parsed and returned as a string,
 // but we need to make sure that only valid numeric-string values are considered, else return '0'
 // Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
-const AmountQueryParam = {
+export const AmountQueryParam = {
   // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | null | undefined) => amount,
+  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
   decode: (amount: string | (string | null)[] | null | undefined) => {
-    const amountStr = amount?.toString()
-
-    // to catch random string like `amount=asdf` from the URL
-    if (isNaN(Number(amountStr))) {
-      if (amountStr?.toLowerCase() === AmountQueryParamEnum.MAX) {
-        return amountStr
-      }
-      return ''
-    }
-
-    return amountStr ?? ''
+    // toString() casts the potential string array into a string
+    const amountStr = amount?.toString() ?? ''
+    return sanitizeAmountQueryParam(amountStr)
   }
 }
 

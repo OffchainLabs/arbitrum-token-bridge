@@ -1,90 +1,102 @@
-import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
-import { Disclosure } from '@headlessui/react'
-import { twMerge } from 'tailwind-merge'
+import React, { ImgHTMLAttributes, useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom";
+import { Disclosure } from "@headlessui/react";
+import { twMerge } from "tailwind-merge";
 
-import { Transition } from './Transition'
-import { ExternalLink } from './ExternalLink'
+import { Transition } from "./Transition";
+import { ExternalLink } from "./ExternalLink";
 import {
   HeaderMenuDesktop,
   HeaderMenuMobile,
-  HeaderMenuProps
-} from './HeaderMenu'
+  HeaderMenuProps,
+} from "./HeaderMenu";
 
-const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
+const defaultHeaderClassName = "z-50 flex h-[80px] justify-center lg:bg-black";
 
 export interface HeaderProps {
-  logoSrc: string
-  getHelpLink: string
+  logoSrc: string;
+  getHelpLink: string;
 }
 
 function toHeaderMenuProps(
   links: { title: string; link: string }[]
 ): HeaderMenuProps {
   return {
-    items: links.map(item => ({
+    items: links.map((item) => ({
       title: item.title,
-      anchorProps: { href: item.link }
-    }))
-  }
+      anchorProps: { href: item.link },
+    })),
+  };
 }
 
 const learnMenuProps = toHeaderMenuProps([
   {
-    title: 'Dev docs',
-    link: 'https://developer.offchainlabs.com'
+    title: "Dev docs",
+    link: "https://developer.offchainlabs.com",
   },
   {
-    title: 'About bridging',
-    link: 'https://arbitrum.io/bridge-tutorial'
+    title: "About bridging",
+    link: "https://arbitrum.io/bridge-tutorial",
   },
   {
-    title: 'About Arbitrum',
-    link: 'https://developer.offchainlabs.com/docs/inside_arbitrum'
-  }
-])
+    title: "About Arbitrum",
+    link: "https://developer.offchainlabs.com/docs/inside_arbitrum",
+  },
+]);
 
 const explorersMenuProps = toHeaderMenuProps([
   {
-    title: 'Arbitrum One (Arbiscan)',
-    link: 'https://arbiscan.io'
+    title: "Arbitrum One (Arbiscan)",
+    link: "https://arbiscan.io",
   },
   {
-    title: 'Arbitrum One (Arbitrum’s explorer)',
-    link: 'https://explorer.arbitrum.io'
+    title: "Arbitrum One (BlockScout)",
+    link: "https://explorer.arbitrum.io",
   },
   {
-    title: 'Arbitrum Nova (BlockScout)',
-    link: 'https://nova-explorer.arbitrum.io'
+    title: "Arbitrum Nova (Arbiscan)",
+    link: "https://nova.arbiscan.io",
   },
   {
-    title: 'Arbitrum Rinkeby (Arbiscan)',
-    link: 'https://testnet.arbiscan.io'
+    title: "Arbitrum Nova (BlockScout)",
+    link: "https://nova-explorer.arbitrum.io",
   },
   {
-    title: 'Arbitrum Rinkeby (BlockScout)',
-    link: 'https://rinkeby-explorer.arbitrum.io'
+    title: "Arbitrum Goerli (Arbiscan)",
+    link: "https://goerli.arbiscan.io",
   },
   {
-    title: 'Arbitrum Goerli Rollup (BlockScout)',
-    link: 'https://goerli-rollup-explorer.arbitrum.io'
-  }
-])
+    title: "Arbitrum Goerli (BlockScout)",
+    link: "https://goerli-rollup-explorer.arbitrum.io",
+  },
+  {
+    title: "Arbitrum Rinkeby (Arbiscan)",
+    link: "https://testnet.arbiscan.io",
+  },
+  {
+    title: "Arbitrum Rinkeby (BlockScout)",
+    link: "https://rinkeby-explorer.arbitrum.io",
+  },
+]);
 
 const chartsStatsMenuProps = toHeaderMenuProps([
   {
-    title: 'What’s up with my retryable?',
-    link: 'https://retryable-tx-panel.arbitrum.io'
+    title: "How much gas am I saving?",
+    link: "https://gas.arbitrum.io",
   },
   {
-    title: 'How popular is Arbitrum?',
-    link: 'https://dune.com/Henrystats/arbitrum-metrics'
+    title: "What’s up with my retryable?",
+    link: "https://retryable-tx-panel.arbitrum.io",
   },
   {
-    title: 'Which L2 do people trust most?',
-    link: 'https://l2beat.com'
-  }
-])
+    title: "How popular is Arbitrum?",
+    link: "https://dune.com/Henrystats/arbitrum-metrics",
+  },
+  {
+    title: "Which L2 do people trust most?",
+    link: "https://l2beat.com",
+  },
+]);
 
 const MenuIcon = {
   Open: function () {
@@ -100,7 +112,7 @@ const MenuIcon = {
         <line x1="8" y1="13" x2="40" y2="13" stroke="#FFFFFF" strokeWidth="2" />
         <line x1="8" y1="25" x2="40" y2="25" stroke="#FFFFFF" strokeWidth="2" />
       </svg>
-    )
+    );
   },
   Close: function () {
     return (
@@ -118,9 +130,9 @@ const MenuIcon = {
           fill="white"
         />
       </svg>
-    )
-  }
-}
+    );
+  },
+};
 
 function DesktopExternalLink({
   children,
@@ -133,32 +145,32 @@ function DesktopExternalLink({
     >
       {children}
     </ExternalLink>
-  )
+  );
 }
 
 export type HeaderOverridesProps = {
-  imageSrc?: string
-  className?: string
-}
+  imageSrc?: string;
+  className?: string;
+};
 
 export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
-  const header = document.getElementById('header')
+  const header = document.getElementById("header");
 
   if (header) {
     if (className) {
       // Reset back to defaults and then add overrides on top of that
-      header.className = defaultHeaderClassName
-      header.classList.add(...className.split(' '))
+      header.className = defaultHeaderClassName;
+      header.classList.add(...className.split(" "));
     }
 
-    const image = document.getElementById('header-image') as HTMLImageElement
+    const image = document.getElementById("header-image") as HTMLImageElement;
 
     if (image && imageSrc) {
-      image.src = imageSrc
+      image.src = imageSrc;
     }
   }
 
-  return null
+  return null;
 }
 
 function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
@@ -166,21 +178,21 @@ function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
     <img
       id="header-image"
       src={props.src}
-      alt={props.alt || 'Arbitrum logo'}
-      className={twMerge('-ml-2 w-56 lg:ml-0 lg:w-60', props.className || '')}
+      alt={props.alt || "Arbitrum logo"}
+      className={twMerge("-ml-2 w-56 lg:ml-0 lg:w-60", props.className || "")}
     />
-  )
+  );
 }
 
 export function HeaderContent({ children }: { children: React.ReactNode }) {
-  const mutationObserverRef = useRef<MutationObserver>()
-  const [, setMutationCycleCount] = useState(0)
+  const mutationObserverRef = useRef<MutationObserver>();
+  const [, setMutationCycleCount] = useState(0);
 
   useEffect(() => {
-    const header = document.getElementById('header')
+    const header = document.getElementById("header");
 
     if (!header) {
-      return
+      return;
     }
 
     /**
@@ -193,24 +205,24 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
      *
      * There's no real performance concern, as the contents of the header change very rarely.
      */
-    const config = { subtree: true, childList: true }
+    const config = { subtree: true, childList: true };
     mutationObserverRef.current = new MutationObserver(() =>
       setMutationCycleCount(
-        prevMutationCycleCount => prevMutationCycleCount + 1
+        (prevMutationCycleCount) => prevMutationCycleCount + 1
       )
-    )
-    mutationObserverRef.current.observe(header, config)
+    );
+    mutationObserverRef.current.observe(header, config);
 
-    return () => mutationObserverRef.current?.disconnect()
-  }, [])
+    return () => mutationObserverRef.current?.disconnect();
+  }, []);
 
-  const rootElement = document.getElementById('header-content-root')
+  const rootElement = document.getElementById("header-content-root");
 
   if (!rootElement) {
-    return null
+    return null;
   }
 
-  return ReactDOM.createPortal(children, rootElement)
+  return ReactDOM.createPortal(children, rootElement);
 }
 
 export function Header(props: HeaderProps) {
@@ -221,18 +233,18 @@ export function Header(props: HeaderProps) {
           <a href="/" className="arb-hover flex flex-col items-center">
             <HeaderImageElement src={props.logoSrc} />
           </a>
-          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
+          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
             <HeaderMenuDesktop
               items={[
                 {
-                  title: 'App Portal',
-                  anchorProps: { href: 'https://portal.arbitrum.one' }
+                  title: "App Portal",
+                  anchorProps: { href: "https://portal.arbitrum.one" },
                 },
                 {
-                  title: 'Explorers',
-                  items: explorersMenuProps.items
-                }
+                  title: "Explorers",
+                  items: explorersMenuProps.items,
+                },
               ]}
             >
               Ecosystem
@@ -271,19 +283,19 @@ export function Header(props: HeaderProps) {
               href="https://discord.com/invite/ZpZuw7p"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/discord.png" alt="Discord" />
+              <img src="/icons/discord.webp" alt="Discord" />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/twitter.png" alt="Twitter" />
+              <img src="/icons/twitter.webp" alt="Twitter" />
             </ExternalLink>
           </div>
         </div>
       </div>
     </header>
-  )
+  );
 }
 
 function MobileExternalLink({
@@ -297,10 +309,10 @@ function MobileExternalLink({
     >
       {children}
     </ExternalLink>
-  )
+  );
 }
 
-function HeaderMobile({ getHelpLink }: Pick<HeaderProps, 'getHelpLink'>) {
+function HeaderMobile({ getHelpLink }: Pick<HeaderProps, "getHelpLink">) {
   return (
     <div className="absolute left-0 top-0 z-50 min-h-screen w-full lg:hidden">
       <div className="flex h-[80px] items-center justify-end px-8">
@@ -317,9 +329,9 @@ function HeaderMobile({ getHelpLink }: Pick<HeaderProps, 'getHelpLink'>) {
         <HeaderMenuMobile
           items={[
             {
-              title: 'App Portal',
-              anchorProps: { href: 'https://portal.arbitrum.one' }
-            }
+              title: "App Portal",
+              anchorProps: { href: "https://portal.arbitrum.one" },
+            },
           ]}
         >
           Ecosystem
@@ -331,5 +343,5 @@ function HeaderMobile({ getHelpLink }: Pick<HeaderProps, 'getHelpLink'>) {
         <MobileExternalLink href={getHelpLink}>Get Help</MobileExternalLink>
       </div>
     </div>
-  )
+  );
 }

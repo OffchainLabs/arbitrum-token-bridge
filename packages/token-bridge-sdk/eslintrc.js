@@ -1,3 +1,3 @@
-const eslintCommon =  require("../../eslintrc")
+const eslintCommon = require('../../eslintrc')
 
-module.exports  = eslintCommon
+module.exports = eslintCommon

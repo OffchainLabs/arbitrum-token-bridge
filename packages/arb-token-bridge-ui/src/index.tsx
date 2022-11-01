@@ -1,6 +1,8 @@
 import ReactDOM from 'react-dom'
 import * as Sentry from '@sentry/react'
 import { BrowserTracing } from '@sentry/tracing'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 
 import App from './components/App/App'
 import reportWebVitals from './reportWebVitals'
@@ -17,6 +19,8 @@ import './styles/tailwind.css'
 if (process.env.NODE_ENV === 'development') {
   registerLocalNetwork()
 }
+
+dayjs.extend(relativeTime)
 
 Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN,

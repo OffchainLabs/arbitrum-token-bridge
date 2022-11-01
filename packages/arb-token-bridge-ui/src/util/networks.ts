@@ -1,4 +1,17 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import {
+  l1Networks,
+  l2Networks
+} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
+
+import { hexValue } from 'ethers/lib/utils'
+import { BigNumber } from 'ethers'
+import * as Sentry from '@sentry/react'
+
+import EthereumLogo from '../assets/EthereumLogo.webp'
+import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -10,10 +23,18 @@ export enum ChainId {
   Mainnet = 1,
   Rinkeby = 4,
   Goerli = 5,
+  Sepolia = 11155111,
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
   ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613
+}
+
+type ExtendedWeb3Provider = Web3Provider & {
+  provider: ExternalProvider & {
+    isMetaMask?: boolean
+    isImToken?: boolean
+  }
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -34,6 +55,42 @@ export const rpcURLs: { [chainId: number]: string } = {
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://rinkeby.arbitrum.io/rpc',
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
+}
+
+export const explorerUrls: { [chainId: number]: string } = {
+  // L1
+  [ChainId.Mainnet]: 'https://etherscan.io',
+  // L1 Testnets
+  [ChainId.Goerli]: 'https://goerli.etherscan.io',
+  [ChainId.Rinkeby]: 'https://rinkeby.etherscan.io',
+  //L2
+  [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
+  [ChainId.ArbitrumOne]: 'https://arbiscan.io',
+  // L2 Testnets
+  [ChainId.ArbitrumRinkeby]: 'https://testnet.arbiscan.io',
+  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
+}
+
+export const getExplorerUrl = (chainId: ChainId) => {
+  return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet] //defaults to etherscan
+}
+
+export const getBlockTime = (chainId: ChainId) => {
+  const network = l1Networks[chainId]
+  if (!network) {
+    throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
+  }
+  return network.blockTime
+}
+
+export const getConfirmPeriodBlocks = (chainId: ChainId) => {
+  const network = l2Networks[chainId]
+  if (!network) {
+    throw new Error(
+      `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
+    )
+  }
+  return network.confirmPeriodBlocks
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
@@ -99,36 +156,45 @@ export function registerLocalNetwork() {
   }
 }
 
-export function isNetwork(network: L1Network | L2Network) {
-  const chainId = network.chainID
+export function isNetwork(chainId: ChainId) {
+  const isMainnet = chainId === ChainId.Mainnet
+
+  const isRinkeby = chainId === ChainId.Rinkeby
+  const isGoerli = chainId === ChainId.Goerli
+  const isSepolia = chainId === ChainId.Sepolia
+
+  const isArbitrumOne = chainId === ChainId.ArbitrumOne
+  const isArbitrumNova = chainId === ChainId.ArbitrumNova
+  const isArbitrumGoerli = chainId === ChainId.ArbitrumGoerli
+  const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
+
+  const isArbitrum =
+    isArbitrumOne || isArbitrumNova || isArbitrumGoerli || isArbitrumRinkeby
+
+  const isTestnet =
+    isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
 
   return {
     // L1
-    isMainnet: chainId === ChainId.Mainnet,
+    isMainnet,
+    isEthereum: !isArbitrum,
     // L1 Testnets
-    isRinkeby: chainId === ChainId.Rinkeby,
-    isGoerli: chainId === ChainId.Goerli,
+    isRinkeby,
+    isGoerli,
+    isSepolia,
     // L2
-    isArbitrum: Boolean((network as any).isArbitrum),
-    isArbitrumOne: chainId === ChainId.ArbitrumOne,
-    isArbitrumNova: chainId === ChainId.ArbitrumNova,
+    isArbitrum,
+    isArbitrumOne,
+    isArbitrumNova,
     // L2 Testnets
-    isArbitrumRinkeby: chainId === ChainId.ArbitrumRinkeby,
-    isArbitrumGoerliRollup: chainId === ChainId.ArbitrumGoerli
+    isArbitrumRinkeby,
+    isArbitrumGoerli,
+    // Testnet
+    isTestnet
   }
 }
 
-export function getNetworkName(
-  chainIdOrNetwork: number | L1Network | L2Network
-) {
-  let chainId: number
-
-  if (typeof chainIdOrNetwork === 'number') {
-    chainId = chainIdOrNetwork
-  } else {
-    chainId = chainIdOrNetwork.chainID
-  }
-
+export function getNetworkName(chainId: number) {
   switch (chainId) {
     case ChainId.Mainnet:
       return 'Mainnet'
@@ -153,5 +219,111 @@ export function getNetworkName(
 
     default:
       return 'Unknown'
+  }
+}
+
+export function getNetworkLogo(chainId: number) {
+  switch (chainId) {
+    // L1 networks
+    case ChainId.Mainnet:
+    case ChainId.Rinkeby:
+    case ChainId.Goerli:
+      return EthereumLogo
+
+    // L2 networks
+    case ChainId.ArbitrumOne:
+    case ChainId.ArbitrumRinkeby:
+    case ChainId.ArbitrumGoerli:
+      return ArbitrumOneLogo
+
+    case ChainId.ArbitrumNova:
+      return ArbitrumNovaLogo
+
+    default:
+      return EthereumLogo
+  }
+}
+
+export type SwitchChainProps = {
+  chainId: number
+  provider: ExtendedWeb3Provider
+  onSuccess?: () => void
+  onError?: (err?: Error) => void
+  onSwitchChainNotSupported?: (attemptedChainId: number) => void
+}
+
+const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
+  const { provider: innerProvider } = provider
+  return innerProvider.isMetaMask || innerProvider.isImToken
+}
+
+const noop = () => {}
+
+const onSwitchChainNotSupportedDefault = (attemptedChainId: number) => {
+  const isDeposit = isNetwork(attemptedChainId).isEthereum
+  const targetTxName = isDeposit ? 'deposit' : 'withdraw'
+  const networkName = getNetworkName(attemptedChainId)
+
+  // TODO: show user a nice dialogue box instead of
+  // eslint-disable-next-line no-alert
+  alert(
+    `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
+  )
+}
+
+export async function switchChain({
+  chainId,
+  provider,
+  onSuccess = noop,
+  onError = noop,
+  onSwitchChainNotSupported = onSwitchChainNotSupportedDefault
+}: SwitchChainProps) {
+  // do an early return if switching-chains is not supported by provider
+  if (!isSwitchChainSupported(provider)) {
+    onSwitchChainNotSupported?.(chainId)
+    return
+  }
+
+  // if all the above conditions are satisfied go ahead and switch the network
+  const hexChainId = hexValue(BigNumber.from(chainId))
+  const networkName = getNetworkName(chainId)
+
+  try {
+    await provider.send('wallet_switchEthereumChain', [
+      {
+        chainId: hexChainId
+      }
+    ])
+
+    onSuccess?.()
+  } catch (err: any) {
+    if (err.code === 4902) {
+      // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
+      // This error code indicates that the chain has not been added to MetaMask.
+
+      try {
+        await provider.send('wallet_addEthereumChain', [
+          {
+            chainId: hexChainId,
+            chainName: networkName,
+            nativeCurrency: {
+              name: 'Ether',
+              symbol: 'ETH',
+              decimals: 18
+            },
+            rpcUrls: [rpcURLs[chainId]],
+            blockExplorerUrls: [getExplorerUrl(chainId)]
+          }
+        ])
+      } catch (err: any) {
+        onError?.(err)
+        Sentry.captureException(err)
+      }
+
+      onSuccess?.()
+    } else {
+      onError?.(err)
+      Sentry.captureException(err)
+    }
   }
 }

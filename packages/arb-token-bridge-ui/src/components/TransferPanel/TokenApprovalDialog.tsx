@@ -11,7 +11,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatNumber, formatUSD } from '../../util/NumberUtils'
-import { isNetwork } from '../../util/networks'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -26,7 +26,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { toUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet } = isNetwork(l1.network)
+  const { isMainnet } = isNetwork(l1.network.chainID)
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
 
@@ -97,7 +97,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${l1.network?.explorerUrl}/token/${token?.address}`}
+              href={`${getExplorerUrl(l1.network.chainID)}/token/${
+                token?.address
+              }`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}

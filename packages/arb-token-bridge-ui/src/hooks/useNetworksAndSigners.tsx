@@ -24,8 +24,9 @@ import {
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
+
+import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
-import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 
@@ -39,7 +40,9 @@ export enum UseNetworksAndSignersStatus {
 export type UseNetworksAndSignersLoadingOrErrorStatus =
   | UseNetworksAndSignersStatus.LOADING
   | UseNetworksAndSignersStatus.NOT_CONNECTED
-  | UseNetworksAndSignersStatus.NOT_SUPPORTED
+
+export type UseNetworksAndSignersNotSupportedStatus =
+  UseNetworksAndSignersStatus.NOT_SUPPORTED
 
 const defaultStatus =
   typeof window.web3 === 'undefined'
@@ -48,6 +51,11 @@ const defaultStatus =
 
 export type UseNetworksAndSignersLoadingOrErrorResult = {
   status: UseNetworksAndSignersLoadingOrErrorStatus
+}
+
+export type UseNetworksAndSignersNotSupportedResult = {
+  status: UseNetworksAndSignersStatus.NOT_SUPPORTED
+  chainId: number // the current unsupported chainId which is connected to UI
 }
 
 export type UseNetworksAndSignersConnectedResult = {
@@ -63,11 +71,13 @@ export type UseNetworksAndSignersConnectedResult = {
     signer: Omit<JsonRpcSigner, 'provider'>
   }
   isConnectedToArbitrum: boolean
+  chainId: number // the current chainId which is connected to UI
 }
 
 export type UseNetworksAndSignersResult =
   | UseNetworksAndSignersLoadingOrErrorResult
   | UseNetworksAndSignersConnectedResult
+  | UseNetworksAndSignersNotSupportedResult
 
 export const NetworksAndSignersContext = createContext<
   UseNetworksAndSignersConnectedResult | undefined
@@ -85,6 +95,10 @@ export function useNetworksAndSigners() {
   return context
 }
 
+export type FallbackProps =
+  | { status: UseNetworksAndSignersLoadingOrErrorStatus }
+  | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
+
 export type NetworksAndSignersProviderProps = {
   /**
    * Chooses a specific L2 chain in a situation where multiple L2 chains are connected to a single L1 chain.
@@ -95,7 +109,7 @@ export type NetworksAndSignersProviderProps = {
    *
    * @see https://reactjs.org/docs/render-props.html
    */
-  fallback: (status: UseNetworksAndSignersLoadingOrErrorStatus) => JSX.Element
+  fallback: (props: FallbackProps) => JSX.Element
   /**
    * Renders on successful connection.
    */
@@ -167,7 +181,23 @@ export function NetworksAndSignersProvider(
       // If provider is not supported, display warning message
       if (!(providerChainId in chainIdToDefaultL2ChainId)) {
         console.error(`Provider chainId not supported: ${providerChainId}`)
-        setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+        setResult({
+          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+          chainId: providerChainId
+        })
+        return
+      }
+
+      // We are phasing out support for provider = Rinkeby or ArbRinkeby
+      if (
+        providerChainId === ChainId.Rinkeby ||
+        providerChainId === ChainId.ArbitrumRinkeby
+      ) {
+        console.error(`Provider chainId not supported: ${providerChainId}`)
+        setResult({
+          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+          chainId: providerChainId
+        })
         return
       }
 
@@ -177,13 +207,16 @@ export function NetworksAndSignersProvider(
        * Case 3: selectedChainId is defined and supported, continue
        */
       let _selectedL2ChainId = selectedL2ChainId
-      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]
+      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
       // Case 1: use a default L2 based on the connected provider chainid
       _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
       if (typeof _selectedL2ChainId === 'undefined') {
         console.error(`Unknown provider chainId: ${providerChainId}`)
-        setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+        setResult({
+          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+          chainId: providerChainId
+        })
         return
       }
 
@@ -202,14 +235,14 @@ export function NetworksAndSignersProvider(
         .then(async l1Network => {
           // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
           const l2Provider = new StaticJsonRpcProvider(
-            rpcURLs[_selectedL2ChainId!]
+            rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
           )
           const l2Network = await getL2Network(l2Provider)
 
           // from the L1 network, instantiate the provider for that too
           // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
           const l1Provider = new StaticJsonRpcProvider(
-            rpcURLs[l1Network.chainID!]
+            rpcURLs[l1Network.chainID]
           )
 
           setResult({
@@ -224,14 +257,18 @@ export function NetworksAndSignersProvider(
               signer: l2Provider.getSigner(address!),
               provider: l2Provider
             },
-            isConnectedToArbitrum: false
+            isConnectedToArbitrum: false,
+            chainId: l1Network.chainID
           })
         })
         .catch(() => {
           // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
           if (providerChainId !== _selectedL2ChainId) {
             // Make sure the L2 provider chainid match the selected chainid
-            setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+            setResult({
+              status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+              chainId: providerChainId
+            })
             return
           }
           getL2Network(web3Provider)
@@ -243,7 +280,7 @@ export function NetworksAndSignersProvider(
               const l1Network = await getL1Network(l1Provider)
 
               const l2Provider = new StaticJsonRpcProvider(
-                rpcURLs[l2Network.chainID!]
+                rpcURLs[l2Network.chainID]
               )
 
               setResult({
@@ -258,11 +295,15 @@ export function NetworksAndSignersProvider(
                   signer: web3Provider.getSigner(0),
                   provider: l2Provider
                 },
-                isConnectedToArbitrum: true
+                isConnectedToArbitrum: true,
+                chainId: l2Network.chainID
               })
             })
             .catch(() => {
-              setResult({ status: UseNetworksAndSignersStatus.NOT_SUPPORTED })
+              setResult({
+                status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+                chainId: providerChainId
+              })
             })
         })
     },
@@ -277,7 +318,15 @@ export function NetworksAndSignersProvider(
   }, [provider, account, network, update])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
-    return props.fallback(result.status)
+    const fallbackProps =
+      result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
+        ? {
+            status: result.status,
+            chainId: result.chainId
+          }
+        : { status: result.status }
+
+    return props.fallback(fallbackProps)
   }
 
   return (

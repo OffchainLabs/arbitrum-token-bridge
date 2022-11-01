@@ -79,7 +79,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const { isMainnet } = isNetwork(l1.network)
+  const { isMainnet } = isNetwork(l1.network.chainID)
   const {
     eth: [ethBalance]
   } = useBalance({
@@ -115,12 +115,12 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="flex w-full flex-col items-center space-y-2">
           <div className="flex flex-row space-x-2">
             <img
-              src="/icons/ethereum.png"
+              src="/icons/ethereum.webp"
               alt="Ethereum"
               className="h-8 opacity-50"
             />
             <span className="text-2xl text-purple-ethereum">
-              {getNetworkName(l1.network)} Balance
+              {getNetworkName(l1.network.chainID)} Balance
             </span>
           </div>
           <span className="text-center text-3xl font-light text-purple-ethereum">
