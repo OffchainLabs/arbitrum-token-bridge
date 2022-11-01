@@ -18,7 +18,7 @@ import {
   L2ToL1MessageData,
   getUniqueIdOrHashFromEvent
 } from 'token-bridge-sdk'
-import { L1Network, L2Network, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import {
   ConnectionState,
@@ -128,8 +128,6 @@ export type AppState = {
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
-
-  changeNetwork: ((network: L1Network | L2Network) => Promise<void>) | null
 }
 
 export const defaultState: AppState = {
@@ -249,8 +247,7 @@ export const defaultState: AppState = {
     )
   }),
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
-  arbTokenBridgeLoaded: false,
-  changeNetwork: null
+  arbTokenBridgeLoaded: false
 }
 export const state: AppState = {
   ...defaultState
