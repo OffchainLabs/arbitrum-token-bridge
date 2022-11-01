@@ -26,13 +26,19 @@
 
 #### Dev Build
 
-1. (back in root dir:) `yarn start_sdk`
+All commands are performed in root dir:
+
+1. `yarn start_sdk`
 
 2. Open new terminal tab
 
-3. `yarn start_ui`
+3. `yarn start_shared_ui`
 
-4. Visit `http://localhost:3000/`
+4. Open new terminal tab
+
+5. `yarn start_ui`
+
+6. Visit `http://localhost:3000/`
 
 #### Local Production Build
 

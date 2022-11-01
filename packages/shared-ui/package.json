@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsc --watch",
+    "watch": "tsc --watch",
     "build": "rm -rf ./dist && tsc && cp -R src/assets dist && yarn build:tailwind",
     "build:tailwind": "tailwindcss build -i src/styles/tailwind.css -o dist/index.css -c tailwind.config.js --minify"
   },
