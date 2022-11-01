@@ -2,16 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
-import { BigNumber } from 'ethers'
-import { hexValue } from 'ethers/lib/utils'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import { L1Network, L2Network } from '@arbitrum/sdk'
-import { ExternalProvider, JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
@@ -38,9 +35,9 @@ import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
-  UseNetworksAndSignersLoadingOrErrorStatus,
   NetworksAndSignersProvider,
-  UseNetworksAndSignersConnectedResult
+  UseNetworksAndSignersConnectedResult,
+  FallbackProps
 } from '../../hooks/useNetworksAndSigners'
 import {
   HeaderContent,
@@ -52,23 +49,15 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import {
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork,
-  rpcURLs
-} from '../../util/networks'
+import { isNetwork, ChainId } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
-
-type Web3Provider = ExternalProvider & {
-  isMetaMask?: boolean
-  isImToken?: boolean
-}
-const isSwitchChainSupported = (provider: Web3Provider) =>
-  provider && (provider.isMetaMask || provider.isImToken)
+import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
+import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
+import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
+import { isTestingEnvironment } from '../../util/CommonUtils'
 
 async function addressIsEOA(address: string, provider: JsonRpcProvider) {
   return (await provider.getCode(address)).length <= 2
@@ -81,7 +70,7 @@ declare global {
 }
 
 const AppContent = (): JSX.Element => {
-  const { l1 } = useNetworksAndSigners()
+  const { l1, chainId } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
@@ -135,14 +124,21 @@ const AppContent = (): JSX.Element => {
     )
   }
 
-  const isTestingEnvironment = !!window.Cypress
-
   return (
     <>
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <HeaderNetworkInformation />
+        <NetworkSelectionContainer
+          supportedNetworks={
+            isNetwork(chainId).isTestnet
+              ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+              : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+          }
+        >
+          <HeaderNetworkInformation />
+        </NetworkSelectionContainer>
+
         <HeaderAccountPopover />
       </HeaderContent>
 
@@ -166,8 +162,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
-
-  const { provider: library } = useWallet()
 
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
@@ -259,80 +253,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
-  useEffect(() => {
-    if (library) {
-      async function logGasPrice() {
-        console.log('Gas price:', await library?.getGasPrice())
-      }
-
-      const changeNetwork = async (network: L1Network | L2Network) => {
-        const chainId = network.chainID
-        const hexChainId = hexValue(BigNumber.from(chainId))
-        const networkName = getNetworkName(chainId)
-        const provider = library?.provider
-
-        if (isSwitchChainSupported(provider)) {
-          console.log('Attempting to switch to chain', chainId)
-          try {
-            // @ts-ignore
-            await provider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [
-                {
-                  chainId: hexChainId
-                }
-              ]
-            })
-          } catch (err: any) {
-            if (err.code === 4902) {
-              console.log(
-                `Network ${chainId} not yet added to wallet; adding now:`
-              )
-              // @ts-ignore
-              await provider.request({
-                method: 'wallet_addEthereumChain',
-                params: [
-                  {
-                    chainId: hexChainId,
-                    chainName: networkName,
-                    nativeCurrency: {
-                      name: 'Ether',
-                      symbol: 'ETH',
-                      decimals: 18
-                    },
-                    rpcUrls: [rpcURLs[network.chainID]],
-                    blockExplorerUrls: [getExplorerUrl(network.chainID)]
-                  }
-                ]
-              })
-            } else {
-              throw err
-            }
-          }
-        } else {
-          // if no `wallet_switchEthereumChain` support
-          console.log(
-            'Not sure if current provider supports wallet_switchEthereumChain'
-          )
-          // TODO: show user a nice dialogue box instead of
-          // eslint-disable-next-line no-alert
-          const targetTxName = networksAndSigners.isConnectedToArbitrum
-            ? 'deposit'
-            : 'withdraw'
-
-          alert(
-            `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
-          )
-
-          // TODO: reset state so user can attempt to press "Deposit" again
-        }
-      }
-
-      logGasPrice()
-      actions.app.setChangeNetwork(changeNetwork)
-    }
-  }, [library, networksAndSigners.isConnectedToArbitrum])
-
   return (
     <>
       {tokenBridgeParams && (
@@ -406,7 +326,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   return (
     <NetworksAndSignersProvider
       selectedL2ChainId={l2ChainId || undefined}
-      fallback={status => <ConnectionFallback status={status} />}
+      fallback={fallbackProps => <ConnectionFallback {...fallbackProps} />}
     >
       {children}
     </NetworksAndSignersProvider>
@@ -432,11 +352,7 @@ function ConnectionFallbackContainer({
   )
 }
 
-function ConnectionFallback({
-  status
-}: {
-  status: UseNetworksAndSignersLoadingOrErrorStatus
-}): JSX.Element {
+function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
 
   async function showConnectionModal() {
@@ -447,7 +363,7 @@ function ConnectionFallback({
     }
   }
 
-  switch (status) {
+  switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
         <>
@@ -479,19 +395,22 @@ function ConnectionFallback({
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
+      const supportedNetworks = isNetwork(props.chainId).isTestnet
+        ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+        : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+
       return (
-        <div className="flex w-full justify-center">
-          <span className="py-24 text-2xl font-light text-blue-link text-white">
-            You are on the wrong network.{' '}
-            <ExternalLink
-              href="https://arbitrum.io/bridge-tutorial"
-              className="arb-hover underline"
-            >
-              Read our tutorial
-            </ExternalLink>{' '}
-            on how to switch networks.
-          </span>
-        </div>
+        <>
+          <HeaderContent>
+            <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
+              <HeaderNetworkNotSupported />
+            </NetworkSelectionContainer>
+          </HeaderContent>
+
+          <ConnectionFallbackContainer>
+            <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
+          </ConnectionFallbackContainer>
+        </>
       )
   }
 }
