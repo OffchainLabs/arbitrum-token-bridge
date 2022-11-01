@@ -79,7 +79,7 @@ const explorersMenuProps = toHeaderMenuProps([
 
 const chartsStatsMenuProps = toHeaderMenuProps([
   {
-    title: 'How much am I saving?',
+    title: 'How much gas am I saving?',
     link: 'https://gas.arbitrum.io/'
   },
   {
