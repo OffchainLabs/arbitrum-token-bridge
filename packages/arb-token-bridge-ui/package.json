@@ -1,11 +1,12 @@
 {
   "name": "arb-token-bridge-ui",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "private": true,
   "dependencies": {
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^1.0.3",
+    "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^7.13.0",
     "@sentry/tracing": "^7.13.0",
     "@tailwindcss/forms": "^0.3.3",
@@ -33,9 +34,6 @@
     "use-query-params": "^2.1.1",
     "walletlink": "^2.4.4",
     "web-vitals": "^2.1.0"
-  },
-  "resolutions": {
-    "@rehooks/local-storage": "2.4.0"
   },
   "scripts": {
     "analyze": "cross-env REACT_APP_INTERACTIVE_ANALYZE=1 $npm_execpath run build",
@@ -76,8 +74,8 @@
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
     "@types/react-virtualized": "^9.21.20",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "autoprefixer": "^9",
     "cross-env": "^7.0.3",
     "cypress-localstorage-commands": "^2.2.1",

@@ -567,6 +567,10 @@ export function TokenSearch({
       return
     }
 
+    if (typeof bridgeTokens === 'undefined') {
+      return
+    }
+
     try {
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {

@@ -48,12 +48,24 @@ const explorersMenuProps = toHeaderMenuProps([
     link: 'https://arbiscan.io'
   },
   {
-    title: 'Arbitrum One (Arbitrum’s explorer)',
+    title: 'Arbitrum One (BlockScout)',
     link: 'https://explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Nova (Arbiscan)',
+    link: 'https://nova.arbiscan.io'
   },
   {
     title: 'Arbitrum Nova (BlockScout)',
     link: 'https://nova-explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Goerli (Arbiscan)',
+    link: 'https://goerli.arbiscan.io'
+  },
+  {
+    title: 'Arbitrum Goerli (BlockScout)',
+    link: 'https://goerli-rollup-explorer.arbitrum.io'
   },
   {
     title: 'Arbitrum Rinkeby (Arbiscan)',
@@ -62,10 +74,6 @@ const explorersMenuProps = toHeaderMenuProps([
   {
     title: 'Arbitrum Rinkeby (BlockScout)',
     link: 'https://rinkeby-explorer.arbitrum.io'
-  },
-  {
-    title: 'Arbitrum Goerli Rollup (BlockScout)',
-    link: 'https://goerli-rollup-explorer.arbitrum.io'
   }
 ])
 
