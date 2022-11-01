@@ -42,6 +42,17 @@ jobs:
       - name: Run tests
         run: yarn test:ci:sdk
 
+  test-ui:
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/restore-cache
+
+      - name: Run tests
+        run: yarn test:ci:ui
+
   audit:
     runs-on: ubuntu-latest
     needs: install

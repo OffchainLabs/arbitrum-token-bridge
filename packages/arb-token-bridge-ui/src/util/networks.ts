@@ -1,4 +1,8 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import {
+  l1Networks,
+  l2Networks
+} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
@@ -43,7 +47,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Goerli]: 'https://goerli.etherscan.io',
   [ChainId.Rinkeby]: 'https://rinkeby.etherscan.io',
   //L2
-  [ChainId.ArbitrumNova]: 'https://nova-explorer.arbitrum.io',
+  [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
   [ChainId.ArbitrumRinkeby]: 'https://testnet.arbiscan.io',
@@ -52,6 +56,24 @@ export const explorerUrls: { [chainId: number]: string } = {
 
 export const getExplorerUrl = (chainId: ChainId) => {
   return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet] //defaults to etherscan
+}
+
+export const getBlockTime = (chainId: ChainId) => {
+  const network = l1Networks[chainId]
+  if (!network) {
+    throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
+  }
+  return network.blockTime
+}
+
+export const getConfirmPeriodBlocks = (chainId: ChainId) => {
+  const network = l2Networks[chainId]
+  if (!network) {
+    throw new Error(
+      `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
+    )
+  }
+  return network.confirmPeriodBlocks
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
@@ -118,18 +140,21 @@ export function registerLocalNetwork() {
 }
 
 export function isNetwork(chainId: ChainId) {
+  const isArbitrum =
+    chainId === ChainId.ArbitrumOne ||
+    chainId === ChainId.ArbitrumNova ||
+    chainId === ChainId.ArbitrumGoerli ||
+    chainId === ChainId.ArbitrumRinkeby
+
   return {
     // L1
     isMainnet: chainId === ChainId.Mainnet,
+    isEthereum: !isArbitrum,
     // L1 Testnets
     isRinkeby: chainId === ChainId.Rinkeby,
     isGoerli: chainId === ChainId.Goerli,
     // L2
-    isArbitrum:
-      chainId === ChainId.ArbitrumOne ||
-      chainId === ChainId.ArbitrumNova ||
-      chainId === ChainId.ArbitrumGoerli ||
-      chainId === ChainId.ArbitrumRinkeby,
+    isArbitrum,
     isArbitrumOne: chainId === ChainId.ArbitrumOne,
     isArbitrumNova: chainId === ChainId.ArbitrumNova,
     // L2 Testnets

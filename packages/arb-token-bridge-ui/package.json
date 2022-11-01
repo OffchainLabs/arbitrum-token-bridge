@@ -6,6 +6,7 @@
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.3",
     "@heroicons/react": "^1.0.3",
+    "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^7.13.0",
     "@sentry/tracing": "^7.13.0",
     "@tailwindcss/forms": "^0.3.3",
@@ -34,17 +35,12 @@
     "walletlink": "^2.4.4",
     "web-vitals": "^2.1.0"
   },
-  "resolutions": {
-    "@rehooks/local-storage": "2.4.0"
-  },
   "scripts": {
     "analyze": "cross-env REACT_APP_INTERACTIVE_ANALYZE=1 $npm_execpath run build",
-    "build:tailwind": "tailwindcss build src/styles/tailwind.css -o src/styles/tailwind.output.css",
-    "prestart": "$npm_execpath run build:tailwind",
-    "prebuild": "$npm_execpath run build:tailwind",
     "start": "craco start",
     "build": "CI= craco build",
     "test": "craco test",
+    "test:ci": "craco test --ci",
     "eject": "craco eject",
     "lint": "tsc --noEmit && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
@@ -78,8 +74,8 @@
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
     "@types/react-virtualized": "^9.21.20",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "autoprefixer": "^9",
     "cross-env": "^7.0.3",
     "cypress-localstorage-commands": "^2.2.1",

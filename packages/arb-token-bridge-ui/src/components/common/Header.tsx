@@ -48,12 +48,24 @@ const explorersMenuProps = toHeaderMenuProps([
     link: 'https://arbiscan.io'
   },
   {
-    title: 'Arbitrum One (Arbitrum’s explorer)',
+    title: 'Arbitrum One (BlockScout)',
     link: 'https://explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Nova (Arbiscan)',
+    link: 'https://nova.arbiscan.io'
   },
   {
     title: 'Arbitrum Nova (BlockScout)',
     link: 'https://nova-explorer.arbitrum.io'
+  },
+  {
+    title: 'Arbitrum Goerli (Arbiscan)',
+    link: 'https://goerli.arbiscan.io'
+  },
+  {
+    title: 'Arbitrum Goerli (BlockScout)',
+    link: 'https://goerli-rollup-explorer.arbitrum.io'
   },
   {
     title: 'Arbitrum Rinkeby (Arbiscan)',
@@ -62,10 +74,6 @@ const explorersMenuProps = toHeaderMenuProps([
   {
     title: 'Arbitrum Rinkeby (BlockScout)',
     link: 'https://rinkeby-explorer.arbitrum.io'
-  },
-  {
-    title: 'Arbitrum Goerli Rollup (BlockScout)',
-    link: 'https://goerli-rollup-explorer.arbitrum.io'
   }
 ])
 
@@ -219,7 +227,7 @@ export function Header() {
           <a href="/" className="arb-hover flex flex-col items-center">
             <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
           </a>
-          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-8">
+          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
             <HeaderMenuDesktop
               items={[
