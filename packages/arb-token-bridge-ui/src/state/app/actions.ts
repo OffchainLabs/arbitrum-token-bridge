@@ -3,7 +3,6 @@ import {
   ArbTokenBridge,
   ERC20BridgeToken
 } from 'token-bridge-sdk'
-import { L1Network, L2Network } from '@arbitrum/sdk'
 
 import { Context } from '..'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
@@ -36,13 +35,6 @@ export const setSelectedToken = (
   token: ERC20BridgeToken | null
 ) => {
   state.app.selectedToken = token ? { ...token } : null
-}
-
-export const setChangeNetwork = (
-  { state }: Context,
-  func: (network: L1Network | L2Network) => Promise<void>
-) => {
-  state.app.changeNetwork = func
 }
 
 export const reset = ({ state }: Context, newChainId: number) => {
