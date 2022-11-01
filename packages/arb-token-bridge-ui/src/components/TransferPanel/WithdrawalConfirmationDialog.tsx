@@ -69,7 +69,8 @@ export function WithdrawalConfirmationDialog(
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
-    getBlockTime(l1.network.chainID) * getConfirmPeriodBlocks(l2.network.chainID)
+    getBlockTime(l1.network.chainID) *
+    getConfirmPeriodBlocks(l2.network.chainID)
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
   const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
