@@ -3,6 +3,7 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
@@ -11,7 +12,6 @@ import * as Sentry from '@sentry/react'
 import EthereumLogo from '../assets/EthereumLogo.png'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.png'
-import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
 
