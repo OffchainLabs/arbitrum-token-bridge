@@ -77,6 +77,5 @@ jobs:
 
       - uses: ./.github/actions/restore-cache
 
-      # TODO: Ignore certain paths
       - name: Check formatting with Prettier
         run: yarn prettier:check
