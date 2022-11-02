@@ -8,7 +8,7 @@ import { twMerge } from 'tailwind-merge'
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -90,7 +90,6 @@ export function TransferPanel() {
   const {
     app: {
       connectionState,
-      changeNetwork,
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
@@ -339,7 +338,10 @@ export function TransferPanel() {
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await changeNetwork?.(latestNetworksAndSigners.current.l1.network)
+          await switchChain({
+            chainId: latestNetworksAndSigners.current.l1.network.chainID,
+            provider: latestConnectedProvider.current!
+          })
 
           while (
             latestNetworksAndSigners.current.isConnectedToArbitrum ||
@@ -444,7 +446,10 @@ export function TransferPanel() {
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await changeNetwork?.(latestNetworksAndSigners.current.l2.network)
+          await switchChain({
+            chainId: latestNetworksAndSigners.current.l2.network.chainID,
+            provider: latestConnectedProvider.current!
+          })
 
           while (
             !latestNetworksAndSigners.current.isConnectedToArbitrum ||
@@ -758,7 +763,7 @@ export function TransferPanel() {
             isSummaryVisible
               ? {}
               : {
-                  background: `url(/images/ArbitrumFaded.png)`,
+                  background: `url(/images/ArbitrumFaded.webp)`,
                   backgroundSize: 'contain',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center'

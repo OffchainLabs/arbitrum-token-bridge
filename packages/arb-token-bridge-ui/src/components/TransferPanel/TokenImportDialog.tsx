@@ -288,7 +288,7 @@ export function TokenImportDialog({
               </span>
             </div>
             <div className="flex w-full justify-center py-4">
-              <img src="/images/grumpy-cat.jpg" alt="Grumpy cat" />
+              <img src="/images/grumpy-cat.webp" alt="Grumpy cat" />
             </div>
           </div>
         </div>

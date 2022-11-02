@@ -12,7 +12,7 @@ import {
 } from './HeaderMenu'
 import { GET_HELP_LINK } from '../../constants'
 
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.png'
+import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
 
 const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
 
@@ -78,6 +78,10 @@ const explorersMenuProps = toHeaderMenuProps([
 ])
 
 const chartsStatsMenuProps = toHeaderMenuProps([
+  {
+    title: 'How much gas am I saving?',
+    link: 'https://gas.arbitrum.io'
+  },
   {
     title: 'What’s up with my retryable?',
     link: 'https://retryable-tx-panel.arbitrum.io'
@@ -277,13 +281,13 @@ export function Header() {
               href="https://discord.com/invite/ZpZuw7p"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/discord.png" alt="Discord" />
+              <img src="/icons/discord.webp" alt="Discord" />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/twitter.png" alt="Twitter" />
+              <img src="/icons/twitter.webp" alt="Twitter" />
             </ExternalLink>
           </div>
         </div>
