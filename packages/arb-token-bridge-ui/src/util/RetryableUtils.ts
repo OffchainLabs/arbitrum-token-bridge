@@ -72,7 +72,7 @@ export const getRetryableTicketExpiration = async ({
 
     const now = dayjs()
 
-    const expiryDateResponse = await l1ToL2Msg.getTimeout()
+    const expiryDateResponse = await l1ToL2Msg!.getTimeout()
     const expirationDate = Number(expiryDateResponse.toString()) * 1000
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')

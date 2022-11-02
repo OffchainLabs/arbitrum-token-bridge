@@ -14,7 +14,7 @@ function Moon() {
 
   return (
     <motion.img
-      src="/images/moon.png"
+      src="/images/moon.webp"
       alt="Moon"
       className="absolute bottom-[-10%] z-0 lg:bottom-[-45%] lg:right-0 lg:max-w-[75vw]"
       style={{ scale }}
@@ -29,7 +29,7 @@ export type LayoutProps = {
 export function Layout(props: LayoutProps) {
   return (
     <div
-      style={{ backgroundImage: 'url(/images/space.jpeg)' }}
+      style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <Header />

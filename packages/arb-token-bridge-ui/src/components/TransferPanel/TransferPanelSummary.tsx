@@ -243,7 +243,7 @@ export function TransferPanelSummary({
   const { toUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
-  const { isMainnet } = isNetwork(l1.network)
+  const { isMainnet } = isNetwork(l1.network.chainID)
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode

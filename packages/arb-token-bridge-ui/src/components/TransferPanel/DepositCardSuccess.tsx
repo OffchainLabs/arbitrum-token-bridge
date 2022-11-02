@@ -33,6 +33,9 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   })
 
   useEffect(() => {
+    if (typeof arbTokenBridge.bridgeTokens === 'undefined') {
+      return
+    }
     // Add token to bridge just in case the user navigated away while the deposit was in-flight
     if (tx.tokenAddress && !bridgeTokens[tx.tokenAddress]) {
       token.add(tx.tokenAddress)

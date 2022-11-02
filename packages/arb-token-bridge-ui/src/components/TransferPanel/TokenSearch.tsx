@@ -423,13 +423,13 @@ function TokensPanel({
 
         const token = tokensFromUser[address] || tokensFromLists[address]
 
-        return (
-          token.name +
-          token.symbol +
-          token.address +
-          // So we don't concatenate "undefined".
-          (token.l2Address || '')
-        )
+        if (!token) {
+          return false
+        }
+
+        const { name, symbol, address: tokenAddress, l2Address = '' } = token
+
+        return (name + symbol + tokenAddress + l2Address)
           .toLowerCase()
           .includes(tokenSearch)
       })
@@ -541,8 +541,11 @@ function TokensPanel({
                   )
                 }
 
-                const token =
-                  tokensFromLists[address] || tokensFromUser[address]
+                let token: SearchableToken | null = null
+                if (address) {
+                  token =
+                    tokensFromLists[address] || tokensFromUser[address] || null
+                }
 
                 return (
                   <TokenRow
@@ -589,6 +592,10 @@ export function TokenSearch({
     }
 
     if (!_token.address) {
+      return
+    }
+
+    if (typeof bridgeTokens === 'undefined') {
       return
     }
 

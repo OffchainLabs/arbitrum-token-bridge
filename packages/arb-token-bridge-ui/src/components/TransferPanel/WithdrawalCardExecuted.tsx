@@ -27,8 +27,13 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
   useEffect(() => {
     // Add token to bridge just in case
-    if (tx.tokenAddress && !arbTokenBridge.bridgeTokens[tx.tokenAddress]) {
-      arbTokenBridge.token.add(tx.tokenAddress)
+    if (typeof arbTokenBridge.bridgeTokens === 'undefined') {
+      return
+    }
+
+    const { tokenAddress } = tx
+    if (tokenAddress && !arbTokenBridge.bridgeTokens[tokenAddress]) {
+      arbTokenBridge.token.add(tokenAddress)
     }
   }, [])
 
