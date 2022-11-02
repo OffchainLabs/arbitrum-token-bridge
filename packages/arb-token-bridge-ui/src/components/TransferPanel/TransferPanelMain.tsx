@@ -258,7 +258,7 @@ function ETHBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatAmount(balance, Decimals.Token, 'ETH')} ETH
+      {formatAmount(balance, { decimals: Decimals.Token, symbol: 'ETH' })} ETH
     </span>
   )
 }
@@ -286,7 +286,10 @@ function TokenBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatAmount(balance, forToken.decimals, forToken.symbol)}{' '}
+      {formatAmount(balance, {
+        decimals: forToken.decimals,
+        symbol: forToken.symbol
+      })}{' '}
       {forToken.symbol}
     </span>
   )

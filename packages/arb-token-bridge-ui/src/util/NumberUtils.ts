@@ -17,60 +17,81 @@ export enum Decimals {
   Long = 5,
   Token = 18
 }
-export const formatNumber = (
-  value: number | BigNumber,
-  decimals: number = 6,
+
+export const formatNumber = <T extends number | BigNumber>(
+  number: T,
   options: {
-    notation: 'compact' | 'standard'
-  } = { notation: 'standard' }
-) => {
-  const num = BigNumber.isBigNumber(value)
-    ? parseFloat(utils.formatUnits(value, decimals))
-    : value
+    decimals?: T extends number ? never : number
+    maximumFractionDigits?: number
+    notation?: 'compact' | 'standard'
+  } = {
+    maximumFractionDigits: 3,
+    notation: 'standard'
+  }
+): string => {
+  const { decimals, notation, maximumFractionDigits } = options
+  const value: number = BigNumber.isBigNumber(number)
+    ? parseFloat(utils.formatUnits(number, decimals ?? Decimals.Token))
+    : number
 
   return Intl.NumberFormat('en', {
-    notation: options?.notation,
-    maximumFractionDigits: decimals
-  }).format(num)
+    notation,
+    maximumFractionDigits
+  }).format(value)
 }
 
-export const formatAmount = (
-  balance: BigNumber,
-  decimals: number = Decimals.Token,
-  symbol?: string
-) => {
-  const value = parseFloat(utils.formatUnits(balance, decimals))
+export const formatAmount = <T extends number | BigNumber>(
+  balance: T,
+  options: {
+    decimals?: T extends number ? never : number
+    symbol?: string
+  }
+): string => {
+  const value: number = BigNumber.isBigNumber(balance)
+    ? parseFloat(utils.formatUnits(balance, options.decimals))
+    : balance
 
   if (value === 0) {
     return '0'
   }
 
-  const isShortSymbol = symbol ? symbol.length < 5 : true
+  const isShortSymbol = options.symbol ? options.symbol.length < 5 : true
 
   // Small number, show 4 or 5 decimals based on token name length
   if (value < 1) {
-    return formatNumber(
-      value,
-      isShortSymbol ? Decimals.Long : Decimals.Standard,
-      { notation: 'compact' }
-    )
+    return formatNumber(value, {
+      maximumFractionDigits: isShortSymbol ? Decimals.Long : Decimals.Standard,
+      notation: 'compact'
+    })
   }
 
   // Long token name, display shortened form with only 1 decimal
   if (!isShortSymbol) {
-    return formatNumber(value, Decimals.Short, { notation: 'compact' })
+    return formatNumber(value, {
+      maximumFractionDigits: Decimals.Short,
+      notation: 'compact'
+    })
   }
 
   // Show compact number (1.234T, 1.234M)
   if (value >= 1_000_000) {
-    return formatNumber(value, Decimals.Compact, { notation: 'compact' })
+    return formatNumber(value, {
+      maximumFractionDigits: Decimals.Compact,
+      notation: 'compact'
+    })
   }
 
   // Show full number without decimals
   if (value >= 10_000) {
-    return formatNumber(value, Decimals.None, { notation: 'standard' })
+    return formatNumber(value, {
+      maximumFractionDigits: Decimals.None,
+      notation: 'standard'
+    })
   }
 
   // Show full number with 4 decimals
-  return formatNumber(value, Decimals.Standard, { notation: 'standard' })
+  return formatNumber(value, {
+    maximumFractionDigits: Decimals.Standard,
+    notation: 'standard'
+  })
 }
