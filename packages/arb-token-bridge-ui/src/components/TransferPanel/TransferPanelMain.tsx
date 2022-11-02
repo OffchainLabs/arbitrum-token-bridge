@@ -20,6 +20,7 @@ import {
   isNetwork,
   switchChain
 } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
 import {
