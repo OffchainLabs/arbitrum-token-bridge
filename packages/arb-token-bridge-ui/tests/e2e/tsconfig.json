@@ -10,5 +10,5 @@
     ],
     "outDir": "./output"
   },
-  "include": ["specs/*.ts"]
+  "include": ["**/*.*"]
 }
