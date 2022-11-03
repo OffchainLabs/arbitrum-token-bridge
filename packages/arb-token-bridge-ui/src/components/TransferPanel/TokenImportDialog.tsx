@@ -1,16 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
+import {
+  ERC20BridgeToken,
+  getL1TokenData,
+  toERC20BridgeToken
+} from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
 
 import { useActions, useAppState } from '../../state'
-import {
-  useTokensFromLists,
-  useTokensFromUser,
-  toERC20BridgeToken
-} from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -51,13 +50,11 @@ export function TokenImportDialog({
   const { l1, l2 } = useNetworksAndSigners()
   const actions = useActions()
 
-  const tokensFromUser = useTokensFromUser()
-  const latestTokensFromUser = useLatest(tokensFromUser)
-
-  const tokensFromLists = useTokensFromLists()
-  const latestTokensFromLists = useLatest(tokensFromLists)
-
   const latestBridgeTokens = useLatest(bridgeTokens)
+
+  const { tokensFromLists = {}, tokensFromUser = {} } = token || {}
+  const latestTokensFromUser = useLatest(tokensFromUser)
+  const latestTokensFromLists = useLatest(tokensFromLists)
 
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)

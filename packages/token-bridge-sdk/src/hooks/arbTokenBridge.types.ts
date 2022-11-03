@@ -107,6 +107,20 @@ export interface ERC20BridgeToken extends BridgeToken {
   decimals: number
 }
 
+export interface BridgeTokenList {
+  id: number
+  originChainID: string
+  url: string
+  name: string
+  isDefault: boolean
+  logoURI: string
+}
+
+export interface TokenListWithId extends TokenList {
+  l2ChainId: string
+  bridgeTokenListId: number
+}
+
 export interface L1TokenData {
   name: string
   symbol: string
@@ -205,10 +219,19 @@ export interface ArbTokenBridgeCache {
   expire: () => void
 }
 
+export interface SearchableToken extends ERC20BridgeToken {
+  tokenLists: number[]
+}
+
+export type SearchableTokenStorage = { [l1Address: string]: SearchableToken }
+
 export interface ArbTokenBridgeToken {
+  tokensFromLists: SearchableTokenStorage
+  tokensFromUser: SearchableTokenStorage
   add: (erc20L1orL2Address: string) => Promise<string>
   addTokensFromList: (tokenList: TokenList, listID?: number) => void
   removeTokensFromList: (listID: number) => void
+  searchTokenFromList: (erc20L1orL2Address: string) => SearchableToken | null
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (params: {
     erc20L1Address: string

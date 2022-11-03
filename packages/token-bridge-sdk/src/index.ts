@@ -10,7 +10,9 @@ export type {
   ContractStorage,
   NodeBlockDeadlineStatus,
   L1TokenData,
-  L2TokenData
+  L2TokenData,
+  SearchableToken,
+  BridgeTokenList
 } from './hooks/arbTokenBridge.types'
 export {
   TokenType,
@@ -44,5 +46,13 @@ export {
 } from './util/index'
 export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
+export {
+  addBridgeTokenListToBridge,
+  fetchTokenListFromURL,
+  fetchTokenLists,
+  toERC20BridgeToken,
+  listIdsToNames,
+  BRIDGE_TOKEN_LISTS
+} from './util/token'
 
 export { useGasPrice } from './hooks/useGasPrice'
