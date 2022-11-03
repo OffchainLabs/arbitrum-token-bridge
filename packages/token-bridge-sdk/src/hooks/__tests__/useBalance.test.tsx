@@ -223,7 +223,7 @@ describe('useBalance', () => {
     })
   })
 
-  it.only('getter update ERC20 balance and merge data', async () => {
+  it('getter update ERC20 balance and merge data', async () => {
     const provider = new StaticJsonRpcProvider(
       process.env.REACT_APP_ETHEREUM_RPC_URL,
       1

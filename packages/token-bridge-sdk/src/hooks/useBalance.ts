@@ -67,7 +67,11 @@ const useBalance = ({
     })
 
     return erc20Addresses.reduce((acc, address, index) => {
-      acc[address.toLowerCase()] = addressesBalances[index].balance
+      const balance = addressesBalances[index]
+      if (balance) {
+        acc[address.toLowerCase()] = balance.balance
+      }
+
       return acc
     }, {} as Erc20Balances)
   }, [queryKey, erc20Addresses, provider, walletAddressLowercased])
