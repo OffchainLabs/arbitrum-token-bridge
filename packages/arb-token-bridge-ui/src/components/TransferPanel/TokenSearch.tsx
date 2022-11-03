@@ -380,6 +380,10 @@ function TokensPanel({
         return erc20L1Balances?.[address.toLowerCase()]
       }
 
+      if (typeof bridgeTokens === 'undefined') {
+        return null
+      }
+
       const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
       return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
