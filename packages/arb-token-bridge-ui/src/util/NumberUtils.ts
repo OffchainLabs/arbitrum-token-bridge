@@ -38,11 +38,11 @@ export const formatAmount = <T extends number | BigNumber>(
   options: {
     decimals?: T extends number ? never : number
     symbol?: string
-  }
+  } = {}
 ): string => {
   const { decimals, symbol } = options
   const value: number = BigNumber.isBigNumber(balance)
-    ? parseFloat(utils.formatUnits(balance, decimals ?? 18))
+    ? parseFloat(utils.formatUnits(balance, decimals))
     : balance
   const suffix = symbol ? ` ${symbol}` : ''
 
