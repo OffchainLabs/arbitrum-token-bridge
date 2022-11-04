@@ -536,61 +536,41 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     amount: BigNumber
   }) {
-    const erc20L1AddressLowercased = erc20L1Address.toLowerCase()
-    const lptMainnetAddressLowercased =
-      '0x58b6a8a3302369daec383334672404ee733ab239'.toLowerCase()
+    const l1BaseFee = await l1.provider.getGasPrice()
 
-    if (
-      // LPT: L1 gateway reverts on zero amount transfers
-      //
-      // https://github.com/livepeer/arbitrum-lpt-bridge/blob/170e937724c21ff9971a9b0198cb8fcc947a4ea1/contracts/L1/gateway/L1LPTGateway.sol#L97
-      erc20L1AddressLowercased === lptMainnetAddressLowercased
-    ) {
-      const l1BaseFee = await l1.provider.getGasPrice()
-
-      const inbox = Inbox__factory.connect(
-        l2.network.ethBridge.inbox,
-        l1.provider
-      )
-
-      const estimatedL2SubmissionCost =
-        await inbox.calculateRetryableSubmissionFee(
-          // Actual data length was 704 but we added some padding
-          //
-          // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
-          BigNumber.from(1000),
-          // We do the same percent increase in the SDK
-          //
-          // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
-          l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
-        )
-
-      return {
-        // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
-        estimatedL1Gas: BigNumber.from(200_000),
-        // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
-        estimatedL2Gas: BigNumber.from(100_000),
-        estimatedL2SubmissionCost
-      }
-    }
-
-    const depositRequest = await erc20Bridger.getDepositRequest({
-      // Setting `amount` to zero so it doesn't fail on not enough allowance
-      amount: BigNumber.from(0),
-      from: walletAddress,
-      erc20L1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
-
-    const estimatedL1Gas = await l1.provider.estimateGas(
-      depositRequest.txRequest
+    const inbox = Inbox__factory.connect(
+      l2.network.ethBridge.inbox,
+      l1.provider
     )
 
-    const estimatedL2Gas = depositRequest.retryableData.gasLimit
     const estimatedL2SubmissionCost =
-      depositRequest.retryableData.maxSubmissionCost
-    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+      await inbox.calculateRetryableSubmissionFee(
+        // Actual data length was 704 but we added some padding
+        //
+        // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
+        BigNumber.from(1_000),
+        // We do the same percent increase in the SDK
+        //
+        // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
+        l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
+      )
+
+    // The values set by looking at a couple of different ERC-20 deposits
+    return {
+      // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
+      // https://etherscan.io/tx/0x0049a5a171b891c5826ba47e77871fa6bae6eb57fcaf474a97d62ab07a815a2c
+      // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
+      // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
+      // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
+      estimatedL1Gas: BigNumber.from(240_000),
+      // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
+      // https://arbiscan.io/tx/0xd2ba11ebc51f546abc2ddda715507948d097e5707fd1dc37c239cc4cf28cc6ed
+      // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
+      // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
+      // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
+      estimatedL2Gas: BigNumber.from(100_000),
+      estimatedL2SubmissionCost
+    }
   }
 
   async function withdrawToken({
