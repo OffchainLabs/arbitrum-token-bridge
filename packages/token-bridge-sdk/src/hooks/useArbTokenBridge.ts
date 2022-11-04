@@ -551,7 +551,7 @@ export const useArbTokenBridge = (
         // L1 DAI Gateway: 324
         // L1 Standard Gateway (APE): 740
         // L1 Custom Gateway (USDT): 324
-        // L1 WETH Gateway (USDT): 324
+        // L1 WETH Gateway: 324
         BigNumber.from(1_000),
         // We do the same percent increase in the SDK
         //
