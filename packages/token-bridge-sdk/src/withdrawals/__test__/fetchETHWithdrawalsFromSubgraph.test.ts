@@ -1,15 +1,16 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { L2_PROVIDER_URL, L2_ACCOUNT_ADDRESS_ETH } from '../../common'
 
 import { fetchETHWithdrawalsFromSubgraph } from '../fetchETHWithdrawalsFromSubgraph'
 
-const l2Provider = new JsonRpcProvider('https://rinkeby.arbitrum.io/rpc')
+const l2Provider = new JsonRpcProvider(L2_PROVIDER_URL)
 
 describe('fetchETHWithdrawalsFromSubgraph', () => {
   it('fetches no ETH withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchETHWithdrawalsFromSubgraph({
-      address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
+      address: L2_ACCOUNT_ADDRESS_ETH,
       fromBlock: 0,
-      toBlock: 11110000,
+      toBlock: 2136,
       l2Provider
     })
 
@@ -18,34 +19,26 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
 
   it('fetches some ETH withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchETHWithdrawalsFromSubgraph({
-      address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
-      fromBlock: 11110000,
-      toBlock: 12055296,
+      address: L2_ACCOUNT_ADDRESS_ETH,
+      fromBlock: 2136,
+      toBlock: 224417,
       l2Provider
     })
 
-    expect(result).toHaveLength(5)
+    expect(result).toHaveLength(3)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           l2TxHash:
-            '0xdc8f593a5c19f2133e59c6e332dee0f330d977ffa11387eee2cfc55cee1722e7'
+            '0x5b52bed323fab12d6eafcf4a7f2a67efb78f20b970332aba8967602c33a6f505'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xb482555a63edc154035834a7380ae3787c0126730228d4e1dce97520f25ed0f7'
+            '0xe49110aa248f0cdcf977bd78dabbd3d50a81c21195a62ee9a3287bdc7bfe4977'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xa639f70688a095ce3134c4768de5ef0e2fbad804ca4bdee8dc56131b4500bcb9'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0xc3636c940f800ccc14e83a35448cc62ab9c5bd9bcdb25cc451769df9bd0260e0'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0x821b91067d86d4081639183e29d00f1e553370f979514337f1aa2b867250a269'
+            '0x96c9e940a9177e4c9a7bbe91ba18983df5c73c542c541cffd6d1a738c3ce52fe'
         })
       ])
     )
@@ -53,34 +46,22 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
 
   it('fetches some ETH withdrawals from subgraph pre-nitro and post-nitro', async () => {
     const result = await fetchETHWithdrawalsFromSubgraph({
-      address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
-      fromBlock: 13744993,
-      toBlock: 13956985,
+      address: L2_ACCOUNT_ADDRESS_ETH,
+      fromBlock: 22204081,
+      toBlock: 22216295,
       l2Provider
     })
 
-    expect(result).toHaveLength(5)
+    expect(result).toHaveLength(2)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           l2TxHash:
-            '0x72ba5c0babbdea27a4b405b041b307b8a9bd420ec8f716071136b51fc660ad2c'
+            '0xe18871590da25b062f774d841423dcdbcd54d8879b9f8851e3fffb92c655c52b'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0x9dcdafe1f4cc1b5cf3b568ed3a4b6529dcbde5c71dbe2b6ded624e3b78056b76'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0xa0f9390177977fc0abf839c36808e853e1213e7583b48d2d48341fa41d054732'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0xbeba9bc68ad640f6b946d3cd157dd51b3f272072c6a31234e5706e00c1bdb40b'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0x050fed85e2b48d4937663a9597d60a97929150072e3e9403b1f07dbdf080a9af'
+            '0xf4a0ef245233a669b0460e4134db4452b89a7d5f06815e3469b441ad4f5d0e19'
         })
       ])
     )

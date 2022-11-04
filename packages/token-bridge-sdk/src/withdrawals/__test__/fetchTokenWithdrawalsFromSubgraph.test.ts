@@ -1,15 +1,18 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { L2_ACCOUNT_ADDRESS_ERC20, L2_PROVIDER_URL } from '../../common'
 
 import { fetchTokenWithdrawalsFromSubgraph } from '../fetchTokenWithdrawalsFromSubgraph'
 
-const l2Provider = new JsonRpcProvider('https://rinkeby.arbitrum.io/rpc')
+const l2Provider = new JsonRpcProvider(L2_PROVIDER_URL)
+
+jest.setTimeout(10000)
 
 describe('fetchTokenWithdrawalsFromSubgraph', () => {
   it('fetches no token withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
+      address: L2_ACCOUNT_ADDRESS_ERC20,
       fromBlock: 0,
-      toBlock: 11110000,
+      toBlock: 12880678,
       l2Provider
     })
 
@@ -18,26 +21,30 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
 
   it('fetches some token withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
-      fromBlock: 11110000,
-      toBlock: 12055296,
+      address: L2_ACCOUNT_ADDRESS_ERC20,
+      fromBlock: 12880679,
+      toBlock: 12889471,
       l2Provider
     })
 
-    expect(result).toHaveLength(3)
+    expect(result).toHaveLength(4)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           l2TxHash:
-            '0xd747141d1bff3c9eb6c11c9bb39a0152de70267449dffe28eafd53f1989566a6'
+            '0xa2a31cb4aa747889245b368c93cdb0ccfa1b8e14e907763080b43112ef1dcc4e'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0x417c9d1928947f5e96b35be3843bcd1eeeacaa64a781aa5b9089a9b255f30107'
+            '0x815973ff35fcd84c54b8651a0c9a36d8c1ddf1bc64b18d673443c918283823c3'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xcce63179f64478c81bb4d915208369a85fa5d891bfe56348109035f95fcae898'
+            '0x9444cd8a461963edb380d32cf11b0c6e16c2e917c11d3d81e4324a0081bf99f1'
+        }),
+        expect.objectContaining({
+          l2TxHash:
+            '0x9444cd8a461963edb380d32cf11b0c6e16c2e917c11d3d81e4324a0081bf99f1'
         })
       ])
     )
@@ -45,22 +52,42 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
 
   it('fetches some token withdrawals from subgraph pre-nitro and post-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: '0x41C966f99De0cA6F6531fbcAc9Db7eaBDF119744',
-      fromBlock: 13910741,
-      toBlock: 13927058,
+      address: L2_ACCOUNT_ADDRESS_ERC20,
+      fromBlock: 22136283,
+      toBlock: 22231082,
       l2Provider
     })
 
-    expect(result).toHaveLength(2)
+    expect(result).toHaveLength(7)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           l2TxHash:
-            '0x5f64136fe311b9ec42e22ac43360f519a0728954a5f122cb93cf5214d1a113cc'
+            '0xa9a4ff859d3d5e727c55d75da085af6b5df2eeec5e9b090f561e4180085de1e3'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xd9b0a17fc302210a0c084f55f653ab654c72aecbe1a2a2e3edf707c34261217f'
+            '0xa9a4ff859d3d5e727c55d75da085af6b5df2eeec5e9b090f561e4180085de1e3'
+        }),
+        expect.objectContaining({
+          l2TxHash:
+            '0xa9a4ff859d3d5e727c55d75da085af6b5df2eeec5e9b090f561e4180085de1e3'
+        }),
+        expect.objectContaining({
+          l2TxHash:
+            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
+        }),
+        expect.objectContaining({
+          l2TxHash:
+            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
+        }),
+        expect.objectContaining({
+          l2TxHash:
+            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
+        }),
+        expect.objectContaining({
+          l2TxHash:
+            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
         })
       ])
     )
