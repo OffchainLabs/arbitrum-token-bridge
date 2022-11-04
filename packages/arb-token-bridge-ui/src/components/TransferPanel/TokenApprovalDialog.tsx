@@ -42,7 +42,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const approvalFeeText = useMemo(() => {
     const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
     const usd = formatUSD(toUSD(estimatedGasFees))
-    return `${eth} ETH${isMainnet ? ` (${usd})` : ''}`
+    return `${eth}${isMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, toUSD, isMainnet])
 
   useEffect(() => {

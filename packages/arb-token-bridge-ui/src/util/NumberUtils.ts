@@ -61,51 +61,65 @@ export const formatAmount = <T extends number | BigNumber>(
     symbol?: string
   }
 ): string => {
+  const { decimals, symbol } = options
   const value: number = BigNumber.isBigNumber(balance)
-    ? parseFloat(utils.formatUnits(balance, options.decimals))
+    ? parseFloat(utils.formatUnits(balance, decimals))
     : balance
+  const suffix = symbol ? ` ${symbol}` : ''
 
   if (value === 0) {
-    return '0'
+    return `0${suffix}`
   }
 
   const isShortSymbol = options.symbol ? options.symbol.length < 5 : true
 
   // Small number, show 4 or 5 decimals based on token name length
   if (value < 1) {
-    return formatNumber(value, {
-      maximumFractionDigits: isShortSymbol ? Decimals.Long : Decimals.Standard,
-      notation: 'compact'
-    })
+    return (
+      formatNumber(value, {
+        maximumFractionDigits: isShortSymbol
+          ? Decimals.Long
+          : Decimals.Standard,
+        notation: 'compact'
+      }) + suffix
+    )
   }
 
   // Long token name, display shortened form with only 1 decimal
   if (!isShortSymbol) {
-    return formatNumber(value, {
-      maximumFractionDigits: Decimals.Short,
-      notation: 'compact'
-    })
+    return (
+      formatNumber(value, {
+        maximumFractionDigits: Decimals.Short,
+        notation: 'compact'
+      }) + suffix
+    )
   }
 
   // Show compact number (1.234T, 1.234M)
   if (value >= 1_000_000) {
-    return formatNumber(value, {
-      maximumFractionDigits: Decimals.Compact,
-      notation: 'compact'
-    })
+    return (
+      formatNumber(value, {
+        maximumFractionDigits: Decimals.Compact,
+        notation: 'compact'
+      }) + suffix
+    )
   }
 
   // Show full number without decimals
   if (value >= 10_000) {
-    return formatNumber(value, {
-      maximumFractionDigits: Decimals.None,
-      notation: 'standard'
-    })
+    return (
+      formatNumber(value, {
+        maximumFractionDigits: Decimals.None,
+        notation: 'standard'
+      }) + suffix
+    )
   }
 
   // Show full number with 4 decimals
-  return formatNumber(value, {
-    maximumFractionDigits: Decimals.Standard,
-    notation: 'standard'
-  })
+  return (
+    formatNumber(value, {
+      maximumFractionDigits: Decimals.Standard,
+      notation: 'standard'
+    }) + suffix
+  )
 }

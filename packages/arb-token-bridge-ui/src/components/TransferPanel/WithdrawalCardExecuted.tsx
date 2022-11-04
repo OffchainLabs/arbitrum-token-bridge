@@ -80,9 +80,8 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
             <span className="font-medium">
               {formatAmount(balance, {
                 decimals: selectedToken?.decimals ?? Decimals.Token,
-                symbol: 'ETH'
-              })}{' '}
-              {tx.asset.toUpperCase()}
+                symbol: tx.asset.toUpperCase()
+              })}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />

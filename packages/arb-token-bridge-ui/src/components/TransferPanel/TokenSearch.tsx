@@ -227,7 +227,8 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
               {tokenBalance ? (
                 formatAmount(tokenBalance, {
-                  decimals: token?.decimals ?? Decimals.Token
+                  decimals: token?.decimals ?? Decimals.Token,
+                  symbol: tokenSymbol
                 })
               ) : (
                 <div className="mr-2">
@@ -238,8 +239,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                     width={14}
                   />
                 </div>
-              )}{' '}
-              {tokenSymbol}
+              )}
             </span>
           ) : (
             <span className="text-sm font-medium text-blue-link">Import</span>
