@@ -680,7 +680,12 @@ export function TransferPanelMain({
       }
 
       // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals || 18))
+      setAmount(
+        utils.formatUnits(
+          tokenBalance,
+          selectedToken?.decimals ?? Decimals.Token
+        )
+      )
       return
     }
 

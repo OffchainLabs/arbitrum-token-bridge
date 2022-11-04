@@ -23,11 +23,11 @@ export enum Decimals {
  *
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
  *
- * Should be used for specific formatting, or when accuracy is needed (balance, gas fee)
+ * Should not be used directly, use formatAmount instead
  * NOTE: decimals is only here to parse BigNumber to number, not to control the display
  * maximumFractionDigits should be used instead to control the display
  */
-export const formatNumber = <T extends number | BigNumber>(
+const formatNumber = <T extends number | BigNumber>(
   number: T,
   options: {
     decimals?: T extends number ? never : number

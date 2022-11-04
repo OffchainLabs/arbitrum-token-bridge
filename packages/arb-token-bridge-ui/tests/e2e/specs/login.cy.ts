@@ -2,7 +2,7 @@
  * Test case suite for Login and balance check flow
  */
 
-import { Decimals, formatNumber } from '../../../src/util/NumberUtils'
+import { Decimals, formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
   goerliRPC,
@@ -16,16 +16,16 @@ describe('Login Account', () => {
   before(() => {
     getInitialETHBalance(goerliRPC).then(
       val =>
-        (l1ETHbal = formatNumber(val, {
+        (l1ETHbal = formatAmount(val, {
           decimals: Decimals.Token,
-          maximumFractionDigits: 5
+          symbol: 'ETH'
         }))
     )
     getInitialETHBalance(arbitrumGoerliRPC).then(
       val =>
-        (l2ETHbal = formatNumber(val, {
+        (l2ETHbal = formatAmount(val, {
           decimals: Decimals.Token,
-          maximumFractionDigits: 5
+          symbol: 'ETH'
         }))
     )
   })

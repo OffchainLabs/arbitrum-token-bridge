@@ -8,7 +8,7 @@ import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { formatNumber, formatUSD, Decimals } from '../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
@@ -281,8 +281,7 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span className="text-dark">
-            {formatNumber(amount, { maximumFractionDigits: Decimals.Standard })}{' '}
-            {token?.symbol || 'ETH'}
+            {formatAmount(amount, { symbol: 'ETH' })} {token?.symbol || 'ETH'}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (
@@ -299,8 +298,8 @@ export function TransferPanelSummary({
         </span>
         <div className="flex w-3/5 justify-between">
           <span className="text-dark">
-            {formatNumber(estimatedTotalGasFees, {
-              maximumFractionDigits: Decimals.Standard
+            {formatAmount(estimatedTotalGasFees, {
+              symbol: 'ETH'
             })}{' '}
             ETH
           </span>
@@ -322,8 +321,8 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL1GasFees, {
-                maximumFractionDigits: Decimals.Standard
+              {formatAmount(estimatedL1GasFees, {
+                symbol: 'ETH'
               })}{' '}
               ETH
             </span>
@@ -343,8 +342,8 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL2GasFees, {
-                maximumFractionDigits: Decimals.Standard
+              {formatAmount(estimatedL2GasFees, {
+                symbol: 'ETH'
               })}{' '}
               ETH
             </span>
@@ -368,8 +367,8 @@ export function TransferPanelSummary({
             <span className="w-2/5 font-light text-dark">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">
               <span className="text-dark">
-                {formatNumber(amount + estimatedTotalGasFees, {
-                  maximumFractionDigits: Decimals.Standard
+                {formatAmount(amount + estimatedTotalGasFees, {
+                  symbol: 'ETH'
                 })}{' '}
                 ETH
               </span>
