@@ -9,7 +9,7 @@ import {
   DepositL2TxStatus
 } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
-import { Decimals, formatAmount } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks//useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
 
@@ -82,7 +82,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
           {balance ? (
             <span className="font-medium">
               {formatAmount(balance, {
-                decimals: selectedToken?.decimals ?? Decimals.Token,
+                decimals: selectedToken?.decimals,
                 symbol: tx.asset.toUpperCase()
               })}
             </span>

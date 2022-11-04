@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { Decimals, formatAmount } from '../../../src/util/NumberUtils'
+import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
@@ -36,11 +36,7 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
-        val =>
-          (l1ERC20bal = formatAmount(val, {
-            decimals: Decimals.Token,
-            symbol: 'LINK'
-          }))
+        val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
       )
       cy.login('L1')
     })

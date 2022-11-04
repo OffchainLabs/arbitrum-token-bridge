@@ -40,7 +40,6 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { Decimals } from '../../util/NumberUtils'
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -544,10 +543,7 @@ export function TransferPanel() {
 
   const amountBigNumber = useMemo(() => {
     try {
-      return utils.parseUnits(
-        amount || '0',
-        selectedToken?.decimals ?? Decimals.Token
-      )
+      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
     } catch (error) {
       return BigNumber.from(0)
     }

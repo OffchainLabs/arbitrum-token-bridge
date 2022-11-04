@@ -12,7 +12,7 @@ import {
   listIdsToNames,
   addBridgeTokenListToBridge
 } from '../../tokenLists'
-import { Decimals, formatAmount } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -227,7 +227,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
               {tokenBalance ? (
                 formatAmount(tokenBalance, {
-                  decimals: token?.decimals ?? Decimals.Token,
+                  decimals: token?.decimals,
                   symbol: tokenSymbol
                 })
               ) : (

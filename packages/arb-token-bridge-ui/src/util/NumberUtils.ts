@@ -9,13 +9,12 @@ export function formatUSD(value: number) {
   return `$${formattedValue}`
 }
 
-export enum Decimals {
+export enum MaximumFractionDigits {
   None = 0,
   Short = 1,
   Compact = 3,
   Standard = 4,
-  Long = 5,
-  Token = 18
+  Long = 5
 }
 
 /**
@@ -24,36 +23,16 @@ export enum Decimals {
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
  *
  * Should not be used directly, use formatAmount instead
- * NOTE: decimals is only here to parse BigNumber to number, not to control the display
- * maximumFractionDigits should be used instead to control the display
  */
-const formatNumber = <T extends number | BigNumber>(
-  number: T,
+const formatNumber = (
+  number: number,
   options: {
-    decimals?: T extends number ? never : number
-    maximumFractionDigits?: number
-    notation?: 'compact' | 'standard'
-  } = {
-    maximumFractionDigits: 3,
-    notation: 'standard'
+    maximumFractionDigits: MaximumFractionDigits
+    notation: 'standard' | 'compact'
   }
-): string => {
-  const { decimals, notation, maximumFractionDigits } = options
-  const value: number = BigNumber.isBigNumber(number)
-    ? parseFloat(utils.formatUnits(number, decimals ?? Decimals.Token))
-    : number
+): string => Intl.NumberFormat('en', options).format(number)
 
-  return Intl.NumberFormat('en', {
-    notation,
-    maximumFractionDigits
-  }).format(value)
-}
-
-/**
- * Format amount according to a specific set of rules to limit space used
- *
- * NOTE: decimals is only here to parse BigNumber to number, not to control the display
- */
+// Format amount according to a specific set of rules to limit space used
 export const formatAmount = <T extends number | BigNumber>(
   balance: T,
   options: {
@@ -63,7 +42,7 @@ export const formatAmount = <T extends number | BigNumber>(
 ): string => {
   const { decimals, symbol } = options
   const value: number = BigNumber.isBigNumber(balance)
-    ? parseFloat(utils.formatUnits(balance, decimals))
+    ? parseFloat(utils.formatUnits(balance, decimals ?? 18))
     : balance
   const suffix = symbol ? ` ${symbol}` : ''
 
@@ -78,8 +57,8 @@ export const formatAmount = <T extends number | BigNumber>(
     return (
       formatNumber(value, {
         maximumFractionDigits: isShortSymbol
-          ? Decimals.Long
-          : Decimals.Standard,
+          ? MaximumFractionDigits.Long
+          : MaximumFractionDigits.Standard,
         notation: 'compact'
       }) + suffix
     )
@@ -89,7 +68,7 @@ export const formatAmount = <T extends number | BigNumber>(
   if (!isShortSymbol) {
     return (
       formatNumber(value, {
-        maximumFractionDigits: Decimals.Short,
+        maximumFractionDigits: MaximumFractionDigits.Short,
         notation: 'compact'
       }) + suffix
     )
@@ -99,7 +78,7 @@ export const formatAmount = <T extends number | BigNumber>(
   if (value >= 1_000_000) {
     return (
       formatNumber(value, {
-        maximumFractionDigits: Decimals.Compact,
+        maximumFractionDigits: MaximumFractionDigits.Compact,
         notation: 'compact'
       }) + suffix
     )
@@ -109,7 +88,7 @@ export const formatAmount = <T extends number | BigNumber>(
   if (value >= 10_000) {
     return (
       formatNumber(value, {
-        maximumFractionDigits: Decimals.None,
+        maximumFractionDigits: MaximumFractionDigits.None,
         notation: 'standard'
       }) + suffix
     )
@@ -118,7 +97,7 @@ export const formatAmount = <T extends number | BigNumber>(
   // Show full number with 4 decimals
   return (
     formatNumber(value, {
-      maximumFractionDigits: Decimals.Standard,
+      maximumFractionDigits: MaximumFractionDigits.Standard,
       notation: 'standard'
     }) + suffix
   )
