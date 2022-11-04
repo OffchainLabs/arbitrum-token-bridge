@@ -18,6 +18,15 @@ export enum Decimals {
   Token = 18
 }
 
+/**
+ * Parse number according to english formatting.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat
+ *
+ * Should be used for specific formatting, or when accuracy is needed (balance, gas fee)
+ * NOTE: decimals is only here to parse BigNumber to number, not to control the display
+ * maximumFractionDigits should be used instead to control the display
+ */
 export const formatNumber = <T extends number | BigNumber>(
   number: T,
   options: {
@@ -40,6 +49,11 @@ export const formatNumber = <T extends number | BigNumber>(
   }).format(value)
 }
 
+/**
+ * Format amount according to a specific set of rules to limit space used
+ *
+ * NOTE: decimals is only here to parse BigNumber to number, not to control the display
+ */
 export const formatAmount = <T extends number | BigNumber>(
   balance: T,
   options: {

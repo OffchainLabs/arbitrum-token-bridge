@@ -4,7 +4,7 @@ import { formatAmount } from '../NumberUtils'
 describe('formatAmount', () => {
   describe('for short token symbol', () => {
     const getResultFromBigNumber = (value: string) =>
-      formatAmount(BigNumber.from(value), { decimals: 6, symbol: 'ETH' })
+      formatAmount(BigNumber.from(value), { decimals: 6, symbol: 'TOK' })
     const getResultFromNumber = (value: number) =>
       formatAmount(value, { symbol: 'ETH' })
 
@@ -71,7 +71,7 @@ describe('formatAmount', () => {
 
   describe('for long token name', () => {
     const getResultFromBigNumber = (value: string) =>
-      formatAmount(BigNumber.from(value), { decimals: 6, symbol: 'ETHPOW' })
+      formatAmount(BigNumber.from(value), { decimals: 6, symbol: 'LONGTOKEN' })
     const getResultFromNumber = (value: number) =>
       formatAmount(value, { symbol: 'ETHPOW' })
 
