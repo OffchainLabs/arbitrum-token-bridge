@@ -6,3 +6,5 @@ export function shortenTxHash(txHash: string) {
     txHashLength
   )}`
 }
+
+export const isTestingEnvironment = !!window.Cypress

@@ -9,10 +9,16 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
+import { useWallet } from '@arbitrum/use-wallet'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  ChainId,
+  getNetworkName,
+  isNetwork,
+  switchChain
+} from '../../util/networks'
 import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
@@ -30,13 +36,13 @@ import {
   useTokenBalances
 } from './TransferPanelMainUtils'
 
-import EthereumLogo from '../../assets/EthereumLogo.png'
+import EthereumLogo from '../../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.png'
+import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.webp'
 
-import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.png'
-import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.png'
-import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.png'
+import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.webp'
+import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.webp'
+import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.webp'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -329,6 +335,8 @@ export function TransferPanelMain({
 
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
 
+  const { provider } = useWallet()
+
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
 
@@ -526,7 +534,10 @@ export function TransferPanelMain({
             }
 
             try {
-              await app.changeNetwork?.(network)
+              await switchChain({
+                chainId: network.chainID,
+                provider: provider!
+              })
               updatePreferredL2Chain(network.chainID)
 
               // If L2 selected, change to withdraw mode and set new selections
@@ -564,7 +575,10 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await app.changeNetwork?.(l1.network)
+                await switchChain({
+                  chainId: l1.network.chainID,
+                  provider: provider!
+                })
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
                 // 4001 - User rejected the request
@@ -601,7 +615,10 @@ export function TransferPanelMain({
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await app.changeNetwork?.(network)
+            await switchChain({
+              chainId: network.chainID,
+              provider: provider!
+            })
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
             // 4001 - User rejected the request
@@ -625,7 +642,10 @@ export function TransferPanelMain({
 
           // Destination network is L2, connect to L1
           try {
-            await app.changeNetwork?.(l1.network)
+            await switchChain({
+              chainId: l1.network.chainID,
+              provider: provider!
+            })
             updatePreferredL2Chain(network.chainID)
 
             // Change to withdraw mode and set new selections
