@@ -40,8 +40,8 @@ describe('Login Account', () => {
   })
 
   it('should show L1 and L2 ETH balances correctly', () => {
-    cy.findByText(`Balance: ${l1ETHbal} ETH`).should('be.visible')
-    cy.findByText(`Balance: ${l2ETHbal} ETH`).should('be.visible')
+    cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
+    cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
   })
 
   it('should show empty bridging summary', () => {

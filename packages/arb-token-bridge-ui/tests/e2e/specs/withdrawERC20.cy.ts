@@ -92,7 +92,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should show ERC20 balance correctly', () => {
-      cy.findByText(`Balance: ${l2ERC20bal} LINK`).should('be.visible')
+      cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
     })
 
     context("bridge amount is lower than user's L2 ERC20 balance value", () => {
