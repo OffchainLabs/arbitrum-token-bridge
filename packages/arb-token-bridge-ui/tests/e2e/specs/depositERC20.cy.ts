@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
@@ -36,7 +36,7 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
-        val => (l1ERC20bal = formatBigNumber(val, 18, 5))
+        val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
       )
       cy.login('L1')
     })
@@ -85,7 +85,7 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show ERC20 balance correctly', () => {
-      cy.findByText(`Balance: ${l1ERC20bal} LINK`).should('be.visible')
+      cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
     })
 
     context("bridge amount is lower than user's L1 ERC20 balance value", () => {
