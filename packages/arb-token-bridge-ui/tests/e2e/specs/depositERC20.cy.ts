@@ -96,7 +96,7 @@ describe('Deposit ERC20 Token', () => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains('0.0001 LINK')
+              .contains(formatAmount(0.0001))
               .should('be.visible')
             cy.findByText('You’ll pay in gas fees')
               .siblings()
@@ -125,9 +125,11 @@ describe('Deposit ERC20 Token', () => {
           .click({ scrollBehavior: false })
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(/Moving 0.0001 LINK to Arbitrum Goerli.../i).should(
-                'be.visible'
-              )
+              cy.findByText(
+                `Moving ${formatAmount(0.0001, {
+                  symbol: 'LINK'
+                })} to Arbitrum Goerli...`
+              ).should('be.visible')
             })
           })
       })

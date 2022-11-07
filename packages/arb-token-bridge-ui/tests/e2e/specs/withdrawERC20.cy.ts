@@ -103,7 +103,7 @@ describe('Withdraw ERC20 Token', () => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains('0.0001 LINK')
+              .contains(formatAmount(0.0001, { symbol: 'LINK' }))
               .should('be.visible')
             cy.findByText(/You’ll pay in gas/i)
               .siblings()
@@ -162,9 +162,11 @@ describe('Withdraw ERC20 Token', () => {
               .click({ scrollBehavior: false })
 
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findAllByText(/Moving 0.0001 LINK to Goerli/i).should(
-                'be.visible'
-              )
+              cy.findAllByText(
+                `Moving ${formatAmount(0.0001, {
+                  symbol: 'LINK'
+                })} to Goerli...`
+              ).should('be.visible')
             })
           })
       })
