@@ -3,7 +3,7 @@ import { BigNumber, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
-import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
@@ -115,7 +115,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="flex w-full flex-col items-center space-y-2">
           <div className="flex flex-row space-x-2">
             <img
-              src="/icons/ethereum.png"
+              src="/icons/ethereum.webp"
               alt="Ethereum"
               className="h-8 opacity-50"
             />
@@ -124,7 +124,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             </span>
           </div>
           <span className="text-center text-3xl font-light text-purple-ethereum">
-            {formatNumber(balanceNumber)} ETH{' '}
+            {formatAmount(balanceNumber, { symbol: 'ETH' })}{' '}
             {isMainnet && (
               <span className="font-medium">
                 ({formatUSD(toUSD(balanceNumber))})

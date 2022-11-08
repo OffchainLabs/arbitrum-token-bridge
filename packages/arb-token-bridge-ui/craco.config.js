@@ -1,12 +1,11 @@
-const webpack = require("webpack")
-const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
-  .BundleAnalyzerPlugin
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = function ({ env }) {
-  const isProductionBuild = process.env.NODE_ENV === "production"
+  const isProductionBuild = process.env.NODE_ENV === 'production'
   const analyzerMode = process.env.REACT_APP_INTERACTIVE_ANALYZE
-    ? "server"
-    : "static" // : "json"
+    ? 'server'
+    : 'static' // : "json"
 
   const plugins = []
 
@@ -16,12 +15,12 @@ module.exports = function ({ env }) {
 
   return {
     webpack: {
-      plugins,
+      plugins
     },
     style: {
       postcss: {
         plugins: [require('tailwindcss'), require('autoprefixer')]
-      },
-    },
+      }
+    }
   }
 }
