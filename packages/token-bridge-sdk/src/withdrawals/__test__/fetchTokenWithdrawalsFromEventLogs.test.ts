@@ -5,6 +5,10 @@ import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawalsFrom
 
 const l2Provider = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
 
+const l2UserAddress = '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299'
+
+/* Note : Please ensure that Block numbers `from` and `to` should be the same in both *fromEventLogs and *fromSubgraph tests */
+
 let l2Network: L2Network
 let l2GatewayAddresses: string[]
 
@@ -20,7 +24,7 @@ beforeAll(async () => {
 describe('fetchTokenWithdrawalsFromEventLogs', () => {
   it('fetches no token withdrawals from event logs pre-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromEventLogs({
-      address: '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299',
+      address: l2UserAddress,
       fromBlock: 0,
       toBlock: 20961063,
       l2Provider,
@@ -32,7 +36,7 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
 
   it('fetches some token withdrawals from event logs pre-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromEventLogs({
-      address: '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299',
+      address: l2UserAddress,
       fromBlock: 20961064,
       toBlock: 26317225,
       l2Provider,
@@ -52,7 +56,7 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
 
   it('fetches some token withdrawals from event logs pre-nitro and post-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromEventLogs({
-      address: '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299',
+      address: l2UserAddress,
       fromBlock: 20961064,
       toBlock: 35134792,
       l2Provider,
