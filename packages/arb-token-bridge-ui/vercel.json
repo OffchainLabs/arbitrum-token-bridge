@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/tos", "destination": "/tos" },
-    { "source": "/", "destination": "/" }
+    { "source": "/", "destination": "/" },
+    { "source": "/tos", "destination": "/" }
   ]
 }
