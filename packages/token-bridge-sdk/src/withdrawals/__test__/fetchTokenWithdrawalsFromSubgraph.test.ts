@@ -1,18 +1,17 @@
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { L2_ACCOUNT_ADDRESS_ERC20, L2_PROVIDER_URL } from '../../common'
 
 import { fetchTokenWithdrawalsFromSubgraph } from '../fetchTokenWithdrawalsFromSubgraph'
 
-const l2Provider = new JsonRpcProvider(L2_PROVIDER_URL)
+const l2Provider = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
 
 jest.setTimeout(10000)
 
 describe('fetchTokenWithdrawalsFromSubgraph', () => {
   it('fetches no token withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: L2_ACCOUNT_ADDRESS_ERC20,
+      address: '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299',
       fromBlock: 0,
-      toBlock: 12880678,
+      toBlock: 20961063,
       l2Provider
     })
 
@@ -21,30 +20,18 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
 
   it('fetches some token withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: L2_ACCOUNT_ADDRESS_ERC20,
-      fromBlock: 12880679,
-      toBlock: 12889471,
+      address: '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299',
+      fromBlock: 20961064,
+      toBlock: 26317225,
       l2Provider
     })
 
-    expect(result).toHaveLength(4)
+    expect(result).toHaveLength(1)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           l2TxHash:
-            '0xa2a31cb4aa747889245b368c93cdb0ccfa1b8e14e907763080b43112ef1dcc4e'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0x815973ff35fcd84c54b8651a0c9a36d8c1ddf1bc64b18d673443c918283823c3'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0x9444cd8a461963edb380d32cf11b0c6e16c2e917c11d3d81e4324a0081bf99f1'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0x9444cd8a461963edb380d32cf11b0c6e16c2e917c11d3d81e4324a0081bf99f1'
+            '0x98c3c3bf97f177e80ac5a5adb154208e5ad43120455e624fff917a7546273800'
         })
       ])
     )
@@ -52,42 +39,34 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
 
   it('fetches some token withdrawals from subgraph pre-nitro and post-nitro', async () => {
     const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: L2_ACCOUNT_ADDRESS_ERC20,
-      fromBlock: 22136283,
-      toBlock: 22231082,
+      address: '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299',
+      fromBlock: 20961064,
+      toBlock: 35134792,
       l2Provider
     })
 
-    expect(result).toHaveLength(7)
+    expect(result).toHaveLength(5)
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           l2TxHash:
-            '0xa9a4ff859d3d5e727c55d75da085af6b5df2eeec5e9b090f561e4180085de1e3'
+            '0x98c3c3bf97f177e80ac5a5adb154208e5ad43120455e624fff917a7546273800'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xa9a4ff859d3d5e727c55d75da085af6b5df2eeec5e9b090f561e4180085de1e3'
+            '0xcf38b3fe57a4d823d0dd4b4ba3792f51640a4575f7da8fb582e5006bf60bceb3'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xa9a4ff859d3d5e727c55d75da085af6b5df2eeec5e9b090f561e4180085de1e3'
+            '0xbd809fa3ad466a5a88628f3f0f9fc92df4ab9d9b1bd6b3861cd87cb464a9a7c3'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
+            '0xbe4141f4b6847ef1f3196734beefa1ac08149abc8beba2d8d71055995cd3c29b'
         }),
         expect.objectContaining({
           l2TxHash:
-            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
-        }),
-        expect.objectContaining({
-          l2TxHash:
-            '0xcadc107f28597db5a2dcb99390eedda0efda46e2eac5aa378a04479908385496'
+            '0x420eadd347bda4bfe5d44a96e0ae68347cb181ee7a910198582e9535665cdb38'
         })
       ])
     )
