@@ -12,7 +12,6 @@ export type {
   L1TokenData,
   L2TokenData
 } from './hooks/arbTokenBridge.types'
-export * from './hooks/useTransactions'
 export {
   TokenType,
   AssetType,
@@ -28,7 +27,7 @@ export type {
   TxnType
 } from './hooks/useTransactions'
 
-export { txnTypeToLayer } from './hooks/useTransactions'
+export { txnTypeToLayer, useTransactions } from './hooks/useTransactions'
 export type {
   L1ToL2MessageData,
   L2ToL1MessageData
