@@ -10,7 +10,7 @@ import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
@@ -40,9 +40,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   )
 
   const approvalFeeText = useMemo(() => {
-    const eth = formatNumber(estimatedGasFees)
+    const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
     const usd = formatUSD(toUSD(estimatedGasFees))
-    return `${eth} ETH${isMainnet ? ` (${usd})` : ''}`
+    return `${eth}${isMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, toUSD, isMainnet])
 
   useEffect(() => {

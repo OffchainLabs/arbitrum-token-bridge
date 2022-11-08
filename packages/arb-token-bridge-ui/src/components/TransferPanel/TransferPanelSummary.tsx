@@ -8,7 +8,7 @@ import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
@@ -281,7 +281,7 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span className="text-dark">
-            {formatNumber(amount, 4)} {token?.symbol || 'ETH'}
+            {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (
@@ -296,9 +296,11 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">
           You’ll pay in gas fees
         </span>
-        <div className="flex flex w-3/5 justify-between">
+        <div className="flex w-3/5 justify-between">
           <span className="text-dark">
-            {formatNumber(estimatedTotalGasFees, 4)} ETH
+            {formatAmount(estimatedTotalGasFees, {
+              symbol: 'ETH'
+            })}
           </span>
           {isMainnet && (
             <span className="font-medium text-dark">
@@ -318,7 +320,9 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL1GasFees, 4)} ETH
+              {formatAmount(estimatedL1GasFees, {
+                symbol: 'ETH'
+              })}
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
@@ -336,7 +340,9 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL2GasFees, 4)} ETH
+              {formatAmount(estimatedL2GasFees, {
+                symbol: 'ETH'
+              })}
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
@@ -358,7 +364,9 @@ export function TransferPanelSummary({
             <span className="w-2/5 font-light text-dark">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">
               <span className="text-dark">
-                {formatNumber(amount + estimatedTotalGasFees, 4)} ETH
+                {formatAmount(amount + estimatedTotalGasFees, {
+                  symbol: 'ETH'
+                })}
               </span>
               {isMainnet && (
                 <span className="font-medium text-dark">
