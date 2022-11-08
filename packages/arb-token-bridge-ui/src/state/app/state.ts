@@ -20,7 +20,11 @@ import {
 } from 'token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import {
+  ConnectionState,
+  PendingWithdrawalsLoadedState,
+  WalletType
+} from '../../util'
 
 export enum WhiteListState {
   VERIFYING,
@@ -106,6 +110,7 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
+  walletType: number
   verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
@@ -128,6 +133,7 @@ export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
+  walletType: WalletType.EOA,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,

@@ -1,7 +1,11 @@
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import {
+  ConnectionState,
+  PendingWithdrawalsLoadedState,
+  WalletType
+} from '../../util'
 import { WhiteListState, WarningTokens } from './state'
 
 export const setConnectionState = (
@@ -9,6 +13,10 @@ export const setConnectionState = (
   connectionState: ConnectionState
 ) => {
   state.app.connectionState = connectionState
+}
+
+export const setWalletType = ({ state }: Context, walletType: WalletType) => {
+  state.app.walletType = walletType
 }
 
 export const setChainIds = (

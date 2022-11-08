@@ -1,10 +1,17 @@
+import { utils } from 'ethers'
+
 export enum ConnectionState {
   LOADING,
   L1_CONNECTED,
   L2_CONNECTED,
   SEQUENCER_UPDATE,
-  NOT_EOA,
   NETWORK_ERROR
+}
+
+export enum WalletType {
+  EOA,
+  SUPPORTED_CONTRACT_WALLET,
+  UNSUPPORTED_CONTRACT_WALLET
 }
 
 export enum PendingWithdrawalsLoadedState {
@@ -12,6 +19,10 @@ export enum PendingWithdrawalsLoadedState {
   READY,
   ERROR
 }
+
+export const gnosisInterface = new utils.Interface([
+  'function getOwners() view returns (address[])'
+])
 
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {

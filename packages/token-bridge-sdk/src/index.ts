@@ -12,6 +12,7 @@ export type {
   L1TokenData,
   L2TokenData
 } from './hooks/arbTokenBridge.types'
+export * from './hooks/useTransactions'
 export {
   TokenType,
   AssetType,

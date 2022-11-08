@@ -6,9 +6,10 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState } from '../../util'
+import { ConnectionState, gnosisInterface, WalletType } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { Contract } from 'ethers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
@@ -59,8 +60,11 @@ import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 
-async function addressIsEOA(address: string, provider: JsonRpcProvider) {
-  return (await provider.getCode(address)).length <= 2
+async function addressIsSmartContract(
+  address: string,
+  provider: JsonRpcProvider
+) {
+  return (await provider.getCode(address)).length > 2
 }
 
 declare global {
@@ -72,7 +76,7 @@ declare global {
 const AppContent = (): JSX.Element => {
   const { l1, chainId } = useNetworksAndSigners()
   const {
-    app: { connectionState }
+    app: { connectionState, walletType }
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
@@ -99,11 +103,11 @@ const AppContent = (): JSX.Element => {
     )
   }
 
-  if (connectionState === ConnectionState.NOT_EOA) {
+  if (walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET) {
+    // TODO: better alert text / keep it?
     return (
       <Alert type="red">
-        Looks like your wallet is connected to a contract; please connect to an
-        externally owned account instead.
+        Unsupported Contract Wallet! This shouldn't happen. Let support know.
       </Alert>
     )
   }
@@ -172,21 +176,74 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const l1Address = await l1Signer.getAddress()
       const l2Address = await l2Signer.getAddress()
 
-      try {
-        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Provider)
-        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Provider)
+      const walletType: WalletType = await (async () => {
+        const l1AddressIsSmartContract = await addressIsSmartContract(
+          l1Address,
+          l1Provider
+        )
+        const l2AddressIsSmartContract = await addressIsSmartContract(
+          l2Address,
+          l2Provider
+        )
 
-        if (!l1AddressIsEOA || !l2AddressIsEOA) {
-          actions.app.setConnectionState(ConnectionState.NOT_EOA)
-          return undefined
+        if (!l1AddressIsSmartContract && !l2AddressIsSmartContract) {
+          return WalletType.EOA
         }
-      } catch (err) {
-        console.warn('CONNECTION ERROR', err)
 
-        // The get code queries doubles as as network liveness check
-        // We could check err.code === 'NETWORK_ERROR' for more granular handling, but any error can/should be handled.
-        actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
-      }
+        if (l1AddressIsSmartContract && l2AddressIsSmartContract) {
+          // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
+          if (l1Address !== l2Address) {
+            console.warn(
+              `SC wallet error: wallets have different addresses: l1: ${l1Address}; l2: ${l2Address} `
+            )
+            return WalletType.UNSUPPORTED_CONTRACT_WALLET
+          }
+
+          try {
+            const l1Contract = new Contract(
+              l1Address,
+              gnosisInterface,
+              l1Provider
+            )
+            const l1Owners: string[] = [
+              ...(await l1Contract.getOwners())
+            ].sort()
+
+            const l2Contract = new Contract(
+              l2Address,
+              gnosisInterface,
+              l2Provider
+            )
+            const l2Owners: string[] = [
+              ...(await l2Contract.getOwners())
+            ].sort()
+
+            const walletsHaveSameOwners =
+              JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
+
+            if (!walletsHaveSameOwners) {
+              console.warn(
+                `SC wallet error; owners don't match:`,
+                l1Owners,
+                l2Owners
+              )
+            }
+
+            return walletsHaveSameOwners
+              ? WalletType.SUPPORTED_CONTRACT_WALLET
+              : WalletType.UNSUPPORTED_CONTRACT_WALLET
+          } catch (err) {
+            console.warn('CONNECTION ERROR', err)
+            actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
+            return WalletType.UNSUPPORTED_CONTRACT_WALLET
+          }
+        }
+        return WalletType.SUPPORTED_CONTRACT_WALLET
+      })()
+
+      // TODO: Make sure the txns work and add advanced options / adding 'to' field
+
+      actions.app.setWalletType(walletType)
 
       setTokenBridgeParams({
         walletAddress: l1Address,
