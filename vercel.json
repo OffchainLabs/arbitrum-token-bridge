@@ -1,6 +1,6 @@
 {
-  "routes": [
-    { "src": "/tos", "dest": "/tos" },
-    { "src": "/", "dest": "/" }
+  "rewrites": [
+    { "source": "/tos", "destination": "/tos" },
+    { "source": "/", "destination": "/" }
   ]
 }
