@@ -4,7 +4,7 @@
  * When user enters the page with query params on URL
  */
 
-import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import { getInitialETHBalance, goerliRPC } from '../../support/common'
 
@@ -15,7 +15,7 @@ describe('User enters site with query params on URL', () => {
   // because it is cleared between each `it` cypress test
   before(() => {
     getInitialETHBalance(goerliRPC).then(
-      val => (l1ETHbal = parseFloat(formatBigNumber(val, 18, 5)))
+      val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 })))
     )
     // before this spec, make sure the cache is fresh
     // otherwise pending transactions from last ran specs will leak in this
