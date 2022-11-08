@@ -1,5 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
-/* eslint-disable ui-testing/no-hard-wait */
 /**
  * When user enters the page with query params on URL
  */
