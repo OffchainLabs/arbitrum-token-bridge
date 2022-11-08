@@ -60,7 +60,7 @@ describe('User enters site with query params on URL', () => {
             {
               errorMsg:
                 'was expecting some other Value but got : ' + initialValue,
-              timeout: 2000,
+              timeout: 5000,
               interval: 500
             }
           ).then(() => {
@@ -97,7 +97,7 @@ describe('User enters site with query params on URL', () => {
             {
               errorMsg:
                 'was expecting some other Value but got : ' + initialValue,
-              timeout: 2000,
+              timeout: 5000,
               interval: 500
             }
           ).then(() => {
@@ -135,7 +135,7 @@ describe('User enters site with query params on URL', () => {
             {
               errorMsg:
                 'was expecting some other Value but got : ' + initialValue,
-              timeout: 2000,
+              timeout: 5000,
               interval: 500
             }
           ).then(() => {
