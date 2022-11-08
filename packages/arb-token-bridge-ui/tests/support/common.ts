@@ -84,3 +84,27 @@ export const startWebApp = () => {
   cy.connectToApp()
   acceptMetamaskAccess()
 }
+
+export const addErc20LINKToken = () => {
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click({ scrollBehavior: false })
+  // open the Select Token popup
+  return cy
+    .findByPlaceholderText(/Search by token name/i)
+    .should('be.visible')
+    .type(ERC20TokenAddressL1, { scrollBehavior: false })
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click({ scrollBehavior: false })
+      // Select the LINK token
+      cy.findByText('ChainLink Token').click({ scrollBehavior: false })
+      // LINK token should be selected now and popup should be closed after selection
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', 'LINK')
+    })
+}
