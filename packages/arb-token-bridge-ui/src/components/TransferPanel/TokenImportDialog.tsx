@@ -171,7 +171,6 @@ export function TokenImportDialog({
     // Can't find the address provided, so we look further
     getL1TokenDataFromL1Address()
       .then(data => {
-        console.error('IN', { data })
         if (!data) {
           return
         }
