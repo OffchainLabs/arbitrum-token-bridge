@@ -705,6 +705,7 @@ export const useArbTokenBridge = (
   }
 
   const removeTokensFromList = (listID: number) => {
+    console.log('SET BRIDGE TEOKSN REMOVE')
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
       for (let address in bridgeTokens) {
@@ -815,6 +816,7 @@ export const useArbTokenBridge = (
       }
     }
 
+    console.log('SET BRIDGE TEOKSN 818')
     setBridgeTokens(oldBridgeTokens => {
       const newBridgeTokens = {
         ...oldBridgeTokens,
@@ -886,6 +888,7 @@ export const useArbTokenBridge = (
       decimals
     }
 
+    console.log('SET BRIDGE TEOKSN 890')
     setBridgeTokens(oldBridgeTokens => {
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
@@ -958,6 +961,7 @@ export const useArbTokenBridge = (
         [l1Address]: erc20TokenBalance
       }))
       const newBridgeTokens = { [l1Address]: bridgeToken }
+      console.log('SET BRIDGE TEOKSN 966')
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })

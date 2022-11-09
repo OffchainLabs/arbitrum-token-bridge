@@ -152,7 +152,6 @@ export function TokenImportDialog({
       return
     }
 
-    console.error({ isL1AddressLoading, l1Address })
     if (!isL1AddressLoading && !l1Address) {
       setStatus(ImportStatus.ERROR)
       return
