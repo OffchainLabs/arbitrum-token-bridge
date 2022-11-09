@@ -100,23 +100,3 @@ export const resetSeenTimeStampCache = () => {
 
   cy.saveLocalStorage()
 }
-
-export const importTokenThroughUI = (address: string) => {
-  // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click({ scrollBehavior: false })
-
-  // open the Select Token popup
-  return cy
-    .findByPlaceholderText(/Search by token name/i)
-    .should('be.visible')
-    .type(address, { scrollBehavior: false })
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click({ scrollBehavior: false })
-    })
-}

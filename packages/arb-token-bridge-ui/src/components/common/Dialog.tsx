@@ -127,7 +127,7 @@ export function Dialog(props: DialogProps) {
                   ref={cancelButtonRef}
                   variant="secondary"
                   onClick={() => props.onClose(false)}
-                  aria-label="Cancel"
+                  aria-label="DialogCancel"
                   {...(props.cancelButtonProps || {})}
                 >
                   Cancel
@@ -136,7 +136,7 @@ export function Dialog(props: DialogProps) {
                   variant="primary"
                   onClick={() => props.onClose(true)}
                   {...(props.actionButtonProps || {})}
-                  aria-label={props.actionButtonTitle || 'Continue'}
+                  aria-label={props.actionButtonTitle || 'DialogContinue'}
                 >
                   {props.actionButtonTitle || 'Continue'}
                 </Button>
