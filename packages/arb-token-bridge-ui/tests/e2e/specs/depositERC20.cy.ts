@@ -3,12 +3,12 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
   getInitialERC20Balance,
   goerliRPC,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {

@@ -3,12 +3,12 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   arbitrumGoerliRPC,
   ERC20TokenAddressL2,
   getInitialERC20Balance,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
 } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {

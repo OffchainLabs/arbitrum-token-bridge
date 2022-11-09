@@ -3,8 +3,11 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
-import { getInitialETHBalance, goerliRPC } from '../../support/common'
+import {
+  getInitialETHBalance,
+  goerliRPC,
+  resetSeenTimeStampCache
+} from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: Number

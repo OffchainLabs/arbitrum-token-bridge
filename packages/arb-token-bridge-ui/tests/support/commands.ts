@@ -12,7 +12,8 @@ import {
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
-  startWebApp
+  startWebApp,
+  resetSeenTimeStampCache
 } from './common'
 
 export function login(networkType: NetworkType, addNewNetwork?: boolean) {
@@ -34,16 +35,6 @@ export const logout = () => {
       })
     })
   })
-}
-
-export const resetSeenTimeStampCache = () => {
-  const dataKey = 'arbitrum:bridge:seen-txs'
-  const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
-
-  cy.setLocalStorage(dataKey, JSON.stringify([]))
-  cy.setLocalStorage(timestampKey, new Date().toISOString())
-
-  cy.saveLocalStorage()
 }
 
 export const restoreAppState = () => {
@@ -78,10 +69,31 @@ export const connectToApp = () => {
   cy.findByText('Connect to your MetaMask Wallet').click()
 }
 
+export const importTokenThroughUI = address => {
+  // Click on the ETH dropdown (Select token button)
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click({ scrollBehavior: false })
+
+  // open the Select Token popup
+  return cy
+    .findByPlaceholderText(/Search by token name/i)
+    .should('be.visible')
+    .type(address, { scrollBehavior: false })
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click({ scrollBehavior: false })
+    })
+}
+
 Cypress.Commands.addAll({
+  connectToApp,
+  importTokenThroughUI,
   login,
   logout,
   restoreAppState,
-  saveAppState,
-  connectToApp
+  saveAppState
 })

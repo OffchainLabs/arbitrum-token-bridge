@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { resetSeenTimeStampCache } from '../../support/commands'
+import { resetSeenTimeStampCache } from '../../support/common'
 
 describe('Switch Networks', () => {
   before(() => {

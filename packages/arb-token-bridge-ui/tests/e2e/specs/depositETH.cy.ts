@@ -2,8 +2,10 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { resetSeenTimeStampCache } from '../../support/commands'
-import { zeroToLessThanOneETH } from '../../support/common'
+import {
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
+} from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {

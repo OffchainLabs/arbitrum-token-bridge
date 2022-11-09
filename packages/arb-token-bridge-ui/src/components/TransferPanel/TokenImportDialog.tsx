@@ -152,6 +152,7 @@ export function TokenImportDialog({
       return
     }
 
+    console.error({ isL1AddressLoading, l1Address })
     if (!isL1AddressLoading && !l1Address) {
       setStatus(ImportStatus.ERROR)
       return
@@ -171,6 +172,7 @@ export function TokenImportDialog({
     // Can't find the address provided, so we look further
     getL1TokenDataFromL1Address()
       .then(data => {
+        console.error('IN', { data })
         if (!data) {
           return
         }

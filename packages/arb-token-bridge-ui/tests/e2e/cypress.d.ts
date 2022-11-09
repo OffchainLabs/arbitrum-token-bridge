@@ -1,6 +1,7 @@
 import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
+  importTokenThroughUI,
   login,
   logout,
   restoreAppState,
@@ -15,9 +16,10 @@ declare global {
        * Custom command to connect MetaMask to the UI.
        * @example cy.login()
        */
+      connectToApp(): typeof connectToApp
+      importTokenThroughUI(address: string): typeof importTokenThroughUI
       login(networkType: NetworkType, addNewNetwork?: boolean): typeof login
       logout(): typeof logout
-      connectToApp(): typeof connectToApp
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
     }
