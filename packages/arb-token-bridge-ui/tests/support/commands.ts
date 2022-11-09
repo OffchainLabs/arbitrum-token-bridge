@@ -18,7 +18,7 @@ import {
 
 export function login({
   networkType,
-  addNewNetwork,
+  addNewNetwork = false,
   url,
   qs
 }: {

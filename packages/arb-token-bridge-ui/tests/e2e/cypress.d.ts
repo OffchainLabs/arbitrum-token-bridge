@@ -1,7 +1,6 @@
 import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
-  importTokenThroughUI,
   login,
   logout,
   restoreAppState,
@@ -17,10 +16,9 @@ declare global {
        * @example cy.login()
        */
       connectToApp(): typeof connectToApp
-      importTokenThroughUI(address: string): typeof importTokenThroughUI
       login(options: {
         networkType: NetworkType
-        addNetwork?: boolean
+        addNewNetwork?: boolean
         url?: string
         qs?: { [s: string]: string }
       }): typeof login
