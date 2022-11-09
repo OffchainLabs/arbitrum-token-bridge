@@ -136,7 +136,7 @@ export function Dialog(props: DialogProps) {
                   variant="primary"
                   onClick={() => props.onClose(true)}
                   {...(props.actionButtonProps || {})}
-                  aria-label="Continue"
+                  aria-label={props.actionButtonTitle || 'Continue'}
                 >
                   {props.actionButtonTitle || 'Continue'}
                 </Button>

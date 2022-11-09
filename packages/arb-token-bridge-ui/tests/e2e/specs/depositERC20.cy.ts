@@ -6,10 +6,11 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
-  addErc20LINKToken,
+  addErc20Token,
   getInitialERC20Balance,
   goerliRPC,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  unbridgedERC20Token
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
@@ -54,7 +55,11 @@ describe('Deposit ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
     it('should add ERC20 token show balance correctly', () => {
-      addErc20LINKToken()
+      addErc20Token({
+        address: ERC20TokenAddressL1,
+        name: 'ChainLink Token',
+        symbol: 'LINK'
+      })
       cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
     })
     context("bridge amount is lower than user's L1 ERC20 balance value", () => {
@@ -129,7 +134,11 @@ describe('Deposit ERC20 Token', () => {
       })
 
       it('should add ERC20 token correctly', () => {
-        addErc20LINKToken()
+        addErc20Token({
+          address: unbridgedERC20Token,
+          name: 'L1CustomToken',
+          symbol: 'LCT'
+        })
         cy.findByPlaceholderText('Enter amount')
           .type('0.00012', { scrollBehavior: false })
           .then(() => {
@@ -149,7 +158,7 @@ describe('Deposit ERC20 Token', () => {
                 cy.confirmMetamaskTransaction().then(() => {
                   cy.findByText(
                     `Moving ${formatAmount(0.00012, {
-                      symbol: 'LINK'
+                      symbol: 'LCT'
                     })} to Arbitrum Goerli...`
                   ).should('be.visible')
                 })

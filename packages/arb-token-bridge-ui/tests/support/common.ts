@@ -26,7 +26,7 @@ export const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
 
 export const ERC20TokenAddressL1 = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
 export const ERC20TokenAddressL2 = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
-
+export const unbridgedERC20Token = '0xcfDE5cb8bF1071584d346220317c4d94c2Bc09cD'
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
@@ -85,7 +85,15 @@ export const startWebApp = () => {
   acceptMetamaskAccess()
 }
 
-export const addErc20LINKToken = () => {
+export const addErc20Token = ({
+  address,
+  name,
+  symbol
+}: {
+  address: string
+  name: string
+  symbol: string
+}) => {
   cy.findByRole('button', { name: 'Select Token' })
     .should('be.visible')
     .should('have.text', 'ETH')
@@ -94,17 +102,17 @@ export const addErc20LINKToken = () => {
   return cy
     .findByPlaceholderText(/Search by token name/i)
     .should('be.visible')
-    .type(ERC20TokenAddressL1, { scrollBehavior: false })
+    .type(address, { scrollBehavior: false })
     .then(() => {
       // Click on the Add new token button
       cy.findByRole('button', { name: 'Add New Token' })
         .should('be.visible')
         .click({ scrollBehavior: false })
       // Select the LINK token
-      cy.findByText('ChainLink Token').click({ scrollBehavior: false })
+      cy.findByText(name).click({ scrollBehavior: false })
       // LINK token should be selected now and popup should be closed after selection
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
-        .should('have.text', 'LINK')
+        .should('have.text', symbol)
     })
 }
