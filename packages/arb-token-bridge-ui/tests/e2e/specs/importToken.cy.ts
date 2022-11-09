@@ -1,8 +1,7 @@
 import {
   ERC20TokenAddressL2,
   ERC20TokenAddressL1,
-  invalidTokenAddress,
-  resetSeenTimeStampCache
+  invalidTokenAddress
 } from '../../support/common'
 
 describe('Import token', () => {
@@ -10,7 +9,7 @@ describe('Import token', () => {
     context('User uses L1 address', () => {
       // log in to metamask
       before(() => {
-        cy.login('L1')
+        cy.login({ networkType: 'L1' })
       })
 
       after(() => {
@@ -34,7 +33,7 @@ describe('Import token', () => {
     context('User uses L2 address', () => {
       // log in to metamask
       before(() => {
-        cy.login('L1')
+        cy.login({ networkType: 'L1' })
       })
 
       after(() => {
@@ -58,7 +57,7 @@ describe('Import token', () => {
     context('User uses invalid address', () => {
       // log in to metamask
       before(() => {
-        cy.login('L1')
+        cy.login({ networkType: 'L1' })
       })
 
       after(() => {
@@ -76,24 +75,12 @@ describe('Import token', () => {
   })
 
   context('User import token through URL', () => {
-    // log in to metamask
-    // before(() => {
-    //   resetSeenTimeStampCache()
-    //   cy.login('L1')
-    //   cy.saveAppState()
-    // })
     after(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
     })
-    // beforeEach(() => {
-    //   cy.restoreAppState()
-    // })
-    // afterEach(() => {
-    //   cy.saveAppState()
-    // })
 
-    context.only('User uses L1 address', () => {
+    context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
         cy.login({
           networkType: 'L1',
@@ -102,10 +89,6 @@ describe('Import token', () => {
             token: ERC20TokenAddressL1
           }
         })
-
-        // cy.intercept(
-        //   'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json'
-        // )
 
         // Modal is displayed
         cy.get('h2')
@@ -131,7 +114,9 @@ describe('Import token', () => {
 
     context('User uses L2 address', () => {
       it('should import token through its L2 address', () => {
-        cy.visit('/', {
+        cy.login({
+          networkType: 'L1',
+          url: '/',
           qs: {
             token: ERC20TokenAddressL2
           }
@@ -162,7 +147,9 @@ describe('Import token', () => {
 
     context('User uses invalid address', () => {
       it('should display an error message', () => {
-        cy.visit('/', {
+        cy.login({
+          networkType: 'L1',
+          url: '/',
           qs: {
             token: invalidTokenAddress
           }

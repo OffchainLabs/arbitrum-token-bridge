@@ -22,7 +22,7 @@ describe('User enters site with query params on URL', () => {
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()
     // log in to metamask before test
-    cy.login('L1')
+    cy.login({ networkType: 'L1' })
     // save state once otherwise `restoreAppState` in beforeEach would clear it
     cy.saveAppState()
   })

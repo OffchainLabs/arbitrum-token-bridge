@@ -38,7 +38,7 @@ describe('Deposit ERC20 Token', () => {
       getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
         val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
       )
-      cy.login('L1')
+      cy.login({ networkType: 'L1' })
     })
 
     after(() => {
