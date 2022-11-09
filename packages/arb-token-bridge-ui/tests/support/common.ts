@@ -79,12 +79,13 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = () => {
+export const startWebApp = (
+  url: string = '/',
+  qs: { [s: string]: string } = {}
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit('/', {
-    qs: {
-      token: ERC20TokenAddressL1
-    }
+  cy.visit(url, {
+    qs
   })
   cy.connectToApp()
   acceptMetamaskAccess()

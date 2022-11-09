@@ -18,7 +18,12 @@ declare global {
        */
       connectToApp(): typeof connectToApp
       importTokenThroughUI(address: string): typeof importTokenThroughUI
-      login(networkType: NetworkType, addNewNetwork?: boolean): typeof login
+      login(options: {
+        networkType: NetworkType
+        addNetwork?: boolean
+        url?: string
+        qs?: { [s: string]: string }
+      }): typeof login
       logout(): typeof logout
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState

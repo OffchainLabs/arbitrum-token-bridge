@@ -77,11 +77,11 @@ describe('Import token', () => {
 
   context('User import token through URL', () => {
     // log in to metamask
-    before(() => {
-      // resetSeenTimeStampCache()
-      cy.login('L1')
-      // cy.saveAppState()
-    })
+    // before(() => {
+    //   resetSeenTimeStampCache()
+    //   cy.login('L1')
+    //   cy.saveAppState()
+    // })
     after(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
@@ -95,20 +95,20 @@ describe('Import token', () => {
 
     context.only('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
-        // cy.visit('/', {
-        //   qs: {
-        //     token: ERC20TokenAddressL1
-        //   }
-        // })
+        cy.login({
+          networkType: 'L1',
+          url: '/',
+          qs: {
+            token: ERC20TokenAddressL1
+          }
+        })
 
-        cy.intercept(
-          'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json'
-        )
+        // cy.intercept(
+        //   'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json'
+        // )
 
         // Modal is displayed
-        cy.get('h2', {
-          timeout: 100_000
-        })
+        cy.get('h2')
           .contains(/import unknown token/i)
           .should('be.visible')
         cy.findByText(/ChainLink Token/i).should('be.visible')

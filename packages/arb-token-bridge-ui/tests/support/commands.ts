@@ -16,9 +16,19 @@ import {
   resetSeenTimeStampCache
 } from './common'
 
-export function login(networkType: NetworkType, addNewNetwork?: boolean) {
+export function login({
+  networkType,
+  addNewNetwork,
+  url,
+  qs
+}: {
+  networkType: NetworkType
+  addNewNetwork?: boolean
+  url?: string
+  qs?: { [s: string]: string }
+}) {
   setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-    startWebApp()
+    startWebApp(url, qs)
   })
 }
 
