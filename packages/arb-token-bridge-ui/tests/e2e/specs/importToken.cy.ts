@@ -1,7 +1,9 @@
 import {
-  ERC20TokenAddressL2,
   ERC20TokenAddressL1,
-  invalidTokenAddress
+  ERC20TokenAddressL2,
+  importTokenThroughUI,
+  invalidTokenAddress,
+  resetSeenTimeStampCache
 } from '../../support/common'
 
 describe('Import token', () => {
@@ -18,7 +20,7 @@ describe('Import token', () => {
       })
 
       it('should import token through its L1 address', () => {
-        cy.importTokenThroughUI(ERC20TokenAddressL1)
+        importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the LINK token
         cy.findByText('ChainLink Token').click({ scrollBehavior: false })
@@ -42,7 +44,7 @@ describe('Import token', () => {
       })
 
       it('should import token through its L2 address', () => {
-        cy.importTokenThroughUI(ERC20TokenAddressL2)
+        importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the LINK token
         cy.findByText('ChainLink Token').click({ scrollBehavior: false })
@@ -66,7 +68,7 @@ describe('Import token', () => {
       })
 
       it('should display an error message', () => {
-        cy.importTokenThroughUI(invalidTokenAddress)
+        importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
         cy.findByText('Token not found on this network.').should('be.visible')
@@ -75,9 +77,10 @@ describe('Import token', () => {
   })
 
   context('User import token through URL', () => {
-    after(() => {
+    afterEach(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
+      resetSeenTimeStampCache()
     })
 
     context('User uses L1 address', () => {
