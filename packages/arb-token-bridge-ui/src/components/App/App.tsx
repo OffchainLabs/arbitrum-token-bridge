@@ -414,7 +414,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
 
     default:
-      throw new UnreachableCaseError(status)
+      throw new UnreachableCaseError(props)
   }
 }
 
