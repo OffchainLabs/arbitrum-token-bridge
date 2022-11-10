@@ -10,15 +10,16 @@ import {
   DepositL2TxStatus
 } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
-import { formatBigNumber } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks//useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
-    app: { arbTokenBridge }
+    app: {
+      arbTokenBridge: { walletAddress, bridgeTokens, token }
+    }
   } = useAppState()
-  const { walletAddress, bridgeTokens, token } = arbTokenBridge
   const dispatch = useAppContextDispatch()
   const {
     l2: { provider: L2Provider }
@@ -56,7 +57,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     }
 
     if (typeof bridgeTokens === 'undefined') {
-      return
+      return null
     }
 
     const l2Address = bridgeTokens[tx.tokenAddress]?.l2Address
@@ -65,7 +66,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       return constants.Zero
     }
 
-    return erc20Balances?.[l2Address]
+    return erc20Balances[l2Address] ?? null
   }, [bridgeTokens, erc20Balances, ethBalance, tx])
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       return 18
     }
 
-    return bridgeTokens[tx.tokenAddress]?.decimals || 18
+    return bridgeTokens[tx.tokenAddress]?.decimals ?? 18
   }, [bridgeTokens, tx.tokenAddress])
 
   return (
@@ -106,7 +107,10 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
           <span className="font-medium">New balance:</span>
           {balance ? (
             <span className="font-medium">
-              {formatBigNumber(balance, decimals)} {tx.asset.toUpperCase()}
+              {formatAmount(balance, {
+                decimals,
+                symbol: tx.asset.toUpperCase()
+              })}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />

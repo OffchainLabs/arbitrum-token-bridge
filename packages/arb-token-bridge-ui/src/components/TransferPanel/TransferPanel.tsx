@@ -545,7 +545,7 @@ export function TransferPanel() {
 
   const amountBigNumber = useMemo(() => {
     try {
-      return utils.parseUnits(amount || '0', selectedToken?.decimals || 18)
+      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
     } catch (error) {
       return BigNumber.from(0)
     }

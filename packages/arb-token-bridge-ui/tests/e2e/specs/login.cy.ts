@@ -2,7 +2,7 @@
  * Test case suite for Login and balance check flow
  */
 
-import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
   goerliRPC,
@@ -15,10 +15,10 @@ describe('Login Account', () => {
 
   before(() => {
     getInitialETHBalance(goerliRPC).then(
-      val => (l1ETHbal = formatBigNumber(val, 18, 5))
+      val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
     getInitialETHBalance(arbitrumGoerliRPC).then(
-      val => (l2ETHbal = formatBigNumber(val, 18, 5))
+      val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
   })
 
@@ -40,8 +40,8 @@ describe('Login Account', () => {
   })
 
   it('should show L1 and L2 ETH balances correctly', () => {
-    cy.findByText(`Balance: ${l1ETHbal} ETH`).should('be.visible')
-    cy.findByText(`Balance: ${l2ETHbal} ETH`).should('be.visible')
+    cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
+    cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
   })
 
   it('should show empty bridging summary', () => {

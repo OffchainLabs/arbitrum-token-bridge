@@ -9,7 +9,7 @@ import {
   WithdrawalL1TxStatus,
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
-import { formatBigNumber } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
 
@@ -91,7 +91,10 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
           <span className="font-medium">New balance:</span>
           {balance ? (
             <span className="font-medium">
-              {formatBigNumber(balance, decimals)} {tx.asset.toUpperCase()}
+              {formatAmount(balance, {
+                decimals,
+                symbol: tx.asset.toUpperCase()
+              })}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />
