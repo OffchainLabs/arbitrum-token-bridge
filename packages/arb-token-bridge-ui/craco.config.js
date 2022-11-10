@@ -1,4 +1,4 @@
-/* eslint-disable global-require */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { ESLINT_MODES, whenProd } = require('@craco/craco')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
