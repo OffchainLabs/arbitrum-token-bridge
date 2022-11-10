@@ -1,5 +1,6 @@
 import '@synthetixio/synpress/support/index.d.ts'
 import {
+  connectToApp,
   login,
   logout,
   restoreAppState,
@@ -16,6 +17,7 @@ declare global {
        */
       login(networkType: NetworkType, addNewNetwork?: boolean): typeof login
       logout(): typeof logout
+      connectToApp(): typeof connectToApp
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
     }

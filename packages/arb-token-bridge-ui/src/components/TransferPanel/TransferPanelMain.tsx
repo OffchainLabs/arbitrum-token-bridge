@@ -13,13 +13,13 @@ import { useWallet } from '@arbitrum/use-wallet'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getNetworkName,
   isNetwork,
   switchChain
 } from '../../util/networks'
-import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -264,7 +264,7 @@ function ETHBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatBigNumber(balance, 18, 5)} ETH
+      {formatAmount(balance, { symbol: 'ETH' })}
     </span>
   )
 }
@@ -292,7 +292,10 @@ function TokenBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatBigNumber(balance, forToken.decimals, 5)} {forToken.symbol}
+      {formatAmount(balance, {
+        decimals: forToken.decimals,
+        symbol: forToken.symbol
+      })}
     </span>
   )
 }
@@ -676,7 +679,7 @@ export function TransferPanelMain({
       }
 
       // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals || 18))
+      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
       return
     }
 
