@@ -11,7 +11,8 @@ import {
 } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
 import { formatAmount } from '../../util/NumberUtils'
-import { useNetworksAndSigners } from '../../hooks//useNetworksAndSigners'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useBalance } from 'token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
@@ -81,17 +82,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
   }, [tx.txId])
 
-  const decimals = useMemo(() => {
-    if (typeof bridgeTokens === 'undefined') {
-      return 18
-    }
-
-    if (!tx.tokenAddress) {
-      return 18
-    }
-
-    return bridgeTokens[tx.tokenAddress]?.decimals ?? 18
-  }, [bridgeTokens, tx.tokenAddress])
+  const decimals = useTokenDecimals(bridgeTokens, tx.tokenAddress)
 
   return (
     <DepositCardContainer tx={tx} dismissable>
