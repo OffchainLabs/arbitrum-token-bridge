@@ -4,6 +4,7 @@
 
 import { resetSeenTimeStampCache } from '../../support/commands'
 import { zeroToLessThanOneETH } from '../../support/common'
+import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {
   // when all of our tests need to run in a logged-in state
@@ -57,7 +58,7 @@ describe('Deposit ETH', () => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains('0.0001 ETH')
+              .contains(formatAmount(0.0001, { symbol: 'ETH' }))
               .should('be.visible')
             cy.findByText('You’ll pay in gas fees')
               .siblings()
@@ -98,9 +99,11 @@ describe('Deposit ETH', () => {
         // https://github.com/cypress-io/cypress/issues/23898
 
         cy.confirmMetamaskTransaction().then(() => {
-          cy.findByText('Moving 0.0001 ETH to Arbitrum Goerli...').should(
-            'be.visible'
-          )
+          cy.findByText(
+            `Moving ${formatAmount(0.0001, {
+              symbol: 'ETH'
+            })} to Arbitrum Goerli...`
+          ).should('be.visible')
         })
       })
     })
