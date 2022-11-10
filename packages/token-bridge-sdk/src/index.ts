@@ -43,6 +43,7 @@ export {
   getDefaultTokenSymbol,
   getL1TokenData,
   getL2TokenData,
+  isTxSuccessful,
   validateTokenList
 } from './util/index'
 export { getL1ERC20Address } from './util/getL1ERC20Address'

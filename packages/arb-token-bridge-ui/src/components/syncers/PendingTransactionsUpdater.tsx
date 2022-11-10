@@ -1,12 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
 import { TransactionReceipt } from '@ethersproject/providers'
-import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
+import { isTxSuccessful, Transaction, txnTypeToLayer } from 'token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { isTxSuccessful } from 'token-bridge-sdk/dist/util'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
