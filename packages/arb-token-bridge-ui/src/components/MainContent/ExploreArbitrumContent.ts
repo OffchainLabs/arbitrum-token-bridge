@@ -94,6 +94,13 @@ export const ExploreArbitrumContent = {
         'Multichain Aggregator with efficient swap rates & yield farming on Arbitrum, code audited. Free pro trading tools.',
       href: 'https://kyberswap.com',
       imageSrc: '/images/explore-arbitrum/defi/kyberswap.webp'
+    },
+    {
+      name: 'SperaX',
+      description:
+        'Sperax USD is a stablecoin and yield automating protocol on Arbitrum.',
+      href: 'https://sperax.io/',
+      imageSrc: '/images/explore-arbitrum/defi/sperax.webp'
     }
   ],
   nfts: [
