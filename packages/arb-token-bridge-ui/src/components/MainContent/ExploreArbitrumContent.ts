@@ -96,7 +96,7 @@ export const ExploreArbitrumContent = {
       imageSrc: '/images/explore-arbitrum/defi/kyberswap.webp'
     },
     {
-      name: 'SperaX',
+      name: 'Sperax',
       description:
         'Sperax USD is a stablecoin and yield automating protocol on Arbitrum.',
       href: 'https://sperax.io/',
