@@ -230,18 +230,8 @@ export const ExploreArbitrumContent = {
   ]
 } as const
 
-// DeFi
-const ExploreArbitrumDeFiProjectNames = ExploreArbitrumContent.defi.map(
-  project => project.name
-)
-
 export type ExploreArbitrumDeFiProjectName =
-  typeof ExploreArbitrumDeFiProjectNames[number]
-
-// NFT
-const ExploreArbitrumNFTProjectNames = ExploreArbitrumContent.nfts.map(
-  project => project.name
-)
+  typeof ExploreArbitrumContent.defi[number]['name']
 
 export type ExploreArbitrumNFTProjectName =
-  typeof ExploreArbitrumNFTProjectNames[number]
+  typeof ExploreArbitrumContent.nfts[number]['name']
