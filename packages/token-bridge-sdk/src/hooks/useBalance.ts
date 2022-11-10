@@ -100,7 +100,7 @@ const useBalance = ({
   const updateErc20 = useCallback(
     (balances: Erc20Balances) => {
       const lowerCasedBalances: Erc20Balances = {}
-      for (let balance in balances) {
+      for (const balance in balances) {
         lowerCasedBalances[balance.toLowerCase()] = balances[balance]
       }
       return mutateErc20(lowerCasedBalances, {

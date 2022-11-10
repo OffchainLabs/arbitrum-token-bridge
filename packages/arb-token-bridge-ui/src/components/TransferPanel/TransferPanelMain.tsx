@@ -4,7 +4,7 @@ import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
@@ -468,7 +468,7 @@ export function TransferPanelMain({
       amount: weiValue
     })
 
-    return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
+    return { ...result, estimatedL2SubmissionCost: constants.Zero }
   }
 
   type NetworkListboxesProps = {

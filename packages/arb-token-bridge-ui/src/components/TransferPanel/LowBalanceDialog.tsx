@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { BigNumber, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
@@ -87,7 +87,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
     walletAddress: app.arbTokenBridge.walletAddress
   })
 
-  const balance = useMemo(() => ethBalance ?? BigNumber.from(0), [ethBalance])
+  const balance = useMemo(() => ethBalance ?? constants.Zero, [ethBalance])
 
   const balanceNumber = useMemo(
     () => parseFloat(utils.formatEther(balance)),

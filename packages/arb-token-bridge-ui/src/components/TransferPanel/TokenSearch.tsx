@@ -4,7 +4,7 @@ import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
-import { BigNumber } from 'ethers'
+import { constants } from 'ethers'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -102,10 +102,10 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     }
 
     if (!token.l2Address) {
-      return BigNumber.from(0)
+      return constants.Zero
     }
 
-    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? BigNumber.from(0)
+    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
   }, [
     ethL1Balance,
     ethL2Balance,

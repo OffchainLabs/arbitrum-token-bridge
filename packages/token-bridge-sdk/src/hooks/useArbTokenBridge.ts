@@ -121,7 +121,7 @@ export const useArbTokenBridge = (
 
   const {
     eth: [, updateEthL1Balance],
-    erc20: [, updateErcL1Balance]
+    erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
     walletAddress,
@@ -129,7 +129,7 @@ export const useArbTokenBridge = (
   })
   const {
     eth: [, updateEthL2Balance],
-    erc20: [, updateErcL2Balance]
+    erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
     walletAddress,
@@ -266,8 +266,8 @@ export const useArbTokenBridge = (
       depositRequest.txRequest
     )
 
-    const estimatedL2Gas = BigNumber.from(0)
-    const estimatedL2SubmissionCost = BigNumber.from(0)
+    const estimatedL2Gas = constants.Zero
+    const estimatedL2SubmissionCost = constants.Zero
     return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
   }
 
@@ -884,11 +884,11 @@ export const useArbTokenBridge = (
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
 
-    updateErcL1Balance({
+    updateErc20L1Balance({
       [l1Address]: l1TokenBalance
     })
     if (l2Address && l2TokenBalance) {
-      updateErcL2Balance({
+      updateErc20L2Balance({
         [l2Address]: l2TokenBalance
       })
     }
@@ -922,11 +922,11 @@ export const useArbTokenBridge = (
           })
         : null
 
-      updateErcL1Balance({
+      updateErc20L1Balance({
         [l1Address]: l1Data.balance
       })
       if (l2Data && l2Address) {
-        updateErcL2Balance({
+        updateErc20L2Balance({
           [l2Address]: l2Data.balance || Zero
         })
       }
@@ -941,8 +941,8 @@ export const useArbTokenBridge = (
       setBridgeTokens,
       l1.provider,
       l2.provider,
-      updateErcL1Balance,
-      updateErcL2Balance
+      updateErc20L1Balance,
+      updateErc20L2Balance
     ]
   )
 
