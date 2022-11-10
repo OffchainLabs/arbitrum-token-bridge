@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import useTransactions from 'token-bridge-sdk/dist/hooks/useTransactions'
+import { useTransactions } from 'token-bridge-sdk'
 import { useActions } from '../state'
 
 export const useTransactionsInApp = () => {
