@@ -32,9 +32,9 @@ import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
   calculateEstimatedL2GasFees,
-  useIsSwitchingL2Chain,
-  useTokenBalances
+  useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
+import { useTokenBalances } from '../../hooks/useTokenBalances'
 
 import EthereumLogo from '../../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'

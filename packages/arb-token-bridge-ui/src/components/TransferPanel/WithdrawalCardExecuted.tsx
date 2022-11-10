@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import Loader from 'react-loader-spinner'
 
 import { useAppState } from '../../state'
@@ -10,21 +10,15 @@ import {
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
 import { formatAmount } from '../../util/NumberUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useTokenBalances } from '../../hooks/useTokenBalances'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
-import { useBalance } from 'token-bridge-sdk'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const { walletAddress, bridgeTokens } = arbTokenBridge
+  const { bridgeTokens } = arbTokenBridge
   const dispatch = useAppContextDispatch()
-  const { l1 } = useNetworksAndSigners()
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1.provider, walletAddress })
 
   useEffect(() => {
     // Add token to bridge just in case
@@ -38,22 +32,10 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     }
   }, [])
 
-  const balance = useMemo(() => {
-    if (!ethL1Balance || !erc20L1Balances) {
-      return null
-    }
-
-    if (tx.asset === 'eth') {
-      return ethL1Balance
-    }
-
-    if (!tx.tokenAddress) {
-      return null
-    }
-
-    return erc20L1Balances?.[tx.tokenAddress.toLowerCase()]
-  }, [erc20L1Balances, ethL1Balance, tx])
-
+  const { l1: l1Balance, l2: l2Balance } = useTokenBalances(
+    tx.tokenAddress?.toLowerCase()
+  )
+  const balance = tx.asset === 'eth' ? l1Balance : l2Balance
   useEffect(() => {
     const timeout = setTimeout(() => {
       dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
