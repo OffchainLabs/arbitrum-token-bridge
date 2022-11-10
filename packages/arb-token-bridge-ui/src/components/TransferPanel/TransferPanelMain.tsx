@@ -234,13 +234,7 @@ function StyledLoader() {
   return <Loader type="TailSpin" color="white" height={16} width={16} />
 }
 
-function ETHBalance({
-  on,
-  prefix = ''
-}: {
-  on: 'ethereum' | 'arbitrum'
-  prefix?: string
-}) {
+function ETHBalance({ on, prefix = '' }: { on: 'l1' | 'l2'; prefix?: string }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -255,7 +249,7 @@ function ETHBalance({
     eth: [ethL2Balance]
   } = useBalance({ provider: l2.provider, walletAddress })
 
-  const balance = on === 'ethereum' ? ethL1Balance : ethL2Balance
+  const balance = on === 'l1' ? ethL1Balance : ethL2Balance
 
   if (!balance) {
     return <StyledLoader />
@@ -275,7 +269,7 @@ function TokenBalance({
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
-  on: 'ethereum' | 'arbitrum'
+  on: 'l1' | 'l2'
   prefix?: string
 }) {
   const balance = useTokenBalances(forToken?.address)[on]
@@ -391,9 +385,7 @@ export function TransferPanelMain({
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-    const tokenBalance = isDepositMode
-      ? tokenBalances.ethereum
-      : tokenBalances.arbitrum
+    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -668,9 +660,7 @@ export function TransferPanelMain({
   async function setMaxAmount() {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
-    const tokenBalance = isDepositMode
-      ? tokenBalances.ethereum
-      : tokenBalances.arbitrum
+    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -722,12 +712,12 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
-                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  on={app.isDepositMode ? 'l1' : 'l2'}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  on={app.isDepositMode ? 'l1' : 'l2'}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
@@ -780,12 +770,12 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
-                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  on={app.isDepositMode ? 'l2' : 'l1'}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  on={app.isDepositMode ? 'l2' : 'l1'}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>

@@ -28,8 +28,8 @@ export function calculateEstimatedL2GasFees(
 // TODO: These could be useful in the rest of the app
 
 export type Balances = {
-  ethereum: BigNumber | null
-  arbitrum: BigNumber | null
+  l1: BigNumber | null
+  l2: BigNumber | null
 }
 
 export function useTokenBalances(erc20L1Address?: string): Balances {
@@ -47,7 +47,7 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
   } = useBalance({ provider: l2.provider, walletAddress })
 
   return useMemo(() => {
-    const defaultResult = { ethereum: null, arbitrum: null }
+    const defaultResult = { l1: null, l2: null }
 
     if (typeof erc20L1Address === 'undefined') {
       return defaultResult
@@ -63,8 +63,8 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       erc20L2Balances?.[(erc20L2Address || '').toLowerCase()] || null
 
     return {
-      ethereum: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
-      arbitrum: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
+      l1: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
+      l2: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
     }
   }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
 }
