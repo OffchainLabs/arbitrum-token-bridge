@@ -94,6 +94,13 @@ export const ExploreArbitrumContent = {
         'Multichain Aggregator with efficient swap rates & yield farming on Arbitrum, code audited. Free pro trading tools.',
       href: 'https://kyberswap.com',
       imageSrc: '/images/explore-arbitrum/defi/kyberswap.webp'
+    },
+    {
+      name: 'Sperax',
+      description:
+        'Sperax USD is a stablecoin and yield automating protocol on Arbitrum.',
+      href: 'https://sperax.io/',
+      imageSrc: '/images/explore-arbitrum/defi/sperax.webp'
     }
   ],
   nfts: [
@@ -223,18 +230,8 @@ export const ExploreArbitrumContent = {
   ]
 } as const
 
-// DeFi
-const ExploreArbitrumDeFiProjectNames = ExploreArbitrumContent.defi.map(
-  project => project.name
-)
-
 export type ExploreArbitrumDeFiProjectName =
-  typeof ExploreArbitrumDeFiProjectNames[number]
-
-// NFT
-const ExploreArbitrumNFTProjectNames = ExploreArbitrumContent.nfts.map(
-  project => project.name
-)
+  typeof ExploreArbitrumContent.defi[number]['name']
 
 export type ExploreArbitrumNFTProjectName =
-  typeof ExploreArbitrumNFTProjectNames[number]
+  typeof ExploreArbitrumContent.nfts[number]['name']
