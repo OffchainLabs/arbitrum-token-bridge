@@ -42,7 +42,7 @@ export function Footer() {
           <span className="text-4xl">Now running Arbitrum Nitro.</span>
           <ExternalLink
             href="https://developer.arbitrum.io"
-            className="text-4xl underline"
+            className="text-2xl underline"
           >
             Learn more.
           </ExternalLink>
