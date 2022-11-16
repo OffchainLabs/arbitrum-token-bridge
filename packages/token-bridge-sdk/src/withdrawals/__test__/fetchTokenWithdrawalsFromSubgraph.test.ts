@@ -1,32 +1,23 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-
+import {
+  getQueryCoveringClassicOnlyWithoutResults,
+  getQueryCoveringClassicOnlyWithResults,
+  getQueryCoveringClassicAndNitroWithResults
+} from './fetchTokenWithdrawalsTestHelpers'
 import { fetchTokenWithdrawalsFromSubgraph } from '../fetchTokenWithdrawalsFromSubgraph'
-
-const l2Provider = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
-
-const l2UserAddress = '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299'
-
-/* Note : Please ensure that Block numbers `from` and `to` should be the same in both *fromEventLogs and *fromSubgraph tests */
 
 describe('fetchTokenWithdrawalsFromSubgraph', () => {
   it('fetches no token withdrawals from subgraph pre-nitro', async () => {
-    const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: l2UserAddress,
-      fromBlock: 0,
-      toBlock: 20961063,
-      l2Provider
-    })
+    const result = await fetchTokenWithdrawalsFromSubgraph(
+      getQueryCoveringClassicOnlyWithoutResults()
+    )
 
     expect(result).toHaveLength(0)
   })
 
   it('fetches some token withdrawals from subgraph pre-nitro', async () => {
-    const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: l2UserAddress,
-      fromBlock: 20961064,
-      toBlock: 26317225,
-      l2Provider
-    })
+    const result = await fetchTokenWithdrawalsFromSubgraph(
+      getQueryCoveringClassicOnlyWithResults()
+    )
 
     expect(result).toHaveLength(1)
     expect(result).toEqual(
@@ -40,12 +31,9 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
   })
 
   it('fetches some token withdrawals from subgraph pre-nitro and post-nitro', async () => {
-    const result = await fetchTokenWithdrawalsFromSubgraph({
-      address: l2UserAddress,
-      fromBlock: 20961064,
-      toBlock: 35134792,
-      l2Provider
-    })
+    const result = await fetchTokenWithdrawalsFromSubgraph(
+      getQueryCoveringClassicAndNitroWithResults()
+    )
 
     expect(result).toHaveLength(5)
     expect(result).toEqual(

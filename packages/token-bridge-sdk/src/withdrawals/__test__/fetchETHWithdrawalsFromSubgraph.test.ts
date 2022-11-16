@@ -1,32 +1,23 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
-
+import {
+  getQueryCoveringClassicOnlyWithoutResults,
+  getQueryCoveringClassicOnlyWithResults,
+  getQueryCoveringClassicAndNitroWithResults
+} from './fetchETHWithdrawalsTestHelpers'
 import { fetchETHWithdrawalsFromSubgraph } from '../fetchETHWithdrawalsFromSubgraph'
-
-const l2Provider = new JsonRpcProvider('https://arb1.arbitrum.io/rpc')
-
-const l2UserAddress = '0xd898275e8b9428429155752f89fe0899ce232830'
-
-/* Note : Please ensure that Block numbers `from` and `to` should be the same in both *fromEventLogs and *fromSubgraph tests */
 
 describe('fetchETHWithdrawalsFromSubgraph', () => {
   it('fetches no ETH withdrawals from subgraph pre-nitro', async () => {
-    const result = await fetchETHWithdrawalsFromSubgraph({
-      address: l2UserAddress,
-      fromBlock: 0,
-      toBlock: 20785771,
-      l2Provider
-    })
+    const result = await fetchETHWithdrawalsFromSubgraph(
+      getQueryCoveringClassicOnlyWithoutResults()
+    )
 
     expect(result).toHaveLength(0)
   })
 
   it('fetches some ETH withdrawals from subgraph pre-nitro', async () => {
-    const result = await fetchETHWithdrawalsFromSubgraph({
-      address: l2UserAddress,
-      fromBlock: 20785772,
-      toBlock: 22964111,
-      l2Provider
-    })
+    const result = await fetchETHWithdrawalsFromSubgraph(
+      getQueryCoveringClassicOnlyWithResults()
+    )
 
     expect(result).toHaveLength(1)
     expect(result).toEqual(
@@ -40,12 +31,9 @@ describe('fetchETHWithdrawalsFromSubgraph', () => {
   })
 
   it('fetches some ETH withdrawals from subgraph pre-nitro and post-nitro', async () => {
-    const result = await fetchETHWithdrawalsFromSubgraph({
-      address: l2UserAddress,
-      fromBlock: 20785772,
-      toBlock: 24905369,
-      l2Provider
-    })
+    const result = await fetchETHWithdrawalsFromSubgraph(
+      getQueryCoveringClassicAndNitroWithResults()
+    )
 
     expect(result).toHaveLength(3)
     expect(result).toEqual(
