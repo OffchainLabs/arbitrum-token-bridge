@@ -5,11 +5,14 @@ import { useBalance } from 'token-bridge-sdk'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAppState } from '../state'
 
-export type Balances = {
-  l1: BigNumber | null
-  l2: BigNumber | null
+export enum NetworkType {
+  l1 = 'l1',
+  l2 = 'l2'
 }
-
+export type Balances = {
+  [NetworkType.l1]: BigNumber | null
+  [NetworkType.l2]: BigNumber | null
+}
 export function useTokenBalances(erc20L1Address?: string): Balances {
   const {
     app: {
@@ -25,7 +28,7 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
   } = useBalance({ provider: l2.provider, walletAddress })
 
   return useMemo(() => {
-    const defaultResult = { l1: null, l2: null }
+    const defaultResult = { [NetworkType.l1]: null, [NetworkType.l2]: null }
 
     if (typeof erc20L1Address === 'undefined') {
       return defaultResult
@@ -41,8 +44,8 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       erc20L2Balances?.[(erc20L2Address || '').toLowerCase()] || null
 
     return {
-      l1: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
-      l2: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
+      [NetworkType.l1]: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
+      [NetworkType.l2]: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
     }
   }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
 }

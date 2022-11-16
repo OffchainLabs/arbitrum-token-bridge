@@ -892,7 +892,6 @@ export const useArbTokenBridge = (
         [l2Address]: l2TokenBalance
       })
     }
-    return l1Address
   }
 
   const updateTokenData = useCallback(

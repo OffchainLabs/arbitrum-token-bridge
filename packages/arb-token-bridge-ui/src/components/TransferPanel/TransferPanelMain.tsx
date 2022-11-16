@@ -34,7 +34,7 @@ import {
   calculateEstimatedL2GasFees,
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
-import { useTokenBalances } from '../../hooks/useTokenBalances'
+import { NetworkType, useTokenBalances } from '../../hooks/useTokenBalances'
 
 import EthereumLogo from '../../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
@@ -234,7 +234,7 @@ function StyledLoader() {
   return <Loader type="TailSpin" color="white" height={16} width={16} />
 }
 
-function ETHBalance({ on, prefix = '' }: { on: 'l1' | 'l2'; prefix?: string }) {
+function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -249,7 +249,7 @@ function ETHBalance({ on, prefix = '' }: { on: 'l1' | 'l2'; prefix?: string }) {
     eth: [ethL2Balance]
   } = useBalance({ provider: l2.provider, walletAddress })
 
-  const balance = on === 'l1' ? ethL1Balance : ethL2Balance
+  const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
   if (!balance) {
     return <StyledLoader />
@@ -269,7 +269,7 @@ function TokenBalance({
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
-  on: 'l1' | 'l2'
+  on: NetworkType
   prefix?: string
 }) {
   const balance = useTokenBalances(forToken?.address)[on]
@@ -712,12 +712,12 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
-                  on={app.isDepositMode ? 'l1' : 'l2'}
+                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? 'l1' : 'l2'}
+                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
@@ -770,12 +770,12 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
-                  on={app.isDepositMode ? 'l2' : 'l1'}
+                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? 'l2' : 'l1'}
+                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
