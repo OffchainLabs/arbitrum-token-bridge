@@ -1,4 +1,10 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, {
+  FormEventHandler,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect
+} from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
@@ -24,6 +30,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
+import { useAddNewToken } from '../../hooks/useAddNewToken'
 
 enum Panel {
   TOKENS,
@@ -329,10 +336,12 @@ function TokensPanel({
 }): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { balances, token, walletAddress },
+      arbTokenBridge: { balances, walletAddress },
       isDepositMode
     }
   } = useAppState()
+  const { addNewToken, loading: isAddingToken, error } = useAddNewToken()
+  const [errorMessage, setErrorMessage] = useState(error)
   const {
     l1: { provider: L1Provider },
     l2: { provider: L2Provider }
@@ -349,8 +358,6 @@ function TokensPanel({
   const tokensFromLists = useTokensFromLists()
 
   const [newToken, setNewToken] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isAddingToken, setIsAddingToken] = useState(false)
 
   const numberOfRows = isLarge ? 5 : 3.5
 
@@ -434,40 +441,18 @@ function TokensPanel({
       })
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
-  const storeNewToken = async () => {
-    return token.add(newToken).catch((ex: Error) => {
-      let error = 'Token not found on this network.'
-
-      if (ex.name === 'TokenDisabledError') {
-        error = 'This token is currently paused in the bridge.'
-      }
-
-      setErrorMessage(error)
-    })
-  }
-
-  const addNewToken: FormEventHandler = async e => {
+  const handleSubmit: FormEventHandler = async e => {
     e.preventDefault()
-    setErrorMessage('')
-
-    if (!isAddress(newToken) || isAddingToken) {
-      return
-    }
-
-    setIsAddingToken(true)
-
-    try {
-      await storeNewToken()
-    } catch (ex) {
-      console.log(ex)
-    } finally {
-      setIsAddingToken(false)
-    }
+    addNewToken(newToken)
   }
+
+  useEffect(() => {
+    setErrorMessage(error)
+  }, [error, setErrorMessage])
 
   return (
     <div className="flex flex-col space-y-3">
-      <form onSubmit={addNewToken} className="flex flex-col">
+      <form onSubmit={handleSubmit} className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <input
             id="newTokenAddress"

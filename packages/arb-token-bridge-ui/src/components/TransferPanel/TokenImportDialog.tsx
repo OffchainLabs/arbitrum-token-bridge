@@ -16,6 +16,7 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl } from '../../util/networks'
+import { useAddNewToken } from '../../hooks/useAddNewToken'
 
 enum ImportStatus {
   LOADING,
@@ -50,6 +51,7 @@ export function TokenImportDialog({
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
   const actions = useActions()
+  const { addNewToken } = useAddNewToken()
 
   const tokensFromUser = useTokensFromUser()
   const latestTokensFromUser = useLatest(tokensFromUser)
@@ -192,6 +194,7 @@ export function TokenImportDialog({
     searchForTokenInLists
   ])
 
+  // Close modal when token is added
   useEffect(() => {
     if (!isOpen) {
       return
@@ -223,16 +226,6 @@ export function TokenImportDialog({
     tokensFromUser
   ])
 
-  async function storeNewToken(newToken: string) {
-    return token.add(newToken).catch((ex: Error) => {
-      setStatus(ImportStatus.ERROR)
-
-      if (ex.name === 'TokenDisabledError') {
-        alert('This token is currently paused in the bridge')
-      }
-    })
-  }
-
   function handleTokenImport() {
     if (typeof bridgeTokens === 'undefined') {
       return
@@ -242,11 +235,11 @@ export function TokenImportDialog({
       return
     }
 
-    setIsImportingToken(true)
-
     if (!l1Address) {
       return
     }
+
+    setIsImportingToken(true)
 
     if (typeof bridgeTokens[l1Address] !== 'undefined') {
       // Token is already added to the bridge
@@ -254,8 +247,12 @@ export function TokenImportDialog({
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
-      storeNewToken(l1Address).catch(() => {
+      addNewToken(l1Address).catch((ex: Error) => {
         setStatus(ImportStatus.ERROR)
+
+        if (ex.name === 'TokenDisabledError') {
+          alert('This token is currently paused in the bridge')
+        }
       })
     }
   }
