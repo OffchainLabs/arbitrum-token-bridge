@@ -112,13 +112,23 @@ describe('Import token', () => {
           .should('have.text', 'ETH')
           .click({ scrollBehavior: false })
 
-        // open the Select Token popup
+        // Check that token list is imported
+        cy.findByRole('button', { name: 'Manage token lists' })
+          .scrollIntoView()
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+
+        cy.findByText('Arbed CMC List').should('be.visible')
+        cy.get('[data-cy="toggle Arbed CMC List"]').should('be.checked')
+
+        cy.findByRole('button', { name: 'Back to Select Token' })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+
+        // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
           .type('UNI', { scrollBehavior: false })
-
-        // Select the UNI token
-        cy.findByText('Added by User').should('exist')
         cy.findByText('Uniswap').click({ scrollBehavior: false })
 
         // UNI token should be selected now and popup should be closed after selection

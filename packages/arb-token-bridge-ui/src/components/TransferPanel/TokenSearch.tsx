@@ -301,6 +301,7 @@ function TokenListsPanel() {
                   type="checkbox"
                   checked={isActive}
                   onChange={() => toggleTokenList(tokenList, isActive)}
+                  data-cy={`toggle ${tokenList.name}`}
                 />
                 <span className="slider round"></span>
               </label>
@@ -617,6 +618,7 @@ export function TokenSearch({
           <button
             className="arb-hover text-sm font-medium text-blue-link"
             onClick={() => setCurrentPanel(Panel.LISTS)}
+            aria-label="Manage token lists"
           >
             Manage token lists
           </button>
@@ -637,6 +639,7 @@ export function TokenSearch({
         <button
           className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
           onClick={() => setCurrentPanel(Panel.TOKENS)}
+          aria-label="Back to Select Token"
         >
           <ArrowSmLeftIcon className="h-6 w-6" />
           <span>Back to Select Token</span>
