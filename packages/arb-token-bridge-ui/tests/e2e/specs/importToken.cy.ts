@@ -42,6 +42,7 @@ describe('Import token', () => {
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the LINK token
+        cy.findByText('Added by User').should('exist')
         cy.findByText('ChainLink Token').click({ scrollBehavior: false })
 
         // LINK token should be selected now and popup should be closed after selection
@@ -91,6 +92,87 @@ describe('Import token', () => {
 
         // Error message is displayed
         cy.findByText('Token not found on this network.').should('be.visible')
+      })
+    })
+
+    context('User uses token symbol', () => {
+      // log in to metamask
+      before(() => {
+        cy.login({ networkType: 'L1' })
+      })
+
+      after(() => {
+        // after all assertions are executed, logout and reset the account
+        cy.logout()
+      })
+
+      it.only('should import token', () => {
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+          .click({ scrollBehavior: false })
+
+        // open the Select Token popup
+        cy.findByPlaceholderText(/Search by token name/i)
+          .should('be.visible')
+          .type('UNI', { scrollBehavior: false })
+
+        // Select the UNI token
+        cy.findByText('Added by User').should('exist')
+        cy.findByText('Uniswap').click({ scrollBehavior: false })
+
+        // UNI token should be selected now and popup should be closed after selection
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'UNI')
+      })
+    })
+
+    context('Add button is grayed', () => {
+      // log in to metamask
+      before(() => {
+        cy.login({ networkType: 'L1' })
+      })
+
+      after(() => {
+        // after all assertions are executed, logout and reset the account
+        cy.logout()
+      })
+
+      it('should disable Add button if address is too long/short', () => {
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+          .click({ scrollBehavior: false })
+
+        // open the Select Token popup
+        cy.findByPlaceholderText(/Search by token name/i)
+          .as('searchInput')
+          .should('be.visible')
+          .type(ERC20TokenAddressL1.slice(0, -1), { scrollBehavior: false })
+
+        // Add button should be disabled
+        cy.findByRole('button', { name: 'Add New Token' })
+          .should('be.visible')
+          .should('be.disabled')
+          .as('addButton')
+
+        // Add last character
+        cy.get('@searchInput').type(
+          `{moveToEnd}${ERC20TokenAddressL1.slice(-1)}`,
+          {
+            scrollBehavior: false
+          }
+        )
+        // Add button should be enabled
+        cy.get('@addButton').should('be.enabled')
+
+        // Add one more character
+        cy.get('@searchInput').type(`{moveToEnd}a`, {
+          scrollBehavior: false
+        })
+        // Add button should be disabled
+        cy.get('@addButton').should('be.disabled')
       })
     })
   })
