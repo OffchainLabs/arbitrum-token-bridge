@@ -7,7 +7,7 @@ import { resetSeenTimeStampCache } from '../../support/commands'
 import { getInitialETHBalance, goerliRPC } from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
-  let l1ETHbal: Number
+  let l1ETHbal: number
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
