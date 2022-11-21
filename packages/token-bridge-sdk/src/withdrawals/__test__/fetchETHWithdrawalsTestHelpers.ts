@@ -13,7 +13,7 @@ export function getQueryCoveringClassicOnlyWithoutResults() {
 }
 
 export function getQueryCoveringClassicOnlyWithResults() {
-  return { ...baseQuery, fromBlock: 20785772, toBlock: 22964111 }
+  return { ...baseQuery, fromBlock: 20785772, toBlock: 22207817 }
 }
 
 export function getQueryCoveringClassicAndNitroWithResults() {
