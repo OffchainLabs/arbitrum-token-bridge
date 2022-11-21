@@ -25,12 +25,6 @@ export const LowBalanceDialogContent = {
         'https://portal.arbitrum.one/wp-content/uploads/2021/11/404-4048020_crypto-com-logo-svg-hd-png-download.png'
     },
     {
-      href: 'https://ftx.com',
-      title: 'FTX',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/02/7_HigzNT_400x400.png'
-    },
-    {
       href: 'https://www.huobi.com',
       title: 'Huobi',
       imageSrc:
