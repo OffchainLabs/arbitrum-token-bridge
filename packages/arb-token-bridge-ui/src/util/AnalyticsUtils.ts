@@ -69,6 +69,7 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Explore: DeFi Project Click: Beefy Finance': 'NDMROCKL',
   'Explore: DeFi Project Click: Yearn Finance': '32U989O7',
   'Explore: DeFi Project Click: KyberSwap': 'RVW7KSNB',
+  'Explore: DeFi Project Click: Sperax': '6IVIM3JM',
   //
   'Explore: NFT Project Click: Arbibots': 'UKENMGHD',
   'Explore: NFT Project Click: Smol Brains': '7JMIH5HA',
