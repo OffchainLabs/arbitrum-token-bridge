@@ -6,7 +6,6 @@ import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
 
 import { useActions, useAppState } from '../../state'
-import { UnreachableCaseError } from '../../util'
 import {
   useTokensFromLists,
   useTokensFromUser,
@@ -83,8 +82,6 @@ export function TokenImportDialog({
         )
       case ImportStatus.ERROR:
         return 'Invalid token address'
-      default:
-        throw new UnreachableCaseError(status)
     }
   }, [status])
 

@@ -6,7 +6,7 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState, UnreachableCaseError } from '../../util'
+import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
@@ -412,9 +412,6 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </ConnectionFallbackContainer>
         </>
       )
-
-    default:
-      throw new UnreachableCaseError(props)
   }
 }
 

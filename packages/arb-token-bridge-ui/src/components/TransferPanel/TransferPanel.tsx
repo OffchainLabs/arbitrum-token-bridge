@@ -7,7 +7,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { useBalance, getL1TokenData, ArbTokenBridge } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
-import { ConnectionState, UnreachableCaseError } from '../../util'
+import { ConnectionState } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
@@ -617,8 +617,6 @@ export function TransferPanel() {
 
           return undefined
         }
-        default:
-          throw new UnreachableCaseError(gasSummary.status)
       }
     },
     [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]

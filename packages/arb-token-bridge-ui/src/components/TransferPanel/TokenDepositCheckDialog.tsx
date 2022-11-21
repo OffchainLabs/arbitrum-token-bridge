@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { UnreachableCaseError } from '../../util'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 
 export type TokenDepositCheckDialogType = 'user-added-token' | 'new-token'
@@ -96,8 +95,6 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
             <br />
           </>
         )
-      default:
-        throw new UnreachableCaseError(type)
     }
   }, [type, symbol])
 
@@ -108,9 +105,6 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
 
       case 'new-token':
         return 'New Token Detected'
-
-      default:
-        throw new UnreachableCaseError(type)
     }
   }, [type, symbol])
 
