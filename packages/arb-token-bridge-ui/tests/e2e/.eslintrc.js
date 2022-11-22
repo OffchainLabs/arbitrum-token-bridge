@@ -1,13 +1,23 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 const synpressPath = path.join(
   process.cwd(),
-  '../../node_modules/@synthetixio/synpress'
+  '/node_modules/@synthetixio/synpress'
 )
 
 module.exports = {
   extends: `${synpressPath}/.eslintrc.js`,
+  parserOptions: {
+    project: path.resolve(
+      './packages/arb-token-bridge-ui/tests/e2e/tsconfig.json'
+    )
+  },
   rules: {
-    // Goes against cypress best practices https://docs.cypress.io/guides/references/best-practices#Selecting-Elements
-    'ui-testing/no-css-page-layout-selector': 'off'
+    'jest/expect-expect': [
+      'off',
+      {
+        assertFunctionNames: ['expect']
+      }
+    ]
   }
 }

@@ -13,13 +13,13 @@ import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
-import { PendingWithdrawalsLoadedState } from '../../util'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
+import { PendingWithdrawalsLoadedState } from '../../util'
 import {
   TransactionsTable,
   TransactionsDataStatus
