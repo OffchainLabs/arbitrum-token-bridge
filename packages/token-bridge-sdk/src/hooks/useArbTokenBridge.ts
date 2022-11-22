@@ -28,7 +28,6 @@ import {
   AssetType,
   ContractStorage,
   ERC20BridgeToken,
-  ERC721Balance,
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
   TokenType,
@@ -135,8 +134,6 @@ export const useArbTokenBridge = (
     walletAddress,
     erc20Addresses: tokenL2Addresses
   })
-
-  const [erc721Balances] = useState<ContractStorage<ERC721Balance>>({})
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
@@ -1362,9 +1359,6 @@ export const useArbTokenBridge = (
   return {
     walletAddress,
     bridgeTokens,
-    balances: {
-      erc721: erc721Balances
-    },
     eth: {
       deposit: depositEth,
       depositEstimateGas: depositEthEstimateGas,
