@@ -5,7 +5,13 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import {
+  useBalance,
+  getL1TokenData,
+  ArbTokenBridge,
+  AssetType,
+  TokenSymbol
+} from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
@@ -23,7 +29,6 @@ import {
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { ArbTokenBridge, AssetType, TokenSymbol } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -447,7 +452,7 @@ export function TransferPanel() {
                 transactions.addTransaction({
                   type: 'deposit-l1',
                   status: 'pending',
-                  value: amount,
+                  value: utils.formatUnits(amount, decimals),
                   txID: tx.hash,
                   assetName: symbol,
                   assetType: AssetType.ERC20,
