@@ -44,7 +44,8 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
       erc20L2Balances?.[(erc20L2Address || '').toLowerCase()] || null
 
     return {
-      [NetworkType.l1]: erc20L1Balances?.[erc20L1Address.toLowerCase()] || null,
+      [NetworkType.l1]:
+        erc20L1Balances?.[erc20L1Address.toLowerCase()] ?? constants.Zero,
       [NetworkType.l2]: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
     }
   }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
