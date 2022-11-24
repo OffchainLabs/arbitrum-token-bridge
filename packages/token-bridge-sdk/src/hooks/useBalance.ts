@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useState, useEffect, useMemo } from 'react'
 import { BigNumber, providers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import useSWR, { useSWRConfig, unstable_serialize, Middleware } from 'swr'
@@ -15,7 +15,10 @@ const merge: Middleware = useSWRNext => {
     const { cache } = useSWRConfig()
 
     const extendedFetcher = async () => {
-      const newBalances = await fetcher!()
+      if (!fetcher) {
+        return
+      }
+      const newBalances = await fetcher(key)
       const oldData = cache.get(unstable_serialize(key))
       return {
         ...oldData,
@@ -29,12 +32,10 @@ const merge: Middleware = useSWRNext => {
 
 const useBalance = ({
   provider,
-  walletAddress,
-  erc20Addresses
+  walletAddress
 }: {
   provider: providers.Provider
   walletAddress: string | undefined
-  erc20Addresses?: string[]
 }) => {
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
@@ -52,33 +53,39 @@ const useBalance = ({
         return null
       }
 
-      return [chainId, walletAddressLowercased, 'balance', type] as const
+      return [walletAddressLowercased, chainId, 'balance', type] as const
     },
     [chainId, walletAddressLowercased]
   )
-  const fetchErc20 = useCallback(async () => {
-    if (!queryKey('erc20') || !erc20Addresses) {
-      return {}
-    }
-
-    const multiCaller = await MultiCaller.fromProvider(provider as Provider)
-    const addressesBalances = await multiCaller.getTokenData(erc20Addresses, {
-      balanceOf: { account: walletAddressLowercased! }
-    })
-
-    return erc20Addresses.reduce((acc, address, index) => {
-      const balance = addressesBalances[index]
-      if (balance) {
-        acc[address.toLowerCase()] = balance.balance
+  const fetchErc20 = useCallback(
+    async (_addresses: string[] | undefined) => {
+      if (
+        typeof walletAddressLowercased === 'undefined' ||
+        !_addresses?.length
+      ) {
+        return {}
       }
 
-      return acc
-    }, {} as Erc20Balances)
-  }, [queryKey, erc20Addresses, provider, walletAddressLowercased])
+      const multiCaller = await MultiCaller.fromProvider(provider)
+      const addressesBalances = await multiCaller.getTokenData(_addresses, {
+        balanceOf: { account: walletAddressLowercased }
+      })
+
+      return _addresses.reduce((acc, address, index) => {
+        const balance = addressesBalances[index]
+        if (balance) {
+          acc[address.toLowerCase()] = balance.balance
+        }
+
+        return acc
+      }, {} as Erc20Balances)
+    },
+    [queryKey, provider, walletAddressLowercased]
+  )
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
-    (_, _walletAddress) => provider.getBalance(_walletAddress),
+    _walletAddress => provider.getBalance(_walletAddress),
     {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
@@ -88,7 +95,7 @@ const useBalance = ({
   )
   const { data: dataErc20 = null, mutate: mutateErc20 } = useSWR(
     queryKey('erc20'),
-    fetchErc20,
+    () => fetchErc20([]),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
@@ -97,34 +104,23 @@ const useBalance = ({
     }
   )
 
-  const updateErc20 = useCallback(
-    (balances: Erc20Balances) => {
-      const lowerCasedBalances: Erc20Balances = {}
-      for (const balance in balances) {
-        lowerCasedBalances[balance.toLowerCase()] = balances[balance]
-      }
-      return mutateErc20(lowerCasedBalances, {
-        populateCache(result, currentData) {
-          return {
-            ...currentData,
-            ...result
-          }
-        },
-        revalidate: false
-      })
-    },
-    [mutateErc20]
-  )
-
-  // Refetch whenever erc20Addresses change
-  useEffect(() => {
-    const refetchErc20 = async () => {
-      const newBalances = await fetchErc20()
-      updateErc20(newBalances)
+  const updateErc20 = useCallback(async (addresses: string[]) => {
+    const balances = await fetchErc20(addresses)
+    const lowerCasedBalances: Erc20Balances = {}
+    for (const balance in balances) {
+      lowerCasedBalances[balance.toLowerCase()] = balances[balance]
     }
 
-    refetchErc20()
-  }, [updateErc20, fetchErc20, erc20Addresses])
+    return mutateErc20(lowerCasedBalances, {
+      populateCache(result, currentData) {
+        return {
+          ...currentData,
+          ...result
+        }
+      },
+      revalidate: false
+    })
+  }, [])
 
   return {
     eth: [dataEth, updateEthBalance] as const,

@@ -189,16 +189,14 @@ export function TransferPanel() {
       return
     }
 
-    if (typeof arbTokenBridge.balances !== 'undefined') {
-      if (!ethL1Balance) {
-        return
-      }
+    if (!ethL1Balance) {
+      return
+    }
 
-      const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
+    const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
 
-      if (isMainnet && isDepositMode && isLowBalance) {
-        openLowBalanceDialog()
-      }
+    if (isMainnet && isDepositMode && isLowBalance) {
+      openLowBalanceDialog()
     }
   }, [
     ethL1Balance,

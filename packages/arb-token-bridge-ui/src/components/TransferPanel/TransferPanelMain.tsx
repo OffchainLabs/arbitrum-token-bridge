@@ -34,7 +34,7 @@ import {
   calculateEstimatedL2GasFees,
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
-import { NetworkType, useTokenBalances } from '../../hooks/useTokenBalances'
+import { NetworkType, useTokenBalances } from './useTokenBalances'
 
 import EthereumLogo from '../../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'

@@ -15,6 +15,8 @@ const Container = ({ children }: PropsWithChildren<{}>) => (
   <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>
 )
 
+const walletAddress = '0x58b6a8a3302369daec383334672404ee733ab239'
+
 describe('useBalance', () => {
   afterEach(() => {
     jest.restoreAllMocks()
@@ -27,10 +29,12 @@ describe('useBalance', () => {
     )
 
     // This should not be called. It's here to avoid false positive
-    jest
-      .spyOn(provider, 'getBalance')
-      .mockImplementation(() => Promise.resolve(BigNumber.from(12)))
-    jest.spyOn(MultiCaller.prototype, 'getTokenData').mockImplementation(() =>
+    const getBalanceSpy = jest.spyOn(provider, 'getBalance')
+    getBalanceSpy.mockImplementationOnce(() =>
+      Promise.resolve(BigNumber.from(12))
+    )
+    const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
+    getTokenDataSpy.mockImplementationOnce(() =>
       Promise.resolve([
         {
           balance: BigNumber.from(10)
@@ -38,13 +42,11 @@ describe('useBalance', () => {
       ])
     )
 
-    const erc20 = ['0x0000000000000000000000000000000000000000']
     const { result, waitForNextUpdate } = renderHook(
       () =>
         useBalance({
           provider,
-          walletAddress: undefined,
-          erc20Addresses: erc20
+          walletAddress: undefined
         }),
       { wrapper: Container }
     )
@@ -58,6 +60,8 @@ describe('useBalance', () => {
       }
     } = result
 
+    expect(getBalanceSpy).not.toHaveBeenCalled()
+    expect(getTokenDataSpy).not.toHaveBeenCalled()
     expect(ethBalance).toBeNull()
     expect(erc20Balances).toBeNull()
   })
@@ -72,24 +76,24 @@ describe('useBalance', () => {
       chainId: undefined
     }))
     // This should not be called. It's here to avoid false positive
-    jest
-      .spyOn(provider, 'getBalance')
-      .mockImplementation(() => Promise.resolve(BigNumber.from(22)))
-    jest.spyOn(MultiCaller.prototype, 'getTokenData').mockImplementation(() =>
+    const getBalanceSpy = jest.spyOn(provider, 'getBalance')
+    getBalanceSpy.mockImplementationOnce(() =>
+      Promise.resolve(BigNumber.from(22))
+    )
+    const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
+    getTokenDataSpy.mockImplementationOnce(() =>
       Promise.resolve([
         {
-          balance: BigNumber.from(10)
+          balance: BigNumber.from(20)
         }
       ])
     )
 
-    const erc20 = ['0x0000000000000000000000000000000000000000']
     const { result, waitForNextUpdate } = renderHook(
       () =>
         useBalance({
           provider,
-          walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239',
-          erc20Addresses: erc20
+          walletAddress
         }),
       { wrapper: Container }
     )
@@ -107,183 +111,260 @@ describe('useBalance', () => {
 
     expect(ethBalance).toBeNull()
     expect(erc20Balances).toBeNull()
+    expect(getBalanceSpy).not.toHaveBeenCalled()
+    expect(getTokenDataSpy).not.toHaveBeenCalled()
   })
 
-  it('getter return ETH balance for valid tuple (walletAddress, chainId)', async () => {
-    const provider = new StaticJsonRpcProvider(
-      process.env.REACT_APP_ETHEREUM_RPC_URL,
-      1
-    )
+  describe('ETH Balance', () => {
+    it('getter return ETH balance for valid tuple (walletAddress, chainId)', async () => {
+      const provider = new StaticJsonRpcProvider(
+        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        1
+      )
 
-    jest
-      .spyOn(provider, 'getBalance')
-      .mockImplementation(() => Promise.resolve(BigNumber.from(10)))
+      const getBalanceSpy = jest.spyOn(provider, 'getBalance')
+      getBalanceSpy.mockImplementationOnce(() =>
+        Promise.resolve(BigNumber.from(32))
+      )
+      const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
+      getTokenDataSpy.mockImplementationOnce(() =>
+        Promise.resolve([
+          {
+            balance: BigNumber.from(30)
+          }
+        ])
+      )
 
-    const { result, waitForNextUpdate } = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239'
-        }),
-      { wrapper: Container }
-    )
+      const { result, waitForNextUpdate } = renderHook(
+        () =>
+          useBalance({
+            provider,
+            walletAddress
+          }),
+        { wrapper: Container }
+      )
 
-    await waitForNextUpdate({ timeout: 100 })
-    expect(result.current.eth[0]?.toNumber()).toEqual(10)
-  })
+      await waitForNextUpdate({ timeout: 100 })
+      expect(result.current.eth[0]?.toNumber()).toEqual(32)
+      expect(getBalanceSpy).toHaveBeenCalledTimes(1)
+      expect(getBalanceSpy).toHaveBeenCalledWith(walletAddress)
+      expect(getTokenDataSpy).not.toHaveBeenCalled()
+    })
 
-  it('setter update ETH balance ', async () => {
-    const provider = new StaticJsonRpcProvider(
-      process.env.REACT_APP_ETHEREUM_RPC_URL,
-      1
-    )
+    it('setter update ETH balance ', async () => {
+      const provider = new StaticJsonRpcProvider(
+        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        1
+      )
 
-    jest
-      .spyOn(provider, 'getBalance')
-      .mockImplementationOnce(() => Promise.resolve(BigNumber.from(30)))
-      .mockImplementationOnce(() => Promise.resolve(BigNumber.from(40)))
+      const getBalanceSpy = jest.spyOn(provider, 'getBalance')
+      getBalanceSpy
+        .mockImplementationOnce(() => Promise.resolve(BigNumber.from(42)))
+        .mockImplementationOnce(() => Promise.resolve(BigNumber.from(52)))
+      const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
+      getTokenDataSpy.mockImplementationOnce(() =>
+        Promise.resolve([
+          {
+            balance: BigNumber.from(40)
+          }
+        ])
+      )
 
-    const { result, waitForNextUpdate } = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239'
-        }),
-      { wrapper: Container }
-    )
+      const { result, waitForNextUpdate } = renderHook(
+        () =>
+          useBalance({
+            provider,
+            walletAddress
+          }),
+        { wrapper: Container }
+      )
 
-    await waitForNextUpdate({ timeout: 100 })
+      await waitForNextUpdate({ timeout: 100 })
 
-    const {
-      current: {
-        eth: [ethBalance, updateEthBalance]
-      }
-    } = result
-
-    expect(ethBalance?.toNumber()).toEqual(30)
-
-    updateEthBalance()
-    await waitForNextUpdate({ timeout: 100 })
-
-    const {
-      current: {
-        eth: [ethBalanceUpdated]
-      }
-    } = result
-
-    expect(ethBalanceUpdated?.toNumber()).toBe(40)
-  })
-
-  it('getter return ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
-    const provider = new StaticJsonRpcProvider(
-      process.env.REACT_APP_ETHEREUM_RPC_URL,
-      1
-    )
-
-    jest.spyOn(MultiCaller.prototype, 'getTokenData').mockImplementation(() =>
-      Promise.resolve([
-        {
-          balance: BigNumber.from(10)
-        },
-        {
-          balance: BigNumber.from(5)
-        },
-        {
-          balance: BigNumber.from(20)
+      const {
+        current: {
+          eth: [ethBalance, updateEthBalance]
         }
-      ])
-    )
+      } = result
 
-    const erc20 = [
-      '0x0000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000001',
-      '0x0000000000000000000000000000000000000002'
-    ]
-    const { result, waitForValueToChange } = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239',
-          erc20Addresses: erc20
-        }),
-      { wrapper: Container }
-    )
+      expect(ethBalance?.toNumber()).toEqual(42)
+      expect(getBalanceSpy).toHaveBeenCalledTimes(1)
+      expect(getBalanceSpy).toHaveBeenCalledWith(walletAddress)
 
-    await waitForValueToChange(() => result.current.erc20, { timeout: 100 })
-    const {
-      current: {
-        erc20: [erc20Balances]
-      }
-    } = result
+      updateEthBalance()
+      await waitForNextUpdate({ timeout: 100 })
 
-    expect(erc20Balances).toEqual({
-      '0x0000000000000000000000000000000000000000': BigNumber.from(10),
-      '0x0000000000000000000000000000000000000001': BigNumber.from(5),
-      '0x0000000000000000000000000000000000000002': BigNumber.from(20)
+      const {
+        current: {
+          eth: [ethBalanceUpdated]
+        }
+      } = result
+
+      expect(ethBalanceUpdated?.toNumber()).toBe(52)
+      expect(getBalanceSpy).toHaveBeenCalledTimes(2)
+      expect(getBalanceSpy).toHaveBeenLastCalledWith(walletAddress)
+      expect(getTokenDataSpy).not.toHaveBeenCalled()
     })
   })
 
-  it('getter update ERC20 balance and merge data', async () => {
-    const provider = new StaticJsonRpcProvider(
-      process.env.REACT_APP_ETHEREUM_RPC_URL,
-      1
-    )
-    jest.spyOn(MultiCaller.prototype, 'getTokenData').mockImplementation(() =>
-      Promise.resolve([
-        {
-          balance: BigNumber.from(11)
-        },
-        {
-          balance: BigNumber.from(22)
+  describe('ERC20 Balance', () => {
+    it('getter return ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
+      const provider = new StaticJsonRpcProvider(
+        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        1
+      )
+
+      const getBalanceSpy = jest.spyOn(provider, 'getBalance')
+      getBalanceSpy.mockImplementationOnce(() =>
+        Promise.resolve(BigNumber.from(62))
+      )
+      const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
+      getTokenDataSpy.mockImplementationOnce(() =>
+        Promise.resolve([
+          {
+            balance: BigNumber.from(10)
+          },
+          {
+            balance: BigNumber.from(5)
+          },
+          {
+            balance: BigNumber.from(20)
+          }
+        ])
+      )
+
+      const { result, waitForValueToChange } = renderHook(
+        () =>
+          useBalance({
+            provider,
+            walletAddress
+          }),
+        { wrapper: Container }
+      )
+      const {
+        current: {
+          erc20: [, updateErc20Balances]
         }
-      ])
-    )
+      } = result
 
-    const erc20 = [
-      '0xABCdef0000000000000000000000000000000000',
-      '0xAAADDD0000000000000000000000000000000001'
-    ]
-    const { result, waitForValueToChange } = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress: '0x58b6A8A3302369DAEc383334672404Ee733aB239',
-          erc20Addresses: erc20
-        }),
-      { wrapper: Container }
-    )
+      const erc20 = [
+        '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000001',
+        '0x0000000000000000000000000000000000000002'
+      ]
+      updateErc20Balances(erc20)
 
-    await waitForValueToChange(() => result.current.erc20, { timeout: 100 })
+      await waitForValueToChange(() => result.current.erc20, { timeout: 100 })
 
-    const {
-      current: {
-        erc20: [erc20Balances, updateErc20Balances]
-      }
-    } = result
-
-    expect(erc20Balances).toEqual({
-      '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
-      '0xaaaddd0000000000000000000000000000000001': BigNumber.from(22)
-    })
-
-    await act(async () => {
-      updateErc20Balances({
-        '0xAaADDD0000000000000000000000000000000001': BigNumber.from(25),
-        '0xAAAAAA0000000000000000000000000000000002': BigNumber.from(33)
-      })
-      await waitForValueToChange(() => result.current.erc20, { timeout: 500 })
-
-      /**
-       * 0x..0 is untouched
-       * 0x..1 is updated
-       * 0x..2 is added
-       *
-       * All balances are stored in lowercase
-       */
       expect(result.current.erc20[0]).toEqual({
+        '0x0000000000000000000000000000000000000000': BigNumber.from(10),
+        '0x0000000000000000000000000000000000000001': BigNumber.from(5),
+        '0x0000000000000000000000000000000000000002': BigNumber.from(20)
+      })
+
+      expect(getBalanceSpy).toHaveBeenCalledTimes(1)
+      expect(getTokenDataSpy).toHaveBeenCalledTimes(1)
+      expect(getTokenDataSpy).toHaveBeenCalledWith(erc20, {
+        balanceOf: { account: walletAddress }
+      })
+    })
+
+    it('setter update ERC20 balance and merge data', async () => {
+      const provider = new StaticJsonRpcProvider(
+        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        1
+      )
+      const getBalanceSpy = jest.spyOn(provider, 'getBalance')
+      getBalanceSpy.mockImplementationOnce(() =>
+        Promise.resolve(BigNumber.from(72))
+      )
+      const getTokenDataSpy = jest.spyOn(MultiCaller.prototype, 'getTokenData')
+      getTokenDataSpy.mockImplementationOnce(() =>
+        Promise.resolve([
+          {
+            balance: BigNumber.from(11)
+          },
+          {
+            balance: BigNumber.from(22)
+          }
+        ])
+      )
+
+      const { result, waitForValueToChange } = renderHook(
+        () =>
+          useBalance({
+            provider,
+            walletAddress
+          }),
+        { wrapper: Container }
+      )
+      const {
+        current: {
+          erc20: [, updateErc20Balances]
+        }
+      } = result
+
+      const erc20 = [
+        '0xABCdef0000000000000000000000000000000000',
+        '0xAAADDD0000000000000000000000000000000001'
+      ]
+      updateErc20Balances(erc20)
+
+      await waitForValueToChange(() => result.current.erc20, { timeout: 100 })
+
+      const {
+        current: {
+          erc20: [erc20Balances]
+        }
+      } = result
+
+      expect(erc20Balances).toEqual({
         '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
-        '0xaaaddd0000000000000000000000000000000001': BigNumber.from(25),
-        '0xaaaaaa0000000000000000000000000000000002': BigNumber.from(33)
+        '0xaaaddd0000000000000000000000000000000001': BigNumber.from(22)
+      })
+
+      expect(getTokenDataSpy).toHaveBeenCalledTimes(1)
+      expect(getTokenDataSpy).toHaveBeenCalledWith(erc20, {
+        balanceOf: { account: walletAddress }
+      })
+
+      await act(async () => {
+        getTokenDataSpy.mockImplementationOnce(() =>
+          Promise.resolve([
+            {
+              balance: BigNumber.from(25) // '0xAaADDD0000000000000000000000000000000001',
+            },
+            {
+              balance: BigNumber.from(33) // '0xAAAAAA0000000000000000000000000000000002'
+            }
+          ])
+        )
+
+        const newAddresses = [
+          '0xAaADDD0000000000000000000000000000000001',
+          '0xAAAAAA0000000000000000000000000000000002'
+        ]
+        updateErc20Balances(newAddresses)
+        await waitForValueToChange(() => result.current.erc20, { timeout: 500 })
+
+        /**
+         * 0x..0 is untouched
+         * 0x..1 is updated
+         * 0x..2 is added
+         *
+         * All balances are stored in lowercase
+         */
+        expect(result.current.erc20[0]).toEqual({
+          '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
+          '0xaaaddd0000000000000000000000000000000001': BigNumber.from(25),
+          '0xaaaaaa0000000000000000000000000000000002': BigNumber.from(33)
+        })
+
+        expect(getBalanceSpy).toHaveBeenCalledTimes(1)
+        expect(getTokenDataSpy).toHaveBeenCalledTimes(2)
+        expect(getTokenDataSpy).toHaveBeenLastCalledWith(newAddresses, {
+          balanceOf: { account: walletAddress }
+        })
       })
     })
   })

@@ -49,11 +49,7 @@ import {
 } from '../withdrawals'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import {
-  getL1TokenData,
-  getL2TokenData,
-  isClassicL2ToL1TransactionEvent
-} from '../util'
+import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
 const { Zero } = constants
@@ -98,41 +94,19 @@ export const useArbTokenBridge = (
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
 
-  const { tokenL2Addresses, tokenL1Addresses } = useMemo(() => {
-    const tokenL1Addresses = []
-    const tokenL2Addresses = []
-    for (const tokenAddress in bridgeTokens) {
-      const { address } = bridgeTokens[tokenAddress]!
-      const { l2Address } = bridgeTokens[tokenAddress]!
-      if (address) {
-        tokenL1Addresses.push(address.toLowerCase())
-      }
-      if (l2Address) {
-        tokenL2Addresses.push(l2Address.toLowerCase())
-      }
-    }
-
-    return {
-      tokenL1Addresses,
-      tokenL2Addresses
-    }
-  }, [bridgeTokens])
-
   const {
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress,
-    erc20Addresses: tokenL1Addresses
+    walletAddress
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress,
-    erc20Addresses: tokenL2Addresses
+    walletAddress
   })
 
   interface ExecutedMessagesCache {
@@ -815,6 +789,21 @@ export const useArbTokenBridge = (
       ...oldBridgeTokens,
       ...bridgeTokensToAdd
     }))
+
+    const l1Addresses = []
+    const l2Addresses = []
+    for (const tokenAddress in bridgeTokensToAdd) {
+      const { address, l2Address } = bridgeTokensToAdd[tokenAddress]!
+      if (address) {
+        l1Addresses.push(address.toLowerCase())
+      }
+      if (l2Address) {
+        l2Addresses.push(l2Address.toLowerCase())
+      }
+    }
+
+    updateErc20L1Balance(l1Addresses)
+    updateErc20L2Balance(l2Addresses)
   }
 
   async function addToken(erc20L1orL2Address: string) {
@@ -838,28 +827,12 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const { name, symbol, balance, decimals } = await getL1TokenData({
+    const { name, symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address: l1Address,
       l1Provider: l1.provider,
       l2Provider: l2.provider
     })
-
-    const l1TokenBalance = balance
-    let l2TokenBalance: BigNumber | null = null
-
-    try {
-      // check if token is deployed at l2 address; if not this will throw
-      const { balance } = await getL2TokenData({
-        account: walletAddress,
-        erc20L2Address: l2Address,
-        l2Provider: l2.provider
-      })
-      l2TokenBalance = balance
-    } catch (error) {
-      console.info(`no L2 token for ${l1Address} (which is fine)`)
-      l2Address = undefined
-    }
 
     const isDisabled = await l1TokenIsDisabled(l1Address)
 
@@ -881,13 +854,9 @@ export const useArbTokenBridge = (
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
 
-    updateErc20L1Balance({
-      [l1Address]: l1TokenBalance
-    })
-    if (l2Address && l2TokenBalance) {
-      updateErc20L2Balance({
-        [l2Address]: l2TokenBalance
-      })
+    updateErc20L1Balance([l1AddressLowerCased])
+    if (l2Address) {
+      updateErc20L2Balance([l2Address.toLowerCase()])
     }
   }
 
@@ -903,29 +872,6 @@ export const useArbTokenBridge = (
         return
       }
 
-      const { l2Address } = bridgeToken
-      const l1Data = await getL1TokenData({
-        account: walletAddress,
-        erc20L1Address: l1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
-      })
-      const l2Data = l2Address
-        ? await getL2TokenData({
-            account: walletAddress,
-            erc20L2Address: l2Address,
-            l2Provider: l2.provider
-          })
-        : null
-
-      updateErc20L1Balance({
-        [l1Address]: l1Data.balance
-      })
-      if (l2Data && l2Address) {
-        updateErc20L2Balance({
-          [l2Address]: l2Data.balance || Zero
-        })
-      }
       const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken }
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
