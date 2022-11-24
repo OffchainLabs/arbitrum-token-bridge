@@ -106,7 +106,7 @@ describe('Import token', () => {
         cy.logout()
       })
 
-      it.only('should import token', () => {
+      it('should import token', () => {
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
@@ -275,7 +275,7 @@ describe('Import token', () => {
 
         cy.findByRole('button', { name: 'Import token' }).should('not.exist')
         // Close modal
-        cy.findByRole('button', { name: 'DialogCancel' })
+        cy.findByRole('button', { name: 'Dialog Cancel' })
           .should('be.visible')
           .click({ scrollBehavior: false })
           .then(() => {
@@ -285,7 +285,7 @@ describe('Import token', () => {
           })
 
         // Modal is closed
-        cy.findByRole('button', { name: 'DialogCancel' }).should('not.exist')
+        cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')
       })
     })
   })
