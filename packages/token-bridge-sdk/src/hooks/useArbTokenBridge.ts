@@ -795,10 +795,10 @@ export const useArbTokenBridge = (
     for (const tokenAddress in bridgeTokensToAdd) {
       const { address, l2Address } = bridgeTokensToAdd[tokenAddress]!
       if (address) {
-        l1Addresses.push(address.toLowerCase())
+        l1Addresses.push(address)
       }
       if (l2Address) {
-        l2Addresses.push(l2Address.toLowerCase())
+        l2Addresses.push(l2Address)
       }
     }
 
@@ -856,7 +856,7 @@ export const useArbTokenBridge = (
 
     updateErc20L1Balance([l1AddressLowerCased])
     if (l2Address) {
-      updateErc20L2Balance([l2Address.toLowerCase()])
+      updateErc20L2Balance([l2Address])
     }
   }
 
@@ -876,6 +876,11 @@ export const useArbTokenBridge = (
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })
+      const { l2Address } = bridgeToken
+      updateErc20L1Balance([l1AddressLowerCased])
+      if (l2Address) {
+        updateErc20L2Balance([l2Address])
+      }
     },
     [
       walletAddress,

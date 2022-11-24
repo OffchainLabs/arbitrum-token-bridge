@@ -106,12 +106,8 @@ const useBalance = ({
 
   const updateErc20 = useCallback(async (addresses: string[]) => {
     const balances = await fetchErc20(addresses)
-    const lowerCasedBalances: Erc20Balances = {}
-    for (const balance in balances) {
-      lowerCasedBalances[balance.toLowerCase()] = balances[balance]
-    }
 
-    return mutateErc20(lowerCasedBalances, {
+    return mutateErc20(balances, {
       populateCache(result, currentData) {
         return {
           ...currentData,
