@@ -481,11 +481,17 @@ export const useArbTokenBridge = (
       l2Provider: l2.provider
     })
 
-    const tx = await erc20Bridger.deposit({
-      l1Signer,
+    const depositRequest = await erc20Bridger.getDepositRequest({
+      l1Provider: l1.provider,
       l2Provider: l2.provider,
+      from: walletAddress,
       erc20L1Address,
       amount
+    })
+
+    const tx = await erc20Bridger.deposit({
+      ...depositRequest,
+      l1Signer
     })
 
     if (txLifecycle?.onTxSubmit) {
