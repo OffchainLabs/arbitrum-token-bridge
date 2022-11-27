@@ -11,21 +11,6 @@ const useAddNewToken = () => {
     }
   } = useAppState()
 
-  const storeNewToken = useCallback(
-    async (L1Address: string) => {
-      return token.add(L1Address).catch((ex: Error) => {
-        let error = 'Token not found on this network.'
-
-        if (ex.name === 'TokenDisabledError') {
-          error = 'This token is currently paused in the bridge.'
-        }
-
-        setErrorMessage(error)
-      })
-    },
-    [token]
-  )
-
   const addNewToken = useCallback(
     async (address: string) => {
       if (!isAddress(address) || isAddingToken) {
@@ -35,14 +20,22 @@ const useAddNewToken = () => {
       setIsAddingToken(true)
 
       try {
-        await storeNewToken(address)
+        await token.add(address).catch((ex: Error) => {
+          let error = 'Token not found on this network.'
+
+          if (ex.name === 'TokenDisabledError') {
+            error = 'This token is currently paused in the bridge.'
+          }
+
+          setErrorMessage(error)
+        })
       } catch (ex) {
         console.log(ex)
       } finally {
         setIsAddingToken(false)
       }
     },
-    [isAddingToken, storeNewToken]
+    [isAddingToken]
   )
 
   return {
