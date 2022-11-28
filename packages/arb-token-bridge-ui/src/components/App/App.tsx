@@ -238,8 +238,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         return WalletType.UNSUPPORTED_CONTRACT_WALLET
       })()
 
-      // TODO: Make sure the txns work and add advanced options / adding 'to' field
-
       actions.app.setWalletType(walletType)
 
       setTokenBridgeParams({

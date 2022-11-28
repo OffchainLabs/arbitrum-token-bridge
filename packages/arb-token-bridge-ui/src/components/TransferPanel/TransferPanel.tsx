@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useWallet } from '@arbitrum/use-wallet'
 import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
