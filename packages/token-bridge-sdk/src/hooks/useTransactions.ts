@@ -284,7 +284,7 @@ const localStorageReducer = (state: Transaction[], action: Action) => {
   return newState
 }
 
-export const useTransactions = (): [Transaction[], TransactionActions] => {
+const useTransactions = (): [Transaction[], TransactionActions] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
 
   useEffect(() => {

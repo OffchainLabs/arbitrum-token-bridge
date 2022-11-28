@@ -688,7 +688,7 @@ export const useArbTokenBridge = (
   const removeTokensFromList = (listID: number) => {
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
-      for (const address in bridgeTokens) {
+      for (let address in bridgeTokens) {
         const token = bridgeTokens[address]
         if (!token) continue
         if (token.listID === listID) {
@@ -789,7 +789,7 @@ export const useArbTokenBridge = (
           l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
       )
     )
-    for (const l1TokenData of candidateUnbridgedTokensToAdd) {
+    for (let l1TokenData of candidateUnbridgedTokensToAdd) {
       if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
         bridgeTokensToAdd[l1TokenData.address] = l1TokenData
       }
