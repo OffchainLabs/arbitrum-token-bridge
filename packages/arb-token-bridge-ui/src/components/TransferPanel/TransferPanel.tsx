@@ -1,18 +1,11 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { useWallet } from '@arbitrum/use-wallet'
-import { utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import {
-  ArbTokenBridge,
-  AssetType,
-  useBalance,
-  getL1TokenData,
-  useTransactions
-} from 'token-bridge-sdk'
-import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
+import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState, WalletType } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
@@ -28,7 +21,6 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
@@ -150,10 +142,12 @@ export function TransferPanel() {
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: l1Provider, walletAddress })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
   const ethBalance = useMemo(() => {
@@ -197,16 +191,14 @@ export function TransferPanel() {
       return
     }
 
-    if (typeof arbTokenBridge.balances !== 'undefined') {
-      if (!ethL1Balance) {
-        return
-      }
+    if (!ethL1Balance) {
+      return
+    }
 
-      const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
+    const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
 
-      if (isMainnet && isDepositMode && isLowBalance) {
-        openLowBalanceDialog()
-      }
+    if (isMainnet && isDepositMode && isLowBalance) {
+      openLowBalanceDialog()
     }
   }, [
     ethL1Balance,
@@ -221,8 +213,7 @@ export function TransferPanel() {
 
   const l1Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL1 =
-        arbTokenBridge?.balances?.erc20[selectedToken.address]?.balance
+      const balanceL1 = erc20L1Balances?.[selectedToken.address.toLowerCase()]
       const { decimals } = selectedToken
       if (!balanceL1 || !decimals) {
         return null
@@ -234,12 +225,13 @@ export function TransferPanel() {
       return null
     }
     return utils.formatUnits(ethL1Balance, 18)
-  }, [ethL1Balance, selectedToken, arbTokenBridge])
+  }, [ethL1Balance, erc20L1Balances, selectedToken])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL2 =
-        arbTokenBridge?.balances?.erc20[selectedToken.address]?.arbChainBalance
+      const balanceL2 = selectedToken.l2Address
+        ? erc20L2Balances?.[selectedToken.l2Address.toLowerCase()]
+        : undefined
       const { decimals } = selectedToken
       if (!balanceL2) {
         return null
@@ -251,7 +243,7 @@ export function TransferPanel() {
       return null
     }
     return utils.formatUnits(ethL2Balance, 18)
-  }, [ethL2Balance, selectedToken, arbTokenBridge])
+  }, [ethL2Balance, erc20L2Balances, selectedToken])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -564,7 +556,7 @@ export function TransferPanel() {
     try {
       return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
     } catch (error) {
-      return BigNumber.from(0)
+      return constants.Zero
     }
   }, [amount, selectedToken])
 

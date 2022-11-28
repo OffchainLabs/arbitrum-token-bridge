@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { BigNumber, providers } from 'ethers'
+import { BigNumber, constants, providers } from 'ethers'
 import useSWR from 'swr'
 
 import { useChainId } from './useChainId'
@@ -20,7 +20,7 @@ export function useGasPrice({
     return ['gasPrice', chainId]
   }, [chainId])
 
-  const { data: gasPrice = BigNumber.from(0) } = useSWR(
+  const { data: gasPrice = constants.Zero } = useSWR(
     queryKey,
     () => provider.getGasPrice(),
     {

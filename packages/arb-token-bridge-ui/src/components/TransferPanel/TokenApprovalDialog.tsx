@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
@@ -31,7 +31,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const l1GasPrice = useGasPrice({ provider: l1.provider })
 
   const [checked, setChecked] = useState(false)
-  const [estimatedGas, setEstimatedGas] = useState<BigNumber>(BigNumber.from(0))
+  const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
 
   // Estimated gas fees, denominated in Ether, represented as a floating point number
   const estimatedGasFees = useMemo(
