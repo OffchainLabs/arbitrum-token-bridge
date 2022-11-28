@@ -60,11 +60,8 @@ import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 
-async function addressIsSmartContract(
-  address: string,
-  provider: JsonRpcProvider
-) {
-  return (await provider.getCode(address)).length > 2
+async function addressIsEOA(address: string, provider: JsonRpcProvider) {
+  return (await provider.getCode(address)).length <= 2
 }
 
 declare global {
@@ -177,11 +174,11 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const l2Address = await l2Signer.getAddress()
 
       const walletType: WalletType = await (async () => {
-        const l1AddressIsSmartContract = await addressIsSmartContract(
+        const l1AddressIsSmartContract = await !addressIsEOA(
           l1Address,
           l1Provider
         )
-        const l2AddressIsSmartContract = await addressIsSmartContract(
+        const l2AddressIsSmartContract = await !addressIsEOA(
           l2Address,
           l2Provider
         )
@@ -238,7 +235,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
             return WalletType.UNSUPPORTED_CONTRACT_WALLET
           }
         }
-        return WalletType.SUPPORTED_CONTRACT_WALLET
+        return WalletType.UNSUPPORTED_CONTRACT_WALLET
       })()
 
       // TODO: Make sure the txns work and add advanced options / adding 'to' field

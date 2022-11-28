@@ -113,7 +113,6 @@ export function TransferPanel() {
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
-  const { addTransaction } = useTransactions()[1]
   const {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
@@ -449,62 +448,19 @@ export function TransferPanel() {
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
-          if (isSmartContractWallet) {
-            const inbox = Inbox__factory.connect(
-              l2Network.ethBridge.inbox,
-              latestNetworksAndSigners.current.l1.signer
-            )
-
-            const l1BaseFee = await l1Provider.getGasPrice()
-
-            const maxSubmissionCost =
-              await inbox.calculateRetryableSubmissionFee(
-                BigNumber.from(1_000),
-                l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
-              )
-
-            const tx = await inbox.unsafeCreateRetryableTicket(
-              walletAddress,
-              0,
-              maxSubmissionCost,
-              walletAddress,
-              walletAddress,
-              0,
-              0,
-              // TODO: data containing an empty string not working, setting 0x never returns the result.
-              '0x',
-              { value: amountRaw }
-            )
-
-            console.log('tx', tx)
-            addTransaction({
-              type: 'deposit-l1',
-              status: 'pending',
-              value: utils.formatUnits(amount, 18),
-              txID: tx.hash,
-              assetName: 'ETH',
-              assetType: AssetType.ETH,
-              sender: walletAddress,
-              l1NetworkID: String(l1Network.chainID)
-            })
-            const receipt = await tx.wait()
-
-            console.log('rec', receipt)
-          } else {
-            await latestEth.current.deposit({
-              amount: amountRaw,
-              l1Signer: latestNetworksAndSigners.current.l1.signer,
-              txLifecycle: {
-                onTxSubmit: () => {
-                  dispatch({
-                    type: 'layout.set_is_transfer_panel_visible',
-                    payload: false
-                  })
-                  setTransferring(false)
-                }
+          await latestEth.current.deposit({
+            amount: amountRaw,
+            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            txLifecycle: {
+              onTxSubmit: () => {
+                dispatch({
+                  type: 'layout.set_is_transfer_panel_visible',
+                  payload: false
+                })
+                setTransferring(false)
               }
-            })
-          }
+            }
+          })
         }
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
