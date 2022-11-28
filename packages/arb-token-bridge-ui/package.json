@@ -79,7 +79,7 @@
     "cypress-localstorage-commands": "^2.2.1",
     "cypress-wait-until": "^1.7.2",
     "env-cmd": "^10.1.0",
-    "eslint": "^8.28.0",
+    "eslint": "^7.32.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^27.1.3",
