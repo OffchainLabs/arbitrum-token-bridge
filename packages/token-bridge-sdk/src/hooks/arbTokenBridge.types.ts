@@ -224,6 +224,7 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     erc20L1Address: string

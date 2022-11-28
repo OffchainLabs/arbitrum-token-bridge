@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { useWallet } from '@arbitrum/use-wallet'
 import { utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
@@ -6,6 +6,7 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
 import {
+  ArbTokenBridge,
   AssetType,
   useBalance,
   getL1TokenData,
@@ -29,7 +30,6 @@ import {
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { BigNumber } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { ArbTokenBridge } from 'token-bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -102,6 +102,7 @@ export function TransferPanel() {
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, walletAddress },
       arbTokenBridge,
+      transactionSettings,
       warningTokens
     }
   } = useAppState()
@@ -424,10 +425,17 @@ export function TransferPanel() {
             }
           }
 
+          const destinationAddress =
+            isSmartContractWallet &&
+            isAddress(String(transactionSettings?.destinationAddress))
+              ? transactionSettings?.destinationAddress
+              : undefined
+
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
@@ -442,8 +450,6 @@ export function TransferPanel() {
           const amountRaw = utils.parseUnits(amount, 18)
 
           if (isSmartContractWallet) {
-            console.log('Transferring ETH from SC wallet.')
-
             const inbox = Inbox__factory.connect(
               l2Network.ethBridge.inbox,
               latestNetworksAndSigners.current.l1.signer

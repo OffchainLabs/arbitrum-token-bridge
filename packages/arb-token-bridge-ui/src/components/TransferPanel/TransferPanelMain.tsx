@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
-import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
+import { isAddress } from '@ethersproject/address'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  SwitchVerticalIcon
+} from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
@@ -20,6 +25,7 @@ import {
   isNetwork,
   switchChain
 } from '../../util/networks'
+import { WalletType } from '../../util'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -56,6 +62,10 @@ export function SwitchNetworksButton(
       <SwitchVerticalIcon className="text-gray-9" />
     </button>
   )
+}
+
+enum AdvancedSettingsErrors {
+  INVALID_ADDRESS = 'The destination address is not valid.'
 }
 
 type OptionsExtraProps = {
@@ -344,7 +354,13 @@ export function TransferPanelMain({
   const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
-  const { arbTokenBridge, isDepositMode, selectedToken } = app
+  const {
+    arbTokenBridge,
+    isDepositMode,
+    selectedToken,
+    transactionSettings,
+    walletType
+  } = app
   const { walletAddress } = arbTokenBridge
 
   const {
@@ -355,6 +371,8 @@ export function TransferPanelMain({
   } = useBalance({ provider: l2.provider, walletAddress })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+  const isSmartContractWallet =
+    walletType === WalletType.SUPPORTED_CONTRACT_WALLET
 
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
@@ -365,6 +383,9 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(true)
+  const [advancedSettingsError, setAdvancedSettingsError] =
+    useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
   const [, setQueryParams] = useArbQueryParams()
@@ -794,6 +815,57 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
+
+      {isSmartContractWallet && (
+        <div className="mt-6">
+          <button
+            onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+            className="flex flex-row items-center"
+          >
+            <span className=" text-lg">Advanced Settings</span>
+            {showAdvancedSettings ? (
+              <ChevronUpIcon className="ml-1 h-4 w-4" />
+            ) : (
+              <ChevronDownIcon className="ml-1 h-4 w-4" />
+            )}
+          </button>
+          {showAdvancedSettings && (
+            <>
+              <div className="mt-2">
+                <span className="text-md text-gray-10">
+                  Destination Address
+                </span>
+                <input
+                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                  placeholder="Enter destination address"
+                  defaultValue={transactionSettings?.destinationAddress}
+                  spellCheck={false}
+                  onChange={e => {
+                    if (!e.target.value) {
+                      setAdvancedSettingsError(null)
+                    } else if (!isAddress(e.target.value)) {
+                      setAdvancedSettingsError(
+                        AdvancedSettingsErrors.INVALID_ADDRESS
+                      )
+                    } else {
+                      setAdvancedSettingsError(null)
+                      actions.app.setTransactionSettings({
+                        ...transactionSettings,
+                        destinationAddress: e.target.value
+                      })
+                    }
+                  }}
+                />
+              </div>
+              {advancedSettingsError && (
+                <span className="text-xs text-red-400">
+                  {advancedSettingsError}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <Dialog
         closeable

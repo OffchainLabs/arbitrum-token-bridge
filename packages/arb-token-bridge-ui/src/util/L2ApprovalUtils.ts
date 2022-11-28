@@ -13,6 +13,13 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l1Address: '0x58b6A8A3302369DAEc383334672404Ee733aB239',
       l2Address: '0x289ba1701C2F088cf0faf8B3705246331cB8A839'
     }
+  ],
+  [ChainId.ArbitrumGoerli]: [
+    {
+      symbol: 'GRT',
+      l1Address: '0x5c946740441C12510a167B447B7dE565C20b9E3C',
+      l2Address: '0x18C924BD5E8b83b47EFaDD632b7178E2Fd36073D'
+    }
   ]
 }
 

@@ -6,7 +6,7 @@ import {
   PendingWithdrawalsLoadedState,
   WalletType
 } from '../../util'
-import { WhiteListState, WarningTokens } from './state'
+import { TransactionSettings, WhiteListState, WarningTokens } from './state'
 
 export const setConnectionState = (
   { state }: Context,
@@ -17,6 +17,13 @@ export const setConnectionState = (
 
 export const setWalletType = ({ state }: Context, walletType: WalletType) => {
   state.app.walletType = walletType
+}
+
+export const setTransactionSettings = (
+  { state }: Context,
+  transactionSettings: TransactionSettings
+) => {
+  state.app.transactionSettings = transactionSettings
 }
 
 export const setChainIds = (

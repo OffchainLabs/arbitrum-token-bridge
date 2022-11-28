@@ -69,6 +69,7 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Explore: DeFi Project Click: Beefy Finance': 'NDMROCKL',
   'Explore: DeFi Project Click: Yearn Finance': '32U989O7',
   'Explore: DeFi Project Click: KyberSwap': 'RVW7KSNB',
+  'Explore: DeFi Project Click: Sperax': '6IVIM3JM',
   //
   'Explore: NFT Project Click: Arbibots': 'UKENMGHD',
   'Explore: NFT Project Click: Smol Brains': '7JMIH5HA',
@@ -95,7 +96,6 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'CEX Click: Bitget': 'P2RBDSLX',
   'CEX Click: Bybit': '4MCGRHS8',
   'CEX Click: Crypto.com': 'ZVK2C6WN',
-  'CEX Click: FTX': 'VLUXY6YT',
   'CEX Click: Huobi': 'TUBTYASY',
   'CEX Click: Kucoin': 'LKGN4G9R',
   'CEX Click: MEXC': 'NY3ECWCL',

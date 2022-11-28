@@ -467,12 +467,14 @@ export const useArbTokenBridge = (
     erc20L1Address,
     amount,
     l1Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) {
     const { symbol, decimals } = await getL1TokenData({
       account: walletAddress,
@@ -481,11 +483,19 @@ export const useArbTokenBridge = (
       l2Provider: l2.provider
     })
 
-    const tx = await erc20Bridger.deposit({
-      l1Signer,
+    const depositRequest = await erc20Bridger.getDepositRequest({
+      l1Provider: l1.provider,
       l2Provider: l2.provider,
+      from: walletAddress,
       erc20L1Address,
+      destinationAddress,
       amount
+    })
+
+    const tx = await erc20Bridger.deposit({
+      ...depositRequest,
+      destinationAddress,
+      l1Signer
     })
 
     if (txLifecycle?.onTxSubmit) {
@@ -518,7 +528,7 @@ export const useArbTokenBridge = (
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED, //** we know its not yet created, we just initiated it */
+      status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
       retryableCreationTxID: l1ToL2Msg.retryableCreationId,
       l2TxID: undefined
     }
@@ -707,7 +717,7 @@ export const useArbTokenBridge = (
   const removeTokensFromList = (listID: number) => {
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
-      for (let address in bridgeTokens) {
+      for (const address in bridgeTokens) {
         const token = bridgeTokens[address]
         if (!token) continue
         if (token.listID === listID) {
@@ -809,7 +819,7 @@ export const useArbTokenBridge = (
           l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
       )
     )
-    for (let l1TokenData of candidateUnbridgedTokensToAdd) {
+    for (const l1TokenData of candidateUnbridgedTokensToAdd) {
       if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
         bridgeTokensToAdd[l1TokenData.address] = l1TokenData
       }

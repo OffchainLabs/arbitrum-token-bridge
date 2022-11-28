@@ -100,6 +100,10 @@ export interface WarningTokens {
   }
 }
 
+export interface TransactionSettings {
+  destinationAddress?: string
+}
+
 const outgoungStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
@@ -114,6 +118,7 @@ export type AppState = {
   verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
+  transactionSettings: TransactionSettings | null
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
   l1DepositsWithUntrackedL2Messages: Transaction[]
@@ -139,6 +144,7 @@ export const defaultState: AppState = {
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
+  transactionSettings: null,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
     return [...transactions]
