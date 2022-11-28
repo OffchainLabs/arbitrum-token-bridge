@@ -10,18 +10,20 @@ import {
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
 import { formatAmount } from '../../util/NumberUtils'
+import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
-    app: { arbTokenBridge, selectedToken }
+    app: { arbTokenBridge }
   } = useAppState()
+  const { walletAddress, bridgeTokens } = arbTokenBridge
   const dispatch = useAppContextDispatch()
   const { l1 } = useNetworksAndSigners()
-  const { walletAddress } = arbTokenBridge
   const {
-    eth: [ethBalance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: l1.provider, walletAddress })
 
   useEffect(() => {
@@ -37,20 +39,20 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   }, [])
 
   const balance = useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
+    if (!ethL1Balance || !erc20L1Balances) {
       return null
     }
 
     if (tx.asset === 'eth') {
-      return ethBalance
+      return ethL1Balance
     }
 
     if (!tx.tokenAddress) {
       return null
     }
 
-    return arbTokenBridge.balances.erc20[tx.tokenAddress]?.balance
-  }, [ethBalance, tx, arbTokenBridge])
+    return erc20L1Balances[tx.tokenAddress.toLowerCase()]
+  }, [erc20L1Balances, ethL1Balance, tx])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -63,6 +65,8 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     }
     // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
   }, [tx.txId])
+
+  const decimals = useTokenDecimals(bridgeTokens, tx.tokenAddress)
 
   return (
     <WithdrawalCardContainer tx={tx} dismissable>
@@ -79,7 +83,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
           {balance ? (
             <span className="font-medium">
               {formatAmount(balance, {
-                decimals: selectedToken?.decimals,
+                decimals,
                 symbol: tx.asset.toUpperCase()
               })}
             </span>
