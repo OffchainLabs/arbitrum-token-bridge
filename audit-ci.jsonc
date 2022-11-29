@@ -1,9 +1,16 @@
 {
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
   "allowlist": [
     // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
     "*|arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>*",
     // react-scripts needs upgrade from v4 to v5. Waiting for migration to nextjs
-    "*|arb-token-bridge-ui>react-scripts>*"
+    "*|arb-token-bridge-ui>react-scripts>*",
+    // https://github.com/advisories/GHSA-w573-4hg7-7wgq
+    // decode-uri-component 0.2.0 is vulnerable to Improper Input Validation resulting in DoS
+    // this is from decode-uri-component, a dependency used in query-string,
+    // which we have installed directly and through @walletconnect/web3-provider
+    // it does not affect users directly so we'll ignore it for now and wait for a patch
+    "GHSA-w573-4hg7-7wgq"
   ]
 }
