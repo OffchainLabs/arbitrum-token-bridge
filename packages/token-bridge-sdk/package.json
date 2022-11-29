@@ -20,7 +20,8 @@
     "build": "rm -rf ./dist && tsc",
     "watch": "tsc --watch",
     "lint": "tsc --noEmit && eslint src/**/*.ts --fix",
-    "format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint",
+    "lintfix": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
+    "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md}\" && yarn run lint",
     "gen_docs": "jsdoc -c jsdoc.json  src/hooks/* readme.md -d docs",
     "test": "jest --watch",
     "test:ci": "jest --ci"
