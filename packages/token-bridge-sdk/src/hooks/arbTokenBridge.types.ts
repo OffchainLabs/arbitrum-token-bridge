@@ -97,7 +97,7 @@ export interface BridgeToken {
   address: string
   l2Address?: string
   logoURI?: string
-  listID?: number // no listID indicates added by user
+  listIds: Set<number> // no listID indicates added by user
 }
 
 export interface ERC20BridgeToken extends BridgeToken {

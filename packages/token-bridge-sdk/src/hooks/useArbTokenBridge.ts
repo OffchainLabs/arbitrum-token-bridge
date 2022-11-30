@@ -687,7 +687,10 @@ export const useArbTokenBridge = (
       for (let address in bridgeTokens) {
         const token = bridgeTokens[address]
         if (!token) continue
-        if (token.listID === listID) {
+
+        token.listIds.delete(listID)
+
+        if (!token.listIds.size) {
           delete newBridgeTokens[address]
         }
       }
@@ -760,7 +763,7 @@ export const useArbTokenBridge = (
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
-          listID
+          listIds: listID ? new Set([listID]) : new Set()
         }
       }
       // save potentially unbridged L1 tokens:
@@ -773,7 +776,7 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listID
+          listIds: listID ? new Set([listID]) : new Set()
         })
       }
     }
@@ -791,25 +794,37 @@ export const useArbTokenBridge = (
       }
     }
 
-    setBridgeTokens(oldBridgeTokens => ({
-      ...oldBridgeTokens,
-      ...bridgeTokensToAdd
-    }))
+    const l1Addresses: string[] = []
+    const l2Addresses: string[] = []
+    setBridgeTokens(oldBridgeTokens => {
+      for (const tokenAddress in bridgeTokensToAdd) {
+        const token = bridgeTokensToAdd[tokenAddress]
+        if (!token) {
+          return
+        }
+        const { address, l2Address } = token
+        if (address) {
+          l1Addresses.push(address)
+        }
+        if (l2Address) {
+          l2Addresses.push(l2Address)
+        }
 
-    const l1Addresses = []
-    const l2Addresses = []
-    for (const tokenAddress in bridgeTokensToAdd) {
-      const { address, l2Address } = bridgeTokensToAdd[tokenAddress]!
-      if (address) {
-        l1Addresses.push(address)
-      }
-      if (l2Address) {
-        l2Addresses.push(l2Address)
-      }
-    }
+        const listIds = oldBridgeTokens?.[token.address]?.listIds
 
-    updateErc20L1Balance(l1Addresses)
-    updateErc20L2Balance(l2Addresses)
+        if (token && listIds && typeof listID !== 'undefined') {
+          token.listIds = new Set([...listIds]).add(listID)
+        }
+      }
+
+      updateErc20L1Balance(l1Addresses)
+      updateErc20L2Balance(l2Addresses)
+
+      return {
+        ...oldBridgeTokens,
+        ...bridgeTokensToAdd
+      }
+    })
   }
 
   async function addToken(erc20L1orL2Address: string) {
@@ -853,7 +868,8 @@ export const useArbTokenBridge = (
       symbol,
       address: l1AddressLowerCased,
       l2Address: l2Address?.toLowerCase(),
-      decimals
+      decimals,
+      listIds: new Set()
     }
 
     setBridgeTokens(oldBridgeTokens => {

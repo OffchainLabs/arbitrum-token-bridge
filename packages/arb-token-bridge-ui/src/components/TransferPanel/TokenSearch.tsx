@@ -17,13 +17,12 @@ import { formatAmount } from '../../util/NumberUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
-  SearchableToken,
   useTokensFromLists,
   useTokensFromUser,
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
 
 enum Panel {
@@ -53,7 +52,7 @@ function shortenAddress(address: string) {
 interface TokenRowProps {
   style?: React.CSSProperties
   onClick: React.MouseEventHandler<HTMLButtonElement>
-  token: SearchableToken | null
+  token: ERC20BridgeToken | null
 }
 
 function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
@@ -120,18 +119,19 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return null
     }
 
-    const tokenLists = token.tokenLists
-
-    if (tokenLists.length === 0) {
+    const listIds = token.listIds
+    const listIdsSize = listIds.size
+    if (listIdsSize === 0) {
       return 'Added by User'
     }
 
-    if (tokenLists.length < 2) {
-      return tokenListIdsToNames(tokenLists)
+    const listIdsArray = Array.from(listIds)
+    if (listIdsSize < 2) {
+      return tokenListIdsToNames(listIdsArray)
     }
 
-    const firstList = tokenLists.slice(0, 1)
-    const more = tokenLists.length - 1
+    const firstList = listIdsArray.slice(0, 1)
+    const more = listIdsSize - 1
 
     return (
       tokenListIdsToNames(firstList) +
@@ -306,7 +306,7 @@ function TokenListsPanel() {
       {listsToShow.map(tokenList => {
         const isActive = Object.keys(bridgeTokens).some(address => {
           const token = bridgeTokens[address]
-          return !!(token && tokenList.id === token.listID)
+          return token?.listIds.has(tokenList?.id)
         })
 
         return (
@@ -341,7 +341,7 @@ const ETH_IDENTIFIER = 'eth.address'
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (token: SearchableToken | null) => void
+  onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
   const {
     app: {
@@ -547,7 +547,7 @@ function TokensPanel({
                   )
                 }
 
-                let token: SearchableToken | null = null
+                let token: ERC20BridgeToken | null = null
                 if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
@@ -589,7 +589,7 @@ export function TokenSearch({
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
-  async function selectToken(_token: SearchableToken | null) {
+  async function selectToken(_token: ERC20BridgeToken | null) {
     close()
 
     if (_token === null) {
