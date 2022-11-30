@@ -427,6 +427,7 @@ export function TransferPanel() {
               console.error(
                 "Couldn't initiate the smart contract wallet transfer. Invalid destination address."
               )
+              setTransferring(false)
               return
             }
             alert(
