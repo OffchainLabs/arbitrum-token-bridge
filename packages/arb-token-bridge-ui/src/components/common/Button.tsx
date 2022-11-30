@@ -27,8 +27,6 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant: ButtonVariant
   loading?: boolean
   loadingProps?: ButtonLoadingProps
-  disabled?: React.ButtonHTMLAttributes<HTMLButtonElement>['disabled']
-  className?: React.ButtonHTMLAttributes<HTMLButtonElement>['className']
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -37,7 +35,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       variant,
       loading,
       loadingProps,
+      // eslint-disable-next-line react/prop-types
       disabled,
+      // eslint-disable-next-line react/prop-types
       className: customClassName,
       children,
       ...props
