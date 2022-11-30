@@ -224,7 +224,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                     </a>
                   ) : (
                     <span className="text-xs text-gray-900">
-                      This token hasn't been bridged to L2
+                      This token hasn&apos;t been bridged to L2
                     </span>
                   )}
                 </>

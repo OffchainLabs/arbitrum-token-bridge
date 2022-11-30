@@ -52,8 +52,6 @@ import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
-const { Zero } = constants
-
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
@@ -506,13 +504,7 @@ export const useArbTokenBridge = (
     return receipt
   }
 
-  async function depositTokenEstimateGas({
-    erc20L1Address,
-    amount
-  }: {
-    erc20L1Address: string
-    amount: BigNumber
-  }) {
+  async function depositTokenEstimateGas() {
     const l1BaseFee = await l1.provider.getGasPrice()
 
     const inbox = Inbox__factory.connect(
@@ -684,7 +676,7 @@ export const useArbTokenBridge = (
   const removeTokensFromList = (listID: number) => {
     setBridgeTokens(prevBridgeTokens => {
       const newBridgeTokens = { ...prevBridgeTokens }
-      for (let address in bridgeTokens) {
+      for (const address in bridgeTokens) {
         const token = bridgeTokens[address]
         if (!token) continue
         if (token.listID === listID) {
@@ -785,7 +777,7 @@ export const useArbTokenBridge = (
           l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
       )
     )
-    for (let l1TokenData of candidateUnbridgedTokensToAdd) {
+    for (const l1TokenData of candidateUnbridgedTokensToAdd) {
       if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
         bridgeTokensToAdd[l1TokenData.address] = l1TokenData
       }
@@ -799,7 +791,11 @@ export const useArbTokenBridge = (
     const l1Addresses = []
     const l2Addresses = []
     for (const tokenAddress in bridgeTokensToAdd) {
-      const { address, l2Address } = bridgeTokensToAdd[tokenAddress]!
+      const token = bridgeTokensToAdd[tokenAddress]
+      if (!token) {
+        return
+      }
+      const { address, l2Address } = token
       if (address) {
         l1Addresses.push(address)
       }
@@ -888,15 +884,7 @@ export const useArbTokenBridge = (
         updateErc20L2Balance([l2Address])
       }
     },
-    [
-      walletAddress,
-      bridgeTokens,
-      setBridgeTokens,
-      l1.provider,
-      l2.provider,
-      updateErc20L1Balance,
-      updateErc20L2Balance
-    ]
+    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
   )
 
   const updateEthBalances = async () => {
