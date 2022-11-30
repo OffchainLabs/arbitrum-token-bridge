@@ -17,6 +17,22 @@ export const NetworkSelectionContainer = ({
 }) => {
   const { provider } = useWallet()
 
+  const handleClick = (
+    chainId: ChainId,
+    close: (
+      focusableElement?:
+        | HTMLElement
+        | React.MutableRefObject<HTMLElement | null>
+        | undefined
+    ) => void
+  ) => {
+    switchChain({
+      chainId: Number(chainId),
+      provider: provider as Web3Provider
+    })
+    close?.() //close the popover after option-click
+  }
+
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
@@ -26,18 +42,20 @@ export const NetworkSelectionContainer = ({
       <Transition>
         <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:mt-4 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) =>
-            supportedNetworks?.map(chainId => (
+            supportedNetworks?.map((chainId, i) => (
               <div
                 key={chainId}
                 className="flex h-12 cursor-pointer flex-nowrap items-center justify-center space-x-3 px-4 font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:justify-start lg:font-normal lg:text-dark"
                 onClick={() => {
-                  switchChain({
-                    chainId: Number(chainId),
-                    provider: provider as Web3Provider
-                  })
-                  close?.() //close the popover after option-click
+                  handleClick(chainId, close)
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.keyCode === 13) {
+                    handleClick(chainId, close)
+                  }
                 }}
                 role="button"
+                tabIndex={i}
                 aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
               >
                 <div className="flex h-8 w-8 items-center justify-center">

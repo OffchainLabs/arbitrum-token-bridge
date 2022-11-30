@@ -105,7 +105,7 @@ function tokenListsToSearchableTokenStorage(
             return
           }
 
-          // @ts-ignore
+          // @ts-ignore Test description
           // TODO: should we upgrade '@uniswap/token-lists'?
           const bridgeInfo: {
             [chainId: string]: { tokenAddress: string }

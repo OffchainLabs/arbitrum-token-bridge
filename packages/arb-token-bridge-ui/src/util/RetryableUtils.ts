@@ -62,8 +62,8 @@ export const getRetryableTicketExpiration = async ({
     isLoadingError = false,
     isExpired = false
 
-  let daysUntilExpired = 0,
-    expirationDate = 0
+  let daysUntilExpired = 0
+  const expirationDate = 0
 
   try {
     const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
