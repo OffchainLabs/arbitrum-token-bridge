@@ -465,7 +465,6 @@ export const useArbTokenBridge = (
 
     const tx = await erc20Bridger.deposit({
       ...depositRequest,
-      destinationAddress,
       l1Signer
     })
 
