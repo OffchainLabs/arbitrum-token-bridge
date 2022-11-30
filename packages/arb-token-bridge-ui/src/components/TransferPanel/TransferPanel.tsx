@@ -423,6 +423,12 @@ export function TransferPanel() {
               : undefined
 
           if (isSmartContractWallet) {
+            if (!destinationAddress) {
+              console.error(
+                "Couldn't initiate the smart contract wallet transfer. Invalid destination address."
+              )
+              return
+            }
             alert(
               'Deposit request sent. Approve in your smart contract wallet app.'
             )
