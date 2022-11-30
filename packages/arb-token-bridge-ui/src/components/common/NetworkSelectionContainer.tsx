@@ -43,7 +43,7 @@ export const NetworkSelectionContainer = ({
         <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:mt-4 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) =>
             supportedNetworks?.map((chainId, i) => (
-              <div
+              <div // TODO: replace with button
                 key={chainId}
                 className="flex h-12 cursor-pointer flex-nowrap items-center justify-center space-x-3 px-4 font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:justify-start lg:font-normal lg:text-dark"
                 onClick={() => {
