@@ -119,6 +119,9 @@ export function TransferPanel() {
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
+  const isSmartContractWallet =
+    walletType === WalletType.SUPPORTED_CONTRACT_WALLET
+
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }, setQueryParams] = useArbQueryParams()
@@ -313,9 +316,6 @@ export function TransferPanel() {
       return
     }
 
-    const isSmartContractWallet =
-      walletType === WalletType.SUPPORTED_CONTRACT_WALLET
-
     const setTransferring = (payload: boolean) =>
       dispatch({ type: 'layout.set_is_transferring', payload })
 
@@ -421,6 +421,13 @@ export function TransferPanel() {
             isAddress(String(transactionSettings?.destinationAddress))
               ? transactionSettings?.destinationAddress
               : undefined
+
+          if (isSmartContractWallet) {
+            alert(
+              'Deposit request sent. Approve in your smart contract wallet app.'
+            )
+            setTransferring(false)
+          }
 
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
@@ -652,7 +659,9 @@ export function TransferPanel() {
       // allow 0-amount deposits when bridging new token
       (isDepositMode &&
         isBridgingANewStandardToken &&
-        (l1Balance === null || amountNum > +l1Balance))
+        (l1Balance === null || amountNum > +l1Balance)) ||
+      (isSmartContractWallet &&
+        !isAddress(String(transactionSettings?.destinationAddress)))
     )
   }, [
     isTransferring,
@@ -661,7 +670,9 @@ export function TransferPanel() {
     amountNum,
     l1Balance,
     isBridgingANewStandardToken,
-    selectedToken
+    selectedToken,
+    transactionSettings,
+    isSmartContractWallet
   ])
 
   // TODO: Refactor this and the property above
@@ -691,7 +702,10 @@ export function TransferPanel() {
         selectedToken.address.toLowerCase() ===
           '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
       isTransferring ||
-      (!isDepositMode && (!amountNum || !l2Balance || amountNum > +l2Balance))
+      (!isDepositMode &&
+        (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
+      (isSmartContractWallet &&
+        !isAddress(String(transactionSettings?.destinationAddress)))
     )
   }, [isTransferring, isDepositMode, amountNum, l2Balance, selectedToken])
 

@@ -404,6 +404,14 @@ export function TransferPanelMain({
     }
   }, [amount, setMaxAmount, setQueryParams])
 
+  useEffect(() => {
+    if (isAddress(String(transactionSettings?.destinationAddress))) {
+      setAdvancedSettingsError(null)
+    } else {
+      setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+    }
+  }, [transactionSettings?.destinationAddress])
+
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
     const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
@@ -830,28 +838,19 @@ export function TransferPanelMain({
                   defaultValue={transactionSettings?.destinationAddress}
                   spellCheck={false}
                   onChange={e => {
-                    if (!e.target.value) {
-                      setAdvancedSettingsError(null)
-                    } else if (!isAddress(e.target.value)) {
-                      setAdvancedSettingsError(
-                        AdvancedSettingsErrors.INVALID_ADDRESS
-                      )
-                    } else {
-                      setAdvancedSettingsError(null)
-                      actions.app.setTransactionSettings({
-                        ...transactionSettings,
-                        destinationAddress: e.target.value
-                      })
-                    }
+                    actions.app.setTransactionSettings({
+                      ...transactionSettings,
+                      destinationAddress: e.target.value.toLowerCase()
+                    })
                   }}
                 />
               </div>
-              {advancedSettingsError && (
-                <span className="text-xs text-red-400">
-                  {advancedSettingsError}
-                </span>
-              )}
             </>
+          )}
+          {isSmartContractWallet && advancedSettingsError && (
+            <span className="text-xs text-red-400">
+              {advancedSettingsError}
+            </span>
           )}
         </div>
       )}

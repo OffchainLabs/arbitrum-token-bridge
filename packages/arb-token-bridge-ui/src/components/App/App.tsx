@@ -174,14 +174,14 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       const l2Address = await l2Signer.getAddress()
 
       const walletType: WalletType = await (async () => {
-        const l1AddressIsSmartContract = await !addressIsEOA(
+        const l1AddressIsSmartContract = !(await addressIsEOA(
           l1Address,
           l1Provider
-        )
-        const l2AddressIsSmartContract = await !addressIsEOA(
+        ))
+        const l2AddressIsSmartContract = !(await addressIsEOA(
           l2Address,
           l2Provider
-        )
+        ))
 
         if (!l1AddressIsSmartContract && !l2AddressIsSmartContract) {
           return WalletType.EOA
@@ -235,7 +235,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
             return WalletType.UNSUPPORTED_CONTRACT_WALLET
           }
         }
-        return WalletType.UNSUPPORTED_CONTRACT_WALLET
+        // TODO: Change to UNSUPPORTED, fix issue with getOwners method
+        return WalletType.SUPPORTED_CONTRACT_WALLET
       })()
 
       actions.app.setWalletType(walletType)
