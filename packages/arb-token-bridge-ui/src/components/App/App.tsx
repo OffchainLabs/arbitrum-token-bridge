@@ -102,11 +102,7 @@ const AppContent = (): JSX.Element => {
 
   if (walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET) {
     // TODO: better alert text / keep it?
-    return (
-      <Alert type="red">
-        Unsupported Contract Wallet! This shouldn't happen. Let support know.
-      </Alert>
-    )
+    return <Alert type="red">Unsupported Contract Wallet!</Alert>
   }
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
@@ -187,56 +183,58 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           return WalletType.EOA
         }
 
-        if (l1AddressIsSmartContract && l2AddressIsSmartContract) {
-          // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
-          if (l1Address !== l2Address) {
-            console.warn(
-              `SC wallet error: wallets have different addresses: l1: ${l1Address}; l2: ${l2Address} `
-            )
-            return WalletType.UNSUPPORTED_CONTRACT_WALLET
-          }
+        // TODO: Remove this comment after questions answered!
+        // QUESTION 1: Is this true that only 1 address is required to be smart contract?
+        // Since destination address is specified my reasoning is it's enough for just
+        // L1 to be SC for deposits, and L2 for withdrawals.
 
-          try {
-            const l1Contract = new Contract(
-              l1Address,
-              gnosisInterface,
-              l1Provider
-            )
-            const l1Owners: string[] = [
-              ...(await l1Contract.getOwners())
-            ].sort()
-
-            const l2Contract = new Contract(
-              l2Address,
-              gnosisInterface,
-              l2Provider
-            )
-            const l2Owners: string[] = [
-              ...(await l2Contract.getOwners())
-            ].sort()
-
-            const walletsHaveSameOwners =
-              JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
-
-            if (!walletsHaveSameOwners) {
-              console.warn(
-                `SC wallet error; owners don't match:`,
-                l1Owners,
-                l2Owners
-              )
-            }
-
-            return walletsHaveSameOwners
-              ? WalletType.SUPPORTED_CONTRACT_WALLET
-              : WalletType.UNSUPPORTED_CONTRACT_WALLET
-          } catch (err) {
-            console.warn('CONNECTION ERROR', err)
-            actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
-            return WalletType.UNSUPPORTED_CONTRACT_WALLET
-          }
+        // Only 1 address is SC. No need to compare owners.
+        if (!l1AddressIsSmartContract || !l2AddressIsSmartContract) {
+          return WalletType.SUPPORTED_CONTRACT_WALLET
         }
-        // TODO: Change to UNSUPPORTED, fix issue with getOwners method
-        return WalletType.SUPPORTED_CONTRACT_WALLET
+
+        // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
+        if (l1Address !== l2Address) {
+          console.warn(
+            `SC wallet error: wallets have different addresses: l1: ${l1Address}; l2: ${l2Address} `
+          )
+          return WalletType.UNSUPPORTED_CONTRACT_WALLET
+        }
+
+        try {
+          const l1Contract = new Contract(
+            l1Address,
+            gnosisInterface,
+            l1Provider
+          )
+          const l1Owners: string[] = [...(await l1Contract.getOwners())].sort()
+
+          const l2Contract = new Contract(
+            l2Address,
+            gnosisInterface,
+            l2Provider
+          )
+          const l2Owners: string[] = [...(await l2Contract.getOwners())].sort()
+
+          const walletsHaveSameOwners =
+            JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
+
+          if (!walletsHaveSameOwners) {
+            console.warn(
+              `SC wallet error; owners don't match:`,
+              l1Owners,
+              l2Owners
+            )
+          }
+
+          return walletsHaveSameOwners
+            ? WalletType.SUPPORTED_CONTRACT_WALLET
+            : WalletType.UNSUPPORTED_CONTRACT_WALLET
+        } catch (err) {
+          console.warn('CONNECTION ERROR', err)
+          actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
+          return WalletType.UNSUPPORTED_CONTRACT_WALLET
+        }
       })()
 
       actions.app.setWalletType(walletType)
