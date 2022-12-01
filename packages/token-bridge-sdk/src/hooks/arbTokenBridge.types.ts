@@ -37,13 +37,11 @@ import {
 export { OutgoingMessageState }
 
 export enum TokenType {
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721'
+  ERC20 = 'ERC20'
 }
 
 export enum AssetType {
   ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
   ETH = 'ETH'
 }
 
@@ -145,42 +143,11 @@ export interface BridgeBalance {
 }
 
 // removing 'tokens' / 'balance' could result in one interface
-/**
- * Holds balance values for ERC721 Token.
- * @name ERC721Balance
- * @alias ERC721Balance
- */
-export interface ERC721Balance {
-  /**
-   * User's NFT balance on L1
-   */
-  ethBalance: BigNumber
-  arbBalance: BigNumber
-
-  tokens: BigNumber[]
-  /**
-   *  User's NFTs on Arbitrum
-   */
-  arbChainTokens: BigNumber[]
-  /**
-   * All NFTs on Arbitrum
-   */
-  totalArbTokens: BigNumber[]
-  /**
-   * All of user's NFTs available in lockbox (ready to transfer out.)
-   */
-  lockBoxTokens: BigNumber[]
-}
-
 export interface AddressToSymbol {
   [tokenAddress: string]: string
 }
 export interface AddressToDecimals {
   [tokenAddress: string]: number
-}
-export interface ArbTokenBridgeBalances {
-  erc20: ContractStorage<BridgeBalance>
-  erc721: ContractStorage<ERC721Balance>
 }
 
 export type GasEstimates = {
@@ -228,7 +195,7 @@ export type SearchableTokenStorage = { [l1Address: string]: SearchableToken }
 export interface ArbTokenBridgeToken {
   tokensFromLists: SearchableTokenStorage
   tokensFromUser: SearchableTokenStorage
-  add: (erc20L1orL2Address: string) => Promise<string>
+  add: (erc20L1orL2Address: string) => Promise<void>
   addTokensFromList: (tokenList: TokenList, listID?: number) => void
   removeTokensFromList: (listID: number) => void
   searchTokenFromList: (erc20L1orL2Address: string) => SearchableToken | null
@@ -313,8 +280,6 @@ export type ArbTokenBridgeTransactions = {
 export interface ArbTokenBridge {
   walletAddress: string
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
-  balances: ArbTokenBridgeBalances
-  cache: ArbTokenBridgeCache
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions

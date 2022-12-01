@@ -144,7 +144,7 @@ export function DepositConfirmationDialog(
                     Transfer on Arbitrum’s bridge to get {tokenSymbolOnArbitrum}
                   </li>
                   <li>
-                    Transfer on {tokenSymbol}'s bridge to swap{' '}
+                    Transfer on {tokenSymbol}&apos;s bridge to swap{' '}
                     {tokenSymbolOnArbitrum} for {tokenSymbol}
                   </li>
                 </ol>

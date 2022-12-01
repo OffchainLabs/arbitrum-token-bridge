@@ -4,7 +4,7 @@ import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
@@ -13,13 +13,13 @@ import { useWallet } from '@arbitrum/use-wallet'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getNetworkName,
   isNetwork,
   switchChain
 } from '../../util/networks'
-import { formatBigNumber } from '../../util/NumberUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -32,9 +32,9 @@ import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
   calculateEstimatedL2GasFees,
-  useIsSwitchingL2Chain,
-  useTokenBalances
+  useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
+import { NetworkType, useTokenBalances } from './useTokenBalances'
 
 import EthereumLogo from '../../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
@@ -176,7 +176,7 @@ function NetworkListbox({
 }
 
 function getListboxOptionsFromL1Network(network: L1Network) {
-  let options: L2Network[] = []
+  const options: L2Network[] = []
 
   network.partnerChainIDs.forEach(chainId => {
     const l2Network = l2Networks[chainId]
@@ -234,13 +234,7 @@ function StyledLoader() {
   return <Loader type="TailSpin" color="white" height={16} width={16} />
 }
 
-function ETHBalance({
-  on,
-  prefix = ''
-}: {
-  on: 'ethereum' | 'arbitrum'
-  prefix?: string
-}) {
+function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -255,7 +249,7 @@ function ETHBalance({
     eth: [ethL2Balance]
   } = useBalance({ provider: l2.provider, walletAddress })
 
-  const balance = on === 'ethereum' ? ethL1Balance : ethL2Balance
+  const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
   if (!balance) {
     return <StyledLoader />
@@ -264,7 +258,7 @@ function ETHBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatBigNumber(balance, 18, 5)} ETH
+      {formatAmount(balance, { symbol: 'ETH' })}
     </span>
   )
 }
@@ -275,11 +269,10 @@ function TokenBalance({
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
-  on: 'ethereum' | 'arbitrum'
+  on: NetworkType
   prefix?: string
 }) {
-  const balances = useTokenBalances(forToken?.address)
-  const balance = balances[on]
+  const balance = useTokenBalances(forToken?.address)[on]
 
   if (!forToken) {
     return null
@@ -292,7 +285,10 @@ function TokenBalance({
   return (
     <span className="text-xl font-light text-white">
       {prefix}
-      {formatBigNumber(balance, forToken.decimals, 5)} {forToken.symbol}
+      {formatAmount(balance, {
+        decimals: forToken.decimals,
+        symbol: forToken.symbol
+      })}
     </span>
   )
 }
@@ -389,9 +385,7 @@ export function TransferPanelMain({
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-    const tokenBalance = isDepositMode
-      ? tokenBalances.ethereum
-      : tokenBalances.arbitrum
+    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -431,7 +425,7 @@ export function TransferPanelMain({
     if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
       return (
         <>
-          <span>This token can't be bridged over. </span>
+          <span>This token can&apos;t be bridged over. </span>
           <button
             className="arb-hover underline"
             onClick={openWithdrawOnlyDialog}
@@ -474,7 +468,7 @@ export function TransferPanelMain({
       amount: weiValue
     })
 
-    return { ...result, estimatedL2SubmissionCost: BigNumber.from(0) }
+    return { ...result, estimatedL2SubmissionCost: constants.Zero }
   }
 
   type NetworkListboxesProps = {
@@ -666,9 +660,7 @@ export function TransferPanelMain({
   async function setMaxAmount() {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
-    const tokenBalance = isDepositMode
-      ? tokenBalances.ethereum
-      : tokenBalances.arbitrum
+    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -676,7 +668,7 @@ export function TransferPanelMain({
       }
 
       // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals || 18))
+      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
       return
     }
 
@@ -720,12 +712,12 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
-                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? 'ethereum' : 'arbitrum'}
+                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
@@ -778,12 +770,12 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
-                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? 'arbitrum' : 'ethereum'}
+                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>

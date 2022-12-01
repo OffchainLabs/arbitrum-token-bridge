@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import Loader from 'react-loader-spinner'
+import { constants } from 'ethers'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -9,13 +10,16 @@ import {
   DepositL2TxStatus
 } from './DepositCard'
 import { useAppContextDispatch } from '../App/AppContext'
-import { formatBigNumber } from '../../util/NumberUtils'
-import { useNetworksAndSigners } from '../../hooks//useNetworksAndSigners'
+import { formatAmount } from '../../util/NumberUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useBalance } from 'token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
-    app: { arbTokenBridge, selectedToken }
+    app: {
+      arbTokenBridge: { walletAddress, bridgeTokens, token }
+    }
   } = useAppState()
   const dispatch = useAppContextDispatch()
   const {
@@ -23,24 +27,25 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   } = useNetworksAndSigners()
 
   const {
-    eth: [ethBalance]
+    eth: [ethBalance],
+    erc20: [erc20Balances]
   } = useBalance({
     provider: L2Provider,
-    walletAddress: arbTokenBridge.walletAddress
+    walletAddress: walletAddress
   })
 
   useEffect(() => {
-    if (typeof arbTokenBridge.bridgeTokens === 'undefined') {
+    if (typeof bridgeTokens === 'undefined') {
       return
     }
     // Add token to bridge just in case the user navigated away while the deposit was in-flight
-    if (tx.tokenAddress && !arbTokenBridge.bridgeTokens[tx.tokenAddress]) {
-      arbTokenBridge.token.add(tx.tokenAddress)
+    if (tx.tokenAddress && !bridgeTokens[tx.tokenAddress]) {
+      token.add(tx.tokenAddress)
     }
   }, [])
 
   const balance = useMemo(() => {
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
+    if (!ethBalance || !erc20Balances) {
       return null
     }
 
@@ -52,8 +57,18 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    return arbTokenBridge.balances.erc20[tx.tokenAddress]?.arbChainBalance
-  }, [ethBalance, tx, arbTokenBridge])
+    if (typeof bridgeTokens === 'undefined') {
+      return null
+    }
+
+    const l2Address = bridgeTokens[tx.tokenAddress]?.l2Address
+
+    if (!l2Address) {
+      return constants.Zero
+    }
+
+    return erc20Balances[l2Address] ?? null
+  }, [bridgeTokens, erc20Balances, ethBalance, tx])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -66,6 +81,8 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     }
     // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
   }, [tx.txId])
+
+  const decimals = useTokenDecimals(bridgeTokens, tx.tokenAddress)
 
   return (
     <DepositCardContainer tx={tx} dismissable>
@@ -81,8 +98,10 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
           <span className="font-medium">New balance:</span>
           {balance ? (
             <span className="font-medium">
-              {formatBigNumber(balance, selectedToken?.decimals || 18)}{' '}
-              {tx.asset.toUpperCase()}
+              {formatAmount(balance, {
+                decimals,
+                symbol: tx.asset.toUpperCase()
+              })}
             </span>
           ) : (
             <Loader type="Oval" height={16} width={16} color="black" />

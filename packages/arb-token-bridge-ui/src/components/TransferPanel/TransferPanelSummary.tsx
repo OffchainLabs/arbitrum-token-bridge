@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { useLatest } from 'react-use'
 import { useGasPrice } from 'token-bridge-sdk'
@@ -8,7 +8,7 @@ import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
@@ -50,11 +50,11 @@ export function useGasSummary(
   const [status, setStatus] = useState<GasEstimationStatus>('idle')
   const [result, setResult] = useState<GasEstimationResult>({
     // Estimated L1 gas, denominated in Wei, represented as a BigNumber
-    estimatedL1Gas: BigNumber.from(0),
+    estimatedL1Gas: constants.Zero,
     // Estimated L2 gas, denominated in Wei, represented as a BigNumber
-    estimatedL2Gas: BigNumber.from(0),
+    estimatedL2Gas: constants.Zero,
     // Estimated L2 submission cost is precalculated and includes gas price
-    estimatedL2SubmissionCost: BigNumber.from(0)
+    estimatedL2SubmissionCost: constants.Zero
   })
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
@@ -151,7 +151,7 @@ export function useGasSummary(
 
             setResult({
               ...estimateGasResult,
-              estimatedL2SubmissionCost: BigNumber.from(0)
+              estimatedL2SubmissionCost: constants.Zero
             })
           } else {
             const estimateGasResult =
@@ -161,7 +161,7 @@ export function useGasSummary(
 
             setResult({
               ...estimateGasResult,
-              estimatedL2SubmissionCost: BigNumber.from(0)
+              estimatedL2SubmissionCost: constants.Zero
             })
           }
         }
@@ -281,7 +281,7 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span className="text-dark">
-            {formatNumber(amount, 4)} {token?.symbol || 'ETH'}
+            {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (
@@ -296,9 +296,11 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light text-dark">
           You’ll pay in gas fees
         </span>
-        <div className="flex flex w-3/5 justify-between">
+        <div className="flex w-3/5 justify-between">
           <span className="text-dark">
-            {formatNumber(estimatedTotalGasFees, 4)} ETH
+            {formatAmount(estimatedTotalGasFees, {
+              symbol: 'ETH'
+            })}
           </span>
           {isMainnet && (
             <span className="font-medium text-dark">
@@ -318,7 +320,9 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL1GasFees, 4)} ETH
+              {formatAmount(estimatedL1GasFees, {
+                symbol: 'ETH'
+              })}
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
@@ -336,7 +340,9 @@ export function TransferPanelSummary({
           </div>
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light text-[#595959]">
-              {formatNumber(estimatedL2GasFees, 4)} ETH
+              {formatAmount(estimatedL2GasFees, {
+                symbol: 'ETH'
+              })}
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
@@ -358,7 +364,9 @@ export function TransferPanelSummary({
             <span className="w-2/5 font-light text-dark">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">
               <span className="text-dark">
-                {formatNumber(amount + estimatedTotalGasFees, 4)} ETH
+                {formatAmount(amount + estimatedTotalGasFees, {
+                  symbol: 'ETH'
+                })}
               </span>
               {isMainnet && (
                 <span className="font-medium text-dark">

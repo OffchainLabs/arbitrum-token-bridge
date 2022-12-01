@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { formatBigNumber } from '../../../src/util/NumberUtils'
+import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
@@ -36,7 +36,7 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
-        val => (l1ERC20bal = formatBigNumber(val, 18, 5))
+        val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
       )
       cy.login('L1')
     })
@@ -87,7 +87,7 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show ERC20 balance correctly', () => {
-      cy.findByText(`Balance: ${l1ERC20bal} LINK`).should('be.visible')
+      cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
     })
 
     context("bridge amount is lower than user's L1 ERC20 balance value", () => {
@@ -98,7 +98,7 @@ describe('Deposit ERC20 Token', () => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains('0.0001 LINK')
+              .contains(formatAmount(0.0001))
               .should('be.visible')
             cy.findByText('You’ll pay in gas fees')
               .siblings()
@@ -127,9 +127,11 @@ describe('Deposit ERC20 Token', () => {
           .click({ scrollBehavior: false })
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(/Moving 0.0001 LINK to Arbitrum Goerli.../i).should(
-                'be.visible'
-              )
+              cy.findByText(
+                `Moving ${formatAmount(0.0001, {
+                  symbol: 'LINK'
+                })} to Arbitrum Goerli...`
+              ).should('be.visible')
             })
           })
       })

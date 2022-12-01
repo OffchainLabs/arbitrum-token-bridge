@@ -4,9 +4,10 @@ import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
+import { constants } from 'ethers'
 
 import { useActions, useAppState } from '../../state'
-import { formatBigNumber } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -54,7 +55,7 @@ interface TokenRowProps {
 function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, balances, walletAddress },
+      arbTokenBridge: { bridgeTokens, walletAddress },
       isDepositMode
     }
   } = useAppState()
@@ -67,10 +68,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
 
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: l1Provider, walletAddress })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
@@ -90,10 +93,23 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
-    return isDepositMode
-      ? balances?.erc20[token.address]?.balance
-      : balances?.erc20[token.address]?.arbChainBalance
-  }, [ethL1Balance, ethL2Balance, token, isDepositMode, balances])
+    if (isDepositMode) {
+      return erc20L1Balances?.[token.address.toLowerCase()]
+    }
+
+    if (!token.l2Address) {
+      return constants.Zero
+    }
+
+    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
+  }, [
+    ethL1Balance,
+    ethL2Balance,
+    token,
+    isDepositMode,
+    erc20L1Balances,
+    erc20L2Balances
+  ])
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
@@ -204,7 +220,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                     </a>
                   ) : (
                     <span className="text-xs text-gray-900">
-                      This token hasn't been bridged to L2
+                      This token hasn&apos;t been bridged to L2
                     </span>
                   )}
                 </>
@@ -222,7 +238,10 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
           {tokenIsAddedToTheBridge ? (
             <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
               {tokenBalance ? (
-                formatBigNumber(tokenBalance, token?.decimals || 18)
+                formatAmount(tokenBalance, {
+                  decimals: token?.decimals,
+                  symbol: tokenSymbol
+                })
               ) : (
                 <div className="mr-2">
                   <Loader
@@ -232,8 +251,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                     width={14}
                   />
                 </div>
-              )}{' '}
-              {tokenSymbol}
+              )}
             </span>
           ) : (
             <span className="text-sm font-medium text-blue-link">Import</span>
@@ -323,7 +341,7 @@ function TokensPanel({
 }): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { balances, token, walletAddress },
+      arbTokenBridge: { token, walletAddress, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -333,10 +351,12 @@ function TokensPanel({
   } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: L1Provider, walletAddress })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
   const { tokensFromLists = {}, tokensFromUser = {} } = token || {}
@@ -353,17 +373,30 @@ function TokensPanel({
         return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
-      return isDepositMode
-        ? balances?.erc20[address]?.balance
-        : balances?.erc20[address]?.arbChainBalance
+      if (isDepositMode) {
+        return erc20L1Balances?.[address.toLowerCase()]
+      }
+
+      if (typeof bridgeTokens === 'undefined') {
+        return null
+      }
+
+      const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
+      return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
-    [ethL1Balance, ethL2Balance, isDepositMode, balances]
+    [
+      bridgeTokens,
+      erc20L1Balances,
+      erc20L2Balances,
+      ethL1Balance,
+      ethL2Balance,
+      isDepositMode
+    ]
   )
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-
-    return [
+    const tokens = [
       ETH_IDENTIFIER,
       // Deduplicate addresses
       ...new Set([
@@ -371,7 +404,8 @@ function TokensPanel({
         ...Object.keys(tokensFromLists)
       ])
     ]
-      .filter((address: string) => {
+    return tokens
+      .filter(address => {
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH

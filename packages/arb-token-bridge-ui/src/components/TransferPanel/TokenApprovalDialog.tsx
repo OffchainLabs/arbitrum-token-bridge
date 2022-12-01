@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
 
 import { useAppState } from '../../state'
@@ -10,7 +10,7 @@ import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { formatNumber, formatUSD } from '../../util/NumberUtils'
+import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
@@ -31,7 +31,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const l1GasPrice = useGasPrice({ provider: l1.provider })
 
   const [checked, setChecked] = useState(false)
-  const [estimatedGas, setEstimatedGas] = useState<BigNumber>(BigNumber.from(0))
+  const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
 
   // Estimated gas fees, denominated in Ether, represented as a floating point number
   const estimatedGasFees = useMemo(
@@ -40,9 +40,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   )
 
   const approvalFeeText = useMemo(() => {
-    const eth = formatNumber(estimatedGasFees)
+    const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
     const usd = formatUSD(toUSD(estimatedGasFees))
-    return `${eth} ETH${isMainnet ? ` (${usd})` : ''}`
+    return `${eth}${isMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, toUSD, isMainnet])
 
   useEffect(() => {
