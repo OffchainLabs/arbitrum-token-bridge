@@ -101,7 +101,6 @@ const AppContent = (): JSX.Element => {
   }
 
   if (walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET) {
-    // TODO: better alert text / keep it?
     return <Alert type="red">Unsupported Contract Wallet!</Alert>
   }
 
