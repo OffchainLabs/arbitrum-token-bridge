@@ -699,7 +699,8 @@ export function TransferPanel() {
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
       (isSmartContractWallet &&
-        !isAddress(String(transactionSettings?.destinationAddress)))
+        !isAddress(String(transactionSettings?.destinationAddress))) ||
+      (isSmartContractWallet && !selectedToken)
     )
   }, [
     isTransferring,
@@ -743,7 +744,8 @@ export function TransferPanel() {
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
       (isSmartContractWallet &&
-        !isAddress(String(transactionSettings?.destinationAddress)))
+        !isAddress(String(transactionSettings?.destinationAddress))) ||
+      (isSmartContractWallet && !selectedToken)
     )
   }, [
     isTransferring,
