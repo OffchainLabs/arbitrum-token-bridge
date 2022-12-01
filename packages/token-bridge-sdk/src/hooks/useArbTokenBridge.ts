@@ -564,12 +564,14 @@ export const useArbTokenBridge = (
     erc20L1Address,
     amount,
     l2Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) {
     if (typeof bridgeTokens === 'undefined') {
       return
@@ -594,7 +596,7 @@ export const useArbTokenBridge = (
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
-      destinationAddress: walletAddress,
+      destinationAddress: destinationAddress || walletAddress,
       amount
     })
 

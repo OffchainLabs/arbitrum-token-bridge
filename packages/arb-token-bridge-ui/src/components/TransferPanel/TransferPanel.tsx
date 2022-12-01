@@ -316,6 +316,12 @@ export function TransferPanel() {
       return
     }
 
+    // ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
+    if (isSmartContractWallet && !selectedToken) {
+      console.error("ETH transfers aren't enabled for smart contract wallets.")
+      return
+    }
+
     const setTransferring = (payload: boolean) =>
       dispatch({ type: 'layout.set_is_transferring', payload })
 
@@ -486,11 +492,13 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const waitForInput = openWithdrawalConfirmationDialog()
-        const confirmed = await waitForInput()
+        if (!isSmartContractWallet) {
+          const waitForInput = openWithdrawalConfirmationDialog()
+          const confirmed = await waitForInput()
 
-        if (!confirmed) {
-          return
+          if (!confirmed) {
+            return
+          }
         }
 
         const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
@@ -505,6 +513,11 @@ export function TransferPanel() {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
+          const destinationAddress =
+            isSmartContractWallet &&
+            isAddress(String(transactionSettings?.destinationAddress))
+              ? transactionSettings?.destinationAddress
+              : undefined
 
           if (
             tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
@@ -519,6 +532,12 @@ export function TransferPanel() {
               latestNetworksAndSigners.current.l2.provider
             )
             if (!allowed) {
+              if (isSmartContractWallet) {
+                alert(
+                  'Token approval request sent. Approve in your smart contract wallet app.'
+                )
+                setTransferring(false)
+              }
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
                 l2Signer: latestNetworksAndSigners.current.l2.signer
@@ -526,10 +545,18 @@ export function TransferPanel() {
             }
           }
 
+          if (isSmartContractWallet) {
+            alert(
+              'Withdrawal request sent. Approve in your smart contract wallet app.'
+            )
+            setTransferring(false)
+          }
+
           await latestToken.current.withdraw({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
@@ -597,6 +624,11 @@ export function TransferPanel() {
       // No error while loading balance
       if (_balance === null || ethBalance === null) {
         return undefined
+      }
+
+      // ETH transfers using SC wallets not enabled yet
+      if (isSmartContractWallet && !selectedToken) {
+        return TransferPanelMainErrorMessage.SC_WALLET_UNSUPPORTED_TOKEN
       }
 
       if (
@@ -713,7 +745,15 @@ export function TransferPanel() {
       (isSmartContractWallet &&
         !isAddress(String(transactionSettings?.destinationAddress)))
     )
-  }, [isTransferring, isDepositMode, amountNum, l2Balance, selectedToken])
+  }, [
+    isTransferring,
+    isDepositMode,
+    amountNum,
+    l2Balance,
+    selectedToken,
+    isSmartContractWallet,
+    transactionSettings?.destinationAddress
+  ])
 
   // TODO: Refactor this and the property above
   const disableWithdrawalV2 = useMemo(() => {
