@@ -186,7 +186,7 @@ function NetworkListbox({
 }
 
 function getListboxOptionsFromL1Network(network: L1Network) {
-  let options: L2Network[] = []
+  const options: L2Network[] = []
 
   network.partnerChainIDs.forEach(chainId => {
     const l2Network = l2Networks[chainId]
@@ -455,7 +455,7 @@ export function TransferPanelMain({
     if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
       return (
         <>
-          <span>This token can't be bridged over. </span>
+          <span>This token can&apos;t be bridged over. </span>
           <button
             className="arb-hover underline"
             onClick={openWithdrawOnlyDialog}

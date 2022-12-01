@@ -17,7 +17,7 @@ function findMatchingL1Tx(
   transactions: MergedTransaction[]
 ) {
   return transactions.find(_tx => {
-    let l2ToL1MsgData = _tx.l2ToL1MsgData
+    const l2ToL1MsgData = _tx.l2ToL1MsgData
 
     if (typeof l2ToL1MsgData === 'undefined') {
       return false
