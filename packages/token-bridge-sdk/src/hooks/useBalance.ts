@@ -1,6 +1,5 @@
-import { useCallback, useState, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BigNumber, providers } from 'ethers'
-import { Provider } from '@ethersproject/providers'
 import useSWR, { useSWRConfig, unstable_serialize, Middleware } from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
 
@@ -80,7 +79,7 @@ const useBalance = ({
         return acc
       }, {} as Erc20Balances)
     },
-    [queryKey, provider, walletAddressLowercased]
+    [provider, walletAddressLowercased]
   )
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
@@ -104,19 +103,22 @@ const useBalance = ({
     }
   )
 
-  const updateErc20 = useCallback(async (addresses: string[]) => {
-    const balances = await fetchErc20(addresses)
+  const updateErc20 = useCallback(
+    async (addresses: string[]) => {
+      const balances = await fetchErc20(addresses)
 
-    return mutateErc20(balances, {
-      populateCache(result, currentData) {
-        return {
-          ...currentData,
-          ...result
-        }
-      },
-      revalidate: false
-    })
-  }, [])
+      return mutateErc20(balances, {
+        populateCache(result, currentData) {
+          return {
+            ...currentData,
+            ...result
+          }
+        },
+        revalidate: false
+      })
+    },
+    [fetchErc20, mutateErc20]
+  )
 
   return {
     eth: [dataEth, updateEthBalance] as const,

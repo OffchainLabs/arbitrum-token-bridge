@@ -257,6 +257,7 @@ const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
   return innerProvider.isMetaMask || innerProvider.isImToken
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 
 const onSwitchChainNotSupportedDefault = (attemptedChainId: number) => {
