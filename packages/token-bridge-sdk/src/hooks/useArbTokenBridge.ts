@@ -682,7 +682,7 @@ export const useArbTokenBridge = (
 
         token.listIds.delete(listID)
 
-        if (!token.listIds.size) {
+        if (token.listIds.size === 0) {
           delete newBridgeTokens[address]
         }
       }
@@ -692,7 +692,7 @@ export const useArbTokenBridge = (
 
   const addTokensFromList = async (
     arbTokenList: TokenList,
-    listID?: number
+    listId?: number
   ) => {
     const l1ChainID = l1.network.chainID
     const l2ChainID = l2.network.chainID
@@ -755,7 +755,7 @@ export const useArbTokenBridge = (
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: listID ? new Set([listID]) : new Set()
+          listIds: listId ? new Set([listId]) : new Set()
         }
       }
       // save potentially unbridged L1 tokens:
@@ -768,7 +768,7 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: listID ? new Set([listID]) : new Set()
+          listIds: listId ? new Set([listId]) : new Set()
         })
       }
     }
@@ -802,10 +802,11 @@ export const useArbTokenBridge = (
           l2Addresses.push(l2Address)
         }
 
+        // Add listId to token.listId existing set
+        // Set is removing duplicate by default
         const listIds = oldBridgeTokens?.[token.address]?.listIds
-
-        if (token && listIds && typeof listID !== 'undefined') {
-          token.listIds = new Set([...listIds]).add(listID)
+        if (token && listIds && typeof listId !== 'undefined') {
+          token.listIds = new Set([...listIds]).add(listId)
         }
       }
 

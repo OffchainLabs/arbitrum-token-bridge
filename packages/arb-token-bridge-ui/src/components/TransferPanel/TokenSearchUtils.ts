@@ -52,7 +52,7 @@ export function useTokensFromUser(): ContractStorage<ERC20BridgeToken> {
       const bridgeToken = bridgeTokens[_address]
 
       // Any tokens in the bridge that don't have a list id were added by the user.
-      if (bridgeToken && !bridgeToken.listIds.size) {
+      if (bridgeToken && bridgeToken.listIds.size === 0) {
         storage[_address] = { ...bridgeToken, listIds: new Set() }
       }
     })
