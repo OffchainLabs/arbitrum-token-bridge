@@ -17,12 +17,6 @@
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-block>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-vm>async-eventemitter>async
-    "GHSA-fwr7-v2mv-hh25",
-    // https://github.com/advisories/GHSA-w573-4hg7-7wgq
-    // decode-uri-component 0.2.0 is vulnerable to Improper Input Validation resulting in DoS
-    // this is from decode-uri-component, a dependency used in query-string,
-    // which we have installed directly and through @walletconnect/web3-provider
-    // it does not affect users directly so we'll ignore it for now and wait for a patch
-    "GHSA-w573-4hg7-7wgq"
+    "GHSA-fwr7-v2mv-hh25"
   ]
 }
