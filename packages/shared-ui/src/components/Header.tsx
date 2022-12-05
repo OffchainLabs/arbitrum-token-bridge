@@ -69,14 +69,6 @@ const explorersMenuProps = toHeaderMenuProps([
 		title: 'Arbitrum Goerli (BlockScout)',
 		link: 'https://goerli-rollup-explorer.arbitrum.io',
 	},
-	{
-		title: 'Arbitrum Rinkeby (Arbiscan)',
-		link: 'https://testnet.arbiscan.io',
-	},
-	{
-		title: 'Arbitrum Rinkeby (BlockScout)',
-		link: 'https://rinkeby-explorer.arbitrum.io',
-	},
 ]);
 
 const chartsStatsMenuProps = toHeaderMenuProps([
