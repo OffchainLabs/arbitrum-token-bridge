@@ -119,7 +119,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return null
     }
 
-    const listIds = token.listIds
+    const listIds: Set<number> = token.listIds
     const listIdsSize = listIds.size
     if (listIdsSize === 0) {
       return 'Added by User'
