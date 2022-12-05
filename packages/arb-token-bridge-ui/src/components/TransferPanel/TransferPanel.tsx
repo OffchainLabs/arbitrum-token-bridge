@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useWallet } from '@arbitrum/use-wallet'
+import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
@@ -84,6 +85,7 @@ export function TransferPanel() {
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
+  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
 
   const {
     app: {
@@ -430,9 +432,7 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             if (destinationAddress) {
-              alert(
-                'Deposit request sent. Approve in your smart contract wallet app.'
-              )
+              setShowSCWalletTooltip(true)
             } else {
               console.error(
                 "Couldn't initiate the smart contract wallet transfer. Invalid destination address."
@@ -533,9 +533,7 @@ export function TransferPanel() {
             )
             if (!allowed) {
               if (isSmartContractWallet) {
-                alert(
-                  'Token approval request sent. Approve in your smart contract wallet app.'
-                )
+                setShowSCWalletTooltip(true)
                 setTransferring(false)
               }
               await latestToken.current.approveL2({
@@ -546,9 +544,7 @@ export function TransferPanel() {
           }
 
           if (isSmartContractWallet) {
-            alert(
-              'Withdrawal request sent. Approve in your smart contract wallet app.'
-            )
+            setShowSCWalletTooltip(true)
             setTransferring(false)
           }
 
@@ -817,6 +813,24 @@ export function TransferPanel() {
       />
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
+
+      {showSCWalletTooltip && (
+        <Tippy
+          placement="top-end"
+          maxWidth="auto"
+          theme="light"
+          onClickOutside={() => setShowSCWalletTooltip(false)}
+          visible={showSCWalletTooltip}
+          content={
+            <span>
+              To continue, please approve tx on Gnosis. If you have n of k
+              signers, then n of k will need to sign on Gnosis.
+            </span>
+          }
+        >
+          <span />
+        </Tippy>
+      )}
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <TransferPanelMain
