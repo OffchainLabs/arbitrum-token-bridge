@@ -690,10 +690,7 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addTokensFromList = async (
-    arbTokenList: TokenList,
-    listId?: number
-  ) => {
+  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
     const l1ChainID = l1.network.chainID
     const l2ChainID = l2.network.chainID
 
@@ -755,7 +752,7 @@ export const useArbTokenBridge = (
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: listId ? new Set([listId]) : new Set()
+          listIds: new Set([listId])
         }
       }
       // save potentially unbridged L1 tokens:
@@ -768,7 +765,7 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: listId ? new Set([listId]) : new Set()
+          listIds: new Set([listId])
         })
       }
     }
@@ -786,15 +783,17 @@ export const useArbTokenBridge = (
       }
     }
 
+    // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
     setBridgeTokens(oldBridgeTokens => {
       const l1Addresses: string[] = []
       const l2Addresses: string[] = []
+
       for (const tokenAddress in bridgeTokensToAdd) {
-        const token = bridgeTokensToAdd[tokenAddress]
-        if (!token) {
+        const tokenToAdd = bridgeTokensToAdd[tokenAddress]
+        if (!tokenToAdd) {
           return
         }
-        const { address, l2Address } = token
+        const { address, l2Address } = tokenToAdd
         if (address) {
           l1Addresses.push(address)
         }
@@ -802,12 +801,11 @@ export const useArbTokenBridge = (
           l2Addresses.push(l2Address)
         }
 
-        // Add listId to token.listId existing set
-        // Set is removing duplicate by default
-        const listIds = oldBridgeTokens?.[token.address]?.listIds
-        if (token && listIds && typeof listId !== 'undefined') {
-          token.listIds = new Set([...listIds]).add(listId)
-        }
+        // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
+        // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
+        const oldListIds =
+          oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
+        tokenToAdd.listIds = new Set([...oldListIds, listId])
       }
 
       updateErc20L1Balance(l1Addresses)
