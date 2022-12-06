@@ -9,7 +9,12 @@ import { twMerge } from 'tailwind-merge'
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState, WalletType } from '../../util'
-import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  switchChain,
+  getNetworkName,
+  isNetwork,
+  addressIsEOA
+} from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -329,7 +334,26 @@ export function TransferPanel() {
 
     setTransferring(true)
 
+    const destinationAddress = String(transactionSettings?.destinationAddress)
+
     try {
+      const isDestinationAddressSmartContract = !(await addressIsEOA(
+        destinationAddress,
+        isDepositMode ? l2Provider : l1Provider
+      ))
+
+      if (
+        // Invalid address
+        (destinationAddress && !isAddress(destinationAddress)) ||
+        // Destination address not matching the connected wallet type
+        (destinationAddress &&
+          isSmartContractWallet !== isDestinationAddressSmartContract)
+      ) {
+        throw new Error(
+          `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
+        )
+      }
+
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -424,20 +448,8 @@ export function TransferPanel() {
             }
           }
 
-          const destinationAddress =
-            isSmartContractWallet &&
-            isAddress(String(transactionSettings?.destinationAddress))
-              ? transactionSettings?.destinationAddress
-              : undefined
-
           if (isSmartContractWallet) {
-            if (destinationAddress) {
-              setShowSCWalletTooltip(true)
-            } else {
-              console.error(
-                "Couldn't initiate the smart contract wallet transfer. Invalid destination address."
-              )
-            }
+            setShowSCWalletTooltip(true)
             setTransferring(false)
           }
 
@@ -513,11 +525,6 @@ export function TransferPanel() {
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
-          const destinationAddress =
-            isSmartContractWallet &&
-            isAddress(String(transactionSettings?.destinationAddress))
-              ? transactionSettings?.destinationAddress
-              : undefined
 
           if (
             tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&

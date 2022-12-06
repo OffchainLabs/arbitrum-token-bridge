@@ -8,7 +8,6 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState, gnosisInterface, WalletType } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { Contract } from 'ethers'
 import Loader from 'react-loader-spinner'
 
@@ -33,6 +32,7 @@ import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
+import { addressIsEOA } from '../../util/networks'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
@@ -59,10 +59,6 @@ import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
-
-async function addressIsEOA(address: string, provider: JsonRpcProvider) {
-  return (await provider.getCode(address)).length <= 2
-}
 
 declare global {
   interface Window {

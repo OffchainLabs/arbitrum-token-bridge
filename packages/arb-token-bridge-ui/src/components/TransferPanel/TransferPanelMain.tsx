@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
-import { isAddress } from '@ethersproject/address'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -20,6 +19,7 @@ import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
+  addressIsEOA,
   ChainId,
   getNetworkName,
   isNetwork,
@@ -377,7 +377,7 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(true)
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
@@ -405,13 +405,42 @@ export function TransferPanelMain({
     }
   }, [amount, setMaxAmount, setQueryParams])
 
+  useEffect(
+    () => setShowAdvancedSettings(isSmartContractWallet),
+    [isSmartContractWallet]
+  )
+
   useEffect(() => {
-    if (isAddress(String(transactionSettings?.destinationAddress))) {
-      setAdvancedSettingsError(null)
-    } else {
-      setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+    const getErrors = async () => {
+      try {
+        const address = String(transactionSettings?.destinationAddress)
+        const isDestinationAddressSmartContract = !(await addressIsEOA(
+          address,
+          isDepositMode ? l2.provider : l1.provider
+        ))
+        if (
+          // Destination address is not required for EOA wallets
+          (!isSmartContractWallet && !address) ||
+          // Make sure address type matches the connected wallet type
+          isSmartContractWallet === isDestinationAddressSmartContract
+        ) {
+          setAdvancedSettingsError(null)
+        } else {
+          setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+        }
+      } catch (err) {
+        console.error(err)
+        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+      }
     }
-  }, [transactionSettings?.destinationAddress])
+    getErrors()
+  }, [
+    l1.provider,
+    l2.provider,
+    isDepositMode,
+    isSmartContractWallet,
+    transactionSettings?.destinationAddress
+  ])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -822,47 +851,46 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      {isSmartContractWallet && (
-        <div className="mt-6">
-          <button
-            onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-            className="flex flex-row items-center"
-          >
-            <span className=" text-lg">Advanced Settings</span>
-            {showAdvancedSettings ? (
-              <ChevronUpIcon className="ml-1 h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="ml-1 h-4 w-4" />
-            )}
-          </button>
-          {showAdvancedSettings && (
-            <>
-              <div className="mt-2">
-                <span className="text-md text-gray-10">
-                  Destination Address
-                </span>
-                <input
-                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
-                  placeholder="Enter destination address"
-                  defaultValue={transactionSettings?.destinationAddress}
-                  spellCheck={false}
-                  onChange={e => {
-                    actions.app.setTransactionSettings({
-                      ...transactionSettings,
-                      destinationAddress: e.target.value.toLowerCase()
-                    })
-                  }}
-                />
-              </div>
-            </>
+      <div className="mt-6">
+        <button
+          onClick={() =>
+            !isSmartContractWallet &&
+            setShowAdvancedSettings(!showAdvancedSettings)
+          }
+          className="flex flex-row items-center"
+        >
+          <span className=" text-lg">Advanced Settings</span>
+          {showAdvancedSettings ? (
+            <ChevronUpIcon className="ml-1 h-4 w-4" />
+          ) : (
+            <ChevronDownIcon className="ml-1 h-4 w-4" />
           )}
-          {isSmartContractWallet && advancedSettingsError && (
-            <span className="text-xs text-red-400">
-              {advancedSettingsError}
-            </span>
-          )}
-        </div>
-      )}
+        </button>
+        {showAdvancedSettings && (
+          <>
+            <div className="mt-2">
+              <span className="text-md text-gray-10">
+                Destination Address{!isSmartContractWallet ? ' (optional)' : ''}
+              </span>
+              <input
+                className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                placeholder="Enter destination address"
+                defaultValue={transactionSettings?.destinationAddress}
+                spellCheck={false}
+                onChange={e => {
+                  actions.app.setTransactionSettings({
+                    ...transactionSettings,
+                    destinationAddress: e.target.value.toLowerCase()
+                  })
+                }}
+              />
+            </div>
+          </>
+        )}
+        {isSmartContractWallet && advancedSettingsError && (
+          <span className="text-xs text-red-400">{advancedSettingsError}</span>
+        )}
+      </div>
 
       <Dialog
         closeable

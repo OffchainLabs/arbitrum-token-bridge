@@ -3,7 +3,11 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
+import {
+  ExternalProvider,
+  JsonRpcProvider,
+  Web3Provider
+} from '@ethersproject/providers'
 
 import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
@@ -106,6 +110,11 @@ export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
 
 export const l2LptGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
+}
+
+export async function addressIsEOA(address: string, provider: JsonRpcProvider) {
+  console.log((await provider.getCode(address)).length)
+  return (await provider.getCode(address)).length <= 2
 }
 
 // Default L2 Chain to use for a certain chainId
