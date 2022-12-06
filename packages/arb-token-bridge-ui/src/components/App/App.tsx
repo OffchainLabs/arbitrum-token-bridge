@@ -178,11 +178,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
           return WalletType.EOA
         }
 
-        // TODO: Remove this comment after questions answered!
-        // QUESTION 1: Is this true that only 1 address is required to be smart contract?
-        // Since destination address is specified my reasoning is it's enough for just
-        // L1 to be SC for deposits, and L2 for withdrawals.
-
         // Only 1 address is SC. No need to compare owners.
         if (!l1AddressIsSmartContract || !l2AddressIsSmartContract) {
           return WalletType.SUPPORTED_CONTRACT_WALLET
