@@ -19,13 +19,13 @@ import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
-  addressIsEOA,
   ChainId,
   getNetworkName,
   isNetwork,
   switchChain
 } from '../../util/networks'
-import { WalletType } from '../../util'
+import { addressIsSmartContract } from '../../util/AddressUtils'
+import { AccountType } from '../../util'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -331,16 +331,20 @@ export enum TransferPanelMainErrorMessage {
 export function TransferPanelMain({
   amount,
   setAmount,
-  errorMessage
+  errorMessage,
+  destinationAddress,
+  setDestinationAddress
 }: {
   amount: string
   setAmount: (value: string) => void
   errorMessage?: TransferPanelMainErrorMessage
+  destinationAddress: string
+  setDestinationAddress: React.Dispatch<React.SetStateAction<string>>
 }) {
   const history = useHistory()
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum, accountType } = useNetworksAndSigners()
 
   const { provider } = useWallet()
 
@@ -348,13 +352,7 @@ export function TransferPanelMain({
   const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
-  const {
-    arbTokenBridge,
-    isDepositMode,
-    selectedToken,
-    transactionSettings,
-    walletType
-  } = app
+  const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
   const {
@@ -366,7 +364,7 @@ export function TransferPanelMain({
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isSmartContractWallet =
-    walletType === WalletType.SUPPORTED_CONTRACT_WALLET
+    accountType === AccountType.SMART_CONTRACT_WALLET
 
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
@@ -413,14 +411,13 @@ export function TransferPanelMain({
   useEffect(() => {
     const getErrors = async () => {
       try {
-        const address = String(transactionSettings?.destinationAddress)
-        const isDestinationAddressSmartContract = !(await addressIsEOA(
-          address,
+        const isDestinationAddressSmartContract = await addressIsSmartContract(
+          destinationAddress,
           isDepositMode ? l2.provider : l1.provider
-        ))
+        )
         if (
           // Destination address is not required for EOA wallets
-          (!isSmartContractWallet && !address) ||
+          (!isSmartContractWallet && !destinationAddress) ||
           // Make sure address type matches the connected wallet type
           isSmartContractWallet === isDestinationAddressSmartContract
         ) {
@@ -439,7 +436,7 @@ export function TransferPanelMain({
     l2.provider,
     isDepositMode,
     isSmartContractWallet,
-    transactionSettings?.destinationAddress
+    destinationAddress
   ])
 
   const maxButtonVisible = useMemo(() => {
@@ -875,14 +872,11 @@ export function TransferPanelMain({
               <input
                 className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
                 placeholder="Enter destination address"
-                defaultValue={transactionSettings?.destinationAddress}
+                defaultValue={destinationAddress}
                 spellCheck={false}
-                onChange={e => {
-                  actions.app.setTransactionSettings({
-                    ...transactionSettings,
-                    destinationAddress: e.target.value.toLowerCase()
-                  })
-                }}
+                onChange={e =>
+                  setDestinationAddress(e.target.value.toLowerCase())
+                }
               />
             </div>
           </>

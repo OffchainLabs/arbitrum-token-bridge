@@ -29,6 +29,8 @@ import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
+import { AccountType } from '../util'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -72,6 +74,7 @@ export type UseNetworksAndSignersConnectedResult = {
   }
   isConnectedToArbitrum: boolean
   chainId: number // the current chainId which is connected to UI
+  accountType: AccountType
 }
 
 export type UseNetworksAndSignersResult =
@@ -258,7 +261,10 @@ export function NetworksAndSignersProvider(
               provider: l2Provider
             },
             isConnectedToArbitrum: false,
-            chainId: l1Network.chainID
+            chainId: l1Network.chainID,
+            accountType: (await addressIsSmartContract(address!, l1Provider))
+              ? AccountType.SMART_CONTRACT_WALLET
+              : AccountType.EOA
           })
         })
         .catch(() => {
@@ -296,7 +302,13 @@ export function NetworksAndSignersProvider(
                   provider: l2Provider
                 },
                 isConnectedToArbitrum: true,
-                chainId: l2Network.chainID
+                chainId: l2Network.chainID,
+                accountType: (await addressIsSmartContract(
+                  address!,
+                  l1Provider
+                ))
+                  ? AccountType.SMART_CONTRACT_WALLET
+                  : AccountType.EOA
               })
             })
             .catch(() => {

@@ -20,11 +20,7 @@ import {
 } from 'token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
-import {
-  ConnectionState,
-  PendingWithdrawalsLoadedState,
-  WalletType
-} from '../../util'
+import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 
 export enum WhiteListState {
   VERIFYING,
@@ -100,10 +96,6 @@ export interface WarningTokens {
   }
 }
 
-export interface TransactionSettings {
-  destinationAddress?: string
-}
-
 const outgoungStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
@@ -114,11 +106,9 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  walletType: number
   verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
-  transactionSettings: TransactionSettings | null
   sortedTransactions: Transaction[]
   pendingTransactions: Transaction[]
   l1DepositsWithUntrackedL2Messages: Transaction[]
@@ -138,13 +128,11 @@ export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
-  walletType: WalletType.EOA,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
-  transactionSettings: null,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
     return [...transactions]

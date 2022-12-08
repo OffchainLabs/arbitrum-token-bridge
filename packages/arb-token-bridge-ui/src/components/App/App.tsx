@@ -6,7 +6,7 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState, gnosisInterface, WalletType } from '../../util'
+import { ConnectionState, gnosisInterface, AccountType } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import { Contract } from 'ethers'
 import Loader from 'react-loader-spinner'
@@ -32,7 +32,7 @@ import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
-import { addressIsEOA } from '../../util/networks'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
@@ -67,9 +67,9 @@ declare global {
 }
 
 const AppContent = (): JSX.Element => {
-  const { l1, chainId } = useNetworksAndSigners()
+  const { l1, chainId, accountType } = useNetworksAndSigners()
   const {
-    app: { connectionState, walletType }
+    app: { connectionState }
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
@@ -94,10 +94,6 @@ const AppContent = (): JSX.Element => {
         maintenance. Thanks for your patience!
       </Alert>
     )
-  }
-
-  if (walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET) {
-    return <Alert type="red">Unsupported Contract Wallet!</Alert>
   }
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
@@ -158,76 +154,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
-      const { signer: l1Signer, provider: l1Provider } = l1
-      const { signer: l2Signer, provider: l2Provider } = l2
+      const { signer: l1Signer } = l1
 
       const l1Address = await l1Signer.getAddress()
-      const l2Address = await l2Signer.getAddress()
-
-      const walletType: WalletType = await (async () => {
-        const l1AddressIsSmartContract = !(await addressIsEOA(
-          l1Address,
-          l1Provider
-        ))
-        const l2AddressIsSmartContract = !(await addressIsEOA(
-          l2Address,
-          l2Provider
-        ))
-
-        if (!l1AddressIsSmartContract && !l2AddressIsSmartContract) {
-          return WalletType.EOA
-        }
-
-        // Only 1 address is SC. No need to compare owners.
-        if (!l1AddressIsSmartContract || !l2AddressIsSmartContract) {
-          return WalletType.SUPPORTED_CONTRACT_WALLET
-        }
-
-        // check if gnosis / gnosis like wallet w/ same L1 & L2 address & same owners
-        if (l1Address !== l2Address) {
-          console.warn(
-            `SC wallet error: wallets have different addresses: l1: ${l1Address}; l2: ${l2Address} `
-          )
-          return WalletType.UNSUPPORTED_CONTRACT_WALLET
-        }
-
-        try {
-          const l1Contract = new Contract(
-            l1Address,
-            gnosisInterface,
-            l1Provider
-          )
-          const l1Owners: string[] = [...(await l1Contract.getOwners())].sort()
-
-          const l2Contract = new Contract(
-            l2Address,
-            gnosisInterface,
-            l2Provider
-          )
-          const l2Owners: string[] = [...(await l2Contract.getOwners())].sort()
-
-          const walletsHaveSameOwners =
-            JSON.stringify(l1Owners) === JSON.stringify(l2Owners)
-
-          if (!walletsHaveSameOwners) {
-            console.warn(
-              `SC wallet error; owners don't match:`,
-              l1Owners,
-              l2Owners
-            )
-          }
-
-          return walletsHaveSameOwners
-            ? WalletType.SUPPORTED_CONTRACT_WALLET
-            : WalletType.UNSUPPORTED_CONTRACT_WALLET
-        } catch (err) {
-          console.warn('CONNECTION ERROR', err)
-          actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
-          return WalletType.UNSUPPORTED_CONTRACT_WALLET
-        }
-      })()
-
-      actions.app.setWalletType(walletType)
 
       setTokenBridgeParams({
         walletAddress: l1Address,

@@ -8,10 +8,9 @@ export enum ConnectionState {
   NETWORK_ERROR
 }
 
-export enum WalletType {
+export enum AccountType {
   EOA,
-  SUPPORTED_CONTRACT_WALLET,
-  UNSUPPORTED_CONTRACT_WALLET
+  SMART_CONTRACT_WALLET
 }
 
 export enum PendingWithdrawalsLoadedState {

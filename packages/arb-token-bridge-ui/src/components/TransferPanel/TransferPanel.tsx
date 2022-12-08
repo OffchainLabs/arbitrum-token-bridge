@@ -8,13 +8,9 @@ import { twMerge } from 'tailwind-merge'
 
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
-import { ConnectionState, WalletType } from '../../util'
-import {
-  switchChain,
-  getNetworkName,
-  isNetwork,
-  addressIsEOA
-} from '../../util/networks'
+import { ConnectionState, AccountType } from '../../util'
+import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -90,18 +86,17 @@ export function TransferPanel() {
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
-  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
+  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(true)
+  const [destinationAddress, setDestinationAddress] = useState('')
 
   const {
     app: {
       connectionState,
-      walletType,
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token, walletAddress },
       arbTokenBridge,
-      transactionSettings,
       warningTokens
     }
   } = useAppState()
@@ -114,7 +109,8 @@ export function TransferPanel() {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider }
+    l2: { network: l2Network, provider: l2Provider },
+    accountType
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
@@ -127,7 +123,7 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const isSmartContractWallet =
-    walletType === WalletType.SUPPORTED_CONTRACT_WALLET
+    accountType === AccountType.SMART_CONTRACT_WALLET
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -317,8 +313,7 @@ export function TransferPanel() {
   const transfer = async () => {
     if (
       latestNetworksAndSigners.current.status !==
-        UseNetworksAndSignersStatus.CONNECTED ||
-      walletType === WalletType.UNSUPPORTED_CONTRACT_WALLET
+      UseNetworksAndSignersStatus.CONNECTED
     ) {
       return
     }
@@ -329,18 +324,23 @@ export function TransferPanel() {
       return
     }
 
+    // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
+    const showDelayedSCTxRequest = () =>
+      setTimeout(() => {
+        setTransferring(false)
+        setShowSCWalletTooltip(true)
+      }, 3000)
+
     const setTransferring = (payload: boolean) =>
       dispatch({ type: 'layout.set_is_transferring', payload })
 
     setTransferring(true)
 
-    const destinationAddress = String(transactionSettings?.destinationAddress)
-
     try {
-      const isDestinationAddressSmartContract = !(await addressIsEOA(
+      const isDestinationAddressSmartContract = await addressIsSmartContract(
         destinationAddress,
         isDepositMode ? l2Provider : l1Provider
-      ))
+      )
 
       if (
         // Invalid address
@@ -449,8 +449,7 @@ export function TransferPanel() {
           }
 
           if (isSmartContractWallet) {
-            setShowSCWalletTooltip(true)
-            setTransferring(false)
+            showDelayedSCTxRequest()
           }
 
           await latestToken.current.deposit({
@@ -540,8 +539,7 @@ export function TransferPanel() {
             )
             if (!allowed) {
               if (isSmartContractWallet) {
-                setShowSCWalletTooltip(true)
-                setTransferring(false)
+                showDelayedSCTxRequest()
               }
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
@@ -551,8 +549,7 @@ export function TransferPanel() {
           }
 
           if (isSmartContractWallet) {
-            setShowSCWalletTooltip(true)
-            setTransferring(false)
+            showDelayedSCTxRequest()
           }
 
           await latestToken.current.withdraw({
@@ -701,8 +698,7 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet &&
-        !isAddress(String(transactionSettings?.destinationAddress))) ||
+      (isSmartContractWallet && !isAddress(destinationAddress)) ||
       (isSmartContractWallet && !selectedToken)
     )
   }, [
@@ -713,7 +709,7 @@ export function TransferPanel() {
     l1Balance,
     isBridgingANewStandardToken,
     selectedToken,
-    transactionSettings,
+    destinationAddress,
     isSmartContractWallet
   ])
 
@@ -746,8 +742,7 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet &&
-        !isAddress(String(transactionSettings?.destinationAddress))) ||
+      (isSmartContractWallet && !isAddress(destinationAddress)) ||
       (isSmartContractWallet && !selectedToken)
     )
   }, [
@@ -757,7 +752,7 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    transactionSettings?.destinationAddress
+    destinationAddress
   ])
 
   // TODO: Refactor this and the property above
@@ -821,24 +816,6 @@ export function TransferPanel() {
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
-      {showSCWalletTooltip && (
-        <Tippy
-          placement="top-end"
-          maxWidth="auto"
-          theme="light"
-          onClickOutside={() => setShowSCWalletTooltip(false)}
-          visible={showSCWalletTooltip}
-          content={
-            <span>
-              To continue, please approve tx on Gnosis. If you have n of k
-              signers, then n of k will need to sign on Gnosis.
-            </span>
-          }
-        >
-          <span />
-        </Tippy>
-      )}
-
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
         <TransferPanelMain
           amount={amount}
@@ -848,6 +825,8 @@ export function TransferPanel() {
               ? getErrorMessage(amount, l1Balance)
               : getErrorMessage(amount, l2Balance)
           }
+          destinationAddress={destinationAddress}
+          setDestinationAddress={setDestinationAddress}
         />
 
         <div className="border-r border-gray-3" />
@@ -901,7 +880,9 @@ export function TransferPanel() {
                 isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
               )}
             >
-              Move funds to {getNetworkName(l2Network.chainID)}
+              {isSmartContractWallet && isTransferring
+                ? 'Sending request...'
+                : `Move funds to ${getNetworkName(l2Network.chainID)}`}
             </Button>
           ) : (
             <Button
@@ -911,7 +892,9 @@ export function TransferPanel() {
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
-              Move funds to {getNetworkName(l1Network.chainID)}
+              {isSmartContractWallet && isTransferring
+                ? 'Sending request...'
+                : `Move funds to ${getNetworkName(l1Network.chainID)}`}
             </Button>
           )}
         </div>
@@ -931,6 +914,32 @@ export function TransferPanel() {
           type={tokenDepositCheckDialogType}
           symbol={selectedToken ? selectedToken.symbol : 'ETH'}
         />
+
+        {showSCWalletTooltip && (
+          <Tippy
+            placement="bottom-end"
+            maxWidth="auto"
+            onClickOutside={() => setShowSCWalletTooltip(false)}
+            theme="orange"
+            visible={showSCWalletTooltip}
+            content={
+              <div className="flex flex-col">
+                <span>
+                  <b>
+                    To continue, please approve tx on your smart contract
+                    wallet.
+                  </b>
+                </span>
+                <span>
+                  If you have n of k signers, then n of k will need to sign.
+                </span>
+              </div>
+            }
+          >
+            {/* Override margin coming from Tippy that causes layout disruptions */}
+            <div className="!m-0" />
+          </Tippy>
+        )}
       </div>
     </>
   )
