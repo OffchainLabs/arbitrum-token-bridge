@@ -282,7 +282,7 @@ export function TransferPanel() {
       } else {
         const isUserAddedToken =
           selectedToken &&
-          typeof selectedToken.listID === 'undefined' &&
+          selectedToken?.listIds.size === 0 &&
           typeof selectedToken.l2Address === 'undefined'
 
         if (isUserAddedToken) {
