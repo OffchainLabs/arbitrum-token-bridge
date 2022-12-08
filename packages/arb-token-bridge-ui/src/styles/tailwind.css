@@ -113,7 +113,7 @@ input:checked + .slider:before {
 }
 
 /* Tippy themes */
-.tippy-box[data-theme~=orange] {
+/* .tippy-box[data-theme~=orange] {
   background-color: #ffeed3;
   color: #ffeed3;
 }
@@ -124,7 +124,7 @@ input:checked + .slider:before {
 
 .tippy-box[data-theme~=orange] > .tippy-content {
   color: #60461F;
-}
+} */
 
 /*
   TODO:
