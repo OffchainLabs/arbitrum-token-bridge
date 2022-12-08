@@ -113,16 +113,16 @@ input:checked + .slider:before {
 }
 
 /* Tippy themes */
-.tippy-box[data-theme=orange] {
+.tippy-box[data-theme="orange"] {
   background-color: #ffeed3;
   color: #ffeed3;
 }
 
-.tippy-box[data-theme=orange] > .tippy-arrow {
+.tippy-box[data-theme="orange"] > .tippy-arrow {
   color: inherit;
 }
 
-.tippy-box[data-theme=orange] > .tippy-content {
+.tippy-box[data-theme="orange"] > .tippy-content {
   color: #60461F;
 }
 
