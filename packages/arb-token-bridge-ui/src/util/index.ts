@@ -1,5 +1,3 @@
-import { utils } from 'ethers'
-
 export enum ConnectionState {
   LOADING,
   L1_CONNECTED,
@@ -18,10 +16,6 @@ export enum PendingWithdrawalsLoadedState {
   READY,
   ERROR
 }
-
-export const gnosisInterface = new utils.Interface([
-  'function getOwners() view returns (address[])'
-])
 
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {

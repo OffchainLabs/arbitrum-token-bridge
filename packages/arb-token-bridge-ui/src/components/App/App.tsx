@@ -6,9 +6,8 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
-import { ConnectionState, gnosisInterface, AccountType } from '../../util'
+import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import { Contract } from 'ethers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
@@ -32,7 +31,6 @@ import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus,
@@ -67,7 +65,7 @@ declare global {
 }
 
 const AppContent = (): JSX.Element => {
-  const { l1, chainId, accountType } = useNetworksAndSigners()
+  const { l1, chainId } = useNetworksAndSigners()
   const {
     app: { connectionState }
   } = useAppState()
