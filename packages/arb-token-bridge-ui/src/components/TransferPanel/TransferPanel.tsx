@@ -86,7 +86,7 @@ export function TransferPanel() {
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
-  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(true)
+  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
   const [destinationAddress, setDestinationAddress] = useState('')
 
   const {
