@@ -231,7 +231,7 @@ export const ExploreArbitrumContent = {
       name: 'OpenSea',
       description:
         "Explore the world's first and largest web3 marketplace for NFTs and crypto collectibles. Browse, create, buy, sell, and auction NFTs.",
-      href: 'https://opensea.io/fr',
+      href: 'https://opensea.io',
       imageSrc: '/images/explore-arbitrum/nft/opensea.webp'
     }
   ]
