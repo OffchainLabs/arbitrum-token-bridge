@@ -226,6 +226,13 @@ export const ExploreArbitrumContent = {
         'Play to own assets in the metaverse; buy land, build farms, harvest, build your own world',
       href: 'https://farmland-game.github.io',
       imageSrc: '/images/explore-arbitrum/nft/farmland.webp'
+    },
+    {
+      name: 'OpenSea',
+      description:
+        "Explore the world's first and largest web3 marketplace for NFTs and crypto collectibles. Browse, create, buy, sell, and auction NFTs.",
+      href: 'https://opensea.io/fr',
+      imageSrc: '/images/explore-arbitrum/nft/opensea.webp'
     }
   ]
 } as const
