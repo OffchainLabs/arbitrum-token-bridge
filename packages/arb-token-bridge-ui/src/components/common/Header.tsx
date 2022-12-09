@@ -44,28 +44,16 @@ const learnMenuProps = toHeaderMenuProps([
 
 const explorersMenuProps = toHeaderMenuProps([
   {
-    title: 'Arbitrum One (Arbiscan)',
+    title: 'Arbitrum One',
     link: 'https://arbiscan.io'
   },
   {
-    title: 'Arbitrum One (BlockScout)',
-    link: 'https://explorer.arbitrum.io'
-  },
-  {
-    title: 'Arbitrum Nova (Arbiscan)',
+    title: 'Arbitrum Nova',
     link: 'https://nova.arbiscan.io'
   },
   {
-    title: 'Arbitrum Nova (BlockScout)',
-    link: 'https://nova-explorer.arbitrum.io'
-  },
-  {
-    title: 'Arbitrum Goerli (Arbiscan)',
+    title: 'Arbitrum Goerli',
     link: 'https://goerli.arbiscan.io'
-  },
-  {
-    title: 'Arbitrum Goerli (BlockScout)',
-    link: 'https://goerli-rollup-explorer.arbitrum.io'
   }
 ])
 
