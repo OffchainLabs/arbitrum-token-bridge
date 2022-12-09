@@ -314,8 +314,8 @@ export function TokenImportDialog({
 
         {status === ImportStatus.KNOWN_UNIMPORTED && (
           <span>
-            This token hasn't been imported yet but appears on a token list. Are
-            you sure you want to import it?
+            This token hasn&apos;t been imported yet but appears on a token
+            list. Are you sure you want to import it?
           </span>
         )}
 
@@ -327,7 +327,7 @@ export function TokenImportDialog({
             />
             <div className="flex flex-col">
               <span>
-                This token isn't found on an active token list.
+                This token isn&apos;t found on an active token list.
                 <br />
                 Make sure you trust the source that led you here.
               </span>
@@ -364,20 +364,23 @@ export function TokenImportDialog({
                 theme="light"
                 content={
                   <div>
-                    This token address doesn't exist in any of the token lists
-                    we have. This doesn't mean it's not good, it just means{' '}
+                    This token address doesn&apos;t exist in any of the token
+                    lists we have. This doesn&apos;t mean it&apos;s not good, it
+                    just means{' '}
                     <span className="font-bold">proceed with caution.</span>
                     <br />
                     <br />
-                    It's easy to impersonate the name of any token, including
-                    ETH. Make sure you trust the source it came from. If it's a
-                    popular token, there's a good chance we have it on our list.
-                    If it's a smaller or newer token, it's reasonable to believe
-                    we might not have it.
+                    It&apos;s easy to impersonate the name of any token,
+                    including ETH. Make sure you trust the source it came from.
+                    If it&apos;s a popular token, there&apos;s a good chance we
+                    have it on our list. If it&apos;s a smaller or newer token,
+                    it&apos;s reasonable to believe we might not have it.
                   </div>
                 }
               >
-                <span className="cursor-pointer underline">I'm confused</span>
+                <span className="cursor-pointer underline">
+                  I&apos;m confused
+                </span>
               </Tippy>
             </div>
           )}

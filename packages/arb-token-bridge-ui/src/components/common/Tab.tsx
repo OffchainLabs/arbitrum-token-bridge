@@ -1,8 +1,10 @@
-import { forwardRef } from 'react'
+import { forwardRef, PropsWithChildren } from 'react'
 
-export type TabButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  selected: boolean
-}
+export type TabButtonProps = PropsWithChildren<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    selected: boolean
+  }
+>
 
 export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
   (props, ref) => {
@@ -21,3 +23,5 @@ export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
     )
   }
 )
+
+TabButton.displayName = 'TabButton'

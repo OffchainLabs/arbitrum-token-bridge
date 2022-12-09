@@ -5,6 +5,7 @@ import { Popover, Tab } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ExternalLinkIcon,
+  InformationCircleIcon,
   LogoutIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -252,8 +253,14 @@ export function HeaderAccountPopover() {
             </div>
           </div>
           <div className="flex-grow overflow-y-scroll bg-white lg:rounded-bl-md lg:rounded-br-md lg:p-4">
-            <div className="px-4 py-2 lg:px-0 lg:py-0 lg:pb-2">
+            <div className="flex flex-col space-y-1 px-4 py-2 lg:px-0 lg:py-0 lg:pb-2">
               <span>Transaction History</span>
+              <div className="flex flex-row items-center space-x-1">
+                <InformationCircleIcon className="h-5 w-5 text-gray-10" />
+                <span className="text-sm font-light text-gray-10">
+                  Withdrawals older than one year are currently not displayed.
+                </span>
+              </div>
             </div>
             <Tab.Group>
               <Tab.List>

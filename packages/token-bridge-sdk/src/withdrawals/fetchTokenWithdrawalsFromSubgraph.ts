@@ -24,6 +24,15 @@ export type FetchTokenWithdrawalsFromSubgraphResult = L2ToL1TransactionEvent & {
   tokenAddress: string
 }
 
+// TODO: We could move this as it might be useful elsewhere
+function filterOutNullValuesFromArray<TNotNull>(
+  array: (TNotNull | null)[]
+): TNotNull[] {
+  return array.filter(
+    (element: TNotNull | null): element is TNotNull => element !== null
+  )
+}
+
 /**
  * Fetches initiated token withdrawals from subgraph in range of [fromBlock, toBlock].
  *
@@ -67,13 +76,21 @@ export async function fetchTokenWithdrawalsFromSubgraph({
       `
   })
 
-  const result: FetchTokenWithdrawalsFromSubgraphResult[] = await Promise.all(
-    queryResult.data.gatewayWithdrawalDatas
-      .map(async data => {
+  const result: (FetchTokenWithdrawalsFromSubgraphResult | null)[] =
+    await Promise.all(
+      queryResult.data.gatewayWithdrawalDatas.map(async data => {
         const { l2TxHash, amount: amountStringified } = data
         const amount = BigNumber.from(amountStringified)
 
         const txReceipt = await l2Provider.getTransactionReceipt(l2TxHash)
+
+        // It's possible we can't fetch the receipt due to it being too old, and only available through an archival node
+        //
+        // TODO: Re-enable once we can support this
+        if (txReceipt === null) {
+          return null
+        }
+
         const l2TxReceipt = new L2TransactionReceipt(txReceipt)
 
         const [l2ToL1Event] = l2TxReceipt.getL2ToL1Events()
@@ -91,13 +108,7 @@ export async function fetchTokenWithdrawalsFromSubgraph({
           tokenAddress
         }
       })
-      .filter(
-        (
-          promise
-        ): promise is Promise<FetchTokenWithdrawalsFromSubgraphResult> =>
-          promise !== null
-      )
-  )
+    )
 
-  return result
+  return filterOutNullValuesFromArray(result)
 }

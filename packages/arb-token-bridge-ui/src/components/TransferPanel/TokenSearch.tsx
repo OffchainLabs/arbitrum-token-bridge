@@ -4,6 +4,7 @@ import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
+import { constants } from 'ethers'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -16,13 +17,12 @@ import { formatAmount } from '../../util/NumberUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
-  SearchableToken,
   useTokensFromLists,
   useTokensFromUser,
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
 
 enum Panel {
@@ -52,13 +52,13 @@ function shortenAddress(address: string) {
 interface TokenRowProps {
   style?: React.CSSProperties
   onClick: React.MouseEventHandler<HTMLButtonElement>
-  token: SearchableToken | null
+  token: ERC20BridgeToken | null
 }
 
 function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, balances, walletAddress },
+      arbTokenBridge: { bridgeTokens, walletAddress },
       isDepositMode
     }
   } = useAppState()
@@ -71,10 +71,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
 
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: l1Provider, walletAddress })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
@@ -94,28 +96,42 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
-    return isDepositMode
-      ? balances?.erc20[token.address]?.balance
-      : balances?.erc20[token.address]?.arbChainBalance
-  }, [ethL1Balance, ethL2Balance, token, isDepositMode, balances])
+    if (isDepositMode) {
+      return erc20L1Balances?.[token.address.toLowerCase()]
+    }
+
+    if (!token.l2Address) {
+      return constants.Zero
+    }
+
+    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
+  }, [
+    ethL1Balance,
+    ethL2Balance,
+    token,
+    isDepositMode,
+    erc20L1Balances,
+    erc20L2Balances
+  ])
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
       return null
     }
 
-    const tokenLists = token.tokenLists
-
-    if (tokenLists.length === 0) {
+    const listIds: Set<number> = token.listIds
+    const listIdsSize = listIds.size
+    if (listIdsSize === 0) {
       return 'Added by User'
     }
 
-    if (tokenLists.length < 2) {
-      return tokenListIdsToNames(tokenLists)
+    const listIdsArray = Array.from(listIds)
+    if (listIdsSize < 2) {
+      return tokenListIdsToNames(listIdsArray)
     }
 
-    const firstList = tokenLists.slice(0, 1)
-    const more = tokenLists.length - 1
+    const firstList = listIdsArray.slice(0, 1)
+    const more = listIdsSize - 1
 
     return (
       tokenListIdsToNames(firstList) +
@@ -208,7 +224,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                     </a>
                   ) : (
                     <span className="text-xs text-gray-900">
-                      This token hasn't been bridged to L2
+                      This token hasn&apos;t been bridged to L2
                     </span>
                   )}
                 </>
@@ -290,7 +306,7 @@ function TokenListsPanel() {
       {listsToShow.map(tokenList => {
         const isActive = Object.keys(bridgeTokens).some(address => {
           const token = bridgeTokens[address]
-          return !!(token && tokenList.id === token.listID)
+          return token?.listIds.has(tokenList?.id)
         })
 
         return (
@@ -325,11 +341,11 @@ const ETH_IDENTIFIER = 'eth.address'
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (token: SearchableToken | null) => void
+  onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
   const {
     app: {
-      arbTokenBridge: { balances, token, walletAddress },
+      arbTokenBridge: { token, walletAddress, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -339,10 +355,12 @@ function TokensPanel({
   } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({ provider: L1Provider, walletAddress })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
   const tokensFromUser = useTokensFromUser()
@@ -360,17 +378,30 @@ function TokensPanel({
         return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
-      return isDepositMode
-        ? balances?.erc20[address]?.balance
-        : balances?.erc20[address]?.arbChainBalance
+      if (isDepositMode) {
+        return erc20L1Balances?.[address.toLowerCase()]
+      }
+
+      if (typeof bridgeTokens === 'undefined') {
+        return null
+      }
+
+      const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
+      return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
-    [ethL1Balance, ethL2Balance, isDepositMode, balances]
+    [
+      bridgeTokens,
+      erc20L1Balances,
+      erc20L2Balances,
+      ethL1Balance,
+      ethL2Balance,
+      isDepositMode
+    ]
   )
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-
-    return [
+    const tokens = [
       ETH_IDENTIFIER,
       // Deduplicate addresses
       ...new Set([
@@ -378,7 +409,8 @@ function TokensPanel({
         ...Object.keys(tokensFromLists)
       ])
     ]
-      .filter((address: string) => {
+    return tokens
+      .filter(address => {
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH
@@ -515,7 +547,7 @@ function TokensPanel({
                   )
                 }
 
-                let token: SearchableToken | null = null
+                let token: ERC20BridgeToken | null = null
                 if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
@@ -557,7 +589,7 @@ export function TokenSearch({
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
-  async function selectToken(_token: SearchableToken | null) {
+  async function selectToken(_token: ERC20BridgeToken | null) {
     close()
 
     if (_token === null) {
