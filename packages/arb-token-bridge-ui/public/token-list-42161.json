@@ -852,18 +852,18 @@
       "decimals": 18,
       "logoURI": "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1608145566",
       "extensions": {
-          "bridgeInfo": {
-              "1": {
-                  "tokenAddress": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
-                  "originBridgeAddress": "0x65E1a5e8946e7E87d9774f5288f41c30a99fD302",
-                  "destBridgeAddress": "0x01cdc91b0a9ba741903aa3699bf4ce31d6c5cc06"
-              }
+        "bridgeInfo": {
+          "1": {
+            "tokenAddress": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
+            "originBridgeAddress": "0x65E1a5e8946e7E87d9774f5288f41c30a99fD302",
+            "destBridgeAddress": "0x01cdc91b0a9ba741903aa3699bf4ce31d6c5cc06"
           }
+        }
       },
       "l1Address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
       "l2GatewayAddress": "0x65E1a5e8946e7E87d9774f5288f41c30a99fD302",
       "l1GatewayAddress": "0x01cdc91b0a9ba741903aa3699bf4ce31d6c5cc06"
-  },
+    },
     {
       "logoURI": "https://etherscan.io/token/images/impermax_32.png",
       "chainId": 42161,
