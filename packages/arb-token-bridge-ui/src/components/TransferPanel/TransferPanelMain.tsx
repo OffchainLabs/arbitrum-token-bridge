@@ -402,9 +402,17 @@ export function TransferPanelMain({
   }, [amount, setMaxAmount, setQueryParams])
 
   useEffect(
+    // Show on page load if SC wallet since destination address mandatory
     () => setShowAdvancedSettings(isSmartContractWallet),
     [isSmartContractWallet]
   )
+
+  useEffect(() => {
+    // Different destination address only allowed for tokens
+    if (!selectedToken) {
+      setDestinationAddress('')
+    }
+  }, [selectedToken])
 
   useEffect(() => {
     const getErrors = async () => {
@@ -846,44 +854,50 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      <div className="mt-6">
-        <button
-          onClick={() =>
-            // Keep visible for SC wallets since destination address is mandatory
-            !isSmartContractWallet &&
-            setShowAdvancedSettings(!showAdvancedSettings)
-          }
-          className="flex flex-row items-center"
-        >
-          <span className=" text-lg">Advanced Settings</span>
-          {showAdvancedSettings ? (
-            <ChevronUpIcon className="ml-1 h-4 w-4" />
-          ) : (
-            <ChevronDownIcon className="ml-1 h-4 w-4" />
+      {/* Only allow different destination address for tokens */}
+      {selectedToken && (
+        <div className="mt-6">
+          <button
+            onClick={() =>
+              // Keep visible for SC wallets since destination address is mandatory
+              !isSmartContractWallet &&
+              setShowAdvancedSettings(!showAdvancedSettings)
+            }
+            className="flex flex-row items-center"
+          >
+            <span className=" text-lg">Advanced Settings</span>
+            {showAdvancedSettings ? (
+              <ChevronUpIcon className="ml-1 h-4 w-4" />
+            ) : (
+              <ChevronDownIcon className="ml-1 h-4 w-4" />
+            )}
+          </button>
+          {showAdvancedSettings && (
+            <>
+              <div className="mt-2">
+                <span className="text-md text-gray-10">
+                  Destination Address
+                  {!isSmartContractWallet ? ' (optional)' : ''}
+                </span>
+                <input
+                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                  placeholder="Enter destination address"
+                  defaultValue={destinationAddress}
+                  spellCheck={false}
+                  onChange={e =>
+                    setDestinationAddress(e.target.value.toLowerCase())
+                  }
+                />
+              </div>
+            </>
           )}
-        </button>
-        {showAdvancedSettings && (
-          <>
-            <div className="mt-2">
-              <span className="text-md text-gray-10">
-                Destination Address{!isSmartContractWallet ? ' (optional)' : ''}
-              </span>
-              <input
-                className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
-                placeholder="Enter destination address"
-                defaultValue={destinationAddress}
-                spellCheck={false}
-                onChange={e =>
-                  setDestinationAddress(e.target.value.toLowerCase())
-                }
-              />
-            </div>
-          </>
-        )}
-        {isSmartContractWallet && advancedSettingsError && (
-          <span className="text-xs text-red-400">{advancedSettingsError}</span>
-        )}
-      </div>
+          {isSmartContractWallet && advancedSettingsError && (
+            <span className="text-xs text-red-400">
+              {advancedSettingsError}
+            </span>
+          )}
+        </div>
+      )}
 
       <Dialog
         closeable
