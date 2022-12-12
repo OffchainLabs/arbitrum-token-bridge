@@ -15,6 +15,21 @@ const L2SubgraphClient = {
   })
 }
 
+export const L1SubgraphClient = {
+  ArbitrumOne: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nitro',
+    cache: new InMemoryCache()
+  }),
+  ArbitrumNova: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
+    cache: new InMemoryCache()
+  }),
+  ArbitrumGoerli: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli',
+    cache: new InMemoryCache()
+  })
+}
+
 export function getL2SubgraphClient(l2ChainId: number) {
   switch (l2ChainId) {
     case 42161:
