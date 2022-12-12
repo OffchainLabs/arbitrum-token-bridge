@@ -1,8 +1,8 @@
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 
 export async function addressIsSmartContract(
   address: string,
-  provider: JsonRpcProvider
+  provider: Provider
 ) {
-  return (await provider.getCode(address)).length > 2
+  return (await provider?.getCode(address)).length > 2 || false
 }

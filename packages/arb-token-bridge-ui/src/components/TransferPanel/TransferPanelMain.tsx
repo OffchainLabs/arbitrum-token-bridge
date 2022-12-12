@@ -344,7 +344,8 @@ export function TransferPanelMain({
   const history = useHistory()
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum, accountType } = useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
+    useNetworksAndSigners()
 
   const { provider } = useWallet()
 
@@ -363,8 +364,6 @@ export function TransferPanelMain({
   } = useBalance({ provider: l2.provider, walletAddress })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
-  const isSmartContractWallet =
-    accountType === AccountType.SMART_CONTRACT_WALLET
 
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
@@ -851,6 +850,7 @@ export function TransferPanelMain({
       <div className="mt-6">
         <button
           onClick={() =>
+            // Keep visible for SC wallets since destination address is mandatory
             !isSmartContractWallet &&
             setShowAdvancedSettings(!showAdvancedSettings)
           }

@@ -110,7 +110,7 @@ export function TransferPanel() {
   const {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider },
-    accountType
+    isSmartContractWallet
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
@@ -121,9 +121,6 @@ export function TransferPanel() {
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
-
-  const isSmartContractWallet =
-    accountType === AccountType.SMART_CONTRACT_WALLET
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -342,16 +339,17 @@ export function TransferPanel() {
         isDepositMode ? l2Provider : l1Provider
       )
 
-      if (
-        // Invalid address
-        (destinationAddress && !isAddress(destinationAddress)) ||
-        // Destination address not matching the connected wallet type
-        (destinationAddress &&
-          isSmartContractWallet !== isDestinationAddressSmartContract)
-      ) {
-        throw new Error(
-          `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
-        )
+      if (destinationAddress) {
+        if (
+          // Invalid address
+          !isAddress(destinationAddress) ||
+          // Destination address not matching the connected wallet type
+          (isSmartContractWallet && !isDestinationAddressSmartContract)
+        ) {
+          throw new Error(
+            `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
+          )
+        }
       }
 
       if (isDepositMode) {

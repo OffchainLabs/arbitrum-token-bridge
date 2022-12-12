@@ -74,7 +74,7 @@ export type UseNetworksAndSignersConnectedResult = {
   }
   isConnectedToArbitrum: boolean
   chainId: number // the current chainId which is connected to UI
-  accountType: AccountType
+  isSmartContractWallet: boolean
 }
 
 export type UseNetworksAndSignersResult =
@@ -262,9 +262,10 @@ export function NetworksAndSignersProvider(
             },
             isConnectedToArbitrum: false,
             chainId: l1Network.chainID,
-            accountType: (await addressIsSmartContract(address!, l1Provider))
-              ? AccountType.SMART_CONTRACT_WALLET
-              : AccountType.EOA
+            isSmartContractWallet: await addressIsSmartContract(
+              address!,
+              l1Provider
+            )
           })
         })
         .catch(() => {
@@ -303,12 +304,10 @@ export function NetworksAndSignersProvider(
                 },
                 isConnectedToArbitrum: true,
                 chainId: l2Network.chainID,
-                accountType: (await addressIsSmartContract(
+                isSmartContractWallet: await addressIsSmartContract(
                   address!,
                   l2Provider
-                ))
-                  ? AccountType.SMART_CONTRACT_WALLET
-                  : AccountType.EOA
+                )
               })
             })
             .catch(() => {

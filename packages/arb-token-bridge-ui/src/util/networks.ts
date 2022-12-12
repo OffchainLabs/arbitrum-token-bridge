@@ -3,11 +3,7 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import {
-  ExternalProvider,
-  JsonRpcProvider,
-  Web3Provider
-} from '@ethersproject/providers'
+import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
