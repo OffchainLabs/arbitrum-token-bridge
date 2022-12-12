@@ -43,7 +43,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     id: 4,
     originChainID: '421611',
     url: 'token-list-421611.json',
-    name: 'Rinkarby Tokens',
+    name: 'ArbRinkeby',
     isDefault: true,
     logoURI:
       'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
@@ -52,7 +52,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     id: 5,
     originChainID: '42161',
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
-    name: 'Arbed CMC List',
+    name: 'Arbed Coinmarketcap List',
     isDefault: false,
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
@@ -78,7 +78,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     id: 8,
     originChainID: '421613',
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
-    name: 'Arbed CMC List',
+    name: 'Arbed Coinmarketcap List',
     isDefault: true,
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
@@ -152,15 +152,18 @@ export function fetchTokenLists(): Promise<void> {
       const tokenListsWithBridgeTokenListId = responses
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
-        .map(({ data }, index) => {
-          const token = BRIDGE_TOKEN_LISTS[index]
-          if (!token) {
+        .map(({ data }) => {
+          const tokenList =
+            data &&
+            BRIDGE_TOKEN_LISTS.find(list => list.name.includes(data.name))
+
+          if (!tokenList) {
             return data
           }
 
           return {
-            l2ChainId: token.originChainID,
-            bridgeTokenListId: token.id,
+            l2ChainId: tokenList.originChainID,
+            bridgeTokenListId: tokenList.id,
             ...data
           }
         })
