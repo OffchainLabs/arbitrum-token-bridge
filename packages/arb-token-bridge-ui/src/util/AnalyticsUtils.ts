@@ -89,6 +89,7 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Explore: NFT Project Click: SmithyDAO': 'KIBVXEXH',
   'Explore: NFT Project Click: Mithical': 'NEMVXNXN',
   'Explore: NFT Project Click: Farmland': 'TJLLNSHG',
+  'Explore: NFT Project Click: OpenSea': 'F5RJY3S0',
   //
   'Explore: Randomize Click': '9M9C7EZ3',
   //
