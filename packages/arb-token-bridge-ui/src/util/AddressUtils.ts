@@ -4,5 +4,5 @@ export async function addressIsSmartContract(
   address: string,
   provider: Provider
 ) {
-  return (await provider?.getCode(address)).length > 2 || false
+  return !!((await provider?.getCode(address)).length > 2)
 }
