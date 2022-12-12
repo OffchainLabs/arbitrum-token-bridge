@@ -88,6 +88,10 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
   const [destinationAddress, setDestinationAddress] = useState('')
+  const [
+    isDestinationAddressSmartContract,
+    setIsDestinationAddressSmartContract
+  ] = useState(false)
 
   const {
     app: {
@@ -169,6 +173,18 @@ export function TransferPanel() {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus])
+
+  useEffect(() => {
+    const getDestinationAddressType = async () => {
+      setIsDestinationAddressSmartContract(
+        await addressIsSmartContract(
+          destinationAddress,
+          isDepositMode ? l2Provider : l1Provider
+        )
+      )
+    }
+    getDestinationAddressType()
+  }, [destinationAddress, isDepositMode, l1Provider, l2Provider])
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -334,11 +350,6 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      const isDestinationAddressSmartContract = await addressIsSmartContract(
-        destinationAddress,
-        isDepositMode ? l2Provider : l1Provider
-      )
-
       if (destinationAddress) {
         if (
           // Invalid address
@@ -696,7 +707,7 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !isAddress(destinationAddress)) ||
+      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
       (isSmartContractWallet && !selectedToken)
     )
   }, [
@@ -707,8 +718,8 @@ export function TransferPanel() {
     l1Balance,
     isBridgingANewStandardToken,
     selectedToken,
-    destinationAddress,
-    isSmartContractWallet
+    isSmartContractWallet,
+    isDestinationAddressSmartContract
   ])
 
   // TODO: Refactor this and the property above
@@ -740,7 +751,7 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !isAddress(destinationAddress)) ||
+      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
       (isSmartContractWallet && !selectedToken)
     )
   }, [
@@ -750,7 +761,7 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    destinationAddress
+    isDestinationAddressSmartContract
   ])
 
   // TODO: Refactor this and the property above
