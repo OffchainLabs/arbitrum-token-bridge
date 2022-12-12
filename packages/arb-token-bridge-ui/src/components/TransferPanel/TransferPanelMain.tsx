@@ -25,7 +25,6 @@ import {
   switchChain
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
-import { AccountType } from '../../util'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'

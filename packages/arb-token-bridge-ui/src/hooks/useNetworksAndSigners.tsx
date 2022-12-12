@@ -29,7 +29,6 @@ import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
-import { AccountType } from '../util'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 export enum UseNetworksAndSignersStatus {

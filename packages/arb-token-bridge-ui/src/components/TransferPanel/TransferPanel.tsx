@@ -8,7 +8,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
-import { ConnectionState, AccountType } from '../../util'
+import { ConnectionState } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'

@@ -6,11 +6,6 @@ export enum ConnectionState {
   NETWORK_ERROR
 }
 
-export enum AccountType {
-  EOA,
-  SMART_CONTRACT_WALLET
-}
-
 export enum PendingWithdrawalsLoadedState {
   LOADING,
   READY,
