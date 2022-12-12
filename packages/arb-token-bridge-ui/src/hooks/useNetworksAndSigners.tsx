@@ -305,7 +305,7 @@ export function NetworksAndSignersProvider(
                 chainId: l2Network.chainID,
                 accountType: (await addressIsSmartContract(
                   address!,
-                  l1Provider
+                  l2Provider
                 ))
                   ? AccountType.SMART_CONTRACT_WALLET
                   : AccountType.EOA
