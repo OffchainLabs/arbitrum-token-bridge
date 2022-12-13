@@ -41,6 +41,9 @@ jobs:
 
       - uses: ./.github/actions/restore-cache
 
+      - name: Build
+        run: yarn build
+
       - name: Run tests
         run: yarn test:ci:sdk
 
@@ -52,6 +55,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - uses: ./.github/actions/restore-cache
+
+      - name: Build
+        run: yarn build
 
       - name: Run tests
         run: yarn test:ci:ui
