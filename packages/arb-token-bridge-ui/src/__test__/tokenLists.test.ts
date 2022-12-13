@@ -4,11 +4,16 @@ import { BRIDGE_TOKEN_LISTS, fetchTokenListFromURL } from '../tokenLists'
  * TODO: Move this test (or a similar one) to the token lists repo
  */
 describe('Token Lists', () => {
+  jest.setTimeout(20_000)
+
   it('validates that all token lists have the proper schema', async () => {
+    const remoteTokenListUrls = BRIDGE_TOKEN_LISTS
+      //
+      .map(tokenList => tokenList.url)
+      .filter(url => !url.startsWith('/'))
+
     const results = await Promise.all(
-      BRIDGE_TOKEN_LISTS.map(bridgeTokenList =>
-        fetchTokenListFromURL(bridgeTokenList.url)
-      )
+      remoteTokenListUrls.map(url => fetchTokenListFromURL(url))
     )
 
     expect(
