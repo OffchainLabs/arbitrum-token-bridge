@@ -60,7 +60,7 @@ jobs:
         run: yarn build
 
       - name: Serve
-        run: yarn serve &
+        run: yarn serve -l 80 &
 
       - name: Run tests
         run: yarn test:ci:ui
