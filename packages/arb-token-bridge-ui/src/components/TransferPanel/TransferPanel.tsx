@@ -331,7 +331,7 @@ export function TransferPanel() {
       return
     }
 
-    // ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
+    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
       return
@@ -465,7 +465,7 @@ export function TransferPanel() {
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
-            destinationAddress,
+            destinationAddress: destinationAddress || undefined,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({

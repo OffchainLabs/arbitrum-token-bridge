@@ -588,7 +588,7 @@ export const useArbTokenBridge = (
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
-      destinationAddress: destinationAddress ?? walletAddress,
+      destinationAddress: destinationAddress || walletAddress,
       amount
     })
 
