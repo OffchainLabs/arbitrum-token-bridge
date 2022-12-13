@@ -4,9 +4,9 @@ import {
   BridgeTokenList,
   ERC20BridgeToken,
   L1TokenData,
-  SearchableTokenStorage,
   TokenListWithId,
-  TokenType
+  TokenType,
+  ContractStorage
 } from '../hooks/arbTokenBridge.types'
 import { validateTokenList } from './index'
 import { TokenList } from '@uniswap/token-lists'
@@ -189,9 +189,9 @@ export function tokenListsToSearchableTokenStorage(
   tokenLists: TokenListWithId[],
   l1ChainId: string,
   l2ChainId: string
-): SearchableTokenStorage {
+): ContractStorage<ERC20BridgeToken> {
   return tokenLists.reduce(
-    (acc: SearchableTokenStorage, tokenList: TokenListWithId) => {
+    (acc: ContractStorage<ERC20BridgeToken>, tokenList: TokenListWithId) => {
       tokenList.tokens.forEach(token => {
         const address = token.address.toLowerCase()
         const stringifiedChainId = String(token.chainId)
@@ -205,7 +205,7 @@ export function tokenListsToSearchableTokenStorage(
               ...token,
               type: TokenType.ERC20,
               l2Address: undefined,
-              tokenLists: []
+              listIds: new Set()
             }
           } else {
             // Token was already added to the map through its L2 token
@@ -216,11 +216,7 @@ export function tokenListsToSearchableTokenStorage(
           }
 
           // acc[address] was defined in the if/else above
-          const tokenLists = acc[address]!.tokenLists
-
-          if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
-            acc[address]!.tokenLists.push(tokenList.bridgeTokenListId)
-          }
+          acc[address]!.listIds.add(tokenList.bridgeTokenListId)
         } else if (stringifiedChainId === l2ChainId) {
           // The token is an L2 token
 
@@ -252,7 +248,7 @@ export function tokenListsToSearchableTokenStorage(
                 address: addressOnL1,
                 l2Address: address,
                 decimals: token.decimals,
-                tokenLists: []
+                listIds: new Set()
               }
             } else {
               // The token's L1 address is already on the list, just fill in its L2 address
@@ -260,11 +256,7 @@ export function tokenListsToSearchableTokenStorage(
             }
 
             // acc[address] was defined in the if/else above
-            const tokenLists = acc[addressOnL1]!.tokenLists
-
-            if (!tokenLists.includes(tokenList.bridgeTokenListId)) {
-              acc[addressOnL1]!.tokenLists.push(tokenList.bridgeTokenListId)
-            }
+            acc[addressOnL1]!.listIds.add(tokenList.bridgeTokenListId)
           }
         }
       })
@@ -281,6 +273,7 @@ export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
     type: TokenType.ERC20,
     symbol: data.symbol,
     address: data.contract.address,
-    decimals: data.decimals
+    decimals: data.decimals,
+    listIds: new Set()
   }
 }

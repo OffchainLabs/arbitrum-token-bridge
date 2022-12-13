@@ -97,7 +97,7 @@ export interface BridgeToken {
   address: string
   l2Address?: string
   logoURI?: string
-  listID?: number // no listID indicates added by user
+  listIds: Set<number> // no listID indicates added by user
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
@@ -190,15 +190,13 @@ export interface SearchableToken extends ERC20BridgeToken {
   tokenLists: number[]
 }
 
-export type SearchableTokenStorage = { [l1Address: string]: SearchableToken }
-
 export interface ArbTokenBridgeToken {
-  tokensFromLists: SearchableTokenStorage
-  tokensFromUser: SearchableTokenStorage
+  tokensFromLists: ContractStorage<ERC20BridgeToken>
+  tokensFromUser: ContractStorage<ERC20BridgeToken>
   add: (erc20L1orL2Address: string) => Promise<void>
-  addTokensFromList: (tokenList: TokenList, listID?: number) => void
+  addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
-  searchTokenFromList: (erc20L1orL2Address: string) => SearchableToken | null
+  searchTokenFromList: (erc20L1orL2Address: string) => ERC20BridgeToken | null
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (params: {
     erc20L1Address: string
