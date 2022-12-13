@@ -17,7 +17,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
     id: 1,
     originChainID: '42161',
-    url: 'token-list-42161.json',
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json',
     name: 'Arbitrum Whitelist Era',
     isDefault: true,
     logoURI:
@@ -43,7 +43,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
     id: 4,
     originChainID: '421611',
-    url: 'token-list-421611.json',
+    url: '/token-list-421611.json',
     name: 'Rinkarby Tokens',
     isDefault: true,
     logoURI:
