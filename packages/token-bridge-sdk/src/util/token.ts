@@ -160,7 +160,7 @@ export function fetchTokenLists(): Promise<void> {
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
         .map(({ data }, index) => {
-          const token = BRIDGE_TOKEN_LISTS[index]
+          const token = BRIDGE_TOKEN_LISTS[index] as BridgeTokenList
           if (!token) {
             return data
           }
