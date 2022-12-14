@@ -50,8 +50,11 @@ import {
 } from '../withdrawals'
 
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { 
-  isTxSuccessful, getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
+import {
+  isTxSuccessful,
+  getL1TokenData,
+  isClassicL2ToL1TransactionEvent
+} from '../util'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
 export const wait = (ms = 0) => {
@@ -424,7 +427,7 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function depositToken({
+  const depositToken = async ({
     erc20L1Address,
     amount,
     l1Signer,
@@ -434,7 +437,7 @@ export const useArbTokenBridge = (
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: TokenDepositTransactionLifecycle
-  }) {
+  }) => {
     try {
       const depositRequest = await erc20Bridger.getDepositRequest({
         l1Provider: l1.provider,
@@ -443,7 +446,7 @@ export const useArbTokenBridge = (
         erc20L1Address,
         amount
       })
-  
+
       const tx = await erc20Bridger.deposit({
         ...depositRequest,
         l1Signer
