@@ -1374,10 +1374,9 @@ export const useArbTokenBridge = (
   const searchTokenFromList = useCallback(
     (tokenAddress: string): ERC20BridgeToken | null => {
       if (!tokenAddress) return null
-      const tokens = { ...tokensFromLists, ...tokensFromUser }
-      return tokens[tokenAddress] || null
+      return bridgeTokens?.[tokenAddress] || null
     },
-    [tokensFromLists, tokensFromUser]
+    [bridgeTokens]
   )
 
   return {
