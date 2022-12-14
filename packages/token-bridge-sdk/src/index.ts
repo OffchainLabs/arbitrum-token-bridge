@@ -11,7 +11,6 @@ export type {
   NodeBlockDeadlineStatus,
   L1TokenData,
   L2TokenData,
-  SearchableToken,
   BridgeTokenList
 } from './hooks/arbTokenBridge.types'
 export {

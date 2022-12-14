@@ -180,16 +180,6 @@ export interface ArbTokenBridgeEth {
   }) => Promise<void | ContractReceipt>
 }
 
-export interface ArbTokenBridgeCache {
-  erc20: string[]
-  erc721: string[]
-  expire: () => void
-}
-
-export interface SearchableToken extends ERC20BridgeToken {
-  tokenLists: number[]
-}
-
 export interface ArbTokenBridgeToken {
   tokensFromLists: ContractStorage<ERC20BridgeToken>
   tokensFromUser: ContractStorage<ERC20BridgeToken>

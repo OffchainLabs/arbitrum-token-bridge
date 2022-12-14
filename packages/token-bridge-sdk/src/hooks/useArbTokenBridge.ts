@@ -37,8 +37,7 @@ import {
   NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle,
-  SearchableToken
+  L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
