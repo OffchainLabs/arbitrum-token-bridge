@@ -87,7 +87,9 @@ export function TransferPanel() {
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
-  const [destinationAddress, setDestinationAddress] = useState('')
+  const [destinationAddress, setDestinationAddress] = useState<
+    string | undefined
+  >(undefined)
   const [
     isDestinationAddressSmartContract,
     setIsDestinationAddressSmartContract
@@ -178,7 +180,7 @@ export function TransferPanel() {
     const getDestinationAddressType = async () => {
       setIsDestinationAddressSmartContract(
         await addressIsSmartContract(
-          destinationAddress,
+          String(destinationAddress),
           isDepositMode ? l2Provider : l1Provider
         )
       )
@@ -465,7 +467,7 @@ export function TransferPanel() {
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
-            destinationAddress: destinationAddress || undefined,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
@@ -637,7 +639,7 @@ export function TransferPanel() {
 
       // ETH transfers using SC wallets not enabled yet
       if (isSmartContractWallet && !selectedToken) {
-        return TransferPanelMainErrorMessage.SC_WALLET_UNSUPPORTED_TOKEN
+        return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
       }
 
       if (

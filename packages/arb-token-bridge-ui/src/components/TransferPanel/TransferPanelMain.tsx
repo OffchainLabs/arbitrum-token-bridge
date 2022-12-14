@@ -324,7 +324,7 @@ export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
   GAS_ESTIMATION_FAILURE,
   WITHDRAW_ONLY,
-  SC_WALLET_UNSUPPORTED_TOKEN
+  SC_WALLET_ETH_NOT_SUPPORTED
 }
 
 export function TransferPanelMain({
@@ -337,8 +337,10 @@ export function TransferPanelMain({
   amount: string
   setAmount: (value: string) => void
   errorMessage?: TransferPanelMainErrorMessage
-  destinationAddress: string
-  setDestinationAddress: React.Dispatch<React.SetStateAction<string>>
+  destinationAddress?: string
+  setDestinationAddress: React.Dispatch<
+    React.SetStateAction<string | undefined>
+  >
 }) {
   const history = useHistory()
   const actions = useActions()
@@ -410,7 +412,7 @@ export function TransferPanelMain({
   useEffect(() => {
     // Different destination address only allowed for tokens
     if (!selectedToken) {
-      setDestinationAddress('')
+      setDestinationAddress(undefined)
     }
   }, [selectedToken])
 
@@ -418,7 +420,7 @@ export function TransferPanelMain({
     const getErrors = async () => {
       try {
         const isDestinationAddressSmartContract = await addressIsSmartContract(
-          destinationAddress,
+          String(destinationAddress),
           isDepositMode ? l2.provider : l1.provider
         )
         if (
@@ -499,11 +501,9 @@ export function TransferPanelMain({
     }
 
     if (
-      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_UNSUPPORTED_TOKEN
+      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
     ) {
-      return `${
-        selectedToken?.symbol || 'ETH'
-      } transfers using smart contract wallets aren't supported yet.`
+      return "ETH transfers using smart contract wallets aren't supported yet."
     }
 
     return `Insufficient balance, please add more to ${
@@ -884,9 +884,13 @@ export function TransferPanelMain({
                   placeholder="Enter destination address"
                   defaultValue={destinationAddress}
                   spellCheck={false}
-                  onChange={e =>
-                    setDestinationAddress(e.target.value.toLowerCase())
-                  }
+                  onChange={e => {
+                    if (!e.target.value) {
+                      setDestinationAddress(undefined)
+                    } else {
+                      setDestinationAddress(e.target.value.toLowerCase())
+                    }
+                  }}
                 />
               </div>
             </>
