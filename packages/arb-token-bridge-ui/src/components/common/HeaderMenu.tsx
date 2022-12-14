@@ -41,7 +41,7 @@ export function HeaderMenuDesktop(
                     {...item.anchorProps}
                     target="_blank"
                     rel="noreferrer"
-                    className="-mx-6 block cursor-pointer px-6 py-1 hover:bg-blue-arbitrum hover:text-white"
+                    className="-mx-6 block cursor-pointer px-6 py-1 font-medium hover:bg-blue-arbitrum hover:text-white"
                   >
                     {item.title}
                   </a>
@@ -53,7 +53,7 @@ export function HeaderMenuDesktop(
               return (
                 <div key={index}>
                   <div className="py-1">
-                    <span>{item.title}</span>
+                    <span className="font-medium">{item.title}</span>
                   </div>
                   <div>
                     {subitems.map((subitem, sIndex) => (

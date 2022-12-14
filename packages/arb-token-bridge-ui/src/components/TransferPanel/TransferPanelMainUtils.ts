@@ -25,40 +25,6 @@ export function calculateEstimatedL2GasFees(
 }
 
 // TODO: These could be useful in the rest of the app
-
-export type Balances = {
-  ethereum: BigNumber | null
-  arbitrum: BigNumber | null
-}
-
-export function useTokenBalances(erc20L1Address?: string): Balances {
-  const { app } = useAppState()
-  const { arbTokenBridge } = app
-
-  return useMemo(() => {
-    const defaultResult = { ethereum: null, arbitrum: null }
-
-    if (typeof erc20L1Address === 'undefined') {
-      return defaultResult
-    }
-
-    if (!arbTokenBridge || !arbTokenBridge.balances) {
-      return defaultResult
-    }
-
-    const tokenBalances = arbTokenBridge.balances.erc20[erc20L1Address]
-
-    if (typeof tokenBalances === 'undefined') {
-      return defaultResult
-    }
-
-    return {
-      ethereum: tokenBalances.balance,
-      arbitrum: tokenBalances.arbChainBalance
-    }
-  }, [arbTokenBridge, erc20L1Address])
-}
-
 export function useIsSwitchingL2Chain() {
   const { app } = useAppState()
   const { isDepositMode } = app

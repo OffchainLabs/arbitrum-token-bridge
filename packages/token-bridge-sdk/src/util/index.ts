@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { BigNumber, constants } from 'ethers'
+import { constants } from 'ethers'
 import { TransactionReceipt, Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -102,8 +102,8 @@ export async function getL1TokenData({
   return {
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
-    balance: tokenData?.balance ?? BigNumber.from(0),
-    allowance: tokenData?.allowance ?? BigNumber.from(0),
+    balance: tokenData?.balance ?? constants.Zero,
+    allowance: tokenData?.allowance ?? constants.Zero,
     decimals: tokenData?.decimals ?? 0,
     contract
   }

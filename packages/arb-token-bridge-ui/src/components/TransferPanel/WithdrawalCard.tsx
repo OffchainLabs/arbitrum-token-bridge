@@ -57,7 +57,7 @@ export function WithdrawalL1TxStatus({
 
   // Try to find the L1 transaction that matches the L2ToL1 message
   const l1Tx = mergedTransactions.find(_tx => {
-    let l2ToL1MsgData = _tx.l2ToL1MsgData
+    const l2ToL1MsgData = _tx.l2ToL1MsgData
 
     if (typeof l2ToL1MsgData === 'undefined') {
       return false

@@ -24,7 +24,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
   const checkAndUpdateFailedRetryables = useCallback(async () => {
     const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
 
-    for (let depositTx of failedRetryablesToRedeem) {
+    for (const depositTx of failedRetryablesToRedeem) {
       const depositTxReceipt = await l1Provider.getTransactionReceipt(
         depositTx.txId
       )
@@ -78,7 +78,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
     const l1DepositsWithUntrackedL2Messages =
       actions.app.l1DepositsWithUntrackedL2Messages()
 
-    for (let depositTx of l1DepositsWithUntrackedL2Messages) {
+    for (const depositTx of l1DepositsWithUntrackedL2Messages) {
       const depositTxReceipt = await l1Provider.getTransactionReceipt(
         depositTx.txID
       )

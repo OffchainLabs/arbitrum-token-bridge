@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { useLatest } from 'react-use'
 import { useGasPrice } from 'token-bridge-sdk'
@@ -50,11 +50,11 @@ export function useGasSummary(
   const [status, setStatus] = useState<GasEstimationStatus>('idle')
   const [result, setResult] = useState<GasEstimationResult>({
     // Estimated L1 gas, denominated in Wei, represented as a BigNumber
-    estimatedL1Gas: BigNumber.from(0),
+    estimatedL1Gas: constants.Zero,
     // Estimated L2 gas, denominated in Wei, represented as a BigNumber
-    estimatedL2Gas: BigNumber.from(0),
+    estimatedL2Gas: constants.Zero,
     // Estimated L2 submission cost is precalculated and includes gas price
-    estimatedL2SubmissionCost: BigNumber.from(0)
+    estimatedL2SubmissionCost: constants.Zero
   })
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
@@ -151,7 +151,7 @@ export function useGasSummary(
 
             setResult({
               ...estimateGasResult,
-              estimatedL2SubmissionCost: BigNumber.from(0)
+              estimatedL2SubmissionCost: constants.Zero
             })
           } else {
             const estimateGasResult =
@@ -161,7 +161,7 @@ export function useGasSummary(
 
             setResult({
               ...estimateGasResult,
-              estimatedL2SubmissionCost: BigNumber.from(0)
+              estimatedL2SubmissionCost: constants.Zero
             })
           }
         }

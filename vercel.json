@@ -1,6 +1,18 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/" },
-    { "source": "/tos", "destination": "/" }
+    {
+      "source": "/",
+      "destination": "/"
+    },
+    {
+      "source": "/tos",
+      "destination": "/"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/token-list-42161.json",
+      "destination": "https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json"
+    }
   ]
 }

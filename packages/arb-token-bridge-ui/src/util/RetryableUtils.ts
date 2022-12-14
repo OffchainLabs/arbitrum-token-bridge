@@ -62,8 +62,8 @@ export const getRetryableTicketExpiration = async ({
     isLoadingError = false,
     isExpired = false
 
-  let daysUntilExpired = 0,
-    expirationDate = 0
+  let daysUntilExpired = 0
+  let expirationDate = 0
 
   try {
     const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
@@ -73,7 +73,7 @@ export const getRetryableTicketExpiration = async ({
     const now = dayjs()
 
     const expiryDateResponse = await l1ToL2Msg!.getTimeout()
-    const expirationDate = Number(expiryDateResponse.toString()) * 1000
+    expirationDate = Number(expiryDateResponse.toString()) * 1000
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 

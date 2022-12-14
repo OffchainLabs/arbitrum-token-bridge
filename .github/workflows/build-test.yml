@@ -41,7 +41,10 @@ jobs:
 
       - uses: ./.github/actions/restore-cache
 
-      - name: Run tests
+      - name: Build
+        run: yarn build
+
+      - name: Test
         run: yarn test:ci:sdk
 
   test-ui:
@@ -53,7 +56,10 @@ jobs:
 
       - uses: ./.github/actions/restore-cache
 
-      - name: Run tests
+      - name: Build
+        run: yarn build
+
+      - name: Test
         run: yarn test:ci:ui
 
   audit:

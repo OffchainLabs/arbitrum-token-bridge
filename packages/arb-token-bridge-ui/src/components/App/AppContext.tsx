@@ -30,6 +30,7 @@ const initialState: AppContextState = {
 
 type AppContextValue = [AppContextState, Dispatch<Action>]
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const AppContext = createContext<AppContextValue>([initialState, () => {}])
 
 type Action =
