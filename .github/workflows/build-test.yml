@@ -49,7 +49,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: ./packages
+          path: |
+            ./packages/arb-token-bridge-ui/build
+            ./packages/token-bridge-sdk/dist
+            ./packages/use-wallet/dist
 
   test-sdk:
     name: "Test SDK"
