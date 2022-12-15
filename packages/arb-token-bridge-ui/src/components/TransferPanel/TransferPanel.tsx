@@ -942,7 +942,7 @@ export function TransferPanel() {
                   </b>
                 </span>
                 <span>
-                  If you have n of k signers, then n of k will need to sign.
+                  If you have k of n signers, then k of n will need to sign.
                 </span>
               </div>
             }
