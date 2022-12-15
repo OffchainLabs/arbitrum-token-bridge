@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Restore node_modules from cache"
+      - name: "Restore 'node_modules' from cache"
         uses: ./.github/actions/restore-cache
 
       - name: Build
@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Restore node_modules from cache"
+      - name: "Restore 'node_modules' from cache"
         uses: ./.github/actions/restore-cache
 
       - name: "Download build artifacts"
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Restore node_modules from cache"
+      - name: "Restore 'node_modules' from cache"
         uses: ./.github/actions/restore-cache
 
       - name: "Download build artifacts"
@@ -99,7 +99,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Restore node_modules from cache"
+      - uses: OffchainLabs/actions/run-nitro-test-node@feat-token-bridge
+        with:
+          token-bridge: true
+
+      - name: "Restore 'node_modules' from cache"
         uses: ./.github/actions/restore-cache
 
       - name: "Download build artifacts"
@@ -107,10 +111,6 @@ jobs:
         with:
           name: build-artifacts
           path: ./packages
-
-      - uses: OffchainLabs/actions/run-nitro-test-node@feat-token-bridge
-        with:
-          token-bridge: true
 
       - name: Run tests
         run: yarn test:ci:ui
@@ -122,7 +122,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Restore node_modules from cache"
+      - name: "Restore 'node_modules' from cache"
         uses: ./.github/actions/restore-cache
 
       - name: Run audit
@@ -135,7 +135,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: "Restore node_modules from cache"
+      - name: "Restore 'node_modules' from cache"
         uses: ./.github/actions/restore-cache
 
       - name: Check formatting with Prettier
