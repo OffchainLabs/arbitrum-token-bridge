@@ -1,4 +1,4 @@
-import { BRIDGE_TOKEN_LISTS, fetchTokenListFromURL } from 'token-bridge-sdk'
+import { BRIDGE_TOKEN_LISTS, fetchTokenListFromURL } from './../useTokenLists'
 
 /**
  * TODO: Move this test (or a similar one) to the token lists repo

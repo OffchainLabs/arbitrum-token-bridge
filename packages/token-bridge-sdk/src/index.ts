@@ -50,11 +50,10 @@ export {
   addBridgeTokenListToBridge,
   fetchTokenListFromURL,
   fetchTokenLists,
-  toERC20BridgeToken,
   listIdsToNames,
   BRIDGE_TOKEN_LISTS
 } from './hooks/useTokenLists'
 
-export { useTokens } from './hooks/useTokens'
+export { useTokens, toERC20BridgeToken } from './hooks/useTokens'
 
 export { useGasPrice } from './hooks/useGasPrice'

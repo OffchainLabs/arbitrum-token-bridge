@@ -6,12 +6,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
-import {
-  ArbTokenBridge,
-  ERC20BridgeToken,
-  L1TokenData,
-  TokenType
-} from '../hooks/arbTokenBridge.types'
+import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { validateTokenList } from '../util'
 
 export interface BridgeTokenList {
@@ -200,17 +195,6 @@ export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
   }
 
   return parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
-}
-
-export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.contract.address,
-    decimals: data.decimals,
-    listIds: new Set()
-  }
 }
 
 export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {

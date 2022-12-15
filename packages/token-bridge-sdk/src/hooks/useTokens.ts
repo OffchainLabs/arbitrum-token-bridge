@@ -8,6 +8,7 @@ import { useCallback, useMemo } from 'react'
 import {
   ContractStorage,
   ERC20BridgeToken,
+  L1TokenData,
   TokenListWithId,
   TokenType
 } from './arbTokenBridge.types'
@@ -169,4 +170,15 @@ export function useTokens({
   }
 
   return { tokens, tokensFromLists, tokensFromUser, searchToken }
+}
+
+export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.contract.address,
+    decimals: data.decimals,
+    listIds: new Set()
+  }
 }
