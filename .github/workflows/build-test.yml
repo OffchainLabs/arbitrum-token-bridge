@@ -56,6 +56,23 @@ jobs:
       - name: Run tests
         run: yarn test:ci:ui
 
+  test-e2e:
+    name: "Test E2E"
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/restore-cache
+      - uses: OffchainLabs/actions/run-nitro-test-node@feat-token-bridge
+        with:
+          token-bridge: true
+
+      - name: Build
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test:ci:ui
+
   audit:
     name: "Audit"
     runs-on: ubuntu-latest

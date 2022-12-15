@@ -8,21 +8,26 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 
-export const l1NetworkConfig = 'goerli'
+export const ethRpcUrl = 'http://localhost:8545'
+export const arbRpcUrl = 'http://localhost:8547'
 
-export const l2NetworkConfig = {
-  networkName: 'arbitrum goerli',
-  rpcUrl: 'https://goerli-rollup.arbitrum.io/rpc',
-  chainId: '421613',
+export const l1NetworkConfig = {
+  networkName: 'Ethereum (Test)',
+  rpcUrl: arbRpcUrl,
+  chainId: 421613,
   symbol: 'ETH',
-  blockExplorer: 'https://goerli-rollup-explorer.arbitrum.io',
+  blockExplorer: 'https://etherscan.io',
   isTestnet: true
 }
 
-export const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env(
-  'INFURA_KEY'
-)}`
-export const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
+export const l2NetworkConfig = {
+  networkName: 'Arbitrum (Test)',
+  rpcUrl: arbRpcUrl,
+  chainId: '421613',
+  symbol: 'ETH',
+  blockExplorer: 'https://arbiscan.io',
+  isTestnet: true
+}
 
 export const ERC20TokenAddressL1 = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
 export const ERC20TokenAddressL2 = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
