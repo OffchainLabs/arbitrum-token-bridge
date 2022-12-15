@@ -159,12 +159,10 @@ export function useTokens({
     return { ...tokensFromLists, ...tokensFromUser }
   }, [tokensFromLists, tokensFromUser])
 
-  const searchToken = (tokenAddress: string): ERC20BridgeToken | null => {
-    /*
+  /*
     function to search for a token within the union of token lists (pre-configured + user added)
-    Objective : if basic data like { symbol, name, decimals } is reqd, then why query the chain for the token data already fetched.
-    */
-
+  */
+  const searchToken = (tokenAddress: string): ERC20BridgeToken | null => {
     if (!tokenAddress) return null
     return bridgeTokens?.[tokenAddress] || null
   }
