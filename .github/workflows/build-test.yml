@@ -64,6 +64,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
+          path: packages
 
       - name: Test
         run: yarn test:ci:sdk
@@ -80,6 +81,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
+          path: packages
 
       - name: Test
         run: yarn test:ci:ui
@@ -96,6 +98,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
+          path: packages
 
       - uses: OffchainLabs/actions/run-nitro-test-node@feat-token-bridge
         with:
