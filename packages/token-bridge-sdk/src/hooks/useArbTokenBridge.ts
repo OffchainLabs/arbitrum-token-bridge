@@ -51,10 +51,6 @@ import {
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
-import {
-  getTokenLists,
-  tokenListsToSearchableTokenStorage
-} from '../util/token'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -1331,42 +1327,6 @@ export const useArbTokenBridge = (
     setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
-  const tokensFromLists: ContractStorage<ERC20BridgeToken> = useMemo(() => {
-    const l1Network = l1.network
-    const l2Network = l2.network
-
-    const tokenLists = getTokenLists(String(l2Network.chainID))
-
-    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
-      return {}
-    }
-
-    return tokenListsToSearchableTokenStorage(
-      tokenLists,
-      String(l1Network.chainID),
-      String(l2Network.chainID)
-    )
-  }, [l1.network, l2.network])
-
-  const tokensFromUser: ContractStorage<ERC20BridgeToken> = useMemo(() => {
-    const storage: ContractStorage<ERC20BridgeToken> = {}
-
-    // Can happen when switching networks.
-    if (typeof bridgeTokens === 'undefined') {
-      return {}
-    }
-
-    Object.keys(bridgeTokens).forEach((_address: string) => {
-      const bridgeToken = bridgeTokens[_address]
-
-      // Any tokens in the bridge that don't have a list id were added by the user.
-      if (bridgeToken && bridgeToken.listIds.size === 0) {
-        storage[_address] = { ...bridgeToken, listIds: new Set() }
-      }
-    })
-    return storage
-  }, [bridgeTokens])
-
   /*
     function to search for a token within the union of token lists (pre-configured + user added)
     Objective : if basic data like { symbol, name, decimals } is reqd, then why query the chain for the token data already fetched.
@@ -1390,12 +1350,9 @@ export const useArbTokenBridge = (
       triggerOutbox: triggerOutboxEth
     },
     token: {
-      tokensFromLists,
-      tokensFromUser,
       add: addToken,
       addTokensFromList,
       removeTokensFromList,
-      searchTokenFromList,
       updateTokenData,
       approve: approveToken,
       approveEstimateGas: approveTokenEstimateGas,

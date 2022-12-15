@@ -15,7 +15,8 @@ import {
   addBridgeTokenListToBridge,
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  listIdsToNames
+  listIdsToNames,
+  useTokens
 } from 'token-bridge-sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
@@ -345,10 +346,11 @@ function TokensPanel({
       isDepositMode
     }
   } = useAppState()
-  const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider }
-  } = useNetworksAndSigners()
+
+  const { l1, l2 } = useNetworksAndSigners()
+  const L1Provider = l1.provider
+  const L2Provider = l2.provider
+
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
@@ -359,7 +361,11 @@ function TokensPanel({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
-  const { tokensFromLists = {}, tokensFromUser = {} } = token || {}
+  const { tokensFromLists, tokensFromUser } = useTokens({
+    l1ChainId: l1.network.chainID,
+    l2ChainId: l2.network.chainID,
+    bridgeTokens
+  })
 
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')

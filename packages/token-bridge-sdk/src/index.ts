@@ -46,12 +46,15 @@ export {
 export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
 export {
+  useTokenLists,
   addBridgeTokenListToBridge,
   fetchTokenListFromURL,
   fetchTokenLists,
   toERC20BridgeToken,
   listIdsToNames,
   BRIDGE_TOKEN_LISTS
-} from './util/token'
+} from './hooks/useTokenLists'
+
+export { useTokens } from './hooks/useTokens'
 
 export { useGasPrice } from './hooks/useGasPrice'

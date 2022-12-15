@@ -3,7 +3,8 @@ import { useLatest } from 'react-use'
 import {
   ERC20BridgeToken,
   getL1TokenData,
-  toERC20BridgeToken
+  toERC20BridgeToken,
+  useTokens
 } from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
@@ -52,7 +53,12 @@ export function TokenImportDialog({
 
   const latestBridgeTokens = useLatest(bridgeTokens)
 
-  const { tokensFromLists = {}, tokensFromUser = {} } = token || {}
+  const { tokensFromLists, tokensFromUser } = useTokens({
+    l1ChainId: l1.network.chainID,
+    l2ChainId: l2.network.chainID,
+    bridgeTokens
+  })
+
   const latestTokensFromUser = useLatest(tokensFromUser)
   const latestTokensFromLists = useLatest(tokensFromLists)
 
