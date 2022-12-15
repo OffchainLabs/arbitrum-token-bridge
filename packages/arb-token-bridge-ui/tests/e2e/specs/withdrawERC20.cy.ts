@@ -72,9 +72,7 @@ describe('Withdraw ERC20 Token', () => {
         .click({ scrollBehavior: false })
 
       // open the Select Token popup
-      cy.findByPlaceholderText(
-        /Search by token name, symbol, L1 or L2 address/i
-      )
+      cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
         .type(ERC20TokenAddressL2, { scrollBehavior: false })
         .then(() => {
