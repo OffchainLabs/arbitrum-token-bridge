@@ -113,7 +113,7 @@ jobs:
           path: ./packages
 
       - name: Run tests
-        run: yarn test:ci:ui
+        run: yarn test:ci:e2e
 
   audit:
     name: "Audit"
