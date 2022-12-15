@@ -38,7 +38,9 @@ jobs:
     needs: install
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/restore-cache
+
+      - name: "Restore node_modules from cache"
+        uses: ./.github/actions/restore-cache
 
       - name: Build
         run: yarn build
@@ -47,10 +49,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: |
-            packages/arb-token-bridge-ui/build
-            packages/token-bridge-sdk/dist
-            packages/use-wallet/dist
+          path: ./packages
 
   test-sdk:
     name: "Test SDK"
@@ -58,13 +57,15 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/restore-cache
+
+      - name: "Restore node_modules from cache"
+        uses: ./.github/actions/restore-cache
 
       - name: "Download build artifacts"
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
-          path: packages
+          path: ./packages
 
       - name: Test
         run: yarn test:ci:sdk
@@ -75,13 +76,15 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/restore-cache
+
+      - name: "Restore node_modules from cache"
+        uses: ./.github/actions/restore-cache
 
       - name: "Download build artifacts"
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
-          path: packages
+          path: ./packages
 
       - name: Test
         run: yarn test:ci:ui
@@ -92,13 +95,15 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/restore-cache
+
+      - name: "Restore node_modules from cache"
+        uses: ./.github/actions/restore-cache
 
       - name: "Download build artifacts"
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
-          path: packages
+          path: ./packages
 
       - uses: OffchainLabs/actions/run-nitro-test-node@feat-token-bridge
         with:
@@ -114,7 +119,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: ./.github/actions/restore-cache
+      - name: "Restore node_modules from cache"
+        uses: ./.github/actions/restore-cache
 
       - name: Run audit
         run: yarn audit:ci
@@ -126,7 +132,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: ./.github/actions/restore-cache
+      - name: "Restore node_modules from cache"
+        uses: ./.github/actions/restore-cache
 
       - name: Check formatting with Prettier
         run: yarn prettier:check
