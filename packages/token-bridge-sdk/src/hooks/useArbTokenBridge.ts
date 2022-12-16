@@ -565,6 +565,13 @@ export const useArbTokenBridge = (
     txLifecycle?: L2ContractCallTransactionLifecycle
     destinationAddress?: string
   }) {
+    const provider = l2Signer.provider
+    const isSmartContractAddress =
+      provider && (await provider.getCode(String(erc20L1Address))).length < 2
+    if (isSmartContractAddress && !destinationAddress) {
+      throw new Error(`Missing destination address`)
+    }
+
     if (typeof bridgeTokens === 'undefined') {
       return
     }
