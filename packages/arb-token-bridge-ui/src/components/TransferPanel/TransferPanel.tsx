@@ -769,24 +769,26 @@ export function TransferPanel() {
           }
           className="flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
         >
-          <div className="hidden lg:block">
-            <span className="text-2xl">Summary</span>
-            <div className="h-4" />
-          </div>
-
-          {isSummaryVisible ? (
-            <TransferPanelSummary
-              amount={amountNum}
-              token={selectedToken}
-              gasSummary={gasSummary}
-            />
-          ) : (
-            <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[297px]">
-              <span className="text-xl">
-                Bridging summary will appear here.
-              </span>
+          <div className="flex flex-col">
+            <div className="hidden lg:block">
+              <span className="text-2xl">Summary</span>
+              <div className="h-4" />
             </div>
-          )}
+
+            {isSummaryVisible ? (
+              <TransferPanelSummary
+                amount={amountNum}
+                token={selectedToken}
+                gasSummary={gasSummary}
+              />
+            ) : (
+              <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[297px]">
+                <span className="text-xl">
+                  Bridging summary will appear here.
+                </span>
+              </div>
+            )}
+          </div>
 
           {isDepositMode ? (
             <Button
