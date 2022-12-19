@@ -307,7 +307,7 @@ function ConnectionFallbackContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="mt-6 mb-12 flex min-h-[calc(100vh-80px)] items-center justify-center px-8">
+    <div className="my-24 flex items-center justify-center px-8">
       <div className="flex flex-col items-center md:flex-row md:items-start">
         {children}
         <ExternalLink href="https://metamask.io/download">
@@ -342,7 +342,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <div className="absolute mt-20 sm:mt-24">
+            <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
               <Loader type="TailSpin" color="white" height={44} width={44} />
             </div>
           </ConnectionFallbackContainer>
