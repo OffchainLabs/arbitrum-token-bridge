@@ -96,28 +96,26 @@ export interface TokenListWithId extends TokenList {
   bridgeTokenListId: number
 }
 
-const STORAGE_KEY = 'arbitrum:bridge:token-lists'
-
 export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
 ) => {
-  const cache = getTokenLists()
-  const found = cache.find(
-    list => list.bridgeTokenListId === bridgeTokenList.id
-  )
+  // const cache = getTokenLists()
+  // const found = cache.find(
+  //   list => list.bridgeTokenListId === bridgeTokenList.id
+  // )
 
-  if (found) {
-    arbTokenBridge.token.addTokensFromList(found, bridgeTokenList.id)
-  } else {
-    fetchTokenListFromURL(bridgeTokenList.url).then(
-      ({ isValid, data: tokenList }) => {
-        if (isValid) {
-          arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-        }
+  // if (found) {
+  //   arbTokenBridge.token.addTokensFromList(found, bridgeTokenList.id)
+  // } else {
+  fetchTokenListFromURL(bridgeTokenList.url).then(
+    ({ isValid, data: tokenList }) => {
+      if (isValid) {
+        arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
       }
-    )
-  }
+    }
+  )
+  // }
 }
 
 export async function fetchTokenListFromURL(
@@ -142,7 +140,7 @@ export async function fetchTokenListFromURL(
   }
 }
 
-export function fetchTokenLists(): Promise<void> {
+export function fetchTokenLists(): Promise<string> {
   return new Promise(resolve => {
     Promise.all(
       BRIDGE_TOKEN_LISTS.map(bridgeTokenList =>
@@ -165,40 +163,32 @@ export function fetchTokenLists(): Promise<void> {
           }
         })
 
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(tokenListsWithBridgeTokenListId)
-      )
-
-      resolve()
+      resolve(JSON.stringify(tokenListsWithBridgeTokenListId))
     })
   })
 }
 
 export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const [tokenLists, setTokenLists] = useState<TokenListWithId[]>(() =>
-    getTokenLists(forL2ChainId)
-  )
+  const [tokenLists, setTokenLists] = useState<TokenListWithId[]>([])
 
   useEffect(() => {
-    setTokenLists(getTokenLists(forL2ChainId))
+    // if token lists haven't been fetched already - get and set them.
+    if (!tokenLists.length) getSetTokenLists()
   }, [forL2ChainId])
 
+  const getSetTokenLists = async (forL2ChainId?: string) => {
+    const stringifiedResult = await fetchTokenLists()
+
+    const parsedStorage: TokenListWithId[] = JSON.parse(stringifiedResult)
+    if (typeof forL2ChainId === 'undefined') {
+      return parsedStorage
+    }
+    setTokenLists(
+      parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
+    )
+  }
+
+  console.log('TOKENLISTS', tokenLists)
+
   return tokenLists
-}
-
-export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const storage = sessionStorage.getItem(STORAGE_KEY)
-
-  if (!storage) {
-    return []
-  }
-
-  const parsedStorage: TokenListWithId[] = JSON.parse(storage)
-
-  if (typeof forL2ChainId === 'undefined') {
-    return parsedStorage
-  }
-
-  return parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
 }
