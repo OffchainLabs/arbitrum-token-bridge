@@ -53,7 +53,7 @@ export const MainNetworkNotSupported = ({
             networkButtonsStyles?.[Number(chainId) as ChainId]?.[
               'btnThemeClass'
             ] ?? ''
-          } w-full min-w-max justify-start bg-blue-arbitrum px-5 py-2`}
+          } w-full min-w-max justify-start px-5 py-2`}
           aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">
