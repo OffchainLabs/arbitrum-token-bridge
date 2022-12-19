@@ -1,14 +1,16 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useWallet } from '@arbitrum/use-wallet'
+import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 
-import { useBalance, getL1TokenData, ArbTokenBridge } from 'token-bridge-sdk'
+import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -84,6 +86,14 @@ export function TransferPanel() {
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
+  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
+  const [destinationAddress, setDestinationAddress] = useState<
+    string | undefined
+  >(undefined)
+  const [
+    isDestinationAddressSmartContract,
+    setIsDestinationAddressSmartContract
+  ] = useState(false)
 
   const {
     app: {
@@ -105,7 +115,8 @@ export function TransferPanel() {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider }
+    l2: { network: l2Network, provider: l2Provider },
+    isSmartContractWallet
   } = networksAndSigners
   const dispatch = useAppContextDispatch()
 
@@ -164,6 +175,18 @@ export function TransferPanel() {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus])
+
+  useEffect(() => {
+    const getDestinationAddressType = async () => {
+      setIsDestinationAddressSmartContract(
+        await addressIsSmartContract(
+          String(destinationAddress),
+          isDepositMode ? l2Provider : l1Provider
+        )
+      )
+    }
+    getDestinationAddressType()
+  }, [destinationAddress, isDepositMode, l1Provider, l2Provider])
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -310,12 +333,38 @@ export function TransferPanel() {
       return
     }
 
+    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
+    if (isSmartContractWallet && !selectedToken) {
+      console.error("ETH transfers aren't enabled for smart contract wallets.")
+      return
+    }
+
+    // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
+    const showDelayedSCTxRequest = () =>
+      setTimeout(() => {
+        setTransferring(false)
+        setShowSCWalletTooltip(true)
+      }, 3000)
+
     const setTransferring = (payload: boolean) =>
       dispatch({ type: 'layout.set_is_transferring', payload })
 
     setTransferring(true)
 
     try {
+      if (destinationAddress) {
+        if (
+          // Invalid address
+          !isAddress(destinationAddress) ||
+          // Destination address not matching the connected wallet type
+          (isSmartContractWallet && !isDestinationAddressSmartContract)
+        ) {
+          throw new Error(
+            `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
+          )
+        }
+      }
+
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -410,10 +459,15 @@ export function TransferPanel() {
             }
           }
 
+          if (isSmartContractWallet) {
+            showDelayedSCTxRequest()
+          }
+
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
@@ -460,11 +514,13 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const waitForInput = openWithdrawalConfirmationDialog()
-        const confirmed = await waitForInput()
+        if (!isSmartContractWallet) {
+          const waitForInput = openWithdrawalConfirmationDialog()
+          const confirmed = await waitForInput()
 
-        if (!confirmed) {
-          return
+          if (!confirmed) {
+            return
+          }
         }
 
         const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
@@ -493,6 +549,9 @@ export function TransferPanel() {
               latestNetworksAndSigners.current.l2.provider
             )
             if (!allowed) {
+              if (isSmartContractWallet) {
+                showDelayedSCTxRequest()
+              }
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
                 l2Signer: latestNetworksAndSigners.current.l2.signer
@@ -500,10 +559,15 @@ export function TransferPanel() {
             }
           }
 
+          if (isSmartContractWallet) {
+            showDelayedSCTxRequest()
+          }
+
           await latestToken.current.withdraw({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
@@ -573,6 +637,11 @@ export function TransferPanel() {
         return undefined
       }
 
+      // ETH transfers using SC wallets not enabled yet
+      if (isSmartContractWallet && !selectedToken) {
+        return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
+      }
+
       if (
         isDepositMode &&
         selectedToken &&
@@ -639,7 +708,9 @@ export function TransferPanel() {
       // allow 0-amount deposits when bridging new token
       (isDepositMode &&
         isBridgingANewStandardToken &&
-        (l1Balance === null || amountNum > +l1Balance))
+        (l1Balance === null || amountNum > +l1Balance)) ||
+      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
+      (isSmartContractWallet && !selectedToken)
     )
   }, [
     isTransferring,
@@ -648,7 +719,9 @@ export function TransferPanel() {
     amountNum,
     l1Balance,
     isBridgingANewStandardToken,
-    selectedToken
+    selectedToken,
+    isSmartContractWallet,
+    isDestinationAddressSmartContract
   ])
 
   // TODO: Refactor this and the property above
@@ -678,9 +751,20 @@ export function TransferPanel() {
         selectedToken.address.toLowerCase() ===
           '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
       isTransferring ||
-      (!isDepositMode && (!amountNum || !l2Balance || amountNum > +l2Balance))
+      (!isDepositMode &&
+        (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
+      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
+      (isSmartContractWallet && !selectedToken)
     )
-  }, [isTransferring, isDepositMode, amountNum, l2Balance, selectedToken])
+  }, [
+    isTransferring,
+    isDepositMode,
+    amountNum,
+    l2Balance,
+    selectedToken,
+    isSmartContractWallet,
+    isDestinationAddressSmartContract
+  ])
 
   // TODO: Refactor this and the property above
   const disableWithdrawalV2 = useMemo(() => {
@@ -752,6 +836,8 @@ export function TransferPanel() {
               ? getErrorMessage(amount, l1Balance)
               : getErrorMessage(amount, l2Balance)
           }
+          destinationAddress={destinationAddress}
+          setDestinationAddress={setDestinationAddress}
         />
 
         <div className="border-r border-gray-3" />
@@ -807,7 +893,9 @@ export function TransferPanel() {
                 isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
               )}
             >
-              Move funds to {getNetworkName(l2Network.chainID)}
+              {isSmartContractWallet && isTransferring
+                ? 'Sending request...'
+                : `Move funds to ${getNetworkName(l2Network.chainID)}`}
             </Button>
           ) : (
             <Button
@@ -817,7 +905,9 @@ export function TransferPanel() {
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
-              Move funds to {getNetworkName(l1Network.chainID)}
+              {isSmartContractWallet && isTransferring
+                ? 'Sending request...'
+                : `Move funds to ${getNetworkName(l1Network.chainID)}`}
             </Button>
           )}
         </div>
@@ -837,6 +927,32 @@ export function TransferPanel() {
           type={tokenDepositCheckDialogType}
           symbol={selectedToken ? selectedToken.symbol : 'ETH'}
         />
+
+        {showSCWalletTooltip && (
+          <Tippy
+            placement="bottom-end"
+            maxWidth="auto"
+            onClickOutside={() => setShowSCWalletTooltip(false)}
+            theme="orange"
+            visible={showSCWalletTooltip}
+            content={
+              <div className="flex flex-col">
+                <span>
+                  <b>
+                    To continue, please approve tx on your smart contract
+                    wallet.
+                  </b>
+                </span>
+                <span>
+                  If you have k of n signers, then k of n will need to sign.
+                </span>
+              </div>
+            }
+          >
+            {/* Override margin coming from Tippy that causes layout disruptions */}
+            <div className="!m-0" />
+          </Tippy>
+        )}
       </div>
     </>
   )
