@@ -131,7 +131,7 @@ export async function fetchTokenListFromURL(
   }
 }
 
-export function fetchTokenLists(): Promise<string> {
+export function fetchTokenLists(): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
     Promise.all(
       BRIDGE_TOKEN_LISTS.map(bridgeTokenList =>
@@ -154,7 +154,7 @@ export function fetchTokenLists(): Promise<string> {
           }
         })
 
-      resolve(JSON.stringify(tokenListsWithBridgeTokenListId))
+      resolve(tokenListsWithBridgeTokenListId as TokenListWithId[])
     })
   })
 }
@@ -168,15 +168,14 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
   }, [forL2ChainId])
 
   const getSetTokenLists = async (forL2ChainId?: string) => {
-    const stringifiedResult = await fetchTokenLists()
-
-    const parsedStorage: TokenListWithId[] = JSON.parse(stringifiedResult)
+    // freshly fetch the token lists instead of a cache
+    const result = await fetchTokenLists()
 
     if (typeof forL2ChainId === 'undefined') {
-      setTokenLists(parsedStorage)
+      setTokenLists(result)
     } else {
       setTokenLists(
-        parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
+        result.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
       )
     }
   }
