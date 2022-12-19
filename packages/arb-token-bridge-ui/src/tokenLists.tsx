@@ -100,14 +100,6 @@ export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
 ) => {
-  // const cache = getTokenLists()
-  // const found = cache.find(
-  //   list => list.bridgeTokenListId === bridgeTokenList.id
-  // )
-
-  // if (found) {
-  //   arbTokenBridge.token.addTokensFromList(found, bridgeTokenList.id)
-  // } else {
   fetchTokenListFromURL(bridgeTokenList.url).then(
     ({ isValid, data: tokenList }) => {
       if (isValid) {
@@ -115,7 +107,6 @@ export const addBridgeTokenListToBridge = (
       }
     }
   )
-  // }
 }
 
 export async function fetchTokenListFromURL(
