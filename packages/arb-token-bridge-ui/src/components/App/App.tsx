@@ -211,7 +211,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   useEffect(() => {
     axios
       .get(
-        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/master/src/WarningList/warningTokens.json'
+        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/aff40a59608678cfd9b034dd198011c90b65b8b6/src/WarningList/warningTokens.json'
       )
       .then(res => {
         actions.app.setWarningTokens(res.data)
