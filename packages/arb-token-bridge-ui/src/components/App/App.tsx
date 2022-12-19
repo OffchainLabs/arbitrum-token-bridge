@@ -302,13 +302,19 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallbackContainer({
+  layout = 'col',
   children
 }: {
+  layout?: 'row' | 'col'
   children: React.ReactNode
 }) {
   return (
     <div className="my-24 flex items-center justify-center px-8">
-      <div className="flex flex-col items-center md:flex-row md:items-start">
+      <div
+        className={`flex flex-col items-center md:flex-${layout} md:items-${
+          layout === 'col' ? 'center' : 'start'
+        }`}
+      >
         {children}
         <ExternalLink href="https://metamask.io/download">
           <img
@@ -377,7 +383,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </NetworkSelectionContainer>
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <ConnectionFallbackContainer layout="row">
             <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
           </ConnectionFallbackContainer>
         </>
