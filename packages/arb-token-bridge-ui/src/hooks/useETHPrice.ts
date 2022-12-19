@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import axios from 'axios'
 import useSWR from 'swr'
 
-export type ETHPrice = 'loading' | 'error' | number
+export type ETHPrice = 'error' | number
 
 export type UseETHPriceResult = {
   ethPrice: ETHPrice
@@ -10,8 +10,6 @@ export type UseETHPriceResult = {
 }
 
 export function useETHPrice(): UseETHPriceResult {
-  const [ethPrice, setETHPrice] = useState<ETHPrice>('loading')
-
   const { data, error } = useSWR(
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
     url => axios.get(url).then(res => res.data),
@@ -23,18 +21,17 @@ export function useETHPrice(): UseETHPriceResult {
     }
   )
 
-  useEffect(
-    () => setETHPrice(error ? 'error' : data?.ethereum?.usd),
-    [data, error]
-  )
-
   const toUSD = useCallback(
     (etherValue: number) => {
+      const ethPrice = data?.ethereum?.usd
       const safeETHPrice = typeof ethPrice === 'number' ? ethPrice : 0
       return etherValue * safeETHPrice
     },
-    [ethPrice]
+    [data]
   )
 
-  return useMemo(() => ({ ethPrice, toUSD }), [ethPrice, toUSD])
+  return useMemo(
+    () => ({ ethPrice: error ? 'error' : data?.ethereum?.usd, toUSD }),
+    [data, error, toUSD]
+  )
 }
