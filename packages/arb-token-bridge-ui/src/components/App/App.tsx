@@ -303,9 +303,19 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 
 function ConnectionFallbackContainer({
   layout = 'col',
+  imgProps = {
+    className: 'sm:w-[420px]',
+    src: '/images/three-arbinauts.webp',
+    alt: 'Three Arbinauts'
+  },
   children
 }: {
   layout?: 'row' | 'col'
+  imgProps?: {
+    className?: string
+    src?: string
+    alt?: string
+  }
   children: React.ReactNode
 }) {
   return (
@@ -318,9 +328,9 @@ function ConnectionFallbackContainer({
         {children}
         <ExternalLink href="https://metamask.io/download">
           <img
-            className="sm:w-[420px]"
-            src="/images/three-arbinauts.webp"
-            alt="Three Arbinauts"
+            className={imgProps.className}
+            src={imgProps.src}
+            alt={imgProps.alt}
           />
         </ExternalLink>
       </div>
@@ -383,7 +393,14 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </NetworkSelectionContainer>
           </HeaderContent>
 
-          <ConnectionFallbackContainer layout="row">
+          <ConnectionFallbackContainer
+            layout="row"
+            imgProps={{
+              className: 'sm:w-[300px]',
+              src: '/images/arbinaut-fixing-spaceship.webp',
+              alt: 'Arbinaut Fixing Spaceship'
+            }}
+          >
             <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
           </ConnectionFallbackContainer>
         </>
