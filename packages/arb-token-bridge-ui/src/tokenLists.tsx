@@ -180,15 +180,15 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
     const stringifiedResult = await fetchTokenLists()
 
     const parsedStorage: TokenListWithId[] = JSON.parse(stringifiedResult)
-    if (typeof forL2ChainId === 'undefined') {
-      return parsedStorage
-    }
-    setTokenLists(
-      parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
-    )
-  }
 
-  console.log('TOKENLISTS', tokenLists)
+    if (typeof forL2ChainId === 'undefined') {
+      setTokenLists(parsedStorage)
+    } else {
+      setTokenLists(
+        parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
+      )
+    }
+  }
 
   return tokenLists
 }
