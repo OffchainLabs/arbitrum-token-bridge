@@ -110,7 +110,7 @@ describe('Switch Networks', () => {
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
         cy.changeMetamaskNetwork('kovan').then(() => {
-          cy.findByText(/Oops! You’re connected to a wrong network./i).should(
+          cy.findByText(/Oops! You’re connected to the wrong network./i).should(
             'be.visible'
           )
         })

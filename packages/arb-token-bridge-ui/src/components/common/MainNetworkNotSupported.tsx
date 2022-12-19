@@ -31,10 +31,10 @@ export const MainNetworkNotSupported = ({
   const { provider } = useWallet()
 
   return (
-    <div className="flex flex-col items-center space-y-8 py-24 px-12">
+    <div className="flex max-w-lg flex-col items-center space-y-8 px-12 py-12 md:items-start md:pr-24 md:pl-0">
       <div className="flex w-full justify-center">
-        <span className="center py-4 text-center text-3xl font-medium text-white">
-          Oops! You’re connected to a wrong network.
+        <span className="center py-4 text-3xl font-medium text-white">
+          Oops! You’re connected to the wrong network
         </span>
       </div>
 
@@ -48,11 +48,12 @@ export const MainNetworkNotSupported = ({
             })
           }}
           key={chainId}
+          textLeft
           className={`text-md ${
             networkButtonsStyles?.[Number(chainId) as ChainId]?.[
               'btnThemeClass'
-            ]
-          } w-full min-w-max py-3 sm:w-6/12`}
+            ] ?? ''
+          } w-full min-w-max justify-start bg-blue-arbitrum px-5 py-2`}
           aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
         >
           <div className="flex flex-row items-center justify-center space-x-3">

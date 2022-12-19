@@ -307,15 +307,17 @@ function ConnectionFallbackContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="mt-6 flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
-      {children}
-      <ExternalLink href="https://metamask.io/download">
-        <img
-          className="sm:w-[420px]"
-          src="/images/three-arbinauts.webp"
-          alt="Three Arbinauts"
-        />
-      </ExternalLink>
+    <div className="mt-6 mb-12 flex min-h-[calc(100vh-80px)] items-center justify-center px-8">
+      <div className="flex flex-col items-center md:flex-row md:items-start">
+        {children}
+        <ExternalLink href="https://metamask.io/download">
+          <img
+            className="sm:w-[420px]"
+            src="/images/three-arbinauts.webp"
+            alt="Three Arbinauts"
+          />
+        </ExternalLink>
+      </div>
     </div>
   )
 }
