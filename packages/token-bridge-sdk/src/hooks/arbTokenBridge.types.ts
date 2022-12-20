@@ -97,7 +97,7 @@ export interface BridgeToken {
   address: string
   l2Address?: string
   logoURI?: string
-  listID?: number // no listID indicates added by user
+  listIds: Set<number> // no listID indicates added by user
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
@@ -168,7 +168,7 @@ export interface ArbTokenBridgeEth {
 
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
-  addTokensFromList: (tokenList: TokenList, listID?: number) => void
+  addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (params: {
@@ -185,6 +185,7 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   depositEstimateGas: (params: {
     erc20L1Address: string
@@ -195,6 +196,7 @@ export interface ArbTokenBridgeToken {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: {
     amount: BigNumber
