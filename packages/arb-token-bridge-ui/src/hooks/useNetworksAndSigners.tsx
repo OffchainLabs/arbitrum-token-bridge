@@ -177,23 +177,10 @@ export function NetworksAndSignersProvider(
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
       const providerChainId = (await web3Provider.getNetwork()).chainId
+      const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
 
-      // If provider is not supported, display warning message
-      if (!(providerChainId in chainIdToDefaultL2ChainId)) {
-        console.error(`Provider chainId not supported: ${providerChainId}`)
-        setResult({
-          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-          chainId: providerChainId
-        })
-        return
-      }
-
-      // We are phasing out support for provider = Rinkeby or ArbRinkeby
-      if (
-        providerChainId === ChainId.Rinkeby ||
-        providerChainId === ChainId.ArbitrumRinkeby
-      ) {
-        console.error(`Provider chainId not supported: ${providerChainId}`)
+      if (chainNotSupported) {
+        console.error(`Chain ${providerChainId} not supported`)
         setResult({
           status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
           chainId: providerChainId
