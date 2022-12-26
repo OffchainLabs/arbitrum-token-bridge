@@ -111,6 +111,9 @@ jobs:
           name: build-artifacts
           path: ./packages
 
+      - name: "Install the Cypress binary"
+        run: yarn test:ci:e2e:install
+
       - name: Copy .env
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
