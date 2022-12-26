@@ -18,6 +18,9 @@ jobs:
         id: cache
         uses: martijnhols/actions-cache/check@v3
         with:
+          path: |
+            "**/node_modules"
+            ~/.cache/Cypress
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
