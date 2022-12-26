@@ -130,7 +130,7 @@ jobs:
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
       - name: Run tests
-        run: test:ci:e2e
+        run: yarn test:ci:e2e
 
   audit:
     name: Audit
