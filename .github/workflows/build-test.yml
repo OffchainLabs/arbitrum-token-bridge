@@ -118,7 +118,10 @@ jobs:
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
       - name: Run tests
-        run: CYPRESS_RUN_BINARY=./node_modules/.bin/cypress yarn test:ci:e2e
+        run: |
+          mkdir ./node_modules/.bin/Cypress
+          mv ./node_modules/.bin/cypress ./node_modules/.bin/cypress
+          CYPRESS_RUN_BINARY=./node_modules/.bin/Cypress yarn test:ci:e2e
 
   audit:
     name: "Audit"
