@@ -114,7 +114,7 @@ jobs:
       - name: "Install the Cypress binary"
         run: |
           yarn test:ci:e2e:install
-          cp ./node_modules/.bin/cypress
+          cp ./node_modules/.bin/cypress /home/runner/.cache/cypress
           mv /home/runner/.cache/cypress /home/runner/.cache/Cypress
 
       - name: Copy .env
