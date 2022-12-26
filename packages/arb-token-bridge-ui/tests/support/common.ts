@@ -12,20 +12,18 @@ export const ethRpcUrl = 'http://localhost:8545'
 export const arbRpcUrl = 'http://localhost:8547'
 
 export const l1NetworkConfig = {
-  networkName: 'Ethereum (Test)',
-  rpcUrl: arbRpcUrl,
-  chainId: 421613,
+  networkName: 'localhost',
+  rpcUrl: ethRpcUrl,
+  chainId: '1337',
   symbol: 'ETH',
-  blockExplorer: 'https://etherscan.io',
   isTestnet: true
 }
 
 export const l2NetworkConfig = {
-  networkName: 'Arbitrum (Test)',
+  networkName: 'arbitrum-localhost',
   rpcUrl: arbRpcUrl,
-  chainId: '421613',
+  chainId: '412346',
   symbol: 'ETH',
-  blockExplorer: 'https://arbiscan.io',
   isTestnet: true
 }
 
@@ -69,7 +67,7 @@ export const setupMetamaskNetwork = (
     }
   } else {
     //else, stick to the original l1 network
-    return cy.changeMetamaskNetwork(l1NetworkConfig)
+    return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
   }
 }
 

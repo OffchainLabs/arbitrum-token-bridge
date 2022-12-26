@@ -24,7 +24,7 @@ export function login(networkType: NetworkType, addNewNetwork?: boolean) {
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
   cy.switchToCypressWindow().then(() => {
-    cy.changeMetamaskNetwork(l1NetworkConfig).then(() => {
+    cy.changeMetamaskNetwork(l1NetworkConfig.networkName).then(() => {
       // disconnect-metamask-wallet hangs if already not connected to metamask,
       // so we do it while logout instead of before login.
       cy.disconnectMetamaskWalletFromAllDapps().then(() => {
