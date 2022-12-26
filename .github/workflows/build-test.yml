@@ -99,7 +99,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: OffchainLabs/actions/run-nitro-test-node@feat-token-bridge
+      - uses: OffchainLabs/actions/run-nitro-test-node@main
         with:
           token-bridge: true
 
