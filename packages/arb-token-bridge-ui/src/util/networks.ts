@@ -13,14 +13,14 @@ import EthereumLogo from '../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
 
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
+const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+
+if (typeof INFURA_KEY === 'undefined') {
+  throw new Error('Infura API key not provided')
+}
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
-
-if (!INFURA_KEY) {
-  throw new Error('Infura API key not provided')
-}
 
 export enum ChainId {
   // L1
