@@ -204,9 +204,6 @@ export function getNetworkName(chainId: number) {
     case ChainId.Mainnet:
       return 'Mainnet'
 
-    case ChainId.Rinkeby:
-      return 'Rinkeby'
-
     case ChainId.Goerli:
       return 'Goerli'
 
@@ -215,9 +212,6 @@ export function getNetworkName(chainId: number) {
 
     case ChainId.ArbitrumNova:
       return 'Arbitrum Nova'
-
-    case ChainId.ArbitrumRinkeby:
-      return 'Arbitrum Rinkeby'
 
     case ChainId.ArbitrumGoerli:
       return 'Arbitrum Goerli'
@@ -231,13 +225,11 @@ export function getNetworkLogo(chainId: number) {
   switch (chainId) {
     // L1 networks
     case ChainId.Mainnet:
-    case ChainId.Rinkeby:
     case ChainId.Goerli:
       return EthereumLogo
 
     // L2 networks
     case ChainId.ArbitrumOne:
-    case ChainId.ArbitrumRinkeby:
     case ChainId.ArbitrumGoerli:
       return ArbitrumOneLogo
 
