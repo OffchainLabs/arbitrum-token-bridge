@@ -8,7 +8,6 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
@@ -58,10 +57,6 @@ import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 
-async function addressIsEOA(address: string, provider: JsonRpcProvider) {
-  return (await provider.getCode(address)).length <= 2
-}
-
 declare global {
   interface Window {
     Cypress?: any
@@ -90,15 +85,6 @@ const AppContent = (): JSX.Element => {
       <Alert type="red">
         Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for
         maintenance. Thanks for your patience!
-      </Alert>
-    )
-  }
-
-  if (connectionState === ConnectionState.NOT_EOA) {
-    return (
-      <Alert type="red">
-        Looks like your wallet is connected to a contract; please connect to an
-        externally owned account instead.
       </Alert>
     )
   }
@@ -161,27 +147,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
-      const { signer: l1Signer, provider: l1Provider } = l1
-      const { signer: l2Signer, provider: l2Provider } = l2
+      const { signer: l1Signer } = l1
 
       const l1Address = await l1Signer.getAddress()
-      const l2Address = await l2Signer.getAddress()
-
-      try {
-        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Provider)
-        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Provider)
-
-        if (!l1AddressIsEOA || !l2AddressIsEOA) {
-          actions.app.setConnectionState(ConnectionState.NOT_EOA)
-          return undefined
-        }
-      } catch (err) {
-        console.warn('CONNECTION ERROR', err)
-
-        // The get code queries doubles as as network liveness check
-        // We could check err.code === 'NETWORK_ERROR' for more granular handling, but any error can/should be handled.
-        actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
-      }
 
       setTokenBridgeParams({
         walletAddress: l1Address,
@@ -238,7 +206,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   useEffect(() => {
     axios
       .get(
-        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/master/src/WarningList/warningTokens.json'
+        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/aff40a59608678cfd9b034dd198011c90b65b8b6/src/WarningList/warningTokens.json'
       )
       .then(res => {
         actions.app.setWarningTokens(res.data)

@@ -4,6 +4,7 @@ import Loader from 'react-loader-spinner'
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
@@ -42,6 +43,8 @@ export function TransactionsTable({
   transactions,
   className = ''
 }: TransactionsTableProps) {
+  const { isSmartContractWallet } = useNetworksAndSigners()
+
   return (
     <table
       className={`w-full rounded-tr-lg rounded-br-lg rounded-bl-lg bg-gray-1 ${className}`}
@@ -98,7 +101,11 @@ export function TransactionsTable({
               })
             ) : (
               <EmptyTableRow>
-                <span className="text-sm font-medium">No transactions</span>
+                <span className="text-sm font-medium">
+                  {isSmartContractWallet
+                    ? 'You can see tx history in your smart contract wallet'
+                    : 'No transactions'}
+                </span>
               </EmptyTableRow>
             )}
           </>
