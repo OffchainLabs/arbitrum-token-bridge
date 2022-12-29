@@ -297,20 +297,38 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallbackContainer({
+  layout = 'col',
+  imgProps = {
+    className: 'sm:w-[420px]',
+    src: '/images/three-arbinauts.webp',
+    alt: 'Three Arbinauts'
+  },
   children
 }: {
+  layout?: 'row' | 'col'
+  imgProps?: {
+    className?: string
+    src?: string
+    alt?: string
+  }
   children: React.ReactNode
 }) {
   return (
-    <div className="mt-6 flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
-      {children}
-      <ExternalLink href="https://metamask.io/download">
-        <img
-          className="sm:w-[420px]"
-          src="/images/three-arbinauts.webp"
-          alt="Three Arbinauts"
-        />
-      </ExternalLink>
+    <div className="my-24 flex items-center justify-center px-8">
+      <div
+        className={`flex flex-col items-center md:flex-${layout} md:items-${
+          layout === 'col' ? 'center' : 'start'
+        }`}
+      >
+        {children}
+        <ExternalLink href="https://metamask.io/download">
+          <img
+            className={imgProps.className}
+            src={imgProps.src}
+            alt={imgProps.alt}
+          />
+        </ExternalLink>
+      </div>
     </div>
   )
 }
@@ -335,7 +353,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <div className="absolute mt-20 sm:mt-24">
+            <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
               <Loader type="TailSpin" color="white" height={44} width={44} />
             </div>
           </ConnectionFallbackContainer>
@@ -370,7 +388,14 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </NetworkSelectionContainer>
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <ConnectionFallbackContainer
+            layout="row"
+            imgProps={{
+              className: 'sm:w-[300px]',
+              src: '/images/arbinaut-fixing-spaceship.webp',
+              alt: 'Arbinaut fixing a spaceship'
+            }}
+          >
             <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
           </ConnectionFallbackContainer>
         </>
