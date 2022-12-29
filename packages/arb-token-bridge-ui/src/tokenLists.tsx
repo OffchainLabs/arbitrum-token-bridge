@@ -40,15 +40,6 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: 'https://gemini.com/static/images/loader.png'
   },
   {
-    id: 4,
-    originChainID: '421611',
-    url: '/token-list-421611.json',
-    name: 'Rinkarby Tokens',
-    isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
-  },
-  {
     id: 5,
     originChainID: '42161',
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
