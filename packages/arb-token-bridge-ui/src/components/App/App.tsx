@@ -11,7 +11,6 @@ import { TokenBridgeParams } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
-import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.webp'
 import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.webp'
 
 import { WelcomeDialog } from './WelcomeDialog'
@@ -71,12 +70,8 @@ const AppContent = (): JSX.Element => {
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network.chainID)
+    const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
-
-    if (isRinkeby) {
-      return { imageSrc: HeaderArbitrumLogoRinkeby, className }
-    }
 
     if (isGoerli) {
       return { imageSrc: HeaderArbitrumLogoGoerli, className }
