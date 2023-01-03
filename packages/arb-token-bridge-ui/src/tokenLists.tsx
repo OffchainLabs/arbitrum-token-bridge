@@ -93,9 +93,9 @@ export const addBridgeTokenListToBridge = (
 ) => {
   fetchTokenListFromURL(bridgeTokenList.url).then(
     ({ isValid, data: tokenList }) => {
-      if (isValid) {
-        arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-      }
+      if (!isValid) return
+
+      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
     }
   )
 }
@@ -153,11 +153,6 @@ export function fetchTokenLists(): Promise<TokenListWithId[]> {
 export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
   const [tokenLists, setTokenLists] = useState<TokenListWithId[]>([])
 
-  useEffect(() => {
-    // if token lists haven't been fetched already - get and set them.
-    if (!tokenLists.length) getSetTokenLists()
-  }, [forL2ChainId])
-
   const getSetTokenLists = async (forL2ChainId?: string) => {
     // freshly fetch the token lists instead of a cache
     const result = await fetchTokenLists()
@@ -170,6 +165,11 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
       )
     }
   }
+
+  useEffect(() => {
+    // get and set the token lists
+    getSetTokenLists(forL2ChainId)
+  }, [forL2ChainId])
 
   return tokenLists
 }
