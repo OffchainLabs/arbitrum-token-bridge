@@ -48,13 +48,11 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should show form fields correctly', () => {
-      cy.findByRole('button', { name: /From: Arbitrum Goerli/i }).should(
-        'be.visible'
-      )
-      cy.findByRole('button', { name: /To: Goerli/i }).should('be.visible')
+      cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 
       cy.findByRole('button', {
-        name: /Move funds to Goerli/i
+        name: /Move funds to Ethereum/i
       })
         .should('be.visible')
         .should('be.disabled')
@@ -127,7 +125,7 @@ describe('Withdraw ERC20 Token', () => {
 
       it('should show a clickable withdraw button', () => {
         cy.findByRole('button', {
-          name: /Move funds to Goerli/i
+          name: /Move funds to Ethereum/i
         })
           .should('be.visible')
           .should('be.enabled')

@@ -5,8 +5,8 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
-  goerliRPC,
-  arbitrumGoerliRPC
+  ethRpcUrl,
+  arbRpcUrl
 } from './../../support/common'
 
 describe('Login Account', () => {
@@ -14,10 +14,10 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(() => {
-    getInitialETHBalance(goerliRPC).then(
+    getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
-    getInitialETHBalance(arbitrumGoerliRPC).then(
+    getInitialETHBalance(arbRpcUrl).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
   })

@@ -1,3 +1,4 @@
+import { Wallet } from 'ethers'
 import { defineConfig } from 'cypress'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
@@ -25,8 +26,9 @@ export default defineConfig({
   requestTimeout: 30000,
   e2e: {
     // @ts-ignore
-    setupNodeEvents(on, config) {
-      config.env.ADDRESS = process.env.ADDRESS
+    async setupNodeEvents(on, config) {
+      const wallet = new Wallet(process.env.PRIVATE_KEY!)
+      config.env.ADDRESS = await wallet.getAddress()
       config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)

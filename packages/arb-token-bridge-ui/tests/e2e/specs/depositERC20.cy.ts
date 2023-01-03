@@ -47,10 +47,8 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
-      cy.findByRole('button', { name: /From: Goerli/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
-        'be.visible'
-      )
+      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
         .should('have.text', 'ETH')
@@ -120,7 +118,7 @@ describe('Deposit ERC20 Token', () => {
 
       it('should deposit successfully', () => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum Goerli'
+          name: 'Move funds to Arbitrum'
         })
           .click({ scrollBehavior: false })
           .then(() => {
@@ -128,7 +126,7 @@ describe('Deposit ERC20 Token', () => {
               cy.findByText(
                 `Moving ${formatAmount(0.0001, {
                   symbol: 'LINK'
-                })} to Arbitrum Goerli...`
+                })} to Arbitrum...`
               ).should('be.visible')
             })
           })

@@ -28,10 +28,8 @@ describe('Switch Networks', () => {
     })
 
     it('should show L1 and L2 chains correctly', () => {
-      cy.findByRole('button', { name: /From: Goerli/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
-        'be.visible'
-      )
+      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
     })
 
     context('Test Networks dropdown in Nav bar', () => {
