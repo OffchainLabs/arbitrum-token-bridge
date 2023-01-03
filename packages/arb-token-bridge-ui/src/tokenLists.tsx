@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
+import { useActions } from './state'
 
 export interface BridgeTokenList {
   id: number
@@ -133,7 +134,7 @@ export function fetchTokenLists(): Promise<TokenListWithId[]> {
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
         .map(({ data }, index) => {
-          const token = BRIDGE_TOKEN_LISTS[index]
+          const token = BRIDGE_TOKEN_LISTS[index] as BridgeTokenList
           if (!token) {
             return data
           }
@@ -153,22 +154,41 @@ export function fetchTokenLists(): Promise<TokenListWithId[]> {
 export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
   const [tokenLists, setTokenLists] = useState<TokenListWithId[]>([])
 
+  const actions = useActions()
+
   const getSetTokenLists = async (forL2ChainId?: string) => {
+    let tokenLists = []
+
     // freshly fetch the token lists instead of a cache
     const result = await fetchTokenLists()
 
     if (typeof forL2ChainId === 'undefined') {
-      setTokenLists(result)
+      tokenLists = result
     } else {
-      setTokenLists(
-        result.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
+      tokenLists = result.filter(
+        tokenList => tokenList.l2ChainId === forL2ChainId
       )
     }
+
+    // set the token lists in the local state to return from this hook
+    setTokenLists(tokenLists)
+
+    // set the token lists in the global app state, to be used for caching if required
+    actions.app.setTokenLists({ value: tokenLists, forL2ChainId })
   }
 
   useEffect(() => {
-    // get and set the token lists
-    getSetTokenLists(forL2ChainId)
+    // get the existing token list in state
+    const { value: prevTokenList, forL2ChainId: prevL2ChainId } =
+      actions.app.getTokenLists()
+
+    if (prevTokenList.length && forL2ChainId === prevL2ChainId) {
+      // don't fetch again if we have already prefetched for the same l2 chain id
+      setTokenLists(prevTokenList)
+    } else {
+      // get and set the token lists
+      getSetTokenLists(forL2ChainId)
+    }
   }, [forL2ChainId])
 
   return tokenLists

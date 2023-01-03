@@ -1,6 +1,7 @@
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
+import { TokenListWithId } from '../../tokenLists'
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
 
@@ -49,6 +50,7 @@ export const reset = ({ state }: Context, newChainId: number) => {
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
   state.app.pwLoadedState = PendingWithdrawalsLoadedState.LOADING
+  state.app.tokenLists = { value: [] }
 }
 
 export const setWarningTokens = (
@@ -79,6 +81,17 @@ export const setArbTokenBridgeLoaded = (
   state.app.arbTokenBridgeLoaded = loaded
 }
 
+export const setTokenLists = (
+  { state }: Context,
+  { value, forL2ChainId }: { value: TokenListWithId[]; forL2ChainId?: string }
+) => {
+  state.app.tokenLists = {
+    value,
+    forL2ChainId,
+    fetchedAtTimestamp: Date.now()
+  }
+}
+
 export const setArbTokenBridge = (
   { state, actions }: Context,
   atb: ArbTokenBridge
@@ -103,4 +116,8 @@ export const getSortedTransactions = ({ state }: Context) => {
 
 export const getFailedRetryablesToRedeem = ({ state }: Context) => {
   return state.app.failedRetryablesToRedeem
+}
+
+export const getTokenLists = ({ state }: Context) => {
+  return state.app.tokenLists
 }

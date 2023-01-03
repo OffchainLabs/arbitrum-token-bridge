@@ -21,6 +21,7 @@ import {
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import { TokenListWithId } from '../../tokenLists'
 
 export enum WhiteListState {
   VERIFYING,
@@ -102,6 +103,12 @@ const outgoungStateToString = {
   [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
+export type TokenListsState = {
+  value: TokenListWithId[] // actual token list
+  forL2ChainId?: string // fetched for which L2 chain id
+  fetchedAtTimestamp?: number // for invalidating the list and refetching whenever required
+}
+
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
@@ -122,6 +129,8 @@ export type AppState = {
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
+
+  tokenLists: TokenListsState
 }
 
 export const defaultState: AppState = {
@@ -241,6 +250,9 @@ export const defaultState: AppState = {
     )
   }),
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
+  tokenLists: {
+    value: []
+  },
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {

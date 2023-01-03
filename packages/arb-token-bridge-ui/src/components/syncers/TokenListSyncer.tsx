@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useAppState } from '../../state'
+import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   addBridgeTokenListToBridge,
@@ -18,6 +18,8 @@ const TokenListSyncer = (): JSX.Element => {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
 
+  const actions = useActions()
+
   useEffect(() => {
     if (typeof l2Network === 'undefined') {
       return
@@ -29,7 +31,11 @@ const TokenListSyncer = (): JSX.Element => {
 
     fetchTokenLists()
       // Add tokens to bridge only after prefetching the token lists
-      .then(() => {
+      .then(tokenLists => {
+        // set the token lists fetched in app-state
+        actions.app.setTokenLists({ value: tokenLists })
+
+        // add the token lists in the bridge
         const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
           bridgeTokenList =>
             bridgeTokenList.originChainID === String(l2Network.chainID) &&
