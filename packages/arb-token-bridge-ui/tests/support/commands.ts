@@ -73,7 +73,7 @@ export const saveAppState = () => {
 
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
-  cy.findByText('Agree to terms').should('be.visible').click()
+  // cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
   cy.findByText('Connect to your MetaMask Wallet').click()
 }
