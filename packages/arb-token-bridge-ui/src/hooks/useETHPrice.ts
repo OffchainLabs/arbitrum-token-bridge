@@ -2,11 +2,10 @@ import { useCallback, useMemo } from 'react'
 import axios from 'axios'
 import useSWR from 'swr'
 
-export type ETHPrice = 'error' | number
-
 export type UseETHPriceResult = {
-  ethPrice: ETHPrice
-  toUSD: (etherValue: number) => number
+  ethPrice: number
+  ethToUSD: (etherValue: number) => number
+  error: Error
 }
 
 export function useETHPrice(): UseETHPriceResult {
@@ -21,7 +20,7 @@ export function useETHPrice(): UseETHPriceResult {
     }
   )
 
-  const toUSD = useCallback(
+  const ethToUSD = useCallback(
     (etherValue: number) => {
       const ethPrice = data?.ethereum?.usd
       const safeETHPrice = typeof ethPrice === 'number' ? ethPrice : 0
@@ -31,7 +30,7 @@ export function useETHPrice(): UseETHPriceResult {
   )
 
   return useMemo(
-    () => ({ ethPrice: error ? 'error' : data?.ethereum?.usd, toUSD }),
-    [data, error, toUSD]
+    () => ({ ethPrice: data?.ethereum?.usd, ethToUSD, error }),
+    [data, error, ethToUSD]
   )
 }

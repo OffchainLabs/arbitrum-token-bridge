@@ -74,7 +74,7 @@ function ExternalLinkCard({
 
 export function LowBalanceDialog(props: UseDialogProps) {
   const { app } = useAppState()
-  const { toUSD } = useETHPrice()
+  const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -118,7 +118,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             {formatAmount(balanceNumber, { symbol: 'ETH' })}{' '}
             {isMainnet && (
               <span className="font-medium">
-                ({formatUSD(toUSD(balanceNumber))})
+                ({formatUSD(ethToUSD(balanceNumber))})
               </span>
             )}
           </span>
