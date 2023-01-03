@@ -28,7 +28,15 @@ describe('Login Account', () => {
   })
 
   it('should pass this test', () => {
-    expect(true).equal(true)
+    cy.visit('/')
+    cy.findByText('WalletConnect').should('be.visible')
+    cy.on('fail', error => {
+      debugger
+
+      console.log('ERROR FROM WALLET CONNECT BUTTON')
+
+      throw error
+    })
   })
 
   it('should show connect wallet if not logged in', () => {
