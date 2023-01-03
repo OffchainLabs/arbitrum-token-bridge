@@ -27,6 +27,10 @@ describe('Login Account', () => {
     cy.logout()
   })
 
+  it('should pass this test', () => {
+    cy.findByText('Agree to terms').should('be.visible')
+  })
+
   it('should show connect wallet if not logged in', () => {
     cy.visit(`/`)
     cy.findByText('Agree to terms').should('be.visible').click()
