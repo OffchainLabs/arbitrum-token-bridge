@@ -34,7 +34,7 @@ export default defineConfig({
       synpressPlugins(on, config)
       return config
     },
-    baseUrl: 'http://10.1.0.23/',
+    baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
       'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
