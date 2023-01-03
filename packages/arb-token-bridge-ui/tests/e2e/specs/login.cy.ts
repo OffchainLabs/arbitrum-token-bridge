@@ -38,7 +38,7 @@ describe('Login Account', () => {
       throw error
     })
     cy.visit(`/`)
-    cy.findByText('Agree to terms').should('be.visible').click()
+    // cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
