@@ -40,15 +40,6 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: 'https://gemini.com/static/images/loader.png'
   },
   {
-    id: 4,
-    originChainID: '421611',
-    url: '/token-list-421611.json',
-    name: 'Rinkarby Tokens',
-    isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
-  },
-  {
     id: 5,
     originChainID: '42161',
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
@@ -142,6 +133,7 @@ export async function fetchTokenListFromURL(
   }
 }
 
+let storage: string | null = null
 export function fetchTokenLists(): Promise<void> {
   return new Promise(resolve => {
     Promise.all(
@@ -165,11 +157,7 @@ export function fetchTokenLists(): Promise<void> {
           }
         })
 
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(tokenListsWithBridgeTokenListId)
-      )
-
+      storage = JSON.stringify(tokenListsWithBridgeTokenListId)
       resolve()
     })
   })
@@ -188,8 +176,6 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
 }
 
 export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const storage = sessionStorage.getItem(STORAGE_KEY)
-
   if (!storage) {
     return []
   }

@@ -5,10 +5,6 @@ const L2SubgraphClient = {
     uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-arb1',
     cache: new InMemoryCache()
   }),
-  ArbitrumRinkeby: new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-rinkeby',
-    cache: new InMemoryCache()
-  }),
   ArbitrumGoerli: new ApolloClient({
     uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-goerli',
     cache: new InMemoryCache()
@@ -19,9 +15,6 @@ export function getL2SubgraphClient(l2ChainId: number) {
   switch (l2ChainId) {
     case 42161:
       return L2SubgraphClient.ArbitrumOne
-
-    case 421611:
-      return L2SubgraphClient.ArbitrumRinkeby
 
     case 421613:
       return L2SubgraphClient.ArbitrumGoerli

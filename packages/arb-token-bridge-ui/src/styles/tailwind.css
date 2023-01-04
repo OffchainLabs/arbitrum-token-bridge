@@ -112,6 +112,20 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+/* Tippy themes */
+.tippy-box[data-theme='orange'] {
+  background-color: #ffeed3;
+  color: #ffeed3;
+}
+
+.tippy-box[data-theme='orange'] > .tippy-arrow {
+  color: inherit;
+}
+
+.tippy-box[data-theme='orange'] > .tippy-content {
+  color: #60461f;
+}
+
 /*
   TODO:
 

@@ -29,6 +29,7 @@ import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -72,6 +73,7 @@ export type UseNetworksAndSignersConnectedResult = {
   }
   isConnectedToArbitrum: boolean
   chainId: number // the current chainId which is connected to UI
+  isSmartContractWallet: boolean
 }
 
 export type UseNetworksAndSignersResult =
@@ -177,23 +179,10 @@ export function NetworksAndSignersProvider(
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
       const providerChainId = (await web3Provider.getNetwork()).chainId
+      const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
 
-      // If provider is not supported, display warning message
-      if (!(providerChainId in chainIdToDefaultL2ChainId)) {
-        console.error(`Provider chainId not supported: ${providerChainId}`)
-        setResult({
-          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-          chainId: providerChainId
-        })
-        return
-      }
-
-      // We are phasing out support for provider = Rinkeby or ArbRinkeby
-      if (
-        providerChainId === ChainId.Rinkeby ||
-        providerChainId === ChainId.ArbitrumRinkeby
-      ) {
-        console.error(`Provider chainId not supported: ${providerChainId}`)
+      if (chainNotSupported) {
+        console.error(`Chain ${providerChainId} not supported`)
         setResult({
           status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
           chainId: providerChainId
@@ -258,7 +247,11 @@ export function NetworksAndSignersProvider(
               provider: l2Provider
             },
             isConnectedToArbitrum: false,
-            chainId: l1Network.chainID
+            chainId: l1Network.chainID,
+            isSmartContractWallet: await addressIsSmartContract(
+              address!,
+              l1Provider
+            )
           })
         })
         .catch(() => {
@@ -296,7 +289,11 @@ export function NetworksAndSignersProvider(
                   provider: l2Provider
                 },
                 isConnectedToArbitrum: true,
-                chainId: l2Network.chainID
+                chainId: l2Network.chainID,
+                isSmartContractWallet: await addressIsSmartContract(
+                  address!,
+                  l2Provider
+                )
               })
             })
             .catch(() => {
