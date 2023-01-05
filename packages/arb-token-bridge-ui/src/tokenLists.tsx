@@ -133,6 +133,7 @@ export async function fetchTokenListFromURL(
   }
 }
 
+let storage: string | null = null
 export function fetchTokenLists(): Promise<void> {
   return new Promise(resolve => {
     Promise.all(
@@ -156,11 +157,7 @@ export function fetchTokenLists(): Promise<void> {
           }
         })
 
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(tokenListsWithBridgeTokenListId)
-      )
-
+      storage = JSON.stringify(tokenListsWithBridgeTokenListId)
       resolve()
     })
   })
@@ -179,8 +176,6 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
 }
 
 export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const storage = sessionStorage.getItem(STORAGE_KEY)
-
   if (!storage) {
     return []
   }
