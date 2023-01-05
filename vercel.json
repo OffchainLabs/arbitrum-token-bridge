@@ -1,4 +1,18 @@
 {
+  "routes": [
+    {
+      "src": "/token-list-42161.json",
+      "status": 308,
+      "headers": {
+        "Location": "https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Referrer-Policy": "origin-when-cross-origin"
+      }
+    }
+  ],
   "rewrites": [
     {
       "source": "/",
@@ -7,12 +21,6 @@
     {
       "source": "/tos",
       "destination": "/"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/token-list-42161.json",
-      "destination": "https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json"
     }
   ]
 }
