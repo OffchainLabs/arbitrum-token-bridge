@@ -11,16 +11,8 @@
         "Access-Control-Allow-Methods": "GET",
         "Referrer-Policy": "origin-when-cross-origin"
       }
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/"
     },
-    {
-      "source": "/tos",
-      "destination": "/"
-    }
+    { "src": "/", "dest": "/" },
+    { "src": "/tos", "dest": "/" }
   ]
 }
