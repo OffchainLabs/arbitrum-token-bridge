@@ -115,8 +115,8 @@ jobs:
       # - name: Run Nitro test node
       #   uses: OffchainLabs/actions/run-nitro-test-node@main
 
-      - name: Restore "node_modules" from cache
-        uses: ./.github/actions/restore-cache
+      # - name: Restore "node_modules" from cache
+      #   uses: ./.github/actions/restore-cache
 
       - name: Restore Cypress binary from cache
         uses: martijnhols/actions-cache/restore@v3
