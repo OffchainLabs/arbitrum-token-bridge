@@ -14,3 +14,6 @@ services:
       http://localhost:3000 && yarn test:ci:e2e'
     networks:
       - x11
+
+  networks:
+    x11:
