@@ -28,6 +28,31 @@ export default defineConfig({
     // @ts-ignore
     async setupNodeEvents(on, config) {
       const wallet = new Wallet(process.env.PRIVATE_KEY!)
+      const walletAddress = await wallet.getAddress()
+      on('before:browser:launch', (browser = {
+        name: 'electron',
+        family: 'chromium',
+        displayName: 'Electron',
+        channel: 'stable',
+        version: '106',
+        majorVersion: '106',
+        path: '',
+        isHeadless: true,
+        isHeaded: false
+      }, launchOptions = {
+        preferences: {
+          width: 1366,
+          height: 850
+        },
+        extensions: [],
+        args: [],
+        env: {
+          'ADDRESS': walletAddress,
+          'INFURA_KEY': process.env.REACT_APP_INFURA_KEY
+        }
+      }) => {
+        return launchOptions
+      })
       config.env.ADDRESS = await wallet.getAddress()
       config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
