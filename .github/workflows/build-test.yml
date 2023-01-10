@@ -103,6 +103,10 @@ jobs:
 
   test-e2e:
     name: Test E2E
+    container:
+      image: synthetixio/docker-e2e:16.17-ubuntu
+      env:
+        NODE_ENV: development
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -134,13 +138,9 @@ jobs:
 
       - name: Run UI
         run: yarn serve &
-        with:
-          browser: electron
 
       - name: Run tests
         run: yarn test:ci:e2e
-        with:
-          browser: electron
 
   audit:
     name: Audit

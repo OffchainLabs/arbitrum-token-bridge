@@ -12,8 +12,3 @@ services:
     command: >
       bash -c 'echo -n "======> local noVNC URL:
       http://localhost:3000 && yarn test:ci:e2e'
-    networks:
-      - x11
-
-  networks:
-    x11:
