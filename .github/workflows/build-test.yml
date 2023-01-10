@@ -134,9 +134,13 @@ jobs:
 
       - name: Run UI
         run: yarn serve &
+        with:
+          browser: electron
 
       - name: Run tests
         run: yarn test:ci:e2e
+        with:
+          browser: electron
 
   audit:
     name: Audit
