@@ -126,11 +126,14 @@ jobs:
           name: build-artifacts
           path: ./packages
 
+      - name: List build directory
+        run: ls ./packages/arb-token-bridge-ui/build
+
       - name: Copy .env
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
       - name: Run UI
-        run: yarn start_ui &
+        run: yarn serve &
 
       - name: Run tests
         run: yarn test:ci:e2e
