@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
@@ -155,7 +154,6 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
   const { data = [] } = useSWRImmutable(
     ['useTokenLists', forL2ChainId],
     async () => {
-      console.log('DEBUGGER : NEW FETCH FOR ', forL2ChainId)
       let newTokensList = []
       const result = await fetchTokenLists()
       if (typeof forL2ChainId === 'undefined') {
@@ -165,6 +163,7 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
           tokenList => tokenList.l2ChainId === forL2ChainId
         )
       }
+      return newTokensList
     },
     {
       shouldRetryOnError: true,
