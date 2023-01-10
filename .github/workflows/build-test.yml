@@ -126,8 +126,8 @@ jobs:
           name: build-artifacts
           path: ./packages
 
-      - name: List build directory
-        run: ls ./packages/arb-token-bridge-ui/build
+      - run: ls -R ./packages/arb-token-bridge-ui/build
+      - run: cat ./packages/arb-token-bridge-ui/build/index.html
 
       - name: Copy .env
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
