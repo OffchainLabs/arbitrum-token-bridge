@@ -103,13 +103,17 @@ jobs:
 
   test-e2e:
     name: Test E2E
+    container:
+      image: synthetixio/docker-e2e:16.17-ubuntu
+      env:
+        NODE_ENV: development
     runs-on: ubuntu-latest
     needs: build
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run Nitro test node
-        uses: OffchainLabs/actions/run-nitro-test-node@main
+      # - name: Run Nitro test node
+      #   uses: OffchainLabs/actions/run-nitro-test-node@main
 
       - name: Restore "node_modules" from cache
         uses: ./.github/actions/restore-cache
@@ -132,17 +136,11 @@ jobs:
       - name: Copy .env
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
-      - name: Run UI and tests
-        container:
-          image: synthetixio/docker-e2e:16.17-ubuntu
-          env:
-            NODE_ENV: development
-        steps:
-          - name: Run UI
-            run: yarn serve &
+      - name: Run UI
+        run: yarn serve &
 
-          - name: Run tests
-            run: yarn test:ci:e2e
+      - name: Run tests
+        run: yarn test:ci:e2e
 
   audit:
     name: Audit
