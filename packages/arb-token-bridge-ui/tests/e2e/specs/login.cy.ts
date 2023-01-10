@@ -28,7 +28,7 @@ describe('Login Account', () => {
   })
 
   it('should pass this test', () => {
-    cy.visit('./')
+    cy.waitUntil(() => cy.visit('/'))
     cy.findByText('WalletConnect').should('be.visible')
     cy.on('fail', error => {
       debugger
@@ -45,8 +45,8 @@ describe('Login Account', () => {
 
       throw error
     })
-    cy.visit(`./`)
-    // cy.findByText('Agree to terms').should('be.visible').click()
+    cy.waitUntil(() => cy.visit('/'))
+    cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
