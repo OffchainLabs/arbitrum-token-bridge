@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  synpress:
+    container_name: synpress
+    build: .
+    environment:
+      - DISPLAY=display:0.0
+      - PRIVATE_KEY=${PRIVATE_KEY}
+    entrypoint: []
+    working_dir: /app
+    command: >
+      bash -c 'echo -n "======> local noVNC URL:
+      http://localhost:3000 && yarn test:ci:e2e'
+    networks:
+      - x11

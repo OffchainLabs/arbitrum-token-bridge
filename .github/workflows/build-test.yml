@@ -120,23 +120,9 @@ jobs:
           path: ~/.cache/Cypress
           key: cypress-binary-${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./packages
-
-      - run: ls -R ./packages/arb-token-bridge-ui/build
-      - run: cat ./packages/arb-token-bridge-ui/build/index.html
-
-      - name: Copy .env
-        run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
-
-      - name: Run UI
-        run: yarn serve &
-
-      - name: Run tests
-        run: yarn test:ci:e2e
+      - name: Run Docker Compose
+        run: |
+          docker-compose --env-file ./packages/arb-token-bridge-ui/.e2e.env.sample up --build --exit-code-from synpress
 
   audit:
     name: Audit
