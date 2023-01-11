@@ -120,7 +120,7 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
 
     return { isValid: true, data }
   } catch (error) {
-    console.warn('Token List URL Invalid')
+    console.warn('Token List URL Invalid', tokenListURL)
     return { isValid: false, data: undefined }
   }
 }
@@ -129,18 +129,18 @@ export function fetchTokenLists(
   forL2ChainId: number
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
-    const listArray = BRIDGE_TOKEN_LISTS.filter(
+    const requestListArray = BRIDGE_TOKEN_LISTS.filter(
       bridgeTokenList => bridgeTokenList.originChainID === forL2ChainId
     )
 
     Promise.all(
-      listArray.map(bridgeTokenList =>
+      requestListArray.map(bridgeTokenList =>
         fetchTokenListFromURL(bridgeTokenList.url)
       )
     ).then(responses => {
       const tokenListsWithBridgeTokenListId = responses
         .map(({ data, isValid }, index) => {
-          const bridgeTokenListId = listArray[index]?.id
+          const bridgeTokenListId = requestListArray[index]?.id
 
           if (typeof bridgeTokenListId === 'undefined') {
             return { ...data, isValid }
@@ -148,7 +148,7 @@ export function fetchTokenLists(
 
           return {
             l2ChainId: forL2ChainId,
-            bridgeTokenListId: listArray[index]?.id,
+            bridgeTokenListId,
             isValid,
             ...data
           }
