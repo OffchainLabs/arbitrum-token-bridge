@@ -31,21 +31,6 @@ describe('Login Account', () => {
     cy.logout()
   })
 
-  it('should spy on RUNNER window.error', () => {
-    cy.spy(window.console, 'error').as('spyWinConsoleError')
-    console.error('questo e errore')
-    cy.get('@spyWinConsoleError').should('be.calledOnce')
-  })
-
-  it('should spy window.error', () => {
-    cy.visit('/', {
-      onBeforeLoad(win) {
-        cy.spy(win.console, 'error').as('spyWinConsoleError')
-      }
-    })
-    cy.get('@spyWinConsoleError').should('be.calledWith', 'from app')
-  })
-
   it('should pass this test', () => {
     console.log('testing logs')
     cy.visit('/')
