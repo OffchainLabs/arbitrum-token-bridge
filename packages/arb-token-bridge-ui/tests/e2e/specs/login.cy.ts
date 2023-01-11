@@ -43,7 +43,13 @@ describe('Login Account', () => {
 
   it('should pass this test', () => {
     console.log('testing logs')
+    cy.on('uncaught:exception', err => {
+      console.log('err', err)
+      cy.log('err', err)
+      throw new Error(`error from should pass test: ${err}`)
+    })
     cy.visit('http://localhost:3000')
+
     // cy.waitUntil(() =>
     //   cy.visit('/', {
     //     onBeforeLoad(win) {
