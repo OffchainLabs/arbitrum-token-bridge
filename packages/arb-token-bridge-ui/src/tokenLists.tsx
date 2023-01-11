@@ -131,9 +131,7 @@ export function fetchTokenLists(
   return new Promise(resolve => {
     Promise.all(
       BRIDGE_TOKEN_LISTS.filter(
-        bridgeTokenList =>
-          // if a specific l2ChainId is present, then only fetch for it, else fetch all
-          !forL2ChainId || bridgeTokenList.originChainID === forL2ChainId
+        bridgeTokenList => bridgeTokenList.originChainID === forL2ChainId
       ).map(bridgeTokenList => fetchTokenListFromURL(bridgeTokenList.url))
     ).then(responses => {
       const tokenListsWithBridgeTokenListId = responses
@@ -168,18 +166,8 @@ export function useTokenLists(
   return useSWRImmutable(
     ['useTokenLists', forL2ChainId],
     async () => {
-      let newTokensList = []
       const result = await fetchTokenLists(forL2ChainId)
-
-      if (typeof forL2ChainId === 'undefined') {
-        newTokensList = result
-      } else {
-        newTokensList = result.filter(
-          tokenList => Number(tokenList.l2ChainId) === forL2ChainId
-        )
-      }
-
-      return newTokensList
+      return result
     },
     {
       shouldRetryOnError: true,
