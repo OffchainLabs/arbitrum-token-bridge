@@ -165,10 +165,7 @@ export function useTokenLists(
 ): SWRResponse<TokenListWithId[]> {
   return useSWRImmutable(
     ['useTokenLists', forL2ChainId],
-    async () => {
-      const result = await fetchTokenLists(forL2ChainId)
-      return result
-    },
+    (_, _forL2ChainId) => fetchTokenLists(_forL2ChainId),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
