@@ -126,7 +126,7 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
 }
 
 export function fetchTokenLists(
-  forL2ChainId?: number
+  forL2ChainId: number
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
     Promise.all(
@@ -163,7 +163,7 @@ export function fetchTokenLists(
 }
 
 export function useTokenLists(
-  forL2ChainId?: number
+  forL2ChainId: number
 ): SWRResponse<TokenListWithId[]> {
   return useSWRImmutable(
     ['useTokenLists', forL2ChainId],

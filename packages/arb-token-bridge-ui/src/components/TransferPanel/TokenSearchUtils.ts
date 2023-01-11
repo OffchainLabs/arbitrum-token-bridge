@@ -16,9 +16,7 @@ export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
 
-  const { data: tokenLists = [] } = useTokenLists(
-    l2Network ? l2Network.chainID : undefined
-  )
+  const { data: tokenLists = [] } = useTokenLists(l2Network.chainID)
 
   return useMemo(() => {
     if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {

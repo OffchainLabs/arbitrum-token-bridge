@@ -27,7 +27,7 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    fetchTokenLists()
+    fetchTokenLists(l2Network.chainID)
       // Add tokens to bridge only after prefetching the token lists
       .then(() => {
         const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
