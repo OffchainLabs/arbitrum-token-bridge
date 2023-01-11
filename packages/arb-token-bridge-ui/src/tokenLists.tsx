@@ -104,7 +104,7 @@ export const addBridgeTokenListToBridge = (
 export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
   isValid: boolean
   data: TokenList | undefined
-  tokenListURL: string
+  tokenListURL?: string
 }> {
   try {
     const { data } = await axios.get(tokenListURL, {
@@ -115,7 +115,7 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
 
     if (!validateTokenList(data)) {
       console.warn('Token List Invalid', data)
-      return { isValid: false, data, tokenListURL }
+      return { isValid: false, data }
     }
 
     return { isValid: true, data, tokenListURL }
