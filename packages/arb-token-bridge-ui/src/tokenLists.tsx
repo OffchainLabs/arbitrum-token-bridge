@@ -100,9 +100,11 @@ export const addBridgeTokenListToBridge = (
   )
 }
 
-export async function fetchTokenListFromURL(
+export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
+  isValid: boolean
+  data: TokenList | undefined
   tokenListURL: string
-): Promise<{ isValid: boolean; data: TokenList | undefined }> {
+}> {
   try {
     const { data } = await axios.get(tokenListURL, {
       headers: {
@@ -112,28 +114,37 @@ export async function fetchTokenListFromURL(
 
     if (!validateTokenList(data)) {
       console.warn('Token List Invalid', data)
-      return { isValid: false, data }
+      return { isValid: false, data, tokenListURL }
     }
 
-    return { isValid: true, data }
+    return { isValid: true, data, tokenListURL }
   } catch (error) {
     console.warn('Token List URL Invalid', tokenListURL)
-    return { isValid: false, data: undefined }
+    return { isValid: false, data: undefined, tokenListURL }
   }
 }
 
-export function fetchTokenLists(): Promise<TokenListWithId[]> {
+export function fetchTokenLists(
+  forL2ChainId?: string
+): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
     Promise.all(
-      BRIDGE_TOKEN_LISTS.map(bridgeTokenList =>
-        fetchTokenListFromURL(bridgeTokenList.url)
-      )
+      BRIDGE_TOKEN_LISTS.filter(
+        bridgeTokenList =>
+          // if a specific l2ChainId is present, then only fetch for it, else fetch all
+          !forL2ChainId || bridgeTokenList.originChainID === forL2ChainId
+      ).map(bridgeTokenList => fetchTokenListFromURL(bridgeTokenList.url))
     ).then(responses => {
       const tokenListsWithBridgeTokenListId = responses
         .filter(({ isValid }) => isValid)
         // Attach the bridge token list id so we can easily retrieve a list later
-        .map(({ data }, index) => {
-          const token = BRIDGE_TOKEN_LISTS[index] as BridgeTokenList
+        .map(({ data, tokenListURL }) => {
+          // TODO: this can be better handled if we receive 1-to-1 id from token-lists in response as well
+          // currently only URL is the unique identfier which can map the request array elements to the response
+
+          const token = BRIDGE_TOKEN_LISTS.find(
+            list => list.url === tokenListURL
+          )
           if (!token) {
             return data
           }
@@ -155,7 +166,8 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
     ['useTokenLists', forL2ChainId],
     async () => {
       let newTokensList = []
-      const result = await fetchTokenLists()
+      const result = await fetchTokenLists(forL2ChainId)
+
       if (typeof forL2ChainId === 'undefined') {
         newTokensList = result
       } else {
@@ -163,6 +175,7 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
           tokenList => tokenList.l2ChainId === forL2ChainId
         )
       }
+
       return newTokensList
     },
     {
