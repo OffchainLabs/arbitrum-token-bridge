@@ -1,16 +1,17 @@
 import { useCallback, useMemo } from 'react'
 import axios from 'axios'
-import useSWR from 'swr'
+import useSWR, { KeyedMutator } from 'swr'
 
 export type UseETHPriceResult = {
   ethPrice: number
   ethToUSD: (etherValue: number) => number
   error: Error
   isValidating: boolean
+  mutate: KeyedMutator<any>
 }
 
 export function useETHPrice(): UseETHPriceResult {
-  const { data, error, isValidating } = useSWR(
+  const { data, error, isValidating, mutate } = useSWR(
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
     url => axios.get(url).then(res => res.data),
     {
@@ -35,8 +36,9 @@ export function useETHPrice(): UseETHPriceResult {
       ethPrice: data?.ethereum?.usd,
       ethToUSD,
       error,
-      isValidating
+      isValidating,
+      mutate
     }),
-    [data, error, ethToUSD, isValidating]
+    [data, error, ethToUSD, isValidating, mutate]
   )
 }
