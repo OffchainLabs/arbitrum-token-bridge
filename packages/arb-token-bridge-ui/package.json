@@ -48,7 +48,7 @@
     "getUnusedComponents": "ts-prune | grep ' default$'",
     "e2e:install": "cypress install",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "yarn synpress run --configFile synpress.config.ts"
+    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts"
   },
   "browserslist": {
     "production": [
