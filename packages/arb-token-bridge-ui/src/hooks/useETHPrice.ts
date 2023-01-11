@@ -6,10 +6,11 @@ export type UseETHPriceResult = {
   ethPrice: number
   ethToUSD: (etherValue: number) => number
   error: Error
+  isValidating: boolean
 }
 
 export function useETHPrice(): UseETHPriceResult {
-  const { data, error } = useSWR(
+  const { data, error, isValidating } = useSWR(
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
     url => axios.get(url).then(res => res.data),
     {
@@ -30,7 +31,12 @@ export function useETHPrice(): UseETHPriceResult {
   )
 
   return useMemo(
-    () => ({ ethPrice: data?.ethereum?.usd, ethToUSD, error }),
-    [data, error, ethToUSD]
+    () => ({
+      ethPrice: data?.ethereum?.usd,
+      ethToUSD,
+      error,
+      isValidating
+    }),
+    [data, error, ethToUSD, isValidating]
   )
 }
