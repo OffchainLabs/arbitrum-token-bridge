@@ -111,6 +111,7 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
+      - uses: browser-actions/setup-chrome@latest
 
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
