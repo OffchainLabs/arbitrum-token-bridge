@@ -31,9 +31,13 @@ describe('Login Account', () => {
     cy.logout()
   })
 
+  // it('just visits home page', () => {
+  //   cy.visit('/')
+  // })
+
   it('should pass this test', () => {
     console.log('testing logs')
-    cy.visit('/')
+    cy.visit('http://localhost:3000')
     // cy.waitUntil(() =>
     //   cy.visit('/', {
     //     onBeforeLoad(win) {
@@ -58,7 +62,7 @@ describe('Login Account', () => {
 
       throw error
     })
-    cy.waitUntil(() => cy.visit('/'))
+    cy.waitUntil(() => cy.visit('http://localhost:3000'))
     cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
