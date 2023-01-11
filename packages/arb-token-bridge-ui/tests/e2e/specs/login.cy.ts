@@ -33,22 +33,23 @@ describe('Login Account', () => {
 
   it('should pass this test', () => {
     console.log('testing logs')
-    cy.waitUntil(() =>
-      cy.visit('/', {
-        onBeforeLoad(win) {
-          cy.stub(win.console, 'log').as('consoleLog')
-          cy.stub(win.console, 'error').as('consoleError')
-        }
-      })
-    )
+    cy.visit('/')
+    // cy.waitUntil(() =>
+    //   cy.visit('/', {
+    //     onBeforeLoad(win) {
+    //       cy.stub(win.console, 'log').as('consoleLog')
+    //       cy.stub(win.console, 'error').as('consoleError')
+    //     }
+    //   })
+    // )
     cy.findByText('WalletConnect').should('be.visible')
-    cy.on('fail', error => {
-      debugger
+    // cy.on('fail', error => {
+    //   debugger
 
-      console.log('ERROR FROM WALLET CONNECT BUTTON')
+    //   console.log('ERROR FROM WALLET CONNECT BUTTON')
 
-      throw error
-    })
+    //   throw error
+    // })
   })
 
   it('should show connect wallet if not logged in', () => {
