@@ -282,7 +282,7 @@ function TokenListsPanel() {
     }
 
     return BRIDGE_TOKEN_LISTS.filter(
-      tokenList => tokenList.originChainID === String(l2Network.chainID)
+      tokenList => tokenList.originChainID === l2Network.chainID
     )
   }, [l2Network])
 
@@ -588,8 +588,8 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
 
-  const { isFetching: isFetchingTokenLists } = useTokenLists(
-    String(l2.network.chainID)
+  const { isValidating: isFetchingTokenLists } = useTokenLists(
+    l2.network.chainID
   ) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)

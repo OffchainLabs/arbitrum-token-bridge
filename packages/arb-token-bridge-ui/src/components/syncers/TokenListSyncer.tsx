@@ -32,7 +32,7 @@ const TokenListSyncer = (): JSX.Element => {
       .then(() => {
         const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
           bridgeTokenList =>
-            bridgeTokenList.originChainID === String(l2Network.chainID) &&
+            bridgeTokenList.originChainID === l2Network.chainID &&
             bridgeTokenList.isDefault
         )
 
