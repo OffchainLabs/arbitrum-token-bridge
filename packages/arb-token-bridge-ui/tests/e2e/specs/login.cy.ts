@@ -13,6 +13,12 @@ cy.on('window:before:load', win => {
   cy.spy(win.console, 'error')
 })
 
+cy.on('uncaught:exception', err => {
+  console.log('err', err)
+  cy.log('err', err)
+  throw err
+})
+
 describe('Login Account', () => {
   let l1ETHbal
   let l2ETHbal
