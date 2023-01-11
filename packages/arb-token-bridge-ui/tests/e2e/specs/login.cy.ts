@@ -28,7 +28,14 @@ describe('Login Account', () => {
   })
 
   it('should pass this test', () => {
-    cy.waitUntil(() => cy.visit('/'))
+    cy.waitUntil(() =>
+      cy.visit('/', {
+        onBeforeLoad(win) {
+          cy.stub(win.console, 'log').as('consoleLog')
+          cy.stub(win.console, 'error').as('consoleError')
+        }
+      })
+    )
     cy.findByText('WalletConnect').should('be.visible')
     cy.on('fail', error => {
       debugger
