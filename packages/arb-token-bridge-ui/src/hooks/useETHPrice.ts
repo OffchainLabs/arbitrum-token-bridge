@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import axios from 'axios'
 import useSWR, { KeyedMutator } from 'swr'
 
@@ -30,14 +30,5 @@ export function useETHPrice(): UseETHPriceResult {
     [data]
   )
 
-  return useMemo(
-    () => ({
-      ethPrice: data ?? 0,
-      ethToUSD,
-      error,
-      isValidating,
-      mutate
-    }),
-    [data, error, ethToUSD, isValidating, mutate]
-  )
+  return { ethPrice: data ?? 0, ethToUSD, error, isValidating, mutate }
 }
