@@ -161,8 +161,11 @@ export function fetchTokenLists(
   })
 }
 
-export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const { data = [] } = useSWRImmutable(
+export function useTokenLists(forL2ChainId?: string): {
+  tokenLists: TokenListWithId[]
+  isFetching: boolean
+} {
+  const { data = [], isValidating } = useSWRImmutable(
     ['useTokenLists', forL2ChainId],
     async () => {
       let newTokensList = []
@@ -185,5 +188,5 @@ export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
     }
   )
 
-  return data
+  return { tokenLists: data, isFetching: isValidating }
 }

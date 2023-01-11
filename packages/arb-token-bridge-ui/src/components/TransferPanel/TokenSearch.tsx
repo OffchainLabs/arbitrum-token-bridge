@@ -11,7 +11,8 @@ import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
   listIdsToNames,
-  addBridgeTokenListToBridge
+  addBridgeTokenListToBridge,
+  useTokenLists
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
 import { Button } from '../common/Button'
@@ -587,6 +588,10 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
 
+  const { isFetching: isFetchingTokenLists } = useTokenLists(
+    String(l2.network.chainID)
+  ) // to show a small loader while token-lists are loading when search panel opens
+
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
   async function selectToken(_token: ERC20BridgeToken | null) {
@@ -646,12 +651,24 @@ export function TokenSearch({
         </div>
         <TokensPanel onTokenSelected={selectToken} />
         <div className="flex justify-end pt-6">
-          <button
-            className="arb-hover text-sm font-medium text-blue-link"
-            onClick={() => setCurrentPanel(Panel.LISTS)}
-          >
-            Manage token lists
-          </button>
+          {isFetchingTokenLists ? (
+            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
+              <Loader
+                type="Oval"
+                color="rgb(40, 160, 240)"
+                height={16}
+                width={16}
+              />
+              Fetching Tokens...
+            </span>
+          ) : (
+            <button
+              className="arb-hover text-gray text-sm font-medium text-blue-link"
+              onClick={() => setCurrentPanel(Panel.LISTS)}
+            >
+              Manage token lists
+            </button>
+          )}
         </div>
       </>
     )
