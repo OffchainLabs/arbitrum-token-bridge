@@ -23,7 +23,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     app: { arbTokenBridge }
   } = useAppState()
 
-  const { toUSD } = useETHPrice()
+  const { ethToUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
   const { isMainnet } = isNetwork(l1.network.chainID)
@@ -41,9 +41,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   const approvalFeeText = useMemo(() => {
     const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
-    const usd = formatUSD(toUSD(estimatedGasFees))
+    const usd = formatUSD(ethToUSD(estimatedGasFees))
     return `${eth}${isMainnet ? ` (${usd})` : ''}`
-  }, [estimatedGasFees, toUSD, isMainnet])
+  }, [estimatedGasFees, ethToUSD, isMainnet])
 
   useEffect(() => {
     if (!isOpen) {

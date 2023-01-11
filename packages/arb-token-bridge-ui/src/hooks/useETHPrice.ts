@@ -1,39 +1,34 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import axios from 'axios'
-
-export type ETHPrice = 'loading' | 'error' | number
+import useSWR, { KeyedMutator } from 'swr'
 
 export type UseETHPriceResult = {
-  ethPrice: ETHPrice
-  toUSD: (etherValue: number) => number
+  ethPrice: number
+  ethToUSD: (etherValue: number) => number
+  error?: Error
+  isValidating: boolean
+  mutate: KeyedMutator<any>
 }
 
 export function useETHPrice(): UseETHPriceResult {
-  const [ethPrice, setETHPrice] = useState<ETHPrice>('loading')
-
-  useEffect(() => {
-    async function fetchETHPrice() {
-      try {
-        const response = await axios.get(
-          'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd'
-        )
-
-        setETHPrice(response.data.ethereum.usd)
-      } catch (error) {
-        setETHPrice('error')
-      }
+  const { data, error, isValidating, mutate } = useSWR<number, Error>(
+    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
+    url => axios.get(url).then(res => res.data.ethereum.usd),
+    {
+      refreshInterval: 30_000,
+      shouldRetryOnError: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 3_000
     }
-
-    fetchETHPrice()
-  }, [])
-
-  const toUSD = useCallback(
-    (etherValue: number) => {
-      const safeETHPrice = typeof ethPrice === 'number' ? ethPrice : 0
-      return etherValue * safeETHPrice
-    },
-    [ethPrice]
   )
 
-  return useMemo(() => ({ ethPrice, toUSD }), [ethPrice, toUSD])
+  const ethToUSD = useCallback(
+    (etherValue: number) => {
+      const safeETHPrice = typeof data === 'number' ? data : 0
+      return etherValue * safeETHPrice
+    },
+    [data]
+  )
+
+  return { ethPrice: data ?? 0, ethToUSD, error, isValidating, mutate }
 }
