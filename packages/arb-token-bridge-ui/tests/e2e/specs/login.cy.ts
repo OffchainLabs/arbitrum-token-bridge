@@ -9,6 +9,10 @@ import {
   arbRpcUrl
 } from './../../support/common'
 
+cy.on('window:before:load', win => {
+  cy.spy(win.console, 'error')
+})
+
 describe('Login Account', () => {
   let l1ETHbal
   let l2ETHbal
@@ -28,6 +32,7 @@ describe('Login Account', () => {
   })
 
   it('should pass this test', () => {
+    console.log('testing logs')
     cy.waitUntil(() =>
       cy.visit('/', {
         onBeforeLoad(win) {
