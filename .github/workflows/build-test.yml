@@ -116,7 +116,8 @@ jobs:
 
       - name: Install docker-compose
         run: |
-          apt install -y docker-compose
+          apt-get update
+          apt-get install -y docker-compose
 
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
