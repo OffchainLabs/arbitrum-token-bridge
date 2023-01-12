@@ -48,7 +48,7 @@ describe('Login Account', () => {
     //   cy.log('err', err)
     //   throw new Error(`error from should pass test: ${err}`)
     // })
-    cy.visit('http://localhost:3000')
+    cy.visit('/').as('home')
 
     // cy.waitUntil(() =>
     //   cy.visit('/', {
@@ -58,7 +58,9 @@ describe('Login Account', () => {
     //     }
     //   })
     // )
-    cy.findByText('WalletConnect').should('be.visible')
+    cy.wait('@home').then(() => {
+      cy.findByText('WalletConnect').should('be.visible')
+    })
     // cy.on('fail', error => {
     //   debugger
 
