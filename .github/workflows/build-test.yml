@@ -104,7 +104,7 @@ jobs:
   test-e2e:
     name: Test E2E
     container:
-      image: synthetixio/docker-e2e:16.17-ubuntu
+      image: synthetixio/docker-e2e:18.12-ubuntu
       env:
         NODE_ENV: development
       ports:
