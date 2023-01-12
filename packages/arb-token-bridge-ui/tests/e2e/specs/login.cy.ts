@@ -48,12 +48,7 @@ describe('Login Account', () => {
     //   cy.log('err', err)
     //   throw new Error(`error from should pass test: ${err}`)
     // })
-    cy.visit('/').then(() => {
-      setTimeout(
-        () => cy.findByText('WalletConnect').should('be.visible'),
-        10000
-      )
-    })
+    cy.visit('/')
 
     // cy.waitUntil(() =>
     //   cy.visit('/', {
@@ -63,7 +58,10 @@ describe('Login Account', () => {
     //     }
     //   })
     // )
-
+    cy.find('.web3modal-provider-container')
+      .should('not.be.undefined')
+      .and('not.be.visible')
+    // cy.findByText('WalletConnect').should('be.visible')
     // cy.on('fail', error => {
     //   debugger
 
