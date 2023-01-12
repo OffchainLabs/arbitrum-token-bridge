@@ -105,7 +105,7 @@ jobs:
     name: Test E2E
     container:
       # image: synthetixio/docker-e2e:18.12-ubuntu
-      image: cypress/base:16.18.1
+      image: cypress/base:18.12.1
       env:
         NODE_ENV: development
       ports:
