@@ -104,7 +104,8 @@ jobs:
   test-e2e:
     name: Test E2E
     container:
-      image: synthetixio/docker-e2e:18.12-ubuntu
+      # image: synthetixio/docker-e2e:18.12-ubuntu
+      image: cypress/base:16.18.1
       env:
         NODE_ENV: development
       ports:
@@ -116,9 +117,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install docker-compose
-        run: |
-          apt-get install -y docker-compose
+      # - name: Install docker-compose
+      #   run: |
+      #     # apt clean
+      #     # apt-get update
+      #     apt-get install -y docker-compose
 
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
