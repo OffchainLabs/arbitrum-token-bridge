@@ -52,6 +52,7 @@
   },
   "browserslist": {
     "production": [
+
       ">0.2%",
       "not dead",
       "not op_mini all",
@@ -66,7 +67,7 @@
   },
   "devDependencies": {
     "@craco/craco": "6.2.0",
-    "@synthetixio/synpress": "^2.3.3",
+    "@synthetixio/synpress": "^3.0.5",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",
     "@types/react": "^17.0.18",
