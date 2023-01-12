@@ -126,7 +126,6 @@ jobs:
       #     apt clean
       #     apt-get update --fix-missing
       #     apt-get install -y docker-compose
-
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
         # with:
