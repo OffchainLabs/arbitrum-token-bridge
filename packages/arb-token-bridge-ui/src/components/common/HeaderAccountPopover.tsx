@@ -1,12 +1,12 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
-import { Popover, Tab } from '@headlessui/react'
+import { Popover } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ExternalLinkIcon,
-  InformationCircleIcon,
-  LogoutIcon
+  LogoutIcon,
+  DocumentTextIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -18,13 +18,7 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import { useAppState } from '../../state'
-import { MergedTransaction } from '../../state/app/state'
-import { PendingWithdrawalsLoadedState } from '../../util'
-import {
-  TransactionsTable,
-  TransactionsDataStatus
-} from '../TransactionsTable/TransactionsTable'
+
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
@@ -35,21 +29,6 @@ const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
 
-function getTransactionsDataStatus(
-  pwLoadedState: PendingWithdrawalsLoadedState
-): TransactionsDataStatus {
-  switch (pwLoadedState) {
-    case PendingWithdrawalsLoadedState.LOADING:
-      return 'loading'
-
-    case PendingWithdrawalsLoadedState.ERROR:
-      return 'error'
-
-    case PendingWithdrawalsLoadedState.READY:
-      return 'success'
-  }
-}
-
 function CustomBoringAvatar({ size, name }: { size: number; name?: string }) {
   return (
     <BoringAvatar
@@ -59,10 +38,6 @@ function CustomBoringAvatar({ size, name }: { size: number; name?: string }) {
       colors={['#11365E', '#EDD75A', '#73B06F', '#0C8F8F', '#405059']}
     />
   )
-}
-
-function isDeposit(tx: MergedTransaction) {
-  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
 async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
@@ -118,9 +93,6 @@ export function HeaderAccountPopover() {
   const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
-  const {
-    app: { mergedTransactions, pwLoadedState }
-  } = useAppState()
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
@@ -141,21 +113,6 @@ export function HeaderAccountPopover() {
 
     resolveNameServiceInfo()
   }, [account, l1Provider])
-
-  const [deposits, withdrawals] = useMemo(() => {
-    const _deposits: MergedTransaction[] = []
-    const _withdrawals: MergedTransaction[] = []
-
-    mergedTransactions.forEach(tx => {
-      if (isDeposit(tx)) {
-        _deposits.push(tx)
-      } else {
-        _withdrawals.push(tx)
-      }
-    })
-
-    return [_deposits, _withdrawals]
-  }, [mergedTransactions])
 
   const currentNetwork = useMemo(() => {
     if (status !== UseNetworksAndSignersStatus.CONNECTED) {
@@ -187,6 +144,10 @@ export function HeaderAccountPopover() {
     window.location.reload()
   }
 
+  function openTransactionHistory() {
+    // no-op
+  }
+
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
@@ -206,109 +167,77 @@ export function HeaderAccountPopover() {
         </div>
       </Popover.Button>
       <Transition>
-        <Popover.Panel className="relative right-0 flex h-96 flex-col rounded-md lg:absolute lg:mt-4 lg:min-w-[896px] lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
-          <div className="bg-blue-arbitrum p-4 lg:rounded-tl-md lg:rounded-tr-md">
-            <div className="flex flex-row justify-between">
-              <Transition show={showCopied}>
-                <span className="absolute left-[89px] top-4 text-xs font-light text-white">
-                  Copied to clipboard!
-                </span>
-              </Transition>
-              <button
-                className="arb-hover hidden flex-row items-center space-x-4 rounded-full lg:flex"
-                onClick={() =>
-                  copy(ensInfo.name ?? udInfo.name ?? account ?? '')
-                }
-              >
-                <SafeImage
-                  src={ensInfo.avatar || undefined}
-                  className="h-14 w-14 rounded-full"
-                  fallback={<CustomBoringAvatar size={56} name={account} />}
-                />
-                <div className="flex flex-row items-center space-x-3">
-                  <span className="text-2xl font-normal text-white">
+        <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-4 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+          {/* Profile photo with address */}
+          <div className="flex flex-row justify-between">
+            <Transition show={showCopied}>
+              <span className="absolute left-[89px] top-4 z-10 text-xs font-light text-white">
+                Copied to clipboard!
+              </span>
+            </Transition>
+            <button
+              className="relative hidden flex-row items-center px-4 py-2 text-gray-7 hover:bg-blue-arbitrum hover:text-white lg:flex"
+              onClick={() => copy(ensInfo.name ?? udInfo.name ?? account ?? '')}
+            >
+              {/* Blurred background */}
+              <div className="absolute inset-0 -z-50 flex h-[40px] w-full flex-col items-center overflow-hidden bg-dark text-center">
+                <div className="scale-400 blur-2xl filter">
+                  <SafeImage
+                    className="h-100 w-100 rounded-full"
+                    src={ensInfo.avatar || undefined}
+                    fallback={<CustomBoringAvatar size={200} name={account} />}
+                  />
+                </div>
+              </div>
+
+              {/* Actual image and account name */}
+              <div className="relative z-10 flex flex-row items-center space-x-2">
+                <div className="box-content rounded-full border-[5px] border-dark	">
+                  <SafeImage
+                    src={ensInfo.avatar || undefined}
+                    className="h-14 w-14 rounded-full"
+                    fallback={<CustomBoringAvatar size={56} name={account} />}
+                  />
+                </div>
+                <div className="flex translate-y-[15px] transform flex-row items-center space-x-3">
+                  <span className="text-md font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
-                  <CustomClipboardCopyIcon className="h-6 w-6 text-white" />
+                  <CustomClipboardCopyIcon className="h-4 w-4" />
                 </div>
-              </button>
-              <div className="flex w-full flex-row justify-between px-6 lg:flex-col lg:items-end lg:px-0">
-                <ExternalLink
-                  href={`${getExplorerUrl(
-                    currentNetwork?.chainID ?? -1
-                  )}/address/${account}`}
-                  className="arb-hover flex flex-row items-center space-x-1 font-light text-white hover:underline"
-                >
-                  <ExternalLinkIcon className="h-4 w-4 text-white" />
-                  <span>View on explorer</span>
-                </ExternalLink>
-                <button
-                  className="arb-hover flex flex-row items-center space-x-1 font-light text-white"
-                  onClick={disconnectWallet}
-                >
-                  <LogoutIcon className="h-4 w-4 text-white" />
-                  <span>Disconnect</span>
-                </button>
               </div>
-            </div>
+            </button>
           </div>
-          <div className="flex-grow overflow-y-scroll bg-white lg:rounded-bl-md lg:rounded-br-md lg:p-4">
-            <div className="flex flex-col space-y-1 px-4 py-2 lg:px-0 lg:py-0 lg:pb-2">
-              <span>Transaction History</span>
-              <div className="flex flex-row items-center space-x-1">
-                <InformationCircleIcon className="h-5 w-5 text-gray-10" />
-                <span className="text-sm font-light text-gray-10">
-                  Withdrawals older than one year are currently not displayed.
-                </span>
-              </div>
-            </div>
-            <Tab.Group>
-              <Tab.List>
-                <Tab as={Fragment}>
-                  {({ selected }) => (
-                    <button
-                      className={`${
-                        !selected ? 'arb-hover' : ''
-                      } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected &&
-                        `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
-                      }`}
-                    >
-                      Deposits
-                    </button>
-                  )}
-                </Tab>
-                <Tab as={Fragment}>
-                  {({ selected }) => (
-                    <button
-                      className={`${
-                        !selected ? 'arb-hover' : ''
-                      } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                        selected &&
-                        `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
-                      }`}
-                    >
-                      Withdrawals
-                    </button>
-                  )}
-                </Tab>
-              </Tab.List>
-              <Tab.Panel>
-                <TransactionsTable
-                  // Currently we load deposit history from local cache, so it's always a success
-                  status="success"
-                  transactions={deposits}
-                  className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
-                />
-              </Tab.Panel>
-              <Tab.Panel>
-                <TransactionsTable
-                  status={getTransactionsDataStatus(pwLoadedState)}
-                  transactions={withdrawals}
-                  className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
-                />
-              </Tab.Panel>
-            </Tab.Group>
+
+          <div className="flex w-full flex-col justify-between px-6 lg:flex-col lg:items-end lg:px-0">
+            {/* Transactions button */}
+            <button
+              className="arb-hover flex w-full flex-row items-center space-x-1 px-4 py-2 font-light text-white hover:bg-blue-arbitrum"
+              onClick={openTransactionHistory}
+            >
+              <DocumentTextIcon className="h-4 w-4 text-white" />
+              <span>Transactions</span>
+            </button>
+
+            {/* Explorer button */}
+            <ExternalLink
+              href={`${getExplorerUrl(
+                currentNetwork?.chainID ?? -1
+              )}/address/${account}`}
+              className="arb-hover flex w-full flex-row items-center space-x-1 px-4 py-2 font-light text-white hover:bg-blue-arbitrum"
+            >
+              <ExternalLinkIcon className="h-4 w-4 text-white" />
+              <span>Explorer</span>
+            </ExternalLink>
+
+            {/* Disconnect button */}
+            <button
+              className="arb-hover flex w-full flex-row items-center space-x-1 px-4 py-2 font-light text-white hover:bg-blue-arbitrum"
+              onClick={disconnectWallet}
+            >
+              <LogoutIcon className="h-4 w-4 text-white" />
+              <span>Disconnect</span>
+            </button>
           </div>
         </Popover.Panel>
       </Transition>
