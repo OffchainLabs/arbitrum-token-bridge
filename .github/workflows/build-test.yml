@@ -141,24 +141,23 @@ jobs:
       - name: Copy .env
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
-      # - name: Run UI
-      #   run: yarn serve &
+      - name: Run UI
+        run: yarn serve &
 
-      # - name: Run tests
-      #   run: yarn test:ci:e2e
+      - name: Run tests
+        run: yarn test:ci:e2e
 
-      - name: UI Tests
-        uses: Synthetixio/synpress
-        with:
-          install: false
-          start: yarn start
-          wait-on: 'http://localhost:3000'
-          wait-on-timeout: 120
-          browser: chrome
-          record: true
-          parallel: false
-          group: 'UI - Chrome'
-          spec: cypress/tests/ui/*
+      # - name: UI Tests
+      #   with:
+      #     install: false
+      #     start: yarn start
+      #     wait-on: 'http://localhost:3000'
+      #     wait-on-timeout: 120
+      #     browser: chrome
+      #     record: true
+      #     parallel: false
+      #     group: 'UI - Chrome'
+      #     spec: cypress/tests/ui/*
 
   audit:
     name: Audit
