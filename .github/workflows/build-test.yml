@@ -103,10 +103,10 @@ jobs:
 
   test-e2e:
     name: Test E2E
-    # container:
-    #   image: synthetixio/docker-e2e:16.17-ubuntu
-    #   env:
-    #     NODE_ENV: development
+    container:
+      image: synthetixio/docker-e2e:16.17-ubuntu
+      env:
+        NODE_ENV: development
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -118,6 +118,8 @@ jobs:
 
       - name: Restore "node_modules" from cache
         uses: ./.github/actions/restore-cache
+        with:
+          path: "**/node_modules"
 
       - name: Restore Cypress binary from cache
         uses: martijnhols/actions-cache/restore@v3
@@ -139,11 +141,24 @@ jobs:
       - name: Copy .env
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
-      - name: Run UI
-        run: yarn serve &
+      # - name: Run UI
+      #   run: yarn serve &
 
-      - name: Run tests
-        run: yarn test:ci:e2e
+      # - name: Run tests
+      #   run: yarn test:ci:e2e
+
+      - name: UI Tests
+        uses: Synthetixio/synpress
+        with:
+          install: false
+          start: yarn start
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          browser: chrome
+          record: true
+          parallel: false
+          group: 'UI - Chrome'
+          spec: cypress/tests/ui/*
 
   audit:
     name: Audit

@@ -42,12 +42,12 @@ describe('Login Account', () => {
   // })
 
   it('should pass this test', () => {
-    console.log('testing logs')
-    cy.on('uncaught:exception', err => {
-      console.log('err', err)
-      cy.log('err', err)
-      throw new Error(`error from should pass test: ${err}`)
-    })
+    // console.log('testing logs')
+    // cy.on('uncaught:exception', err => {
+    //   console.log('err', err)
+    //   cy.log('err', err)
+    //   throw new Error(`error from should pass test: ${err}`)
+    // })
     cy.visit('http://localhost:3000')
 
     // cy.waitUntil(() =>
@@ -74,7 +74,7 @@ describe('Login Account', () => {
 
       throw error
     })
-    cy.waitUntil(() => cy.visit('http://localhost:3000'))
+    cy.visit('/')
     cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
