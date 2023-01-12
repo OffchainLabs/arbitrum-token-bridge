@@ -107,7 +107,8 @@ jobs:
       image: synthetixio/docker-e2e:16.17-ubuntu
       env:
         NODE_ENV: development
-
+      # volumes:
+      #   "**/node_modules"
     runs-on: ubuntu-latest
     needs: build
     steps:
