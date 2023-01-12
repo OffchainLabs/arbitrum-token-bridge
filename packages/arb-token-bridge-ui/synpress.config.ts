@@ -33,6 +33,10 @@ export default defineConfig({
       const wallet = new Wallet(process.env.PRIVATE_KEY!)
       config.env.ADDRESS = await wallet.getAddress()
       config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+      on('before:browser:launch', async (browser = undefined, arguments_) => {
+        arguments_.args.push('--disable-gpu')
+        return arguments_
+      })
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       return config

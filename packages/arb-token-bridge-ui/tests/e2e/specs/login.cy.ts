@@ -58,10 +58,7 @@ describe('Login Account', () => {
     //     }
     //   })
     // )
-    cy.find('.web3modal-provider-container')
-      .should('not.be.undefined')
-      .and('not.be.visible')
-    // cy.findByText('WalletConnect').should('be.visible')
+    cy.findByText('WalletConnect').should('be.visible')
     // cy.on('fail', error => {
     //   debugger
 
@@ -72,11 +69,6 @@ describe('Login Account', () => {
   })
 
   it('should show connect wallet if not logged in', () => {
-    cy.on('fail', error => {
-      debugger
-
-      throw error
-    })
     cy.visit('/')
     cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
