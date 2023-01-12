@@ -125,6 +125,8 @@ jobs:
 
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
+        with:
+          submodules: true
 
       - name: Restore "node_modules" from cache
         uses: ./.github/actions/restore-cache
