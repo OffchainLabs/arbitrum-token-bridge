@@ -119,8 +119,8 @@ jobs:
 
       - name: Install docker-compose
         run: |
-          # apt clean
-          # apt-get update --fix-missing
+          apt clean
+          apt-get update --fix-missing
           apt-get install -y docker-compose
 
       - name: Run Nitro test node
