@@ -11,6 +11,7 @@ import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
+import { TransactionHistory } from '../common/TransactionHistory'
 
 const motionDivProps = {
   layout: true,
@@ -70,6 +71,14 @@ function dedupeWithdrawals(transactions: MergedTransaction[]) {
   })
 
   return Object.values(map)
+}
+
+const SidePanel = () => {
+  return (
+    <div className="border-1 fixed right-0 top-0 z-50 h-full w-2/5 border-white bg-dark p-4 text-white">
+      <TransactionHistory />
+    </div>
+  )
 }
 
 export function MainContent() {
@@ -183,6 +192,8 @@ export function MainContent() {
           )}
         </AnimatePresence>
       </div>
+
+      <SidePanel />
     </div>
   )
 }

@@ -52,13 +52,15 @@ export const TransactionHistory = () => {
   return (
     <>
       <div className="flex flex-col space-y-1 px-4 py-2 lg:px-0 lg:py-0 lg:pb-2">
-        <span>Transaction History</span>
-        <div className="flex flex-row items-center space-x-1">
+        <span className="text-xl">Transaction History</span>
+
+        <div className="h-1 w-full border-b-[1px] border-gray-9" />
+        {/* <div className="flex flex-row items-center space-x-1">
           <InformationCircleIcon className="h-5 w-5 text-gray-10" />
           <span className="text-sm font-light text-gray-10">
             Withdrawals older than one year are currently not displayed.
           </span>
-        </div>
+        </div> */}
       </div>
       <Tab.Group>
         <Tab.List>

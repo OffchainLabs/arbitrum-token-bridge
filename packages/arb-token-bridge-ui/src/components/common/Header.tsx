@@ -14,7 +14,7 @@ import { GET_HELP_LINK } from '../../constants'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
 
-const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
+const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
 function toHeaderMenuProps(
   links: { title: string; link: string }[]

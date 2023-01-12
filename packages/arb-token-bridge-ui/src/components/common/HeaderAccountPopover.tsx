@@ -169,7 +169,7 @@ export function HeaderAccountPopover() {
       <Transition>
         <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-4 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
-          <div className="flex flex-row justify-between">
+          <div className="flex flex-row justify-between pb-2">
             <Transition show={showCopied}>
               <span className="absolute left-[89px] top-4 z-10 text-xs font-light text-white">
                 Copied to clipboard!
