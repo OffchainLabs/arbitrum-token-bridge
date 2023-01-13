@@ -193,7 +193,7 @@ export function MainContent() {
         </AnimatePresence>
       </div>
 
-      <SidePanel />
+      {false && <SidePanel />}
     </div>
   )
 }
