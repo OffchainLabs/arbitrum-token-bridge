@@ -41,6 +41,22 @@ describe('Login Account', () => {
   //   cy.visit('/')
   // })
 
+  it('Connect Wallet button visible', () => {
+    cy.visit('/')
+    cy.findByText('Connect Wallet').should('be.visible')
+  })
+
+  it('Connect Wallet button in the main content visible', () => {
+    cy.visit('/')
+    cy.find('.rounded-lg').findByText('Connect Wallet').should('be.visible')
+  })
+
+  it('Clicks connect wallet and displays MetaMask popup', () => {
+    cy.visit('/')
+    cy.findByText('Connect Wallet').click()
+    cy.isMetamaskWindowActive().should('be.true')
+  })
+
   it('MetaMask image is defined', () => {
     cy.visit('/')
     cy.findByAltText('MetaMask').should('not.be.undefined')
