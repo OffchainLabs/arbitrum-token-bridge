@@ -27,6 +27,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant: ButtonVariant
   loading?: boolean
   loadingProps?: ButtonLoadingProps
+  textLeft?: true
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -59,7 +60,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        <div className="flex flex-row items-center justify-center space-x-3">
+        <div
+          className={`flex flex-row items-center justify-${
+            props.textLeft ? 'start' : 'center'
+          } space-x-3`}
+        >
           {showLoader && (
             <Loader
               type="TailSpin"

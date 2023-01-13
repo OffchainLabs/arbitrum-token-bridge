@@ -440,12 +440,14 @@ export const useArbTokenBridge = (
     erc20L1Address,
     amount,
     l1Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) {
     const { symbol, decimals } =
       searchTokenFromList(erc20L1Address) ||
@@ -461,6 +463,7 @@ export const useArbTokenBridge = (
       l2Provider: l2.provider,
       from: walletAddress,
       erc20L1Address,
+      destinationAddress,
       amount
     })
 
@@ -559,13 +562,22 @@ export const useArbTokenBridge = (
     erc20L1Address,
     amount,
     l2Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) {
+    const provider = l2Signer.provider
+    const isSmartContractAddress =
+      provider && (await provider.getCode(String(erc20L1Address))).length < 2
+    if (isSmartContractAddress && !destinationAddress) {
+      throw new Error(`Missing destination address`)
+    }
+
     if (typeof bridgeTokens === 'undefined') {
       return
     }
@@ -592,7 +604,7 @@ export const useArbTokenBridge = (
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
-      destinationAddress: walletAddress,
+      destinationAddress: destinationAddress ?? walletAddress,
       amount
     })
 

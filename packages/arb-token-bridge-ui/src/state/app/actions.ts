@@ -39,7 +39,7 @@ export const reset = ({ state }: Context, newChainId: number) => {
     state.app.l2NetworkChainId !== newChainId
   ) {
     // only reset the selected token if we are not switching between the pair of l1-l2 networks.
-    // we dont want to reset the token if we are switching from Rinkeby to Rinkarby for example
+    // we dont want to reset the token if we are switching from Goerli to Arbitrum Goerli for example
     // because we are maybe in the process of auto switching the network and triggering deposit or withdraw
     state.app.selectedToken = null
   }

@@ -6,8 +6,8 @@ const useTwitter = () => {
   } = useAppState()
   const walletAddress = arbTokenBridge.walletAddress
   const text =
-    `ok I need @arbitrum to give me Nitro testnet gas. like VERY SOON. I cant take this, I’ve been waiting for @nitro_devnet release. I just want to start developing. but I need the gas IN MY WALLET NOW. can devs DO SOMETHING?? \r\n SEND HERE: ${
-      walletAddress || '0x*YOUR**ETH**ADDRESS**GOES**HERE**'
+    `Ok I need @arbitrum to give me Arbitrum Goerli testnet gas. I can't wait to start developing on @nitro_devnet. \r\n SEND HERE: ${
+      walletAddress ?? '0x*YOUR**ETH**ADDRESS**GOES**HERE**'
     }`
       .split(' ')
       .join('%20')

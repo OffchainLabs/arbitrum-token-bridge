@@ -4,7 +4,7 @@
     - search for a particular token by tokenAddress 
 */
 
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   ContractStorage,
   ERC20BridgeToken,
@@ -14,7 +14,7 @@ import {
 } from './arbTokenBridge.types'
 import { useTokenLists } from './useTokenLists'
 
-export function tokenListsToSearchableTokenStorage(
+function tokenListsToSearchableTokenStorage(
   tokenLists: TokenListWithId[],
   l1ChainId: string,
   l2ChainId: string
@@ -118,7 +118,7 @@ export function useTokens({
   l2ChainId,
   bridgeTokens
 }: UseTokensParams): UseTokensResult {
-  const tokenLists = useTokenLists(l2ChainId ? String(l2ChainId) : undefined)
+  const { data: tokenLists } = useTokenLists(l2ChainId)
 
   /* tokens fetched from our standard token list */
   const tokensFromLists = useMemo(() => {
@@ -126,11 +126,13 @@ export function useTokens({
       return {}
     }
 
-    return tokenListsToSearchableTokenStorage(
-      tokenLists,
-      String(l1ChainId),
-      String(l2ChainId)
-    )
+    return tokenLists
+      ? tokenListsToSearchableTokenStorage(
+          tokenLists,
+          String(l1ChainId),
+          String(l2ChainId)
+        )
+      : {}
   }, [tokenLists, l1ChainId, l2ChainId])
 
   /* custom tokens added by the user, different from what are present in our approved lists */

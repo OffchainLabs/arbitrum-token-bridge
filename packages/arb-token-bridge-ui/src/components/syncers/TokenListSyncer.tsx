@@ -3,8 +3,7 @@ import { useEffect } from 'react'
 import { useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
-  addBridgeTokenListToBridge,
-  fetchTokenLists
+  addBridgeTokenListToBridge
 } from 'token-bridge-sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
@@ -27,19 +26,15 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    fetchTokenLists()
-      // Add tokens to bridge only after prefetching the token lists
-      .then(() => {
-        const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
-          bridgeTokenList =>
-            bridgeTokenList.originChainID === String(l2Network.chainID) &&
-            bridgeTokenList.isDefault
-        )
+    const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
+      bridgeTokenList =>
+        bridgeTokenList.originChainID === l2Network.chainID &&
+        bridgeTokenList.isDefault
+    )
 
-        tokenListsToSet.forEach(bridgeTokenList => {
-          addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
-        })
-      })
+    tokenListsToSet.forEach(bridgeTokenList => {
+      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+    })
   }, [arbTokenBridge?.walletAddress, l2Network])
 
   return <></>
