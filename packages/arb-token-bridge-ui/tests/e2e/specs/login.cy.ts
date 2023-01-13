@@ -41,17 +41,16 @@ describe('Login Account', () => {
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
-  it('should connect wallet using MetaMask successfully', () => {
+  it('should connect wallet using MetaMask and show empty bridging summary successfully', () => {
+    cy.findByText('MetaMask').click({ force: true })
     cy.login('L1')
     cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
 
   it('should show L1 and L2 ETH balances correctly', () => {
+    cy.findByText('MetaMask').click({ force: true })
+    cy.login('L1')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
-  })
-
-  it('should show empty bridging summary', () => {
-    cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
 })
