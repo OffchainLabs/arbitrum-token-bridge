@@ -61,6 +61,18 @@ describe('Login Account', () => {
     cy.findByAltText('WalletConnect').should('be.visible')
   })
 
+  it('MetaMask window shown', () => {
+    cy.isMetamaskWindowActive().should('be.true')
+  })
+
+  it('Footer moon defined', () => {
+    cy.findByAltText('Moon').should('not.be.undefined')
+  })
+
+  it('Footer moon visible', () => {
+    cy.findByAltText('Moon').should('be.visible')
+  })
+
   it('should show connect wallet if not logged in', () => {
     cy.visit('/')
     cy.findByText('Agree to terms').should('be.visible').click()
