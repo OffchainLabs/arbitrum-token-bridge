@@ -62,14 +62,17 @@ describe('Login Account', () => {
   })
 
   it('MetaMask window shown', () => {
+    cy.visit('/')
     cy.isMetamaskWindowActive().should('be.true')
   })
 
   it('Footer moon defined', () => {
+    cy.visit('/')
     cy.findByAltText('Moon').should('not.be.undefined')
   })
 
   it('Footer moon visible', () => {
+    cy.visit('/')
     cy.findByAltText('Moon').should('be.visible')
   })
 
