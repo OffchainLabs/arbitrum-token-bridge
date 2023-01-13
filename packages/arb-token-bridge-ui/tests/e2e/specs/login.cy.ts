@@ -35,10 +35,12 @@ describe('Login Account', () => {
   it('should show connect wallet if not logged in', () => {
     cy.findByText('Agree to terms')
       .parentsUntil('button')
-      .should('be.visible')
+      // .should('be.visible')
       .click()
-    cy.findByText('MetaMask').should('be.visible')
-    cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
+    // Fail to make cypress give a screenshot
+    cy.findByText('failtextthatdoesntexist').should('be.visible')
+    // cy.findByText('MetaMask').should('be.visible')
+    // cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
   it('should connect wallet using MetaMask successfully', () => {
