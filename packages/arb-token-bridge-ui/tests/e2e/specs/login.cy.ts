@@ -41,31 +41,24 @@ describe('Login Account', () => {
   //   cy.visit('/')
   // })
 
-  it('should pass this test', () => {
-    // console.log('testing logs')
-    // cy.on('uncaught:exception', err => {
-    //   console.log('err', err)
-    //   cy.log('err', err)
-    //   throw new Error(`error from should pass test: ${err}`)
-    // })
+  it('MetaMask image is defined', () => {
     cy.visit('/')
+    cy.findByAltText('MetaMask').should('not.be.undefined')
+  })
 
-    // cy.waitUntil(() =>
-    //   cy.visit('/', {
-    //     onBeforeLoad(win) {
-    //       cy.stub(win.console, 'log').as('consoleLog')
-    //       cy.stub(win.console, 'error').as('consoleError')
-    //     }
-    //   })
-    // )
-    cy.findByText('WalletConnect').should('be.visible')
-    // cy.on('fail', error => {
-    //   debugger
+  it('WalletConnect image is defined', () => {
+    cy.visit('/')
+    cy.findByAltText('WalletConnect').should('not.be.undefined')
+  })
 
-    //   console.log('ERROR FROM WALLET CONNECT BUTTON')
+  it('MetaMask image is visible', () => {
+    cy.visit('/')
+    cy.findByAltText('MetaMask').should('be.visible')
+  })
 
-    //   throw error
-    // })
+  it('WalletConnect image is visible', () => {
+    cy.visit('/')
+    cy.findByAltText('WalletConnect').should('be.visible')
   })
 
   it('should show connect wallet if not logged in', () => {
