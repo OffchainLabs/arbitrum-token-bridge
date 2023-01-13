@@ -2,6 +2,7 @@ import { Wallet } from 'ethers'
 import { defineConfig } from 'cypress'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
+import cypressLogs from 'cypress-log-to-output'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -32,13 +33,17 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       const wallet = new Wallet(process.env.PRIVATE_KEY!)
       config.env.ADDRESS = await wallet.getAddress()
-      config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+      config.env.INFURA_KEY = '8f367f5282bb4ffeaa511076447262b5'
+      // config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
       on('before:browser:launch', async (browser = undefined, arguments_) => {
         arguments_.args.push('--disable-gpu')
         return arguments_
       })
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
+      // cypressLogs.install(on, (type, event) => {
+      //   return event.level === 'error' || event.type === 'error'
+      // })
       return config
     },
     baseUrl: 'http://localhost:3000',
