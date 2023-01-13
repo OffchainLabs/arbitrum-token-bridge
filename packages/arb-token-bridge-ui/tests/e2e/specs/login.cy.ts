@@ -41,6 +41,23 @@ describe('Login Account', () => {
   //   cy.visit('/')
   // })
 
+  it('T&C visible', () => {
+    cy.clearCookies()
+    cy.visit('/')
+    cy.clearCookies()
+    cy.findByText('Agree to terms').should('be.visible')
+  })
+
+  it('Has loader on the page', () => {
+    cy.visit('/')
+    cy.find(`[aria-label="audio-loading"]`).should('be.visible')
+  })
+
+  it('Header item visible', () => {
+    cy.visit('/')
+    cy.findByText('Get Help').should('be.visible')
+  })
+
   it('Connect Wallet button visible', () => {
     cy.visit('/')
     cy.findByText('Connect Wallet').should('be.visible')
