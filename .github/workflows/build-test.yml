@@ -126,6 +126,7 @@ jobs:
       #     apt clean
       #     apt-get update --fix-missing
       #     apt-get install -y docker-compose
+
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
         # with:
@@ -159,6 +160,13 @@ jobs:
 
       - name: Run tests
         run: yarn test:ci:e2e
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@latest
+        if: failure()
+        with:
+          name: cypress-snapshots
+          path: cypress/snapshots
 
       # - name: UI Tests
       #   with:
