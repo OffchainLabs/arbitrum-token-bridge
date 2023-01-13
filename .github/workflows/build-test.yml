@@ -142,7 +142,6 @@ jobs:
           key: cypress-binary-${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
 
       # cache key: 5b2feae1d55694e5cbe795c3f4966f5e696481d1ef1ebb56324919eeba0a515d
-
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
@@ -162,7 +161,7 @@ jobs:
         run: yarn test:ci:e2e
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@latest
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: cypress-snapshots
