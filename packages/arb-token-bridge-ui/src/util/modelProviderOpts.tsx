@@ -12,7 +12,6 @@ export const modalProviderOpts = {
         rpc: {
           [ChainId.ArbitrumOne]: rpcURLs[ChainId.ArbitrumOne],
           [ChainId.ArbitrumNova]: rpcURLs[ChainId.ArbitrumNova],
-          [ChainId.ArbitrumRinkeby]: rpcURLs[ChainId.ArbitrumRinkeby],
           [ChainId.ArbitrumGoerli]: rpcURLs[ChainId.ArbitrumGoerli]
         },
         infuraId: process.env.REACT_APP_INFURA_KEY // required

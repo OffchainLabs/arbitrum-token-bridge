@@ -240,7 +240,7 @@ export function TransferPanelSummary({
   } = gasSummary
 
   const { app } = useAppState()
-  const { toUSD } = useETHPrice()
+  const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
   const { isMainnet } = isNetwork(l1.network.chainID)
@@ -286,7 +286,7 @@ export function TransferPanelSummary({
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (
             <span className="font-medium text-dark">
-              {formatUSD(toUSD(amount))}
+              {formatUSD(ethToUSD(amount))}
             </span>
           )}
         </div>
@@ -304,7 +304,7 @@ export function TransferPanelSummary({
           </span>
           {isMainnet && (
             <span className="font-medium text-dark">
-              {formatUSD(toUSD(estimatedTotalGasFees))}
+              {formatUSD(ethToUSD(estimatedTotalGasFees))}
             </span>
           )}
         </div>
@@ -326,7 +326,7 @@ export function TransferPanelSummary({
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
-                ({formatUSD(toUSD(estimatedL1GasFees))})
+                ({formatUSD(ethToUSD(estimatedL1GasFees))})
               </span>
             )}
           </div>
@@ -346,7 +346,7 @@ export function TransferPanelSummary({
             </span>
             {isMainnet && (
               <span className="font-light text-[#595959]">
-                ({formatUSD(toUSD(estimatedL2GasFees))})
+                ({formatUSD(ethToUSD(estimatedL2GasFees))})
               </span>
             )}
           </div>
@@ -370,7 +370,7 @@ export function TransferPanelSummary({
               </span>
               {isMainnet && (
                 <span className="font-medium text-dark">
-                  {formatUSD(toUSD(amount + estimatedTotalGasFees))}
+                  {formatUSD(ethToUSD(amount + estimatedTotalGasFees))}
                 </span>
               )}
             </div>
