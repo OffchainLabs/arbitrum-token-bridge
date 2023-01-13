@@ -3,7 +3,7 @@ import { usePrevious } from 'react-use'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
-import { useAppState } from '../../state'
+import { useActions, useAppState } from '../../state'
 import { SeenTransactionsCache } from '../../state/SeenTransactionsCache'
 import { MergedTransaction } from '../../state/app/state'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
@@ -12,6 +12,7 @@ import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
 import { TransactionHistory } from '../common/TransactionHistory'
+import { SidePanel } from '../common/SidePanel'
 
 const motionDivProps = {
   layout: true,
@@ -73,18 +74,11 @@ function dedupeWithdrawals(transactions: MergedTransaction[]) {
   return Object.values(map)
 }
 
-const SidePanel = () => {
-  return (
-    <div className="border-1 fixed right-0 top-0 z-50 h-full w-2/5 border-white bg-dark p-4 text-white">
-      <TransactionHistory />
-    </div>
-  )
-}
-
 export function MainContent() {
   const {
-    app: { mergedTransactions, pwLoadedState }
+    app: { mergedTransactions, pwLoadedState, showTransactionHistory }
   } = useAppState()
+  const actions = useActions()
   const { seenTransactions, layout } = useAppContextState()
   const { isTransferPanelVisible } = layout
   const dispatch = useAppContextDispatch()
@@ -193,7 +187,16 @@ export function MainContent() {
         </AnimatePresence>
       </div>
 
-      {false && <SidePanel />}
+      {showTransactionHistory && (
+        <SidePanel
+          heading="Transaction History"
+          onClose={() => {
+            actions.app.setShowTransactionHistory(false)
+          }}
+        >
+          <TransactionHistory />
+        </SidePanel>
+      )}
     </div>
   )
 }

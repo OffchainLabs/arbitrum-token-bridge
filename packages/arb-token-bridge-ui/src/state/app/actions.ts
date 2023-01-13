@@ -79,6 +79,13 @@ export const setArbTokenBridgeLoaded = (
   state.app.arbTokenBridgeLoaded = loaded
 }
 
+export const setShowTransactionHistory = (
+  { state }: Context,
+  show: boolean
+) => {
+  state.app.showTransactionHistory = show
+}
+
 export const setArbTokenBridge = (
   { state, actions }: Context,
   atb: ArbTokenBridge

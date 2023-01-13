@@ -22,6 +22,7 @@ import {
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
+import { useActions } from '../../state'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -94,6 +95,8 @@ export function HeaderAccountPopover() {
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
 
+  const actions = useActions()
+
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
@@ -145,7 +148,7 @@ export function HeaderAccountPopover() {
   }
 
   function openTransactionHistory() {
-    // no-op
+    actions.app.setShowTransactionHistory(true)
   }
 
   return (
