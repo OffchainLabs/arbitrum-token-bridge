@@ -103,34 +103,13 @@ jobs:
 
   test-e2e:
     name: Test E2E
-    # container:
-    #   # image: synthetixio/docker-e2e:18.12-ubuntu
-    #   image: cypress/browsers:node12.18.3-chrome87-ff82
-    #   env:
-    #     NODE_ENV: development
-    #   ports:
-    #     - 80
-    #   # volumes:
-    #   #   "**/node_modules"
     runs-on: ubuntu-latest
     needs: build
-    env:
-      QT_X11_NO_MITSHM: 1
-      _X11_NO_MITSHM: 1
-      _MITSHM: 0
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Install docker-compose
-      #   run: |
-      #     apt clean
-      #     apt-get update --fix-missing
-      #     apt-get install -y docker-compose
-
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
-        # with:
-        #   submodules: true
 
       - name: Restore "node_modules" from cache
         uses: ./.github/actions/restore-cache
@@ -141,7 +120,6 @@ jobs:
           path: ~/.cache/Cypress
           key: cypress-binary-${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
 
-      # cache key: 5b2feae1d55694e5cbe795c3f4966f5e696481d1ef1ebb56324919eeba0a515d
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
@@ -166,18 +144,6 @@ jobs:
         with:
           name: cypress-snapshots
           path: ./packages/arb-token-bridge-ui/cypress/screenshots
-
-      # - name: UI Tests
-      #   with:
-      #     install: false
-      #     start: yarn start
-      #     wait-on: 'http://localhost:3000'
-      #     wait-on-timeout: 120
-      #     browser: chrome
-      #     record: true
-      #     parallel: false
-      #     group: 'UI - Chrome'
-      #     spec: cypress/tests/ui/*
 
   audit:
     name: Audit
