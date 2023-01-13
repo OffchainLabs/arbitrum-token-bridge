@@ -18,16 +18,13 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(() => {
+    cy.visit('/')
     getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
     getInitialETHBalance(arbRpcUrl).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
-  })
-
-  beforeEach(() => {
-    cy.visit('/')
   })
 
   after(() => {
