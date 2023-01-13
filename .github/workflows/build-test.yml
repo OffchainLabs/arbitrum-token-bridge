@@ -165,7 +165,7 @@ jobs:
         if: failure()
         with:
           name: cypress-snapshots
-          path: cypress/snapshots
+          path: ./packages/arb-token-bridge-ui/cypress/screenshots
 
       # - name: UI Tests
       #   with:
