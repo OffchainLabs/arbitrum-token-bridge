@@ -48,6 +48,23 @@ describe('Login Account', () => {
     cy.findByText('Agree to terms').should('be.visible')
   })
 
+  it('Header item defined', () => {
+    cy.visit('/')
+    cy.findByText('Get Help').should('not.be.undefined')
+  })
+
+  it('This should fail (non existing text)', () => {
+    cy.visit('/')
+    cy.findByText('I dont exist on this page gmskgmk').should(
+      'not.be.undefined'
+    )
+  })
+
+  it('This should also fail (wrong url)', () => {
+    cy.visit('/invalidurl')
+    cy.findByAltText('MetaMask').should('not.be.undefined')
+  })
+
   it('Has loader on the page', () => {
     cy.visit('/')
     cy.find(`[aria-label="audio-loading"]`).should('be.visible')
