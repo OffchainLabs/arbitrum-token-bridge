@@ -18,7 +18,6 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(() => {
-    cy.visit('/')
     getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
@@ -27,20 +26,19 @@ describe('Login Account', () => {
     )
   })
 
+  beforeEach(() => {
+    cy.visit('/')
+    cy.get('button[type="button"]').contains('Agree to terms').click()
+  })
+
   after(() => {
     // after all assertions are executed, logout and reset the account
     cy.logout()
   })
 
   it('should show connect wallet if not logged in', () => {
-    cy.findByText('Agree to terms')
-      .parentsUntil('button')
-      // .should('be.visible')
-      .click()
-    // Fail to make cypress give a screenshot
-    cy.findByText('failtextthatdoesntexist').should('be.visible')
-    // cy.findByText('MetaMask').should('be.visible')
-    // cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
+    cy.findByText('MetaMask').should('be.visible')
+    cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
   it('should connect wallet using MetaMask successfully', () => {
