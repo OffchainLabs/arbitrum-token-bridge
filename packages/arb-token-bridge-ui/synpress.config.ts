@@ -20,10 +20,7 @@ export default defineConfig({
   viewportWidth: 1366,
   viewportHeight: 850,
   env: {
-    coverage: false,
-    QT_X11_NO_MITSHM: 1,
-    _X11_NO_MITSHM: 1,
-    _MITSHM: 0
+    coverage: false
   },
   defaultCommandTimeout: 30000,
   pageLoadTimeout: 30000,

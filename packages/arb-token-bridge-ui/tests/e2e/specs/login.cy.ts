@@ -24,11 +24,8 @@ describe('Login Account', () => {
     getInitialETHBalance(arbRpcUrl).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
-  })
-
-  beforeEach(() => {
     cy.visit('/')
-    cy.get('button[type="button"]').contains('Agree to terms').click()
+    cy.get('button').contains('Agree to terms').click()
   })
 
   after(() => {
@@ -37,18 +34,22 @@ describe('Login Account', () => {
   })
 
   it('should show connect wallet if not logged in', () => {
+    // cy.visit('/')
+    // cy.get('button').contains('Agree to terms').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
   it('should connect wallet using MetaMask and show empty bridging summary successfully', () => {
-    cy.findByText('MetaMask').click({ force: true })
+    // cy.visit('/')
+    // cy.get('button').contains('Agree to terms').click()
+    cy.findByText('MetaMask').click()
     cy.login('L1')
     cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
 
   it('should show L1 and L2 ETH balances correctly', () => {
-    cy.findByText('MetaMask').click({ force: true })
+    cy.findByText('MetaMask').click()
     cy.login('L1')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
