@@ -24,13 +24,16 @@ describe('Login Account', () => {
     getInitialETHBalance(arbRpcUrl).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
-    cy.visit('/')
-    cy.get('button').contains('Agree to terms').click()
   })
 
   after(() => {
     // after all assertions are executed, logout and reset the account
     cy.logout()
+  })
+
+  beforeEach(() => {
+    cy.visit('/')
+    cy.get('button').contains('Agree to terms').click()
   })
 
   it('should show connect wallet if not logged in', () => {
