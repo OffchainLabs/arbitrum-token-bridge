@@ -27,6 +27,8 @@ describe('Withdraw ETH', () => {
   context('user has some ETH and is on L2', () => {
     // log in to metamask before withdrawal
     before(() => {
+      cy.visit('/')
+      cy.get('button').contains('Agree to terms').click()
       // login to L2 chain for Arb Goerli network
       cy.login('L2', true) // add new L2 network
     })

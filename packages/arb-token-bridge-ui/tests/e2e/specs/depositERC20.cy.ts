@@ -7,7 +7,6 @@ import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
   getInitialERC20Balance,
-  goerliRPC,
   zeroToLessThanOneETH
 } from '../../support/common'
 
@@ -38,6 +37,7 @@ describe('Deposit ERC20 Token', () => {
       getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
         val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
       )
+      cy.get('button').contains('Agree to terms').click()
       cy.login('L1')
     })
 
