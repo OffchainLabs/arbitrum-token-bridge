@@ -7,6 +7,7 @@ import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
   getInitialERC20Balance,
+  goerliRPC,
   zeroToLessThanOneETH
 } from '../../support/common'
 
