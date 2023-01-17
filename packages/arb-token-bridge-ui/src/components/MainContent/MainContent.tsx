@@ -149,20 +149,6 @@ export function MainContent() {
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
         <AnimatePresence>
-          {unseenTransactions.map(tx =>
-            isDeposit(tx) ? (
-              <motion.div key={tx.txId} {...motionDivProps}>
-                <DepositCard key={tx.txId} tx={tx} />
-              </motion.div>
-            ) : (
-              <motion.div key={tx.txId} {...motionDivProps}>
-                <WithdrawalCard key={tx.txId} tx={tx} />
-              </motion.div>
-            )
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
           {isTransferPanelVisible && (
             <motion.div
               key="transfer-panel"
@@ -194,7 +180,25 @@ export function MainContent() {
             actions.app.setShowTransactionHistory(false)
           }}
         >
-          <TransactionHistory />
+          <>
+            {/* Pending unseen transaction cards */}
+            <AnimatePresence>
+              {unseenTransactions.map(tx =>
+                isDeposit(tx) ? (
+                  <motion.div key={tx.txId} {...motionDivProps}>
+                    <DepositCard key={tx.txId} tx={tx} />
+                  </motion.div>
+                ) : (
+                  <motion.div key={tx.txId} {...motionDivProps}>
+                    <WithdrawalCard key={tx.txId} tx={tx} />
+                  </motion.div>
+                )
+              )}
+            </AnimatePresence>
+
+            {/* Transaction history table */}
+            <TransactionHistory />
+          </>
         </SidePanel>
       )}
     </div>

@@ -125,10 +125,10 @@ const AppContent = (): JSX.Element => {
 
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
-      <TokenListSyncer />
-      <BalanceUpdater />
       {!isTestingEnvironment && <PWLoadedUpdater />}
 
+      <TokenListSyncer />
+      <BalanceUpdater />
       <Notifications />
       <MainContent />
     </>
