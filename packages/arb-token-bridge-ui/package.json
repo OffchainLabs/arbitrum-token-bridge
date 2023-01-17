@@ -47,8 +47,8 @@
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "getUnusedComponents": "ts-prune | grep ' default$'",
     "e2e:install": "cypress install",
-    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts --browser firefox",
-    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts --browser firefox"
+    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts --browser edge",
+    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts --browser edge"
   },
   "browserslist": {
     "production": [
