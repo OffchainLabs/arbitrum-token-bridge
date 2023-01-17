@@ -151,10 +151,13 @@ export function HeaderAccountPopover() {
     actions.app.setShowTransactionHistory(true)
   }
 
+  const headerItemsClassName =
+    'arb-hover flex w-full flex-row items-center space-x-2 px-[4rem] py-2 text-lg lg:text-base font-light text-white hover:bg-blue-arbitrum lg:px-4'
+
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
-        <div className="py-3 lg:py-0">
+      <Popover.Button className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0">
+        <div>
           <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
             <SafeImage
               src={ensInfo.avatar || undefined}
@@ -212,10 +215,10 @@ export function HeaderAccountPopover() {
             </button>
           </div>
 
-          <div className="flex w-full flex-col justify-between px-6 lg:flex-col lg:items-end lg:px-0">
+          <div className="flex w-full flex-col justify-between lg:flex-col lg:items-end lg:px-0">
             {/* Transactions button */}
             <button
-              className="arb-hover flex w-full flex-row items-center space-x-1 px-4 py-2 font-light text-white hover:bg-blue-arbitrum"
+              className={headerItemsClassName}
               onClick={openTransactionHistory}
             >
               <DocumentTextIcon className="h-4 w-4 text-white" />
@@ -227,17 +230,14 @@ export function HeaderAccountPopover() {
               href={`${getExplorerUrl(
                 currentNetwork?.chainID ?? -1
               )}/address/${account}`}
-              className="arb-hover flex w-full flex-row items-center space-x-1 px-4 py-2 font-light text-white hover:bg-blue-arbitrum"
+              className={headerItemsClassName}
             >
               <ExternalLinkIcon className="h-4 w-4 text-white" />
               <span>Explorer</span>
             </ExternalLink>
 
             {/* Disconnect button */}
-            <button
-              className="arb-hover flex w-full flex-row items-center space-x-1 px-4 py-2 font-light text-white hover:bg-blue-arbitrum"
-              onClick={disconnectWallet}
-            >
+            <button className={headerItemsClassName} onClick={disconnectWallet}>
               <LogoutIcon className="h-4 w-4 text-white" />
               <span>Disconnect</span>
             </button>

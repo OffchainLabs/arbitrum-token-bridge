@@ -13,6 +13,7 @@ import {
 import { GET_HELP_LINK } from '../../constants'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
+import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -118,7 +119,7 @@ function DesktopExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="arb-hover hidden text-base text-white lg:block"
+      className="arb-hover hidden whitespace-nowrap text-base text-white lg:block lg:pr-4"
       {...props}
     >
       {children}
@@ -282,12 +283,16 @@ function MobileExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="arb-hover py-3 text-2xl font-medium text-white"
+      className="arb-hover flex w-full flex-row flex-nowrap items-center space-x-4 p-4 py-3 text-2xl font-medium text-white"
       {...props}
     >
       {children}
     </ExternalLink>
   )
+}
+
+const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
+  return <img src={src} alt={alt} className="max-w-8 mr-4 max-h-8" />
 }
 
 function HeaderMobile() {
@@ -298,12 +303,15 @@ function HeaderMobile() {
           <MenuIcon.Close />
         </Disclosure.Button>
       </div>
-      <div className="flex min-h-screen flex-col items-center space-y-3 bg-blue-arbitrum pt-4">
+      <div className="flex min-h-screen flex-col items-center space-y-3 bg-dark">
         <div
           id="header-content-root"
-          className="flex w-full flex-col items-center space-y-3"
+          className="flex w-full flex-col-reverse items-center space-y-3"
         ></div>
-        <HeaderMenuMobile {...learnMenuProps}>Learn</HeaderMenuMobile>
+        <HeaderMenuMobile {...learnMenuProps}>
+          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          Learn
+        </HeaderMenuMobile>
         <HeaderMenuMobile
           items={[
             {
@@ -312,13 +320,21 @@ function HeaderMobile() {
             }
           ]}
         >
+          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
           Ecosystem
         </HeaderMenuMobile>
-        <HeaderMenuMobile {...explorersMenuProps}>Explorers</HeaderMenuMobile>
+        <HeaderMenuMobile {...explorersMenuProps}>
+          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          Explorers
+        </HeaderMenuMobile>
         <HeaderMenuMobile {...chartsStatsMenuProps}>
+          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
           Charts & Stats
         </HeaderMenuMobile>
-        <MobileExternalLink href={GET_HELP_LINK}>Get Help</MobileExternalLink>
+        <MobileExternalLink href={GET_HELP_LINK}>
+          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          Get Help
+        </MobileExternalLink>
       </div>
     </div>
   )

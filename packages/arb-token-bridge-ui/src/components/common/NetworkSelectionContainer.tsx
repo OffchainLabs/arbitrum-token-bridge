@@ -35,7 +35,7 @@ export const NetworkSelectionContainer = ({
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button className="arb-hover flex w-full justify-center rounded-full lg:w-max">
+      <Popover.Button className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0">
         {children}
       </Popover.Button>
 
@@ -45,7 +45,7 @@ export const NetworkSelectionContainer = ({
             supportedNetworks?.map((chainId, i) => (
               <div // TODO: replace with button
                 key={chainId}
-                className="flex h-12 cursor-pointer flex-nowrap items-center justify-center space-x-3 px-4 font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:justify-start lg:font-normal lg:text-dark"
+                className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-[4rem] text-lg font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
                 onClick={() => {
                   handleClick(chainId, close)
                 }}
@@ -58,11 +58,11 @@ export const NetworkSelectionContainer = ({
                 tabIndex={i}
                 aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
               >
-                <div className="flex h-8 w-8 items-center justify-center">
+                <div className="flex h-4 w-4 items-center justify-center lg:h-8 lg:w-8">
                   <img
                     src={getNetworkLogo(Number(chainId))}
                     alt={`${getNetworkName(Number(chainId))} logo`}
-                    className="max-w-8 max-h-8"
+                    className="lg:max-w-8 max-w-4 max-h-4 lg:max-h-8"
                   />
                 </div>
                 <span className="whitespace-nowrap">

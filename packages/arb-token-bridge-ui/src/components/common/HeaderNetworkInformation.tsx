@@ -38,7 +38,7 @@ export function HeaderNetworkInformation() {
 
   return (
     <div
-      className="flex w-max flex-row items-center justify-center space-x-3 rounded-full px-4 py-3 text-white lg:bg-dark lg:py-2"
+      className="flex w-max flex-row items-center justify-center space-x-3 rounded-full text-white lg:bg-dark lg:px-4 lg:py-2"
       aria-label={`Selected Network : ${networkName}`}
     >
       <div className="flex h-8 w-8 items-center justify-center">
