@@ -107,6 +107,10 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v3
+      - uses: cypress-io/github-action@v5
+        with:
+          browser: chrome
+          headed: true
 
       - name: Run Nitro test node
         uses: OffchainLabs/actions/run-nitro-test-node@main
