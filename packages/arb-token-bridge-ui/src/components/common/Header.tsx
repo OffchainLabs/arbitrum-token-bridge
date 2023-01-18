@@ -13,7 +13,11 @@ import {
 import { GET_HELP_LINK } from '../../constants'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
+import LearnLogo from '../../assets/header/headerLogo_learn.webp'
+import EcosystemLogo from '../../assets/header/headerLogo_ecosystem.webp'
+import ExplorersLogo from '../../assets/header/headerLogo_explorers.webp'
+import ChartsAndStatsLogo from '../../assets/header/headerLogo_chartsAndStats.webp'
+import GetHelpLogo from '../../assets/header/headerLogo_help.webp'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -309,7 +313,7 @@ function HeaderMobile() {
           className="flex w-full flex-col-reverse items-center space-y-3"
         ></div>
         <HeaderMenuMobile {...learnMenuProps}>
-          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          <HeaderItemLogo src={LearnLogo} alt={`logo`} />
           Learn
         </HeaderMenuMobile>
         <HeaderMenuMobile
@@ -320,19 +324,19 @@ function HeaderMobile() {
             }
           ]}
         >
-          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          <HeaderItemLogo src={EcosystemLogo} alt={`logo`} />
           Ecosystem
         </HeaderMenuMobile>
         <HeaderMenuMobile {...explorersMenuProps}>
-          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          <HeaderItemLogo src={ExplorersLogo} alt={`logo`} />
           Explorers
         </HeaderMenuMobile>
         <HeaderMenuMobile {...chartsStatsMenuProps}>
-          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          <HeaderItemLogo src={ChartsAndStatsLogo} alt={`logo`} />
           Charts & Stats
         </HeaderMenuMobile>
         <MobileExternalLink href={GET_HELP_LINK}>
-          <HeaderItemLogo src={ArbitrumOneLogo} alt={`logo`} />
+          <HeaderItemLogo src={GetHelpLogo} alt={`logo`} />
           Get Help
         </MobileExternalLink>
       </div>
