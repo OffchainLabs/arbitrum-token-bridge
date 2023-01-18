@@ -20,6 +20,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  getNetworkLogo,
   getNetworkName,
   isNetwork,
   switchChain
@@ -40,10 +41,6 @@ import {
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
-
-import EthereumLogo from '../../assets/EthereumLogo.webp'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.webp'
 
 import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.webp'
 import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.webp'
@@ -102,17 +99,7 @@ function NetworkListbox({
   }, [value])
 
   const getOptionImageSrc = useCallback((network: L1Network | L2Network) => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
-
-    if (!isArbitrum) {
-      return EthereumLogo
-    }
-
-    if (isArbitrumNova) {
-      return ArbitrumNovaLogo
-    }
-
-    return ArbitrumOneLogo
+    return getNetworkLogo(network.chainID)
   }, [])
 
   const getOptionClassName = useCallback(

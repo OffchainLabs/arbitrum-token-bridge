@@ -9,9 +9,9 @@ import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
-import EthereumLogo from '../assets/EthereumLogo.webp'
-import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
+import EthereumLogo from '../assets/EthereumLogoRound.webp'
+import ArbitrumOneLogo from '../assets/ArbitrumOneLogoRound.webp'
+import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogoRound.webp'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
 

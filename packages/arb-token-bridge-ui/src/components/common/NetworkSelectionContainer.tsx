@@ -58,11 +58,11 @@ export const NetworkSelectionContainer = ({
                 tabIndex={i}
                 aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
               >
-                <div className="flex h-4 w-4 items-center justify-center lg:h-8 lg:w-8">
+                <div className="flex h-6 w-6 items-center justify-center lg:h-8 lg:w-8">
                   <img
                     src={getNetworkLogo(Number(chainId))}
                     alt={`${getNetworkName(Number(chainId))} logo`}
-                    className="lg:max-w-8 max-w-4 max-h-4 lg:max-h-8"
+                    className="lg:max-w-8 max-w-6 max-h-6 lg:max-h-8"
                   />
                 </div>
                 <span className="whitespace-nowrap">
