@@ -105,47 +105,106 @@ jobs:
     name: Test E2E
     runs-on: ubuntu-latest
     needs: build
-    services:
-      image: synthetixio/docker-e2e:14.17-debian
-    steps:
-      - uses: actions/checkout@v3
+    strategy:
+      matrix:
+        resolution: ['low', 'medium', 'high']
+    steps:      
+      - name: Chown workspace
+        run: chown -R $(whoami) .
 
-      - name: Run Nitro test node
-        uses: OffchainLabs/actions/run-nitro-test-node@main
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
 
-      - name: Restore "node_modules" from cache
-        uses: ./.github/actions/restore-cache
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
 
-      - name: Restore Cypress binary from cache
-        uses: martijnhols/actions-cache/restore@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325 # pin@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # pin@v2
         with:
-          path: ~/.cache/Cypress
-          key: cypress-binary-${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Run e2e tests (${{ matrix.resolution }} res)
+        run: |
+          docker-compose -f docker-compose.ci.yml --env-file ${{ matrix.resolution }}-res.env --profile foundry up --build --exit-code-from synpress
+        env:
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
+          NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
+          CYPRESS_PRIVATE_KEY_WITH_FUNDS:
+            ${{ secrets.CYPRESS_PRIVATE_KEY_WITH_FUNDS }}
+          ANVIL_FORK_URL: ${{ secrets.ANVIL_FORK_URL }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_USERNAME: ${{ secrets.GH_USERNAME }}
+          # cypress dashboard
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          COMMIT_INFO_MESSAGE: ${{ github.event.pull_request.title }}
+          COMMIT_INFO_SHA: ${{ github.event.pull_request.head.sha }}
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
+      - name: Archive e2e artifacts (${{ matrix.resolution }} res)
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
+        if: always()
         with:
-          name: build-artifacts
-          path: ./packages
+          name: e2e-artifacts-${{ matrix.resolution }}-res
+          path: |
+            docker/videos
+            docker/videos-ci
+            docker/screenshots
+        continue-on-error: true
 
-      - run: ls -R ./packages/arb-token-bridge-ui/build
-      - run: cat ./packages/arb-token-bridge-ui/build/index.html
+  # test-e2e:
+  #   name: Test E2E
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   services:
+  #     synpress:
+  #       image: synthetixio/docker-e2e:14.17-debian
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Copy .env
-        run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
+  #     - name: Run Nitro test node
+  #       uses: OffchainLabs/actions/run-nitro-test-node@main
 
-      - name: Run UI
-        run: yarn serve &
+  #     - name: Restore "node_modules" from cache
+  #       uses: ./.github/actions/restore-cache
 
-      - name: Run tests
-        run: yarn test:ci:e2e
+  #     - name: Restore Cypress binary from cache
+  #       uses: martijnhols/actions-cache/restore@v3
+  #       with:
+  #         path: ~/.cache/Cypress
+  #         key: cypress-binary-${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-snapshots
-          path: ./packages/arb-token-bridge-ui/cypress/screenshots
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: build-artifacts
+  #         path: ./packages
+
+  #     - run: ls -R ./packages/arb-token-bridge-ui/build
+  #     - run: cat ./packages/arb-token-bridge-ui/build/index.html
+
+  #     - name: Copy .env
+  #       run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
+
+  #     - name: Run UI
+  #       run: yarn serve &
+
+  #     - name: Run tests
+  #       run: yarn test:ci:e2e
+
+  #     - name: Upload screenshots
+  #       uses: actions/upload-artifact@v3
+  #       if: failure()
+  #       with:
+  #         name: cypress-snapshots
+  #         path: ./packages/arb-token-bridge-ui/cypress/screenshots
 
   audit:
     name: Audit
