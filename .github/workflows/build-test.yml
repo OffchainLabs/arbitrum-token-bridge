@@ -103,9 +103,10 @@ jobs:
 
   test-e2e:
     name: Test E2E
-    image: synthetixio/docker-e2e:14.17-debian
     runs-on: ubuntu-latest
     needs: build
+    services:
+      image: synthetixio/docker-e2e:14.17-debian
     steps:
       - uses: actions/checkout@v3
 
