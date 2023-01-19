@@ -38,7 +38,7 @@ export default defineConfig({
       // })
       return config
     },
-    // baseUrl: 'http://localhost:3000',
+    baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
       'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
