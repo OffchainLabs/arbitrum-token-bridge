@@ -27,6 +27,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "dependencies": {
+    "start-server-and-test": "^1.14.0"
+  },
   "devDependencies": {
     "audit-ci": "^6.3.0"
   }
