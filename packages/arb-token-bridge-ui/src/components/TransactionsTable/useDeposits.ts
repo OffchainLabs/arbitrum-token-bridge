@@ -15,7 +15,15 @@ import {
   EthDepositStatus
 } from '@arbitrum/sdk'
 
-export const useDeposits = () => {
+export const useDeposits = ({
+  searchString,
+  pageNumber,
+  pageSize
+}: {
+  searchString?: string
+  pageNumber?: number
+  pageSize?: number
+}) => {
   // Done 1. take the l1 address of the sender
   // Done 2. call the deposit subgraph
   // Done 3. store the results
@@ -44,12 +52,21 @@ export const useDeposits = () => {
   const [loading, setLoading] = useState<boolean>(false)
 
   const fetchAndSetEthDeposits = async () => {
+    console.log('**** FETCHING DEPOSITS FOR ****', {
+      searchString,
+      pageNumber,
+      pageSize
+    })
+
     setLoading(true)
     const result = await fetchETHDepositsFromSubgraph({
       address: walletAddress,
       fromBlock: 0,
       toBlock: currentL1BlockNumber,
-      l2Provider: l2.provider
+      l2Provider: l2.provider,
+      searchString,
+      pageNumber,
+      pageSize
     })
 
     const ethDepositsFromSubgraph = result.map(tx => ({
@@ -81,6 +98,12 @@ export const useDeposits = () => {
   }
 
   const updateAdditionalTransactionData = async (depositTx: Transaction) => {
+    /*
+    ******
+    TODO : Probably this code can also be a part of the `fetchETHDepositsFromSubgraph` function in sdk
+    *******
+    */
+
     const depositTxReceipt = await l1.provider.getTransactionReceipt(
       depositTx.txID
     )
@@ -116,7 +139,7 @@ export const useDeposits = () => {
 
       const updatedDepositTx = {
         ...depositTx,
-        status: retryableCreationTxID ? 'success' : 'pending', // handle other cases here
+        status: retryableCreationTxID ? 'success' : 'pending', // TODO :handle other cases here
         timestampCreated,
         timestampResolved,
         l1ToL2MsgData: {
@@ -158,7 +181,7 @@ export const useDeposits = () => {
   useEffect(() => {
     //fetch the deposits through subgraph and populate them in state variable
     fetchAndSetEthDeposits()
-  }, [walletAddress])
+  }, [walletAddress, searchString, pageNumber, pageSize])
 
   return { deposits, loading }
 }

@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { Fragment, useMemo } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useActions, useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 
@@ -25,6 +25,12 @@ function getTransactionsDataStatus(
   }
 }
 
+export type PageParams = {
+  searchString?: string
+  pageNumber?: number
+  pageSize?: number
+}
+
 function isDeposit(tx: MergedTransaction) {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
@@ -34,8 +40,14 @@ export const TransactionHistory = () => {
     app: { mergedTransactions, pwLoadedState }
   } = useAppState()
 
+  const [pageParams, setPageParams] = useState<PageParams>({
+    searchString: '',
+    pageNumber: 0,
+    pageSize: 10
+  })
+
   const { deposits: depositsFromSubgraph, loading: depositsLoading } =
-    useDeposits()
+    useDeposits(pageParams)
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
@@ -91,6 +103,8 @@ export const TransactionHistory = () => {
             status={depositsLoading ? 'loading' : 'success'}
             transactions={deposits}
             className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
+            pageParams={pageParams}
+            updatePageParams={setPageParams}
           />
         </Tab.Panel>
         <Tab.Panel>
@@ -98,6 +112,8 @@ export const TransactionHistory = () => {
             status={getTransactionsDataStatus(pwLoadedState)}
             transactions={withdrawals}
             className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
+            pageParams={pageParams}
+            updatePageParams={setPageParams}
           />
         </Tab.Panel>
       </Tab.Group>

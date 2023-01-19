@@ -55,12 +55,18 @@ export async function fetchETHDepositsFromSubgraph({
   address,
   fromBlock,
   toBlock,
-  l2Provider
+  l2Provider,
+  pageSize = 10,
+  pageNumber = 0,
+  searchString = ''
 }: {
   address: string
   fromBlock: number
   toBlock: number
   l2Provider: Provider
+  pageSize?: number
+  pageNumber?: number
+  searchString?: string
 }): Promise<DepositETHSubgraphResult[]> {
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
@@ -76,18 +82,22 @@ export async function fetchETHDepositsFromSubgraph({
             sender: "${address}",
             blockCreatedAt_gte: ${fromBlock},
             blockCreatedAt_lte: ${toBlock}
+            ${searchString ? `transactionHash: "${searchString}"` : ''}
           }
           orderBy: blockCreatedAt
           orderDirection: desc
-          first: 10
+          first: ${pageSize},
+          skip: ${pageNumber * pageSize}
         ) {
           id
-          sender
-          destAddr
-          value
-          msgData
-          transactionHash
           blockCreatedAt
+          value
+          destAddr
+          isClassic
+          msgData
+          sender
+          timestamp
+          transactionHash
         }
       }
     `
@@ -96,12 +106,12 @@ export async function fetchETHDepositsFromSubgraph({
   return res.data.ethDeposits.map((eventData: any) => {
     const {
       id,
-      sender,
-      destAddr,
+      blockCreatedAt,
       value,
+      destAddr,
       msgData,
-      transactionHash,
-      blockCreatedAt
+      sender,
+      transactionHash
     } = eventData
 
     return {
