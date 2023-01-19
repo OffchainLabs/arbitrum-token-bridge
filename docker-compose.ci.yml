@@ -3,7 +3,7 @@ version: '3.9'
 services:
   synpress:
     container_name: synpress
-    build: .
+    build: ./packages/arb-token-bridge-ui
     environment:
       - DISPLAY=display:0.0
       - CYPRESS_PRIVATE_KEY_WITH_FUNDS=${CYPRESS_PRIVATE_KEY_WITH_FUNDS}
