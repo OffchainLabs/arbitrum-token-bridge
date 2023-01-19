@@ -132,8 +132,8 @@ jobs:
         run: |
           docker-compose -f docker-compose.ci.yml --env-file ${{ matrix.resolution }}-res.env --profile foundry up --build --exit-code-from synpress
         env:
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 0
+          DOCKER_BUILDKIT: 0
           DOCKER_DEFAULT_PLATFORM: linux/amd64
           NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
           CYPRESS_PRIVATE_KEY_WITH_FUNDS:
