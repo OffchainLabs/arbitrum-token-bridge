@@ -128,6 +128,7 @@ export const useArbTokenBridge = (
     {
       addTransaction,
       addTransactions,
+      setTransactions,
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
@@ -1352,6 +1353,7 @@ export const useArbTokenBridge = (
     },
     transactions: {
       transactions,
+      setTransactions,
       clearPendingTransactions,
       setTransactionConfirmed,
       updateTransaction,

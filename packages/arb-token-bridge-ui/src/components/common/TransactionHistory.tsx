@@ -8,6 +8,7 @@ import {
   TransactionsTable,
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
+import { useDeposits } from '../TransactionsTable/useDeposits'
 
 function getTransactionsDataStatus(
   pwLoadedState: PendingWithdrawalsLoadedState
@@ -33,7 +34,8 @@ export const TransactionHistory = () => {
     app: { mergedTransactions, pwLoadedState }
   } = useAppState()
 
-  const actions = useActions()
+  const { deposits: depositsFromSubgraph, loading: depositsLoading } =
+    useDeposits()
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
@@ -48,7 +50,7 @@ export const TransactionHistory = () => {
     })
 
     return [_deposits, _withdrawals]
-  }, [mergedTransactions])
+  }, [mergedTransactions, depositsFromSubgraph])
 
   return (
     <>
@@ -86,7 +88,7 @@ export const TransactionHistory = () => {
         <Tab.Panel>
           <TransactionsTable
             // Currently we load deposit history from local cache, so it's always a success
-            status="success"
+            status={depositsLoading ? 'loading' : 'success'}
             transactions={deposits}
             className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
           />

@@ -25,6 +25,7 @@ type Action =
       txID: string
       l1ToL2MsgData: L1ToL2MessageData
     }
+  | { type: 'SET_TRANSACTIONS'; transactions: Transaction[] }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -260,6 +261,9 @@ function reducer(state: Transaction[], action: Action) {
     case 'UPDATE_L1TOL2MSG_DATA': {
       return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
     }
+    case 'SET_TRANSACTIONS': {
+      return action.transactions
+    }
     default:
       return state
   }
@@ -489,6 +493,15 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
+  const setTransactions = (transactions: Transaction[]) => {
+    // replaces the state with a new set of transactions
+    // useful when you want to display some transactions fetched from subgraph without worrying about existing state
+    return dispatch({
+      type: 'SET_TRANSACTIONS',
+      transactions
+    })
+  }
+
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))
   }, [state])
@@ -498,6 +511,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     {
       addTransaction,
       addTransactions,
+      setTransactions,
       setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,

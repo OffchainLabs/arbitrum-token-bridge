@@ -212,6 +212,8 @@ export interface ArbTokenBridgeToken {
 
 export interface TransactionActions {
   addFailedTransaction: (transaction: FailedTransaction) => void
+
+  setTransactions: (transactions: Transaction[]) => void
   setTransactionSuccess: (txID: string) => void
   setTransactionFailure: (txID?: string) => void
   removeTransaction: (txID: string) => void
@@ -248,6 +250,7 @@ export type ArbTokenBridgeTransactions = {
   | 'addTransactions'
   | 'fetchAndUpdateL1ToL2MsgStatus'
   | 'fetchAndUpdateEthDepositMessageStatus'
+  | 'setTransactions'
 >
 
 export interface ArbTokenBridge {

@@ -176,13 +176,13 @@ export const defaultState: AppState = {
         direction: tx.type,
         status: tx.status,
         createdAt: tx.timestampCreated
-          ? dayjs(tx.timestampCreated).format('HH:mm:ss MM/DD/YYYY')
+          ? dayjs(tx.timestampCreated).format('HH:mm MMM DD, YYYY')
           : null,
         createdAtTime: tx.timestampCreated
           ? dayjs(tx.timestampCreated).toDate().getTime()
           : null,
         resolvedAt: tx.timestampResolved
-          ? dayjs(new Date(tx.timestampResolved)).format('HH:mm:ss MM/DD/YYYY')
+          ? dayjs(new Date(tx.timestampResolved)).format('HH:mm MMM DD, YYYY')
           : null,
         txId: tx.txID,
         asset: tx.assetName?.toLowerCase(),

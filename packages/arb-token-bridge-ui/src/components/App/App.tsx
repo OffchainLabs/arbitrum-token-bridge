@@ -125,7 +125,9 @@ const AppContent = (): JSX.Element => {
 
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
-      {!isTestingEnvironment && <PWLoadedUpdater />}
+
+      {/* UNDO THIS LATER */}
+      {/* {!isTestingEnvironment && <PWLoadedUpdater />} */}
 
       <TokenListSyncer />
       <BalanceUpdater />
