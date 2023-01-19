@@ -103,6 +103,7 @@ jobs:
 
   test-e2e:
     name: Test E2E
+    image: synthetixio/docker-e2e:14.17-debian
     runs-on: ubuntu-latest
     needs: build
     steps:
