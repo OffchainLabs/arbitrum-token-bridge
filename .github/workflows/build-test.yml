@@ -194,14 +194,16 @@ jobs:
         run: cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
 
       - name: Run UI
-        run: yarn serve &
+        run: xvfb-run -a yarn serve &
 
       # - name: Run tests
       #   run: yarn test:ci:e2e
-      - name: Run headless tests
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: yarn test:ci:e2e
+      # - name: Run headless tests
+      #   uses: GabrielBB/xvfb-action@v1
+      #   with:
+      #     run: yarn test:ci:e2e
+      - name: Run tests
+        run: yarn test:ci:e2e
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v3
