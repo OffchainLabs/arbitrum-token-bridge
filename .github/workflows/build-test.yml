@@ -212,6 +212,13 @@ jobs:
           name: cypress-snapshots
           path: ./packages/arb-token-bridge-ui/cypress/screenshots
 
+      - name: Upload videos
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-videos
+          path: ./packages/arb-token-bridge-ui/cypress/videos
+
   audit:
     name: Audit
     runs-on: ubuntu-latest

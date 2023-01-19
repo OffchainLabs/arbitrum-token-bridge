@@ -13,7 +13,7 @@ export default defineConfig({
   },
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: false,
+  video: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
   viewportWidth: 1366,
