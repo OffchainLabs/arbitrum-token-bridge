@@ -64,16 +64,12 @@ export function TransactionsTable({
   }
 
   const search = () => {
-    if (searchString) {
-      if (!validate_txhash(searchString)) {
-        setSearchError(true)
-      } else {
-        // search logic - using `searchString`
-        updatePageParams?.({ pageNumber: 0, pageSize: 10, searchString })
-      }
-    } else {
-      updatePageParams?.({ pageNumber: 0, pageSize: 10, searchString: '' })
+    if (searchString && !validate_txhash(searchString)) {
+      setSearchError(true)
+      return
     }
+    // search logic - using `searchString`
+    updatePageParams?.({ pageNumber: 0, pageSize: 10, searchString })
   }
 
   const next = () => {
