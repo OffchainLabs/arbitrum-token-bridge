@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react'
-import { Fragment, useMemo, useState } from 'react'
-import { useActions, useAppState } from '../../state'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
@@ -37,17 +37,31 @@ function isDeposit(tx: MergedTransaction) {
 
 export const TransactionHistory = () => {
   const {
-    app: { mergedTransactions, pwLoadedState }
+    app: {
+      mergedTransactions,
+      pwLoadedState,
+      arbTokenBridge: {
+        transactions: { setTransactions: setTransactionsInStore }
+      }
+    }
   } = useAppState()
 
+  /* 
+    Deposit history
+  */
   const [pageParams, setPageParams] = useState<PageParams>({
     searchString: '',
     pageNumber: 0,
     pageSize: 10
   })
 
-  const { deposits: depositsFromSubgraph, loading: depositsLoading } =
+  const { data: depositsFromSubgraph, isValidating: depositsLoading } =
     useDeposits(pageParams)
+
+  useEffect(() => {
+    '***** called depositsFromSubgraph useEffect ****'
+    setTransactionsInStore(depositsFromSubgraph || [])
+  }, [depositsFromSubgraph])
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
