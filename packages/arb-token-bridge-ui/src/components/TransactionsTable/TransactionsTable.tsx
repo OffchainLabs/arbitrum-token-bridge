@@ -6,6 +6,7 @@ import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { PageParams } from '../common/TransactionHistory'
+import ArbinautMoonWalking from '../../assets/ArbinautMoonWalking.webp'
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
@@ -28,6 +29,20 @@ function EmptyTableRow({ children }: { children: React.ReactNode }) {
         </td>
       </tr>
     </>
+  )
+}
+
+const NoDataOverlay = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="flex h-full w-full flex-col items-center p-[2rem]">
+      {children}
+
+      <img
+        src={ArbinautMoonWalking}
+        alt="Moon walking Arbibaut"
+        className="lg:max-h-[50%] lg:max-w-[50%]"
+      />
+    </div>
   )
 }
 
@@ -107,7 +122,6 @@ export function TransactionsTable({
         />
         {searchError ? 'Oops - seems like a wrong L1 transaction hash!' : null}
       </div>
-
       {/* Pagination buttons */}
       <div className="flex w-full flex-row justify-between p-4">
         <button className="bg-blue-arbitrum p-2" onClick={prev}>
@@ -120,6 +134,21 @@ export function TransactionsTable({
           Next
         </button>
       </div>
+
+      {/* when there are no search results found */}
+      {status === 'success' && !transactions.length && searchString && (
+        <NoDataOverlay>
+          <div className="text-center text-white">
+            <p className="whitespace-nowrap text-lg">
+              Oops! Looks like nothing matched your search query.
+            </p>
+            <p className="whitespace-nowrap text-base">
+              You can search for full or partial tx ID&apos;s.
+            </p>
+          </div>
+        </NoDataOverlay>
+      )}
+
       <table
         className={`w-full rounded-tr-lg rounded-br-lg rounded-bl-lg bg-gray-1 ${className}`}
       >
