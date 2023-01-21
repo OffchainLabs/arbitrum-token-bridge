@@ -60,6 +60,16 @@ export async function getL1TokenData({
   l2Provider: Provider
   throwOnInvalidERC20?: boolean
 }): Promise<L1TokenData> {
+  // caching for tokens results
+  const l1TokenDataCache = JSON.parse(
+    localStorage.getItem('l1TokenDataCache') || '{}'
+  )
+  if (l1TokenDataCache?.[erc20L1Address]) {
+    // if found in cache - then return this only
+    console.log('**** CACHE HIT FOR ****', erc20L1Address)
+    return l1TokenDataCache?.[erc20L1Address]
+  }
+
   const l2Network = await getL2Network(l2Provider)
   const erc20Bridger = new Erc20Bridger(l2Network)
 
@@ -93,7 +103,7 @@ export async function getL1TokenData({
       )
   }
 
-  return {
+  const finalTokenData = {
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
     balance: tokenData?.balance ?? constants.Zero,
@@ -101,6 +111,17 @@ export async function getL1TokenData({
     decimals: tokenData?.decimals ?? 0,
     contract
   }
+
+  // store the newly fetched final-token-data in cache
+  try {
+    console.log('**** CACHE MISS FOR ****', erc20L1Address)
+    l1TokenDataCache[erc20L1Address] = finalTokenData
+    localStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+  } catch (e) {
+    console.warn(e)
+  }
+
+  return finalTokenData
 }
 
 /**

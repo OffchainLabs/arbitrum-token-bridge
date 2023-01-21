@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 import { Provider } from '@ethersproject/providers'
-import { AssetType, Transaction } from 'token-bridge-sdk'
+import { AssetType, getL1TokenData, Transaction } from 'token-bridge-sdk'
 import {
   L1TransactionReceipt,
   L1ToL2MessageStatus,
@@ -196,25 +196,71 @@ const updateAdditionalTransactionData = async (
     // add the updated deposit TX to arbtokenBridge.transactions.transactions
     // so that it updates the state AND performs subsequent operations and shows on UI
   } else {
-    /*
+    // fetch the token details like asset name and asset type
+    const { name, symbol } = await getL1TokenData({
+      account: depositTx.sender,
+      erc20L1Address: depositTx.tokenAddress!,
+      l1Provider,
+      l2Provider
+    })
 
-      FOR TOKEN DEPOSITS - PENDING
+    // fetch timestamp things
+    const timestampCreated = depositTx.blockNumber
+      ? (await l1Provider.getBlock(Number(depositTx.blockNumber))).timestamp *
+        1000
+      : new Date().toISOString()
 
-      */
+    const updatedDepositTx = {
+      ...depositTx,
+      timestampCreated,
+      asset: symbol,
+      assetName: symbol,
+      assetType: AssetType.ERC20
+    }
+
     const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
     if (!l1ToL2Msg) {
-      return
+      return updatedDepositTx
     }
 
-    const status = await l1ToL2Msg.status()
+    const res = await l1ToL2Msg.waitForStatus()
 
-    if (status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
-      // mark as success
-    } else {
-      // mark as pending
+    const l2TxID = (() => {
+      if (res.status === L1ToL2MessageStatus.REDEEMED) {
+        return res.l2TxReceipt.transactionHash
+      } else {
+        return undefined
+      }
+    })()
+
+    const l1ToL2MsgData = {
+      status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
     }
 
-    return depositTx
+    const isDeposited =
+      l1ToL2MsgData.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+
+    const l2BlockNum = isDeposited
+      ? (await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId))
+          .blockNumber
+      : null
+
+    const timestampResolved = l2BlockNum
+      ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
+      : null
+
+    const completeDepositTx = {
+      ...updatedDepositTx,
+      status: l1ToL2Msg.retryableCreationId ? 'success' : 'pending', // TODO :handle other cases here
+      timestampCreated,
+      timestampResolved,
+      l1ToL2MsgData: l1ToL2MsgData
+    }
+
+    return completeDepositTx
   }
 }
 
@@ -222,6 +268,7 @@ export async function fetchERC20DepositsFromSubgraph({
   address,
   fromBlock,
   toBlock,
+  l1Provider,
   l2Provider,
   pageSize = 10,
   pageNumber = 0,
@@ -230,11 +277,13 @@ export async function fetchERC20DepositsFromSubgraph({
   address: string
   fromBlock: number
   toBlock: number
+  l1Provider: Provider
   l2Provider: Provider
   pageSize?: number
   pageNumber?: number
   searchString?: string
-}): Promise<DepositETHSubgraphResult[]> {
+}): Promise<Transaction[]> {
+  const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
   if (fromBlock === 0 && toBlock === 0) {
@@ -244,14 +293,17 @@ export async function fetchERC20DepositsFromSubgraph({
   const res = await getL1SubgraphClient(l2ChainId).query({
     query: gql`
       {
-        tokenDeposits(
-          first: 10, 
-            where: {
-              from: "${address}",
-              blockCreatedAt_gte: ${fromBlock},
-              blockCreatedAt_lte: ${toBlock}
-              ${searchString ? `transactionHash: "${searchString}"` : ''}
-            }
+        tokenDeposits(          
+          where: {
+            from: "${address}",
+            blockCreatedAt_gte: ${fromBlock},
+            blockCreatedAt_lte: ${toBlock}
+            ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
+          }
+          orderBy: blockCreatedAt
+          orderDirection: desc
+          first: ${pageSize},
+          skip: ${pageNumber * pageSize}
         ) {
           transactionHash
           to
@@ -275,25 +327,26 @@ export async function fetchERC20DepositsFromSubgraph({
     `
   })
 
-  return res.data.ethDeposits.map((eventData: any) => {
-    const {
-      id,
-      blockCreatedAt,
-      value,
-      destAddr,
-      msgData,
-      sender,
-      transactionHash
-    } = eventData
+  const tokenDepositsFromSubgraph = res.data.tokenDeposits.map((tx: any) => ({
+    type: 'deposit-l1',
+    status: 'pending',
+    value: utils.formatEther(tx.amount),
+    txID: tx.transactionHash,
+    tokenAddress: tx.l1Token.id,
+    sender: address,
+    l1NetworkID: String(l1ChainId),
+    l2NetworkID: String(l2ChainId),
+    blockNumber: tx.blockCreatedAt
+  })) as unknown as Transaction[]
 
-    return {
-      id,
-      sender,
-      destAddr,
-      value,
-      msgData,
-      transactionHash,
-      blockCreatedAt
-    }
-  })
+  // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
+  // 2. on the basis of those, finally calculate the status of the transaction
+  // 3. once this is done, update the transactions someohow in the APP-STATE so that they start showing?
+  const finalTransactions = (await Promise.all(
+    tokenDepositsFromSubgraph.map(depositTx =>
+      updateAdditionalTransactionData(depositTx, l1Provider, l2Provider)
+    )
+  )) as Transaction[]
+
+  return finalTransactions
 }
