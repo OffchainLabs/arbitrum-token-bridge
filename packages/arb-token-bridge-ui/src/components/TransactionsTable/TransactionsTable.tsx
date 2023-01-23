@@ -7,7 +7,14 @@ import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { PageParams } from '../common/TransactionHistory'
 import ArbinautMoonWalking from '../../assets/ArbinautMoonWalking.webp'
-import { Menu } from '@headlessui/react'
+import { Listbox, Menu } from '@headlessui/react'
+import {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SearchIcon
+} from '@heroicons/react/outline'
+import { ChainId, getNetworkLogo } from '../../util/networks'
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
@@ -61,6 +68,60 @@ export type TransactionsTableProps = {
   // pagination?: { pageNumber?: number; pageSize?: number }
   // handleSearch?: () => void
   // handlePagination?: () => void
+}
+
+const DepositTypeDropdown = ({
+  value,
+  setValue
+}: {
+  value: PageParams['type']
+  setValue: (val: PageParams['type']) => void
+}) => {
+  const options = {
+    ETH: { name: 'ETH', value: 'ETH', logo: ChainId.Mainnet },
+    ERC20: { name: 'Other Tokens', value: 'ERC20', logo: ChainId.ArbitrumOne }
+  }
+  return (
+    <Listbox
+      as="div"
+      className="relative shrink grow-0 flex-nowrap"
+      value={value}
+      onChange={setValue}
+    >
+      <Listbox.Button
+        className={`arb-hover bg-arbitrum-blue flex w-max items-center space-x-1 rounded-full bg-white px-2 py-1 text-base`}
+      >
+        <img
+          src={getNetworkLogo(options[value].logo)}
+          alt={`${options[value].name} logo`}
+          className="max-w-6 max-h-6"
+        />
+        <span>{value === 'ETH' ? 'ETH' : 'Others'}</span>
+        {<ChevronDownIcon className="h-4 w-4" />}
+      </Listbox.Button>
+
+      <Listbox.Options className="absolute z-20 mt-2 rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+        {Object.values(options).map(option => (
+          <Listbox.Option
+            key={option.value}
+            value={option.value}
+            className={
+              'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]'
+            }
+          >
+            <div className="flex h-8 w-8 items-center justify-center">
+              <img
+                src={getNetworkLogo(option.logo)}
+                alt={`${option.name} logo`}
+                className="max-w-8 max-h-9"
+              />
+            </div>
+            <span>{option.name}</span>
+          </Listbox.Option>
+        ))}
+      </Listbox.Options>
+    </Listbox>
+  )
 }
 
 export function TransactionsTable({
@@ -117,69 +178,56 @@ export function TransactionsTable({
 
   return (
     <>
-      {/* Deposit type dropdown */}
-      <div>
-        <Menu>
-          <Menu.Button>
-            {pageParams?.type === 'ETH' ? 'ETH Deposits' : 'Token Deposits'}
-          </Menu.Button>
-          <Menu.Items>
-            <Menu.Item>
-              {({ active }) => (
-                <div
-                  className={`${pageParams?.type === 'ETH' && 'bg-blue-500'}`}
-                  onClick={() => changeType('ETH')}
-                >
-                  ETH Deposits
-                </div>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <div
-                  className={`${pageParams?.type === 'ERC20' && 'bg-blue-500'}`}
-                  onClick={() => changeType('ERC20')}
-                >
-                  Token Deposits
-                </div>
-              )}
-            </Menu.Item>
-            <Menu.Item disabled>
-              <span className="opacity-75">Invite a friend (coming soon!)</span>
-            </Menu.Item>
-          </Menu.Items>
-        </Menu>
-      </div>
-      {/* Search bar */}
-      <div className="w-full p-4">
-        <input
-          className="w-full text-dark"
-          type="text"
-          placeholder="Search for L1 transaction hash..."
-          value={searchString}
-          onChange={e => {
-            searchError ? setSearchError(false) : null
-            setSearchString(e.target.value)
-          }}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              search()
-            }
-          }}
-        />
-        {searchError ? 'Oops - seems like a wrong L1 transaction hash!' : null}
-      </div>
-      {/* Pagination buttons */}
-      <div className="flex w-full flex-row justify-between p-4">
-        <button className="bg-blue-arbitrum p-2" onClick={prev}>
-          Previous
-        </button>
+      <div className="flex w-auto flex-nowrap items-center justify-between gap-4 border-2 border-b border-gray-10 bg-gray-3 p-3 text-sm">
+        {/* Deposit type dropdown */}
 
-        <div>Page no. : {(pageParams?.pageNumber || 0) + 1} </div>
+        <DepositTypeDropdown
+          value={pageParams!.type}
+          setValue={changeType}
+        ></DepositTypeDropdown>
 
-        <button className="bg-blue-arbitrum p-2" onClick={next}>
-          Next
-        </button>
+        {/* Search bar */}
+        <div className="relative flex h-full w-full grow items-center rounded bg-white px-2">
+          <SearchIcon className="h-4 w-4 shrink-0 text-gray-9" />
+          <input
+            className="text-normal h-full w-full p-2 font-light placeholder:text-gray-9"
+            type="text"
+            placeholder="Search for L1 transaction hash"
+            value={searchString}
+            onChange={e => {
+              searchError ? setSearchError(false) : null
+              setSearchString(e.target.value)
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                search()
+              }
+            }}
+          />
+          {searchError ? (
+            <span className="absolute -bottom-4 text-xs text-red-400">
+              Oops! Seems like a wrong L1 transaction hash.
+            </span>
+          ) : null}
+        </div>
+        {/* Pagination buttons */}
+        <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
+          <button
+            className="rounded border border-gray-10 p-1"
+            onClick={prev}
+            disabled={!pageParams?.pageNumber}
+          >
+            <ChevronLeftIcon className="h-3 w-3" />
+          </button>
+
+          <div className="whitespace-nowrap p-2">
+            Page {(pageParams?.pageNumber || 0) + 1}{' '}
+          </div>
+
+          <button className="rounded border border-gray-10 p-1" onClick={next}>
+            <ChevronRightIcon className="h-3 w-3" />
+          </button>
+        </div>
       </div>
 
       {/* when there are no search results found */}

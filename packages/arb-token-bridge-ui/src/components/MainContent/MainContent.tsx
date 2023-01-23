@@ -173,8 +173,9 @@ export function MainContent() {
         </AnimatePresence>
       </div>
 
-      {showTransactionHistory && (
+      {true && (
         <SidePanel
+          isOpen={showTransactionHistory}
           heading="Transaction History"
           onClose={() => {
             actions.app.setShowTransactionHistory(false)
