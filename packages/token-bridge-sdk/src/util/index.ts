@@ -62,7 +62,7 @@ export async function getL1TokenData({
 }): Promise<L1TokenData> {
   // caching for tokens results
   const l1TokenDataCache = JSON.parse(
-    localStorage.getItem('l1TokenDataCache') || '{}'
+    sessionStorage.getItem('l1TokenDataCache') || '{}'
   )
   if (l1TokenDataCache?.[erc20L1Address]) {
     // if found in cache - then return this only
@@ -116,7 +116,7 @@ export async function getL1TokenData({
   try {
     console.log('**** CACHE MISS FOR ****', erc20L1Address)
     l1TokenDataCache[erc20L1Address] = finalTokenData
-    localStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+    sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
   } catch (e) {
     console.warn(e)
   }

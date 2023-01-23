@@ -7,6 +7,7 @@ import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { PageParams } from '../common/TransactionHistory'
 import ArbinautMoonWalking from '../../assets/ArbinautMoonWalking.webp'
+import { Menu } from '@headlessui/react'
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
@@ -84,7 +85,12 @@ export function TransactionsTable({
       return
     }
     // search logic - using `searchString`
-    updatePageParams?.({ pageNumber: 0, pageSize: 10, searchString })
+    updatePageParams?.(prevParams => ({
+      ...prevParams,
+      pageNumber: 0,
+      pageSize: 10,
+      searchString
+    }))
   }
 
   const next = () => {
@@ -101,8 +107,49 @@ export function TransactionsTable({
     }))
   }
 
+  const changeType = (type: PageParams['type']) => {
+    updatePageParams?.(prevParams => ({
+      ...prevParams,
+      pageNumber: 0,
+      type: type
+    }))
+  }
+
   return (
     <>
+      {/* Deposit type dropdown */}
+      <div>
+        <Menu>
+          <Menu.Button>
+            {pageParams?.type === 'ETH' ? 'ETH Deposits' : 'Token Deposits'}
+          </Menu.Button>
+          <Menu.Items>
+            <Menu.Item>
+              {({ active }) => (
+                <div
+                  className={`${pageParams?.type === 'ETH' && 'bg-blue-500'}`}
+                  onClick={() => changeType('ETH')}
+                >
+                  ETH Deposits
+                </div>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <div
+                  className={`${pageParams?.type === 'ERC20' && 'bg-blue-500'}`}
+                  onClick={() => changeType('ERC20')}
+                >
+                  Token Deposits
+                </div>
+              )}
+            </Menu.Item>
+            <Menu.Item disabled>
+              <span className="opacity-75">Invite a friend (coming soon!)</span>
+            </Menu.Item>
+          </Menu.Items>
+        </Menu>
+      </div>
       {/* Search bar */}
       <div className="w-full p-4">
         <input

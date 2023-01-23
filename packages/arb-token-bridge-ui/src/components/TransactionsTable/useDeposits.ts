@@ -1,17 +1,22 @@
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useAppContextState } from '../App/AppContext'
-import { fetchETHDepositsFromSubgraph } from './fetchEthDepositsFromSubgraph_draft'
+import {
+  fetchERC20DepositsFromSubgraph,
+  fetchETHDepositsFromSubgraph
+} from './fetchEthDepositsFromSubgraph_draft'
 import useSWR from 'swr'
 
 export const useDeposits = ({
   searchString,
   pageNumber,
-  pageSize
+  pageSize,
+  type = 'ETH'
 }: {
   searchString?: string
   pageNumber?: number
   pageSize?: number
+  type?: 'ETH' | 'ERC20'
 }) => {
   const {
     app: {
@@ -35,7 +40,8 @@ export const useDeposits = ({
       l2Provider,
       searchString,
       pageNumber,
-      pageSize
+      pageSize,
+      type
     ],
     (
       _,
@@ -47,7 +53,9 @@ export const useDeposits = ({
       _pageNumber,
       _pageSize
     ) =>
-      fetchETHDepositsFromSubgraph({
+      (type === 'ETH'
+        ? fetchETHDepositsFromSubgraph
+        : fetchERC20DepositsFromSubgraph)({
         address: _walletAddress,
         fromBlock: 0,
         toBlock: currentL1BlockNumber,

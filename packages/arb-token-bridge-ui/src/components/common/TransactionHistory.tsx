@@ -29,6 +29,7 @@ export type PageParams = {
   searchString?: string
   pageNumber?: number
   pageSize?: number
+  type: 'ETH' | 'ERC20'
 }
 
 function isDeposit(tx: MergedTransaction) {
@@ -52,11 +53,12 @@ export const TransactionHistory = () => {
   const [pageParams, setPageParams] = useState<PageParams>({
     searchString: '',
     pageNumber: 0,
-    pageSize: 10
+    pageSize: 10,
+    type: 'ETH'
   })
 
   const { data: depositsFromSubgraph, isValidating: depositsLoading } =
-    useDeposits(pageParams)
+    useDeposits({ ...pageParams })
 
   useEffect(() => {
     '***** called depositsFromSubgraph useEffect ****'
