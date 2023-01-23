@@ -80,6 +80,8 @@ export async function fetchETHDepositsFromSubgraph({
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
+  const t = new Date().getTime()
+
   if (fromBlock === 0 && toBlock === 0) {
     return []
   }
@@ -129,12 +131,26 @@ export async function fetchETHDepositsFromSubgraph({
 
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
-  // 3. once this is done, update the transactions someohow in the APP-STATE so that they start showing?
+
+  const t1 = new Date().getTime()
+  console.log(
+    `*** done getting ETH subgraph data, took ${
+      Math.round(t1 - t) / 1000
+    } seconds`
+  )
+
   const finalTransactions = (await Promise.all(
     ethDepositsFromSubgraph.map(depositTx =>
       updateAdditionalTransactionData(depositTx, l1Provider, l2Provider)
     )
   )) as Transaction[]
+
+  const t2 = new Date().getTime()
+  console.log(
+    `*** done getting final ETH additional data, took ${
+      Math.round(t2 - t1) / 1000
+    } seconds`
+  )
 
   return finalTransactions
 }
@@ -144,31 +160,29 @@ const updateAdditionalTransactionData = async (
   l1Provider: Provider,
   l2Provider: Provider
 ) => {
+  // fetch L1 transaction receipt
   const depositTxReceipt = await l1Provider.getTransactionReceipt(
     depositTx.txID
   )
-
-  // fetch L1 transaction receipt
   const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
+  // Check if deposit is ETH
   if (depositTx.assetName === AssetType.ETH) {
+    // from the receipt - get the eth-deposit-message
     const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
     if (!ethDepositMessage) {
       return
     }
 
+    // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
     const status = await ethDepositMessage.status()
-
     const isDeposited = status === EthDepositStatus.DEPOSITED
-
     const timestampCreated = depositTx.blockNumber
       ? (await l1Provider.getBlock(Number(depositTx.blockNumber))).timestamp *
         1000
       : new Date().toISOString()
-
     const retryableCreationTxID = ethDepositMessage.l2DepositTxHash
-
     const l2BlockNum = isDeposited
       ? (await l2Provider.getTransaction(retryableCreationTxID)).blockNumber
       : null
@@ -177,6 +191,7 @@ const updateAdditionalTransactionData = async (
       ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
       : null
 
+    // return the data to populate on UI
     const updatedDepositTx = {
       ...depositTx,
       status: retryableCreationTxID ? 'success' : 'pending', // TODO :handle other cases here
@@ -193,11 +208,11 @@ const updateAdditionalTransactionData = async (
     }
 
     return updatedDepositTx
-    // add the updated deposit TX to arbtokenBridge.transactions.transactions
-    // so that it updates the state AND performs subsequent operations and shows on UI
   } else {
-    // fetch the token details like asset name and asset type
-    const { name, symbol } = await getL1TokenData({
+    // else if the transaction is not ETH ie. it's a ERC20 token deposit
+
+    // first fetch the token details like asset name and asset type
+    const { symbol } = await getL1TokenData({
       account: depositTx.sender,
       erc20L1Address: depositTx.tokenAddress!,
       l1Provider,
@@ -218,6 +233,7 @@ const updateAdditionalTransactionData = async (
       assetType: AssetType.ERC20
     }
 
+    // get l1 to l2 message for status fields
     const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
     if (!l1ToL2Msg) {
       return updatedDepositTx
@@ -286,6 +302,8 @@ export async function fetchERC20DepositsFromSubgraph({
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
+  const t = new Date().getTime()
+
   if (fromBlock === 0 && toBlock === 0) {
     return []
   }
@@ -339,6 +357,13 @@ export async function fetchERC20DepositsFromSubgraph({
     blockNumber: tx.blockCreatedAt
   })) as unknown as Transaction[]
 
+  const t1 = new Date().getTime()
+  console.log(
+    `*** done getting Token subgraph data, took ${
+      Math.round(t1 - t) / 1000
+    } seconds`
+  )
+
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
   // 3. once this is done, update the transactions someohow in the APP-STATE so that they start showing?
@@ -347,6 +372,13 @@ export async function fetchERC20DepositsFromSubgraph({
       updateAdditionalTransactionData(depositTx, l1Provider, l2Provider)
     )
   )) as Transaction[]
+
+  const t2 = new Date().getTime()
+  console.log(
+    `*** done getting final Token additional data, took ${
+      Math.round(t2 - t1) / 1000
+    } seconds`
+  )
 
   return finalTransactions
 }
