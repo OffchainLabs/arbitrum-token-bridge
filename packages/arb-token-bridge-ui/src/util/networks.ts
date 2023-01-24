@@ -13,7 +13,7 @@ import EthereumLogo from '../assets/EthereumLogo.webp'
 import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
 import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
 
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY as string
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY as string
 
 if (!INFURA_KEY) {
   throw new Error('Infura API key not provided')
