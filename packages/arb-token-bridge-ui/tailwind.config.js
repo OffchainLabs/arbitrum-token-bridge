@@ -52,7 +52,7 @@ module.exports = {
     extend: {
       display: ['group-hover'],
       textColor: ['disabled'],
-      backgroundColor: ['active', 'disabled'],
+      backgroundColor: ['active', 'disabled', 'even'],
       boxShadow: ['active'],
       opacity: ['active', 'disabled'],
       margin: ['active'],

@@ -1,9 +1,11 @@
 import { Tab } from '@headlessui/react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 
 import { PendingWithdrawalsLoadedState } from '../../util'
+import { getNetworkLogo, getNetworkName } from '../../util/networks'
 import {
   TransactionsTable,
   TransactionsDataStatus
@@ -47,6 +49,7 @@ export const TransactionHistory = () => {
     }
   } = useAppState()
 
+  const { l1, l2 } = useNetworksAndSigners()
   /* 
     Deposit history
   */
@@ -83,18 +86,22 @@ export const TransactionHistory = () => {
   return (
     <>
       <Tab.Group>
-        <Tab.List>
+        <Tab.List className={'flex flex-row'}>
           <Tab as={Fragment}>
             {({ selected }) => (
               <button
                 className={`${
-                  !selected ? 'arb-hover' : ''
-                } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                  selected &&
-                  `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
+                  !selected ? 'arb-hover text-white' : ''
+                } flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ${
+                  selected && ` bg-white`
                 }`}
               >
-                Deposits
+                {/* Deposits */}
+                <img
+                  src={getNetworkLogo(l2.network.chainID)}
+                  className="max-w-6 max-h-6"
+                />
+                {`To ${getNetworkName(l2.network.chainID)}`}
               </button>
             )}
           </Tab>
@@ -102,13 +109,17 @@ export const TransactionHistory = () => {
             {({ selected }) => (
               <button
                 className={`${
-                  !selected ? 'arb-hover' : ''
-                } rounded-tl-lg rounded-tr-lg px-4 py-2 ${
-                  selected &&
-                  `border-2 border-b-0 border-blue-arbitrum border-opacity-80 bg-gray-3`
+                  !selected ? 'arb-hover text-white' : ''
+                } flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ${
+                  selected && `bg-white`
                 }`}
               >
-                Withdrawals
+                {/* Withdrawals */}
+                <img
+                  src={getNetworkLogo(l1.network.chainID)}
+                  className="max-w-6 max-h-6"
+                />
+                {`To ${getNetworkName(l1.network.chainID)}`}
               </button>
             )}
           </Tab>
@@ -118,7 +129,6 @@ export const TransactionHistory = () => {
             // Currently we load deposit history from local cache, so it's always a success
             status={depositsLoading ? 'loading' : 'success'}
             transactions={deposits}
-            className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
             pageParams={pageParams}
             updatePageParams={setPageParams}
           />
@@ -127,7 +137,6 @@ export const TransactionHistory = () => {
           <TransactionsTable
             status={getTransactionsDataStatus(pwLoadedState)}
             transactions={withdrawals}
-            className="-mt-0.5 border-2 border-blue-arbitrum border-opacity-80 bg-gray-3"
             pageParams={pageParams}
             updatePageParams={setPageParams}
           />

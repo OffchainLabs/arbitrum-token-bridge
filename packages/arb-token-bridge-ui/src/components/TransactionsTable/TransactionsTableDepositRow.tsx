@@ -76,7 +76,11 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
     )
   }
 
-  return <span>{tx.resolvedAt || tx.createdAt || 'N/A'}</span>
+  return (
+    <span className="whitespace-nowrap">
+      {tx.resolvedAt || tx.createdAt || 'N/A'}
+    </span>
+  )
 }
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
@@ -84,9 +88,9 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
   const l2TxHash = tx.l1ToL2MsgData?.l2TxID
 
   return (
-    <div className="flex flex flex-col flex-col space-y-1">
-      <span className="text-dark">
-        L1:{' '}
+    <div className="flex flex-col space-y-1">
+      <span className="whitespace-nowrap text-dark">
+        Mainnet:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
@@ -96,8 +100,8 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       </span>
 
       {l2TxHash && (
-        <span className="text-dark">
-          L2:{' '}
+        <span className="whitespace-nowrap text-dark">
+          Arbitrum:{' '}
           <ExternalLink
             href={`${getExplorerUrl(l2.network.chainID)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
@@ -149,7 +153,9 @@ export function TransactionsTableDepositRow({
   const bgClassName = isError ? 'bg-brick' : ''
 
   return (
-    <tr className={`text-sm text-dark ${bgClassName} ${className}`}>
+    <tr
+      className={`bg-cyan text-sm text-dark even:bg-white ${bgClassName} ${className}`}
+    >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <DepositRowStatus tx={tx} />
       </td>
@@ -158,7 +164,7 @@ export function TransactionsTableDepositRow({
         <DepositRowTime tx={tx} />
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td className="w-1/5 whitespace-nowrap px-3 py-3">
         {tx.value} {tx.asset.toUpperCase()}
       </td>
 

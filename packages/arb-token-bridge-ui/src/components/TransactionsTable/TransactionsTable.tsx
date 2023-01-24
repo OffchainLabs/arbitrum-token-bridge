@@ -89,7 +89,7 @@ const DepositTypeDropdown = ({
       onChange={setValue}
     >
       <Listbox.Button
-        className={`arb-hover bg-arbitrum-blue flex w-max items-center space-x-1 rounded-full bg-white px-2 py-1 text-base`}
+        className={`arb-hover bg-arbitrum-blue flex w-max items-center space-x-1 rounded-full border-2 bg-white px-2 py-1 text-base`}
       >
         <img
           src={getNetworkLogo(options[value].logo)}
@@ -127,7 +127,6 @@ const DepositTypeDropdown = ({
 export function TransactionsTable({
   status,
   transactions,
-  className = '',
   pageParams,
   updatePageParams
 }: TransactionsTableProps) {
@@ -178,7 +177,7 @@ export function TransactionsTable({
 
   return (
     <>
-      <div className="flex w-auto flex-nowrap items-center justify-between gap-4 border-2 border-b border-gray-10 bg-gray-3 p-3 text-sm">
+      <div className="flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm">
         {/* Deposit type dropdown */}
 
         <DepositTypeDropdown
@@ -187,7 +186,7 @@ export function TransactionsTable({
         ></DepositTypeDropdown>
 
         {/* Search bar */}
-        <div className="relative flex h-full w-full grow items-center rounded bg-white px-2">
+        <div className="relative flex h-full w-full grow items-center rounded border-2 bg-white px-2">
           <SearchIcon className="h-4 w-4 shrink-0 text-gray-9" />
           <input
             className="text-normal h-full w-full p-2 font-light placeholder:text-gray-9"
@@ -205,7 +204,7 @@ export function TransactionsTable({
             }}
           />
           {searchError ? (
-            <span className="absolute -bottom-4 text-xs text-red-400">
+            <span className="absolute bottom-0 right-4 bg-white p-[9px] text-xs text-red-400">
               Oops! Seems like a wrong L1 transaction hash.
             </span>
           ) : null}
@@ -244,10 +243,8 @@ export function TransactionsTable({
         </NoDataOverlay>
       )}
 
-      <table
-        className={`w-full rounded-tr-lg rounded-br-lg rounded-bl-lg bg-gray-1 ${className}`}
-      >
-        <thead className="border-b border-gray-10 text-left text-sm text-gray-10">
+      <table className="w-full overflow-hidden  rounded-b-lg bg-white">
+        <thead className="text-left text-sm text-gray-10">
           <tr>
             <th className="py-3 pl-6 pr-3 font-normal">Status</th>
             <th className="px-3 py-3 font-normal">Time</th>
@@ -289,7 +286,7 @@ export function TransactionsTable({
                     <TransactionsTableDepositRow
                       key={`${tx.txId}-${tx.direction}`}
                       tx={tx}
-                      className={!isFinalRow ? 'border-b border-gray-10' : ''}
+                      className={!isFinalRow ? 'border-b border-gray-1' : ''}
                     />
                   ) : (
                     <TransactionsTableWithdrawalRow

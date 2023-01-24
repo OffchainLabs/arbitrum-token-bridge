@@ -6,9 +6,9 @@ interface StatusBadgeProps {
 }
 
 const variants: Record<string, string> = {
-  blue: 'bg-cyan text-cyan-dark border border-cyan-dark',
-  yellow: 'bg-orange text-orange-dark border border-orange-dark',
-  green: 'bg-lime text-lime-dark border border-lime-dark',
+  blue: 'bg-cyan text-cyan-dark',
+  yellow: 'bg-orange text-orange-dark',
+  green: 'bg-lime text-lime-dark',
   red: 'bg-brick text-brick-dark border border-brick-dark'
 }
 

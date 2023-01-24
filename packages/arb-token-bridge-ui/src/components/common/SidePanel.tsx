@@ -25,7 +25,7 @@ export const SidePanel = ({
         <div className="fixed inset-0 top-0 right-0 flex h-full w-full items-start justify-end overflow-y-auto">
           {/* The heading of dialog  */}
           <Dialog.Panel className="flex min-h-full w-full flex-col bg-dark lg:w-1/2">
-            <Dialog.Title className="sticky top-0 z-50 mx-2 flex flex-row justify-between border-b-[1px] border-gray-9 bg-dark py-4 text-white">
+            <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-9 bg-dark py-4 text-white">
               <span className="text-xl">{heading}</span>
               <button className="arb-hover" onClick={onClose}>
                 <XIcon className="h-6 w-6 text-white" />

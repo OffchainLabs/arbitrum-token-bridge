@@ -30,7 +30,11 @@ export function DepositCountdown({
   ) {
     // We expect the deposit to be completed within 15 minutes in most cases, so we subtract the diff from 15 minutes
     const minutesRemaining = 15 - now.diff(whenCreated, 'minutes')
-    return <span>{getMinutesRemainingText(minutesRemaining)}</span>
+    return (
+      <span className="whitespace-nowrap">
+        {getMinutesRemainingText(minutesRemaining)}
+      </span>
+    )
   }
 
   return null
