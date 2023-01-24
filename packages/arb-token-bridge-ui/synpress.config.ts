@@ -30,6 +30,7 @@ export default defineConfig({
       const wallet = new Wallet(process.env.PRIVATE_KEY!)
       config.env.ADDRESS = await wallet.getAddress()
       config.env.INFURA_KEY = '8f367f5282bb4ffeaa511076447262b5'
+      config.env.PRIVATE_KEY = process.env.PRIVATE_KEY
       // config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)

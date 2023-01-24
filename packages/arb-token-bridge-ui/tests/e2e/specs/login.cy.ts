@@ -31,12 +31,9 @@ describe('Login Account', () => {
     cy.logout()
   })
 
-  beforeEach(() => {
+  it('should show connect wallet if not logged in', () => {
     cy.visit('/')
     cy.get('button').contains('Agree to terms').click()
-  })
-
-  it('should show connect wallet if not logged in', () => {
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
@@ -47,7 +44,6 @@ describe('Login Account', () => {
   })
 
   it('should show L1 and L2 ETH balances correctly', () => {
-    cy.findByText('MetaMask').click()
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
   })

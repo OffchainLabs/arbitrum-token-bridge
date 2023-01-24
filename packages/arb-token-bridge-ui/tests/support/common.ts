@@ -3,8 +3,9 @@
 */
 
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
+import { BigNumber, Wallet } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
+import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 
 export type NetworkType = 'L1' | 'L2'
 
@@ -16,7 +17,8 @@ export const l1NetworkConfig = {
   rpcUrl: ethRpcUrl,
   chainId: '1337',
   symbol: 'ETH',
-  isTestnet: true
+  isTestnet: true,
+  l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
 }
 
 export const l2NetworkConfig = {
@@ -24,11 +26,12 @@ export const l2NetworkConfig = {
   rpcUrl: arbRpcUrl,
   chainId: '412346',
   symbol: 'ETH',
-  isTestnet: true
+  isTestnet: true,
+  l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
 }
 
-export const ERC20TokenAddressL1 = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-export const ERC20TokenAddressL2 = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
+export const ERC20TokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
@@ -40,14 +43,23 @@ export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
 
 export async function getInitialERC20Balance(
   tokenAddress: string,
+  multiCallerAddress: string,
   rpcURL: string
 ): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
-  const multiCaller = await MultiCaller.fromProvider(provider)
+  const multiCaller = new MultiCaller(provider, multiCallerAddress)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
     balanceOf: { account: Cypress.env('ADDRESS') }
   })
   return tokenData.balance
+}
+
+export const wrapEth = async (amount: BigNumber) => {
+  const provider = new StaticJsonRpcProvider(ethRpcUrl)
+  const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+  const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
+  const tx = await factory.deposit({ value: amount })
+  await tx.wait()
 }
 
 export const setupMetamaskNetwork = (
@@ -84,6 +96,7 @@ export const acceptMetamaskAccess = () => {
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   cy.visit(`/`)
+  cy.get('button').contains('Agree to terms').click()
   cy.connectToApp()
   acceptMetamaskAccess()
 }

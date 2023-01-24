@@ -2,12 +2,14 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
+import { BigNumber } from '@ethersproject/bignumber'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
   getInitialERC20Balance,
-  goerliRPC,
+  ethRpcUrl,
+  l1NetworkConfig,
   zeroToLessThanOneETH
 } from '../../support/common'
 
@@ -32,13 +34,25 @@ describe('Deposit ERC20 Token', () => {
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
     let l1ERC20bal
+    const ERC20AmountToSend = 0.0001
+    const BN_ERC20AmountToSend = BigNumber.from(
+      String(ERC20AmountToSend * 10 ** 18)
+    )
 
     // log in to metamask before deposit
     before(() => {
-      getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
-        val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
+      getInitialERC20Balance(
+        ERC20TokenAddressL1,
+        l1NetworkConfig.l1MultiCall,
+        ethRpcUrl
+      ).then(
+        val =>
+          // add eth we are about to wrap to the existing balance
+          (l1ERC20bal = formatAmount(val.add(BN_ERC20AmountToSend), {
+            symbol: 'WETH'
+          }))
       )
-      cy.get('button').contains('Agree to terms').click()
+      cy.wrapEth(BN_ERC20AmountToSend)
       cy.login('L1')
     })
 
@@ -73,13 +87,13 @@ describe('Deposit ERC20 Token', () => {
             .should('be.visible')
             .click({ scrollBehavior: false })
 
-          // Select the LINK token
-          cy.findByText('ChainLink Token').click({ scrollBehavior: false })
+          // Select the WETH token
+          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
-          // LINK token should be selected now and popup should be closed after selection
+          // WETH token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
-            .should('have.text', 'LINK')
+            .should('have.text', 'WETH')
         })
     })
 
@@ -90,12 +104,12 @@ describe('Deposit ERC20 Token', () => {
     context("bridge amount is lower than user's L1 ERC20 balance value", () => {
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
-          .type('0.0001', { scrollBehavior: false })
+          .type(String(ERC20AmountToSend), { scrollBehavior: false })
           .then(() => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains(formatAmount(0.0001))
+              .contains(formatAmount(ERC20AmountToSend))
               .should('be.visible')
             cy.findByText('You’ll pay in gas fees')
               .siblings()
@@ -118,17 +132,45 @@ describe('Deposit ERC20 Token', () => {
       })
 
       it('should deposit successfully', () => {
+        const confirmTxAndFinish = () => {
+          cy.confirmMetamaskTransaction().then(() => {
+            cy.findByText(
+              `Moving ${formatAmount(ERC20AmountToSend, {
+                symbol: 'WETH'
+              })} to Arbitrum...`
+            ).should('be.visible')
+          })
+        }
+
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })
           .click({ scrollBehavior: false })
           .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(
-                `Moving ${formatAmount(0.0001, {
-                  symbol: 'LINK'
-                })} to Arbitrum...`
-              ).should('be.visible')
+            // when running e2e locally multiple times on the same node
+            // sometimes approval is not required
+            // we check for both scenarios
+            cy.get('body').then($body => {
+              if (
+                // check for token approval modal
+                $body
+                  .find(
+                    'span:contains("I understand that I have to pay a one-time")'
+                  )
+                  .is(':visible')
+              ) {
+                cy.findByText(
+                  /I understand that I have to pay a one-time/i
+                ).click()
+                cy.get('button')
+                  .contains(/Pay approval fee of/i)
+                  .click()
+                cy.confirmMetamaskPermissionToSpend().then(() => {
+                  confirmTxAndFinish()
+                })
+              } else {
+                confirmTxAndFinish()
+              }
             })
           })
       })

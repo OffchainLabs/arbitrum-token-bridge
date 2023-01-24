@@ -5,9 +5,10 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
-  arbitrumGoerliRPC,
+  arbRpcUrl,
   ERC20TokenAddressL2,
   getInitialERC20Balance,
+  l2NetworkConfig,
   zeroToLessThanOneETH
 } from '../../support/common'
 
@@ -34,11 +35,13 @@ describe('Withdraw ERC20 Token', () => {
 
     // log in to metamask before withdrawal
     before(() => {
-      getInitialERC20Balance(ERC20TokenAddressL2, arbitrumGoerliRPC).then(
-        val => (l2ERC20bal = formatAmount(val, { symbol: 'LINK' }))
-      )
+      getInitialERC20Balance(
+        ERC20TokenAddressL2,
+        l2NetworkConfig.l2MultiCall,
+        arbRpcUrl
+      ).then(val => (l2ERC20bal = formatAmount(val, { symbol: 'WETH' })))
 
-      // login to L2 chain for Arb Goerli network
+      // login to L2 chain for Local Mainnet network
       cy.login('L2', false) // don't add new network, switch to exisiting
     })
 
@@ -79,19 +82,20 @@ describe('Withdraw ERC20 Token', () => {
             .should('be.visible')
             .click({ scrollBehavior: false })
 
-          // Select the LINK token
-          cy.findByText('ChainLink Token').click({ scrollBehavior: false })
+          // Select the WETH token
+          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
-          // LINK token should be selected now and popup should be closed after selection
+          // WETH token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
-            .should('have.text', 'LINK')
+            .should('have.text', 'WETH')
         })
     })
 
-    it('should show ERC20 balance correctly', () => {
-      cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
-    })
+    // TODO: Await for WETH wrap tx
+    // it('should show ERC20 balance correctly', () => {
+    //   cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
+    // })
 
     context("bridge amount is lower than user's L2 ERC20 balance value", () => {
       it('should show summary', () => {
@@ -101,7 +105,7 @@ describe('Withdraw ERC20 Token', () => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains(formatAmount(0.0001, { symbol: 'LINK' }))
+              .contains(formatAmount(0.0001, { symbol: 'WETH' }))
               .should('be.visible')
             cy.findByText(/You’ll pay in gas/i)
               .siblings()
@@ -162,8 +166,8 @@ describe('Withdraw ERC20 Token', () => {
             cy.confirmMetamaskTransaction().then(() => {
               cy.findAllByText(
                 `Moving ${formatAmount(0.0001, {
-                  symbol: 'LINK'
-                })} to Goerli...`
+                  symbol: 'WETH'
+                })} to Ethereum...`
               ).should('be.visible')
             })
           })

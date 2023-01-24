@@ -4,7 +4,7 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
-import { getInitialETHBalance, goerliRPC } from '../../support/common'
+import { getInitialETHBalance, ethRpcUrl } from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -12,7 +12,7 @@ describe('User enters site with query params on URL', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   before(() => {
-    getInitialETHBalance(goerliRPC).then(
+    getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 })))
     )
     // before this spec, make sure the cache is fresh

@@ -12,7 +12,8 @@ import {
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
-  startWebApp
+  startWebApp,
+  wrapEth
 } from './common'
 
 export function login(networkType: NetworkType, addNewNetwork?: boolean) {
@@ -73,7 +74,7 @@ export const saveAppState = () => {
 
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
-  // cy.findByText('Agree to terms').should('be.visible').click()
+  cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
   cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click({ force: true })
 }
@@ -83,5 +84,6 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  connectToApp
+  connectToApp,
+  wrapEth
 })

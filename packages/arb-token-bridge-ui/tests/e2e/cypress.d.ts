@@ -6,7 +6,8 @@ import {
   restoreAppState,
   saveAppState
 } from '../support/commands'
-import { NetworkType } from '../support/common'
+import { NetworkType, wrapEth } from '../support/common'
+import { BigNumber } from 'ethers'
 
 declare global {
   namespace Cypress {
@@ -20,6 +21,7 @@ declare global {
       connectToApp(): typeof connectToApp
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
+      wrapEth(amount: BigNumber): typeof wrapEth
     }
   }
 }
