@@ -15,17 +15,30 @@ import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY as string
 
-if (!INFURA_KEY) {
+if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')
 }
 
+const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
+const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
+
 export enum ChainId {
+  // L1
   Mainnet = 1,
+  // L1 Testnets
+  /**
+   * Rinkeby is deprecated, but we are keeping it in order to detect it and point to Goerli instead.
+   */
   Rinkeby = 4,
   Goerli = 5,
   Sepolia = 11155111,
+  // L2
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
+  // L2 Testnets
+  /**
+   * Arbitrum Rinkeby is deprecated, but we are keeping it in order to detect it and point to Arbitrum Goerli instead.
+   */
   ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613
 }
@@ -40,20 +53,14 @@ type ExtendedWeb3Provider = Web3Provider & {
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Mainnet]:
-    process.env.REACT_APP_ETHEREUM_RPC_URL ||
-    `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+    process.env.REACT_APP_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL,
   // L1 Testnets
-  [ChainId.Rinkeby]:
-    process.env.REACT_APP_RINKEBY_RPC_URL ||
-    `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
   [ChainId.Goerli]:
-    process.env.REACT_APP_GOERLI_RPC_URL ||
-    `https://goerli.infura.io/v3/${INFURA_KEY}`,
+    process.env.REACT_APP_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumRinkeby]: 'https://rinkeby.arbitrum.io/rpc',
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
 }
 
@@ -62,12 +69,10 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Mainnet]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Goerli]: 'https://goerli.etherscan.io',
-  [ChainId.Rinkeby]: 'https://rinkeby.etherscan.io',
-  //L2
+  // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
-  [ChainId.ArbitrumRinkeby]: 'https://testnet.arbiscan.io',
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
 }
 
@@ -95,12 +100,10 @@ export const getConfirmPeriodBlocks = (chainId: ChainId) => {
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
-  [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F',
-  [ChainId.ArbitrumRinkeby]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65'
+  [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F'
 }
 
 export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
-  [ChainId.ArbitrumRinkeby]: '0x65321bf24210b81500230dcece14faa70a9f50a7',
   [ChainId.ArbitrumOne]: '0x07d4692291b9e30e326fd31706f686f83f331b82'
 }
 
@@ -110,13 +113,15 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 
 // Default L2 Chain to use for a certain chainId
 export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
-  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli],
-  [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
-  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
-  [ChainId.ArbitrumRinkeby]: [ChainId.ArbitrumRinkeby],
-  [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
+  // L1
   [ChainId.Mainnet]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
-  [ChainId.Rinkeby]: [ChainId.ArbitrumRinkeby]
+  // L1 Testnets
+  [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
+  // L2
+  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
+  [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
+  // L2 Testnets
+  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli]
 }
 
 export function registerLocalNetwork() {
@@ -199,9 +204,6 @@ export function getNetworkName(chainId: number) {
     case ChainId.Mainnet:
       return 'Mainnet'
 
-    case ChainId.Rinkeby:
-      return 'Rinkeby'
-
     case ChainId.Goerli:
       return 'Goerli'
 
@@ -210,9 +212,6 @@ export function getNetworkName(chainId: number) {
 
     case ChainId.ArbitrumNova:
       return 'Arbitrum Nova'
-
-    case ChainId.ArbitrumRinkeby:
-      return 'Arbitrum Rinkeby'
 
     case ChainId.ArbitrumGoerli:
       return 'Arbitrum Goerli'
@@ -226,13 +225,11 @@ export function getNetworkLogo(chainId: number) {
   switch (chainId) {
     // L1 networks
     case ChainId.Mainnet:
-    case ChainId.Rinkeby:
     case ChainId.Goerli:
       return EthereumLogo
 
     // L2 networks
     case ChainId.ArbitrumOne:
-    case ChainId.ArbitrumRinkeby:
     case ChainId.ArbitrumGoerli:
       return ArbitrumOneLogo
 

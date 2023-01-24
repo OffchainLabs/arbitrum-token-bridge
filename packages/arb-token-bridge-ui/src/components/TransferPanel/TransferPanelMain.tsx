@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
-import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  SwitchVerticalIcon
+} from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
@@ -20,6 +24,7 @@ import {
   isNetwork,
   switchChain
 } from '../../util/networks'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -56,6 +61,10 @@ export function SwitchNetworksButton(
       <SwitchVerticalIcon className="text-gray-9" />
     </button>
   )
+}
+
+enum AdvancedSettingsErrors {
+  INVALID_ADDRESS = 'The destination address is not valid.'
 }
 
 type OptionsExtraProps = {
@@ -314,22 +323,30 @@ function NetworkListboxPlusBalancesContainer({
 export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
   GAS_ESTIMATION_FAILURE,
-  WITHDRAW_ONLY
+  WITHDRAW_ONLY,
+  SC_WALLET_ETH_NOT_SUPPORTED
 }
 
 export function TransferPanelMain({
   amount,
   setAmount,
-  errorMessage
+  errorMessage,
+  destinationAddress,
+  setDestinationAddress
 }: {
   amount: string
   setAmount: (value: string) => void
   errorMessage?: TransferPanelMainErrorMessage
+  destinationAddress?: string
+  setDestinationAddress: React.Dispatch<
+    React.SetStateAction<string | undefined>
+  >
 }) {
   const history = useHistory()
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
+    useNetworksAndSigners()
 
   const { provider } = useWallet()
 
@@ -358,6 +375,9 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
+  const [advancedSettingsError, setAdvancedSettingsError] =
+    useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
 
   const [, setQueryParams] = useArbQueryParams()
@@ -382,6 +402,50 @@ export function TransferPanelMain({
       setMaxAmount()
     }
   }, [amount, setMaxAmount, setQueryParams])
+
+  useEffect(
+    // Show on page load if SC wallet since destination address mandatory
+    () => setShowAdvancedSettings(isSmartContractWallet),
+    [isSmartContractWallet]
+  )
+
+  useEffect(() => {
+    // Different destination address only allowed for tokens
+    if (!selectedToken) {
+      setDestinationAddress(undefined)
+    }
+  }, [selectedToken])
+
+  useEffect(() => {
+    const getErrors = async () => {
+      try {
+        const isDestinationAddressSmartContract = await addressIsSmartContract(
+          String(destinationAddress),
+          isDepositMode ? l2.provider : l1.provider
+        )
+        if (
+          // Destination address is not required for EOA wallets
+          (!isSmartContractWallet && !destinationAddress) ||
+          // Make sure address type matches the connected wallet type
+          isSmartContractWallet === isDestinationAddressSmartContract
+        ) {
+          setAdvancedSettingsError(null)
+        } else {
+          setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+        }
+      } catch (err) {
+        console.error(err)
+        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+      }
+    }
+    getErrors()
+  }, [
+    l1.provider,
+    l2.provider,
+    isDepositMode,
+    isSmartContractWallet,
+    destinationAddress
+  ])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -434,6 +498,12 @@ export function TransferPanelMain({
           </button>
         </>
       )
+    }
+
+    if (
+      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
+    ) {
+      return "ETH transfers using smart contract wallets aren't supported yet."
     }
 
     return `Insufficient balance, please add more to ${
@@ -783,6 +853,55 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
+
+      {/* Only allow different destination address for tokens */}
+      {selectedToken && (
+        <div className="mt-6">
+          <button
+            onClick={() =>
+              // Keep visible for SC wallets since destination address is mandatory
+              !isSmartContractWallet &&
+              setShowAdvancedSettings(!showAdvancedSettings)
+            }
+            className="flex flex-row items-center"
+          >
+            <span className=" text-lg">Advanced Settings</span>
+            {showAdvancedSettings ? (
+              <ChevronUpIcon className="ml-1 h-4 w-4" />
+            ) : (
+              <ChevronDownIcon className="ml-1 h-4 w-4" />
+            )}
+          </button>
+          {showAdvancedSettings && (
+            <>
+              <div className="mt-2">
+                <span className="text-md text-gray-10">
+                  Destination Address
+                  {!isSmartContractWallet ? ' (optional)' : ''}
+                </span>
+                <input
+                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                  placeholder="Enter destination address"
+                  defaultValue={destinationAddress}
+                  spellCheck={false}
+                  onChange={e => {
+                    if (!e.target.value) {
+                      setDestinationAddress(undefined)
+                    } else {
+                      setDestinationAddress(e.target.value.toLowerCase())
+                    }
+                  }}
+                />
+              </div>
+            </>
+          )}
+          {isSmartContractWallet && advancedSettingsError && (
+            <span className="text-xs text-red-400">
+              {advancedSettingsError}
+            </span>
+          )}
+        </div>
+      )}
 
       <Dialog
         closeable

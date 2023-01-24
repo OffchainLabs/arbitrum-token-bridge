@@ -47,13 +47,6 @@ export const ExploreArbitrumContent = {
       imageSrc: '/images/explore-arbitrum/defi/treasuredao.webp'
     },
     {
-      name: 'Tracer DAO',
-      description:
-        'Go long or short on your crypto with Tracer’s perpetual tokens',
-      href: 'https://tracer.finance',
-      imageSrc: '/images/explore-arbitrum/defi/tracerdao.webp'
-    },
-    {
       name: 'Balancer',
       description:
         'Swap in and out of your favorite tokens on Arbitrum; provide liquidity and earn yields',

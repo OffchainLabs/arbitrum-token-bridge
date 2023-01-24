@@ -37,19 +37,6 @@ function ArbitrumBetaNotification() {
   )
 }
 
-function RinkebyTestnetNotification() {
-  return (
-    <Notification>
-      <ExternalLink
-        href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
-        className="arb-hover underline"
-      >
-        What is Rinkeby Testnet?
-      </ExternalLink>
-    </Notification>
-  )
-}
-
 function NitroDevnetNotification() {
   const handleTwitterClick = useTwitter()
 
@@ -73,12 +60,11 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network.chainID)
+  const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
 
   return (
     <NotificationContainer>
       {isMainnet && <ArbitrumBetaNotification />}
-      {isRinkeby && <RinkebyTestnetNotification />}
       {isGoerli && <NitroDevnetNotification />}
     </NotificationContainer>
   )

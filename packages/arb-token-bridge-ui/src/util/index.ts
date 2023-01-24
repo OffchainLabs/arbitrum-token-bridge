@@ -3,7 +3,6 @@ export enum ConnectionState {
   L1_CONNECTED,
   L2_CONNECTED,
   SEQUENCER_UPDATE,
-  NOT_EOA,
   NETWORK_ERROR
 }
 

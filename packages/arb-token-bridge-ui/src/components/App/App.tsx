@@ -8,11 +8,9 @@ import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import Loader from 'react-loader-spinner'
 
 import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
-import HeaderArbitrumLogoRinkeby from '../../assets/HeaderArbitrumLogoRinkeby.webp'
 import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.webp'
 
 import { WelcomeDialog } from './WelcomeDialog'
@@ -59,10 +57,6 @@ import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 
-async function addressIsEOA(address: string, provider: JsonRpcProvider) {
-  return (await provider.getCode(address)).length <= 2
-}
-
 declare global {
   interface Window {
     Cypress?: any
@@ -76,12 +70,8 @@ const AppContent = (): JSX.Element => {
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isMainnet, isRinkeby, isGoerli } = isNetwork(l1.network.chainID)
+    const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
-
-    if (isRinkeby) {
-      return { imageSrc: HeaderArbitrumLogoRinkeby, className }
-    }
 
     if (isGoerli) {
       return { imageSrc: HeaderArbitrumLogoGoerli, className }
@@ -95,15 +85,6 @@ const AppContent = (): JSX.Element => {
       <Alert type="red">
         Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for
         maintenance. Thanks for your patience!
-      </Alert>
-    )
-  }
-
-  if (connectionState === ConnectionState.NOT_EOA) {
-    return (
-      <Alert type="red">
-        Looks like your wallet is connected to a contract; please connect to an
-        externally owned account instead.
       </Alert>
     )
   }
@@ -166,27 +147,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
-      const { signer: l1Signer, provider: l1Provider } = l1
-      const { signer: l2Signer, provider: l2Provider } = l2
+      const { signer: l1Signer } = l1
 
       const l1Address = await l1Signer.getAddress()
-      const l2Address = await l2Signer.getAddress()
-
-      try {
-        const l1AddressIsEOA = await addressIsEOA(l1Address, l1Provider)
-        const l2AddressIsEOA = await addressIsEOA(l2Address, l2Provider)
-
-        if (!l1AddressIsEOA || !l2AddressIsEOA) {
-          actions.app.setConnectionState(ConnectionState.NOT_EOA)
-          return undefined
-        }
-      } catch (err) {
-        console.warn('CONNECTION ERROR', err)
-
-        // The get code queries doubles as as network liveness check
-        // We could check err.code === 'NETWORK_ERROR' for more granular handling, but any error can/should be handled.
-        actions.app.setConnectionState(ConnectionState.NETWORK_ERROR)
-      }
 
       setTokenBridgeParams({
         walletAddress: l1Address,
@@ -243,7 +206,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   useEffect(() => {
     axios
       .get(
-        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/master/src/WarningList/warningTokens.json'
+        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/aff40a59608678cfd9b034dd198011c90b65b8b6/src/WarningList/warningTokens.json'
       )
       .then(res => {
         actions.app.setWarningTokens(res.data)
@@ -334,20 +297,38 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallbackContainer({
+  layout = 'col',
+  imgProps = {
+    className: 'sm:w-[420px]',
+    src: '/images/three-arbinauts.webp',
+    alt: 'Three Arbinauts'
+  },
   children
 }: {
+  layout?: 'row' | 'col'
+  imgProps?: {
+    className?: string
+    src?: string
+    alt?: string
+  }
   children: React.ReactNode
 }) {
   return (
-    <div className="mt-6 flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
-      {children}
-      <ExternalLink href="https://metamask.io/download">
-        <img
-          className="sm:w-[420px]"
-          src="/images/three-arbinauts.webp"
-          alt="Three Arbinauts"
-        />
-      </ExternalLink>
+    <div className="my-24 flex items-center justify-center px-8">
+      <div
+        className={`flex flex-col items-center md:flex-${layout} md:items-${
+          layout === 'col' ? 'center' : 'start'
+        }`}
+      >
+        {children}
+        <ExternalLink href="https://metamask.io/download">
+          <img
+            className={imgProps.className}
+            src={imgProps.src}
+            alt={imgProps.alt}
+          />
+        </ExternalLink>
+      </div>
     </div>
   )
 }
@@ -372,7 +353,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </HeaderContent>
 
           <ConnectionFallbackContainer>
-            <div className="absolute mt-20 sm:mt-24">
+            <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
               <Loader type="TailSpin" color="white" height={44} width={44} />
             </div>
           </ConnectionFallbackContainer>
@@ -407,7 +388,14 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </NetworkSelectionContainer>
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <ConnectionFallbackContainer
+            layout="row"
+            imgProps={{
+              className: 'sm:w-[300px]',
+              src: '/images/arbinaut-fixing-spaceship.webp',
+              alt: 'Arbinaut fixing a spaceship'
+            }}
+          >
             <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
           </ConnectionFallbackContainer>
         </>
