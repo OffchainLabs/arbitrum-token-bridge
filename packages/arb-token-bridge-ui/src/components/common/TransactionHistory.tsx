@@ -97,10 +97,12 @@ export const TransactionHistory = () => {
                 }`}
               >
                 {/* Deposits */}
-                <img
-                  src={getNetworkLogo(l2.network.chainID)}
-                  className="max-w-6 max-h-6"
-                />
+                {selected && (
+                  <img
+                    src={getNetworkLogo(l2.network.chainID)}
+                    className="max-w-6 max-h-6"
+                  />
+                )}
                 {`To ${getNetworkName(l2.network.chainID)}`}
               </button>
             )}
@@ -115,10 +117,12 @@ export const TransactionHistory = () => {
                 }`}
               >
                 {/* Withdrawals */}
-                <img
-                  src={getNetworkLogo(l1.network.chainID)}
-                  className="max-w-6 max-h-6"
-                />
+                {selected && (
+                  <img
+                    src={getNetworkLogo(l1.network.chainID)}
+                    className="max-w-6 max-h-6"
+                  />
+                )}
                 {`To ${getNetworkName(l1.network.chainID)}`}
               </button>
             )}

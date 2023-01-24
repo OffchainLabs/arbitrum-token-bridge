@@ -206,7 +206,7 @@ export function HeaderAccountPopover() {
                   />
                 </div>
                 <div className="flex translate-y-[15px] transform flex-row items-center space-x-3">
-                  <span className="text-md font-normal">
+                  <span className="text-md max-w-[10rem] overflow-hidden text-ellipsis font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
                   <CustomClipboardCopyIcon className="h-4 w-4" />
