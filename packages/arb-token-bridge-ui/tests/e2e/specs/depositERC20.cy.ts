@@ -52,7 +52,7 @@ describe('Deposit ERC20 Token', () => {
         ethRpcUrl
       ).then(
         val =>
-          (l1ERC20bal = formatAmount(val.add(BN_ERC20AmountToSend), {
+          (l1ERC20bal = formatAmount(val, {
             symbol: 'WETH'
           }))
       )
