@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'development') {
 dayjs.extend(relativeTime)
 
 Sentry.init({
-  dsn: process.env.REACT_APP_SENTRY_DSN,
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   release: Package.version,
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
