@@ -12,8 +12,6 @@ import {
 } from './HeaderMenu'
 import { GET_HELP_LINK } from '../../constants'
 
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
-
 const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
 
 function toHeaderMenuProps(
@@ -209,7 +207,7 @@ export function Header() {
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
+            <HeaderImageElement src="/HeaderArbitrumLogoMainnet.webp" />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>

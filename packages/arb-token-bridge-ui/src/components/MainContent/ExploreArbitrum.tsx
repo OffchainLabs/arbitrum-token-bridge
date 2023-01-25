@@ -9,8 +9,6 @@ import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-
 import {
   ExploreArbitrumContent,
   ExploreArbitrumDeFiProjectName,
@@ -93,7 +91,7 @@ function ProjectCard({
       <div className="flex flex-row justify-between space-x-2 rounded-bl-xl rounded-br-xl bg-[rgba(0,0,0,0.29)] p-4 backdrop-blur-sm backdrop-filter">
         <p className="self-center font-light text-white">{description}</p>
         <img
-          src={ArbitrumOneLogo}
+          src="/ArbitrumOneLogo.svg"
           alt="Arbitrum logo"
           className="h-8 self-end"
         />

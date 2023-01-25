@@ -18,7 +18,7 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+// import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(
@@ -162,9 +162,9 @@ export function DepositConfirmationDialog(
                           ? 'Copied to clipboard!'
                           : `Copy link for ${tokenSymbol} bridge`}
                       </span>
-                      {!showCopied && (
+                      {/* {!showCopied && (
                         <CustomClipboardCopyIcon className="h-6 w-6" />
-                      )}
+                      )} */}
                     </div>
                   </button>
                 </div>
