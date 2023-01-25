@@ -17,8 +17,17 @@ describe('Deposit ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+  const ERC20AmountToSend = 0.0001
+  const BN_ERC20AmountToSend = BigNumber.from(
+    String(ERC20AmountToSend * 10 ** 18)
+  )
 
   before(() => {
+    cy.wrapEth(BN_ERC20AmountToSend)
+    cy.log('Wrapping some ETH...')
+    // makes sure weth reflects in the account
+    // eslint-disable-next-line
+    cy.wait(30000)
     // before this spec, make sure the cache is fresh
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()
@@ -34,10 +43,6 @@ describe('Deposit ERC20 Token', () => {
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
     let l1ERC20bal
-    const ERC20AmountToSend = 0.0001
-    const BN_ERC20AmountToSend = BigNumber.from(
-      String(ERC20AmountToSend * 10 ** 18)
-    )
 
     // log in to metamask before deposit
     before(() => {
@@ -47,12 +52,10 @@ describe('Deposit ERC20 Token', () => {
         ethRpcUrl
       ).then(
         val =>
-          // add eth we are about to wrap to the existing balance
           (l1ERC20bal = formatAmount(val.add(BN_ERC20AmountToSend), {
             symbol: 'WETH'
           }))
       )
-      cy.wrapEth(BN_ERC20AmountToSend)
       cy.login('L1')
     })
 
