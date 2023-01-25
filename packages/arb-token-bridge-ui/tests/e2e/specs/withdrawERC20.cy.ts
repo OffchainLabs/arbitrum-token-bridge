@@ -1,5 +1,5 @@
 /**
- * When user wants to bridge ETH from L1 to L2
+ * When user wants to bridge ERC20 from L1 to L2
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -92,10 +92,9 @@ describe('Withdraw ERC20 Token', () => {
         })
     })
 
-    // TODO: Await for WETH wrap tx
-    // it('should show ERC20 balance correctly', () => {
-    //   cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
-    // })
+    it('should show ERC20 balance correctly', () => {
+      cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
+    })
 
     context("bridge amount is lower than user's L2 ERC20 balance value", () => {
       it('should show summary', () => {

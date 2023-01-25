@@ -1,5 +1,5 @@
 /**
- * When user wants to bridge ETH from L1 to L2
+ * When user wants to bridge ERC20 from L1 to L2
  */
 
 import { BigNumber } from '@ethersproject/bignumber'
@@ -27,7 +27,7 @@ describe('Deposit ERC20 Token', () => {
     cy.log('Wrapping some ETH...')
     // makes sure weth reflects in the account
     // eslint-disable-next-line
-    cy.wait(30000)
+    cy.wait(20000)
     // before this spec, make sure the cache is fresh
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()
