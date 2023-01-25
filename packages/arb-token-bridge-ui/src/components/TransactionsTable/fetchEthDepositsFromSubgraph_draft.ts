@@ -89,7 +89,7 @@ export async function fetchETHDepositsFromSubgraph({
   const res = await getL1SubgraphClient(l2ChainId).query({
     query: gql`
       {
-        ethDeposits(
+        deposits(
           where: {
             sender: "${address}",
             blockCreatedAt_gte: ${fromBlock},
@@ -102,32 +102,44 @@ export async function fetchETHDepositsFromSubgraph({
           skip: ${pageNumber * pageSize}
         ) {
           id
-          blockCreatedAt
-          value
-          destAddr
-          isClassic
-          msgData
+          type
           sender
+          receiver
+          ethValue
+          l1Token {
+            id
+          }
+          sequenceNumber
+          tokenAmount
+          isClassic
           timestamp
           transactionHash
+          blockCreatedAt
         }
       }
     `
   })
 
-  const ethDepositsFromSubgraph = res.data.ethDeposits.map((tx: any) => ({
-    type: 'deposit-l1',
-    status: 'pending',
-    value: utils.formatEther(tx.value),
-    txID: tx.transactionHash,
-    asset: 'ETH',
-    assetName: 'ETH',
-    assetType: AssetType.ETH,
-    sender: address,
-    l1NetworkID: String(l1ChainId),
-    l2NetworkID: String(l2ChainId),
-    blockNumber: tx.blockCreatedAt
-  })) as unknown as Transaction[]
+  const ethDepositsFromSubgraph = res.data.deposits.map((tx: any) => {
+    const isEthDeposit = !tx?.l1Token?.id
+
+    return {
+      type: 'deposit-l1',
+      status: 'pending',
+      value: utils.formatEther(isEthDeposit ? tx.ethValue : tx.tokenAmount),
+      txID: tx.transactionHash,
+      tokenAddress: isEthDeposit ? null : tx.l1Token.id,
+      sender: address,
+
+      asset: isEthDeposit ? 'ETH' : null,
+      assetName: isEthDeposit ? 'ETH' : null,
+      assetType: isEthDeposit ? AssetType.ETH : null,
+
+      l1NetworkID: String(l1ChainId),
+      l2NetworkID: String(l2ChainId),
+      blockNumber: tx.blockCreatedAt
+    }
+  }) as unknown as Transaction[]
 
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
