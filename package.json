@@ -13,14 +13,11 @@
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "test:ci:sdk": "yarn workspace token-bridge-sdk test:ci",
     "test:ci:ui": "yarn workspace arb-token-bridge-ui test:ci",
-    "test:ci:e2e": "yarn workspace arb-token-bridge-ui e2e:run",
+    "test:e2e": "yarn workspace arb-token-bridge-ui e2e:run",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
-    "test:e2e:anvil": "start-server-and-test 'yarn start:server' http-get://localhost:3000 'SKIP_METAMASK_SETUP=true SYNPRESS_LOCAL_TEST=true CYPRESS_USE_ANVIL=true node synpress.js run --configFile=synpress.config.ts'",
-    "test:e2e:ci:anvil": "start-server-and-test 'yarn start:server' http-get://localhost:3000 'SKIP_METAMASK_SETUP=true SYNPRESS_LOCAL_TEST=true CYPRESS_USE_ANVIL=true node synpress.js run --configFile=synpress.config.ts --record --group'",
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "start:server": "serve node_modules/@metamask/test-dapp/dist -p 3000",
-    "prettier:format": "./node_modules/.bin/prettier --write .",
-    "serve": "serve -s packages/arb-token-bridge-ui/build"
+    "prettier:format": "./node_modules/.bin/prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -28,10 +25,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {
-    "serve": "^14.1.2",
-    "start-server-and-test": "^1.14.0"
-  },
   "devDependencies": {
     "audit-ci": "^6.3.0"
   }

@@ -15,12 +15,12 @@ import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
 
-// if (typeof INFURA_KEY === 'undefined') {
-//   throw new Error('Infura API key not provided')
-// }
+if (typeof INFURA_KEY === 'undefined') {
+  throw new Error('Infura API key not provided')
+}
 
-const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/8f367f5282bb4ffeaa511076447262b5`
-const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/8f367f5282bb4ffeaa511076447262b5`
+const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
+const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 
 export enum ChainId {
   // L1
@@ -31,7 +31,6 @@ export enum ChainId {
    */
   Rinkeby = 4,
   Goerli = 5,
-  Local = 1337,
   Sepolia = 11155111,
   // L2
   ArbitrumOne = 42161,

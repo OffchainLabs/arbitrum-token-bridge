@@ -13,7 +13,7 @@ export default defineConfig({
   },
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: true,
+  video: false,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
   viewportWidth: 1366,
@@ -29,14 +29,10 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       const wallet = new Wallet(process.env.PRIVATE_KEY!)
       config.env.ADDRESS = await wallet.getAddress()
-      config.env.INFURA_KEY = '8f367f5282bb4ffeaa511076447262b5'
       config.env.PRIVATE_KEY = process.env.PRIVATE_KEY
-      // config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+      config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
-      // cypressLogs.install(on, (type, event) => {
-      //   return event.level === 'error' || event.type === 'error'
-      // })
       return config
     },
     baseUrl: 'http://localhost:3000',
