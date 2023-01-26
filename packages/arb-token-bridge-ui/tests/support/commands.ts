@@ -109,7 +109,7 @@ export const connectToApp = () => {
   cy.findByText('MetaMask').should('be.visible')
   cy.findByText('Connect to your MetaMask Wallet')
     .should('be.visible')
-    .click({ force: true })
+    .click()
 }
 
 Cypress.Commands.addAll({
