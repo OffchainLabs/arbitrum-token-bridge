@@ -41,7 +41,7 @@ export const logout = () => {
   })
 }
 
-export const fundWallet = (
+export const fundWalletWithEth = (
   accountNameOrNumberFrom: string | number,
   accountNameOrNumberTo: string | number,
   amount: number
@@ -119,5 +119,5 @@ Cypress.Commands.addAll({
   saveAppState,
   connectToApp,
   wrapEth,
-  fundWallet
+  fundWalletWithEth
 })

@@ -5,9 +5,9 @@ import {
   logout,
   restoreAppState,
   saveAppState,
-  fundWallet
+  fundWalletWithEth
 } from '../support/commands'
-import { NetworkType, wrapEth } from '../support/common'
+import { NetworkType } from '../support/common'
 import { BigNumber } from 'ethers'
 
 declare global {
@@ -23,11 +23,11 @@ declare global {
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
       wrapEth(amount: BigNumber): typeof wrapEth
-      fundWallet(
+      fundWalletWithEth(
         accountNameOrNumberFrom: string | number,
         accountNameOrNumberTo: string | number,
         amount: number
-      ): typeof fundWallet
+      ): typeof fundWalletWithEth
     }
   }
 }
