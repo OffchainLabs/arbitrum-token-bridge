@@ -123,8 +123,7 @@ describe('Switch Networks', () => {
             scrollBehavior: false
           })
 
-        // TODO: Failing, makes the remaining test to fail with a stuck Metamask notification
-        cy.allowMetamaskToSwitchNetwork().then(() => {
+        cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
           cy.findByRole('button', {
             name: /Selected Network : Arbitrum Goerli/i
           }).should('be.visible')
