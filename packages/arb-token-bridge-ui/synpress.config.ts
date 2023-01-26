@@ -27,7 +27,7 @@ export default defineConfig({
     // @ts-ignore
     setupNodeEvents(on, config) {
       config.env.ADDRESS = process.env.ADDRESS
-      config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+      config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       return config

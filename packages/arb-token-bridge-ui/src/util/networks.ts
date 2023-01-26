@@ -49,10 +49,10 @@ type ExtendedWeb3Provider = Web3Provider & {
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Mainnet]:
-    process.env.REACT_APP_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL,
+    process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL,
   // L1 Testnets
   [ChainId.Goerli]:
-    process.env.REACT_APP_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL,
+    process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
@@ -140,9 +140,9 @@ export function registerLocalNetwork() {
     const customL2Network = localNetwork.l2Network
 
     rpcURLs[customL1Network.chainID] =
-      process.env.REACT_APP_LOCAL_ETHEREUM_RPC_URL || ''
+      process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL || ''
     rpcURLs[customL2Network.chainID] =
-      process.env.REACT_APP_LOCAL_ARBITRUM_RPC_URL || ''
+      process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL || ''
 
     chainIdToDefaultL2ChainId[customL1Network.chainID] = [
       customL2Network.chainID
