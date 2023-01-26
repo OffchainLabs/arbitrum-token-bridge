@@ -1,5 +1,5 @@
 name: Create .env file
-description: "Create .env file from GitHub secrets"
+description: "Create .env file"
 
 inputs:
   NEXT_PUBLIC_INFURA_KEY:
