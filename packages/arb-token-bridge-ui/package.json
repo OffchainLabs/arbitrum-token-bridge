@@ -62,6 +62,7 @@
     ]
   },
   "devDependencies": {
+    "@svgr/webpack": "^6.5.1",
     "@synthetixio/synpress": "^2.3.3",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",

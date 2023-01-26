@@ -26,7 +26,7 @@ import {
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
-// import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import CustomClipboardCopyIcon from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
 
 type ENSInfo = { name: string | null; avatar: string | null }
@@ -229,7 +229,7 @@ export function HeaderAccountPopover() {
                   <span className="text-2xl font-normal text-white">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
-                  {/* <CustomClipboardCopyIcon className="h-6 w-6 text-white" /> */}
+                  <CustomClipboardCopyIcon className="h-6 w-6 text-white" />
                 </div>
               </button>
               <div className="flex w-full flex-row justify-between px-6 lg:flex-col lg:items-end lg:px-0">
