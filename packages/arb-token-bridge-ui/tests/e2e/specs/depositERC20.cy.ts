@@ -170,6 +170,7 @@ describe('Deposit ERC20 Token', () => {
                   confirmTxAndFinish()
                 })
               } else {
+                // token already approved
                 confirmTxAndFinish()
               }
             })
