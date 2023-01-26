@@ -3,9 +3,8 @@
 */
 
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, Wallet } from 'ethers'
+import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
-import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 
 export type NetworkType = 'L1' | 'L2'
 
@@ -36,9 +35,9 @@ export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
-export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
+export async function getInitialETHBalance(rpcURL: string, walletAddress?: string): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
-  return await provider.getBalance(Cypress.env('ADDRESS'))
+  return await provider.getBalance(walletAddress || Cypress.env('ADDRESS'))
 }
 
 export async function getInitialERC20Balance(
@@ -52,14 +51,6 @@ export async function getInitialERC20Balance(
     balanceOf: { account: Cypress.env('ADDRESS') }
   })
   return tokenData.balance
-}
-
-export const wrapEth = async (amount: BigNumber) => {
-  const provider = new StaticJsonRpcProvider(ethRpcUrl)
-  const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
-  const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
-  const tx = await factory.deposit({ value: amount })
-  await tx.wait()
 }
 
 export const setupMetamaskNetwork = (

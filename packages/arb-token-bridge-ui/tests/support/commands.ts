@@ -8,12 +8,16 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber, utils, Wallet } from 'ethers'
+import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import {
+  ethRpcUrl,
+  ERC20TokenAddressL1,
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
-  startWebApp,
-  wrapEth
+  startWebApp
 } from './common'
 
 export function login(networkType: NetworkType, addNewNetwork?: boolean) {
@@ -36,6 +40,33 @@ export const logout = () => {
     })
   })
 }
+
+export const fundWallet = (
+  accountNameOrNumberFrom: string | number,
+  accountNameOrNumberTo: string | number,
+  amount: number
+) => {
+  cy.switchMetamaskAccount(accountNameOrNumberTo)
+  cy.getMetamaskWalletAddress().then(async (address) => {
+    cy.switchMetamaskAccount(accountNameOrNumberFrom)
+    const provider = new StaticJsonRpcProvider(ethRpcUrl)
+    const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+    const tx = {
+      to: address,
+      value: utils.parseEther(String(amount))
+    }
+    await wallet.sendTransaction(tx)
+  })
+}
+
+export const wrapEth = async (amount: BigNumber) => {
+  const provider = new StaticJsonRpcProvider(ethRpcUrl)
+  const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+  const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
+  const tx = await factory.deposit({ value: amount })
+  await tx.wait()
+}
+
 
 export const resetSeenTimeStampCache = () => {
   const dataKey = 'arbitrum:bridge:seen-txs'
@@ -76,7 +107,9 @@ export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
-  cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click({ force: true })
+  cy.findByText('Connect to your MetaMask Wallet')
+    .should('be.visible')
+    .click({ force: true })
 }
 
 Cypress.Commands.addAll({
@@ -85,5 +118,6 @@ Cypress.Commands.addAll({
   restoreAppState,
   saveAppState,
   connectToApp,
-  wrapEth
+  wrapEth,
+  fundWallet
 })

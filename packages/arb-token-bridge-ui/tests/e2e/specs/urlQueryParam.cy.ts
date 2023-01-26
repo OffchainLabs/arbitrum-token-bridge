@@ -7,21 +7,27 @@ import { resetSeenTimeStampCache } from '../../support/commands'
 import { getInitialETHBalance, ethRpcUrl } from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
+  // we fund another wallet with small amount of eth so we test on realistic numbers
+  const ethToFund = 127.345
   let l1ETHbal: number
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   before(() => {
-    getInitialETHBalance(ethRpcUrl).then(
-      val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 })))
-    )
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-    // log in to metamask before test
-    cy.login('L1')
-    // save state once otherwise `restoreAppState` in beforeEach would clear it
-    cy.saveAppState()
+    cy.fundWallet(2, 1, ethToFund)
+    cy.switchMetamaskAccount(1)
+    cy.getMetamaskWalletAddress().then(address => {
+      getInitialETHBalance(ethRpcUrl, address).then(
+        val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 })))
+      )
+      // before this spec, make sure the cache is fresh
+      // otherwise pending transactions from last ran specs will leak in this
+      resetSeenTimeStampCache()
+      // log in to metamask before test
+      cy.login('L1')
+      // save state once otherwise `restoreAppState` in beforeEach would clear it
+      cy.saveAppState()
+    })
   })
   after(() => {
     // after all assertions are executed, logout and reset the account
@@ -33,6 +39,14 @@ describe('User enters site with query params on URL', () => {
   afterEach(() => {
     cy.saveAppState()
   })
+  context('User has ETH on the smaller account', () => {
+    it('displays correct balance based on funded eth', () => {
+      cy.findByText(
+        `Balance: ${formatAmount(ethToFund, { symbol: 'ETH' })}`
+      ).should('be.visible')
+    })
+  })
+
   context('Amount query param', () => {
     // only ETH is supported for now so by default the following tests are assumed to be ETH
     it('?amount=max should set transfer panel amount to maximum amount possible based on balance', () => {
