@@ -1,5 +1,5 @@
 /**
- * When user wants to bridge ETH from L1 to L2
+ * When user wants to bridge ETH from L2 to L1
  */
 
 import { resetSeenTimeStampCache } from '../../support/commands'

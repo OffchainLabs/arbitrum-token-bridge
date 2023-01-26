@@ -16,7 +16,6 @@
     "test:e2e": "yarn workspace arb-token-bridge-ui e2e:run",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
     "prettier:check": "./node_modules/.bin/prettier --check .",
-    "start:server": "serve node_modules/@metamask/test-dapp/dist -p 3000",
     "prettier:format": "./node_modules/.bin/prettier --write ."
   },
   "keywords": [],

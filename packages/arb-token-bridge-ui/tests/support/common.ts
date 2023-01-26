@@ -37,7 +37,7 @@ export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
 export async function getInitialETHBalance(rpcURL: string, walletAddress?: string): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
-  return await provider.getBalance(walletAddress || Cypress.env('ADDRESS'))
+  return await provider.getBalance(walletAddress ?? Cypress.env('ADDRESS'))
 }
 
 export async function getInitialERC20Balance(

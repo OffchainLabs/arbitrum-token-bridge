@@ -1,5 +1,5 @@
 /**
- * When user wants to bridge ERC20 from L1 to L2
+ * When user wants to bridge ERC20 from L2 to L1
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -41,7 +41,7 @@ describe('Withdraw ERC20 Token', () => {
         arbRpcUrl
       ).then(val => (l2ERC20bal = formatAmount(val, { symbol: 'WETH' })))
 
-      // login to L2 chain for Local Mainnet network
+      // login to L2 chain for Local network
       cy.login('L2', false) // don't add new network, switch to exisiting
     })
 

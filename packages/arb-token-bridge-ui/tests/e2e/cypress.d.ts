@@ -5,6 +5,7 @@ import {
   logout,
   restoreAppState,
   saveAppState,
+  wrapEth,
   fundWalletWithEth
 } from '../support/commands'
 import { NetworkType } from '../support/common'

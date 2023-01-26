@@ -18,12 +18,9 @@ describe('Deposit ERC20 Token', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   const ERC20AmountToSend = 0.0001
-  const BN_ERC20AmountToSend = BigNumber.from(
-    String(ERC20AmountToSend * 10 ** 18)
-  )
 
   before(() => {
-    cy.wrapEth(BN_ERC20AmountToSend)
+    cy.wrapEth(BigNumber.from(String(ERC20AmountToSend * 10 ** 18)))
     cy.log('Wrapping some ETH...')
     // makes sure weth reflects in the account
     // eslint-disable-next-line
