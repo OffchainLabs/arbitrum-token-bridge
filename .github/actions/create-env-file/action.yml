@@ -1,11 +1,17 @@
 name: Create .env file
 description: "Create .env file from GitHub secrets"
+
+inputs:
+  NEXT_PUBLIC_INFURA_KEY:
+    description: "NEXT_PUBLIC_INFURA_KEY"
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Create .env file
       uses: SpicyPizza/create-envfile@v1.3
       with:
-        envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+        envkey_NEXT_PUBLIC_INFURA_KEY: ${{ inputs.NEXT_PUBLIC_INFURA_KEY }}
         directory: ./packages/arb-token-bridge-ui/
         file_name: .env.local
