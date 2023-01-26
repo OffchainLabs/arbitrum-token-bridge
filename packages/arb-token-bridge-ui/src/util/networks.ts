@@ -9,7 +9,7 @@ import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
-const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY as string
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
 if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')
