@@ -31,6 +31,7 @@ export enum ChainId {
    */
   Rinkeby = 4,
   Goerli = 5,
+  Local = 1337,
   Sepolia = 11155111,
   // L2
   ArbitrumOne = 42161,
