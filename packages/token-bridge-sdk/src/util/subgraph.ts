@@ -1,12 +1,19 @@
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+import fetch from 'cross-fetch'
+import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
 
 const L2SubgraphClient = {
   ArbitrumOne: new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-arb1',
-    cache: new InMemoryCache()
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-arb1',
+      fetch,
+    }),
+    cache: new InMemoryCache(),
   }),
   ArbitrumGoerli: new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-goerli',
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-goerli',
+      fetch,
+    }),
     cache: new InMemoryCache()
   })
 }
