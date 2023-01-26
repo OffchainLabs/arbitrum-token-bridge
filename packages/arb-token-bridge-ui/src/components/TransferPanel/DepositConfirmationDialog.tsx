@@ -162,9 +162,9 @@ export function DepositConfirmationDialog(
                           ? 'Copied to clipboard!'
                           : `Copy link for ${tokenSymbol} bridge`}
                       </span>
-                      {/* {!showCopied && (
+                      {!showCopied && (
                         <CustomClipboardCopyIcon className="h-6 w-6" />
-                      )} */}
+                      )}
                     </div>
                   </button>
                 </div>
