@@ -20,6 +20,7 @@ describe('Deposit ERC20 Token', () => {
   const ERC20AmountToSend = 0.0001
 
   before(() => {
+    // we don't have any erc20 locally so we are wrapping some eth
     cy.wrapEth(BigNumber.from(String(ERC20AmountToSend * 10 ** 18)))
     cy.log('Wrapping some ETH...')
     // makes sure weth reflects in the account
