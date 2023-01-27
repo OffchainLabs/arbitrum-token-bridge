@@ -41,7 +41,7 @@ export const logout = () => {
   })
 }
 
-export const sendEth = (
+export const sendEthToAccount = (
   accountNameOrNumberFrom: string | number,
   accountNameOrNumberTo: string | number,
   amount: number
@@ -127,6 +127,6 @@ Cypress.Commands.addAll({
   saveAppState,
   connectToApp,
   wrapEth,
-  sendEth,
+  sendEthToAccount,
   approveWeth
 })

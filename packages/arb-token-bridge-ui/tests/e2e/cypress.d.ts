@@ -6,7 +6,7 @@ import {
   restoreAppState,
   saveAppState,
   wrapEth,
-  sendEth,
+  sendEthToAccount,
   approveWeth
 } from '../support/commands'
 import { NetworkType } from '../support/common'
@@ -25,11 +25,17 @@ declare global {
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
       wrapEth(amount: BigNumber): typeof wrapEth
-      sendEth(
+      /**
+       * Move funds between accounts within the same wallet
+       * @param accountNameOrNumberFrom Origin account
+       * @param accountNameOrNumberTo Destination account
+       * @param amount Amount of ETH
+       */
+      sendEthToAccount(
         accountNameOrNumberFrom: string | number,
         accountNameOrNumberTo: string | number,
         amount: number
-      ): typeof sendEth
+      ): typeof sendEthToAccount
       approveWeth(): typeof approveWeth
     }
   }

@@ -2,7 +2,7 @@
  * When user wants to bridge ERC20 from L1 to L2
  */
 
-import { BigNumber } from '@ethersproject/bignumber'
+import { BigNumber } from 'ethers'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
