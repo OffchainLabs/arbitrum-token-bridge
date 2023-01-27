@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import useSWRImmutable from 'swr/immutable'
+import { SWRResponse } from 'swr'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
 
 export interface BridgeTokenList {
   id: number
-  originChainID: string
+  originChainID: number
   url: string
   name: string
   isDefault: boolean
@@ -15,7 +16,7 @@ export interface BridgeTokenList {
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
     id: 1,
-    originChainID: '42161',
+    originChainID: 42161,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json',
     name: 'Arbitrum Whitelist Era',
     isDefault: true,
@@ -24,7 +25,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 2,
-    originChainID: '42161',
+    originChainID: 42161,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_list.json',
     name: 'Arbed Uniswap List',
     isDefault: true,
@@ -33,7 +34,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 3,
-    originChainID: '42161',
+    originChainID: 42161,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
     isDefault: false,
@@ -41,7 +42,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 5,
-    originChainID: '42161',
+    originChainID: 42161,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
     name: 'Arbed CMC List',
     isDefault: false,
@@ -50,7 +51,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 6,
-    originChainID: '42170',
+    originChainID: 42170,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
     isDefault: true,
@@ -59,7 +60,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 7,
-    originChainID: '42170',
+    originChainID: 42170,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
     isDefault: true,
@@ -67,7 +68,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 8,
-    originChainID: '421613',
+    originChainID: 421613,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
     name: 'Arbed CMC List',
     isDefault: true,
@@ -85,35 +86,26 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
 export interface TokenListWithId extends TokenList {
   l2ChainId: string
   bridgeTokenListId: number
+  isValid?: boolean
 }
-
-const STORAGE_KEY = 'arbitrum:bridge:token-lists'
 
 export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
 ) => {
-  const cache = getTokenLists()
-  const found = cache.find(
-    list => list.bridgeTokenListId === bridgeTokenList.id
-  )
+  fetchTokenListFromURL(bridgeTokenList.url).then(
+    ({ isValid, data: tokenList }) => {
+      if (!isValid) return
 
-  if (found) {
-    arbTokenBridge.token.addTokensFromList(found, bridgeTokenList.id)
-  } else {
-    fetchTokenListFromURL(bridgeTokenList.url).then(
-      ({ isValid, data: tokenList }) => {
-        if (isValid) {
-          arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-        }
-      }
-    )
-  }
+      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
+    }
+  )
 }
 
-export async function fetchTokenListFromURL(
-  tokenListURL: string
-): Promise<{ isValid: boolean; data: TokenList | undefined }> {
+export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
+  isValid: boolean
+  data: TokenList | undefined
+}> {
   try {
     const { data } = await axios.get(tokenListURL, {
       headers: {
@@ -133,58 +125,51 @@ export async function fetchTokenListFromURL(
   }
 }
 
-let storage: string | null = null
-export function fetchTokenLists(): Promise<void> {
+export function fetchTokenLists(
+  forL2ChainId: number
+): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
+    const requestListArray = BRIDGE_TOKEN_LISTS.filter(
+      bridgeTokenList => bridgeTokenList.originChainID === forL2ChainId
+    )
+
     Promise.all(
-      BRIDGE_TOKEN_LISTS.map(bridgeTokenList =>
+      requestListArray.map(bridgeTokenList =>
         fetchTokenListFromURL(bridgeTokenList.url)
       )
     ).then(responses => {
       const tokenListsWithBridgeTokenListId = responses
-        .filter(({ isValid }) => isValid)
-        // Attach the bridge token list id so we can easily retrieve a list later
-        .map(({ data }, index) => {
-          const token = BRIDGE_TOKEN_LISTS[index]
-          if (!token) {
-            return data
+        .map(({ data, isValid }, index) => {
+          const bridgeTokenListId = requestListArray[index]?.id
+
+          if (typeof bridgeTokenListId === 'undefined') {
+            return { ...data, isValid }
           }
 
           return {
-            l2ChainId: token.originChainID,
-            bridgeTokenListId: token.id,
+            l2ChainId: forL2ChainId,
+            bridgeTokenListId,
+            isValid,
             ...data
           }
         })
+        .filter(list => list?.isValid)
 
-      storage = JSON.stringify(tokenListsWithBridgeTokenListId)
-      resolve()
+      resolve(tokenListsWithBridgeTokenListId as TokenListWithId[])
     })
   })
 }
 
-export function useTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  const [tokenLists, setTokenLists] = useState<TokenListWithId[]>(() =>
-    getTokenLists(forL2ChainId)
+export function useTokenLists(
+  forL2ChainId: number
+): SWRResponse<TokenListWithId[]> {
+  return useSWRImmutable(
+    ['useTokenLists', forL2ChainId],
+    (_, _forL2ChainId) => fetchTokenLists(_forL2ChainId),
+    {
+      shouldRetryOnError: true,
+      errorRetryCount: 2,
+      errorRetryInterval: 1_000
+    }
   )
-
-  useEffect(() => {
-    setTokenLists(getTokenLists(forL2ChainId))
-  }, [forL2ChainId])
-
-  return tokenLists
-}
-
-export function getTokenLists(forL2ChainId?: string): TokenListWithId[] {
-  if (!storage) {
-    return []
-  }
-
-  const parsedStorage: TokenListWithId[] = JSON.parse(storage)
-
-  if (typeof forL2ChainId === 'undefined') {
-    return parsedStorage
-  }
-
-  return parsedStorage.filter(tokenList => tokenList.l2ChainId === forL2ChainId)
 }
