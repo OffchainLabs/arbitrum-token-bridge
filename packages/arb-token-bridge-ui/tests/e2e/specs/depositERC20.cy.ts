@@ -2,7 +2,7 @@
  * When user wants to bridge ERC20 from L1 to L2
  */
 
-import { BigNumber } from 'ethers'
+import { utils } from 'ethers'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
@@ -22,7 +22,7 @@ describe('Deposit ERC20 Token', () => {
   before(() => {
     cy.approveWeth()
     // we don't have any erc20 locally so we are wrapping some eth
-    cy.wrapEth(BigNumber.from(String(ERC20AmountToSend * 10 ** 18)))
+    cy.wrapEth(utils.parseEther(String(ERC20AmountToSend)))
     cy.log('Wrapping some ETH...')
     // makes sure weth reflects in the account
     // eslint-disable-next-line
