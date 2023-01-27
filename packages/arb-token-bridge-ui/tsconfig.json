@@ -1,9 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src", "additional.d.ts"],
+  "include": [
+    "src",
+    "additional.d.ts"
+  ],
   "compilerOptions": {
     "noEmit": true,
     "incremental": true,
     "jsx": "preserve"
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

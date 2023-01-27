@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
 import { formatAmount } from '../NumberUtils'
 
+/* eslint-disable @typescript-eslint/no-loss-of-precision */
 describe('formatAmount', () => {
   describe('for short token symbol', () => {
     const getResultFromBigNumber = (value: string) =>
