@@ -20,6 +20,7 @@ describe('Deposit ERC20 Token', () => {
   const ERC20AmountToSend = 0.0001
 
   before(() => {
+    cy.log('Approving WETH...')
     cy.approveWeth()
     // we don't have any erc20 locally so we are wrapping some eth
     cy.wrapEth(utils.parseEther(String(ERC20AmountToSend)))
