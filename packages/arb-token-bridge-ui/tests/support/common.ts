@@ -17,7 +17,7 @@ export const l1NetworkConfig = {
   chainId: '1337',
   symbol: 'ETH',
   isTestnet: true,
-  l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+  l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 }
 
 export const l2NetworkConfig = {
@@ -26,7 +26,7 @@ export const l2NetworkConfig = {
   chainId: '412346',
   symbol: 'ETH',
   isTestnet: true,
-  l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+  l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 }
 
 export const ERC20TokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
