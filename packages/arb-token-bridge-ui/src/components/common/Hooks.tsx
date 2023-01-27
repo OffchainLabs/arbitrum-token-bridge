@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 // inspired from https://overreacted.io/making-setinterval-declarative-with-react-hooks/
-export const useInterval = <T extends unknown>(
+export const useInterval = <T,>(
   callback: () => T,
   delay: number
 ): { forceTrigger: typeof callback } => {
