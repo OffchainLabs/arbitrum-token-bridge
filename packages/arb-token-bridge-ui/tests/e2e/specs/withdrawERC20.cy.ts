@@ -92,6 +92,9 @@ describe('Withdraw ERC20 Token', () => {
         })
     })
 
+    // TODO: WETH deposit takes time to be refected in the balance.
+    // In theory there's a chance it won't show here before tests.
+    // Fix: await for deposit result and continue tests.
     it('should show ERC20 balance correctly', () => {
       cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
     })
