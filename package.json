@@ -16,7 +16,8 @@
     "test:e2e": "yarn workspace arb-token-bridge-ui e2e:run",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
     "prettier:check": "./node_modules/.bin/prettier --check .",
-    "prettier:format": "./node_modules/.bin/prettier --write ."
+    "prettier:format": "./node_modules/.bin/prettier --write .",
+    "serve": "serve -s packages/arb-token-bridge-ui/build"
   },
   "keywords": [],
   "author": "",
