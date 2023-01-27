@@ -9,7 +9,7 @@
 
 import '@testing-library/cypress/add-commands'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, utils, Wallet } from 'ethers'
+import { BigNumber, constants, utils, Wallet } from 'ethers'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import {
   ethRpcUrl,
@@ -47,7 +47,7 @@ export const sendEth = (
   amount: number
 ) => {
   cy.switchMetamaskAccount(accountNameOrNumberTo)
-  cy.getMetamaskWalletAddress().then(async (address) => {
+  cy.getMetamaskWalletAddress().then(async address => {
     cy.switchMetamaskAccount(accountNameOrNumberFrom)
     const provider = new StaticJsonRpcProvider(ethRpcUrl)
     const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
@@ -64,6 +64,18 @@ export const wrapEth = async (amount: BigNumber) => {
   const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
   const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
   const tx = await factory.deposit({ value: amount })
+  await tx.wait()
+}
+
+export const approveWeth = async () => {
+  const provider = new StaticJsonRpcProvider(ethRpcUrl)
+  const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+  const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
+  const tx = await factory.approve(
+    // L1 WETH gateway
+    '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+    constants.MaxInt256
+  )
   await tx.wait()
 }
 
@@ -105,9 +117,7 @@ export const saveAppState = () => {
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText('MetaMask').should('be.visible')
-  cy.findByText('Connect to your MetaMask Wallet')
-    .should('be.visible')
-    .click()
+  cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click()
 }
 
 Cypress.Commands.addAll({
@@ -117,5 +127,6 @@ Cypress.Commands.addAll({
   saveAppState,
   connectToApp,
   wrapEth,
-  sendEth
+  sendEth,
+  approveWeth
 })

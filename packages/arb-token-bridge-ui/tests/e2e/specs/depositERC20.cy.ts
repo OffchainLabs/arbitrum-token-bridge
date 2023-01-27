@@ -7,7 +7,6 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
-  getERC20Allowance,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
@@ -21,12 +20,13 @@ describe('Deposit ERC20 Token', () => {
   const ERC20AmountToSend = 0.0001
 
   before(() => {
+    cy.approveWeth()
     // we don't have any erc20 locally so we are wrapping some eth
     cy.wrapEth(BigNumber.from(String(ERC20AmountToSend * 10 ** 18)))
     cy.log('Wrapping some ETH...')
     // makes sure weth reflects in the account
     // eslint-disable-next-line
-    cy.wait(20000)
+    cy.wait(15000)
     // before this spec, make sure the cache is fresh
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()
@@ -42,7 +42,6 @@ describe('Deposit ERC20 Token', () => {
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
     let l1ERC20bal: string
-    let allowance: BigNumber
 
     // log in to metamask before deposit
     before(() => {
@@ -56,11 +55,6 @@ describe('Deposit ERC20 Token', () => {
             symbol: 'WETH'
           }))
       )
-      getERC20Allowance(
-        ERC20TokenAddressL1,
-        l1NetworkConfig.l1MultiCall,
-        ethRpcUrl
-      ).then(val => (allowance = val))
       cy.login('L1')
     })
 
@@ -140,46 +134,18 @@ describe('Deposit ERC20 Token', () => {
       })
 
       it('should deposit successfully', () => {
-        const confirmTxAndFinish = () => {
-          cy.confirmMetamaskTransaction().then(() => {
-            cy.findByText(
-              `Moving ${formatAmount(ERC20AmountToSend, {
-                symbol: 'WETH'
-              })} to Arbitrum...`
-            ).should('be.visible')
-          })
-        }
-
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })
           .click({ scrollBehavior: false })
           .then(() => {
-            if (
-              allowance.lt(BigNumber.from(String(ERC20AmountToSend * 10 ** 18)))
-            ) {
-              // allowance not set
+            cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
-                /I understand that I have to pay a one-time/i
-              ).click()
-              cy.get('button')
-                .contains(/Pay approval fee of/i)
-                .click()
-              cy.confirmMetamaskPermissionToSpend().then(() => {
-                cy.waitUntil(() =>
-                  cy
-                    .get('button')
-                    .contains('Move funds to Arbitrum')
-                    .should('not.be.disabled')
-                    .then(() => {
-                      confirmTxAndFinish()
-                    })
-                )
-              })
-            } else {
-              // allowance already set
-              confirmTxAndFinish()
-            }
+                `Moving ${formatAmount(ERC20AmountToSend, {
+                  symbol: 'WETH'
+                })} to Arbitrum...`
+              ).should('be.visible')
+            })
           })
       })
     })

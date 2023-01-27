@@ -6,7 +6,8 @@ import {
   restoreAppState,
   saveAppState,
   wrapEth,
-  sendEth
+  sendEth,
+  approveWeth
 } from '../support/commands'
 import { NetworkType } from '../support/common'
 import { BigNumber } from 'ethers'
@@ -29,6 +30,7 @@ declare global {
         accountNameOrNumberTo: string | number,
         amount: number
       ): typeof sendEth
+      approveWeth(): typeof approveWeth
     }
   }
 }

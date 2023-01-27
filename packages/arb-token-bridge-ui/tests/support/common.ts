@@ -56,24 +56,6 @@ export async function getInitialERC20Balance(
   return tokenData.balance
 }
 
-export async function getERC20Allowance(
-  tokenAddress: string,
-  multiCallerAddress: string,
-  rpcURL: string
-): Promise<BigNumber> {
-  const provider = new StaticJsonRpcProvider(rpcURL)
-
-  const multiCaller = new MultiCaller(provider, multiCallerAddress)
-  const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
-    allowance: {
-      owner: Cypress.env('ADDRESS'),
-      // L1 WETH gateway
-      spender: '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e'
-    }
-  })
-  return tokenData.allowance
-}
-
 export const setupMetamaskNetwork = (
   networkType: NetworkType,
   addNewNetwork?: boolean
