@@ -23,9 +23,10 @@ describe('Deposit ERC20 Token', () => {
     cy.log('Approving WETH...')
     cy.approveWeth()
     // we don't have any erc20 locally so we are wrapping some eth
-    cy.wrapEth(utils.parseEther(String(ERC20AmountToSend)))
     cy.log('Wrapping some ETH...')
+    cy.wrapEth(utils.parseEther(String(ERC20AmountToSend)))
     // makes sure weth reflects in the account
+    // TODO: refactor to await for WETH to show in the balance and continue tests.
     // eslint-disable-next-line
     cy.wait(15000)
     // before this spec, make sure the cache is fresh
