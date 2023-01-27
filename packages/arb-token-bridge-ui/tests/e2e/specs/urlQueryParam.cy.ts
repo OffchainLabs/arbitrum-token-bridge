@@ -14,7 +14,7 @@ describe('User enters site with query params on URL', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   before(() => {
-    cy.fundWalletWithEth(2, 1, ethToFund)
+    cy.sendEth(2, 1, ethToFund)
     cy.switchMetamaskAccount(1)
     cy.getMetamaskWalletAddress().then(address => {
       getInitialETHBalance(ethRpcUrl, address).then(

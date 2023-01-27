@@ -35,7 +35,10 @@ export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
-export async function getInitialETHBalance(rpcURL: string, walletAddress?: string): Promise<BigNumber> {
+export async function getInitialETHBalance(
+  rpcURL: string,
+  walletAddress?: string
+): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
   return await provider.getBalance(walletAddress ?? Cypress.env('ADDRESS'))
 }
@@ -51,6 +54,24 @@ export async function getInitialERC20Balance(
     balanceOf: { account: Cypress.env('ADDRESS') }
   })
   return tokenData.balance
+}
+
+export async function getERC20Allowance(
+  tokenAddress: string,
+  multiCallerAddress: string,
+  rpcURL: string
+): Promise<BigNumber> {
+  const provider = new StaticJsonRpcProvider(rpcURL)
+
+  const multiCaller = new MultiCaller(provider, multiCallerAddress)
+  const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
+    allowance: {
+      owner: Cypress.env('ADDRESS'),
+      // L1 WETH gateway
+      spender: '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e'
+    }
+  })
+  return tokenData.allowance
 }
 
 export const setupMetamaskNetwork = (

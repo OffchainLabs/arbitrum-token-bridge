@@ -7,6 +7,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
+  getERC20Allowance,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
@@ -40,7 +41,8 @@ describe('Deposit ERC20 Token', () => {
 
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
-    let l1ERC20bal
+    let l1ERC20bal: string
+    let allowance: BigNumber
 
     // log in to metamask before deposit
     before(() => {
@@ -54,6 +56,11 @@ describe('Deposit ERC20 Token', () => {
             symbol: 'WETH'
           }))
       )
+      getERC20Allowance(
+        ERC20TokenAddressL1,
+        l1NetworkConfig.l1MultiCall,
+        ethRpcUrl
+      ).then(val => (allowance = val))
       cy.login('L1')
     })
 
@@ -148,32 +155,31 @@ describe('Deposit ERC20 Token', () => {
         })
           .click({ scrollBehavior: false })
           .then(() => {
-            // when running e2e locally multiple times on the same node
-            // sometimes approval is not required
-            // we check for both scenarios
-            cy.get('body').then($body => {
-              if (
-                // check for token approval modal
-                $body
-                  .find(
-                    'span:contains("I understand that I have to pay a one-time")'
-                  )
-                  .is(':visible')
-              ) {
-                cy.findByText(
-                  /I understand that I have to pay a one-time/i
-                ).click()
-                cy.get('button')
-                  .contains(/Pay approval fee of/i)
-                  .click()
-                cy.confirmMetamaskPermissionToSpend().then(() => {
-                  confirmTxAndFinish()
-                })
-              } else {
-                // token already approved
-                confirmTxAndFinish()
-              }
-            })
+            if (
+              allowance.lt(BigNumber.from(String(ERC20AmountToSend * 10 ** 18)))
+            ) {
+              // allowance not set
+              cy.findByText(
+                /I understand that I have to pay a one-time/i
+              ).click()
+              cy.get('button')
+                .contains(/Pay approval fee of/i)
+                .click()
+              cy.confirmMetamaskPermissionToSpend().then(() => {
+                cy.waitUntil(() =>
+                  cy
+                    .get('button')
+                    .contains('Move funds to Arbitrum')
+                    .should('not.be.disabled')
+                    .then(() => {
+                      confirmTxAndFinish()
+                    })
+                )
+              })
+            } else {
+              // allowance already set
+              confirmTxAndFinish()
+            }
           })
       })
     })

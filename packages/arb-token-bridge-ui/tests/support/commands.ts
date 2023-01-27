@@ -41,7 +41,7 @@ export const logout = () => {
   })
 }
 
-export const fundWalletWithEth = (
+export const sendEth = (
   accountNameOrNumberFrom: string | number,
   accountNameOrNumberTo: string | number,
   amount: number
@@ -66,7 +66,6 @@ export const wrapEth = async (amount: BigNumber) => {
   const tx = await factory.deposit({ value: amount })
   await tx.wait()
 }
-
 
 export const resetSeenTimeStampCache = () => {
   const dataKey = 'arbitrum:bridge:seen-txs'
@@ -118,5 +117,5 @@ Cypress.Commands.addAll({
   saveAppState,
   connectToApp,
   wrapEth,
-  fundWalletWithEth
+  sendEth
 })
