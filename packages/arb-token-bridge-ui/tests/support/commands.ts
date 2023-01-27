@@ -8,11 +8,10 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, constants, utils, Wallet } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import {
-  ethRpcUrl,
+  getWallet,
   ERC20TokenAddressL1,
   l1NetworkConfig,
   NetworkType,
@@ -49,8 +48,7 @@ export const sendEthToAccount = (
   cy.switchMetamaskAccount(accountNameOrNumberTo)
   cy.getMetamaskWalletAddress().then(async address => {
     cy.switchMetamaskAccount(accountNameOrNumberFrom)
-    const provider = new StaticJsonRpcProvider(ethRpcUrl)
-    const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+    const wallet = getWallet()
     const tx = {
       to: address,
       value: utils.parseEther(String(amount))
@@ -60,16 +58,14 @@ export const sendEthToAccount = (
 }
 
 export const wrapEth = async (amount: BigNumber) => {
-  const provider = new StaticJsonRpcProvider(ethRpcUrl)
-  const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+  const wallet = getWallet()
   const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
   const tx = await factory.deposit({ value: amount })
   await tx.wait()
 }
 
 export const approveWeth = async () => {
-  const provider = new StaticJsonRpcProvider(ethRpcUrl)
-  const wallet = new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
+  const wallet = getWallet()
   const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
   const tx = await factory.approve(
     // L1 WETH gateway
