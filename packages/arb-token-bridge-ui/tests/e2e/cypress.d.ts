@@ -5,12 +5,11 @@ import {
   logout,
   restoreAppState,
   saveAppState,
-  wrapEth,
-  sendEthToAccount,
-  approveWeth
+  sendEth
 } from '../support/commands'
 import { NetworkType } from '../support/common'
 import { BigNumber } from 'ethers'
+import { Provider } from '@ethersproject/providers'
 
 declare global {
   namespace Cypress {
@@ -24,19 +23,7 @@ declare global {
       connectToApp(): typeof connectToApp
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
-      wrapEth(amount: BigNumber): typeof wrapEth
-      /**
-       * Move funds between accounts within the same wallet
-       * @param accountNameOrNumberFrom Origin account
-       * @param accountNameOrNumberTo Destination account
-       * @param amount Amount of ETH
-       */
-      sendEthToAccount(
-        accountNameOrNumberFrom: string | number,
-        accountNameOrNumberTo: string | number,
-        amount: number
-      ): typeof sendEthToAccount
-      approveWeth(): typeof approveWeth
+      sendEth(to: string, amount: BigNumber, provider: Provider): typeof sendEth
     }
   }
 }

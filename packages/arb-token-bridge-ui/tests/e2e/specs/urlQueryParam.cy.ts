@@ -5,6 +5,8 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import { getInitialETHBalance, ethRpcUrl } from '../../support/common'
+import { utils } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 describe('User enters site with query params on URL', () => {
   // we fund another wallet with small amount of eth so we test on realistic numbers
@@ -14,7 +16,12 @@ describe('User enters site with query params on URL', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   before(() => {
-    cy.sendEthToAccount(2, 1, ethToFund)
+    const provider = new StaticJsonRpcProvider(ethRpcUrl)
+    cy.sendEth(
+      Cypress.env('ALT_ADDRESS'),
+      utils.parseEther(String(ethToFund)),
+      provider
+    )
     cy.switchMetamaskAccount(1)
     cy.getMetamaskWalletAddress().then(address => {
       getInitialETHBalance(ethRpcUrl, address).then(

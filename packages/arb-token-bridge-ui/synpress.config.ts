@@ -1,7 +1,11 @@
-import { Wallet } from 'ethers'
+import { constants, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
+import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
+
+import { ethRpcUrl, ERC20TokenAddressL1 } from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -28,6 +32,24 @@ export default defineConfig({
     // @ts-ignore
     async setupNodeEvents(on, config) {
       const wallet = new Wallet(process.env.PRIVATE_KEY!)
+      const provider = new StaticJsonRpcProvider(ethRpcUrl)
+
+      on('before:run', async () => {
+        const factory = TestWETH9__factory.connect(
+          ERC20TokenAddressL1,
+          wallet.connect(provider)
+        )
+        // WETH used to test ERC-20 transfers
+        const wrapTx = await factory.deposit({ value: utils.parseEther('0.1') })
+        await wrapTx.wait()
+        // Approve ERC-20
+        const approveTx = await factory.approve(
+          // L1 WETH gateway
+          '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+          constants.MaxInt256
+        )
+        await approveTx.wait()
+      })
       config.env.ADDRESS = await wallet.getAddress()
       config.env.PRIVATE_KEY = process.env.PRIVATE_KEY
       config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY

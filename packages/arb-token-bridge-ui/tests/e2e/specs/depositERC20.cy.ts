@@ -2,7 +2,6 @@
  * When user wants to bridge ERC20 from L1 to L2
  */
 
-import { utils } from 'ethers'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
 import {
@@ -20,15 +19,6 @@ describe('Deposit ERC20 Token', () => {
   const ERC20AmountToSend = 0.0001
 
   before(() => {
-    cy.log('Approving WETH...')
-    cy.approveWeth()
-    // we don't have any erc20 locally so we are wrapping some eth
-    cy.log('Wrapping some ETH...')
-    cy.wrapEth(utils.parseEther(String(ERC20AmountToSend)))
-    // makes sure weth reflects in the account
-    // TODO: refactor to await for WETH to show in the balance and continue tests.
-    // eslint-disable-next-line
-    cy.wait(15000)
     // before this spec, make sure the cache is fresh
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()

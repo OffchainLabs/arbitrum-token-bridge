@@ -8,11 +8,10 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { BigNumber, constants, utils } from 'ethers'
-import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
+import { BigNumber } from 'ethers'
+import { Provider } from '@ethersproject/providers'
 import {
   getWallet,
-  ERC20TokenAddressL1,
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
@@ -40,38 +39,13 @@ export const logout = () => {
   })
 }
 
-export const sendEthToAccount = (
-  accountNameOrNumberFrom: string | number,
-  accountNameOrNumberTo: string | number,
-  amount: number
+export const sendEth = async (
+  to: string,
+  amount: BigNumber,
+  provider: Provider
 ) => {
-  cy.switchMetamaskAccount(accountNameOrNumberTo)
-  cy.getMetamaskWalletAddress().then(async address => {
-    cy.switchMetamaskAccount(accountNameOrNumberFrom)
-    const wallet = getWallet()
-    const tx = {
-      to: address,
-      value: utils.parseEther(String(amount))
-    }
-    await wallet.sendTransaction(tx)
-  })
-}
-
-export const wrapEth = async (amount: BigNumber) => {
-  const wallet = getWallet()
-  const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
-  const tx = await factory.deposit({ value: amount })
-  await tx.wait()
-}
-
-export const approveWeth = async () => {
-  const wallet = getWallet()
-  const factory = TestWETH9__factory.connect(ERC20TokenAddressL1, wallet)
-  const tx = await factory.approve(
-    // L1 WETH gateway
-    '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
-    constants.MaxInt256
-  )
+  const wallet = getWallet(provider)
+  const tx = await wallet.sendTransaction({ to, value: amount })
   await tx.wait()
 }
 
@@ -122,7 +96,5 @@ Cypress.Commands.addAll({
   restoreAppState,
   saveAppState,
   connectToApp,
-  wrapEth,
-  sendEthToAccount,
-  approveWeth
+  sendEth
 })
