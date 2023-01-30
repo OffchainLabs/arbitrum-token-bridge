@@ -2,8 +2,8 @@
   All the utility functions and configs related to our testing
 */
 
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { BigNumber, Wallet } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
@@ -34,10 +34,6 @@ export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
-
-export const getWallet = (provider: Provider) => {
-  return new Wallet(Cypress.env('PRIVATE_KEY')).connect(provider)
-}
 
 export async function getInitialETHBalance(
   rpcURL: string,
