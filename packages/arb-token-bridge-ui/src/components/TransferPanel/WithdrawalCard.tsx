@@ -12,7 +12,7 @@ import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { getExplorerUrl, getNetworkLogo } from '../../util/networks'
+import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -134,7 +134,7 @@ export function WithdrawalCardContainer({
       <div className="relative flex items-center gap-6">
         {/* Logo watermark */}
         <img
-          src={getNetworkLogo(5)}
+          src={getNetworkLogo(ChainId.Mainnet)}
           className="ml-[-60px] h-full opacity-[40%]"
           alt="Withdrawal"
         />
@@ -147,8 +147,8 @@ export function WithdrawalCardContainer({
           onClick={() => {
             trackEvent('Move More Funds Click')
             dispatch({
-              type: 'layout.set_is_transfer_panel_visible',
-              payload: true
+              type: 'layout.set_txhistory_panel_visible',
+              payload: false
             })
           }}
         >

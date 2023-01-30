@@ -24,7 +24,6 @@ import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
-import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
@@ -125,9 +124,6 @@ const AppContent = (): JSX.Element => {
 
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
-
-      {/* UNDO THIS LATER */}
-      {/* {!isTestingEnvironment && <PWLoadedUpdater />} */}
 
       <TokenListSyncer />
       <BalanceUpdater />

@@ -214,7 +214,7 @@ export interface ArbTokenBridgeToken {
 export interface TransactionActions {
   addFailedTransaction: (transaction: FailedTransaction) => void
 
-  setTransactions: (transactions: Transaction[]) => void
+  setDepositsInStore: (transactions: Transaction[]) => void
   setTransactionSuccess: (txID: string) => void
   setTransactionFailure: (txID?: string) => void
   removeTransaction: (txID: string) => void
@@ -251,7 +251,7 @@ export type ArbTokenBridgeTransactions = {
   | 'addTransactions'
   | 'fetchAndUpdateL1ToL2MsgStatus'
   | 'fetchAndUpdateEthDepositMessageStatus'
-  | 'setTransactions'
+  | 'setDepositsInStore'
 >
 
 export interface ArbTokenBridge {
@@ -261,6 +261,6 @@ export interface ArbTokenBridge {
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  setWithdrawals: (txns: L2ToL1EventResultPlus[]) => void
+  setWithdrawalsInStore: (txns: L2ToL1EventResultPlus[]) => void
   setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
 }

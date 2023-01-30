@@ -102,7 +102,9 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   }
 
   return (
-    <span>{matchingL1Tx.resolvedAt || matchingL1Tx.createdAt || 'N/A'}</span>
+    <span className="whitespace-nowrap">
+      {matchingL1Tx.resolvedAt || matchingL1Tx.createdAt || 'N/A'}
+    </span>
   )
 }
 
@@ -120,11 +122,13 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
     const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
 
     if (typeof matchingL1Tx === 'undefined') {
-      return <span className="text-dark">L1: Not available</span>
+      return (
+        <span className="whitespace-nowrap text-dark">L1: Not available</span>
+      )
     }
 
     return (
-      <span className="text-dark">
+      <span className="whitespace-nowrap text-dark">
         L1:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
@@ -137,8 +141,8 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
   }
 
   return (
-    <div className="flex flex flex-col flex-col space-y-1">
-      <span className="text-dark">
+    <div className="flex flex-col space-y-1">
+      <span className="whitespace-nowrap text-dark">
         L2:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
@@ -190,7 +194,7 @@ function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
   }
 
   if (tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
-    return <span>EXECUTE_CALL_EXCEPTION</span>
+    return <span className="whitespace-nowrap">EXECUTE_CALL_EXCEPTION</span>
   }
 
   return null
@@ -210,7 +214,7 @@ export function TransactionsTableWithdrawalRow({
   }
 
   return (
-    <tr className={`text-sm text-dark ${className}`}>
+    <tr className={`bg-cyan text-sm text-dark even:bg-white ${className}`}>
       <td className="w-1/5 py-3 pl-6 pr-3">
         <WithdrawalRowStatus tx={tx} />
       </td>
@@ -219,7 +223,7 @@ export function TransactionsTableWithdrawalRow({
         <WithdrawalRowTime tx={tx} />
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td className="w-1/5 whitespace-nowrap px-3 py-3">
         {tx.value} {tx.asset.toUpperCase()}
       </td>
 

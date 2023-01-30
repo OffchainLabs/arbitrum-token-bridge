@@ -493,12 +493,12 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
-  const setTransactions = (transactions: Transaction[]) => {
-    // replaces the state with a new set of transactions
+  const setDepositsInStore = (newTransactions: Transaction[]) => {
+    // appends the state with a new set of transactions
     // useful when you want to display some transactions fetched from subgraph without worrying about existing state
     return dispatch({
       type: 'SET_TRANSACTIONS',
-      transactions
+      transactions: [...transactions, ...newTransactions]
     })
   }
 
@@ -511,7 +511,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     {
       addTransaction,
       addTransactions,
-      setTransactions,
+      setDepositsInStore,
       setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,

@@ -23,6 +23,7 @@ import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
 import { useActions } from '../../state'
+import { useAppContextDispatch } from '../App/AppContext'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -95,7 +96,7 @@ export function HeaderAccountPopover() {
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const actions = useActions()
+  const dispatch = useAppContextDispatch()
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
@@ -148,7 +149,7 @@ export function HeaderAccountPopover() {
   }
 
   function openTransactionHistory() {
-    actions.app.setShowTransactionHistory(true)
+    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
 
   const headerItemsClassName =

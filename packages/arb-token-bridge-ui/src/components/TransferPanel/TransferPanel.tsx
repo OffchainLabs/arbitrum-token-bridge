@@ -471,8 +471,8 @@ export function TransferPanel() {
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
-                  type: 'layout.set_is_transfer_panel_visible',
-                  payload: false
+                  type: 'layout.set_txhistory_panel_visible',
+                  payload: true
                 })
                 setTransferring(false)
               }
@@ -487,8 +487,8 @@ export function TransferPanel() {
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
-                  type: 'layout.set_is_transfer_panel_visible',
-                  payload: false
+                  type: 'layout.set_txhistory_panel_visible',
+                  payload: true
                 })
                 setTransferring(false)
               }
@@ -571,8 +571,8 @@ export function TransferPanel() {
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
-                  type: 'layout.set_is_transfer_panel_visible',
-                  payload: false
+                  type: 'layout.set_txhistory_panel_visible',
+                  payload: true
                 })
                 setTransferring(false)
               }
@@ -587,8 +587,8 @@ export function TransferPanel() {
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
-                  type: 'layout.set_is_transfer_panel_visible',
-                  payload: false
+                  type: 'layout.set_txhistory_panel_visible',
+                  payload: true
                 })
                 setTransferring(false)
               }

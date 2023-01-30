@@ -61,7 +61,7 @@ export const fetchPendingTransactions = async ({
   const completeWithdrawalData = transformWithdrawals(pendingWithrawals)
 
   console.log('***** transformed both deposits and withdrawals *****')
-  const finalMergedTransactions = [
+  const pendingMergedTransactions = [
     ...completeDepositData,
     ...completeWithdrawalData
   ].sort((a, b) => {
@@ -72,7 +72,7 @@ export const fetchPendingTransactions = async ({
   })
 
   console.log('***** FINISH! returning sorted pending transactions *****')
-  return finalMergedTransactions
+  return { pendingDeposits, pendingWithrawals, pendingMergedTransactions }
 }
 
 export const usePendingTransactions = () => {

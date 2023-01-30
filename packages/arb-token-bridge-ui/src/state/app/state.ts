@@ -86,7 +86,6 @@ export type AppState = {
 
   pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
-  showTransactionHistory: boolean
 }
 
 export const defaultState: AppState = {
@@ -147,8 +146,7 @@ export const defaultState: AppState = {
     )
   }),
   pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
-  arbTokenBridgeLoaded: false,
-  showTransactionHistory: false
+  arbTokenBridgeLoaded: false
 }
 export const state: AppState = {
   ...defaultState

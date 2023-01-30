@@ -295,7 +295,7 @@ export function TransactionsTable({
                     <TransactionsTableWithdrawalRow
                       key={`${tx.txId}-${tx.direction}`}
                       tx={tx}
-                      className={!isFinalRow ? 'border-b border-gray-10' : ''}
+                      className={!isFinalRow ? 'border-b border-gray-1' : ''}
                     />
                   )
                 })

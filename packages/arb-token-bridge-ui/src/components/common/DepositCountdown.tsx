@@ -11,7 +11,7 @@ function getMinutesRemainingText(minutesRemaining: number): string {
     return 'Less than a minute...'
   }
 
-  return `~${minutesRemaining} minutes remaining`
+  return `~${minutesRemaining} mins remaining`
 }
 
 export function DepositCountdown({

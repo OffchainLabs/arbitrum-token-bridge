@@ -41,14 +41,7 @@ function isDeposit(tx: MergedTransaction) {
 
 export const TransactionHistory = () => {
   const {
-    app: {
-      mergedTransactions,
-      pwLoadedState,
-      arbTokenBridge: {
-        transactions: { setTransactions: setDepositsInStore },
-        setWithdrawals
-      }
-    }
+    app: { mergedTransactions, arbTokenBridge }
   } = useAppState()
 
   const { l1, l2 } = useNetworksAndSigners()
@@ -77,12 +70,14 @@ export const TransactionHistory = () => {
 
   useEffect(() => {
     '***** called depositsFromSubgraph useEffect ****'
-    setDepositsInStore(depositsFromSubgraph || [])
+    arbTokenBridge?.transactions?.setDepositsInStore?.(
+      depositsFromSubgraph || []
+    )
   }, [depositsFromSubgraph])
 
   useEffect(() => {
     '***** called withdrawalsFromSubgraph useEffect ****'
-    setWithdrawals(withdrawalsFromSubgraph || [])
+    arbTokenBridge?.setWithdrawalsInStore?.(withdrawalsFromSubgraph || [])
   }, [withdrawalsFromSubgraph])
 
   const [deposits, withdrawals] = useMemo(() => {
@@ -148,7 +143,6 @@ export const TransactionHistory = () => {
       </Tab.List>
       <Tab.Panel className="overflow-scroll">
         <TransactionsTable
-          // Currently we load deposit history from local cache, so it's always a success
           status={
             depositsLoading ? 'loading' : !depositsError ? 'success' : 'error'
           }

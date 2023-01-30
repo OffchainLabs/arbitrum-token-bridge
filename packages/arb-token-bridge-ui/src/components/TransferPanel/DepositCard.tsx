@@ -13,7 +13,7 @@ import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { getExplorerUrl } from '../../util/networks'
+import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 
 export function DepositL1TxStatus({
   tx
@@ -126,7 +126,9 @@ export function DepositCardContainer({
   }
 
   return (
-    <div className={`w-full p-6 pb-12 sm:pb-6 lg:rounded-xl ${bgClassName}`}>
+    <div
+      className={`box-border w-full overflow-hidden	rounded-xl border-4 border-purple-ethereum p-4 ${bgClassName}`}
+    >
       {dismissable && (
         <button
           className={twMerge(
@@ -139,16 +141,24 @@ export function DepositCardContainer({
         </button>
       )}
 
-      <div className="flex flex-col space-y-3">{children}</div>
+      <div className="relative flex items-center gap-6">
+        {/* Logo watermark */}
+        <img
+          src={getNetworkLogo(ChainId.ArbitrumOne)}
+          className="ml-[-60px] h-full opacity-[40%]"
+          alt="Deposit"
+        />
+        <div className="w-full">{children}</div>
+      </div>
 
       {!isTransferPanelVisible && !dismissable && (
         <button
-          className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
+          className="arb-hover absolute bottom-4 right-4 text-blue-link underline"
           onClick={() => {
             trackEvent('Move More Funds Click')
             dispatch({
-              type: 'layout.set_is_transfer_panel_visible',
-              payload: true
+              type: 'layout.set_txhistory_panel_visible',
+              payload: false
             })
           }}
         >

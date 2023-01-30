@@ -135,7 +135,7 @@ export const useArbTokenBridge = (
     {
       addTransaction,
       addTransactions,
-      setTransactions,
+      setDepositsInStore,
       setTransactionFailure,
       clearPendingTransactions,
       setTransactionConfirmed,
@@ -1173,13 +1173,13 @@ export const useArbTokenBridge = (
     setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
-  const setWithdrawals = (withdrawalTxns: L2ToL1EventResultPlus[]) => {
+  const setWithdrawalsInStore = (withdrawalTxns: L2ToL1EventResultPlus[]) => {
     let pwMap = {} as PendingWithdrawalsMap
     withdrawalTxns.forEach(tx => {
       const id = getUniqueIdOrHashFromEvent(tx).toString()
       pwMap[id] = tx
     })
-    setPendingWithdrawalMap(pwMap)
+    setPendingWithdrawalMap({ ...pendingWithdrawalsMap, ...pwMap })
   }
 
   return {
@@ -1210,7 +1210,7 @@ export const useArbTokenBridge = (
     },
     transactions: {
       transactions,
-      setTransactions,
+      setDepositsInStore,
       clearPendingTransactions,
       setTransactionConfirmed,
       updateTransaction,
@@ -1220,7 +1220,7 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
-    setWithdrawals: setWithdrawals,
+    setWithdrawalsInStore,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals
   }
 }
