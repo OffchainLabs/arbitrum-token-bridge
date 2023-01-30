@@ -62,7 +62,6 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Explore: DeFi Project Click: GMX': '1P9YY5PL',
   'Explore: DeFi Project Click: Dopex': 'SZPHSXIE',
   'Explore: DeFi Project Click: TreasureDAO': 'YVGKJ1CX',
-  'Explore: DeFi Project Click: Tracer DAO': 'ZLIYK03N',
   'Explore: DeFi Project Click: Balancer': '4FZQAI5H',
   'Explore: DeFi Project Click: Jones DAO': 'LOUGONM6',
   'Explore: DeFi Project Click: 1inch': 'DZBLQTEL',
