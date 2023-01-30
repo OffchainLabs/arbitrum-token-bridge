@@ -4,12 +4,9 @@ import {
   login,
   logout,
   restoreAppState,
-  saveAppState,
-  sendEth
+  saveAppState
 } from '../support/commands'
 import { NetworkType } from '../support/common'
-import { BigNumber } from 'ethers'
-import { Provider } from '@ethersproject/providers'
 
 declare global {
   namespace Cypress {
@@ -23,7 +20,6 @@ declare global {
       connectToApp(): typeof connectToApp
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
-      sendEth(to: string, amount: BigNumber, provider: Provider): typeof sendEth
     }
   }
 }

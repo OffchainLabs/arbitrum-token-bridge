@@ -8,10 +8,7 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { BigNumber } from 'ethers'
-import { Provider } from '@ethersproject/providers'
 import {
-  getWallet,
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
@@ -39,16 +36,6 @@ export const logout = () => {
       })
     })
   })
-}
-
-export const sendEth = async (
-  to: string,
-  amount: BigNumber,
-  provider: Provider
-) => {
-  const wallet = getWallet(provider)
-  const tx = await wallet.sendTransaction({ to, value: amount })
-  await tx.wait()
 }
 
 export const resetSeenTimeStampCache = () => {
@@ -97,6 +84,5 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  connectToApp,
-  sendEth
+  connectToApp
 })
