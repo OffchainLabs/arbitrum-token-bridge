@@ -5,7 +5,7 @@ import {
   fetchERC20DepositsFromSubgraph,
   fetchETHDepositsFromSubgraph
 } from './fetchEthDepositsFromSubgraph_draft'
-import { fetchETHWithdrawals } from 'token-bridge-sdk'
+import { fetchETHWithdrawals, fetchTokenWithdrawals } from 'token-bridge-sdk'
 import useSWR from 'swr'
 
 export const useDeposits = ({
@@ -127,7 +127,7 @@ export const useWithdrawals = ({
       _pageSize,
       _type
     ) =>
-      (_type === 'ETH' ? fetchETHWithdrawals : fetchETHWithdrawals)({
+      (_type === 'ETH' ? fetchETHWithdrawals : fetchTokenWithdrawals)({
         address: _walletAddress,
         fromBlock: 0,
         toBlock: currentL1BlockNumber,
@@ -146,4 +146,20 @@ export const useWithdrawals = ({
       revalidateOnReconnect: false
     }
   )
+}
+
+// Consolidate all 2
+
+const fetchPendingDeposits = () => {
+  // fetch the first 50 deposits and check if they are pending.
+}
+
+const fetchPendingWithdrawals = () => {
+  // fetch the first 50 withdrawals and check if they are pending.
+}
+
+const fetchPendingTransactions = () => {
+  // 1. fetch pending deposits
+  // 2. fetch pending withdrawals
+  // 3. merge all these 3
 }

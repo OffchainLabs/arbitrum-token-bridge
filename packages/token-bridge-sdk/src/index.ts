@@ -46,4 +46,7 @@ export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
 
 export { useGasPrice } from './hooks/useGasPrice'
-export { fetchETHWithdrawals } from './withdrawals/fetchWithdrawalsFromSubgraph_draft'
+export {
+  fetchETHWithdrawals,
+  fetchTokenWithdrawals
+} from './withdrawals/fetchWithdrawalsFromSubgraph_draft'

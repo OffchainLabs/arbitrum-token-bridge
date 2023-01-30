@@ -12,7 +12,7 @@ import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl, getNetworkLogo } from '../../util/networks'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -119,7 +119,9 @@ export function WithdrawalCardContainer({
   }
 
   return (
-    <div className={`w-full p-6 pb-12 sm:pb-6 lg:rounded-xl ${bgClassName}`}>
+    <div
+      className={`box-border w-full overflow-hidden	rounded-xl border-4 border-purple-ethereum p-4 ${bgClassName}`}
+    >
       {dismissable && (
         <button
           className="arb-hover absolute top-4 right-4 text-lime-dark underline"
@@ -129,7 +131,15 @@ export function WithdrawalCardContainer({
         </button>
       )}
 
-      <div className="flex flex-col space-y-3">{children}</div>
+      <div className="relative flex items-center gap-6">
+        {/* Logo watermark */}
+        <img
+          src={getNetworkLogo(5)}
+          className="ml-[-60px] h-full opacity-[40%]"
+          alt="Withdrawal"
+        />
+        <div className="w-full">{children}</div>
+      </div>
 
       {!isTransferPanelVisible && !dismissable && (
         <button

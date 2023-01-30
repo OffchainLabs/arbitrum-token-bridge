@@ -177,7 +177,7 @@ export function TransactionsTable({
 
   return (
     <>
-      <div className="flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm">
+      <div className="sticky top-0 left-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm">
         {/* Deposit type dropdown */}
 
         <DepositTypeDropdown

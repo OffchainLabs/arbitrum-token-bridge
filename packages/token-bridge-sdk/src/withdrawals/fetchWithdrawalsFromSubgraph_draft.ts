@@ -115,43 +115,54 @@ export const fetchETHWithdrawals = async ({
   // return finalWithdrawalTxns
 }
 
-// export const fetchTokenWithdrawals = async ({
-//   address,
-//   fromBlock,
-//   toBlock,
-//   l1Provider,
-//   l2Provider
-// }: {
-//   address: string
-//   fromBlock: number
-//   toBlock: number
-//   l1Provider: Provider
-//   l2Provider: Provider
-// }) => {
-//   const l2ChainID = (await l2Provider.getNetwork()).chainId
+export const fetchTokenWithdrawals = async ({
+  address,
+  fromBlock,
+  toBlock,
+  l1Provider,
+  l2Provider,
+  pageSize = 10,
+  pageNumber = 0,
+  searchString = ''
+}: {
+  address: string
+  fromBlock: number
+  toBlock: number
+  l1Provider: Provider
+  l2Provider: Provider
+  pageSize?: number
+  pageNumber?: number
+  searchString?: string
+}) => {
+  const l2ChainID = (await l2Provider.getNetwork()).chainId
 
-//   const ethWithdrawals = await fetchTokenWithdrawalsFromSubgraph({
-//     address,
-//     fromBlock,
-//     toBlock,
-//     l2Provider
-//   })
+  const tokenWithdrawals = await fetchTokenWithdrawalsFromSubgraph({
+    address,
+    fromBlock,
+    toBlock,
+    l2Provider,
+    pageSize,
+    pageNumber,
+    searchString
+  })
 
-//   console.log('YAYYYYY, fetched ETH withdrawals')
+  console.log('YAYYYYY, fetched Token withdrawals')
 
-//   const l2ToL1Txns = await Promise.all(
-//     ethWithdrawals.map(withdrawal =>
-//       updateAdditionalWithdrawalData(
-//         withdrawal,
-//         l1Provider,
-//         l2Provider,
-//         l2ChainID
-//       )
-//     )
-//   )
+  const l2ToL1Txns = await Promise.all(
+    tokenWithdrawals.map(withdrawal =>
+      updateAdditionalWithdrawalData(
+        withdrawal,
+        l1Provider,
+        l2Provider,
+        l2ChainID
+      )
+    )
+  )
 
-//   return transformWithdrawals(l2ToL1Txns)
-// }
+  console.log('YAYYYYY, fetched additional data for token withdrawals')
+
+  return l2ToL1Txns
+}
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus | FetchTokenWithdrawalsFromSubgraphResult,

@@ -173,35 +173,35 @@ export function MainContent() {
         </AnimatePresence>
       </div>
 
-      {true && (
-        <SidePanel
-          isOpen={showTransactionHistory}
-          heading="Transaction History"
-          onClose={() => {
-            actions.app.setShowTransactionHistory(false)
-          }}
-        >
-          <>
-            {/* Pending unseen transaction cards */}
-            <AnimatePresence>
-              {unseenTransactions.map(tx =>
-                isDeposit(tx) ? (
-                  <motion.div key={tx.txId} {...motionDivProps}>
-                    <DepositCard key={tx.txId} tx={tx} />
-                  </motion.div>
-                ) : (
-                  <motion.div key={tx.txId} {...motionDivProps}>
-                    <WithdrawalCard key={tx.txId} tx={tx} />
-                  </motion.div>
-                )
-              )}
-            </AnimatePresence>
+      <SidePanel
+        isOpen={showTransactionHistory}
+        heading="Transaction History"
+        onClose={() => {
+          actions.app.setShowTransactionHistory(false)
+        }}
+      >
+        <div className="flex flex-col justify-around gap-6">
+          {/* Pending unseen transaction cards */}
+          <div className="flex max-h-[500px] flex-col gap-4 overflow-scroll rounded-lg bg-blue-arbitrum p-4">
+            {unseenTransactions.map(tx =>
+              isDeposit(tx) ? (
+                <motion.div key={tx.txId} {...motionDivProps}>
+                  <DepositCard key={tx.txId} tx={tx} />
+                </motion.div>
+              ) : (
+                <motion.div key={tx.txId} {...motionDivProps}>
+                  <WithdrawalCard key={tx.txId} tx={tx} />
+                </motion.div>
+              )
+            )}
+          </div>
 
-            {/* Transaction history table */}
+          {/* Transaction history table */}
+          <div>
             <TransactionHistory />
-          </>
-        </SidePanel>
-      )}
+          </div>
+        </div>
+      </SidePanel>
     </div>
   )
 }
