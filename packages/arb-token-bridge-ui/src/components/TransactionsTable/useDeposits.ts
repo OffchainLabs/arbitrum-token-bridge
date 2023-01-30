@@ -1,10 +1,7 @@
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useAppContextState } from '../App/AppContext'
-import {
-  fetchERC20DepositsFromSubgraph,
-  fetchETHDepositsFromSubgraph
-} from './fetchEthDepositsFromSubgraph_draft'
+import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
 import { fetchETHWithdrawals, fetchTokenWithdrawals } from 'token-bridge-sdk'
 import useSWR from 'swr'
 
@@ -56,9 +53,7 @@ export const useDeposits = ({
       _pageSize,
       _type
     ) =>
-      (_type === 'ETH'
-        ? fetchETHDepositsFromSubgraph
-        : fetchERC20DepositsFromSubgraph)({
+      fetchDeposits({
         address: _walletAddress,
         fromBlock: 0,
         toBlock: currentL1BlockNumber,
@@ -146,20 +141,4 @@ export const useWithdrawals = ({
       revalidateOnReconnect: false
     }
   )
-}
-
-// Consolidate all 2
-
-const fetchPendingDeposits = () => {
-  // fetch the first 50 deposits and check if they are pending.
-}
-
-const fetchPendingWithdrawals = () => {
-  // fetch the first 50 withdrawals and check if they are pending.
-}
-
-const fetchPendingTransactions = () => {
-  // 1. fetch pending deposits
-  // 2. fetch pending withdrawals
-  // 3. merge all these 3
 }

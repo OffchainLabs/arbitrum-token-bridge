@@ -2,8 +2,6 @@ import {
   fetchTokenWithdrawalsFromSubgraph,
   FetchTokenWithdrawalsFromSubgraphResult
 } from './fetchTokenWithdrawalsFromSubgraph'
-import dayjs from 'dayjs'
-import { ethers, BigNumber } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { fetchETHWithdrawalsFromSubgraph } from './fetchETHWithdrawalsFromSubgraph'
 import {
@@ -11,18 +9,14 @@ import {
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatus,
-  OutgoingMessageState
+  OutgoingMessageState,
+  WithdrawalInitiated
 } from '../hooks/arbTokenBridge.types'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
-import { L2ToL1MessageReader } from '@arbitrum/sdk'
-import {
-  L1ToL2MessageData,
-  L2ToL1MessageData,
-  Transaction,
-  TxnType
-} from 'hooks/useTransactions'
-import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
+import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
+import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 
 export const outgoungStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
@@ -208,7 +202,7 @@ export const updateAdditionalWithdrawalData = async (
   return l2toL1TxWithDeadline
 }
 
-async function mapETHWithdrawalToL2ToL1EventResult(
+export async function mapETHWithdrawalToL2ToL1EventResult(
   // `l2TxHash` exists on result from subgraph
   // `transactionHash` exists on result from event logs
   event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string },
@@ -235,7 +229,7 @@ async function mapETHWithdrawalToL2ToL1EventResult(
   }
 }
 
-async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
+export async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
   result: FetchTokenWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,
@@ -348,4 +342,192 @@ async function attachNodeBlockDeadlineToEvent(
       throw e
     }
   }
+}
+
+async function tryFetchLatestSubgraphBlockNumber(
+  l2ChainID: number
+): Promise<number> {
+  try {
+    return await fetchL2BlockNumberFromSubgraph(l2ChainID)
+  } catch (error) {
+    // In case the subgraph is not supported or down, fall back to fetching everything through event logs
+    return 0
+  }
+}
+
+async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+  result: WithdrawalInitiated,
+  l1Provider: Provider,
+  l2Provider: Provider,
+  l2ChainID: number,
+  walletAddress: string
+): Promise<L2ToL1EventResultPlus | undefined> {
+  const { symbol, decimals } = await getL1TokenData({
+    account: walletAddress,
+    erc20L1Address: result.l1Token!,
+    l1Provider,
+    l2Provider
+  })
+
+  const txReceipt = await l2Provider.getTransactionReceipt(result.txHash)
+  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+
+  // TODO: length != 1
+  const [event] = l2TxReceipt.getL2ToL1Events()
+
+  if (!event) {
+    return undefined
+  }
+
+  const outgoingMessageState = await getOutgoingMessageState(
+    event,
+    l1Provider,
+    l2Provider,
+    l2ChainID
+  )
+
+  return {
+    ...event,
+    type: AssetType.ERC20,
+    value: result._amount,
+    tokenAddress: result.l1Token,
+    outgoingMessageState,
+    symbol,
+    decimals,
+    l2TxHash: l2TxReceipt.transactionHash
+  }
+}
+
+export const fetchWithdrawals = async ({
+  address, // wallet address
+  l1Provider,
+  l2Provider,
+  gatewayAddresses,
+  pageNumber = 0,
+  pageSize,
+  searchString
+}: {
+  address: string
+  l1Provider: Provider
+  l2Provider: Provider
+  gatewayAddresses: string[]
+  pageNumber?: number
+  pageSize?: number
+  searchString?: string
+}) => {
+  const l1ChainID = (await l1Provider.getNetwork()).chainId
+  const l2ChainID = (await l2Provider.getNetwork()).chainId
+
+  const t = new Date().getTime()
+
+  console.log('*** Getting initial pending withdrawal data ***')
+
+  const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
+    l2ChainID
+  )
+
+  console.log(
+    'Latest block number on L2 from subgraph:',
+    latestSubgraphBlockNumber
+  )
+
+  const [
+    ethWithdrawalsFromSubgraph,
+    ethWithdrawalsFromEventLogs,
+    tokenWithdrawalsFromSubgraph,
+    tokenWithdrawalsFromEventLogs
+  ] = await Promise.all([
+    // ETH Withdrawals
+    fetchETHWithdrawalsFromSubgraph({
+      address: address,
+      fromBlock: 0,
+      toBlock: latestSubgraphBlockNumber,
+      l2Provider: l2Provider,
+      pageNumber,
+      pageSize,
+      searchString
+    }),
+    fetchETHWithdrawalsFromEventLogs({
+      address: address,
+      fromBlock: latestSubgraphBlockNumber + 1,
+      toBlock: 'latest',
+      l2Provider: l2Provider
+    }),
+    // Token Withdrawals
+    fetchTokenWithdrawalsFromSubgraph({
+      address: address,
+      fromBlock: 0,
+      toBlock: latestSubgraphBlockNumber,
+      l2Provider: l2Provider,
+      pageNumber,
+      pageSize,
+      searchString
+    }),
+    fetchTokenWithdrawalsFromEventLogs({
+      address: address,
+      fromBlock: latestSubgraphBlockNumber + 1,
+      toBlock: 'latest',
+      l2Provider: l2Provider,
+      l2GatewayAddresses: gatewayAddresses
+    })
+  ])
+
+  const l2ToL1Txns = (
+    await Promise.all([
+      ...ethWithdrawalsFromSubgraph.map(withdrawal =>
+        mapETHWithdrawalToL2ToL1EventResult(
+          withdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID
+        )
+      ),
+      ...ethWithdrawalsFromEventLogs.map(withdrawal =>
+        mapETHWithdrawalToL2ToL1EventResult(
+          withdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID
+        )
+      ),
+      ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
+        mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
+          withdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID
+        )
+      ),
+      ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
+        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+          withdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID,
+          address
+        )
+      )
+    ])
+  )
+    .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
+    .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+
+  const finalL2ToL1Txns = await Promise.all(
+    l2ToL1Txns.map(withdrawal =>
+      updateAdditionalWithdrawalData(
+        withdrawal,
+        l1Provider,
+        l2Provider,
+        l2ChainID
+      )
+    )
+  )
+
+  console.log(
+    `*** done getting pending withdrawals and additional data, took ${
+      Math.round(new Date().getTime() - t) / 1000
+    } seconds`
+  )
+
+  return finalL2ToL1Txns as L2ToL1EventResultPlus[]
 }

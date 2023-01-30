@@ -1,18 +1,14 @@
-import { useEffect, useMemo } from 'react'
-import { usePrevious } from 'react-use'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { PendingWithdrawalsLoadedState } from '../../util'
 import { useActions, useAppState } from '../../state'
-import { SeenTransactionsCache } from '../../state/SeenTransactionsCache'
 import { MergedTransaction } from '../../state/app/state'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
 import { TransactionHistory } from '../common/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
+import { usePendingTransactions } from '../TransactionsTable/usePendingTransactions'
 
 const motionDivProps = {
   layout: true,
@@ -79,89 +75,28 @@ export function MainContent() {
     app: { mergedTransactions, pwLoadedState, showTransactionHistory }
   } = useAppState()
   const actions = useActions()
-  const { seenTransactions, layout } = useAppContextState()
-  const { isTransferPanelVisible } = layout
-  const dispatch = useAppContextDispatch()
-  const unseenTransactionsWithDuplicates = mergedTransactions
-    // Exclude seen txs
-    .filter(tx => !seenTransactions.includes(tx.txId))
-    // Exclude token approval txs
-    .filter(tx => tx.direction !== 'approve')
-    // Exclude withdrawal claim txs
-    .filter(tx => {
-      if (tx.direction === 'outbox') {
-        return L2ToL1MessageStatuses.includes(tx.status)
-      }
 
-      return true
-    })
-
-  const unseenTransactions = dedupeWithdrawals(unseenTransactionsWithDuplicates)
-  const prevUnseenTransactions = usePrevious(unseenTransactions)
-
-  const didLoadPendingWithdrawals = useMemo(
-    () => pwLoadedState === PendingWithdrawalsLoadedState.READY,
-    [pwLoadedState]
-  )
-
-  useEffect(() => {
-    const prevUnseenTransactionsLength = prevUnseenTransactions?.length || 0
-
-    // The last visible card was hidden, so bring back the transfer panel
-    if (prevUnseenTransactionsLength > 0 && unseenTransactions.length === 0) {
-      dispatch({ type: 'layout.set_is_transfer_panel_visible', payload: true })
-    }
-    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
-  }, [unseenTransactions, prevUnseenTransactions])
-
-  useEffect(() => {
-    if (didLoadPendingWithdrawals) {
-      const cacheCreatedTimestamp = SeenTransactionsCache.getCreationTimestamp()
-
-      // Should never be the case, more of a sanity check
-      if (!cacheCreatedTimestamp) {
-        return
-      }
-
-      // Some withdrawals won't be marked as seen on cache creation, as their L2 tx hash wasn't in the local cache at initialization.
-      // In that case, we wait for the L2-to-L1 messages to load via the subgraph, and then mark their L2 txs as seen.
-      unseenTransactions
-        .filter(tx => L2ToL1MessageStatuses.includes(tx.status))
-        .forEach(tx => {
-          const txCreatedAt = tx.createdAt
-
-          // Should never be the case, more of a sanity check
-          if (!txCreatedAt) {
-            dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-            return
-          }
-
-          // We only pick those older than the cache, so we don't accidentally mark fresh withdrawals as seen.
-          if (new Date(txCreatedAt) < cacheCreatedTimestamp) {
-            dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-          }
-        })
-    }
-    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
-  }, [didLoadPendingWithdrawals, unseenTransactions])
+  const {
+    data: pendingTxns,
+    isValidating: fetchingPendingTxns,
+    error: errorFetchingPendingTxns
+  } = usePendingTransactions()
 
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
         <AnimatePresence>
-          {isTransferPanelVisible && (
-            <motion.div
-              key="transfer-panel"
-              {...motionDivProps}
-              className="relative z-10"
-            >
-              <TransferPanel />
-            </motion.div>
-          )}
+          <motion.div
+            key="transfer-panel"
+            {...motionDivProps}
+            className="relative z-10"
+          >
+            <TransferPanel />
+          </motion.div>
         </AnimatePresence>
 
         <AnimatePresence>
-          {unseenTransactions.length > 0 && (
+          {!fetchingPendingTxns && !pendingTxns?.length && (
             <>
               <motion.div key="explore-arbitrum" {...motionDivProps}>
                 <ExploreArbitrum />
@@ -183,7 +118,13 @@ export function MainContent() {
         <div className="flex flex-col justify-around gap-6">
           {/* Pending unseen transaction cards */}
           <div className="flex max-h-[500px] flex-col gap-4 overflow-scroll rounded-lg bg-blue-arbitrum p-4">
-            {unseenTransactions.map(tx =>
+            {fetchingPendingTxns
+              ? 'Loading pending transactions...'
+              : errorFetchingPendingTxns
+              ? 'Error loading transactions...'
+              : null}
+
+            {pendingTxns?.map(tx =>
               isDeposit(tx) ? (
                 <motion.div key={tx.txId} {...motionDivProps}>
                   <DepositCard key={tx.txId} tx={tx} />

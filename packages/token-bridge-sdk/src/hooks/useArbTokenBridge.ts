@@ -52,7 +52,10 @@ import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 import {
+  fetchWithdrawals,
   getOutgoingMessageState,
+  mapETHWithdrawalToL2ToL1EventResult,
+  mapTokenWithdrawalFromSubgraphToL2ToL1EventResult,
   updateAdditionalWithdrawalData
 } from '../withdrawals/fetchWithdrawalsFromSubgraph_draft'
 
@@ -1133,93 +1136,16 @@ export const useArbTokenBridge = (
   }
 
   const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
-    const t = new Date().getTime()
     const pendingWithdrawals: PendingWithdrawalsMap = {}
 
-    console.log('*** Getting initial pending withdrawal data ***')
-
-    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber()
-
-    console.log(
-      'Latest block number on L2 from subgraph:',
-      latestSubgraphBlockNumber
-    )
-
-    const [
-      ethWithdrawalsFromSubgraph,
-      ethWithdrawalsFromEventLogs,
-      tokenWithdrawalsFromSubgraph,
-      tokenWithdrawalsFromEventLogs
-    ] = await Promise.all([
-      // ETH Withdrawals
-      fetchETHWithdrawalsFromSubgraph({
-        address: walletAddress,
-        fromBlock: 0,
-        toBlock: latestSubgraphBlockNumber,
-        l2Provider: l2.provider
-      }),
-      fetchETHWithdrawalsFromEventLogs({
-        address: walletAddress,
-        fromBlock: latestSubgraphBlockNumber + 1,
-        toBlock: 'latest',
-        l2Provider: l2.provider
-      }),
-      // Token Withdrawals
-      fetchTokenWithdrawalsFromSubgraph({
-        address: walletAddress,
-        fromBlock: 0,
-        toBlock: latestSubgraphBlockNumber,
-        l2Provider: l2.provider
-      }),
-      fetchTokenWithdrawalsFromEventLogs({
-        address: walletAddress,
-        fromBlock: latestSubgraphBlockNumber + 1,
-        toBlock: 'latest',
-        l2Provider: l2.provider,
-        l2GatewayAddresses: gatewayAddresses
-      })
-    ])
-
-    // const l2ToL1Txns = (
-    //   await Promise.all([
-    //     ...ethWithdrawalsFromSubgraph.map(withdrawal =>
-    //       mapETHWithdrawalToL2ToL1EventResult(withdrawal)
-    //     ),
-    //     ...ethWithdrawalsFromEventLogs.map(withdrawal =>
-    //       mapETHWithdrawalToL2ToL1EventResult(withdrawal)
-    //     ),
-    //     ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
-    //       mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
-    //     ),
-    //     ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
-    //       mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
-    //     )
-    //   ])
-    // )
-    //   .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
-    //   .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
-
-    const l2ToL1Txns = [
-      ...(ethWithdrawalsFromSubgraph as L2ToL1EventResultPlus[]),
-      ...tokenWithdrawalsFromSubgraph
-    ]
-
-    console.log(
-      `*** done getting pending withdrawals, took ${
-        Math.round(new Date().getTime() - t) / 1000
-      } seconds`
-    )
-
-    const finalL2ToL1Txns = await Promise.all(
-      l2ToL1Txns.map(withdrawal =>
-        updateAdditionalWithdrawalData(
-          withdrawal,
-          l1.provider,
-          l2.provider,
-          l2.network.chainID
-        )
-      )
-    )
+    // fetch the first 100 eth and first 100 token withdrawals
+    const finalL2ToL1Txns = await fetchWithdrawals({
+      address: walletAddress,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider,
+      gatewayAddresses,
+      pageSize: 100
+    })
 
     // add the events to their respective places in the State
     for (const event of finalL2ToL1Txns) {

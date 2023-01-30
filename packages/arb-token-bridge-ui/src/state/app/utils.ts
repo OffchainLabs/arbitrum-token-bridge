@@ -91,7 +91,7 @@ export const transformWithdrawals = (
           : outgoungStateToString[tx.outgoingMessageState],
       createdAt: dayjs(
         new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
-      ).format('HH:mm:ss MM/DD/YYYY'),
+      ).format('MMM DD, YYYY hh:mm A'),
       createdAtTime:
         BigNumber.from(tx.timestamp).toNumber() * 1000 +
         (uniqueIdOrHash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action

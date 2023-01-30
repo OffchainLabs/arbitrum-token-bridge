@@ -47,6 +47,7 @@ export { getUniqueIdOrHashFromEvent } from './util/migration'
 
 export { useGasPrice } from './hooks/useGasPrice'
 export {
+  fetchWithdrawals,
   fetchETHWithdrawals,
   fetchTokenWithdrawals
 } from './withdrawals/fetchWithdrawalsFromSubgraph_draft'
