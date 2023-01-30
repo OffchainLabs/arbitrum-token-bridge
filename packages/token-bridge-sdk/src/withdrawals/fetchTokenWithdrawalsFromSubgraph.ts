@@ -54,7 +54,7 @@ export async function fetchTokenWithdrawalsFromSubgraph({
   address: string
   fromBlock: number
   toBlock: number
-  l2Provider: Provider,
+  l2Provider: Provider
   pageSize?: number
   pageNumber?: number
   searchString?: string
@@ -73,10 +73,14 @@ export async function fetchTokenWithdrawalsFromSubgraph({
               from: "${address}",
               l2BlockNum_gte: ${fromBlock},
               l2BlockNum_lte: ${toBlock},
-              ${searchString ? `l2TxHash_contains: "${searchString}"` : ''}
-              first: ${pageSize},
-              skip: ${pageNumber * pageSize}
+              ${
+                searchString ? `l2TxHash_contains: "${searchString}"` : ''
+              }            
             }
+            first: ${pageSize},
+            skip: ${pageNumber * pageSize}
+            orderBy: l2BlockNum
+            orderDirection: desc
           ) {
             l2TxHash
             amount

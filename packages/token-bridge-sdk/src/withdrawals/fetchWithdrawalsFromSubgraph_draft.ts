@@ -22,6 +22,7 @@ import {
   TxnType
 } from 'hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
+import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
 export const outgoungStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
@@ -51,10 +52,14 @@ export const fetchETHWithdrawals = async ({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
+  const latestSubgraphBlockNumber = await fetchL2BlockNumberFromSubgraph(
+    l2ChainID
+  )
+
   const ethWithdrawals = await fetchETHWithdrawalsFromSubgraph({
     address,
-    fromBlock,
-    toBlock,
+    fromBlock: 0,
+    toBlock: latestSubgraphBlockNumber,
     l2Provider,
     pageSize,
     pageNumber,
@@ -136,10 +141,14 @@ export const fetchTokenWithdrawals = async ({
 }) => {
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
+  const latestSubgraphBlockNumber = await fetchL2BlockNumberFromSubgraph(
+    l2ChainID
+  )
+
   const tokenWithdrawals = await fetchTokenWithdrawalsFromSubgraph({
     address,
-    fromBlock,
-    toBlock,
+    fromBlock: 0,
+    toBlock: latestSubgraphBlockNumber,
     l2Provider,
     pageSize,
     pageNumber,

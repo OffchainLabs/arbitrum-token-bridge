@@ -50,3 +50,5 @@ export {
   fetchETHWithdrawals,
   fetchTokenWithdrawals
 } from './withdrawals/fetchWithdrawalsFromSubgraph_draft'
+
+export { fetchL2BlockNumberFromSubgraph } from './util/subgraph'
