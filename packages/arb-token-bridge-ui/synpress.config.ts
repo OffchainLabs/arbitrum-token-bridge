@@ -5,7 +5,11 @@ import synpressPlugins from '@synthetixio/synpress/plugins'
 import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 
-import { ethRpcUrl, ERC20TokenAddressL1 } from './tests/support/common'
+import {
+  ethRpcUrl,
+  ERC20TokenAddressL1,
+  arbRpcUrl
+} from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -31,27 +35,55 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
-      const wallet = new Wallet(process.env.PRIVATE_KEY!)
-      const provider = new StaticJsonRpcProvider(ethRpcUrl)
+      const wallet = new Wallet(process.env.PRIVATE_KEY_LOCAL!)
+      const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
+      const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
+      const testWallet = Wallet.createRandom()
+      const testWalletAddress = await testWallet.getAddress()
+
+      const getWethFactory = (provider: StaticJsonRpcProvider) =>
+        TestWETH9__factory.connect(
+          ERC20TokenAddressL1,
+          testWallet.connect(provider)
+        )
 
       on('before:run', async () => {
-        const factory = TestWETH9__factory.connect(
-          ERC20TokenAddressL1,
-          wallet.connect(provider)
-        )
-        // WETH used to test ERC-20 transfers
-        const wrapTx = await factory.deposit({ value: utils.parseEther('0.1') })
-        await wrapTx.wait()
+        let tx
+        // Fund the test wallet. We do this to run tests on a small amount of ETH.
+        // Fund L1
+        tx = await wallet.connect(ethProvider).sendTransaction({
+          to: testWalletAddress,
+          value: utils.parseEther('123.45678')
+        })
+        await tx.wait()
+        // Fund L2
+        tx = await wallet.connect(arbProvider).sendTransaction({
+          to: testWalletAddress,
+          value: utils.parseEther('0.5')
+        })
+        await tx.wait()
+
+        // Wrap ETH to test ERC-20 transactions
+        // L1
+        tx = await getWethFactory(ethProvider).deposit({
+          value: utils.parseEther('0.2')
+        })
+        await tx.wait()
+        // L2
+        tx = await getWethFactory(arbProvider).deposit({
+          value: utils.parseEther('0.1')
+        })
+
         // Approve ERC-20
-        const approveTx = await factory.approve(
+        tx = await getWethFactory(ethProvider).approve(
           // L1 WETH gateway
           '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
           constants.MaxInt256
         )
-        await approveTx.wait()
+        await tx.wait()
       })
-      config.env.ADDRESS = await wallet.getAddress()
-      config.env.PRIVATE_KEY = process.env.PRIVATE_KEY
+      config.env.ADDRESS = testWalletAddress
+      config.env.PRIVATE_KEY = testWallet.privateKey
       config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)

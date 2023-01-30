@@ -19,8 +19,10 @@ import {
 } from './common'
 
 export function login(networkType: NetworkType, addNewNetwork?: boolean) {
-  setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-    startWebApp()
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY')).then(() => {
+    setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
+      startWebApp()
+    })
   })
 }
 
