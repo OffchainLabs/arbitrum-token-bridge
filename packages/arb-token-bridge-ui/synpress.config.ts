@@ -8,6 +8,7 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import {
   ethRpcUrl,
   ERC20TokenAddressL1,
+  ERC20TokenAddressL2,
   arbRpcUrl
 } from './tests/support/common'
 
@@ -41,11 +42,11 @@ export default defineConfig({
       const testWallet = Wallet.createRandom()
       const testWalletAddress = await testWallet.getAddress()
 
-      const getWethFactory = (provider: StaticJsonRpcProvider) =>
-        TestWETH9__factory.connect(
-          ERC20TokenAddressL1,
-          testWallet.connect(provider)
-        )
+      const getWethFactory = (
+        provider: StaticJsonRpcProvider,
+        tokenAddress: string
+      ) =>
+        TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
 
       on('before:run', async () => {
         let tx
@@ -65,17 +66,17 @@ export default defineConfig({
 
         // Wrap ETH to test ERC-20 transactions
         // L1
-        tx = await getWethFactory(ethProvider).deposit({
+        tx = await getWethFactory(ethProvider, ERC20TokenAddressL1).deposit({
           value: utils.parseEther('0.2')
         })
         await tx.wait()
         // L2
-        tx = await getWethFactory(arbProvider).deposit({
+        tx = await getWethFactory(arbProvider, ERC20TokenAddressL2).deposit({
           value: utils.parseEther('0.1')
         })
 
         // Approve ERC-20
-        tx = await getWethFactory(ethProvider).approve(
+        tx = await getWethFactory(ethProvider, ERC20TokenAddressL1).approve(
           // L1 WETH gateway
           '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
           constants.MaxInt256
