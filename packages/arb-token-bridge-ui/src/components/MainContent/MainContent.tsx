@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
@@ -13,6 +13,8 @@ import { useEffect } from 'react'
 import { outgoungStateToString } from '../../state/app/utils'
 import { OutgoingMessageState } from 'token-bridge-sdk'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { InformationCircleIcon } from '@heroicons/react/outline'
+import Loader from 'react-loader-spinner'
 
 const motionDivProps = {
   layout: true,
@@ -100,20 +102,28 @@ export function MainContent() {
         onClose={closeTransactionHistory}
       >
         <div className="flex flex-col justify-around gap-6">
-          {/* Pending unseen transaction cards */}
-          <div className="flex max-h-[500px] flex-col gap-4 overflow-scroll rounded-lg bg-blue-arbitrum p-4">
-            {fetchingPendingTxns
-              ? 'Loading pending transactions...'
-              : errorFetchingPendingTxns
-              ? 'Error loading transactions...'
-              : null}
+          {/* Pending transaction cards */}
+          <div className="relative flex max-h-[500px] flex-col gap-4 overflow-scroll rounded-lg bg-blue-arbitrum p-4">
+            <span className="flex items-center gap-x-3 text-xl text-white">
+              {fetchingPendingTxns ? (
+                <Loader type="TailSpin" color="white" width={20} height={20} />
+              ) : null}
+              Pending Transactions
+            </span>
+            {errorFetchingPendingTxns && (
+              <span className="flex gap-x-2 text-sm text-red-400">
+                <InformationCircleIcon className="h-5 w-5" aria-hidden="true" />
+                Failed to load pending transactions
+              </span>
+            )}
 
             {mergedTransactions
               ?.filter(
                 tx =>
-                  tx.status === 'pending' ||
-                  tx.status !==
-                    outgoungStateToString[OutgoingMessageState.EXECUTED]
+                  (isDeposit(tx) && tx.status === 'pending') ||
+                  (!isDeposit(tx) &&
+                    tx.status !==
+                      outgoungStateToString[OutgoingMessageState.EXECUTED])
               )
               ?.map(tx =>
                 isDeposit(tx) ? (

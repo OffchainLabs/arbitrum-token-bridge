@@ -1,21 +1,14 @@
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
-import { useAppContextState } from '../App/AppContext'
 import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
-import {
-  fetchETHWithdrawals,
-  fetchTokenWithdrawals,
-  fetchWithdrawals
-} from 'token-bridge-sdk'
+import { fetchWithdrawals } from 'token-bridge-sdk'
 import useSWR from 'swr'
 import { useGateways } from './useGateways'
 
 export const useDeposits = ({
   searchString,
   pageNumber,
-  pageSize,
-  type = 'ETH',
-  isDeposit = false
+  pageSize
 }: {
   searchString?: string
   pageNumber?: number
@@ -29,8 +22,6 @@ export const useDeposits = ({
     }
   } = useAppState()
 
-  const { currentL1BlockNumber } = useAppContextState()
-
   const { l1, l2 } = useNetworksAndSigners()
 
   const l1Provider = l1.provider,
@@ -38,15 +29,13 @@ export const useDeposits = ({
 
   return useSWR(
     [
-      'deposits',
+      `deposits`,
       walletAddress,
-      // currentL1BlockNumber,
       l1Provider,
       l2Provider,
       searchString,
       pageNumber,
-      pageSize,
-      type
+      pageSize
     ],
     (
       _,
@@ -55,13 +44,10 @@ export const useDeposits = ({
       _l2Provider,
       _searchString,
       _pageNumber,
-      _pageSize,
-      _type
+      _pageSize
     ) =>
       fetchDeposits({
         address: _walletAddress,
-        fromBlock: 0,
-        toBlock: currentL1BlockNumber,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         searchString: _searchString,
@@ -82,23 +68,17 @@ export const useDeposits = ({
 export const useWithdrawals = ({
   searchString,
   pageNumber,
-  pageSize,
-  type = 'ETH',
-  isDeposit = false
+  pageSize
 }: {
   searchString?: string
   pageNumber?: number
   pageSize?: number
-  type?: 'ETH' | 'ERC20'
-  isDeposit: boolean
 }) => {
   const {
     app: {
       arbTokenBridge: { walletAddress }
     }
   } = useAppState()
-
-  const { currentL1BlockNumber } = useAppContextState()
 
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -111,13 +91,11 @@ export const useWithdrawals = ({
     [
       'withdrawal',
       walletAddress,
-      // currentL1BlockNumber,
       l1Provider,
       l2Provider,
       searchString,
       pageNumber,
-      pageSize,
-      type
+      pageSize
     ],
     (
       _,
@@ -126,8 +104,7 @@ export const useWithdrawals = ({
       _l2Provider,
       _searchString,
       _pageNumber,
-      _pageSize,
-      _type
+      _pageSize
     ) =>
       fetchWithdrawals({
         address: _walletAddress,

@@ -36,7 +36,7 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
           )
         }}
       >
-        <span className="text-lg text-brick-dark">
+        <span className="text-base text-brick-dark">
           L1 transaction:{' '}
           <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
         </span>

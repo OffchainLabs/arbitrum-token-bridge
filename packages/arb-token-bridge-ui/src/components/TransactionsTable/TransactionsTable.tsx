@@ -1,20 +1,27 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { PageParams } from '../common/TransactionHistory'
 import ArbinautMoonWalking from '../../assets/ArbinautMoonWalking.webp'
-import { Listbox, Menu } from '@headlessui/react'
 import {
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   SearchIcon
 } from '@heroicons/react/outline'
-import { ChainId, getNetworkLogo } from '../../util/networks'
+import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
+import { fetchWithdrawals } from 'token-bridge-sdk'
+import { useAppState } from '../../state'
+import { useGateways } from './useGateways'
+import { transformDeposits, transformWithdrawals } from '../../state/app/utils'
+
+export type PageParams = {
+  searchString?: string
+  pageNumber?: number
+  pageSize?: number
+}
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
@@ -57,87 +64,33 @@ const NoDataOverlay = ({ children }: { children: React.ReactNode }) => {
 export type TransactionsDataStatus = 'loading' | 'error' | 'success'
 
 export type TransactionsTableProps = {
-  status: TransactionsDataStatus
-  transactions: MergedTransaction[]
-  className?: string
-
-  pageParams?: PageParams
-  updatePageParams?: React.Dispatch<React.SetStateAction<PageParams>>
-
-  // searchString?: string
-  // pagination?: { pageNumber?: number; pageSize?: number }
-  // handleSearch?: () => void
-  // handlePagination?: () => void
+  type: 'deposits' | 'withdrawals'
 }
 
-const DepositTypeDropdown = ({
-  value,
-  setValue
-}: {
-  value: PageParams['type']
-  setValue: (val: PageParams['type']) => void
-}) => {
-  const options = {
-    ETH: { name: 'ETH', value: 'ETH', logo: ChainId.Mainnet },
-    ERC20: { name: 'Other Tokens', value: 'ERC20', logo: ChainId.ArbitrumOne }
-  }
-  return (
-    <Listbox
-      as="div"
-      className="relative shrink grow-0 flex-nowrap"
-      value={value}
-      onChange={setValue}
-    >
-      <Listbox.Button
-        className={`arb-hover bg-arbitrum-blue flex w-max items-center space-x-1 rounded-full border-2 bg-white px-2 py-1 text-base`}
-      >
-        <img
-          src={getNetworkLogo(options[value].logo)}
-          alt={`${options[value].name} logo`}
-          className="max-w-6 max-h-6"
-        />
-        <span>{value === 'ETH' ? 'ETH' : 'Others'}</span>
-        {<ChevronDownIcon className="h-4 w-4" />}
-      </Listbox.Button>
-
-      <Listbox.Options className="absolute z-20 mt-2 rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {Object.values(options).map(option => (
-          <Listbox.Option
-            key={option.value}
-            value={option.value}
-            className={
-              'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]'
-            }
-          >
-            <div className="flex h-8 w-8 items-center justify-center">
-              <img
-                src={getNetworkLogo(option.logo)}
-                alt={`${option.name} logo`}
-                className="max-w-8 max-h-9"
-              />
-            </div>
-            <span>{option.name}</span>
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </Listbox>
-  )
+function validate_txhash(addr: string) {
+  return /^0x([A-Fa-f0-9]{64})$/.test(addr)
 }
 
-export function TransactionsTable({
-  status,
-  transactions,
-  pageParams,
-  updatePageParams
-}: TransactionsTableProps) {
-  const { isSmartContractWallet } = useNetworksAndSigners()
+export function TransactionsTable({ type }: TransactionsTableProps) {
+  const {
+    app: {
+      arbTokenBridge: { walletAddress }
+    }
+  } = useAppState()
 
-  const [searchString, setSearchString] = useState(pageParams?.searchString)
+  const { l1, l2, isSmartContractWallet } = useNetworksAndSigners()
+
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<boolean>(false)
+  const [transactions, setTransactions] = useState<MergedTransaction[]>([])
+  const [pageParams, setPageParams] = useState<PageParams>({
+    searchString: '',
+    pageNumber: 0,
+    pageSize: 10
+  })
+  const gatewaysToUse = useGateways()
+  const [searchString, setSearchString] = useState(pageParams.searchString)
   const [searchError, setSearchError] = useState(false)
-
-  function validate_txhash(addr: string) {
-    return /^0x([A-Fa-f0-9]{64})$/.test(addr)
-  }
 
   const search = () => {
     if (searchString && !validate_txhash(searchString)) {
@@ -145,7 +98,7 @@ export function TransactionsTable({
       return
     }
     // search logic - using `searchString`
-    updatePageParams?.(prevParams => ({
+    setPageParams(prevParams => ({
       ...prevParams,
       pageNumber: 0,
       pageSize: 10,
@@ -154,47 +107,67 @@ export function TransactionsTable({
   }
 
   const next = () => {
-    updatePageParams?.(prevParams => ({
+    setPageParams(prevParams => ({
       ...prevParams,
       pageNumber: (prevParams?.pageNumber || 0) + 1
     }))
   }
 
   const prev = () => {
-    updatePageParams?.(prevParams => ({
+    setPageParams(prevParams => ({
       ...prevParams,
       pageNumber: (prevParams?.pageNumber || 1) - 1
     }))
   }
 
-  const changeType = (type: PageParams['type']) => {
-    updatePageParams?.(prevParams => ({
-      ...prevParams,
-      pageNumber: 0,
-      type: type
-    }))
-  }
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true)
+    setError(false)
+    try {
+      if (type === 'deposits') {
+        const transactions = await fetchDeposits({
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider,
+          ...pageParams
+        })
+
+        setTransactions(transformDeposits(transactions))
+      } else {
+        const transactions = await fetchWithdrawals({
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider,
+          ...pageParams,
+          gatewayAddresses: gatewaysToUse
+        })
+        setTransactions(transformWithdrawals(transactions))
+      }
+      setLoading(false)
+    } catch (e) {
+      setLoading(false)
+      setError(true)
+    }
+  }, [pageParams, type])
+
+  useEffect(() => {
+    fetchTransactions()
+  }, [pageParams, l1, l2])
+
+  const status = loading ? 'loading' : error ? 'error' : 'success'
+  const layerType = type === 'deposits' ? 'L1' : 'L2'
 
   return (
     <>
       {/* top search and pagination bar */}
       <div className="sticky top-0 left-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm">
-        {/* Deposit type dropdown */}
-
-        {false && (
-          <DepositTypeDropdown
-            value={pageParams!.type}
-            setValue={changeType}
-          ></DepositTypeDropdown>
-        )}
-
         {/* Search bar */}
         <div className="relative flex h-full w-full grow items-center rounded border-2 bg-white px-2">
           <SearchIcon className="h-4 w-4 shrink-0 text-gray-9" />
           <input
             className="text-normal h-full w-full p-2 font-light placeholder:text-gray-9"
             type="text"
-            placeholder="Search for L1 transaction hash"
+            placeholder={`Search for ${layerType} transaction hash`}
             value={searchString}
             onChange={e => {
               searchError ? setSearchError(false) : null
@@ -208,7 +181,7 @@ export function TransactionsTable({
           />
           {searchError ? (
             <span className="absolute bottom-0 right-4 bg-white p-[9px] text-xs text-red-400">
-              Oops! Seems like a wrong L1 transaction hash.
+              {`Oops! Seems like a wrong ${layerType} transaction hash.`}
             </span>
           ) : null}
         </div>

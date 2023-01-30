@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment } from 'react'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -10,7 +10,6 @@ import {
   TransactionsTable,
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
-import { useDeposits, useWithdrawals } from '../TransactionsTable/useDeposits'
 
 function getTransactionsDataStatus(
   pwLoadedState: PendingWithdrawalsLoadedState
@@ -27,73 +26,12 @@ function getTransactionsDataStatus(
   }
 }
 
-export type PageParams = {
-  searchString?: string
-  pageNumber?: number
-  pageSize?: number
-  type: 'ETH' | 'ERC20'
-  isDeposit: boolean
-}
-
-function isDeposit(tx: MergedTransaction) {
-  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
-}
-
 export const TransactionHistory = () => {
   const {
     app: { mergedTransactions, arbTokenBridge }
   } = useAppState()
 
   const { l1, l2 } = useNetworksAndSigners()
-  /* 
-    Deposit history
-  */
-  const [pageParams, setPageParams] = useState<PageParams>({
-    searchString: '',
-    pageNumber: 0,
-    pageSize: 10,
-    type: 'ETH',
-    isDeposit: false
-  })
-
-  const {
-    data: depositsFromSubgraph,
-    isValidating: depositsLoading,
-    error: depositsError
-  } = useDeposits({ ...pageParams })
-
-  const {
-    data: withdrawalsFromSubgraph,
-    isValidating: withdrawalsLoading,
-    error: withdrawalsError
-  } = useWithdrawals({ ...pageParams })
-
-  useEffect(() => {
-    '***** called depositsFromSubgraph useEffect ****'
-    arbTokenBridge?.transactions?.setDepositsInStore?.(
-      depositsFromSubgraph || []
-    )
-  }, [depositsFromSubgraph])
-
-  useEffect(() => {
-    '***** called withdrawalsFromSubgraph useEffect ****'
-    arbTokenBridge?.setWithdrawalsInStore?.(withdrawalsFromSubgraph || [])
-  }, [withdrawalsFromSubgraph])
-
-  const [deposits, withdrawals] = useMemo(() => {
-    const _deposits: MergedTransaction[] = []
-    const _withdrawals: MergedTransaction[] = []
-
-    mergedTransactions.forEach(tx => {
-      if (isDeposit(tx)) {
-        _deposits.push(tx)
-      } else {
-        _withdrawals.push(tx)
-      }
-    })
-
-    return [_deposits, _withdrawals]
-  }, [mergedTransactions, depositsFromSubgraph])
 
   return (
     <Tab.Group>
@@ -142,28 +80,10 @@ export const TransactionHistory = () => {
         </Tab>
       </Tab.List>
       <Tab.Panel className="overflow-scroll">
-        <TransactionsTable
-          status={
-            depositsLoading ? 'loading' : !depositsError ? 'success' : 'error'
-          }
-          transactions={deposits}
-          pageParams={pageParams}
-          updatePageParams={setPageParams}
-        />
+        <TransactionsTable type="deposits" />
       </Tab.Panel>
       <Tab.Panel className="overflow-scroll">
-        <TransactionsTable
-          status={
-            withdrawalsLoading
-              ? 'loading'
-              : !withdrawalsError
-              ? 'success'
-              : 'error'
-          }
-          transactions={withdrawals}
-          pageParams={pageParams}
-          updatePageParams={setPageParams}
-        />
+        <TransactionsTable type="withdrawals" />
       </Tab.Panel>
     </Tab.Group>
   )

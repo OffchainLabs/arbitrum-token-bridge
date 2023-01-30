@@ -12,32 +12,36 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
   return (
     <WithdrawalCardContainer tx={tx}>
-      <span className="animate-pulse text-2xl text-blue-arbitrum">
-        Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}...
-      </span>
+      <div className="flex flex-row flex-wrap items-center justify-between">
+        <div className="flex flex-col">
+          <span className="text-2xl text-blue-arbitrum">
+            Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}...
+          </span>
 
-      <span className="animate-pulse text-4xl font-semibold text-blue-arbitrum">
-        {tx.nodeBlockDeadline ? (
-          <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
-        ) : (
-          <span>Calculating...</span>
-        )}
-      </span>
+          <span className="animate-pulse text-sm text-gray-10">
+            {tx.nodeBlockDeadline ? (
+              <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
+            ) : (
+              <span>Calculating...</span>
+            )}
+          </span>
 
-      <Tooltip content={<span>Funds aren’t ready to claim yet.</span>}>
-        <Button variant="primary" className="text-2xl" disabled>
-          Claim {tx.value} {tx.asset.toUpperCase()}
-        </Button>
-      </Tooltip>
+          <div className="h-2" />
+          <div className="flex flex-col font-light">
+            <span className="text-base text-blue-arbitrum">
+              L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+            </span>
+            <span className="text-base text-blue-arbitrum">
+              L1 transaction: Will show after claiming
+            </span>
+          </div>
+        </div>
 
-      <div className="h-2" />
-      <div className="flex flex-col font-light">
-        <span className="text-lg text-blue-arbitrum">
-          L2 transaction: <WithdrawalL2TxStatus tx={tx} />
-        </span>
-        <span className="text-lg text-blue-arbitrum">
-          L1 transaction: Will show after claiming
-        </span>
+        <Tooltip content={<span>Funds aren’t ready to claim yet.</span>}>
+          <Button variant="primary" className="my-4 text-lg" disabled>
+            Claim {tx.value} {tx.asset.toUpperCase()}
+          </Button>
+        </Tooltip>
       </div>
     </WithdrawalCardContainer>
   )

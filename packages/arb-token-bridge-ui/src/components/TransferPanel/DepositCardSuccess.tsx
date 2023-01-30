@@ -111,10 +111,10 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
 
       <div className="h-2" />
       <div className="flex flex-col font-light">
-        <span className="text-lg text-lime-dark">
+        <span className="text-base text-lime-dark">
           L1 transaction: <DepositL1TxStatus tx={tx} />
         </span>
-        <span className="text-lg text-lime-dark">
+        <span className="text-base text-lime-dark">
           L2 transaction: <DepositL2TxStatus tx={tx} />
         </span>
       </div>
