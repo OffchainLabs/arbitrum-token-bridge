@@ -3,3 +3,4 @@ export { fetchETHWithdrawalsFromSubgraph } from './fetchETHWithdrawalsFromSubgra
 export { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 export { fetchTokenWithdrawalsFromSubgraph } from './fetchTokenWithdrawalsFromSubgraph'
 export type { FetchTokenWithdrawalsFromSubgraphResult } from './fetchTokenWithdrawalsFromSubgraph'
+export { fetchETHWithdrawals } from './fetchWithdrawalsFromSubgraph_draft'

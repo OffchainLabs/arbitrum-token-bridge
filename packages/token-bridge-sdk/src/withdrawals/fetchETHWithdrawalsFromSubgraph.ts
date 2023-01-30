@@ -18,12 +18,18 @@ export async function fetchETHWithdrawalsFromSubgraph({
   address,
   fromBlock,
   toBlock,
-  l2Provider
+  l2Provider,
+  pageSize = 10,
+  pageNumber = 0,
+  searchString = ''
 }: {
   address: string
   fromBlock: number
   toBlock: number
   l2Provider: Provider
+  pageSize?: number
+  pageNumber?: number
+  searchString?: string
 }): Promise<(L2ToL1EventResult & { l2TxHash: string })[]> {
   if (fromBlock === 0 && toBlock === 0) {
     return []
@@ -37,10 +43,13 @@ export async function fetchETHWithdrawalsFromSubgraph({
         where: {
           l2From: "${address}",
           l2BlockNum_gte: ${fromBlock},
-          l2BlockNum_lte: ${toBlock}
+          l2BlockNum_lte: ${toBlock},
+          ${searchString ? `l2TxHash_contains: "${searchString}"` : ''}
         }
         orderBy: l2Timestamp
         orderDirection: desc
+        first: ${pageSize},
+        skip: ${pageNumber * pageSize}
       ) {
         uniqueId
         l2TxHash

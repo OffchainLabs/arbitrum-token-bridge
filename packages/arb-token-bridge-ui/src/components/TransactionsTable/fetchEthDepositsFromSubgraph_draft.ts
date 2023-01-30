@@ -153,7 +153,7 @@ export async function fetchETHDepositsFromSubgraph({
 
   const finalTransactions = (await Promise.all(
     ethDepositsFromSubgraph.map(depositTx =>
-      updateAdditionalTransactionData(depositTx, l1Provider, l2Provider)
+      updateAdditionalDepositData(depositTx, l1Provider, l2Provider)
     )
   )) as Transaction[]
 
@@ -167,7 +167,7 @@ export async function fetchETHDepositsFromSubgraph({
   return finalTransactions
 }
 
-const updateAdditionalTransactionData = async (
+const updateAdditionalDepositData = async (
   depositTx: Transaction,
   l1Provider: Provider,
   l2Provider: Provider
@@ -381,7 +381,7 @@ export async function fetchERC20DepositsFromSubgraph({
   // 3. once this is done, update the transactions someohow in the APP-STATE so that they start showing?
   const finalTransactions = (await Promise.all(
     tokenDepositsFromSubgraph.map(depositTx =>
-      updateAdditionalTransactionData(depositTx, l1Provider, l2Provider)
+      updateAdditionalDepositData(depositTx, l1Provider, l2Provider)
     )
   )) as Transaction[]
 

@@ -10,7 +10,7 @@ import {
   TransactionsTable,
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
-import { useDeposits } from '../TransactionsTable/useDeposits'
+import { useDeposits, useWithdrawals } from '../TransactionsTable/useDeposits'
 
 function getTransactionsDataStatus(
   pwLoadedState: PendingWithdrawalsLoadedState
@@ -32,6 +32,7 @@ export type PageParams = {
   pageNumber?: number
   pageSize?: number
   type: 'ETH' | 'ERC20'
+  isDeposit: boolean
 }
 
 function isDeposit(tx: MergedTransaction) {
@@ -44,7 +45,8 @@ export const TransactionHistory = () => {
       mergedTransactions,
       pwLoadedState,
       arbTokenBridge: {
-        transactions: { setTransactions: setTransactionsInStore }
+        transactions: { setTransactions: setDepositsInStore },
+        setWithdrawals
       }
     }
   } = useAppState()
@@ -57,16 +59,25 @@ export const TransactionHistory = () => {
     searchString: '',
     pageNumber: 0,
     pageSize: 10,
-    type: 'ETH'
+    type: 'ETH',
+    isDeposit: false
   })
 
   const { data: depositsFromSubgraph, isValidating: depositsLoading } =
     useDeposits({ ...pageParams })
 
+  const { data: withdrawalsFromSubgraph, isValidating: withdrawalsLoading } =
+    useWithdrawals({ ...pageParams })
+
   useEffect(() => {
     '***** called depositsFromSubgraph useEffect ****'
-    setTransactionsInStore(depositsFromSubgraph || [])
+    setDepositsInStore(depositsFromSubgraph || [])
   }, [depositsFromSubgraph])
+
+  useEffect(() => {
+    '***** called withdrawalsFromSubgraph useEffect ****'
+    setWithdrawals(withdrawalsFromSubgraph || [])
+  }, [withdrawalsFromSubgraph])
 
   const [deposits, withdrawals] = useMemo(() => {
     const _deposits: MergedTransaction[] = []
@@ -101,6 +112,7 @@ export const TransactionHistory = () => {
                   <img
                     src={getNetworkLogo(l2.network.chainID)}
                     className="max-w-6 max-h-6"
+                    alt="Deposit"
                   />
                 )}
                 {`To ${getNetworkName(l2.network.chainID)}`}
@@ -121,6 +133,7 @@ export const TransactionHistory = () => {
                   <img
                     src={getNetworkLogo(l1.network.chainID)}
                     className="max-w-6 max-h-6"
+                    alt="Withdraw"
                   />
                 )}
                 {`To ${getNetworkName(l1.network.chainID)}`}
@@ -139,7 +152,7 @@ export const TransactionHistory = () => {
         </Tab.Panel>
         <Tab.Panel>
           <TransactionsTable
-            status={getTransactionsDataStatus(pwLoadedState)}
+            status={withdrawalsLoading ? 'loading' : 'success'}
             transactions={withdrawals}
             pageParams={pageParams}
             updatePageParams={setPageParams}

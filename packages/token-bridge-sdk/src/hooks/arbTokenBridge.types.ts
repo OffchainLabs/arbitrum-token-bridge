@@ -33,6 +33,7 @@ import {
   Transaction,
   L1ToL2MessageData
 } from './useTransactions'
+import { FetchTokenWithdrawalsFromSubgraphResult } from 'withdrawals'
 
 export { OutgoingMessageState }
 
@@ -260,5 +261,6 @@ export interface ArbTokenBridge {
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
+  setWithdrawals: (txns: L2ToL1EventResultPlus[]) => void
   setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
 }

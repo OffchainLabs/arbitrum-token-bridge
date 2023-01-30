@@ -51,6 +51,10 @@ import {
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
+import {
+  getOutgoingMessageState,
+  updateAdditionalWithdrawalData
+} from '../withdrawals/fetchWithdrawalsFromSubgraph_draft'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -1084,42 +1088,6 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function mapETHWithdrawalToL2ToL1EventResult(
-    // `l2TxHash` exists on result from subgraph
-    // `transactionHash` exists on result from event logs
-    event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
-  ): Promise<L2ToL1EventResultPlus> {
-    const { callvalue } = event
-    const outgoingMessageState = await getOutgoingMessageState(event)
-
-    return {
-      ...event,
-      type: AssetType.ETH,
-      value: callvalue,
-      symbol: 'ETH',
-      outgoingMessageState,
-      decimals: 18,
-      l2TxHash: event.l2TxHash || event.transactionHash
-    }
-  }
-
-  async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
-    result: FetchTokenWithdrawalsFromSubgraphResult
-  ): Promise<L2ToL1EventResultPlus> {
-    const symbol = await getTokenSymbol(result.tokenAddress)
-    const decimals = await getTokenDecimals(result.tokenAddress)
-    const outgoingMessageState = await getOutgoingMessageState(result)
-
-    return {
-      ...result,
-      value: result.amount,
-      type: AssetType.ERC20,
-      symbol,
-      decimals,
-      outgoingMessageState
-    }
-  }
-
   async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     result: WithdrawalInitiated
   ): Promise<L2ToL1EventResultPlus | undefined> {
@@ -1136,7 +1104,12 @@ export const useArbTokenBridge = (
       return undefined
     }
 
-    const outgoingMessageState = await getOutgoingMessageState(event)
+    const outgoingMessageState = await getOutgoingMessageState(
+      event,
+      l1.provider,
+      l2.provider,
+      l2.network.chainID
+    )
 
     return {
       ...event,
@@ -1147,49 +1120,6 @@ export const useArbTokenBridge = (
       symbol,
       decimals,
       l2TxHash: l2TxReceipt.transactionHash
-    }
-  }
-
-  async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
-    if (
-      event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-      event.outgoingMessageState === OutgoingMessageState.CONFIRMED
-    ) {
-      return event
-    }
-
-    const messageReader = L2ToL1MessageReader.fromEvent(l1.provider, event)
-
-    try {
-      const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-        l2.provider
-      )
-
-      return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
-    } catch (e) {
-      const expectedError = "batch doesn't exist"
-      const expectedError2 = 'CALL_EXCEPTION'
-      const err = e as Error & { error: Error }
-      const actualError =
-        err && (err.message || (err.error && err.error.message))
-      if (actualError.includes(expectedError)) {
-        const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
-        return {
-          ...event,
-          nodeBlockDeadline
-        }
-      } else if (actualError.includes(expectedError2)) {
-        // in classic we simulate `executeTransaction` in `hasExecuted`
-        // which might revert if the L2 to L1 call fail
-        const nodeBlockDeadline: NodeBlockDeadlineStatus =
-          'EXECUTE_CALL_EXCEPTION'
-        return {
-          ...event,
-          nodeBlockDeadline
-        }
-      } else {
-        throw e
-      }
     }
   }
 
@@ -1250,24 +1180,29 @@ export const useArbTokenBridge = (
       })
     ])
 
-    const l2ToL1Txns = (
-      await Promise.all([
-        ...ethWithdrawalsFromSubgraph.map(withdrawal =>
-          mapETHWithdrawalToL2ToL1EventResult(withdrawal)
-        ),
-        ...ethWithdrawalsFromEventLogs.map(withdrawal =>
-          mapETHWithdrawalToL2ToL1EventResult(withdrawal)
-        ),
-        ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
-          mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
-        ),
-        ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
-          mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
-        )
-      ])
-    )
-      .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
-      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+    // const l2ToL1Txns = (
+    //   await Promise.all([
+    //     ...ethWithdrawalsFromSubgraph.map(withdrawal =>
+    //       mapETHWithdrawalToL2ToL1EventResult(withdrawal)
+    //     ),
+    //     ...ethWithdrawalsFromEventLogs.map(withdrawal =>
+    //       mapETHWithdrawalToL2ToL1EventResult(withdrawal)
+    //     ),
+    //     ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
+    //       mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
+    //     ),
+    //     ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
+    //       mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
+    //     )
+    //   ])
+    // )
+    //   .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
+    //   .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+
+    const l2ToL1Txns = [
+      ...(ethWithdrawalsFromSubgraph as L2ToL1EventResultPlus[]),
+      ...tokenWithdrawalsFromSubgraph
+    ]
 
     console.log(
       `*** done getting pending withdrawals, took ${
@@ -1275,39 +1210,26 @@ export const useArbTokenBridge = (
       } seconds`
     )
 
-    const l2ToL1TxnsWithDeadlines = await Promise.all(
-      l2ToL1Txns.map(attachNodeBlockDeadlineToEvent)
+    const finalL2ToL1Txns = await Promise.all(
+      l2ToL1Txns.map(withdrawal =>
+        updateAdditionalWithdrawalData(
+          withdrawal,
+          l1.provider,
+          l2.provider,
+          l2.network.chainID
+        )
+      )
     )
 
-    for (const event of l2ToL1TxnsWithDeadlines) {
+    // add the events to their respective places in the State
+    for (const event of finalL2ToL1Txns) {
       pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event
     }
-
-    const executedMessages = l2ToL1Txns.filter(
+    const executedMessages = finalL2ToL1Txns.filter(
       tx => tx.outgoingMessageState === OutgoingMessageState.EXECUTED
     )
-
     addToExecutedMessagesCache(executedMessages)
     setPendingWithdrawalMap(pendingWithdrawals)
-  }
-
-  async function getOutgoingMessageState(event: L2ToL1EventResult) {
-    const cacheKey = getExecutedMessagesCacheKey({
-      event,
-      l2ChainId: l2.network.chainID
-    })
-
-    if (executedMessagesCache[cacheKey]) {
-      return OutgoingMessageState.EXECUTED
-    }
-
-    const messageReader = new L2ToL1MessageReader(l1.provider, event)
-
-    try {
-      return await messageReader.status(l2.provider)
-    } catch (error) {
-      return OutgoingMessageState.UNCONFIRMED
-    }
   }
 
   function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
@@ -1323,6 +1245,15 @@ export const useArbTokenBridge = (
     })
 
     setExecutedMessagesCache({ ...executedMessagesCache, ...added })
+  }
+
+  const setWithdrawals = (withdrawalTxns: L2ToL1EventResultPlus[]) => {
+    let pwMap = {} as PendingWithdrawalsMap
+    withdrawalTxns.forEach(tx => {
+      const id = getUniqueIdOrHashFromEvent(tx).toString()
+      pwMap[id] = tx
+    })
+    setPendingWithdrawalMap(pwMap)
   }
 
   return {
@@ -1363,6 +1294,7 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
+    setWithdrawals: setWithdrawals,
     setInitialPendingWithdrawals: setInitialPendingWithdrawals
   }
 }
