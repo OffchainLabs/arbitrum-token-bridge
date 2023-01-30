@@ -63,11 +63,17 @@ export const TransactionHistory = () => {
     isDeposit: false
   })
 
-  const { data: depositsFromSubgraph, isValidating: depositsLoading } =
-    useDeposits({ ...pageParams })
+  const {
+    data: depositsFromSubgraph,
+    isValidating: depositsLoading,
+    error: depositsError
+  } = useDeposits({ ...pageParams })
 
-  const { data: withdrawalsFromSubgraph, isValidating: withdrawalsLoading } =
-    useWithdrawals({ ...pageParams })
+  const {
+    data: withdrawalsFromSubgraph,
+    isValidating: withdrawalsLoading,
+    error: withdrawalsError
+  } = useWithdrawals({ ...pageParams })
 
   useEffect(() => {
     '***** called depositsFromSubgraph useEffect ****'
@@ -143,7 +149,9 @@ export const TransactionHistory = () => {
       <Tab.Panel className="overflow-scroll">
         <TransactionsTable
           // Currently we load deposit history from local cache, so it's always a success
-          status={depositsLoading ? 'loading' : 'success'}
+          status={
+            depositsLoading ? 'loading' : !depositsError ? 'success' : 'error'
+          }
           transactions={deposits}
           pageParams={pageParams}
           updatePageParams={setPageParams}
@@ -151,7 +159,13 @@ export const TransactionHistory = () => {
       </Tab.Panel>
       <Tab.Panel className="overflow-scroll">
         <TransactionsTable
-          status={withdrawalsLoading ? 'loading' : 'success'}
+          status={
+            withdrawalsLoading
+              ? 'loading'
+              : !withdrawalsError
+              ? 'success'
+              : 'error'
+          }
           transactions={withdrawals}
           pageParams={pageParams}
           updatePageParams={setPageParams}

@@ -2,8 +2,13 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useAppContextState } from '../App/AppContext'
 import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
-import { fetchETHWithdrawals, fetchTokenWithdrawals } from 'token-bridge-sdk'
+import {
+  fetchETHWithdrawals,
+  fetchTokenWithdrawals,
+  fetchWithdrawals
+} from 'token-bridge-sdk'
 import useSWR from 'swr'
+import { useGateways } from './useGateways'
 
 export const useDeposits = ({
   searchString,
@@ -97,6 +102,8 @@ export const useWithdrawals = ({
 
   const { l1, l2 } = useNetworksAndSigners()
 
+  const gatewaysToUse = useGateways()
+
   const l1Provider = l1.provider,
     l2Provider = l2.provider
 
@@ -122,15 +129,14 @@ export const useWithdrawals = ({
       _pageSize,
       _type
     ) =>
-      (_type === 'ETH' ? fetchETHWithdrawals : fetchTokenWithdrawals)({
+      fetchWithdrawals({
         address: _walletAddress,
-        fromBlock: 0,
-        toBlock: currentL1BlockNumber,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         searchString: _searchString,
         pageNumber: _pageNumber,
-        pageSize: _pageSize
+        pageSize: _pageSize,
+        gatewayAddresses: gatewaysToUse
       }),
     {
       shouldRetryOnError: true,

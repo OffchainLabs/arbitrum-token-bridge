@@ -6,11 +6,7 @@ import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
 import useSWR from 'swr'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
-import {
-  l2DaiGatewayAddresses,
-  l2LptGatewayAddresses,
-  l2wstETHGatewayAddresses
-} from '../../util/networks'
+import { useGateways } from './useGateways'
 
 const INITIAL_PAGE_SIZE = 10
 
@@ -81,6 +77,8 @@ export const fetchPendingTransactions = async ({
 
 export const usePendingTransactions = () => {
   const { l1, l2 } = useNetworksAndSigners()
+  const gatewaysToUse = useGateways()
+
   const l1Provider = l1.provider
   const l2Provider = l2.provider
 
@@ -90,23 +88,6 @@ export const usePendingTransactions = () => {
     }
   } = useAppState()
 
-  /* configure gateway addresses for fetching withdrawals */
-  const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
-    l2.network.tokenBridge
-  const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
-  const l2DaiGateway = l2DaiGatewayAddresses[l2.network.chainID]
-  const l2wstETHGateway = l2wstETHGatewayAddresses[l2.network.chainID]
-  const l2LptGateway = l2LptGatewayAddresses[l2.network.chainID]
-  if (l2DaiGateway) {
-    gatewaysToUse.push(l2DaiGateway)
-  }
-  if (l2wstETHGateway) {
-    gatewaysToUse.push(l2wstETHGateway)
-  }
-  if (l2LptGateway) {
-    gatewaysToUse.push(l2LptGateway)
-  }
-
   /* return the cached response for the complete pending transactions */
   return useSWR(
     [
@@ -114,7 +95,8 @@ export const usePendingTransactions = () => {
       walletAddress,
       // currentL1BlockNumber,
       l1Provider,
-      l2Provider
+      l2Provider,
+      gatewaysToUse
     ],
     (_, _walletAddress, _l1Provider, _l2Provider) =>
       fetchPendingTransactions({
