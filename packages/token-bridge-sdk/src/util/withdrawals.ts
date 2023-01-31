@@ -21,31 +21,10 @@ export const outgoungStateToString = {
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus | FetchTokenWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
-  l2Provider: Provider,
-  l2ChainID: number
+  l2Provider: Provider
 ) => {
-  const isEthWithdrawal = !withdrawalTx['tokenAddress']
-
-  let l2ToL1EventResult
-
-  if (isEthWithdrawal) {
-    l2ToL1EventResult = await mapETHWithdrawalToL2ToL1EventResult(
-      withdrawalTx,
-      l1Provider,
-      l2Provider,
-      l2ChainID
-    )
-  } else {
-    l2ToL1EventResult = await mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
-      withdrawalTx as FetchTokenWithdrawalsFromSubgraphResult,
-      l1Provider,
-      l2Provider,
-      l2ChainID
-    )
-  }
-
   const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
-    l2ToL1EventResult,
+    withdrawalTx as L2ToL1EventResultPlus,
     l1Provider,
     l2Provider
   )

@@ -132,12 +132,7 @@ export const fetchWithdrawals = async ({
 
   const finalL2ToL1Txns = await Promise.all(
     l2ToL1Txns.map(withdrawal =>
-      updateAdditionalWithdrawalData(
-        withdrawal,
-        l1Provider,
-        l2Provider,
-        l2ChainID
-      )
+      updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
     )
   )
 
@@ -193,8 +188,7 @@ export const fetchETHWithdrawals = async ({
       updateAdditionalWithdrawalData(
         withdrawal as L2ToL1EventResultPlus,
         l1Provider,
-        l2Provider,
-        l2ChainID
+        l2Provider
       )
     )
   )
@@ -241,12 +235,7 @@ export const fetchTokenWithdrawals = async ({
 
   const l2ToL1Txns = await Promise.all(
     tokenWithdrawals.map(withdrawal =>
-      updateAdditionalWithdrawalData(
-        withdrawal,
-        l1Provider,
-        l2Provider,
-        l2ChainID
-      )
+      updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
     )
   )
 
