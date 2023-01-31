@@ -36,13 +36,13 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
-      const wallet = new Wallet(process.env.PRIVATE_KEY_LOCAL!)
+      const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
       const testWallet = Wallet.createRandom()
       const testWalletAddress = await testWallet.getAddress()
 
-      const getWethFactory = (
+      const getWethContract = (
         provider: StaticJsonRpcProvider,
         tokenAddress: string
       ) =>
@@ -66,17 +66,17 @@ export default defineConfig({
 
         // Wrap ETH to test ERC-20 transactions
         // L1
-        tx = await getWethFactory(ethProvider, ERC20TokenAddressL1).deposit({
+        tx = await getWethContract(ethProvider, ERC20TokenAddressL1).deposit({
           value: utils.parseEther('0.2')
         })
         await tx.wait()
         // L2
-        tx = await getWethFactory(arbProvider, ERC20TokenAddressL2).deposit({
+        tx = await getWethContract(arbProvider, ERC20TokenAddressL2).deposit({
           value: utils.parseEther('0.1')
         })
 
         // Approve ERC-20
-        tx = await getWethFactory(ethProvider, ERC20TokenAddressL1).approve(
+        tx = await getWethContract(ethProvider, ERC20TokenAddressL1).approve(
           // L1 WETH gateway
           '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
           constants.MaxInt256
