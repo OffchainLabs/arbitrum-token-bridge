@@ -15,7 +15,7 @@ import 'tippy.js/themes/light.css'
 
 import './styles/tailwind.css'
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
   registerLocalNetwork()
 }
 
