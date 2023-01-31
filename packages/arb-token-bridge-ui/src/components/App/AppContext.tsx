@@ -8,11 +8,9 @@ import {
 
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { SeenTransactionsCache } from '../../state/SeenTransactionsCache'
 
 type AppContextState = {
   currentL1BlockNumber: number
-  seenTransactions: string[]
   layout: {
     isTransferPanelVisible: boolean
     isTransferring: boolean
@@ -22,7 +20,6 @@ type AppContextState = {
 
 const initialState: AppContextState = {
   currentL1BlockNumber: 0,
-  seenTransactions: SeenTransactionsCache.get(),
   layout: {
     isTransferPanelVisible: true,
     isTransferring: false,
@@ -46,17 +43,6 @@ function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
     case 'set_current_l1_block_number':
       return { ...state, currentL1BlockNumber: action.payload }
-
-    case 'set_tx_as_seen':
-      // Don't duplicate txs
-      if (state.seenTransactions.includes(action.payload)) {
-        return state
-      }
-
-      return {
-        ...state,
-        seenTransactions: [...state.seenTransactions, action.payload]
-      }
 
     case 'layout.set_is_transfer_panel_visible':
       return {
@@ -90,7 +76,6 @@ export function AppContextProvider({
   children: React.ReactNode
 }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { seenTransactions } = state
 
   const { l1 } = useNetworksAndSigners()
   const currentL1BlockNumber = useBlockNumber(l1.provider)
@@ -101,11 +86,6 @@ export function AppContextProvider({
       payload: currentL1BlockNumber
     })
   }, [currentL1BlockNumber])
-
-  useEffect(() => {
-    // Keep seen transactions cache in sync
-    SeenTransactionsCache.update(seenTransactions)
-  }, [seenTransactions])
 
   return (
     <AppContext.Provider value={[state, dispatch]}>

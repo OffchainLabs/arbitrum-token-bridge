@@ -16,7 +16,7 @@ import {
 } from 'token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import { ConnectionState } from '../../util'
 import {
   filterAndSortTransactions,
   transformDeposits,
@@ -83,8 +83,6 @@ export type AppState = {
 
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
-
-  pwLoadedState: PendingWithdrawalsLoadedState
   arbTokenBridgeLoaded: boolean
 }
 
@@ -145,7 +143,6 @@ export const defaultState: AppState = {
       })
     )
   }),
-  pwLoadedState: PendingWithdrawalsLoadedState.LOADING,
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {
