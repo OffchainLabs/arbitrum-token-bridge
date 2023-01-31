@@ -26,7 +26,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
     id: 2,
     originChainID: 42161,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_list.json',
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI:
