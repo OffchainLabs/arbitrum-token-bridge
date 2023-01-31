@@ -5,10 +5,10 @@ import {
   fetchWithdrawals,
   OutgoingMessageState
 } from 'token-bridge-sdk'
-import { transformDeposits, transformWithdrawals } from '../../state/app/utils'
+import { transformDeposits, transformWithdrawals } from '../state/app/utils'
 import useSWR from 'swr'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useAppState } from '../../state'
+import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
+import { useAppState } from '../state'
 import { useGateways } from './useGateways'
 
 const INITIAL_PAGE_SIZE = 10

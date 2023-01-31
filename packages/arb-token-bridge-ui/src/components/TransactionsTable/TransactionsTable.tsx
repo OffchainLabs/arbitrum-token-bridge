@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/outline'
 import { fetchDeposits, fetchWithdrawals } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
-import { useGateways } from './useGateways'
+import { useGateways } from '../../hooks/useGateways'
 import { transformDeposits, transformWithdrawals } from '../../state/app/utils'
 
 export type PageParams = {

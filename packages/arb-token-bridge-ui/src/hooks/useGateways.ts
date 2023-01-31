@@ -1,10 +1,14 @@
+/*
+  Outputs the gateways which are valid for the user based on their L2 chain to fetch their withdrawals from.
+*/
+
 import { useMemo } from 'react'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworksAndSigners } from './useNetworksAndSigners'
 import {
   l2DaiGatewayAddresses,
   l2LptGatewayAddresses,
   l2wstETHGatewayAddresses
-} from '../../util/networks'
+} from '../util/networks'
 
 export const useGateways = () => {
   const { l2 } = useNetworksAndSigners()
