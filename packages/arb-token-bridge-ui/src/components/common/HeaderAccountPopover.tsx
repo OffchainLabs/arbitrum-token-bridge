@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useCopyToClipboard } from 'react-use'
+import { useCopyToClipboard, useLocalStorage } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover } from '@headlessui/react'
 import {
@@ -22,8 +22,8 @@ import {
 import { SafeImage } from './SafeImage'
 import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
-import { useActions } from '../../state'
 import { useAppContextDispatch } from '../App/AppContext'
+import { TransactionHistoryTooltip } from './TransactionHistoryTooltip'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -102,6 +102,10 @@ export function HeaderAccountPopover() {
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
 
+  // check local-storage for viewed flag
+  const [txHistoryViewedOnce, setTxHistoryViewedOnce] =
+    useLocalStorage<boolean>('arbitrum:view-new-tx-history')
+
   useEffect(() => {
     async function resolveNameServiceInfo() {
       if (account) {
@@ -155,24 +159,36 @@ export function HeaderAccountPopover() {
   const headerItemsClassName =
     'arb-hover flex w-full flex-row items-center space-x-2 px-[4rem] py-2 text-lg lg:text-base font-light text-white hover:bg-blue-arbitrum lg:px-4'
 
+  const setTxHistoryViewed = () => {
+    setTxHistoryViewedOnce(true)
+  }
+
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0">
-        <div>
-          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
-            <SafeImage
-              src={ensInfo.avatar || undefined}
-              className="h-8 w-8 rounded-full"
-              fallback={<CustomBoringAvatar size={32} name={account} />}
-            />
-            <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-              {ensInfo.name ?? udInfo.name ?? accountShort}
-            </span>
+      <TransactionHistoryTooltip
+        isVisible={!txHistoryViewedOnce}
+        onClose={setTxHistoryViewed}
+      >
+        <Popover.Button
+          className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0"
+          onClick={setTxHistoryViewed}
+        >
+          <div>
+            <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
+              <SafeImage
+                src={ensInfo.avatar || undefined}
+                className="h-8 w-8 rounded-full"
+                fallback={<CustomBoringAvatar size={32} name={account} />}
+              />
+              <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
+                {ensInfo.name ?? udInfo.name ?? accountShort}
+              </span>
 
-            <ChevronDownIcon className="h-4 w-4 text-white" />
+              <ChevronDownIcon className="h-4 w-4 text-white" />
+            </div>
           </div>
-        </div>
-      </Popover.Button>
+        </Popover.Button>
+      </TransactionHistoryTooltip>
       <Transition>
         <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-4 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
@@ -224,6 +240,10 @@ export function HeaderAccountPopover() {
             >
               <DocumentTextIcon className="h-4 w-4 text-white" />
               <span>Transactions</span>
+
+              <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
+                NEW
+              </span>
             </button>
 
             {/* Explorer button */}
