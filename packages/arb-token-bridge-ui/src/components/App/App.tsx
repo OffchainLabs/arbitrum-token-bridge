@@ -54,7 +54,6 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { isTestingEnvironment } from '../../util/CommonUtils'
 
 declare global {
   interface Window {

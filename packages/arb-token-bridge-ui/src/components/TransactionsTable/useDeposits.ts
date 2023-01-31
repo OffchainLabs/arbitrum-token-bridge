@@ -1,7 +1,6 @@
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
-import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
-import { fetchWithdrawals } from 'token-bridge-sdk'
+import { fetchDeposits, fetchWithdrawals } from 'token-bridge-sdk'
 import useSWR from 'swr'
 import { useGateways } from './useGateways'
 

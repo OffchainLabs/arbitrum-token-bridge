@@ -12,7 +12,6 @@ import {
   Erc20Bridger,
   L1ToL2MessageStatus,
   L2ToL1Message,
-  L2ToL1MessageReader,
   L2TransactionReceipt
 } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
@@ -34,30 +33,15 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated,
   L2ToL1EventResult,
-  NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
   L2ContractCallTransactionLifecycle
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import {
-  fetchETHWithdrawalsFromEventLogs,
-  fetchETHWithdrawalsFromSubgraph,
-  fetchTokenWithdrawalsFromEventLogs,
-  fetchTokenWithdrawalsFromSubgraph,
-  FetchTokenWithdrawalsFromSubgraphResult
-} from '../withdrawals'
-
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
-import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
-import {
-  fetchWithdrawals,
-  getOutgoingMessageState,
-  mapETHWithdrawalToL2ToL1EventResult,
-  mapTokenWithdrawalFromSubgraphToL2ToL1EventResult,
-  updateAdditionalWithdrawalData
-} from '../withdrawals/fetchWithdrawalsFromSubgraph_draft'
+import { getOutgoingMessageState } from '../util/withdrawals'
+import { fetchWithdrawals } from '../withdrawals/fetchWithdrawals'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -1123,15 +1107,6 @@ export const useArbTokenBridge = (
       symbol,
       decimals,
       l2TxHash: l2TxReceipt.transactionHash
-    }
-  }
-
-  async function tryFetchLatestSubgraphBlockNumber(): Promise<number> {
-    try {
-      return await fetchL2BlockNumberFromSubgraph(l2.network.chainID)
-    } catch (error) {
-      // In case the subgraph is not supported or down, fall back to fetching everything through event logs
-      return 0
     }
   }
 

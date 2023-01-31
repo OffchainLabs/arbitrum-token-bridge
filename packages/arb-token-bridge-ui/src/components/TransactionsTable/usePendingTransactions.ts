@@ -1,8 +1,11 @@
 import { Provider } from '@ethersproject/providers'
 import dayjs from 'dayjs'
-import { fetchWithdrawals, OutgoingMessageState } from 'token-bridge-sdk'
+import {
+  fetchDeposits,
+  fetchWithdrawals,
+  OutgoingMessageState
+} from 'token-bridge-sdk'
 import { transformDeposits, transformWithdrawals } from '../../state/app/utils'
-import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
 import useSWR from 'swr'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'

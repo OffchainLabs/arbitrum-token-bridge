@@ -11,8 +11,7 @@ import {
   ChevronRightIcon,
   SearchIcon
 } from '@heroicons/react/outline'
-import { fetchDeposits } from './fetchEthDepositsFromSubgraph_draft'
-import { fetchWithdrawals } from 'token-bridge-sdk'
+import { fetchDeposits, fetchWithdrawals } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { useGateways } from './useGateways'
 import { transformDeposits, transformWithdrawals } from '../../state/app/utils'

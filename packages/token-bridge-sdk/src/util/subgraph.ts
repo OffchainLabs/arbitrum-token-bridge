@@ -1,5 +1,20 @@
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
+const L1SubgraphClient = {
+  ArbitrumOne: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nitro',
+    cache: new InMemoryCache()
+  }),
+  ArbitrumNova: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
+    cache: new InMemoryCache()
+  }),
+  ArbitrumGoerli: new ApolloClient({
+    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli',
+    cache: new InMemoryCache()
+  })
+}
+
 const L2SubgraphClient = {
   ArbitrumOne: new ApolloClient({
     uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-arb1',
@@ -9,6 +24,22 @@ const L2SubgraphClient = {
     uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-goerli',
     cache: new InMemoryCache()
   })
+}
+
+export function getL1SubgraphClient(l2ChainId: number) {
+  switch (l2ChainId) {
+    case 42161:
+      return L1SubgraphClient.ArbitrumOne
+
+    case 42170:
+      return L1SubgraphClient.ArbitrumNova
+
+    case 421613:
+      return L1SubgraphClient.ArbitrumGoerli
+
+    default:
+      throw new Error(`[getL1SubgraphClient] Unsupported network: ${l2ChainId}`)
+  }
 }
 
 export function getL2SubgraphClient(l2ChainId: number) {
