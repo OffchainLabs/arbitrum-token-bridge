@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "../../node_modules",
+    "baseUrl": "../../../../",
     "types": [
       "cypress",
       "@synthetixio/synpress/support",
