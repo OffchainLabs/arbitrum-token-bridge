@@ -24,7 +24,7 @@ export function login(networkType: NetworkType, addNewNetwork?: boolean) {
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
   cy.switchToCypressWindow().then(() => {
-    cy.changeMetamaskNetwork(l1NetworkConfig).then(() => {
+    cy.changeMetamaskNetwork(l1NetworkConfig.networkName).then(() => {
       // disconnect-metamask-wallet hangs if already not connected to metamask,
       // so we do it while logout instead of before login.
       cy.disconnectMetamaskWalletFromAllDapps().then(() => {
@@ -75,7 +75,7 @@ export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
-  cy.findByText('Connect to your MetaMask Wallet').click()
+  cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click()
 }
 
 Cypress.Commands.addAll({

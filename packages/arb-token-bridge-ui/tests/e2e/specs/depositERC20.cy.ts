@@ -1,5 +1,5 @@
 /**
- * When user wants to bridge ETH from L1 to L2
+ * When user wants to bridge ERC20 from L1 to L2
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
@@ -7,7 +7,8 @@ import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
   getInitialERC20Balance,
-  goerliRPC,
+  ethRpcUrl,
+  l1NetworkConfig,
   zeroToLessThanOneETH
 } from '../../support/common'
 
@@ -15,6 +16,7 @@ describe('Deposit ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+  const ERC20AmountToSend = 0.0001
 
   before(() => {
     // before this spec, make sure the cache is fresh
@@ -31,12 +33,19 @@ describe('Deposit ERC20 Token', () => {
 
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
-    let l1ERC20bal
+    let l1ERC20bal: string
 
     // log in to metamask before deposit
     before(() => {
-      getInitialERC20Balance(ERC20TokenAddressL1, goerliRPC).then(
-        val => (l1ERC20bal = formatAmount(val, { symbol: 'LINK' }))
+      getInitialERC20Balance(
+        ERC20TokenAddressL1,
+        l1NetworkConfig.l1MultiCall,
+        ethRpcUrl
+      ).then(
+        val =>
+          (l1ERC20bal = formatAmount(val, {
+            symbol: 'WETH'
+          }))
       )
       cy.login('L1')
     })
@@ -47,10 +56,8 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
-      cy.findByRole('button', { name: /From: Goerli/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
-        'be.visible'
-      )
+      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
         .should('have.text', 'ETH')
@@ -74,13 +81,13 @@ describe('Deposit ERC20 Token', () => {
             .should('be.visible')
             .click({ scrollBehavior: false })
 
-          // Select the LINK token
-          cy.findByText('ChainLink Token').click({ scrollBehavior: false })
+          // Select the WETH token
+          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
-          // LINK token should be selected now and popup should be closed after selection
+          // WETH token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
-            .should('have.text', 'LINK')
+            .should('have.text', 'WETH')
         })
     })
 
@@ -91,12 +98,12 @@ describe('Deposit ERC20 Token', () => {
     context("bridge amount is lower than user's L1 ERC20 balance value", () => {
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
-          .type('0.0001', { scrollBehavior: false })
+          .type(String(ERC20AmountToSend), { scrollBehavior: false })
           .then(() => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains(formatAmount(0.0001))
+              .contains(formatAmount(ERC20AmountToSend))
               .should('be.visible')
             cy.findByText('You’ll pay in gas fees')
               .siblings()
@@ -120,15 +127,15 @@ describe('Deposit ERC20 Token', () => {
 
       it('should deposit successfully', () => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum Goerli'
+          name: 'Move funds to Arbitrum'
         })
           .click({ scrollBehavior: false })
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
-                `Moving ${formatAmount(0.0001, {
-                  symbol: 'LINK'
-                })} to Arbitrum Goerli...`
+                `Moving ${formatAmount(ERC20AmountToSend, {
+                  symbol: 'WETH'
+                })} to Arbitrum...`
               ).should('be.visible')
             })
           })
@@ -153,4 +160,6 @@ describe('Deposit ERC20 Token', () => {
     'user has some ERC-20 tokens which require token approval permission and is on L1',
     () => {}
   )
+  // TODO
+  context('approve and send ERC-20 successfully', () => {})
 })

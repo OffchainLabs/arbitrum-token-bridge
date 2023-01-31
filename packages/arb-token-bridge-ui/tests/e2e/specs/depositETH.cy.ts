@@ -36,10 +36,8 @@ describe('Deposit ETH', () => {
     })
 
     it('should show L1 and L2 chains correctly', () => {
-      cy.findByRole('button', { name: /From: Goerli/i }).should('be.visible')
-      cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
-        'be.visible'
-      )
+      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
     })
 
     context("bridge amount is lower than user's L1 ETH balance value", () => {
@@ -87,7 +85,7 @@ describe('Deposit ETH', () => {
 
       it('should deposit successfully', () => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum Goerli'
+          name: 'Move funds to Arbitrum'
         }).click({ scrollBehavior: false })
         // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
         // cypress by default tries to scroll the element into view even when it is already in view
@@ -102,7 +100,7 @@ describe('Deposit ETH', () => {
           cy.findByText(
             `Moving ${formatAmount(0.0001, {
               symbol: 'ETH'
-            })} to Arbitrum Goerli...`
+            })} to Arbitrum...`
           ).should('be.visible')
         })
       })

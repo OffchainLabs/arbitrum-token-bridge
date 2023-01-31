@@ -8,39 +8,48 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 
-export const l1NetworkConfig = 'goerli'
+export const ethRpcUrl = 'http://localhost:8545'
+export const arbRpcUrl = 'http://localhost:8547'
 
-export const l2NetworkConfig = {
-  networkName: 'arbitrum goerli',
-  rpcUrl: 'https://goerli-rollup.arbitrum.io/rpc',
-  chainId: '421613',
+export const l1NetworkConfig = {
+  networkName: 'localhost',
+  rpcUrl: ethRpcUrl,
+  chainId: '1337',
   symbol: 'ETH',
-  blockExplorer: 'https://goerli-rollup-explorer.arbitrum.io',
-  isTestnet: true
+  isTestnet: true,
+  l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 }
 
-export const goerliRPC = `https://goerli.infura.io/v3/${Cypress.env(
-  'INFURA_KEY'
-)}`
-export const arbitrumGoerliRPC = 'https://goerli-rollup.arbitrum.io/rpc'
+export const l2NetworkConfig = {
+  networkName: 'arbitrum-localhost',
+  rpcUrl: arbRpcUrl,
+  chainId: '412346',
+  symbol: 'ETH',
+  isTestnet: true,
+  l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+}
 
-export const ERC20TokenAddressL1 = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-export const ERC20TokenAddressL2 = '0xd14838A68E8AFBAdE5efb411d5871ea0011AFd28'
+export const ERC20TokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
 
-export async function getInitialETHBalance(rpcURL: string): Promise<BigNumber> {
+export async function getInitialETHBalance(
+  rpcURL: string,
+  walletAddress?: string
+): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
-  return await provider.getBalance(Cypress.env('ADDRESS'))
+  return await provider.getBalance(walletAddress ?? Cypress.env('ADDRESS'))
 }
 
 export async function getInitialERC20Balance(
   tokenAddress: string,
+  multiCallerAddress: string,
   rpcURL: string
 ): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
-  const multiCaller = await MultiCaller.fromProvider(provider)
+  const multiCaller = new MultiCaller(provider, multiCallerAddress)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
     balanceOf: { account: Cypress.env('ADDRESS') }
   })
@@ -64,7 +73,7 @@ export const setupMetamaskNetwork = (
     }
   } else {
     //else, stick to the original l1 network
-    return cy.changeMetamaskNetwork(l1NetworkConfig)
+    return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
   }
 }
 
@@ -80,7 +89,7 @@ export const acceptMetamaskAccess = () => {
 
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit(`/`)
+  cy.visit('/')
   cy.connectToApp()
   acceptMetamaskAccess()
 }

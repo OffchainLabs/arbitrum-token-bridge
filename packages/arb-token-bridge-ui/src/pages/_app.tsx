@@ -13,7 +13,7 @@ import { registerLocalNetwork } from '../util/networks'
 
 import '../styles/tailwind.css'
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
   registerLocalNetwork()
 }
 
