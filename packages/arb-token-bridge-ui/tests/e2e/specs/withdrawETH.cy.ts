@@ -1,5 +1,5 @@
 /**
- * When user wants to bridge ETH from L1 to L2
+ * When user wants to bridge ETH from L2 to L1
  */
 
 import { resetSeenTimeStampCache } from '../../support/commands'
@@ -37,13 +37,11 @@ describe('Withdraw ETH', () => {
     })
 
     it('should show form fields correctly', () => {
-      cy.findByRole('button', { name: /From: Arbitrum Goerli/i }).should(
-        'be.visible'
-      )
-      cy.findByRole('button', { name: /To: Goerli/i }).should('be.visible')
+      cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
+      cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 
       cy.findByRole('button', {
-        name: /Move funds to Goerli/i
+        name: /Move funds to Ethereum/i
       })
         .should('be.visible')
         .should('be.disabled')
@@ -86,7 +84,7 @@ describe('Withdraw ETH', () => {
 
       it('should show a clickable withdraw button', () => {
         cy.findByRole('button', {
-          name: /Move funds to Goerli/i
+          name: /Move funds to Ethereum/i
         })
           .should('be.visible')
           .should('be.enabled')
@@ -125,7 +123,7 @@ describe('Withdraw ETH', () => {
       it('should withdraw successfully', () => {
         cy.confirmMetamaskTransaction().then(() => {
           cy.findAllByText(
-            `Moving ${formatAmount(0.0001, { symbol: 'ETH' })} to Goerli...`
+            `Moving ${formatAmount(0.0001, { symbol: 'ETH' })} to Ethereum...`
           ).should('be.visible')
         })
       })

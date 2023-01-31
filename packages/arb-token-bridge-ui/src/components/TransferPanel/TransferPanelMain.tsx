@@ -265,7 +265,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   }
 
   return (
-    <span className="text-xl font-light text-white">
+    <span className="break-all text-xl font-light text-white">
       {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
