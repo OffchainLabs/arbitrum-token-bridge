@@ -4,8 +4,7 @@ import {
   login,
   logout,
   restoreAppState,
-  saveAppState,
-  visitHomePage
+  saveAppState
 } from '../support/commands'
 import { NetworkType } from '../support/common'
 
@@ -21,7 +20,6 @@ declare global {
       connectToApp(): typeof connectToApp
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
-      visitHomePage(): typeof visitHomePage
     }
   }
 }

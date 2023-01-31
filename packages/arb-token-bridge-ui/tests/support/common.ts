@@ -89,7 +89,7 @@ export const acceptMetamaskAccess = () => {
 
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visitHomePage()
+  cy.visit('/')
   cy.connectToApp()
   acceptMetamaskAccess()
 }

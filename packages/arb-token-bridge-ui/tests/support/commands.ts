@@ -36,11 +36,6 @@ export const logout = () => {
   })
 }
 
-export const visitHomePage = () => {
-  cy.visit(`/`)
-  cy.get('button').contains('Agree to terms').should('be.visible').click()
-}
-
 export const resetSeenTimeStampCache = () => {
   const dataKey = 'arbitrum:bridge:seen-txs'
   const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
@@ -78,6 +73,7 @@ export const saveAppState = () => {
 
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
+  cy.findByText('Agree to terms').should('be.visible').click()
   cy.findByText('MetaMask').should('be.visible')
   cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click()
 }
@@ -87,6 +83,5 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  connectToApp,
-  visitHomePage
+  connectToApp
 })
