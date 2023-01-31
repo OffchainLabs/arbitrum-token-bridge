@@ -17,7 +17,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div>
           {/* Heading */}
-          <span className="animate-pulse text-2xl text-blue-arbitrum">
+          <span className="ml-[2rem] animate-pulse text-2xl text-blue-arbitrum lg:ml-0">
             Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}
           </span>
 

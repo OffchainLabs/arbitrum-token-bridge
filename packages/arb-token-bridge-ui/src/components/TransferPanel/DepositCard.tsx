@@ -141,14 +141,15 @@ export function DepositCardContainer({
         </button>
       )}
 
-      <div className="relative flex items-center gap-6">
+      <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <img
           src={getNetworkLogo(ChainId.ArbitrumOne)}
-          className="ml-[-60px] h-full opacity-[40%]"
+          className="absolute left-0 top-1 z-10 h-6 lg:relative lg:top-0 lg:ml-[-60px] lg:h-full lg:opacity-[40%]"
           alt="Deposit"
         />
-        <div className="w-full">{children}</div>
+        {/* Actual content */}
+        <div className="z-20 w-full">{children}</div>
       </div>
 
       {!isTransferPanelVisible && !dismissable && (
