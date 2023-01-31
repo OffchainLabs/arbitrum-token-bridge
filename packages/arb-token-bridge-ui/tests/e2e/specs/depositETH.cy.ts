@@ -102,7 +102,7 @@ describe('Deposit ETH', () => {
           cy.findByText(
             `Moving ${formatAmount(0.0001, {
               symbol: 'ETH'
-            })} to Arbitrum Goerli...`
+            })} to Arbitrum Goerli`
           ).should('be.visible')
         })
       })

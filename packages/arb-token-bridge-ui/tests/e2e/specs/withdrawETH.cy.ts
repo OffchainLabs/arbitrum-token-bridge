@@ -125,7 +125,7 @@ describe('Withdraw ETH', () => {
       it('should withdraw successfully', () => {
         cy.confirmMetamaskTransaction().then(() => {
           cy.findAllByText(
-            `Moving ${formatAmount(0.0001, { symbol: 'ETH' })} to Goerli...`
+            `Moving ${formatAmount(0.0001, { symbol: 'ETH' })} to Goerli`
           ).should('be.visible')
         })
       })

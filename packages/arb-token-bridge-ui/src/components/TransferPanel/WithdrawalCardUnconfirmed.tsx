@@ -15,7 +15,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="flex flex-col">
           <span className="ml-[2rem] text-2xl  text-blue-arbitrum lg:ml-0">
-            Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}...
+            Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}
           </span>
 
           <span className="animate-pulse text-sm text-gray-10">

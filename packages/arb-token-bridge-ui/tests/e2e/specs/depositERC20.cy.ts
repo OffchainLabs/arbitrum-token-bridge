@@ -128,7 +128,7 @@ describe('Deposit ERC20 Token', () => {
               cy.findByText(
                 `Moving ${formatAmount(0.0001, {
                   symbol: 'LINK'
-                })} to Arbitrum Goerli...`
+                })} to Arbitrum Goerli`
               ).should('be.visible')
             })
           })

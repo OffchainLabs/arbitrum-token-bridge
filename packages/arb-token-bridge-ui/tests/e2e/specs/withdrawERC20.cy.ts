@@ -165,7 +165,7 @@ describe('Withdraw ERC20 Token', () => {
               cy.findAllByText(
                 `Moving ${formatAmount(0.0001, {
                   symbol: 'LINK'
-                })} to Goerli...`
+                })} to Goerli`
               ).should('be.visible')
             })
           })
