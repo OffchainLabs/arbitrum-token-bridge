@@ -494,18 +494,12 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   }
 
   const setDepositsInStore = (newTransactions: Transaction[]) => {
-    // appends the state with a new set of transactions
+    // RESETS the state with a new set of transactions
     // useful when you want to display some transactions fetched from subgraph without worrying about existing state
-
-    let transactionsMap: { [id: string]: Transaction } = {}
-
-    ;[...transactions, ...newTransactions].forEach(tx => {
-      transactionsMap[tx.txID] = tx
-    })
 
     return dispatch({
       type: 'SET_TRANSACTIONS',
-      transactions: Object.values(transactionsMap)
+      transactions: newTransactions
     })
   }
 

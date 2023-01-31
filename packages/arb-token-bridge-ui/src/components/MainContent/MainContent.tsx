@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { useAppState } from '../../state'
-import { MergedTransaction } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
@@ -117,25 +117,29 @@ export function MainContent() {
               </span>
             )}
 
-            {mergedTransactions
-              ?.filter(
-                tx =>
-                  (isDeposit(tx) && tx.status === 'pending') ||
-                  (!isDeposit(tx) &&
-                    tx.status !==
-                      outgoungStateToString[OutgoingMessageState.EXECUTED])
-              )
-              ?.map(tx =>
-                isDeposit(tx) ? (
-                  <motion.div key={tx.txId} {...motionDivProps}>
-                    <DepositCard key={tx.txId} tx={tx} />
-                  </motion.div>
-                ) : (
-                  <motion.div key={tx.txId} {...motionDivProps}>
-                    <WithdrawalCard key={tx.txId} tx={tx} />
-                  </motion.div>
+            {!fetchingPendingTxns &&
+              mergedTransactions
+                ?.filter(
+                  tx =>
+                    (isDeposit(tx) &&
+                      (tx.status === 'pending' ||
+                        tx.depositStatus == DepositStatus.L1_PENDING ||
+                        tx.depositStatus === DepositStatus.L2_PENDING)) ||
+                    (!isDeposit(tx) &&
+                      tx.status !==
+                        outgoungStateToString[OutgoingMessageState.EXECUTED])
                 )
-              )}
+                ?.map(tx =>
+                  isDeposit(tx) ? (
+                    <motion.div key={tx.txId} {...motionDivProps}>
+                      <DepositCard key={tx.txId} tx={tx} />
+                    </motion.div>
+                  ) : (
+                    <motion.div key={tx.txId} {...motionDivProps}>
+                      <WithdrawalCard key={tx.txId} tx={tx} />
+                    </motion.div>
+                  )
+                )}
           </div>
 
           {/* Transaction history table */}

@@ -1154,7 +1154,7 @@ export const useArbTokenBridge = (
       const id = getUniqueIdOrHashFromEvent(tx).toString()
       pwMap[id] = tx
     })
-    setPendingWithdrawalMap({ ...pendingWithdrawalsMap, ...pwMap })
+    setPendingWithdrawalMap({ ...pwMap })
   }
 
   return {

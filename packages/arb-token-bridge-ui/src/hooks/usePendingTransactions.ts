@@ -5,11 +5,16 @@ import {
   fetchWithdrawals,
   OutgoingMessageState
 } from 'token-bridge-sdk'
-import { transformDeposits, transformWithdrawals } from '../state/app/utils'
+import {
+  outgoungStateToString,
+  transformDeposits,
+  transformWithdrawals
+} from '../state/app/utils'
 import useSWR from 'swr'
 import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
 import { useAppState } from '../state'
 import { useGateways } from './useGateways'
+import { DepositStatus } from '../state/app/state'
 
 const INITIAL_PAGE_SIZE = 10
 
@@ -52,17 +57,36 @@ export const fetchPendingTransactions = async ({
   console.log('***** fetched pending withdrawals *****')
 
   // filter out pending deposits
-  const pendingDeposits = deposits.filter(tx => tx.status === 'pending')
+  const pendingDepositsMap: { [id: string]: boolean } = {}
+  // get their complete transformed data (so that we get their exact status)
+  const completeDepositData = transformDeposits(deposits)
+  completeDepositData.forEach(completeTxData => {
+    if (
+      completeTxData &&
+      completeTxData.depositStatus !== DepositStatus.L2_SUCCESS
+    ) {
+      pendingDepositsMap[completeTxData.txId] = true
+    }
+  })
+  const pendingDeposits = deposits.filter(tx => pendingDepositsMap[tx.txID])
 
   // filter out pending withdrawals
+  const pendingWithrawalMap: { [id: string]: boolean } = {}
+  const completeWithdrawalData = transformWithdrawals(withdrawals)
+  completeWithdrawalData.forEach(completeTxData => {
+    if (
+      completeTxData &&
+      completeTxData.status !==
+        outgoungStateToString[OutgoingMessageState.EXECUTED]
+    ) {
+      pendingWithrawalMap[String(completeTxData.txId)] = true
+    }
+  })
   const pendingWithrawals = withdrawals.filter(
-    tx => tx.outgoingMessageState !== OutgoingMessageState.EXECUTED
+    tx => pendingWithrawalMap[tx.l2TxHash!]
   )
 
   // merge those 2 and return back in 1 array which can be
-  const completeDepositData = transformDeposits(pendingDeposits)
-  const completeWithdrawalData = transformWithdrawals(pendingWithrawals)
-
   console.log('***** transformed both deposits and withdrawals *****')
   const pendingMergedTransactions = [
     ...completeDepositData,
