@@ -214,8 +214,12 @@ export function Header() {
             <HeaderMenuDesktop
               items={[
                 {
-                  title: 'App Portal',
+                  title: 'Arbitrum One Portal',
                   anchorProps: { href: 'https://portal.arbitrum.one' }
+                },
+                {
+                  title: 'Arbitrum Nova Portal',
+                  anchorProps: { href: 'https://portal-nova.arbitrum.io' }
                 },
                 {
                   title: 'Explorers',
@@ -305,8 +309,12 @@ function HeaderMobile() {
         <HeaderMenuMobile
           items={[
             {
-              title: 'App Portal',
+              title: 'Arbitrum One Portal',
               anchorProps: { href: 'https://portal.arbitrum.one' }
+            },
+            {
+              title: 'Arbitrum Nova Portal',
+              anchorProps: { href: 'https://portal-nova.arbitrum.io' }
             }
           ]}
         >
