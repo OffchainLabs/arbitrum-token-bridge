@@ -6,9 +6,9 @@ import { InformationCircleIcon } from '@heroicons/react/outline'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex w-full justify-center bg-black lg:mb-6">
+    <div className="my-2 flex w-full justify-center bg-black lg:mb-6">
       <div className="w-full max-w-[1440px] lg:px-8">
-        <div className="flex w-full">{children}</div>
+        <div className="flex w-full flex-wrap gap-2">{children}</div>
       </div>
     </div>
   )
@@ -16,7 +16,7 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
 function Notification({ children }: { children: React.ReactNode }) {
   return (
-    <div className="m-2 flex w-auto gap-2 rounded-md bg-dark p-2 px-4 text-sm text-cyan">
+    <div className="flex w-auto gap-2 whitespace-nowrap rounded-md bg-dark p-2 px-4 text-sm text-cyan">
       <InformationCircleIcon
         className="h-5 w-5 text-gray-10"
         aria-hidden="true"
