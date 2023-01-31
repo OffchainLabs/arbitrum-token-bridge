@@ -89,8 +89,7 @@ export const acceptMetamaskAccess = () => {
 
 export const startWebApp = () => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit(`/`)
-  cy.get('button').contains('Agree to terms').click()
+  cy.visitHomePage()
   cy.connectToApp()
   acceptMetamaskAccess()
 }

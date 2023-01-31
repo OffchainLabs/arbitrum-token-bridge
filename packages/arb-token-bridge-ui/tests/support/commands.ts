@@ -36,6 +36,11 @@ export const logout = () => {
   })
 }
 
+export const visitHomePage = () => {
+  cy.visit(`/`)
+  cy.get('button').contains('Agree to terms').should('be.visible').click()
+}
+
 export const resetSeenTimeStampCache = () => {
   const dataKey = 'arbitrum:bridge:seen-txs'
   const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
@@ -82,5 +87,6 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  connectToApp
+  connectToApp,
+  visitHomePage
 })
