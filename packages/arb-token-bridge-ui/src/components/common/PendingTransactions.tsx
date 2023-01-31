@@ -36,29 +36,28 @@ export const PendingTransactions = ({
         </span>
       )}
 
-      {!loading &&
-        transactions
-          ?.filter(
-            tx =>
-              (isDeposit(tx) &&
-                (tx.status === 'pending' ||
-                  tx.depositStatus == DepositStatus.L1_PENDING ||
-                  tx.depositStatus === DepositStatus.L2_PENDING)) ||
-              (!isDeposit(tx) &&
-                tx.status !==
-                  outgoungStateToString[OutgoingMessageState.EXECUTED])
+      {transactions
+        ?.filter(
+          tx =>
+            (isDeposit(tx) &&
+              (tx.status === 'pending' ||
+                tx.depositStatus == DepositStatus.L1_PENDING ||
+                tx.depositStatus === DepositStatus.L2_PENDING)) ||
+            (!isDeposit(tx) &&
+              tx.status !==
+                outgoungStateToString[OutgoingMessageState.EXECUTED])
+        )
+        ?.map(tx =>
+          isDeposit(tx) ? (
+            <motion.div key={tx.txId} {...motionDivProps}>
+              <DepositCard key={tx.txId} tx={tx} />
+            </motion.div>
+          ) : (
+            <motion.div key={tx.txId} {...motionDivProps}>
+              <WithdrawalCard key={tx.txId} tx={tx} />
+            </motion.div>
           )
-          ?.map(tx =>
-            isDeposit(tx) ? (
-              <motion.div key={tx.txId} {...motionDivProps}>
-                <DepositCard key={tx.txId} tx={tx} />
-              </motion.div>
-            ) : (
-              <motion.div key={tx.txId} {...motionDivProps}>
-                <WithdrawalCard key={tx.txId} tx={tx} />
-              </motion.div>
-            )
-          )}
+        )}
     </div>
   )
 }
