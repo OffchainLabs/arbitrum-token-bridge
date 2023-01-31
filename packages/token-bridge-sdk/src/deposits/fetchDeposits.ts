@@ -59,8 +59,7 @@ export async function fetchDeposits({
     address,
     fromBlock,
     toBlock,
-    l1Provider,
-    l2Provider,
+    l2ChainId,
     pageSize,
     pageNumber,
     searchString

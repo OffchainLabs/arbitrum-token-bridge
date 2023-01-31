@@ -23,8 +23,7 @@ export const fetchDepositsFromSubgraph = async ({
   address,
   fromBlock,
   toBlock,
-  l1Provider,
-  l2Provider,
+  l2ChainId,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
@@ -32,14 +31,11 @@ export const fetchDepositsFromSubgraph = async ({
   address: string
   fromBlock?: number
   toBlock?: number
-  l1Provider: Provider
-  l2Provider: Provider
+  l2ChainId: number
   pageSize?: number
   pageNumber?: number
   searchString?: string
 }): Promise<FetchDepositsFromSubgraphResult[]> => {
-  const l2ChainId = (await l2Provider.getNetwork()).chainId
-
   if (fromBlock === 0 && toBlock === 0) {
     return []
   }
