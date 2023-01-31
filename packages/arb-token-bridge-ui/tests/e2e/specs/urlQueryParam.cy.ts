@@ -4,7 +4,7 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { resetSeenTimeStampCache } from '../../support/commands'
-import { getInitialETHBalance, goerliRPC } from '../../support/common'
+import { getInitialETHBalance, ethRpcUrl } from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -12,7 +12,7 @@ describe('User enters site with query params on URL', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   before(() => {
-    getInitialETHBalance(goerliRPC).then(
+    getInitialETHBalance(ethRpcUrl, Cypress.env('ADDRESS')).then(
       val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 })))
     )
     // before this spec, make sure the cache is fresh
@@ -33,6 +33,7 @@ describe('User enters site with query params on URL', () => {
   afterEach(() => {
     cy.saveAppState()
   })
+
   context('Amount query param', () => {
     // only ETH is supported for now so by default the following tests are assumed to be ETH
     it('?amount=max should set transfer panel amount to maximum amount possible based on balance', () => {
@@ -49,17 +50,15 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-        .invoke('val')
-        .then(initialValue => {
+        .then(() => {
           cy.waitUntil(
             () =>
               cy
                 .findByPlaceholderText(/Enter amount/i)
-                .then($el => $el.val() !== initialValue),
+                .then($el => Number($el.val()) > 0),
             // optional timeouts and error messages
             {
-              errorMsg:
-                'was expecting some other Value but got : ' + initialValue,
+              errorMsg: 'was expecting a numerical input value greater than 0',
               timeout: 5000,
               interval: 500
             }
@@ -86,17 +85,15 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-        .invoke('val')
-        .then(initialValue => {
+        .then(() => {
           cy.waitUntil(
             () =>
               cy
                 .findByPlaceholderText(/Enter amount/i)
-                .then($el => $el.val() !== initialValue),
+                .then($el => Number($el.val()) > 0),
             // optional timeouts and error messages
             {
-              errorMsg:
-                'was expecting some other Value but got : ' + initialValue,
+              errorMsg: 'was expecting a numerical input value greater than 0',
               timeout: 5000,
               interval: 500
             }
@@ -124,17 +121,15 @@ describe('User enters site with query params on URL', () => {
         // it's very hard to get the max amount separately
         // so this test only asserts the amount set for the input field is less than user's balance
         // but not the exact MAX AMOUNT set by the `setMaxAmount` function in `TransferPanelMain.tsx`
-        .invoke('val')
-        .then(initialValue => {
+        .then(() => {
           cy.waitUntil(
             () =>
               cy
                 .findByPlaceholderText(/Enter amount/i)
-                .then($el => $el.val() !== initialValue),
+                .then($el => Number($el.val()) > 0),
             // optional timeouts and error messages
             {
-              errorMsg:
-                'was expecting some other Value but got : ' + initialValue,
+              errorMsg: 'was expecting a numerical input value greater than 0',
               timeout: 5000,
               interval: 500
             }

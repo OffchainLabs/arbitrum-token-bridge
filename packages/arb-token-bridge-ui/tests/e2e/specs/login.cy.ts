@@ -5,8 +5,8 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
-  goerliRPC,
-  arbitrumGoerliRPC
+  ethRpcUrl,
+  arbRpcUrl
 } from './../../support/common'
 
 describe('Login Account', () => {
@@ -14,10 +14,10 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(() => {
-    getInitialETHBalance(goerliRPC).then(
+    getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
-    getInitialETHBalance(arbitrumGoerliRPC).then(
+    getInitialETHBalance(arbRpcUrl).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
   })
@@ -28,13 +28,13 @@ describe('Login Account', () => {
   })
 
   it('should show connect wallet if not logged in', () => {
-    cy.visit(`/`)
+    cy.visit('/')
     cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
-  it('should connect wallet using MetaMask successfully', () => {
+  it('should connect wallet using MetaMask and show empty bridging summary successfully', () => {
     cy.login('L1')
     cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
@@ -42,9 +42,5 @@ describe('Login Account', () => {
   it('should show L1 and L2 ETH balances correctly', () => {
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
-  })
-
-  it('should show empty bridging summary', () => {
-    cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
 })
