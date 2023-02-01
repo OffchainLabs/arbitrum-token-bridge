@@ -20,6 +20,7 @@
     "framer-motion": "^4.1.17",
     "lodash-es": "^4.17.21",
     "next": "^13.1.5",
+    "next-query-params": "^4.1.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
     "query-string": "^7.1.3",

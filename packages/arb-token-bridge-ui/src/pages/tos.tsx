@@ -1,6 +1,4 @@
-export const TOS_VERSION = 1
-
-export function TermsOfService() {
+export default function TermsOfService() {
   return (
     <div className="flex w-full justify-center">
       <div className="max-w-[1440px] px-8 py-8 text-white lg:px-32">

@@ -4,7 +4,6 @@ import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -23,7 +22,6 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
 import {
@@ -52,6 +50,7 @@ import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
+import { TOS_VERSION } from '../../constants'
 
 declare global {
   interface Window {
@@ -222,63 +221,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
-function Routes() {
-  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
-  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
-
-  return (
-    <Router>
-      <ArbQueryParamProvider>
-        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-        <Switch>
-          <Route path="/tos" exact>
-            <TermsOfService />
-          </Route>
-
-          <Route path="/" exact>
-            <NetworkReady>
-              <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </AppContextProvider>
-            </NetworkReady>
-          </Route>
-
-          <Route path="*">
-            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-              <span className="text-8xl text-white">404</span>
-              <p className="text-3xl text-white">
-                Page not found in this solar system
-              </p>
-              <img
-                src="/images/arbinaut-fixing-spaceship.webp"
-                alt="Arbinaut fixing a spaceship"
-                className="lg:max-w-md"
-              />
-            </div>
-          </Route>
-        </Switch>
-      </ArbQueryParamProvider>
-    </Router>
-  )
-}
-
 function NetworkReady({ children }: { children: React.ReactNode }) {
   const [{ l2ChainId }] = useArbQueryParams()
 
@@ -402,9 +344,36 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
+  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
+  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
+
+  const isTosAccepted = tosAccepted !== undefined
+
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  function onClose(confirmed: boolean) {
+    // Only close after confirming (agreeing to terms)
+    if (confirmed) {
+      setTosAccepted('true')
+      welcomeDialogProps.onClose(confirmed)
+    }
+  }
+
   return (
     <Provider value={overmind}>
-      <Routes />
+      <ArbQueryParamProvider>
+        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+        <NetworkReady>
+          <AppContextProvider>
+            <Injector>{isTosAccepted && <AppContent />}</Injector>
+          </AppContextProvider>
+        </NetworkReady>
+      </ArbQueryParamProvider>
     </Provider>
   )
 }
