@@ -10,5 +10,6 @@
     ],
     "outDir": "./output"
   },
-  "include": ["**/*.*"]
+  "include": ["**/*.*"],
+  "exclude": ["node_modules"]
 }
