@@ -16,7 +16,6 @@ import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
-import { Layout } from '../common/Layout'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -405,9 +404,7 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <Layout>
-        <Routes />
-      </Layout>
+      <Routes />
     </Provider>
   )
 }
