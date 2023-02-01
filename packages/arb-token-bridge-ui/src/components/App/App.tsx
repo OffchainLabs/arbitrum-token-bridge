@@ -51,6 +51,7 @@ import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 import { TOS_VERSION } from '../../constants'
+import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 
 declare global {
   interface Window {
@@ -234,43 +235,6 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   )
 }
 
-function ConnectionFallbackContainer({
-  layout = 'col',
-  imgProps = {
-    className: 'sm:w-[420px]',
-    src: '/images/three-arbinauts.webp',
-    alt: 'Three Arbinauts'
-  },
-  children
-}: {
-  layout?: 'row' | 'col'
-  imgProps?: {
-    className?: string
-    src?: string
-    alt?: string
-  }
-  children: React.ReactNode
-}) {
-  return (
-    <div className="my-24 flex items-center justify-center px-8">
-      <div
-        className={`flex flex-col items-center md:flex-${layout} md:items-${
-          layout === 'col' ? 'center' : 'start'
-        }`}
-      >
-        {children}
-        <ExternalLink href="https://metamask.io/download">
-          <img
-            className={imgProps.className}
-            src={imgProps.src}
-            alt={imgProps.alt}
-          />
-        </ExternalLink>
-      </div>
-    </div>
-  )
-}
-
 function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
 
@@ -290,11 +254,11 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             <HeaderNetworkLoadingIndicator />
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <AppConnectionFallbackContainer>
             <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
               <Loader type="TailSpin" color="white" height={44} width={44} />
             </div>
-          </ConnectionFallbackContainer>
+          </AppConnectionFallbackContainer>
         </>
       )
 
@@ -305,11 +269,11 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             <HeaderConnectWalletButton />
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <AppConnectionFallbackContainer>
             <Button variant="primary" onClick={showConnectionModal}>
               Connect Wallet
             </Button>
-          </ConnectionFallbackContainer>
+          </AppConnectionFallbackContainer>
         </>
       )
 
@@ -326,7 +290,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </NetworkSelectionContainer>
           </HeaderContent>
 
-          <ConnectionFallbackContainer
+          <AppConnectionFallbackContainer
             layout="row"
             imgProps={{
               className: 'sm:w-[300px]',
@@ -335,7 +299,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             }}
           >
             <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
-          </ConnectionFallbackContainer>
+          </AppConnectionFallbackContainer>
         </>
       )
   }
