@@ -26,7 +26,7 @@ import {
   TransactionsDataStatus
 } from '../TransactionsTable/TransactionsTable'
 import { SafeImage } from './SafeImage'
-import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import CustomClipboardCopyIcon from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
 
 type ENSInfo = { name: string | null; avatar: string | null }

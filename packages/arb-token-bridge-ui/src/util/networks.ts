@@ -9,11 +9,7 @@ import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
-import EthereumLogo from '../assets/EthereumLogo.webp'
-import ArbitrumOneLogo from '../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../assets/ArbitrumNovaLogo.webp'
-
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
 if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')
@@ -55,10 +51,10 @@ type ExtendedWeb3Provider = Web3Provider & {
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Mainnet]:
-    process.env.REACT_APP_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL,
+    process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL,
   // L1 Testnets
   [ChainId.Goerli]:
-    process.env.REACT_APP_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL,
+    process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL,
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
@@ -188,9 +184,9 @@ export function registerLocalNetwork(
   const { l1Network, l2Network } = params
 
   const l1NetworkRpcUrl =
-    process.env.REACT_APP_LOCAL_ETHEREUM_RPC_URL ?? 'http://localhost:8545'
+    process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL ?? 'http://localhost:8545'
   const l2NetworkRpcUrl =
-    process.env.REACT_APP_LOCAL_ARBITRUM_RPC_URL ?? 'http://localhost:8547'
+    process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL ?? 'http://localhost:8547'
 
   try {
     rpcURLs[l1Network.chainID] = l1NetworkRpcUrl
@@ -276,18 +272,18 @@ export function getNetworkLogo(chainId: number) {
     // L1 networks
     case ChainId.Mainnet:
     case ChainId.Goerli:
-      return EthereumLogo
+      return '/EthereumLogo.webp'
 
     // L2 networks
     case ChainId.ArbitrumOne:
     case ChainId.ArbitrumGoerli:
-      return ArbitrumOneLogo
+      return '/ArbitrumOneLogo.svg'
 
     case ChainId.ArbitrumNova:
-      return ArbitrumNovaLogo
+      return '/ArbitrumNovaLogo.webp'
 
     default:
-      return EthereumLogo
+      return '/EthereumLogo.webp'
   }
 }
 

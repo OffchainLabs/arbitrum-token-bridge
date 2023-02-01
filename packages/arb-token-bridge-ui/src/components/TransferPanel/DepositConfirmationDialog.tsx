@@ -18,7 +18,7 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
+import CustomClipboardCopyIcon from '../../assets/copy.svg'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(

@@ -24,7 +24,7 @@ describe('useBalance', () => {
 
   it('getter return null for undefined walletAddress', async () => {
     const provider = new StaticJsonRpcProvider(
-      process.env.REACT_APP_ETHEREUM_RPC_URL,
+      process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
       1
     )
 
@@ -68,7 +68,7 @@ describe('useBalance', () => {
 
   it('getter return null for missing chainId', async () => {
     const provider = new StaticJsonRpcProvider(
-      process.env.REACT_APP_ETHEREUM_RPC_URL
+      process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL
     )
 
     // @ts-ignore
@@ -118,7 +118,7 @@ describe('useBalance', () => {
   describe('ETH Balance', () => {
     it('getter return ETH balance for valid tuple (walletAddress, chainId)', async () => {
       const provider = new StaticJsonRpcProvider(
-        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
         1
       )
 
@@ -153,7 +153,7 @@ describe('useBalance', () => {
 
     it('setter update ETH balance', async () => {
       const provider = new StaticJsonRpcProvider(
-        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
         1
       )
 
@@ -210,7 +210,7 @@ describe('useBalance', () => {
   describe('ERC20 Balance', () => {
     it('getter return ERC20 balance for valid tuple (walletAddress, chainId)', async () => {
       const provider = new StaticJsonRpcProvider(
-        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
         1
       )
 
@@ -271,7 +271,7 @@ describe('useBalance', () => {
 
     it('setter update ERC20 balance and merge data', async () => {
       const provider = new StaticJsonRpcProvider(
-        process.env.REACT_APP_ETHEREUM_RPC_URL,
+        process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
         1
       )
       const getBalanceSpy = jest.spyOn(provider, 'getBalance')

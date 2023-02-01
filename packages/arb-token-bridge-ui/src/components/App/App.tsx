@@ -10,9 +10,6 @@ import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
-import HeaderArbitrumLogoGoerli from '../../assets/HeaderArbitrumLogoGoerli.webp'
-
 import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
@@ -74,10 +71,10 @@ const AppContent = (): JSX.Element => {
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
 
     if (isGoerli) {
-      return { imageSrc: HeaderArbitrumLogoGoerli, className }
+      return { imageSrc: '/HeaderArbitrumLogoGoerli.webp', className }
     }
 
-    return { imageSrc: HeaderArbitrumLogoMainnet, className }
+    return { imageSrc: '/HeaderArbitrumLogoMainnet.webp', className }
   }, [l1.network])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {

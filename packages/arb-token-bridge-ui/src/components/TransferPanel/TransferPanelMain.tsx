@@ -41,14 +41,6 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 
-import EthereumLogo from '../../assets/EthereumLogo.webp'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.webp'
-
-import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.webp'
-import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.webp'
-import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.webp'
-
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
@@ -105,14 +97,14 @@ function NetworkListbox({
     const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
 
     if (!isArbitrum) {
-      return EthereumLogo
+      return '/EthereumLogo.webp'
     }
 
     if (isArbitrumNova) {
-      return ArbitrumNovaLogo
+      return '/ArbitrumNovaLogo.webp'
     }
 
-    return ArbitrumOneLogo
+    return '/ArbitrumOneLogo.svg'
   }, [])
 
   const getOptionClassName = useCallback(
@@ -209,20 +201,20 @@ function NetworkContainer({
 
     if (!isArbitrum) {
       return {
-        backgroundImage: `url(${TransparentEthereumLogo})`,
+        backgroundImage: `url('/TransparentEthereumLogo.webp')`,
         backgroundClassName: 'bg-purple-ethereum'
       }
     }
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url(${TransparentArbitrumNovaLogo})`,
+        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp'})`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url(${TransparentArbitrumOneLogo})`,
+      backgroundImage: `url('/TransparentArbitrumOneLogo.webp')`,
       backgroundClassName: 'bg-blue-arbitrum'
     }
   }, [network])

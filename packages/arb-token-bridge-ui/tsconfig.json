@@ -1,8 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src"],
+  "include": ["src", "additional.d.ts"],
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "incremental": true,
+    "jsx": "preserve"
   },
-  "exclude": ["./packages/arb-token-bridge-ui/build/static/js/*.js"]
+  "exclude": ["node_modules"]
 }

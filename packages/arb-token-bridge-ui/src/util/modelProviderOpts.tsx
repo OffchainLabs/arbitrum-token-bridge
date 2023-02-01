@@ -14,14 +14,14 @@ export const modalProviderOpts = {
           [ChainId.ArbitrumNova]: rpcURLs[ChainId.ArbitrumNova],
           [ChainId.ArbitrumGoerli]: rpcURLs[ChainId.ArbitrumGoerli]
         },
-        infuraId: process.env.REACT_APP_INFURA_KEY // required
+        infuraId: process.env.NEXT_PUBLIC_INFURA_KEY // required
       }
     },
     walletlink: {
       package: WalletLink,
       options: {
         appName: 'Arbitrum Bridge', // Required
-        infuraId: process.env.REACT_APP_INFURA_KEY, // Required unless you provide a JSON RPC url; see `rpc` below
+        infuraId: process.env.NEXT_PUBLIC_INFURA_KEY, // Required unless you provide a JSON RPC url; see `rpc` below
         chainId: ChainId.ArbitrumOne, // Optional. It defaults to 1 if not provided
         appLogoUrl: null, // Optional. Application logo image URL. favicon is used if unspecified
         darkMode: false // Optional. Use dark theme, defaults to false
