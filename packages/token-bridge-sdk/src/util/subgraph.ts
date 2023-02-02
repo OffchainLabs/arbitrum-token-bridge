@@ -3,15 +3,25 @@ import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nitro',
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nitro',
+      fetch
+    }),
     cache: new InMemoryCache()
   }),
   ArbitrumNova: new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
+      fetch
+    }),
+
     cache: new InMemoryCache()
   }),
   ArbitrumGoerli: new ApolloClient({
-    uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli',
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli',
+      fetch
+    }),
     cache: new InMemoryCache()
   })
 }
