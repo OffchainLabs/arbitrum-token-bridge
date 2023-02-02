@@ -12,12 +12,23 @@ import {
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
-  startWebApp
+  startWebApp,
+  resetSeenTimeStampCache
 } from './common'
 
-export function login(networkType: NetworkType, addNewNetwork?: boolean) {
+export function login({
+  networkType,
+  addNewNetwork = false,
+  url,
+  qs
+}: {
+  networkType: NetworkType
+  addNewNetwork?: boolean
+  url?: string
+  qs?: { [s: string]: string }
+}) {
   setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-    startWebApp()
+    startWebApp(url, qs)
   })
 }
 
@@ -34,16 +45,6 @@ export const logout = () => {
       })
     })
   })
-}
-
-export const resetSeenTimeStampCache = () => {
-  const dataKey = 'arbitrum:bridge:seen-txs'
-  const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
-
-  cy.setLocalStorage(dataKey, JSON.stringify([]))
-  cy.setLocalStorage(timestampKey, new Date().toISOString())
-
-  cy.saveLocalStorage()
 }
 
 export const restoreAppState = () => {
@@ -79,9 +80,9 @@ export const connectToApp = () => {
 }
 
 Cypress.Commands.addAll({
+  connectToApp,
   login,
   logout,
   restoreAppState,
-  saveAppState,
-  connectToApp
+  saveAppState
 })

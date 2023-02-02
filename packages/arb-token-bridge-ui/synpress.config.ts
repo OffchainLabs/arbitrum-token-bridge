@@ -4,6 +4,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
 import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
+import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 
 import {
   ethRpcUrl,
@@ -47,6 +48,12 @@ export default defineConfig({
         tokenAddress: string
       ) =>
         TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
+
+      // Deploy a custom ERC-20 token
+      const erc20Contract = new TestERC20__factory().connect(wallet.connect(ethProvider))
+      const testErc20Token = await erc20Contract.deploy()
+      await testErc20Token.deployed()
+      config.env.CUSTOM_ERC20_TOKEN_ADDRESS = testErc20Token.address
 
       on('before:run', async () => {
         let tx
@@ -93,12 +100,13 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
-      'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
-      'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
-      'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
-      'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
-      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
-      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
+      'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import custom ERC20
+      // 'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
+      // 'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
+      // 'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
+      // 'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
+      // 'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      // 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'
   }

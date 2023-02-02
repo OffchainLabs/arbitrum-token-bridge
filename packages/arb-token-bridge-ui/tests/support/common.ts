@@ -31,6 +31,7 @@ export const l2NetworkConfig = {
 
 export const ERC20TokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
@@ -87,9 +88,24 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = () => {
+export const startWebApp = (
+  url: string = '/',
+  qs: { [s: string]: string } = {}
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit('/')
+  cy.visit(url, {
+    qs
+  })
   cy.connectToApp()
   acceptMetamaskAccess()
+}
+
+export const resetSeenTimeStampCache = () => {
+  const dataKey = 'arbitrum:bridge:seen-txs'
+  const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
+
+  cy.setLocalStorage(dataKey, JSON.stringify([]))
+  cy.setLocalStorage(timestampKey, new Date().toISOString())
+
+  cy.saveLocalStorage()
 }

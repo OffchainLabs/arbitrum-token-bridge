@@ -3,13 +3,13 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   ERC20TokenAddressL1,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
@@ -47,7 +47,7 @@ describe('Deposit ERC20 Token', () => {
             symbol: 'WETH'
           }))
       )
-      cy.login('L1')
+      cy.login({ networkType: 'L1', addNewNetwork: true })
     })
 
     after(() => {
