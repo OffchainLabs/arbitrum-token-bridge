@@ -145,7 +145,7 @@ export function DepositCardContainer({
         {/* Logo watermark */}
         <img
           src={getNetworkLogo(ChainId.ArbitrumOne)}
-          className="absolute left-0 top-1 z-10 h-6 lg:relative lg:top-0 lg:ml-[-60px] lg:h-full lg:opacity-[40%]"
+          className="absolute left-0 top-1 z-10 h-6 lg:relative lg:top-0 lg:h-full lg:opacity-[40%]"
           alt="Deposit"
         />
         {/* Actual content */}

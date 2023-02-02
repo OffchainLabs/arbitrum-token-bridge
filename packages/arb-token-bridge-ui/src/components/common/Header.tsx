@@ -12,13 +12,6 @@ import {
 } from './HeaderMenu'
 import { GET_HELP_LINK } from '../../constants'
 
-import HeaderArbitrumLogoMainnet from '../../assets/HeaderArbitrumLogoMainnet.webp'
-import LearnLogo from '../../assets/header/headerLogo_learn.webp'
-import EcosystemLogo from '../../assets/header/headerLogo_ecosystem.webp'
-import ExplorersLogo from '../../assets/header/headerLogo_explorers.webp'
-import ChartsAndStatsLogo from '../../assets/header/headerLogo_chartsAndStats.webp'
-import GetHelpLogo from '../../assets/header/headerLogo_help.webp'
-
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
 function toHeaderMenuProps(
@@ -214,7 +207,7 @@ export function Header() {
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <HeaderImageElement src={HeaderArbitrumLogoMainnet} />
+            <HeaderImageElement src="/HeaderArbitrumLogoMainnet.webp" />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
@@ -317,7 +310,10 @@ function HeaderMobile() {
           className="flex w-full flex-col-reverse items-center space-y-3"
         ></div>
         <HeaderMenuMobile {...learnMenuProps}>
-          <HeaderItemLogo src={LearnLogo} alt={`logo`} />
+          <HeaderItemLogo
+            src={'../../../images/header/headerLogo_learn.webp'}
+            alt={`logo`}
+          />
           Learn
         </HeaderMenuMobile>
         <HeaderMenuMobile
@@ -332,19 +328,31 @@ function HeaderMobile() {
             }
           ]}
         >
-          <HeaderItemLogo src={EcosystemLogo} alt={`logo`} />
+          <HeaderItemLogo
+            src={'../../../images/header/headerLogo_ecosystem.webp'}
+            alt={`logo`}
+          />
           Ecosystem
         </HeaderMenuMobile>
         <HeaderMenuMobile {...explorersMenuProps}>
-          <HeaderItemLogo src={ExplorersLogo} alt={`logo`} />
+          <HeaderItemLogo
+            src={'../../../images/header/headerLogo_explorers.webp'}
+            alt={`logo`}
+          />
           Explorers
         </HeaderMenuMobile>
         <HeaderMenuMobile {...chartsStatsMenuProps}>
-          <HeaderItemLogo src={ChartsAndStatsLogo} alt={`logo`} />
+          <HeaderItemLogo
+            src={'../../../images/header/headerLogo_chartsAndStats.webp'}
+            alt={`logo`}
+          />
           Charts & Stats
         </HeaderMenuMobile>
         <MobileExternalLink href={GET_HELP_LINK}>
-          <HeaderItemLogo src={GetHelpLogo} alt={`logo`} />
+          <HeaderItemLogo
+            src={'../../../images/header/headerLogo_help.webp'}
+            alt={`logo`}
+          />
           Get Help
         </MobileExternalLink>
       </div>

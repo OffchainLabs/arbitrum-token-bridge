@@ -6,7 +6,8 @@ import {
   ChevronDownIcon,
   ExternalLinkIcon,
   LogoutIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -20,7 +21,6 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 
 import { SafeImage } from './SafeImage'
-import { ReactComponent as CustomClipboardCopyIcon } from '../../assets/copy.svg'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextDispatch } from '../App/AppContext'
 import { TransactionHistoryTooltip } from './TransactionHistoryTooltip'
@@ -203,7 +203,7 @@ export function HeaderAccountPopover() {
               onClick={() => copy(ensInfo.name ?? udInfo.name ?? account ?? '')}
             >
               {/* Blurred background */}
-              <div className="absolute inset-0 -z-50 flex h-[40px] w-full flex-col items-center overflow-hidden bg-dark text-center">
+              <div className="absolute inset-0 flex h-[40px] w-full flex-col items-center overflow-hidden bg-dark text-center">
                 <div className="scale-400 blur-2xl filter">
                   <SafeImage
                     className="h-100 w-100 rounded-full"
@@ -226,7 +226,7 @@ export function HeaderAccountPopover() {
                   <span className="text-md max-w-[10rem] overflow-hidden text-ellipsis font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
-                  <CustomClipboardCopyIcon className="h-4 w-4" />
+                  <DocumentDuplicateIcon className="h-4 w-4" />
                 </div>
               </div>
             </button>

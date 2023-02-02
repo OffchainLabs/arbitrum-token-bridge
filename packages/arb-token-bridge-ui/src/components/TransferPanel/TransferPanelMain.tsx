@@ -42,10 +42,6 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 
-import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.webp'
-import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.webp'
-import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.webp'
-
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
@@ -196,20 +192,20 @@ function NetworkContainer({
 
     if (!isArbitrum) {
       return {
-        backgroundImage: `url(${TransparentEthereumLogo})`,
+        backgroundImage: `url('/TransparentEthereumLogo.webp')`,
         backgroundClassName: 'bg-purple-ethereum'
       }
     }
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url(${TransparentArbitrumNovaLogo})`,
+        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp'})`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url(${TransparentArbitrumOneLogo})`,
+      backgroundImage: `url('/TransparentArbitrumOneLogo.webp')`,
       backgroundClassName: 'bg-blue-arbitrum'
     }
   }, [network])

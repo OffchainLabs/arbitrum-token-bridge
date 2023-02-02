@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkLogo, getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 

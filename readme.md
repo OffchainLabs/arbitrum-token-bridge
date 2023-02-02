@@ -12,12 +12,12 @@
 
    1. `touch ./packages/arb-token-bridge-ui/.env`
 
-   2. In `.env`, add `REACT_APP_INFURA_KEY=my-infura-key`
+   2. In `.env`, add `NEXT_PUBLIC_INFURA_KEY=my-infura-key`
 
    3. For custom urls, set optional vars:
 
-   - `REACT_APP_ETHEREUM_RPC_URL=my-eth-node`
-   - `REACT_APP_GOERLI_RPC_URL=my-goerli-node`
+   - `NEXT_PUBLIC_ETHEREUM_RPC_URL=my-eth-node`
+   - `NEXT_PUBLIC_GOERLI_RPC_URL=my-goerli-node`
      (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
      If no custom URL is provided, Infura will be used by default.
 

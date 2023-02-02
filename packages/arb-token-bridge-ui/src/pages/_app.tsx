@@ -1,19 +1,17 @@
-import ReactDOM from 'react-dom'
+import type { AppProps } from 'next/app'
+import Head from 'next/head'
 import * as Sentry from '@sentry/react'
 import { BrowserTracing } from '@sentry/tracing'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-import App from './components/App/App'
-import reportWebVitals from './reportWebVitals'
-import { registerLocalNetwork } from './util/networks'
-
-import Package from '../package.json'
-
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 
-import './styles/tailwind.css'
+import Package from '../../package.json'
+import { registerLocalNetwork } from '../util/networks'
+
+import '../styles/tailwind.css'
 
 if (process.env.NODE_ENV !== 'production') {
   registerLocalNetwork()
@@ -22,7 +20,7 @@ if (process.env.NODE_ENV !== 'production') {
 dayjs.extend(relativeTime)
 
 Sentry.init({
-  dsn: process.env.REACT_APP_SENTRY_DSN,
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   release: Package.version,
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
@@ -42,8 +40,14 @@ Sentry.init({
   }
 })
 
-ReactDOM.render(<App />, document.getElementById('root'))
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals()
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Bridge to Arbitrum</title>
+      </Head>
+      <Component {...pageProps} />
+    </>
+  )
+}

@@ -85,7 +85,7 @@ export default defineConfig({
       })
       config.env.ADDRESS = testWalletAddress
       config.env.PRIVATE_KEY = testWallet.privateKey
-      config.env.INFURA_KEY = process.env.REACT_APP_INFURA_KEY
+      config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       return config

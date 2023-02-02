@@ -5,7 +5,6 @@ import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import ArbinautMoonWalking from '../../assets/ArbinautMoonWalking.webp'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -52,7 +51,7 @@ const NoDataOverlay = ({ children }: { children: React.ReactNode }) => {
       {children}
 
       <img
-        src={ArbinautMoonWalking}
+        src={'../../../images/ArbinautMoonWalking.webp'}
         alt="Moon walking Arbibaut"
         className="lg:max-h-[50%] lg:max-w-[50%]"
       />
