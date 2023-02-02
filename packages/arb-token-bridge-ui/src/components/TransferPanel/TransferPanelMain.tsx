@@ -208,7 +208,7 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp'})`,
+        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
