@@ -1,10 +1,10 @@
-import { useCallback, useState, useMemo } from 'react'
-import { BigNumber, constants, utils } from 'ethers'
-import { Signer } from '@ethersproject/abstract-signer'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { useLocalStorage } from '@rehooks/local-storage'
-import { TokenList } from '@uniswap/token-lists'
-import { MaxUint256 } from '@ethersproject/constants'
+import { useCallback, useState, useMemo } from 'react';
+import { BigNumber, constants, utils } from 'ethers';
+import { Signer } from '@ethersproject/abstract-signer';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { useLocalStorage } from '@rehooks/local-storage';
+import { TokenList } from '@uniswap/token-lists';
+import { MaxUint256 } from '@ethersproject/constants';
 import {
   L1Network,
   L2Network,
@@ -13,14 +13,14 @@ import {
   L1ToL2MessageStatus,
   L2ToL1Message,
   L2ToL1MessageReader,
-  L2TransactionReceipt
-} from '@arbitrum/sdk'
-import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+  L2TransactionReceipt,
+} from '@arbitrum/sdk';
+import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction';
+import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory';
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory';
 
-import { getL1ERC20Address } from '../util/getL1ERC20Address'
-import useTransactions, { L1ToL2MessageData } from './useTransactions'
+import { getL1ERC20Address } from '../util/getL1ERC20Address';
+import useTransactions, { L1ToL2MessageData } from './useTransactions';
 import {
   AddressToSymbol,
   AddressToDecimals,
@@ -37,92 +37,92 @@ import {
   NodeBlockDeadlineStatus,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle
-} from './arbTokenBridge.types'
-import { useBalance } from './useBalance'
+  L2ContractCallTransactionLifecycle,
+} from './arbTokenBridge.types';
+import { useBalance } from './useBalance';
 import {
   fetchETHWithdrawalsFromEventLogs,
   fetchETHWithdrawalsFromSubgraph,
   fetchTokenWithdrawalsFromEventLogs,
   fetchTokenWithdrawalsFromSubgraph,
-  FetchTokenWithdrawalsFromSubgraphResult
-} from '../withdrawals'
+  FetchTokenWithdrawalsFromSubgraphResult,
+} from '../withdrawals';
 
-import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
-import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
+import { getUniqueIdOrHashFromEvent } from '../util/migration';
+import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util';
+import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph';
 
 export const wait = (ms = 0) => {
-  return new Promise(res => setTimeout(res, ms))
-}
+  return new Promise((res) => setTimeout(res, ms));
+};
 
-const addressToSymbol: AddressToSymbol = {}
-const addressToDecimals: AddressToDecimals = {}
+const addressToSymbol: AddressToSymbol = {};
+const addressToDecimals: AddressToDecimals = {};
 
 class TokenDisabledError extends Error {
   constructor(msg: string) {
-    super(msg)
-    this.name = 'TokenDisabledError'
+    super(msg);
+    this.name = 'TokenDisabledError';
   }
 }
 
 function getExecutedMessagesCacheKey({
   event,
-  l2ChainId
+  l2ChainId,
 }: {
-  event: L2ToL1EventResult
-  l2ChainId: number
+  event: L2ToL1EventResult;
+  l2ChainId: number;
 }) {
   return isClassicL2ToL1TransactionEvent(event)
     ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
-    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
+    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`;
 }
 
 export interface TokenBridgeParams {
-  walletAddress: string
-  l1: { provider: JsonRpcProvider; network: L1Network }
-  l2: { provider: JsonRpcProvider; network: L2Network }
+  walletAddress: string;
+  l1: { provider: JsonRpcProvider; network: L1Network };
+  l2: { provider: JsonRpcProvider; network: L2Network };
 }
 
 export const useArbTokenBridge = (
-  params: TokenBridgeParams
+  params: TokenBridgeParams,
 ): ArbTokenBridge => {
-  const { walletAddress, l1, l2 } = params
+  const { walletAddress, l1, l2 } = params;
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
-  >(undefined)
+  >(undefined);
 
   const {
     eth: [, updateEthL1Balance],
-    erc20: [, updateErc20L1Balance]
+    erc20: [, updateErc20L1Balance],
   } = useBalance({
     provider: l1.provider,
-    walletAddress
-  })
+    walletAddress,
+  });
   const {
     eth: [, updateEthL2Balance],
-    erc20: [, updateErc20L2Balance]
+    erc20: [, updateErc20L2Balance],
   } = useBalance({
     provider: l2.provider,
-    walletAddress
-  })
+    walletAddress,
+  });
 
   interface ExecutedMessagesCache {
-    [id: string]: boolean
+    [id: string]: boolean;
   }
 
   const [executedMessagesCache, setExecutedMessagesCache] =
     useLocalStorage<ExecutedMessagesCache>(
       'arbitrum:bridge:executed-messages',
-      {}
+      {},
     ) as [
       ExecutedMessagesCache,
       React.Dispatch<ExecutedMessagesCache>,
-      React.Dispatch<void>
-    ]
+      React.Dispatch<void>,
+    ];
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
-    useState<PendingWithdrawalsMap>({})
+    useState<PendingWithdrawalsMap>({});
   const [
     transactions,
     {
@@ -134,18 +134,21 @@ export const useArbTokenBridge = (
       setTransactionSuccess,
       updateTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateEthDepositMessageStatus
-    }
-  ] = useTransactions()
+      fetchAndUpdateEthDepositMessageStatus,
+    },
+  ] = useTransactions();
 
-  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
-  const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
+  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network]);
+  const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network]);
 
-  const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
-  const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
+  const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network]);
+  const erc20Bridger = useMemo(
+    () => new Erc20Bridger(l2.network),
+    [l2.network],
+  );
 
   async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
-    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider)
+    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider);
   }
 
   /**
@@ -154,7 +157,7 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
-    return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1.provider)
+    return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1.provider);
   }
 
   /**
@@ -163,31 +166,31 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
-    return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider)
+    return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider);
   }
 
   const depositEth = async ({
     amount,
     l1Signer,
-    txLifecycle
+    txLifecycle,
   }: {
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    amount: BigNumber;
+    l1Signer: Signer;
+    txLifecycle?: L1EthDepositTransactionLifecycle;
   }) => {
-    let tx: L1EthDepositTransaction
+    let tx: L1EthDepositTransaction;
 
     try {
       tx = await ethBridger.deposit({
         amount,
-        l1Signer
-      })
+        l1Signer,
+      });
 
       if (txLifecycle?.onTxSubmit) {
-        txLifecycle.onTxSubmit(tx)
+        txLifecycle.onTxSubmit(tx);
       }
     } catch (error: any) {
-      return alert(error.message)
+      return alert(error.message);
     }
 
     addTransaction({
@@ -199,65 +202,65 @@ export const useArbTokenBridge = (
       assetType: AssetType.ETH,
       sender: walletAddress,
       l1NetworkID,
-      l2NetworkID
-    })
+      l2NetworkID,
+    });
 
-    const receipt = await tx.wait()
+    const receipt = await tx.wait();
 
     if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(receipt)
+      txLifecycle.onTxConfirm(receipt);
     }
 
-    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
+    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider);
 
     if (!ethDepositMessage) {
-      return
+      return;
     }
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      l2TxID: undefined
-    }
+      l2TxID: undefined,
+    };
 
-    updateTransaction(receipt, tx, l1ToL2MsgData)
-    updateEthBalances()
-  }
+    updateTransaction(receipt, tx, l1ToL2MsgData);
+    updateEthBalances();
+  };
 
   async function depositEthEstimateGas({ amount }: { amount: BigNumber }) {
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
-      from: walletAddress
-    })
+      from: walletAddress,
+    });
 
     const estimatedL1Gas = await l1.provider.estimateGas(
-      depositRequest.txRequest
-    )
+      depositRequest.txRequest,
+    );
 
-    const estimatedL2Gas = constants.Zero
-    const estimatedL2SubmissionCost = constants.Zero
-    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+    const estimatedL2Gas = constants.Zero;
+    const estimatedL2SubmissionCost = constants.Zero;
+    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost };
   }
 
   async function withdrawEth({
     amount,
     l2Signer,
-    txLifecycle
+    txLifecycle,
   }: {
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    amount: BigNumber;
+    l2Signer: Signer;
+    txLifecycle?: L2ContractCallTransactionLifecycle;
   }) {
     const tx = await ethBridger.withdraw({
       amount,
       l2Signer,
       destinationAddress: walletAddress,
-      from: walletAddress
-    })
+      from: walletAddress,
+    });
 
     if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
+      txLifecycle.onTxSubmit(tx);
     }
 
     try {
@@ -271,30 +274,30 @@ export const useArbTokenBridge = (
         sender: walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
-        l2NetworkID
-      })
+        l2NetworkID,
+      });
 
-      const receipt = await tx.wait()
+      const receipt = await tx.wait();
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
+        txLifecycle.onTxConfirm(receipt);
       }
 
-      updateTransaction(receipt, tx)
-      updateEthBalances()
+      updateTransaction(receipt, tx);
+      updateEthBalances();
 
-      const l2ToL1Events = receipt.getL2ToL1Events()
+      const l2ToL1Events = receipt.getL2ToL1Events();
 
       if (l2ToL1Events.length === 1) {
-        const l2ToL1EventResult = l2ToL1Events[0]
+        const l2ToL1EventResult = l2ToL1Events[0];
 
         if (!l2ToL1EventResult) {
-          return
+          return;
         }
 
-        const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
+        const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString();
 
-        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
+        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED;
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
           type: AssetType.ETH,
@@ -303,20 +306,20 @@ export const useArbTokenBridge = (
           symbol: 'ETH',
           decimals: 18,
           nodeBlockDeadline: 'NODE_NOT_CREATED',
-          l2TxHash: tx.hash
-        }
+          l2TxHash: tx.hash,
+        };
 
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+        setPendingWithdrawalMap((oldPendingWithdrawalsMap) => {
           return {
             ...oldPendingWithdrawalsMap,
-            [id]: l2ToL1EventResultPlus
-          }
-        })
+            [id]: l2ToL1EventResultPlus,
+          };
+        });
       }
 
-      return receipt
+      return receipt;
     } catch (e) {
-      console.error('withdrawEth err', e)
+      console.error('withdrawEth err', e);
     }
   }
 
@@ -324,37 +327,37 @@ export const useArbTokenBridge = (
     const withdrawalRequest = await ethBridger.getWithdrawalRequest({
       amount,
       destinationAddress: walletAddress,
-      from: walletAddress
-    })
+      from: walletAddress,
+    });
 
     // Can't do this atm. Hardcoded to 130_000.
-    const estimatedL1Gas = BigNumber.from(130_000)
+    const estimatedL1Gas = BigNumber.from(130_000);
 
     const estimatedL2Gas = await l2.provider.estimateGas(
-      withdrawalRequest.txRequest
-    )
+      withdrawalRequest.txRequest,
+    );
 
-    return { estimatedL1Gas, estimatedL2Gas }
+    return { estimatedL1Gas, estimatedL2Gas };
   }
 
   const approveToken = async ({
     erc20L1Address,
-    l1Signer
+    l1Signer,
   }: {
-    erc20L1Address: string
-    l1Signer: Signer
+    erc20L1Address: string;
+    l1Signer: Signer;
   }) => {
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
-      l1Signer
-    })
+      l1Signer,
+    });
 
     const tokenData = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+      l2Provider: l2.provider,
+    });
 
     addTransaction({
       type: 'approve',
@@ -364,55 +367,55 @@ export const useArbTokenBridge = (
       assetName: tokenData.symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
-      l1NetworkID
-    })
+      l1NetworkID,
+    });
 
-    const receipt = await tx.wait()
+    const receipt = await tx.wait();
 
-    updateTransaction(receipt, tx)
-    updateTokenData(erc20L1Address)
-  }
+    updateTransaction(receipt, tx);
+    updateTokenData(erc20L1Address);
+  };
 
   const approveTokenEstimateGas = async ({
-    erc20L1Address
+    erc20L1Address,
   }: {
-    erc20L1Address: string
+    erc20L1Address: string;
   }) => {
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
-      l1.provider
-    )
+      l1.provider,
+    );
 
-    const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
+    const contract = ERC20__factory.connect(erc20L1Address, l1.provider);
 
     return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
-      from: walletAddress
-    })
-  }
+      from: walletAddress,
+    });
+  };
 
   const approveTokenL2 = async ({
     erc20L1Address,
-    l2Signer
+    l2Signer,
   }: {
-    erc20L1Address: string
-    l2Signer: Signer
+    erc20L1Address: string;
+    l2Signer: Signer;
   }) => {
     if (typeof bridgeTokens === 'undefined') {
-      return
+      return;
     }
-    const bridgeToken = bridgeTokens[erc20L1Address]
-    if (!bridgeToken) throw new Error('Bridge token not found')
-    const { l2Address } = bridgeToken
-    if (!l2Address) throw new Error('L2 address not found')
-    const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
-    const contract = await ERC20__factory.connect(l2Address, l2Signer)
-    const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
+    const bridgeToken = bridgeTokens[erc20L1Address];
+    if (!bridgeToken) throw new Error('Bridge token not found');
+    const { l2Address } = bridgeToken;
+    if (!l2Address) throw new Error('L2 address not found');
+    const gatewayAddress = await getL2GatewayAddress(erc20L1Address);
+    const contract = await ERC20__factory.connect(l2Address, l2Signer);
+    const tx = await contract.functions.approve(gatewayAddress, MaxUint256);
     const tokenData = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+      l2Provider: l2.provider,
+    });
 
     addTransaction({
       type: 'approve-l2',
@@ -424,33 +427,33 @@ export const useArbTokenBridge = (
       sender: walletAddress,
       blockNumber: tx.blockNumber,
       l1NetworkID,
-      l2NetworkID
-    })
+      l2NetworkID,
+    });
 
-    const receipt = await tx.wait()
-    updateTransaction(receipt, tx)
-    updateTokenData(erc20L1Address)
-  }
+    const receipt = await tx.wait();
+    updateTransaction(receipt, tx);
+    updateTokenData(erc20L1Address);
+  };
 
   async function depositToken({
     erc20L1Address,
     amount,
     l1Signer,
     txLifecycle,
-    destinationAddress
+    destinationAddress,
   }: {
-    erc20L1Address: string
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
-    destinationAddress?: string
+    erc20L1Address: string;
+    amount: BigNumber;
+    l1Signer: Signer;
+    txLifecycle?: L1ContractCallTransactionLifecycle;
+    destinationAddress?: string;
   }) {
     const { symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+      l2Provider: l2.provider,
+    });
 
     const depositRequest = await erc20Bridger.getDepositRequest({
       l1Provider: l1.provider,
@@ -458,16 +461,16 @@ export const useArbTokenBridge = (
       from: walletAddress,
       erc20L1Address,
       destinationAddress,
-      amount
-    })
+      amount,
+    });
 
     const tx = await erc20Bridger.deposit({
       ...depositRequest,
-      l1Signer
-    })
+      l1Signer,
+    });
 
     if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
+      txLifecycle.onTxSubmit(tx);
     }
 
     addTransaction({
@@ -480,40 +483,40 @@ export const useArbTokenBridge = (
       tokenAddress: erc20L1Address,
       sender: walletAddress,
       l1NetworkID,
-      l2NetworkID
-    })
+      l2NetworkID,
+    });
 
-    const receipt = await tx.wait()
+    const receipt = await tx.wait();
 
     if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(receipt)
+      txLifecycle.onTxConfirm(receipt);
     }
 
-    const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
+    const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider);
     if (!l1ToL2Msg) {
-      return
+      return;
     }
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
       retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-      l2TxID: undefined
-    }
+      l2TxID: undefined,
+    };
 
-    updateTransaction(receipt, tx, l1ToL2MsgData)
-    updateTokenData(erc20L1Address)
+    updateTransaction(receipt, tx, l1ToL2MsgData);
+    updateTokenData(erc20L1Address);
 
-    return receipt
+    return receipt;
   }
 
   async function depositTokenEstimateGas() {
-    const l1BaseFee = await l1.provider.getGasPrice()
+    const l1BaseFee = await l1.provider.getGasPrice();
 
     const inbox = Inbox__factory.connect(
       l2.network.ethBridge.inbox,
-      l1.provider
-    )
+      l1.provider,
+    );
 
     const estimatedL2SubmissionCost =
       await inbox.calculateRetryableSubmissionFee(
@@ -528,8 +531,8 @@ export const useArbTokenBridge = (
         // We do the same percent increase in the SDK
         //
         // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
-        l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
-      )
+        l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3))),
+      );
 
     return {
       // Values set by looking at a couple of different ERC-20 deposits
@@ -548,8 +551,8 @@ export const useArbTokenBridge = (
       // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
       // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
       estimatedL2Gas: BigNumber.from(100_000),
-      estimatedL2SubmissionCost
-    }
+      estimatedL2SubmissionCost,
+    };
   }
 
   async function withdrawToken({
@@ -557,50 +560,50 @@ export const useArbTokenBridge = (
     amount,
     l2Signer,
     txLifecycle,
-    destinationAddress
+    destinationAddress,
   }: {
-    erc20L1Address: string
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-    destinationAddress?: string
+    erc20L1Address: string;
+    amount: BigNumber;
+    l2Signer: Signer;
+    txLifecycle?: L2ContractCallTransactionLifecycle;
+    destinationAddress?: string;
   }) {
-    const provider = l2Signer.provider
+    const provider = l2Signer.provider;
     const isSmartContractAddress =
-      provider && (await provider.getCode(String(erc20L1Address))).length < 2
+      provider && (await provider.getCode(String(erc20L1Address))).length < 2;
     if (isSmartContractAddress && !destinationAddress) {
-      throw new Error(`Missing destination address`)
+      throw new Error(`Missing destination address`);
     }
 
     if (typeof bridgeTokens === 'undefined') {
-      return
+      return;
     }
-    const bridgeToken = bridgeTokens[erc20L1Address]
+    const bridgeToken = bridgeTokens[erc20L1Address];
 
     const { symbol, decimals } = await (async () => {
       if (bridgeToken) {
-        const { symbol, decimals } = bridgeToken
-        return { symbol, decimals }
+        const { symbol, decimals } = bridgeToken;
+        return { symbol, decimals };
       }
       const { symbol, decimals } = await getL1TokenData({
         account: walletAddress,
         erc20L1Address,
         l1Provider: l1.provider,
-        l2Provider: l2.provider
-      })
-      addToken(erc20L1Address)
-      return { symbol, decimals }
-    })()
+        l2Provider: l2.provider,
+      });
+      addToken(erc20L1Address);
+      return { symbol, decimals };
+    })();
 
     const tx = await erc20Bridger.withdraw({
       l2Signer,
       erc20l1Address: erc20L1Address,
       destinationAddress: destinationAddress ?? walletAddress,
-      amount
-    })
+      amount,
+    });
 
     if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
+      txLifecycle.onTxSubmit(tx);
     }
 
     addTransaction({
@@ -613,29 +616,29 @@ export const useArbTokenBridge = (
       sender: walletAddress,
       blockNumber: tx.blockNumber,
       l1NetworkID,
-      l2NetworkID
-    })
+      l2NetworkID,
+    });
 
     try {
-      const receipt = await tx.wait()
+      const receipt = await tx.wait();
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
+        txLifecycle.onTxConfirm(receipt);
       }
 
-      updateTransaction(receipt, tx)
+      updateTransaction(receipt, tx);
 
-      const l2ToL1Events = receipt.getL2ToL1Events()
+      const l2ToL1Events = receipt.getL2ToL1Events();
 
       if (l2ToL1Events.length === 1) {
-        const l2ToL1EventDataResult = l2ToL1Events[0]
+        const l2ToL1EventDataResult = l2ToL1Events[0];
 
         if (!l2ToL1EventDataResult) {
-          return
+          return;
         }
 
-        const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
-        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
+        const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString();
+        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED;
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
           type: AssetType.ERC20,
@@ -645,77 +648,77 @@ export const useArbTokenBridge = (
           symbol: symbol,
           decimals: decimals,
           nodeBlockDeadline: 'NODE_NOT_CREATED',
-          l2TxHash: tx.hash
-        }
+          l2TxHash: tx.hash,
+        };
 
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+        setPendingWithdrawalMap((oldPendingWithdrawalsMap) => {
           return {
             ...oldPendingWithdrawalsMap,
-            [id]: l2ToL1EventDataResultPlus
-          }
-        })
+            [id]: l2ToL1EventDataResultPlus,
+          };
+        });
       }
-      updateTokenData(erc20L1Address)
-      return receipt
+      updateTokenData(erc20L1Address);
+      return receipt;
     } catch (err) {
-      console.warn('withdraw token err', err)
+      console.warn('withdraw token err', err);
     }
   }
 
   async function withdrawTokenEstimateGas({
     amount,
-    erc20L1Address
+    erc20L1Address,
   }: {
-    amount: BigNumber
-    erc20L1Address: string
+    amount: BigNumber;
+    erc20L1Address: string;
   }) {
-    const estimatedL1Gas = BigNumber.from(160_000)
+    const estimatedL1Gas = BigNumber.from(160_000);
 
     const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
       amount,
       destinationAddress: walletAddress,
       erc20l1Address: erc20L1Address,
-      from: walletAddress
-    })
+      from: walletAddress,
+    });
 
     const estimatedL2Gas = await l2.provider.estimateGas(
-      withdrawalRequest.txRequest
-    )
+      withdrawalRequest.txRequest,
+    );
 
-    return { estimatedL1Gas, estimatedL2Gas }
+    return { estimatedL1Gas, estimatedL2Gas };
   }
 
   const removeTokensFromList = (listID: number) => {
-    setBridgeTokens(prevBridgeTokens => {
-      const newBridgeTokens = { ...prevBridgeTokens }
+    setBridgeTokens((prevBridgeTokens) => {
+      const newBridgeTokens = { ...prevBridgeTokens };
       for (const address in bridgeTokens) {
-        const token = bridgeTokens[address]
-        if (!token) continue
+        const token = bridgeTokens[address];
+        if (!token) continue;
 
-        token.listIds.delete(listID)
+        token.listIds.delete(listID);
 
         if (token.listIds.size === 0) {
-          delete newBridgeTokens[address]
+          delete newBridgeTokens[address];
         }
       }
-      return newBridgeTokens
-    })
-  }
+      return newBridgeTokens;
+    });
+  };
 
   const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.chainID
-    const l2ChainID = l2.network.chainID
+    const l1ChainID = l1.network.chainID;
+    const l2ChainID = l2.network.chainID;
 
-    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {};
 
-    const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
+    const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = [];
 
     for (const tokenData of arbTokenList.tokens) {
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
-        tokenData
+        tokenData;
 
       if (![l1ChainID, l2ChainID].includes(chainId)) {
-        continue
+        continue;
       }
 
       const bridgeInfo = (() => {
@@ -723,37 +726,37 @@ export const useArbTokenBridge = (
         interface Extensions {
           bridgeInfo: {
             [chainId: string]: {
-              tokenAddress: string
-              originBridgeAddress: string
-              destBridgeAddress: string
-            }
-          }
+              tokenAddress: string;
+              originBridgeAddress: string;
+              destBridgeAddress: string;
+            };
+          };
         }
         const isExtensions = (obj: any): obj is Extensions => {
-          if (!obj) return false
-          if (!obj['bridgeInfo']) return false
+          if (!obj) return false;
+          if (!obj['bridgeInfo']) return false;
           return Object.keys(obj['bridgeInfo'])
-            .map(key => obj['bridgeInfo'][key])
+            .map((key) => obj['bridgeInfo'][key])
             .every(
-              e =>
+              (e) =>
                 e &&
                 'tokenAddress' in e &&
                 'originBridgeAddress' in e &&
-                'destBridgeAddress' in e
-            )
-        }
+                'destBridgeAddress' in e,
+            );
+        };
         if (!isExtensions(extensions)) {
-          return null
+          return null;
         } else {
-          return extensions.bridgeInfo
+          return extensions.bridgeInfo;
         }
-      })()
+      })();
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase();
 
         if (!l1Address) {
-          return
+          return;
         }
 
         bridgeTokensToAdd[l1Address] = {
@@ -764,8 +767,8 @@ export const useArbTokenBridge = (
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: new Set([listId])
-        }
+          listIds: new Set([listId]),
+        };
       }
       // save potentially unbridged L1 tokens:
       // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
@@ -777,94 +780,94 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: new Set([listId])
-        })
+          listIds: new Set([listId]),
+        });
       }
     }
 
     // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
     const l1AddressesOfBridgedTokens = new Set(
       Object.keys(bridgeTokensToAdd).map(
-        l1Address =>
-          l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
-      )
-    )
+        (l1Address) =>
+          l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */,
+      ),
+    );
     for (const l1TokenData of candidateUnbridgedTokensToAdd) {
       if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
-        bridgeTokensToAdd[l1TokenData.address] = l1TokenData
+        bridgeTokensToAdd[l1TokenData.address] = l1TokenData;
       }
     }
 
     // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
-    setBridgeTokens(oldBridgeTokens => {
-      const l1Addresses: string[] = []
-      const l2Addresses: string[] = []
+    setBridgeTokens((oldBridgeTokens) => {
+      const l1Addresses: string[] = [];
+      const l2Addresses: string[] = [];
 
       for (const tokenAddress in bridgeTokensToAdd) {
-        const tokenToAdd = bridgeTokensToAdd[tokenAddress]
+        const tokenToAdd = bridgeTokensToAdd[tokenAddress];
         if (!tokenToAdd) {
-          return
+          return;
         }
-        const { address, l2Address } = tokenToAdd
+        const { address, l2Address } = tokenToAdd;
         if (address) {
-          l1Addresses.push(address)
+          l1Addresses.push(address);
         }
         if (l2Address) {
-          l2Addresses.push(l2Address)
+          l2Addresses.push(l2Address);
         }
 
         // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
         // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
         const oldListIds =
-          oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
-        tokenToAdd.listIds = new Set([...oldListIds, listId])
+          oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set();
+        tokenToAdd.listIds = new Set([...oldListIds, listId]);
       }
 
-      updateErc20L1Balance(l1Addresses)
-      updateErc20L2Balance(l2Addresses)
+      updateErc20L1Balance(l1Addresses);
+      updateErc20L2Balance(l2Addresses);
 
       return {
         ...oldBridgeTokens,
-        ...bridgeTokensToAdd
-      }
-    })
-  }
+        ...bridgeTokensToAdd,
+      };
+    });
+  };
 
   async function addToken(erc20L1orL2Address: string) {
-    let l1Address: string
-    let l2Address: string | undefined
+    let l1Address: string;
+    let l2Address: string | undefined;
 
-    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
+    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase();
     const maybeL1Address = await getL1ERC20Address({
       erc20L2Address: lowercasedErc20L1orL2Address,
-      l2Provider: l2.provider
-    })
+      l2Provider: l2.provider,
+    });
 
     if (maybeL1Address) {
       // looks like l2 address was provided
-      l1Address = maybeL1Address
-      l2Address = lowercasedErc20L1orL2Address
+      l1Address = maybeL1Address;
+      l2Address = lowercasedErc20L1orL2Address;
     } else {
       // looks like l1 address was provided
-      l1Address = lowercasedErc20L1orL2Address
-      l2Address = await getL2ERC20Address(l1Address)
+      l1Address = lowercasedErc20L1orL2Address;
+      l2Address = await getL2ERC20Address(l1Address);
     }
 
-    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {};
     const { name, symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address: l1Address,
       l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+      l2Provider: l2.provider,
+    });
 
-    const isDisabled = await l1TokenIsDisabled(l1Address)
+    const isDisabled = await l1TokenIsDisabled(l1Address);
 
     if (isDisabled) {
-      throw new TokenDisabledError('Token currently disabled')
+      throw new TokenDisabledError('Token currently disabled');
     }
 
-    const l1AddressLowerCased = l1Address.toLowerCase()
+    const l1AddressLowerCased = l1Address.toLowerCase();
     bridgeTokensToAdd[l1AddressLowerCased] = {
       name,
       type: TokenType.ERC20,
@@ -872,73 +875,73 @@ export const useArbTokenBridge = (
       address: l1AddressLowerCased,
       l2Address: l2Address?.toLowerCase(),
       decimals,
-      listIds: new Set()
-    }
+      listIds: new Set(),
+    };
 
-    setBridgeTokens(oldBridgeTokens => {
-      return { ...oldBridgeTokens, ...bridgeTokensToAdd }
-    })
+    setBridgeTokens((oldBridgeTokens) => {
+      return { ...oldBridgeTokens, ...bridgeTokensToAdd };
+    });
 
-    updateErc20L1Balance([l1AddressLowerCased])
+    updateErc20L1Balance([l1AddressLowerCased]);
     if (l2Address) {
-      updateErc20L2Balance([l2Address])
+      updateErc20L2Balance([l2Address]);
     }
   }
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
       if (typeof bridgeTokens === 'undefined') {
-        return
+        return;
       }
-      const l1AddressLowerCased = l1Address.toLowerCase()
-      const bridgeToken = bridgeTokens[l1AddressLowerCased]
+      const l1AddressLowerCased = l1Address.toLowerCase();
+      const bridgeToken = bridgeTokens[l1AddressLowerCased];
 
       if (!bridgeToken) {
-        return
+        return;
       }
 
-      const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken }
-      setBridgeTokens(oldBridgeTokens => {
-        return { ...oldBridgeTokens, ...newBridgeTokens }
-      })
-      const { l2Address } = bridgeToken
-      updateErc20L1Balance([l1AddressLowerCased])
+      const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken };
+      setBridgeTokens((oldBridgeTokens) => {
+        return { ...oldBridgeTokens, ...newBridgeTokens };
+      });
+      const { l2Address } = bridgeToken;
+      updateErc20L1Balance([l1AddressLowerCased]);
       if (l2Address) {
-        updateErc20L2Balance([l2Address])
+        updateErc20L2Balance([l2Address]);
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
-  )
+    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance],
+  );
 
   const updateEthBalances = async () => {
-    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
-  }
+    Promise.all([updateEthL1Balance(), updateEthL2Balance()]);
+  };
 
   async function triggerOutboxToken({
     id,
-    l1Signer
+    l1Signer,
   }: {
-    id: string
-    l1Signer: Signer
+    id: string;
+    l1Signer: Signer;
   }) {
-    const event = pendingWithdrawalsMap[id]
+    const event = pendingWithdrawalsMap[id];
 
     if (!event) {
-      throw new Error('Outbox message not found')
+      throw new Error('Outbox message not found');
     }
 
-    const { tokenAddress, value } = event
+    const { tokenAddress, value } = event;
 
-    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event);
 
-    const res = await messageWriter.execute(l2.provider)
+    const res = await messageWriter.execute(l2.provider);
 
     const { symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address: tokenAddress as string,
       l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+      l2Provider: l2.provider,
+    });
 
     addTransaction({
       status: 'pending',
@@ -949,53 +952,53 @@ export const useArbTokenBridge = (
       sender: walletAddress,
       txID: res.hash,
       l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
+      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) },
+    });
 
     try {
-      const rec = await res.wait()
+      const rec = await res.wait();
 
       if (rec.status === 1) {
-        setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache([event])
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          const pendingWithdrawal = newPendingWithdrawalsMap[id]
+        setTransactionSuccess(rec.transactionHash);
+        addToExecutedMessagesCache([event]);
+        setPendingWithdrawalMap((oldPendingWithdrawalsMap) => {
+          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap };
+          const pendingWithdrawal = newPendingWithdrawalsMap[id];
           if (pendingWithdrawal) {
             pendingWithdrawal.outgoingMessageState =
-              OutgoingMessageState.EXECUTED
+              OutgoingMessageState.EXECUTED;
           }
 
-          return newPendingWithdrawalsMap
-        })
+          return newPendingWithdrawalsMap;
+        });
       } else {
-        setTransactionFailure(rec.transactionHash)
+        setTransactionFailure(rec.transactionHash);
       }
 
-      return rec
+      return rec;
     } catch (err) {
-      console.warn('WARNING: token outbox execute failed:', err)
+      console.warn('WARNING: token outbox execute failed:', err);
     }
   }
 
   async function triggerOutboxEth({
     id,
-    l1Signer
+    l1Signer,
   }: {
-    id: string
-    l1Signer: Signer
+    id: string;
+    l1Signer: Signer;
   }) {
-    const event = pendingWithdrawalsMap[id]
+    const event = pendingWithdrawalsMap[id];
 
     if (!event) {
-      throw new Error('Outbox message not found')
+      throw new Error('Outbox message not found');
     }
 
-    const { value } = event
+    const { value } = event;
 
-    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event);
 
-    const res = await messageWriter.execute(l2.provider)
+    const res = await messageWriter.execute(l2.provider);
 
     addTransaction({
       status: 'pending',
@@ -1006,41 +1009,41 @@ export const useArbTokenBridge = (
       sender: walletAddress,
       txID: res.hash,
       l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
+      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) },
+    });
 
     try {
-      const rec = await res.wait()
+      const rec = await res.wait();
 
       if (rec.status === 1) {
-        setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache([event])
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          const pendingWithdrawal = newPendingWithdrawalsMap[id]
+        setTransactionSuccess(rec.transactionHash);
+        addToExecutedMessagesCache([event]);
+        setPendingWithdrawalMap((oldPendingWithdrawalsMap) => {
+          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap };
+          const pendingWithdrawal = newPendingWithdrawalsMap[id];
           if (pendingWithdrawal) {
             pendingWithdrawal.outgoingMessageState =
-              OutgoingMessageState.EXECUTED
+              OutgoingMessageState.EXECUTED;
           }
 
-          return newPendingWithdrawalsMap
-        })
+          return newPendingWithdrawalsMap;
+        });
       } else {
-        setTransactionFailure(rec.transactionHash)
+        setTransactionFailure(rec.transactionHash);
       }
 
-      return rec
+      return rec;
     } catch (err) {
-      console.warn('WARNING: ETH outbox execute failed:', err)
+      console.warn('WARNING: ETH outbox execute failed:', err);
     }
   }
 
   const getTokenSymbol = async (_l1Address: string) => {
-    const l1Address = _l1Address.toLocaleLowerCase()
+    const l1Address = _l1Address.toLocaleLowerCase();
 
-    const l1Symbol = addressToSymbol[l1Address]
+    const l1Symbol = addressToSymbol[l1Address];
     if (l1Symbol) {
-      return l1Symbol
+      return l1Symbol;
     }
 
     try {
@@ -1049,22 +1052,22 @@ export const useArbTokenBridge = (
         erc20L1Address: l1Address,
         l1Provider: l1.provider,
         l2Provider: l2.provider,
-        throwOnInvalidERC20: false
-      })
-      addressToSymbol[l1Address] = symbol
-      return symbol
+        throwOnInvalidERC20: false,
+      });
+      addressToSymbol[l1Address] = symbol;
+      return symbol;
     } catch (err) {
-      console.warn('could not get token symbol', err)
-      return '???'
+      console.warn('could not get token symbol', err);
+      return '???';
     }
-  }
+  };
 
   const getTokenDecimals = async (_l1Address: string) => {
-    const l1Address = _l1Address.toLocaleLowerCase()
+    const l1Address = _l1Address.toLocaleLowerCase();
 
-    const l1Decimals = addressToDecimals[l1Address]
+    const l1Decimals = addressToDecimals[l1Address];
     if (l1Decimals) {
-      return l1Decimals
+      return l1Decimals;
     }
 
     try {
@@ -1073,23 +1076,23 @@ export const useArbTokenBridge = (
         erc20L1Address: l1Address,
         l1Provider: l1.provider,
         l2Provider: l2.provider,
-        throwOnInvalidERC20: false
-      })
-      addressToDecimals[l1Address] = decimals
-      return decimals
+        throwOnInvalidERC20: false,
+      });
+      addressToDecimals[l1Address] = decimals;
+      return decimals;
     } catch (err) {
-      console.warn('could not get token decimals', err)
-      return 18
+      console.warn('could not get token decimals', err);
+      return 18;
     }
-  }
+  };
 
   async function mapETHWithdrawalToL2ToL1EventResult(
     // `l2TxHash` exists on result from subgraph
     // `transactionHash` exists on result from event logs
-    event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
+    event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string },
   ): Promise<L2ToL1EventResultPlus> {
-    const { callvalue } = event
-    const outgoingMessageState = await getOutgoingMessageState(event)
+    const { callvalue } = event;
+    const outgoingMessageState = await getOutgoingMessageState(event);
 
     return {
       ...event,
@@ -1098,16 +1101,16 @@ export const useArbTokenBridge = (
       symbol: 'ETH',
       outgoingMessageState,
       decimals: 18,
-      l2TxHash: event.l2TxHash || event.transactionHash
-    }
+      l2TxHash: event.l2TxHash || event.transactionHash,
+    };
   }
 
   async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
-    result: FetchTokenWithdrawalsFromSubgraphResult
+    result: FetchTokenWithdrawalsFromSubgraphResult,
   ): Promise<L2ToL1EventResultPlus> {
-    const symbol = await getTokenSymbol(result.tokenAddress)
-    const decimals = await getTokenDecimals(result.tokenAddress)
-    const outgoingMessageState = await getOutgoingMessageState(result)
+    const symbol = await getTokenSymbol(result.tokenAddress);
+    const decimals = await getTokenDecimals(result.tokenAddress);
+    const outgoingMessageState = await getOutgoingMessageState(result);
 
     return {
       ...result,
@@ -1115,27 +1118,27 @@ export const useArbTokenBridge = (
       type: AssetType.ERC20,
       symbol,
       decimals,
-      outgoingMessageState
-    }
+      outgoingMessageState,
+    };
   }
 
   async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-    result: WithdrawalInitiated
+    result: WithdrawalInitiated,
   ): Promise<L2ToL1EventResultPlus | undefined> {
-    const symbol = await getTokenSymbol(result.l1Token)
-    const decimals = await getTokenDecimals(result.l1Token)
+    const symbol = await getTokenSymbol(result.l1Token);
+    const decimals = await getTokenDecimals(result.l1Token);
 
-    const txReceipt = await l2.provider.getTransactionReceipt(result.txHash)
-    const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+    const txReceipt = await l2.provider.getTransactionReceipt(result.txHash);
+    const l2TxReceipt = new L2TransactionReceipt(txReceipt);
 
     // TODO: length != 1
-    const [event] = l2TxReceipt.getL2ToL1Events()
+    const [event] = l2TxReceipt.getL2ToL1Events();
 
     if (!event) {
-      return undefined
+      return undefined;
     }
 
-    const outgoingMessageState = await getOutgoingMessageState(event)
+    const outgoingMessageState = await getOutgoingMessageState(event);
 
     return {
       ...event,
@@ -1145,8 +1148,8 @@ export const useArbTokenBridge = (
       outgoingMessageState,
       symbol,
       decimals,
-      l2TxHash: l2TxReceipt.transactionHash
-    }
+      l2TxHash: l2TxReceipt.transactionHash,
+    };
   }
 
   async function attachNodeBlockDeadlineToEvent(event: L2ToL1EventResultPlus) {
@@ -1154,174 +1157,174 @@ export const useArbTokenBridge = (
       event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
       event.outgoingMessageState === OutgoingMessageState.CONFIRMED
     ) {
-      return event
+      return event;
     }
 
-    const messageReader = L2ToL1MessageReader.fromEvent(l1.provider, event)
+    const messageReader = L2ToL1MessageReader.fromEvent(l1.provider, event);
 
     try {
       const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-        l2.provider
-      )
+        l2.provider,
+      );
 
-      return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
+      return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() };
     } catch (e) {
-      const expectedError = "batch doesn't exist"
-      const expectedError2 = 'CALL_EXCEPTION'
-      const err = e as Error & { error: Error }
+      const expectedError = "batch doesn't exist";
+      const expectedError2 = 'CALL_EXCEPTION';
+      const err = e as Error & { error: Error };
       const actualError =
-        err && (err.message || (err.error && err.error.message))
+        err && (err.message || (err.error && err.error.message));
       if (actualError.includes(expectedError)) {
-        const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
+        const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED';
         return {
           ...event,
-          nodeBlockDeadline
-        }
+          nodeBlockDeadline,
+        };
       } else if (actualError.includes(expectedError2)) {
         // in classic we simulate `executeTransaction` in `hasExecuted`
         // which might revert if the L2 to L1 call fail
         const nodeBlockDeadline: NodeBlockDeadlineStatus =
-          'EXECUTE_CALL_EXCEPTION'
+          'EXECUTE_CALL_EXCEPTION';
         return {
           ...event,
-          nodeBlockDeadline
-        }
+          nodeBlockDeadline,
+        };
       } else {
-        throw e
+        throw e;
       }
     }
   }
 
   async function tryFetchLatestSubgraphBlockNumber(): Promise<number> {
     try {
-      return await fetchL2BlockNumberFromSubgraph(l2.network.chainID)
+      return await fetchL2BlockNumberFromSubgraph(l2.network.chainID);
     } catch (error) {
       // In case the subgraph is not supported or down, fall back to fetching everything through event logs
-      return 0
+      return 0;
     }
   }
 
   const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
-    const t = new Date().getTime()
-    const pendingWithdrawals: PendingWithdrawalsMap = {}
+    const t = new Date().getTime();
+    const pendingWithdrawals: PendingWithdrawalsMap = {};
 
-    console.log('*** Getting initial pending withdrawal data ***')
+    console.log('*** Getting initial pending withdrawal data ***');
 
-    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber()
+    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber();
 
     console.log(
       'Latest block number on L2 from subgraph:',
-      latestSubgraphBlockNumber
-    )
+      latestSubgraphBlockNumber,
+    );
 
     const [
       ethWithdrawalsFromSubgraph,
       ethWithdrawalsFromEventLogs,
       tokenWithdrawalsFromSubgraph,
-      tokenWithdrawalsFromEventLogs
+      tokenWithdrawalsFromEventLogs,
     ] = await Promise.all([
       // ETH Withdrawals
       fetchETHWithdrawalsFromSubgraph({
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l2Provider: l2.provider
+        l2Provider: l2.provider,
       }),
       fetchETHWithdrawalsFromEventLogs({
         address: walletAddress,
         fromBlock: latestSubgraphBlockNumber + 1,
         toBlock: 'latest',
-        l2Provider: l2.provider
+        l2Provider: l2.provider,
       }),
       // Token Withdrawals
       fetchTokenWithdrawalsFromSubgraph({
         address: walletAddress,
         fromBlock: 0,
         toBlock: latestSubgraphBlockNumber,
-        l2Provider: l2.provider
+        l2Provider: l2.provider,
       }),
       fetchTokenWithdrawalsFromEventLogs({
         address: walletAddress,
         fromBlock: latestSubgraphBlockNumber + 1,
         toBlock: 'latest',
         l2Provider: l2.provider,
-        l2GatewayAddresses: gatewayAddresses
-      })
-    ])
+        l2GatewayAddresses: gatewayAddresses,
+      }),
+    ]);
 
     const l2ToL1Txns = (
       await Promise.all([
-        ...ethWithdrawalsFromSubgraph.map(withdrawal =>
-          mapETHWithdrawalToL2ToL1EventResult(withdrawal)
+        ...ethWithdrawalsFromSubgraph.map((withdrawal) =>
+          mapETHWithdrawalToL2ToL1EventResult(withdrawal),
         ),
-        ...ethWithdrawalsFromEventLogs.map(withdrawal =>
-          mapETHWithdrawalToL2ToL1EventResult(withdrawal)
+        ...ethWithdrawalsFromEventLogs.map((withdrawal) =>
+          mapETHWithdrawalToL2ToL1EventResult(withdrawal),
         ),
-        ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
-          mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal)
+        ...tokenWithdrawalsFromSubgraph.map((withdrawal) =>
+          mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(withdrawal),
         ),
-        ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
-          mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal)
-        )
+        ...tokenWithdrawalsFromEventLogs.map((withdrawal) =>
+          mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(withdrawal),
+        ),
       ])
     )
       .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
-      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+      .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp);
 
     console.log(
       `*** done getting pending withdrawals, took ${
         Math.round(new Date().getTime() - t) / 1000
-      } seconds`
-    )
+      } seconds`,
+    );
 
     const l2ToL1TxnsWithDeadlines = await Promise.all(
-      l2ToL1Txns.map(attachNodeBlockDeadlineToEvent)
-    )
+      l2ToL1Txns.map(attachNodeBlockDeadlineToEvent),
+    );
 
     for (const event of l2ToL1TxnsWithDeadlines) {
-      pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event
+      pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event;
     }
 
     const executedMessages = l2ToL1Txns.filter(
-      tx => tx.outgoingMessageState === OutgoingMessageState.EXECUTED
-    )
+      (tx) => tx.outgoingMessageState === OutgoingMessageState.EXECUTED,
+    );
 
-    addToExecutedMessagesCache(executedMessages)
-    setPendingWithdrawalMap(pendingWithdrawals)
-  }
+    addToExecutedMessagesCache(executedMessages);
+    setPendingWithdrawalMap(pendingWithdrawals);
+  };
 
   async function getOutgoingMessageState(event: L2ToL1EventResult) {
     const cacheKey = getExecutedMessagesCacheKey({
       event,
-      l2ChainId: l2.network.chainID
-    })
+      l2ChainId: l2.network.chainID,
+    });
 
     if (executedMessagesCache[cacheKey]) {
-      return OutgoingMessageState.EXECUTED
+      return OutgoingMessageState.EXECUTED;
     }
 
-    const messageReader = new L2ToL1MessageReader(l1.provider, event)
+    const messageReader = new L2ToL1MessageReader(l1.provider, event);
 
     try {
-      return await messageReader.status(l2.provider)
+      return await messageReader.status(l2.provider);
     } catch (error) {
-      return OutgoingMessageState.UNCONFIRMED
+      return OutgoingMessageState.UNCONFIRMED;
     }
   }
 
   function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
-    const added: { [cacheKey: string]: boolean } = {}
+    const added: { [cacheKey: string]: boolean } = {};
 
     events.forEach((event: L2ToL1EventResult) => {
       const cacheKey = getExecutedMessagesCacheKey({
         event,
-        l2ChainId: l2.network.chainID
-      })
+        l2ChainId: l2.network.chainID,
+      });
 
-      added[cacheKey] = true
-    })
+      added[cacheKey] = true;
+    });
 
-    setExecutedMessagesCache({ ...executedMessagesCache, ...added })
+    setExecutedMessagesCache({ ...executedMessagesCache, ...added });
   }
 
   return {
@@ -1332,7 +1335,7 @@ export const useArbTokenBridge = (
       depositEstimateGas: depositEthEstimateGas,
       withdraw: withdrawEth,
       withdrawEstimateGas: withdrawEthEstimateGas,
-      triggerOutbox: triggerOutboxEth
+      triggerOutbox: triggerOutboxEth,
     },
     token: {
       add: addToken,
@@ -1348,7 +1351,7 @@ export const useArbTokenBridge = (
       withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken,
       getL2ERC20Address,
-      getL2GatewayAddress
+      getL2GatewayAddress,
     },
     transactions: {
       transactions,
@@ -1358,9 +1361,9 @@ export const useArbTokenBridge = (
       addTransaction,
       addTransactions,
       fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateEthDepositMessageStatus
+      fetchAndUpdateEthDepositMessageStatus,
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
-    setInitialPendingWithdrawals: setInitialPendingWithdrawals
-  }
-}
+    setInitialPendingWithdrawals: setInitialPendingWithdrawals,
+  };
+};

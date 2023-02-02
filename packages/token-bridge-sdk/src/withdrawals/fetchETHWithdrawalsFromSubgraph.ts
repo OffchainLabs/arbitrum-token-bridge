@@ -1,9 +1,9 @@
-import { gql } from '@apollo/client'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Provider } from '@ethersproject/providers'
+import { gql } from '@apollo/client';
+import { BigNumber } from '@ethersproject/bignumber';
+import { Provider } from '@ethersproject/providers';
 
-import { getL2SubgraphClient } from '../util/subgraph'
-import { L2ToL1EventResult } from '../hooks/arbTokenBridge.types'
+import { getL2SubgraphClient } from '../util/subgraph';
+import { L2ToL1EventResult } from '../hooks/arbTokenBridge.types';
 
 /**
  * Fetches initiated ETH withdrawals from subgraph in range of [fromBlock, toBlock].
@@ -18,18 +18,18 @@ export async function fetchETHWithdrawalsFromSubgraph({
   address,
   fromBlock,
   toBlock,
-  l2Provider
+  l2Provider,
 }: {
-  address: string
-  fromBlock: number
-  toBlock: number
-  l2Provider: Provider
+  address: string;
+  fromBlock: number;
+  toBlock: number;
+  l2Provider: Provider;
 }): Promise<(L2ToL1EventResult & { l2TxHash: string })[]> {
   if (fromBlock === 0 && toBlock === 0) {
-    return []
+    return [];
   }
 
-  const l2ChainId = (await l2Provider.getNetwork()).chainId
+  const l2ChainId = (await l2Provider.getNetwork()).chainId;
 
   const res = await getL2SubgraphClient(l2ChainId).query({
     query: gql`{
@@ -54,8 +54,8 @@ export async function fetchETHWithdrawalsFromSubgraph({
         l1Callvalue
         isClassic
       }
-    }`
-  })
+    }`,
+  });
 
   return res.data.l2ToL1Transactions.map((eventData: any) => {
     const {
@@ -70,18 +70,22 @@ export async function fetchETHWithdrawalsFromSubgraph({
       l2Timestamp,
       l1Callvalue,
       l1Calldata,
-      isClassic
-    } = eventData
+      isClassic,
+    } = eventData;
 
-    const batchNumber = isClassic ? BigNumber.from(maybeBatchNumber) : undefined
-    const indexInBatch = isClassic ? BigNumber.from(indexInBatchStr) : undefined
+    const batchNumber = isClassic
+      ? BigNumber.from(maybeBatchNumber)
+      : undefined;
+    const indexInBatch = isClassic
+      ? BigNumber.from(indexInBatchStr)
+      : undefined;
 
     // `position` is in the `indexInBatch` property for Nitro
     // `hash` is in the `uniqueId` property for Nitro
     //
     // https://github.com/OffchainLabs/arbitrum-subgraphs/blob/nitro-support/packages/layer2-token-gateway/schema.graphql#L101
-    const position = isClassic ? undefined : BigNumber.from(indexInBatchStr)
-    const hash = isClassic ? undefined : BigNumber.from(uniqueIdStr)
+    const position = isClassic ? undefined : BigNumber.from(indexInBatchStr);
+    const hash = isClassic ? undefined : BigNumber.from(uniqueIdStr);
 
     return {
       uniqueId: BigNumber.from(uniqueIdStr),
@@ -96,7 +100,7 @@ export async function fetchETHWithdrawalsFromSubgraph({
       ethBlockNum: BigNumber.from(l1BlockNum),
       timestamp: l2Timestamp,
       callvalue: BigNumber.from(l1Callvalue),
-      data: l1Calldata ?? '0x'
-    }
-  })
+      data: l1Calldata ?? '0x',
+    };
+  });
 }

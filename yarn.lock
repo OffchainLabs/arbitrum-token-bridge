@@ -3653,6 +3653,11 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@offchainlabs/prettier-config@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/prettier-config/-/prettier-config-0.2.0.tgz#7b349a94772655ccca366c43d639839ad5267be4"
+  integrity sha512-6ArtT+Uwin/EjNJk3+KQ+zbl2pWwvCSifjy1NfQa/seOsRwJNiRywjBA6EXEXc+om/MMCNwc8t1MaxFBDpaMXw==
+
 "@playwright/test@^1.27.1":
   version "1.29.2"
   resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.29.2.tgz#c48184721d0f0b7627a886e2ec42f1efb2be339d"
@@ -16303,6 +16308,11 @@ prettier@^2.7.1:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.1.tgz#e235806850d057f97bb08368a4f7d899f7760c64"
   integrity sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==
+
+prettier@^2.8.3:
+  version "2.8.3"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.3.tgz#ab697b1d3dd46fb4626fbe2f543afe0cc98d8632"
+  integrity sha512-tJ/oJ4amDihPoufT5sM0Z1SKEuKay8LfVAMlbbhnnkvt6BUserZylqo2PN+p9KeljLr0OHa2rXHU1T8reeoTrw==
 
 pretty-bytes@^3.0.0:
   version "3.0.1"

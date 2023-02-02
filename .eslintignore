@@ -1,5 +1,6 @@
 node_modules
 dist
+prettier.config.js
 synpress.config.ts
 tailwind.config.js
 

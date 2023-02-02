@@ -1,24 +1,24 @@
-import { useMemo } from 'react'
-import { BigNumber, constants, providers } from 'ethers'
-import useSWR from 'swr'
+import { useMemo } from 'react';
+import { BigNumber, constants, providers } from 'ethers';
+import useSWR from 'swr';
 
-import { useChainId } from './useChainId'
+import { useChainId } from './useChainId';
 
 export function useGasPrice({
-  provider
+  provider,
 }: {
-  provider: providers.Provider
+  provider: providers.Provider;
 }): BigNumber {
-  const chainId = useChainId({ provider })
+  const chainId = useChainId({ provider });
 
   const queryKey = useMemo(() => {
     if (typeof chainId === 'undefined') {
       // Don't fetch
-      return null
+      return null;
     }
 
-    return ['gasPrice', chainId]
-  }, [chainId])
+    return ['gasPrice', chainId];
+  }, [chainId]);
 
   const { data: gasPrice = constants.Zero } = useSWR(
     queryKey,
@@ -27,9 +27,9 @@ export function useGasPrice({
       refreshInterval: 30_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
-      errorRetryInterval: 5_000
-    }
-  )
+      errorRetryInterval: 5_000,
+    },
+  );
 
-  return gasPrice
+  return gasPrice;
 }

@@ -1,5 +1,5 @@
-import { Provider, BlockTag } from '@ethersproject/providers'
-import { L2ToL1MessageReader } from '@arbitrum/sdk'
+import { Provider, BlockTag } from '@ethersproject/providers';
+import { L2ToL1MessageReader } from '@arbitrum/sdk';
 
 /**
  * Fetches initiated ETH withdrawals from event logs in range of [fromBlock, toBlock].
@@ -14,17 +14,17 @@ export function fetchETHWithdrawalsFromEventLogs({
   address,
   fromBlock,
   toBlock,
-  l2Provider
+  l2Provider,
 }: {
-  address: string
-  fromBlock: BlockTag
-  toBlock: BlockTag
-  l2Provider: Provider
+  address: string;
+  fromBlock: BlockTag;
+  toBlock: BlockTag;
+  l2Provider: Provider;
 }) {
   return L2ToL1MessageReader.getL2ToL1Events(
     l2Provider,
     { fromBlock, toBlock },
     undefined,
-    address
-  )
+    address,
+  );
 }
