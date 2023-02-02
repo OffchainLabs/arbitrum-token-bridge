@@ -28,7 +28,7 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@3.0.0":
+"@arbitrum/sdk@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.0.0.tgz#a5dc48a00cb8c6e230a2c696c0e880a7f80c637d"
   integrity sha512-Mws5WAxxirp3vk8JH3vyQ5H6q1NNUIAAGEd9oEnQYDMyTBHLKU293GA3s9w4w6ZfIq/RZq8YCexhy4D1R+mQng==
@@ -3653,7 +3653,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@offchainlabs/prettier-config@0.2.0":
+"@offchainlabs/prettier-config@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@offchainlabs/prettier-config/-/prettier-config-0.2.0.tgz#7b349a94772655ccca366c43d639839ad5267be4"
   integrity sha512-6ArtT+Uwin/EjNJk3+KQ+zbl2pWwvCSifjy1NfQa/seOsRwJNiRywjBA6EXEXc+om/MMCNwc8t1MaxFBDpaMXw==

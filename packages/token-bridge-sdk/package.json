@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.0",
-    "@arbitrum/sdk": "3.0.0",
+    "@arbitrum/sdk": "^3.0.0",
     "@rehooks/local-storage": "^2.4.4",
     "@uniswap/token-lists": "^1.0.0-beta.27",
     "ajv": "^8.6.3",
@@ -40,7 +40,7 @@
     "swr": "^1.3.0"
   },
   "devDependencies": {
-    "@offchainlabs/prettier-config": "0.2.0",
+    "@offchainlabs/prettier-config": "^0.2.0",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^27.4.1",
     "@types/node": "^12.0.0",
