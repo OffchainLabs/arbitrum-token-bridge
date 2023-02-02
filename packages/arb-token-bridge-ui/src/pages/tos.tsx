@@ -1,6 +1,4 @@
-export const TOS_VERSION = 1
-
-export function TermsOfService() {
+export default function TermsOfService() {
   return (
     <div className="flex w-full justify-center">
       <div className="max-w-[1440px] px-8 py-8 text-white lg:px-32">
@@ -137,67 +135,62 @@ export function TermsOfService() {
           violator to law enforcement authorities. You agree to not use the
           Service or Your Apps to:
         </p>
-        <p className="mb-4">
-          <ol>
-            <li>
-              distribute any content that (i) infringes any intellectual
-              property or other proprietary rights of any party; (ii) you do not
-              have a right to upload under any law or under contractual or
-              fiduciary relationships; (iii) contains software viruses or any
-              other computer code, files or programs designed to interrupt,
-              destroy, or limit the functionality of any computer software or
-              hardware or telecommunications equipment; (iv) poses or creates a
-              privacy or security risk to any person; (v) constitutes
-              unsolicited or unauthorized advertising, promotional materials,
-              commercial activities and/or sales, “junk mail,” “spam,” “chain
-              letters,” “pyramid schemes,” “contests,” “sweepstakes,” or any
-              other form of solicitation; (vi) is unlawful, harmful,
-              threatening, abusive, harassing, tortious, excessively violent,
-              defamatory, vulgar, obscene, pornographic, libelous, invasive of
-              another’s privacy, hateful, discriminatory, or otherwise
-              objectionable; or (vii) in the sole judgment of Offchain Labs, is
-              objectionable or which restricts or inhibits any other person from
-              using or enjoying the Service, or which may expose Offchain Labs
-              or its users to any harm or liability of any type;
-            </li>
-            <li>
-              seek to interfere with or compromise the integrity, security, or
-              proper functioning of any computer, server, network, personal
-              device, or other information technology system, including the
-              deployment of viruses and denial of service attacks;
-            </li>
-            <li>
-              violate any applicable local, state, national, or international
-              law, or any regulations having the force of law, including any
-              laws or regulations concerning the integrity of trading markets
-              (e.g., manipulative tactics commonly known as spoofing and wash
-              trading) or trading of securities or derivatives;
-            </li>
-            <li>
-              engage in any activity that seeks to defraud us or any other
-              person or entity, including providing any false, inaccurate, or
-              misleading information in order to unlawfully obtain the property
-              of another;
-            </li>
-            <li>
-              impersonate any person or entity, or falsely state or otherwise
-              misrepresent your affiliation with a person or entity;
-            </li>
-            <li>
-              solicit personal information from anyone under the age of 18;
-            </li>
-            <li>
-              harvest or collect email addresses or other contact information of
-              other users from the Service by electronic or other means for the
-              purposes of sending unsolicited emails or other unsolicited
-              communications; or
-            </li>
-            <li>
-              further or promote any criminal activity or enterprise or provide
-              instructional information about illegal activities.
-            </li>
-          </ol>
-        </p>
+        <ol className="mb-4">
+          <li>
+            distribute any content that (i) infringes any intellectual property
+            or other proprietary rights of any party; (ii) you do not have a
+            right to upload under any law or under contractual or fiduciary
+            relationships; (iii) contains software viruses or any other computer
+            code, files or programs designed to interrupt, destroy, or limit the
+            functionality of any computer software or hardware or
+            telecommunications equipment; (iv) poses or creates a privacy or
+            security risk to any person; (v) constitutes unsolicited or
+            unauthorized advertising, promotional materials, commercial
+            activities and/or sales, “junk mail,” “spam,” “chain letters,”
+            “pyramid schemes,” “contests,” “sweepstakes,” or any other form of
+            solicitation; (vi) is unlawful, harmful, threatening, abusive,
+            harassing, tortious, excessively violent, defamatory, vulgar,
+            obscene, pornographic, libelous, invasive of another’s privacy,
+            hateful, discriminatory, or otherwise objectionable; or (vii) in the
+            sole judgment of Offchain Labs, is objectionable or which restricts
+            or inhibits any other person from using or enjoying the Service, or
+            which may expose Offchain Labs or its users to any harm or liability
+            of any type;
+          </li>
+          <li>
+            seek to interfere with or compromise the integrity, security, or
+            proper functioning of any computer, server, network, personal
+            device, or other information technology system, including the
+            deployment of viruses and denial of service attacks;
+          </li>
+          <li>
+            violate any applicable local, state, national, or international law,
+            or any regulations having the force of law, including any laws or
+            regulations concerning the integrity of trading markets (e.g.,
+            manipulative tactics commonly known as spoofing and wash trading) or
+            trading of securities or derivatives;
+          </li>
+          <li>
+            engage in any activity that seeks to defraud us or any other person
+            or entity, including providing any false, inaccurate, or misleading
+            information in order to unlawfully obtain the property of another;
+          </li>
+          <li>
+            impersonate any person or entity, or falsely state or otherwise
+            misrepresent your affiliation with a person or entity;
+          </li>
+          <li>solicit personal information from anyone under the age of 18;</li>
+          <li>
+            harvest or collect email addresses or other contact information of
+            other users from the Service by electronic or other means for the
+            purposes of sending unsolicited emails or other unsolicited
+            communications; or
+          </li>
+          <li>
+            further or promote any criminal activity or enterprise or provide
+            instructional information about illegal activities.
+          </li>
+        </ol>
         <p className="mb-4">
           If you are blocked by Offchain Labs from accessing the Service
           (including by blocking your IP address), you agree not to implement

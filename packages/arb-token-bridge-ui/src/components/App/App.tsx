@@ -4,7 +4,6 @@ import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
@@ -16,7 +15,6 @@ import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { Button } from '../common/Button'
-import { Layout } from '../common/Layout'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -24,7 +22,6 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { TermsOfService, TOS_VERSION } from '../TermsOfService/TermsOfService'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
 import {
@@ -53,6 +50,8 @@ import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
+import { TOS_VERSION } from '../../constants'
+import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 
 declare global {
   interface Window {
@@ -223,63 +222,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
-function Routes() {
-  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
-  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
-
-  return (
-    <Router>
-      <ArbQueryParamProvider>
-        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-        <Switch>
-          <Route path="/tos" exact>
-            <TermsOfService />
-          </Route>
-
-          <Route path="/" exact>
-            <NetworkReady>
-              <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </AppContextProvider>
-            </NetworkReady>
-          </Route>
-
-          <Route path="*">
-            <div className="flex w-full flex-col items-center space-y-4 px-8 py-4 text-center lg:py-0">
-              <span className="text-8xl text-white">404</span>
-              <p className="text-3xl text-white">
-                Page not found in this solar system
-              </p>
-              <img
-                src="/images/arbinaut-fixing-spaceship.webp"
-                alt="Arbinaut fixing a spaceship"
-                className="lg:max-w-md"
-              />
-            </div>
-          </Route>
-        </Switch>
-      </ArbQueryParamProvider>
-    </Router>
-  )
-}
-
 function NetworkReady({ children }: { children: React.ReactNode }) {
   const [{ l2ChainId }] = useArbQueryParams()
 
@@ -290,43 +232,6 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
     >
       {children}
     </NetworksAndSignersProvider>
-  )
-}
-
-function ConnectionFallbackContainer({
-  layout = 'col',
-  imgProps = {
-    className: 'sm:w-[420px]',
-    src: '/images/three-arbinauts.webp',
-    alt: 'Three Arbinauts'
-  },
-  children
-}: {
-  layout?: 'row' | 'col'
-  imgProps?: {
-    className?: string
-    src?: string
-    alt?: string
-  }
-  children: React.ReactNode
-}) {
-  return (
-    <div className="my-24 flex items-center justify-center px-8">
-      <div
-        className={`flex flex-col items-center md:flex-${layout} md:items-${
-          layout === 'col' ? 'center' : 'start'
-        }`}
-      >
-        {children}
-        <ExternalLink href="https://metamask.io/download">
-          <img
-            className={imgProps.className}
-            src={imgProps.src}
-            alt={imgProps.alt}
-          />
-        </ExternalLink>
-      </div>
-    </div>
   )
 }
 
@@ -349,11 +254,11 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             <HeaderNetworkLoadingIndicator />
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <AppConnectionFallbackContainer>
             <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
               <Loader type="TailSpin" color="white" height={44} width={44} />
             </div>
-          </ConnectionFallbackContainer>
+          </AppConnectionFallbackContainer>
         </>
       )
 
@@ -364,11 +269,11 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             <HeaderConnectWalletButton />
           </HeaderContent>
 
-          <ConnectionFallbackContainer>
+          <AppConnectionFallbackContainer>
             <Button variant="primary" onClick={showConnectionModal}>
               Connect Wallet
             </Button>
-          </ConnectionFallbackContainer>
+          </AppConnectionFallbackContainer>
         </>
       )
 
@@ -385,7 +290,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </NetworkSelectionContainer>
           </HeaderContent>
 
-          <ConnectionFallbackContainer
+          <AppConnectionFallbackContainer
             layout="row"
             imgProps={{
               className: 'sm:w-[300px]',
@@ -394,7 +299,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             }}
           >
             <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
-          </ConnectionFallbackContainer>
+          </AppConnectionFallbackContainer>
         </>
       )
   }
@@ -403,11 +308,36 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
+  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
+  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
+
+  const isTosAccepted = tosAccepted !== undefined
+
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  function onClose(confirmed: boolean) {
+    // Only close after confirming (agreeing to terms)
+    if (confirmed) {
+      setTosAccepted('true')
+      welcomeDialogProps.onClose(confirmed)
+    }
+  }
+
   return (
     <Provider value={overmind}>
-      <Layout>
-        <Routes />
-      </Layout>
+      <ArbQueryParamProvider>
+        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+        <NetworkReady>
+          <AppContextProvider>
+            <Injector>{isTosAccepted && <AppContent />}</Injector>
+          </AppContextProvider>
+        </NetworkReady>
+      </ArbQueryParamProvider>
     </Provider>
   )
 }
