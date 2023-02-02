@@ -241,7 +241,10 @@ export function Header() {
           {({ open }) => (
             <div className="flex items-center">
               {!open && (
-                <Disclosure.Button className="lg:hidden">
+                <Disclosure.Button
+                  className="lg:hidden"
+                  aria-label="Menu Toggle Button"
+                >
                   <MenuIcon.Open />
                 </Disclosure.Button>
               )}
