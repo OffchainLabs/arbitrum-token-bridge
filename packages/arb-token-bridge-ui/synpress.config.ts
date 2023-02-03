@@ -9,8 +9,8 @@ import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
 
 import {
   ethRpcUrl,
-  ERC20TokenAddressL1,
-  ERC20TokenAddressL2,
+  wethTokenAddressL1,
+  wethTokenAddressL2,
   arbRpcUrl
 } from './tests/support/common'
 
@@ -54,8 +54,8 @@ export default defineConfig({
       const erc20Contract = new TestERC20__factory().connect(
         wallet.connect(ethProvider)
       )
-      const l1TestErc20Token = await erc20Contract.deploy()
-      await l1TestErc20Token.deployed()
+      const l1Erc20Token = await erc20Contract.deploy()
+      await l1Erc20Token.deployed()
 
       const l2Network = await getL2Network(wallet.connect(arbProvider))
       const erc20Bridger = new Erc20Bridger(l2Network)
@@ -63,7 +63,7 @@ export default defineConfig({
       // Deploy to L2
       await erc20Bridger.deposit({
         amount: BigNumber.from(0),
-        erc20L1Address: l1TestErc20Token.address,
+        erc20L1Address: l1Erc20Token.address,
         l1Signer: wallet.connect(ethProvider),
         l2Provider: arbProvider
       })
@@ -86,17 +86,17 @@ export default defineConfig({
 
         // Wrap ETH to test ERC-20 transactions
         // L1
-        tx = await getWethContract(ethProvider, ERC20TokenAddressL1).deposit({
+        tx = await getWethContract(ethProvider, wethTokenAddressL1).deposit({
           value: utils.parseEther('0.2')
         })
         await tx.wait()
         // L2
-        tx = await getWethContract(arbProvider, ERC20TokenAddressL2).deposit({
+        tx = await getWethContract(arbProvider, wethTokenAddressL2).deposit({
           value: utils.parseEther('0.1')
         })
 
         // Approve ERC-20
-        tx = await getWethContract(ethProvider, ERC20TokenAddressL1).approve(
+        tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
           // L1 WETH gateway
           '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
           constants.MaxInt256
@@ -106,10 +106,10 @@ export default defineConfig({
       config.env.ADDRESS = testWalletAddress
       config.env.PRIVATE_KEY = testWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.TEST_ERC20_TOKEN_ADDRESS_L1 = l1TestErc20Token.address
-      config.env.TEST_ERC20_TOKEN_ADDRESS_L2 =
+      config.env.ERC20_TOKEN_ADDRESS_L1 = l1Erc20Token.address
+      config.env.ERC20_TOKEN_ADDRESS_L2 =
         await erc20Bridger.getL2ERC20Address(
-          l1TestErc20Token.address,
+          l1Erc20Token.address,
           ethProvider
         )
       cypressLocalStoragePlugin(on, config)
@@ -124,7 +124,7 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
-      'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import custom ERC20
+      'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
       'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'

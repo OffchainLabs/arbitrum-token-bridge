@@ -5,8 +5,8 @@ import {
   resetSeenTimeStampCache
 } from '../../support/common'
 
-const ERC20TokenAddressL1 = Cypress.env('TEST_ERC20_TOKEN_ADDRESS_L1')
-const ERC20TokenAddressL2 = Cypress.env('TEST_ERC20_TOKEN_ADDRESS_L2')
+const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
+const ERC20TokenAddressL2 = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
 const ERC20TokenName = 'IntArbTestToken'
 const ERC20TokenSymbol = 'IARB'
 

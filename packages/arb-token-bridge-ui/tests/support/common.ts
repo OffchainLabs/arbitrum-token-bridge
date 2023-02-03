@@ -29,8 +29,8 @@ export const l2NetworkConfig = {
   l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 }
 
-export const ERC20TokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
-export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
