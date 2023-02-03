@@ -11,7 +11,7 @@ import {
   ethRpcUrl,
   ERC20TokenAddressL1,
   ERC20TokenAddressL2,
-  arbRpcUrl,
+  arbRpcUrl
 } from './tests/support/common'
 
 export default defineConfig({
@@ -60,10 +60,6 @@ export default defineConfig({
       const l2Network = await getL2Network(wallet.connect(arbProvider))
       const erc20Bridger = new Erc20Bridger(l2Network)
 
-      const l2TestErc20Address = await erc20Bridger.getL2ERC20Address(
-        l1TestErc20Token.address,
-        ethProvider
-      )
       // Deploy to L2
       await erc20Bridger.deposit({
         amount: BigNumber.from(0),
@@ -110,8 +106,12 @@ export default defineConfig({
       config.env.ADDRESS = testWalletAddress
       config.env.PRIVATE_KEY = testWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.CUSTOM_ERC20_TOKEN_ADDRESS_L1 = l1TestErc20Token.address
-      config.env.CUSTOM_ERC20_TOKEN_ADDRESS_L2 = l2TestErc20Address
+      config.env.TEST_ERC20_TOKEN_ADDRESS_L1 = l1TestErc20Token.address
+      config.env.TEST_ERC20_TOKEN_ADDRESS_L2 =
+        await erc20Bridger.getL2ERC20Address(
+          l1TestErc20Token.address,
+          ethProvider
+        )
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       return config
