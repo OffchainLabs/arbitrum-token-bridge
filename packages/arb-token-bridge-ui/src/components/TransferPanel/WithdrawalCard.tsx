@@ -135,7 +135,7 @@ export function WithdrawalCardContainer({
         {/* Logo watermark */}
         <img
           src={getNetworkLogo(ChainId.Mainnet)}
-          className="absolute left-0 top-1 z-10 h-6 lg:relative lg:top-0 lg:h-full lg:opacity-[40%]"
+          className="absolute left-0 top-1 z-10 h-6 max-h-[90px] lg:relative lg:top-0 lg:h-full lg:opacity-[40%]"
           alt="Withdrawal"
         />
         {/* Actual content */}
