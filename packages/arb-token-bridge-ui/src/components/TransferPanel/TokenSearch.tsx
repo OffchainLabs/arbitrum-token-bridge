@@ -510,7 +510,6 @@ function TokensPanel({
               setErrorMessage('')
               setNewToken(e.target.value)
             }}
-            autoFocus
             placeholder="Search by token name, symbol, L1 or L2 address"
             className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
