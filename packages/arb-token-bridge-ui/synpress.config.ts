@@ -6,6 +6,7 @@ import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
+import { registerLocalNetwork } from './src/util/networks'
 
 import {
   ethRpcUrl,
@@ -38,6 +39,8 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      registerLocalNetwork()
+
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
