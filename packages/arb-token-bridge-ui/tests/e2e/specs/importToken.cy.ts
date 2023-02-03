@@ -102,7 +102,7 @@ describe('Import token', () => {
         cy.logout()
       })
 
-      it('should display an error message', () => {
+      it('should display an error message after invalid input', () => {
         importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
@@ -143,10 +143,13 @@ describe('Import token', () => {
           .click({ scrollBehavior: false })
 
         cy.findByText('Arbed CMC List').should('be.visible')
+        // native element is hidden, no access to better selectors
+        // eslint-disable-next-line
         cy.get('[data-cy="toggle Arbed CMC List"]')
+          .as('tokenListToggle')
           .parent()
           .click({ scrollBehavior: false })
-        cy.get('[data-cy="toggle Arbed CMC List"]').should('be.checked')
+        cy.get('@tokenListToggle').should('be.checked')
 
         cy.findByRole('button', { name: 'Back to Select Token' })
           .should('be.visible')
@@ -222,7 +225,7 @@ describe('Import token', () => {
     })
 
     context('User uses L1 address', () => {
-      it('should import token through its L1 address', () => {
+      it('should import token through URL using its L1 address', () => {
         cy.login({
           networkType: 'L1',
           url: '/',
@@ -232,6 +235,7 @@ describe('Import token', () => {
         })
 
         // waiting for metamask notification to disappear
+        // eslint-disable-next-line
         cy.wait(3000)
 
         // Modal is displayed
@@ -259,7 +263,7 @@ describe('Import token', () => {
     })
 
     context('User uses L2 address', () => {
-      it('should import token through its L2 address', () => {
+      it('should import token through URL using its L2 address', () => {
         cy.login({
           networkType: 'L1',
           url: '/',
@@ -269,6 +273,7 @@ describe('Import token', () => {
         })
 
         // waiting for metamask notification to disappear
+        // eslint-disable-next-line
         cy.wait(3000)
 
         // Modal is displayed
@@ -295,7 +300,7 @@ describe('Import token', () => {
     })
 
     context('User uses invalid address', () => {
-      it('should display an error message', () => {
+      it('should display an error message after invalid URL', () => {
         cy.login({
           networkType: 'L1',
           url: '/',
