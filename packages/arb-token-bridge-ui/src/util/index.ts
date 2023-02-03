@@ -26,3 +26,16 @@ export function preloadImages(imageSources: string[]) {
     image.src = imageSrc
   })
 }
+
+export const loadEnvironmentVariableWithFallback = ({
+  env,
+  fallback
+}: {
+  env?: string
+  fallback: string
+}) => {
+  if (typeof env === 'undefined' || !env.trim().length) {
+    return fallback
+  }
+  return env
+}

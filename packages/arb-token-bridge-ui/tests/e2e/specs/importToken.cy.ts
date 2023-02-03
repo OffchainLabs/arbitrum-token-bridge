@@ -1,9 +1,12 @@
+import { utils } from 'ethers'
 import {
+  getInitialETHBalance,
   invalidTokenAddress,
   resetSeenTimeStampCache
 } from '../../support/common'
 
-const ERC20TokenAddress = Cypress.env('CUSTOM_ERC20_TOKEN_ADDRESS')
+const ERC20TokenAddressL1 = Cypress.env('CUSTOM_ERC20_TOKEN_ADDRESS_L1')
+const ERC20TokenAddressL2 = Cypress.env('CUSTOM_ERC20_TOKEN_ADDRESS_L2')
 const ERC20TokenName = 'IntArbTestToken'
 const ERC20TokenSymbol = 'IARB'
 
@@ -28,7 +31,17 @@ const importTokenThroughUI = (address: string) => {
 }
 
 describe('Import token', () => {
+  // we use mainnet to test token lists
+  // need low balance check to bypass a mainnet popup
+  let isLowBalanceMainnet: boolean
+
   context('User import token through UI', () => {
+    before(() => {
+      getInitialETHBalance(
+        `https://mainnet.infura.io/v3/${Cypress.env('INFURA_KEY')}`,
+        Cypress.env('ADDRESS')
+      ).then(val => (isLowBalanceMainnet = val.lte(utils.parseEther('0.005'))))
+    })
     context('User uses L1 address', () => {
       // log in to metamask
       before(() => {
@@ -41,7 +54,7 @@ describe('Import token', () => {
       })
 
       it('should import token through its L1 address', () => {
-        importTokenThroughUI(ERC20TokenAddress)
+        importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
         cy.findByText('Added by User').should('exist')
@@ -66,7 +79,7 @@ describe('Import token', () => {
       })
 
       it('should import token through its L2 address', () => {
-        importTokenThroughUI(ERC20TokenAddress)
+        importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
         cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
@@ -101,8 +114,15 @@ describe('Import token', () => {
       // log in to metamask
       before(() => {
         cy.login({ networkType: 'L1' })
-        // We don't have the token list locally so we test on Goerli
+        // we don't have the token list locally so we test on mainnet
         cy.changeMetamaskNetwork('mainnet')
+
+        // click low balance pop up if shown
+        if (isLowBalanceMainnet) {
+          cy.findByText('Go to bridge')
+            .should('be.visible')
+            .click({ scrollBehavior: false })
+        }
       })
 
       after(() => {
@@ -111,16 +131,10 @@ describe('Import token', () => {
       })
 
       it('should import token', () => {
-        cy.log('start')
-        cy.wait(5000)
-
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
           .click({ scrollBehavior: false })
-
-        cy.log('Select token clicked')
-        cy.wait(5000)
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
@@ -128,26 +142,15 @@ describe('Import token', () => {
           .should('be.visible')
           .click({ scrollBehavior: false })
 
-        cy.log('Manage token list clicked')
-        cy.wait(5000)
-
         cy.findByText('Arbed CMC List').should('be.visible')
-        cy.get('[data-cy="toggle Arbed CMC List"]').parent().click({ scrollBehavior: false })
-
-        cy.log('Toggle clicked')
-        cy.wait(5000)
-
+        cy.get('[data-cy="toggle Arbed CMC List"]')
+          .parent()
+          .click({ scrollBehavior: false })
         cy.get('[data-cy="toggle Arbed CMC List"]').should('be.checked')
-
-        cy.log('Toggle is checked')
-        cy.wait(5000)
 
         cy.findByRole('button', { name: 'Back to Select Token' })
           .should('be.visible')
           .click({ scrollBehavior: false })
-
-        cy.log('Back button clicked')
-        cy.wait(5000)
 
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
@@ -183,7 +186,7 @@ describe('Import token', () => {
         cy.findByPlaceholderText(/Search by token name/i)
           .as('searchInput')
           .should('be.visible')
-          .type(ERC20TokenAddress.slice(0, -1), { scrollBehavior: false })
+          .type(ERC20TokenAddressL1.slice(0, -1), { scrollBehavior: false })
 
         // Add button should be disabled
         cy.findByRole('button', { name: 'Add New Token' })
@@ -193,7 +196,7 @@ describe('Import token', () => {
 
         // Add last character
         cy.get('@searchInput').type(
-          `{moveToEnd}${ERC20TokenAddress.slice(-1)}`,
+          `{moveToEnd}${ERC20TokenAddressL1.slice(-1)}`,
           {
             scrollBehavior: false
           }
@@ -224,29 +227,34 @@ describe('Import token', () => {
           networkType: 'L1',
           url: '/',
           qs: {
-            token: ERC20TokenAddress
+            token: ERC20TokenAddressL1
           }
         })
+
+        // waiting for metamask notification to disappear
+        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
           .contains(/import unknown token/i)
           .should('be.visible')
         cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
-        cy.findByText(new RegExp(ERC20TokenAddress, 'i')).should('be.visible')
+        cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
 
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click({ scrollBehavior: false, force: true })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
               .should('have.text', ERC20TokenSymbol)
-          })
 
-        // Modal is closed
-        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
+            // Modal is closed
+            cy.findByRole('button', { name: 'Import token' }).should(
+              'not.exist'
+            )
+          })
       })
     })
 
@@ -256,9 +264,12 @@ describe('Import token', () => {
           networkType: 'L1',
           url: '/',
           qs: {
-            token: ERC20TokenAddress
+            token: ERC20TokenAddressL2
           }
         })
+
+        // waiting for metamask notification to disappear
+        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
@@ -266,7 +277,7 @@ describe('Import token', () => {
           .should('be.visible')
         cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
         // Modal should always display L1 address regardless of query parameter
-        cy.findByText(new RegExp(ERC20TokenAddress, 'i')).should('be.visible')
+        cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
 
         // Import token
         cy.findByRole('button', { name: 'Import token' })
@@ -295,7 +306,7 @@ describe('Import token', () => {
 
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)
-        cy.findByText(new RegExp(ERC20TokenAddress, 'i')).should('not.exist')
+        cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('not.exist')
 
         cy.findByRole('button', { name: 'Import token' }).should('not.exist')
         // Close modal
