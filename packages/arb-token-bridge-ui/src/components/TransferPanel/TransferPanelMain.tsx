@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -199,7 +198,7 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp'})`,
+        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
@@ -325,7 +324,6 @@ export function TransferPanelMain({
     React.SetStateAction<string | undefined>
   >
 }) {
-  const history = useHistory()
   const actions = useActions()
 
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
@@ -375,7 +373,7 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, history, setQueryParams])
+  }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
@@ -708,7 +706,7 @@ export function TransferPanelMain({
         }
       }
     }
-  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
+  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to])
 
   async function setMaxAmount() {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance

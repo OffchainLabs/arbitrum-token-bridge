@@ -2,12 +2,16 @@ import React from 'react'
 import Loader from 'react-loader-spinner'
 import dynamic from 'next/dynamic'
 
+import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
+
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
   loading: () => (
-    <div className="mt-6 flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-8">
-      <Loader type="TailSpin" color="white" width={44} height={44} />
-    </div>
+    <AppConnectionFallbackContainer>
+      <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
+        <Loader type="TailSpin" color="white" height={44} width={44} />
+      </div>
+    </AppConnectionFallbackContainer>
   )
 })
 

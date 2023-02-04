@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import { Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { useRouteMatch } from 'react-router-dom'
 
 import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
@@ -8,11 +7,6 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 
 export function WelcomeDialog(props: UseDialogProps) {
   const confirmButtonRef = useRef(null)
-  const isTosRoute = useRouteMatch('/tos')
-
-  if (isTosRoute) {
-    return null
-  }
 
   return (
     <Dialog {...props} initialFocus={confirmButtonRef} isCustom>
