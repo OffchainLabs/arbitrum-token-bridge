@@ -9,10 +9,8 @@ import {
   l1NetworkConfig,
   zeroToLessThanOneETH,
   resetSeenTimeStampCache,
-  ERC20TokenSymbol
+  wethTokenAddressL1
 } from '../../support/common'
-
-const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
 
 describe('Deposit ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
@@ -40,13 +38,13 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(
-        ERC20TokenAddressL1,
+        wethTokenAddressL1,
         l1NetworkConfig.l1MultiCall,
         ethRpcUrl
       ).then(
         val =>
           (l1ERC20bal = formatAmount(val, {
-            symbol: ERC20TokenSymbol
+            symbol: 'WETH'
           }))
       )
       cy.login({ networkType: 'L1', addNewNetwork: true })
@@ -75,7 +73,7 @@ describe('Deposit ERC20 Token', () => {
       // open the Select Token popup
       cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
-        .type(ERC20TokenAddressL1, { scrollBehavior: false })
+        .type(wethTokenAddressL1, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
 
@@ -84,12 +82,12 @@ describe('Deposit ERC20 Token', () => {
             .click({ scrollBehavior: false })
 
           // Select the ERC20 token
-          cy.findByText(ERC20TokenSymbol).click({ scrollBehavior: false })
+          cy.findByText('WETH').click({ scrollBehavior: false })
 
           // ERC20 token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
-            .should('have.text', ERC20TokenSymbol)
+            .should('have.text', 'WETH')
         })
     })
 

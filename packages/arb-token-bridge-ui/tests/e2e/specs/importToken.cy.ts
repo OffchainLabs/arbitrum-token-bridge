@@ -4,31 +4,12 @@ import {
   invalidTokenAddress,
   resetSeenTimeStampCache,
   ERC20TokenName,
-  ERC20TokenSymbol
+  ERC20TokenSymbol,
+  importTokenThroughUI
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
 const ERC20TokenAddressL2 = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
-
-const importTokenThroughUI = (address: string) => {
-  // Click on the ETH dropdown (Select token button)
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click({ scrollBehavior: false })
-
-  // open the Select Token popup
-  return cy
-    .findByPlaceholderText(/Search by token name/i)
-    .should('be.visible')
-    .type(address, { scrollBehavior: false })
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click({ scrollBehavior: false })
-    })
-}
 
 describe('Import token', () => {
   // we use mainnet to test token lists
