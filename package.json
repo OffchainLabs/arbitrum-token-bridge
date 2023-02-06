@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start_ui": "yarn workspace arb-token-bridge-ui start",
+    "start_ui": "yarn workspace arb-token-bridge-ui dev",
     "start_sdk": "yarn workspace token-bridge-sdk watch",
     "build": "yarn workspace @arbitrum/use-wallet build && yarn workspace token-bridge-sdk build && yarn workspace arb-token-bridge-ui build",
     "format": "yarn workspace arb-token-bridge-ui format && yarn workspace token-bridge-sdk format",

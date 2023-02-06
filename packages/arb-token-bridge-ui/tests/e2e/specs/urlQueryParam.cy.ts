@@ -3,8 +3,11 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
-import { getInitialETHBalance, ethRpcUrl } from '../../support/common'
+import {
+  ethRpcUrl,
+  getInitialETHBalance,
+  resetSeenTimeStampCache
+} from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -19,7 +22,7 @@ describe('User enters site with query params on URL', () => {
     // otherwise pending transactions from last ran specs will leak in this
     resetSeenTimeStampCache()
     // log in to metamask before test
-    cy.login('L1')
+    cy.login({ networkType: 'L1' })
     // save state once otherwise `restoreAppState` in beforeEach would clear it
     cy.saveAppState()
   })

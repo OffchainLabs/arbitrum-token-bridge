@@ -1,9 +1,5 @@
 import { useMemo } from 'react'
 
-import EthereumLogo from '../../assets/EthereumLogo.webp'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.webp'
-
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChevronDownIcon } from '@heroicons/react/outline'
@@ -24,14 +20,14 @@ export function HeaderNetworkInformation() {
     const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
 
     if (!isArbitrum) {
-      return EthereumLogo
+      return '/EthereumLogo.webp'
     }
 
     if (isArbitrumNova) {
-      return ArbitrumNovaLogo
+      return '/ArbitrumNovaLogo.webp'
     }
 
-    return ArbitrumOneLogo
+    return '/ArbitrumOneLogo.svg'
   }, [network])
 
   const networkName = getNetworkName(network.chainID)

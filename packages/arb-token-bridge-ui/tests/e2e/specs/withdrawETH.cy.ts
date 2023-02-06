@@ -2,8 +2,10 @@
  * When user wants to bridge ETH from L2 to L1
  */
 
-import { resetSeenTimeStampCache } from '../../support/commands'
-import { zeroToLessThanOneETH } from '../../support/common'
+import {
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
+} from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
@@ -28,7 +30,7 @@ describe('Withdraw ETH', () => {
     // log in to metamask before withdrawal
     before(() => {
       // login to L2 chain for Arb Goerli network
-      cy.login('L2', true) // add new L2 network
+      cy.login({ networkType: 'L2', addNewNetwork: true }) // add new L2 network
     })
 
     after(() => {

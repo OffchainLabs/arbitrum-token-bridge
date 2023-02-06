@@ -7,7 +7,6 @@ import {
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import dayjs from 'dayjs'
 
-import GoogleCalendarIcon from '../../assets/GoogleCalendar.svg'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
@@ -208,7 +207,7 @@ export function WithdrawalConfirmationDialog(
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"
                     >
                       <img
-                        src={GoogleCalendarIcon}
+                        src="/GoogleCalendar.svg"
                         alt="Google Calendar Icon"
                       />
                       <span>Add to Google Calendar</span>

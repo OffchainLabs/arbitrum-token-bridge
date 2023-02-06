@@ -29,8 +29,9 @@ export const l2NetworkConfig = {
   l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 }
 
-export const ERC20TokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
-export const ERC20TokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
 export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
@@ -87,41 +88,24 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = () => {
+export const startWebApp = (
+  url: string = '/',
+  qs: { [s: string]: string } = {}
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
-  cy.visit('/')
+  cy.visit(url, {
+    qs
+  })
   cy.connectToApp()
   acceptMetamaskAccess()
 }
 
-export const addErc20Token = ({
-  address,
-  name,
-  symbol
-}: {
-  address: string
-  name: string
-  symbol: string
-}) => {
-  cy.findByRole('button', { name: 'Select Token' })
-    .should('be.visible')
-    .should('have.text', 'ETH')
-    .click({ scrollBehavior: false })
-  // open the Select Token popup
-  return cy
-    .findByPlaceholderText(/Search by token name/i)
-    .should('be.visible')
-    .type(address, { scrollBehavior: false })
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click({ scrollBehavior: false })
-      // Select the LINK token
-      cy.findByText(name).click({ scrollBehavior: false })
-      // LINK token should be selected now and popup should be closed after selection
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', symbol)
-    })
+export const resetSeenTimeStampCache = () => {
+  const dataKey = 'arbitrum:bridge:seen-txs'
+  const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
+
+  cy.setLocalStorage(dataKey, JSON.stringify([]))
+  cy.setLocalStorage(timestampKey, new Date().toISOString())
+
+  cy.saveLocalStorage()
 }

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router-dom'
 import { Listbox } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -40,14 +39,6 @@ import {
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
-
-import EthereumLogo from '../../assets/EthereumLogo.webp'
-import ArbitrumOneLogo from '../../assets/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../assets/ArbitrumNovaLogo.webp'
-
-import TransparentEthereumLogo from '../../assets/TransparentEthereumLogo.webp'
-import TransparentArbitrumOneLogo from '../../assets/TransparentArbitrumOneLogo.webp'
-import TransparentArbitrumNovaLogo from '../../assets/TransparentArbitrumNovaLogo.webp'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -105,14 +96,14 @@ function NetworkListbox({
     const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
 
     if (!isArbitrum) {
-      return EthereumLogo
+      return '/EthereumLogo.webp'
     }
 
     if (isArbitrumNova) {
-      return ArbitrumNovaLogo
+      return '/ArbitrumNovaLogo.webp'
     }
 
-    return ArbitrumOneLogo
+    return '/ArbitrumOneLogo.svg'
   }, [])
 
   const getOptionClassName = useCallback(
@@ -209,20 +200,20 @@ function NetworkContainer({
 
     if (!isArbitrum) {
       return {
-        backgroundImage: `url(${TransparentEthereumLogo})`,
+        backgroundImage: `url('/TransparentEthereumLogo.webp')`,
         backgroundClassName: 'bg-purple-ethereum'
       }
     }
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url(${TransparentArbitrumNovaLogo})`,
+        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url(${TransparentArbitrumOneLogo})`,
+      backgroundImage: `url('/TransparentArbitrumOneLogo.webp')`,
       backgroundClassName: 'bg-blue-arbitrum'
     }
   }, [network])
@@ -342,7 +333,6 @@ export function TransferPanelMain({
     React.SetStateAction<string | undefined>
   >
 }) {
-  const history = useHistory()
   const actions = useActions()
 
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
@@ -392,7 +382,7 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, history, setQueryParams])
+  }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
@@ -725,7 +715,7 @@ export function TransferPanelMain({
         }
       }
     }
-  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to, history])
+  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to])
 
   async function setMaxAmount() {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance

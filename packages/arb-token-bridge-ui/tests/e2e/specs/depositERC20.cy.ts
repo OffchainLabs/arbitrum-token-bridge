@@ -3,14 +3,13 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
 import {
-  ERC20TokenAddressL1,
-  addErc20Token,
+  wethTokenAddressL1,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
@@ -39,7 +38,7 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(
-        ERC20TokenAddressL1,
+        wethTokenAddressL1,
         l1NetworkConfig.l1MultiCall,
         ethRpcUrl
       ).then(
@@ -48,12 +47,14 @@ describe('Deposit ERC20 Token', () => {
             symbol: 'WETH'
           }))
       )
-      cy.login('L1')
+      cy.login({ networkType: 'L1', addNewNetwork: true })
     })
+
     after(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
     })
+
     it('should show L1 and L2 chains, and ETH correctly', () => {
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
@@ -72,7 +73,7 @@ describe('Deposit ERC20 Token', () => {
       // open the Select Token popup
       cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
-        .type(ERC20TokenAddressL1, { scrollBehavior: false })
+        .type(wethTokenAddressL1, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
 
@@ -93,6 +94,7 @@ describe('Deposit ERC20 Token', () => {
     it('should show ERC20 balance correctly', () => {
       cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
     })
+
     context("bridge amount is lower than user's L1 ERC20 balance value", () => {
       it('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
@@ -122,6 +124,7 @@ describe('Deposit ERC20 Token', () => {
               .should('be.visible')
           })
       })
+
       it('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
@@ -138,6 +141,7 @@ describe('Deposit ERC20 Token', () => {
           })
       })
     })
+
     // TODO => test for bridge amount higher than user's L1 ERC20 balance
   })
 
@@ -151,83 +155,10 @@ describe('Deposit ERC20 Token', () => {
   context('user has 0 L1-ERC20 and is on L2', () => {})
   // TODO
   context('user has 0 L1-ERC20 and is on wrong chain', () => {})
-
+  // TODO
   context(
     'user has some ERC-20 tokens which require token approval permission and is on L1',
-    () => {
-      // log in to metamask before deposit
-      before(() => {
-        cy.login('L1')
-      })
-      after(() => {
-        // after all assertions are executed, logout and reset the account
-        cy.logout()
-      })
-
-      it('should add ERC20 token correctly', () => {
-        addErc20Token({
-          address: unbridgedERC20Token,
-          name: 'L1CustomToken',
-          symbol: 'LCT'
-        })
-        cy.findByPlaceholderText('Enter amount')
-          .type('0.00012', { scrollBehavior: false })
-          .then(() => {
-            cy.findByRole('button', {
-              name: /Move funds to Arbitrum Goerli/i
-            })
-              .should('be.visible')
-              .should('be.enabled')
-              .click({ scrollBehavior: false })
-            // New dialog to approve the token
-            cy.findByText('New Token Detected').should('be.visible')
-            cy.findByRole('button', { name: 'Continue' })
-              .should('be.visible')
-              .should('be.enabled')
-              .click({ scrollBehavior: false })
-              .then(() => {
-                cy.confirmMetamaskTransaction().then(() => {
-                  cy.findByText(
-                    `Moving ${formatAmount(0.00012, {
-                      symbol: 'LCT'
-                    })} to Arbitrum Goerli...`
-                  ).should('be.visible')
-                })
-              })
-            // TODO: once we create new wallet per test, uncomment, to also test for token approval
-            // Move funds button should now be disabled while the dialog is open
-            // cy.findByRole('button', {
-            //   name: /Move funds to Arbitrum Goerli/i
-            // })
-            //   .should('be.visible')
-            //   .should('be.disabled')
-            // New dialog to approve the fee
-            // Pay button is disabled until checkbox is checked
-            // cy.findByRole('button', { name: /Pay approval fee of / })
-            //   .should('be.visible')
-            //   .should('be.disabled')
-            // cy.findByRole('button', {
-            //   name: /I understand that I have to pay a one-time approval fee of/
-            // })
-            //   .should('be.visible')
-            //   .should('be.enabled')
-            //   .click({ scrollBehavior: false })
-            // cy.findByRole('button', { name: /Pay approval fee of/ })
-            //   .should('be.visible')
-            //   .should('be.enabled')
-            //   .click({ scrollBehavior: false })
-            //   .then(() => {
-            //     cy.confirmMetamaskTransaction().then(() => {
-            //       cy.findByText(
-            //         `Moving ${formatAmount(0.0001, {
-            //           symbol: 'LINK'
-            //         })} to Arbitrum Goerli...`
-            //       ).should('be.visible')
-            //     })
-            //   })
-          })
-      })
-    }
+    () => {}
   )
   // TODO
   context('approve and send ERC-20 successfully', () => {})

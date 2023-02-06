@@ -74,6 +74,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
+  },
+  {
+    id: 9,
+    originChainID: 412346,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
+    name: 'Arbed CMC List',
+    isDefault: true,
+    logoURI:
+      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
   }
 ]
 
