@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import useSWR from 'swr'
+import React, { useState } from 'react'
 import Loader from 'react-loader-spinner'
 
-import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -13,16 +13,16 @@ import {
 import { fetchDeposits, fetchWithdrawals } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { useGateways } from '../../hooks/useGateways'
-import { transformDeposits, transformWithdrawals } from '../../state/app/utils'
+import {
+  isDeposit,
+  transformDeposits,
+  transformWithdrawals
+} from '../../state/app/utils'
 
 export type PageParams = {
-  searchString?: string
-  pageNumber?: number
-  pageSize?: number
-}
-
-const isDeposit = (tx: MergedTransaction) => {
-  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
+  searchString: string
+  pageNumber: number
+  pageSize: number
 }
 
 function EmptyTableRow({ children }: { children: React.ReactNode }) {
@@ -59,7 +59,11 @@ const NoDataOverlay = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-export type TransactionsDataStatus = 'loading' | 'error' | 'success'
+enum TableDataStatus {
+  LOADING,
+  ERROR,
+  SUCCESS
+}
 
 export type TransactionsTableProps = {
   type: 'deposits' | 'withdrawals'
@@ -78,9 +82,6 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
 
   const { l1, l2, isSmartContractWallet } = useNetworksAndSigners()
 
-  const [loading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
-  const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [pageParams, setPageParams] = useState<PageParams>({
     searchString: '',
     pageNumber: 0,
@@ -90,8 +91,57 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
   const [searchString, setSearchString] = useState(pageParams.searchString)
   const [searchError, setSearchError] = useState(false)
 
+  const fetchTransactions = async () => {
+    if (type === 'deposits') {
+      const transactions = await fetchDeposits({
+        walletAddress,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider,
+        ...pageParams
+      })
+
+      return transformDeposits(transactions)
+    } else {
+      const transactions = await fetchWithdrawals({
+        walletAddress,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider,
+        ...pageParams,
+        gatewayAddresses: gatewaysToUse
+      })
+      return transformWithdrawals(transactions)
+    }
+  }
+
+  const {
+    data: transactions = [],
+    isValidating: loading,
+    error: error
+  } = useSWR(
+    [
+      'transactions',
+      type,
+      l1.network.chainID,
+      l2.network.chainID,
+      pageParams.pageNumber,
+      pageParams.pageSize,
+      pageParams.searchString
+    ],
+    fetchTransactions,
+    {
+      shouldRetryOnError: false,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false
+    }
+  )
+
+  const disableNextBtn = loading || transactions.length < pageParams.pageSize // if transactions are less than pagesize
+  const disablePrevBtn = loading || !pageParams.pageNumber // if page number is 0, then don't prev.
+
   const search = () => {
-    if (searchString && !validate_txhash(searchString)) {
+    const trimmedSearchString = searchString.trim()
+    if (trimmedSearchString && !validate_txhash(trimmedSearchString)) {
       setSearchError(true)
       return
     }
@@ -100,60 +150,33 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
       ...prevParams,
       pageNumber: 0,
       pageSize: 10,
-      searchString
+      searchString: trimmedSearchString
     }))
   }
 
   const next = () => {
-    setPageParams(prevParams => ({
-      ...prevParams,
-      pageNumber: (prevParams?.pageNumber || 0) + 1
-    }))
+    if (!disableNextBtn) {
+      setPageParams(prevParams => ({
+        ...prevParams,
+        pageNumber: prevParams.pageNumber + 1
+      }))
+    }
   }
 
   const prev = () => {
-    setPageParams(prevParams => ({
-      ...prevParams,
-      pageNumber: (prevParams?.pageNumber || 1) - 1
-    }))
+    if (!disablePrevBtn) {
+      setPageParams(prevParams => ({
+        ...prevParams,
+        pageNumber: prevParams.pageNumber - 1
+      }))
+    }
   }
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true)
-    setError(false)
-    try {
-      if (type === 'deposits') {
-        const transactions = await fetchDeposits({
-          walletAddress,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider,
-          ...pageParams
-        })
-
-        setTransactions(transformDeposits(transactions))
-      } else {
-        const transactions = await fetchWithdrawals({
-          walletAddress,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider,
-          ...pageParams,
-          gatewayAddresses: gatewaysToUse
-        })
-        setTransactions(transformWithdrawals(transactions))
-      }
-      setLoading(false)
-    } catch (e) {
-      setLoading(false)
-      setError(true)
-      throw e
-    }
-  }, [pageParams, type])
-
-  useEffect(() => {
-    fetchTransactions()
-  }, [pageParams, l1, l2])
-
-  const status = loading ? 'loading' : error ? 'error' : 'success'
+  const status = loading
+    ? TableDataStatus.LOADING
+    : error
+    ? TableDataStatus.ERROR
+    : TableDataStatus.SUCCESS
   const layerType = type === 'deposits' ? 'L1' : 'L2'
 
   return (
@@ -187,36 +210,48 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
         {/* Pagination buttons */}
         <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
           <button
-            className="rounded border border-gray-10 p-1"
+            className={`rounded border border-gray-10 p-1 ${
+              disablePrevBtn
+                ? 'cursor-not-allowed opacity-30'
+                : 'cursor-pointer'
+            }`}
             onClick={prev}
-            disabled={!pageParams?.pageNumber}
           >
             <ChevronLeftIcon className="h-3 w-3" />
           </button>
 
           <div className="whitespace-nowrap p-2">
-            Page {(pageParams?.pageNumber || 0) + 1}{' '}
+            Page {pageParams.pageNumber + 1}{' '}
           </div>
 
-          <button className="rounded border border-gray-10 p-1" onClick={next}>
+          <button
+            className={`rounded border border-gray-10 p-1 ${
+              disableNextBtn
+                ? 'cursor-not-allowed opacity-30'
+                : 'cursor-pointer'
+            }`}
+            onClick={next}
+          >
             <ChevronRightIcon className="h-3 w-3" />
           </button>
         </div>
       </div>
 
       {/* when there are no search results found */}
-      {status === 'success' && !transactions.length && searchString && (
-        <NoDataOverlay>
-          <div className="text-center text-white">
-            <p className="whitespace-nowrap text-lg">
-              Oops! Looks like nothing matched your search query.
-            </p>
-            <p className="whitespace-nowrap text-base">
-              You can search for full or partial tx ID&apos;s.
-            </p>
-          </div>
-        </NoDataOverlay>
-      )}
+      {status === TableDataStatus.SUCCESS &&
+        !transactions.length &&
+        searchString && (
+          <NoDataOverlay>
+            <div className="text-center text-white">
+              <p className="whitespace-nowrap text-lg">
+                Oops! Looks like nothing matched your search query.
+              </p>
+              <p className="whitespace-nowrap text-base">
+                You can search for full or partial tx ID&apos;s.
+              </p>
+            </div>
+          </NoDataOverlay>
+        )}
 
       <table className="w-full overflow-hidden  rounded-b-lg bg-white">
         <thead className="text-left text-sm text-gray-10">
@@ -232,7 +267,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
         </thead>
 
         <tbody>
-          {status === 'loading' && (
+          {status === TableDataStatus.LOADING && (
             <EmptyTableRow>
               <div className="flex flex-row items-center space-x-3">
                 <Loader type="TailSpin" color="black" width={16} height={16} />
@@ -243,7 +278,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
             </EmptyTableRow>
           )}
 
-          {status === 'error' && (
+          {status === TableDataStatus.ERROR && (
             <EmptyTableRow>
               <span className="text-sm font-medium text-brick-dark">
                 Failed to load transactions
@@ -251,7 +286,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
             </EmptyTableRow>
           )}
 
-          {status === 'success' && (
+          {status === TableDataStatus.SUCCESS && (
             <>
               {transactions.length > 0 ? (
                 transactions.map((tx, index) => {

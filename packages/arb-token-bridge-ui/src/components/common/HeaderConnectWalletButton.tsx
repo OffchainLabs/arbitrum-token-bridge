@@ -1,4 +1,5 @@
 import { useWallet } from '@arbitrum/use-wallet'
+import { PlusCircleIcon } from '@heroicons/react/outline'
 
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 
@@ -19,11 +20,7 @@ export function HeaderConnectWalletButton() {
       type="button"
       className="arb-hover flex w-full flex-row items-center rounded-full p-4 text-2xl font-medium text-white lg:bg-lime-dark lg:py-2 lg:px-4 lg:text-base lg:font-normal"
     >
-      <img
-        src={'../../../images/header/headerLogo_connect.webp'}
-        alt="Connect Wallet"
-        className="max-w-8 mr-4 max-h-8"
-      />
+      <PlusCircleIcon className="mr-3 h-8 w-8 rounded-full bg-white p-1 text-black opacity-50" />
       Connect Wallet
     </button>
   )

@@ -20,7 +20,7 @@ export const TransactionHistoryTooltip = ({
         <div className="flex items-center gap-1 text-dark">
           <BellIcon className="h-4 w-4 animate-pulse text-red-800" />
           <span className="whitespace-nowrap">
-            You can now see your transaction history here
+            See transaction history here
           </span>
           <XIcon className="h-4 w-4 cursor-pointer" onClick={onClose} />
         </div>

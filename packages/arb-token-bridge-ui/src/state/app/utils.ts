@@ -129,3 +129,7 @@ export const filterAndSortTransactions = (
     })
     .reverse()
 }
+
+export const isDeposit = (tx: MergedTransaction) => {
+  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
+}

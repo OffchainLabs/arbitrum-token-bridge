@@ -3,14 +3,10 @@ import { InformationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { OutgoingMessageState } from 'token-bridge-sdk'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { outgoungStateToString } from '../../state/app/utils'
+import { isDeposit, outgoungStateToString } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
-
-function isDeposit(tx: MergedTransaction) {
-  return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
-}
 
 export const PendingTransactions = ({
   transactions,
