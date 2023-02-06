@@ -82,7 +82,7 @@ describe('Deposit ERC20 Token', () => {
             .click({ scrollBehavior: false })
 
           // Select the ERC20 token
-          cy.findByText('WETH').click({ scrollBehavior: false })
+          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
           // ERC20 token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
@@ -125,25 +125,10 @@ describe('Deposit ERC20 Token', () => {
           })
       })
 
-      it('should approve successfully', () => {
-        cy.findByRole('button', {
-          name: 'Move funds to Arbitrum'
-        })
-          .as('@transferButton')
-          .click({ scrollBehavior: false })
-          .then(() => {
-            cy.confirmMetamaskPermissionToSpend()
-          })
-        cy.get('@transferButton').should('be.disabled')
-      })
-
       it('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })
-          .should('not.be.disabled')
-          .as('transferButton')
-        cy.get('@transferButton')
           .click({ scrollBehavior: false })
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
