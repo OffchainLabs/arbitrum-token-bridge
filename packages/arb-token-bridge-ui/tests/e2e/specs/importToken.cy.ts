@@ -143,9 +143,7 @@ describe('Import token', () => {
           .click({ scrollBehavior: false })
 
         cy.findByText('Arbed CMC List').should('be.visible')
-        // native element is hidden, no access to better selectors
-        // eslint-disable-next-line
-        cy.get('[data-cy="toggle Arbed CMC List"]')
+        cy.findByLabelText('Arbed CMC List')
           .as('tokenListToggle')
           .parent()
           .click({ scrollBehavior: false })
@@ -229,7 +227,7 @@ describe('Import token', () => {
         cy.login({
           networkType: 'L1',
           url: '/',
-          qs: {
+          query: {
             token: ERC20TokenAddressL1
           }
         })
@@ -267,7 +265,7 @@ describe('Import token', () => {
         cy.login({
           networkType: 'L1',
           url: '/',
-          qs: {
+          query: {
             token: ERC20TokenAddressL2
           }
         })
@@ -304,7 +302,7 @@ describe('Import token', () => {
         cy.login({
           networkType: 'L1',
           url: '/',
-          qs: {
+          query: {
             token: invalidTokenAddress
           }
         })

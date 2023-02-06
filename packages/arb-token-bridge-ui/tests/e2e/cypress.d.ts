@@ -20,7 +20,7 @@ declare global {
         networkType: NetworkType
         addNewNetwork?: boolean
         url?: string
-        qs?: { [s: string]: string }
+        query?: { [s: string]: string }
       }): typeof login
       logout(): typeof logout
       restoreAppState(): typeof restoreAppState
