@@ -190,7 +190,7 @@ export function registerLocalNetwork(
   const { l1Network, l2Network } = params
 
   const l1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_LOCAL_ETHREUM_RPC_URL,
+    env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
     fallback: 'http://localhost:8545'
   })
   const l2NetworkRpcUrl = loadEnvironmentVariableWithFallback({

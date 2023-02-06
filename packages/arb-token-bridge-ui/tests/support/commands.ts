@@ -20,15 +20,15 @@ export function login({
   networkType,
   addNewNetwork = false,
   url,
-  qs
+  query
 }: {
   networkType: NetworkType
   addNewNetwork?: boolean
   url?: string
-  qs?: { [s: string]: string }
+  query?: { [s: string]: string }
 }) {
   setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-    startWebApp(url, qs)
+    startWebApp(url, query)
   })
 }
 

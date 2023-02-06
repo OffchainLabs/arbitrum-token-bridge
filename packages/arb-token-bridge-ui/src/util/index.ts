@@ -34,7 +34,7 @@ export const loadEnvironmentVariableWithFallback = ({
   env?: string
   fallback: string
 }) => {
-  if (typeof env === 'undefined' || !env.trim().length) {
+  if (typeof env === 'undefined' || env.trim().length === 0) {
     return fallback
   }
   return env
