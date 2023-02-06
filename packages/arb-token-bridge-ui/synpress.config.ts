@@ -66,7 +66,7 @@ export default defineConfig({
 
       // Deploy to L2
       await erc20Bridger.deposit({
-        amount: BigNumber.from(1000000000),
+        amount: BigNumber.from(0),
         erc20L1Address: l1Erc20Token.address,
         l1Signer: wallet.connect(ethProvider),
         l2Provider: arbProvider
@@ -77,6 +77,8 @@ export default defineConfig({
         ethProvider
       )
       const l2Erc20Token = erc20Bridger.getL2TokenContract(arbProvider, l2TokenAddress)
+      // const l2bal = await l2Erc20Token.balanceOf(wallet.address)
+      // console.log('l2 bal: ', l2bal.toNumber())
       
       on('before:run', async () => {
         let tx
