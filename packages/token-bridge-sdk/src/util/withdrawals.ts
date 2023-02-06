@@ -12,12 +12,6 @@ import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 
-export const outgoungStateToString = {
-  [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
-  [OutgoingMessageState.CONFIRMED]: 'Confirmed',
-  [OutgoingMessageState.EXECUTED]: 'Executed'
-}
-
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus | FetchTokenWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
