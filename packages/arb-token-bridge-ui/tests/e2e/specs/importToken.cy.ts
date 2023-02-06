@@ -2,13 +2,12 @@ import { utils } from 'ethers'
 import {
   getInitialETHBalance,
   invalidTokenAddress,
-  resetSeenTimeStampCache
+  resetSeenTimeStampCache,
+  ERC20TokenAddressL1,
+  ERC20TokenAddressL2,
+  ERC20TokenName,
+  ERC20TokenSymbol
 } from '../../support/common'
-
-const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-const ERC20TokenAddressL2 = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
-const ERC20TokenName = 'IntArbTestToken'
-const ERC20TokenSymbol = 'IARB'
 
 const importTokenThroughUI = (address: string) => {
   // Click on the ETH dropdown (Select token button)

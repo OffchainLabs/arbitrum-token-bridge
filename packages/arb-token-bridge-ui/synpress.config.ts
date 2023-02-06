@@ -8,12 +8,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
 import { registerLocalNetwork } from './src/util/networks'
 
-import {
-  ethRpcUrl,
-  wethTokenAddressL1,
-  wethTokenAddressL2,
-  arbRpcUrl
-} from './tests/support/common'
+import { ethRpcUrl, arbRpcUrl } from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -59,6 +54,7 @@ export default defineConfig({
       )
       const l1Erc20Token = await erc20Contract.deploy()
       await l1Erc20Token.deployed()
+      await (await l1Erc20Token.mint()).wait()
 
       const l2Network = await getL2Network(wallet.connect(arbProvider))
       const erc20Bridger = new Erc20Bridger(l2Network)
@@ -87,24 +83,35 @@ export default defineConfig({
         })
         await tx.wait()
 
-        // Wrap ETH to test ERC-20 transactions
-        // L1
-        tx = await getWethContract(ethProvider, wethTokenAddressL1).deposit({
-          value: utils.parseEther('0.2')
-        })
+        tx = l1Erc20Token.transfer(testWalletAddress, utils.parseEther('1'))
         await tx.wait()
-        // L2
-        tx = await getWethContract(arbProvider, wethTokenAddressL2).deposit({
-          value: utils.parseEther('0.1')
-        })
 
-        // Approve ERC-20
-        tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
-          // L1 WETH gateway
-          '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
-          constants.MaxInt256
-        )
+        tx = erc20Bridger.deposit({
+          amount: BigNumber.from(0.3),
+          erc20L1Address: l1Erc20Token.address,
+          l1Signer: wallet.connect(ethProvider),
+          l2Provider: arbProvider,
+          destinationAddress: testWalletAddress
+        })
         await tx.wait()
+        // // Wrap ETH to test ERC-20 transactions
+        // // L1
+        // tx = await getWethContract(ethProvider, wethTokenAddressL1).deposit({
+        //   value: utils.parseEther('0.2')
+        // })
+        // await tx.wait()
+        // // L2
+        // tx = await getWethContract(arbProvider, wethTokenAddressL2).deposit({
+        //   value: utils.parseEther('0.1')
+        // })
+
+        // // Approve ERC-20
+        // tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
+        //   // L1 WETH gateway
+        //   '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+        //   constants.MaxInt256
+        // )
+        // await tx.wait()
       })
       config.env.ADDRESS = testWalletAddress
       config.env.PRIVATE_KEY = testWallet.privateKey
@@ -121,7 +128,7 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
-      'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
+      // 'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20

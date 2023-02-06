@@ -4,12 +4,13 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
-  wethTokenAddressL1,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
   zeroToLessThanOneETH,
-  resetSeenTimeStampCache
+  resetSeenTimeStampCache,
+  ERC20TokenAddressL1,
+  ERC20TokenSymbol
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
@@ -38,13 +39,13 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(
-        wethTokenAddressL1,
+        ERC20TokenAddressL1,
         l1NetworkConfig.l1MultiCall,
         ethRpcUrl
       ).then(
         val =>
           (l1ERC20bal = formatAmount(val, {
-            symbol: 'WETH'
+            symbol: ERC20TokenSymbol
           }))
       )
       cy.login({ networkType: 'L1', addNewNetwork: true })
@@ -73,7 +74,7 @@ describe('Deposit ERC20 Token', () => {
       // open the Select Token popup
       cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
-        .type(wethTokenAddressL1, { scrollBehavior: false })
+        .type(ERC20TokenAddressL1, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
 
@@ -81,13 +82,13 @@ describe('Deposit ERC20 Token', () => {
             .should('be.visible')
             .click({ scrollBehavior: false })
 
-          // Select the WETH token
-          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
+          // Select the ERC20 token
+          cy.findByText(ERC20TokenSymbol).click({ scrollBehavior: false })
 
-          // WETH token should be selected now and popup should be closed after selection
+          // ERC20 token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
-            .should('have.text', 'WETH')
+            .should('have.text', ERC20TokenSymbol)
         })
     })
 
@@ -125,10 +126,25 @@ describe('Deposit ERC20 Token', () => {
           })
       })
 
+      it('should approve successfully', () => {
+        cy.findByRole('button', {
+          name: 'Move funds to Arbitrum'
+        })
+          .as('@transferButton')
+          .click({ scrollBehavior: false })
+          .then(() => {
+            cy.confirmMetamaskPermissionToSpend()
+          })
+        cy.get('@transferButton').should('be.disabled')
+      })
+
       it('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })
+          .should('not.be.disabled')
+          .as('transferButton')
+        cy.get('@transferButton')
           .click({ scrollBehavior: false })
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
