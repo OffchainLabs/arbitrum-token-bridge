@@ -159,19 +159,15 @@ export function HeaderAccountPopover() {
   const headerItemsClassName =
     'arb-hover flex w-full flex-row items-center space-x-2 px-[4rem] py-2 text-lg lg:text-base font-light text-white hover:bg-blue-arbitrum lg:px-4'
 
-  const setTxHistoryViewed = () => {
-    setTxHistoryViewedOnce(true)
-  }
-
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <TransactionHistoryTooltip
         isVisible={!txHistoryViewedOnce}
-        onClose={setTxHistoryViewed}
+        onClose={() => setTxHistoryViewedOnce(true)}
       >
         <Popover.Button
           className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0"
-          onClick={setTxHistoryViewed}
+          onClick={() => setTxHistoryViewedOnce(true)}
         >
           <div>
             <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">

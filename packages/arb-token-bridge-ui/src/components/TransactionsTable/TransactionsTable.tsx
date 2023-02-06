@@ -59,7 +59,7 @@ const NoDataOverlay = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-enum TableDataStatus {
+enum TableStatus {
   LOADING,
   ERROR,
   SUCCESS
@@ -173,10 +173,10 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
   }
 
   const status = loading
-    ? TableDataStatus.LOADING
+    ? TableStatus.LOADING
     : error
-    ? TableDataStatus.ERROR
-    : TableDataStatus.SUCCESS
+    ? TableStatus.ERROR
+    : TableStatus.SUCCESS
   const layerType = type === 'deposits' ? 'L1' : 'L2'
 
   return (
@@ -238,20 +238,18 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
       </div>
 
       {/* when there are no search results found */}
-      {status === TableDataStatus.SUCCESS &&
-        !transactions.length &&
-        searchString && (
-          <NoDataOverlay>
-            <div className="text-center text-white">
-              <p className="whitespace-nowrap text-lg">
-                Oops! Looks like nothing matched your search query.
-              </p>
-              <p className="whitespace-nowrap text-base">
-                You can search for full or partial tx ID&apos;s.
-              </p>
-            </div>
-          </NoDataOverlay>
-        )}
+      {status === TableStatus.SUCCESS && !transactions.length && searchString && (
+        <NoDataOverlay>
+          <div className="text-center text-white">
+            <p className="whitespace-nowrap text-lg">
+              Oops! Looks like nothing matched your search query.
+            </p>
+            <p className="whitespace-nowrap text-base">
+              You can search for full or partial tx ID&apos;s.
+            </p>
+          </div>
+        </NoDataOverlay>
+      )}
 
       <table className="w-full overflow-hidden  rounded-b-lg bg-white">
         <thead className="text-left text-sm text-gray-10">
@@ -267,7 +265,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
         </thead>
 
         <tbody>
-          {status === TableDataStatus.LOADING && (
+          {status === TableStatus.LOADING && (
             <EmptyTableRow>
               <div className="flex flex-row items-center space-x-3">
                 <Loader type="TailSpin" color="black" width={16} height={16} />
@@ -278,7 +276,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
             </EmptyTableRow>
           )}
 
-          {status === TableDataStatus.ERROR && (
+          {status === TableStatus.ERROR && (
             <EmptyTableRow>
               <span className="text-sm font-medium text-brick-dark">
                 Failed to load transactions
@@ -286,7 +284,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
             </EmptyTableRow>
           )}
 
-          {status === TableDataStatus.SUCCESS && (
+          {status === TableStatus.SUCCESS && (
             <>
               {transactions.length > 0 ? (
                 transactions.map((tx, index) => {
