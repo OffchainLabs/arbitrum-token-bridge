@@ -48,25 +48,36 @@ export default defineConfig({
       ) =>
         TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
 
-      // Deploy test ERC-20 token
+      // Deploy & mint test ERC-20 token
       const erc20Contract = new TestERC20__factory().connect(
         wallet.connect(ethProvider)
       )
       const l1Erc20Token = await erc20Contract.deploy()
       await l1Erc20Token.deployed()
       await (await l1Erc20Token.mint()).wait()
+      console.log('here')
+      const bl = await l1Erc20Token.balanceOf(wallet.address)
+      console.log('bl: ', bl.toNumber())
+      const sup = await l1Erc20Token.totalSupply()
+      console.log('sup: ', sup.toNumber())
 
       const l2Network = await getL2Network(wallet.connect(arbProvider))
       const erc20Bridger = new Erc20Bridger(l2Network)
 
       // Deploy to L2
       await erc20Bridger.deposit({
-        amount: BigNumber.from(0),
+        amount: BigNumber.from(1000000000),
         erc20L1Address: l1Erc20Token.address,
         l1Signer: wallet.connect(ethProvider),
         l2Provider: arbProvider
       })
 
+      const l2TokenAddress = await erc20Bridger.getL2ERC20Address(
+        l1Erc20Token.address,
+        ethProvider
+      )
+      const l2Erc20Token = erc20Bridger.getL2TokenContract(arbProvider, l2TokenAddress)
+      
       on('before:run', async () => {
         let tx
         // Fund the test wallet. We do this to run tests on a small amount of ETH.
@@ -83,17 +94,15 @@ export default defineConfig({
         })
         await tx.wait()
 
-        tx = l1Erc20Token.transfer(testWalletAddress, utils.parseEther('1'))
-        await tx.wait()
+        // tx = await l1Erc20Token.transfer(testWalletAddress, utils.parseEther('0.0001'))
 
-        tx = erc20Bridger.deposit({
-          amount: BigNumber.from(0.3),
-          erc20L1Address: l1Erc20Token.address,
-          l1Signer: wallet.connect(ethProvider),
-          l2Provider: arbProvider,
-          destinationAddress: testWalletAddress
-        })
-        await tx.wait()
+        // tx = await erc20Bridger.deposit({
+        //   amount: BigNumber.from(0.00001),
+        //   erc20L1Address: l1Erc20Token.address,
+        //   l1Signer: wallet.connect(ethProvider),
+        //   l2Provider: arbProvider,
+        //   destinationAddress: testWalletAddress
+        // })
         // // Wrap ETH to test ERC-20 transactions
         // // L1
         // tx = await getWethContract(ethProvider, wethTokenAddressL1).deposit({

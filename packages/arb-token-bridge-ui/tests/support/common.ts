@@ -31,8 +31,6 @@ export const l2NetworkConfig = {
 
 // export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 // export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
-export const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-export const ERC20TokenAddressL2 = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'

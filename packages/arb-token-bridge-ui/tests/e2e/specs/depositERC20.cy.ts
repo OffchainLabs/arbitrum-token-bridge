@@ -9,9 +9,10 @@ import {
   l1NetworkConfig,
   zeroToLessThanOneETH,
   resetSeenTimeStampCache,
-  ERC20TokenAddressL1,
   ERC20TokenSymbol
 } from '../../support/common'
+
+const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
 
 describe('Deposit ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
