@@ -124,7 +124,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
     try {
       if (type === 'deposits') {
         const transactions = await fetchDeposits({
-          address: walletAddress,
+          walletAddress,
           l1Provider: l1.provider,
           l2Provider: l2.provider,
           ...pageParams
@@ -133,7 +133,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
         setTransactions(transformDeposits(transactions))
       } else {
         const transactions = await fetchWithdrawals({
-          address: walletAddress,
+          walletAddress,
           l1Provider: l1.provider,
           l2Provider: l2.provider,
           ...pageParams,

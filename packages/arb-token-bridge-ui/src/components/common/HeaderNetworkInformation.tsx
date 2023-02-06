@@ -16,8 +16,6 @@ export function HeaderNetworkInformation() {
     [l1Network, l2Network, isConnectedToArbitrum]
   )
 
-  const logoSrc = useMemo(() => getNetworkLogo(network.chainID), [network])
-
   const networkName = getNetworkName(network.chainID)
 
   return (
@@ -27,7 +25,7 @@ export function HeaderNetworkInformation() {
     >
       <div className="flex h-8 w-8 items-center justify-center">
         <img
-          src={logoSrc}
+          src={getNetworkLogo(network.chainID)}
           alt={`${networkName} logo`}
           className="max-w-8 max-h-8"
         />

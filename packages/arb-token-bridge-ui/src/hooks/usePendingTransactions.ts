@@ -19,13 +19,13 @@ import { DepositStatus } from '../state/app/state'
 const INITIAL_PAGE_SIZE = 10
 
 export const fetchPendingTransactions = async ({
-  address,
+  walletAddress,
   l1Provider,
   l2Provider,
   gatewayAddresses,
   pageSize = INITIAL_PAGE_SIZE
 }: {
-  address: string
+  walletAddress: string
   l1Provider: Provider
   l2Provider: Provider
   gatewayAddresses: string[]
@@ -36,7 +36,7 @@ export const fetchPendingTransactions = async ({
   console.log('***** START: fetching pending transactions *****')
   // fetch the first 100 deposits
   const deposits = await fetchDeposits({
-    address,
+    walletAddress,
     l1Provider,
     l2Provider,
     pageNumber: 0,
@@ -47,7 +47,7 @@ export const fetchPendingTransactions = async ({
   console.log('***** fetching pending withdrawals *****')
   // fetch the first 100 withdrawals
   const withdrawals = await fetchWithdrawals({
-    address,
+    walletAddress,
     l1Provider,
     l2Provider,
     pageNumber: 0,
@@ -71,7 +71,7 @@ export const fetchPendingTransactions = async ({
   const pendingDeposits = deposits.filter(tx => pendingDepositsMap[tx.txID])
 
   // filter out pending withdrawals
-  const pendingWithrawalMap: { [id: string]: boolean } = {}
+  const pendingWithdrawalMap: { [id: string]: boolean } = {}
   const completeWithdrawalData = transformWithdrawals(withdrawals)
   completeWithdrawalData.forEach(completeTxData => {
     if (
@@ -79,11 +79,11 @@ export const fetchPendingTransactions = async ({
       completeTxData.status !==
         outgoungStateToString[OutgoingMessageState.EXECUTED]
     ) {
-      pendingWithrawalMap[String(completeTxData.txId)] = true
+      pendingWithdrawalMap[String(completeTxData.txId)] = true
     }
   })
   const pendingWithrawals = withdrawals.filter(
-    tx => pendingWithrawalMap[tx.l2TxHash!]
+    tx => pendingWithdrawalMap[tx.l2TxHash!]
   )
 
   // merge those 2 and return back in 1 array which can be
@@ -117,17 +117,10 @@ export const usePendingTransactions = () => {
 
   /* return the cached response for the complete pending transactions */
   return useSWR(
-    [
-      'pendingTxns',
-      walletAddress,
-      // currentL1BlockNumber,
-      l1Provider,
-      l2Provider,
-      gatewaysToUse
-    ],
+    ['pendingTxns', walletAddress, l1Provider, l2Provider, gatewaysToUse],
     (_, _walletAddress, _l1Provider, _l2Provider) =>
       fetchPendingTransactions({
-        address: _walletAddress,
+        walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         gatewayAddresses: gatewaysToUse

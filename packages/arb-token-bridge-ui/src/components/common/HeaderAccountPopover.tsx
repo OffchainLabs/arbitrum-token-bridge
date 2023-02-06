@@ -194,16 +194,16 @@ export function HeaderAccountPopover() {
           {/* Profile photo with address */}
           <div className="flex flex-row justify-between pb-2">
             <Transition show={showCopied}>
-              <span className="absolute left-[89px] top-4 z-10 text-xs font-light text-white">
+              <span className="absolute left-[90px] top-[2rem] z-10 text-xs font-light text-white">
                 Copied to clipboard!
               </span>
             </Transition>
             <button
-              className="relative hidden flex-row items-center px-4 py-2 text-gray-7 hover:bg-blue-arbitrum hover:text-white lg:flex"
+              className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-7 hover:bg-blue-arbitrum hover:text-white lg:flex"
               onClick={() => copy(ensInfo.name ?? udInfo.name ?? account ?? '')}
             >
               {/* Blurred background */}
-              <div className="absolute inset-0 flex h-[40px] w-full flex-col items-center overflow-hidden bg-dark text-center">
+              <div className="absolute inset-0 flex h-[3rem] w-full flex-col items-center overflow-hidden bg-dark text-center">
                 <div className="scale-400 blur-2xl filter">
                   <SafeImage
                     className="h-100 w-100 rounded-full"
@@ -215,7 +215,7 @@ export function HeaderAccountPopover() {
 
               {/* Actual image and account name */}
               <div className="relative z-10 flex flex-row items-center space-x-2">
-                <div className="box-content rounded-full border-[5px] border-dark	">
+                <div className="box-content rounded-full border-[5px] border-dark">
                   <SafeImage
                     src={ensInfo.avatar || undefined}
                     className="h-14 w-14 rounded-full"

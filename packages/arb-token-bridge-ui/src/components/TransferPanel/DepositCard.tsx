@@ -127,7 +127,7 @@ export function DepositCardContainer({
 
   return (
     <div
-      className={`box-border w-full overflow-hidden	rounded-xl border-4 border-blue-link p-4 ${bgClassName}`}
+      className={`box-border w-full overflow-hidden rounded-xl border-4 border-blue-link p-4 ${bgClassName}`}
     >
       {dismissable && (
         <button

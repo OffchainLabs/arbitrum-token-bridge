@@ -32,7 +32,7 @@ export const PendingTransactions = ({
   )
 
   return (
-    <div className="relative flex max-h-[500px] flex-col gap-4 overflow-scroll rounded-lg bg-blue-arbitrum p-4">
+    <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">
       {/* Heading */}
       <span className="flex items-center gap-x-3 text-xl text-white">
         {loading ? (

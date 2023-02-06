@@ -35,8 +35,7 @@ export const updateAdditionalDepositData = async (
     const status = await ethDepositMessage.status()
     const isDeposited = status === EthDepositStatus.DEPOSITED
     const timestampCreated = depositTx.blockNumber
-      ? (await l1Provider.getBlock(Number(depositTx.blockNumber))).timestamp *
-        1000
+      ? (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
       : new Date().toISOString()
     const retryableCreationTxID = ethDepositMessage.l2DepositTxHash
     const l2BlockNum = isDeposited
@@ -77,8 +76,7 @@ export const updateAdditionalDepositData = async (
 
     // fetch timestamp things
     const timestampCreated = depositTx.blockNumber
-      ? (await l1Provider.getBlock(Number(depositTx.blockNumber))).timestamp *
-        1000
+      ? (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
       : new Date().toISOString()
 
     const updatedDepositTx = {

@@ -74,9 +74,5 @@ export const fetchDepositsFromSubgraph = async ({
     `
   })
 
-  const depositsFromSubgraph = res.data.deposits.map(
-    (tx: FetchDepositsFromSubgraphResult) => tx
-  )
-
-  return depositsFromSubgraph
+  return res.data.deposits as FetchDepositsFromSubgraphResult[]
 }

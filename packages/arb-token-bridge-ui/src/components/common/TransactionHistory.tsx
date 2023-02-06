@@ -59,10 +59,10 @@ export const TransactionHistory = () => {
             )}
           </Tab>
         </Tab.List>
-        <Tab.Panel className="overflow-scroll">
+        <Tab.Panel className="overflow-auto">
           <TransactionsTable type="deposits" />
         </Tab.Panel>
-        <Tab.Panel className="overflow-scroll">
+        <Tab.Panel className="overflow-auto">
           <TransactionsTable type="withdrawals" />
         </Tab.Panel>
       </Tab.Group>

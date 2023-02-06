@@ -21,8 +21,8 @@ export type DepositETHSubgraphResult = {
 /* Fetch complete deposits - both ETH and Token deposits from subgraph into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 /* TODO : Add event logs as well */
-export async function fetchDeposits({
-  address,
+export const fetchDeposits = async ({
+  walletAddress,
   fromBlock,
   toBlock,
   l1Provider,
@@ -31,7 +31,7 @@ export async function fetchDeposits({
   pageNumber = 0,
   searchString = ''
 }: {
-  address: string
+  walletAddress: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider
@@ -39,7 +39,7 @@ export async function fetchDeposits({
   pageSize?: number
   pageNumber?: number
   searchString?: string
-}): Promise<Transaction[]> {
+}): Promise<Transaction[]> => {
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
@@ -56,7 +56,7 @@ export async function fetchDeposits({
   }
 
   const depositsFromSubgraph = await fetchDepositsFromSubgraph({
-    address,
+    address: walletAddress,
     fromBlock,
     toBlock,
     l2ChainId,
@@ -75,7 +75,7 @@ export async function fetchDeposits({
         value: utils.formatEther(isEthDeposit ? tx.ethValue : tx.tokenAmount),
         txID: tx.transactionHash,
         tokenAddress: isEthDeposit ? null : tx.l1Token.id,
-        sender: address,
+        sender: walletAddress,
 
         asset: isEthDeposit ? 'ETH' : null,
         assetName: isEthDeposit ? 'ETH' : null,

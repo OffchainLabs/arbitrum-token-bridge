@@ -33,7 +33,7 @@ export const SidePanel = ({
             </Dialog.Title>
 
             {/* Contents of the panel */}
-            <div className="z-40 h-full overflow-scroll p-4">{children}</div>
+            <div className="z-40 h-full overflow-auto p-4">{children}</div>
           </Dialog.Panel>
         </div>
       </Dialog>

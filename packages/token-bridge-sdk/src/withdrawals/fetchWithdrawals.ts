@@ -17,7 +17,7 @@ import {
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
-  address, // wallet address
+  walletAddress, // wallet address
   l1Provider,
   l2Provider,
   gatewayAddresses,
@@ -25,7 +25,7 @@ export const fetchWithdrawals = async ({
   pageSize,
   searchString
 }: {
-  address: string
+  walletAddress: string
   l1Provider: Provider
   l2Provider: Provider
   gatewayAddresses: string[]
@@ -57,7 +57,7 @@ export const fetchWithdrawals = async ({
   ] = await Promise.all([
     // ETH Withdrawals
     fetchETHWithdrawalsFromSubgraph({
-      address: address,
+      address: walletAddress,
       fromBlock: 0,
       toBlock: latestSubgraphBlockNumber,
       l2Provider: l2Provider,
@@ -66,14 +66,14 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      address: address,
+      address: walletAddress,
       fromBlock: latestSubgraphBlockNumber + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     // Token Withdrawals
     fetchTokenWithdrawalsFromSubgraph({
-      address: address,
+      address: walletAddress,
       fromBlock: 0,
       toBlock: latestSubgraphBlockNumber,
       l2Provider: l2Provider,
@@ -82,7 +82,7 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      address: address,
+      address: walletAddress,
       fromBlock: latestSubgraphBlockNumber + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
@@ -122,7 +122,7 @@ export const fetchWithdrawals = async ({
           l1Provider,
           l2Provider,
           l2ChainID,
-          address
+          walletAddress
         )
       )
     ])

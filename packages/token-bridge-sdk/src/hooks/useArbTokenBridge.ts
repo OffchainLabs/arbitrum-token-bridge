@@ -1115,7 +1115,7 @@ export const useArbTokenBridge = (
 
     // fetch the first 100 eth and first 100 token withdrawals
     const finalL2ToL1Txns = await fetchWithdrawals({
-      address: walletAddress,
+      walletAddress,
       l1Provider: l1.provider,
       l2Provider: l2.provider,
       gatewayAddresses,

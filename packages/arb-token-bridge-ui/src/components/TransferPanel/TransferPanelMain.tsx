@@ -93,10 +93,6 @@ function NetworkListbox({
     return 'bg-[rgba(101,109,123,0.8)]'
   }, [value])
 
-  const getOptionImageSrc = useCallback((network: L1Network | L2Network) => {
-    return getNetworkLogo(network.chainID)
-  }, [])
-
   const getOptionClassName = useCallback(
     (index: number) => {
       if (index === 0) {
@@ -151,7 +147,7 @@ function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <img
-                    src={getOptionImageSrc(option)}
+                    src={getNetworkLogo(option.chainID)}
                     alt={`${getNetworkName(option.chainID)} logo`}
                     className="max-w-8 max-h-9"
                   />
