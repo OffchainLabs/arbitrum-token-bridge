@@ -72,25 +72,27 @@ export const fetchDeposits = async ({
       return {
         type: 'deposit-l1',
         status: 'pending',
-        value: utils.formatEther(isEthDeposit ? tx.ethValue : tx.tokenAmount),
+        value: utils.formatEther(
+          isEthDeposit ? tx.ethValue : tx.tokenAmount || 0
+        ),
         txID: tx.transactionHash,
-        tokenAddress: isEthDeposit ? null : tx.l1Token.id,
+        tokenAddress: isEthDeposit ? null : tx?.l1Token?.id,
         sender: walletAddress,
 
-        asset: isEthDeposit ? 'ETH' : null,
-        assetName: isEthDeposit ? 'ETH' : null,
-        assetType: isEthDeposit ? AssetType.ETH : null,
+        asset: isEthDeposit ? 'ETH' : tx?.l1Token?.symbol,
+        assetName: isEthDeposit ? 'ETH' : tx?.l1Token?.symbol,
+        assetType: isEthDeposit ? AssetType.ETH : AssetType.ERC20,
 
         l1NetworkID: String(l1ChainId),
         l2NetworkID: String(l2ChainId),
-        blockNumber: tx.blockCreatedAt
+        blockNumber: Number(tx.blockCreatedAt)
       }
     }
   ) as unknown as Transaction[]
 
   const t1 = new Date().getTime()
   console.log(
-    `*** done getting ETH subgraph data, took ${
+    `*** done getting ETH deposit subgraph data, took ${
       Math.round(t1 - t) / 1000
     } seconds`
   )
@@ -103,7 +105,7 @@ export const fetchDeposits = async ({
 
   const t2 = new Date().getTime()
   console.log(
-    `*** done getting final ETH additional data, took ${
+    `*** done getting final ETH deposit additional data, took ${
       Math.round(t2 - t1) / 1000
     } seconds`
   )

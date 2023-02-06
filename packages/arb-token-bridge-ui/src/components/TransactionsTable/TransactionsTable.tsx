@@ -145,6 +145,7 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
     } catch (e) {
       setLoading(false)
       setError(true)
+      throw e
     }
   }, [pageParams, type])
 

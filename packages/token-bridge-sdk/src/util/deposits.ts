@@ -6,7 +6,6 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { Transaction } from '../hooks/useTransactions'
-import { getL1TokenData } from '../util'
 
 export const updateAdditionalDepositData = async (
   depositTx: Transaction,
@@ -66,14 +65,6 @@ export const updateAdditionalDepositData = async (
   } else {
     // else if the transaction is not ETH ie. it's a ERC20 token deposit
 
-    // first fetch the token details like asset name and asset type
-    const { symbol } = await getL1TokenData({
-      account: depositTx.sender,
-      erc20L1Address: depositTx.tokenAddress!,
-      l1Provider,
-      l2Provider
-    })
-
     // fetch timestamp things
     const timestampCreated = depositTx.blockNumber
       ? (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
@@ -81,10 +72,7 @@ export const updateAdditionalDepositData = async (
 
     const updatedDepositTx = {
       ...depositTx,
-      timestampCreated,
-      asset: symbol,
-      assetName: symbol,
-      assetType: AssetType.ERC20
+      timestampCreated
     }
 
     // get l1 to l2 message for status fields

@@ -1,22 +1,25 @@
 import { gql } from '@apollo/client'
 import { getL1SubgraphClient } from '../util/subgraph'
-import { Provider } from '@ethersproject/providers'
 
 export type FetchDepositsFromSubgraphResult = {
-  id: string
-  type: string
-  sender: string
   receiver: string
-  ethValue: string
-  l1Token: {
-    id: string
-  }
+  sender: string
   sequenceNumber: string
-  tokenAmount: string
-  isClassic: boolean
-  timestamp: number
+  timestamp: string
   transactionHash: string
+  type: 'EthDeposit' | 'TokenDeposit'
+  isClassic: boolean
+  id: string
+  ethValue: string
+  tokenAmount?: string
   blockCreatedAt: string
+  l1Token?: {
+    symbol: string
+    decimals: string
+    id: string
+    name: string
+    registeredAtBlock: string
+  }
 }
 
 export const fetchDepositsFromSubgraph = async ({
@@ -41,8 +44,7 @@ export const fetchDepositsFromSubgraph = async ({
   }
 
   const res = await getL1SubgraphClient(l2ChainId).query({
-    query: gql`
-      {
+    query: gql`{
         deposits(
           where: {
             sender: "${address}",
@@ -55,24 +57,65 @@ export const fetchDepositsFromSubgraph = async ({
           first: ${pageSize},
           skip: ${pageNumber * pageSize}
         ) {
-          id
-          type
-          sender
           receiver
-          ethValue
-          l1Token {
-            id
-          }
+          sender
           sequenceNumber
-          tokenAmount
-          isClassic
           timestamp
+          tokenAmount
           transactionHash
+          type
+          isClassic
+          id
+          ethValue
           blockCreatedAt
+          l1Token {
+            symbol
+            decimals    
+            id
+            name
+            registeredAtBlock
+          }                  
         }
       }
     `
   })
 
-  return res.data.deposits as FetchDepositsFromSubgraphResult[]
+  const transactions: FetchDepositsFromSubgraphResult[] = res.data.deposits.map(
+    (tx: FetchDepositsFromSubgraphResult) => {
+      const {
+        receiver,
+        sender,
+        sequenceNumber,
+        timestamp,
+        tokenAmount,
+        transactionHash,
+        type,
+        isClassic,
+        id,
+        ethValue,
+        blockCreatedAt,
+        l1Token
+      } = tx
+
+      return {
+        receiver,
+        sender,
+        sequenceNumber,
+        timestamp,
+        tokenAmount,
+        transactionHash,
+        type,
+        isClassic,
+        id,
+        ethValue,
+        blockCreatedAt,
+        l1Token: {
+          id: l1Token?.id,
+          symbol: l1Token?.symbol
+        }
+      }
+    }
+  )
+
+  return transactions
 }
