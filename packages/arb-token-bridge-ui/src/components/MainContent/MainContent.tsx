@@ -52,7 +52,7 @@ export function MainContent() {
 
     // if pending withdrawals found, add them in the store
     arbTokenBridge?.setWithdrawalsInStore?.(
-      pendingTxns?.pendingWithrawals || []
+      pendingTxns?.pendingWithdrawals || []
     )
   }, [pendingTxns])
 

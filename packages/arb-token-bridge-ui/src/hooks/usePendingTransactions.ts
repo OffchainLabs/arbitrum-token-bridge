@@ -82,7 +82,7 @@ export const fetchPendingTransactions = async ({
       pendingWithdrawalMap[String(completeTxData.txId)] = true
     }
   })
-  const pendingWithrawals = withdrawals.filter(
+  const pendingWithdrawals = withdrawals.filter(
     tx => pendingWithdrawalMap[tx.l2TxHash!]
   )
 
@@ -99,7 +99,7 @@ export const fetchPendingTransactions = async ({
   })
 
   console.log('***** FINISH! returning sorted pending transactions *****')
-  return { pendingDeposits, pendingWithrawals, pendingMergedTransactions }
+  return { pendingDeposits, pendingWithdrawals, pendingMergedTransactions }
 }
 
 export const usePendingTransactions = () => {
