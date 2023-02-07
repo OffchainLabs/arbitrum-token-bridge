@@ -584,7 +584,7 @@ export function TransferPanel() {
                 })
                 setTransferring(false)
                 if (isFathomNetworkName(l2NetworkName)) {
-                  trackEvent(`Withdraw from ${l2NetworkName}`)
+                  trackEvent(`Withdrawal from ${l2NetworkName}`)
                 }
               }
             }
@@ -603,7 +603,7 @@ export function TransferPanel() {
                 })
                 setTransferring(false)
                 if (isFathomNetworkName(l2NetworkName)) {
-                  trackEvent(`Withdraw from ${l2NetworkName}`)
+                  trackEvent(`Withdrawal from ${l2NetworkName}`)
                 }
               }
             }
