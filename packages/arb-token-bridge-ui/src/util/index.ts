@@ -32,7 +32,7 @@ export const loadEnvironmentVariableWithFallback = ({
   fallback
 }: {
   env?: string
-  fallback: string
+  fallback?: string
 }): string => {
   const isValidEnv = (value?: string) => {
     return typeof value === 'string' && value.trim().length !== 0
@@ -41,7 +41,7 @@ export const loadEnvironmentVariableWithFallback = ({
     return String(env)
   }
   if (isValidEnv(fallback)) {
-    return fallback
+    return String(fallback)
   }
   throw new Error(
     `
