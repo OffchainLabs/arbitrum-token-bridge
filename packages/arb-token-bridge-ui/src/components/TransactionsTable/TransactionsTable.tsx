@@ -182,7 +182,11 @@ export function TransactionsTable({ type }: TransactionsTableProps) {
   return (
     <>
       {/* top search and pagination bar */}
-      <div className="sticky top-0 left-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm">
+      <div
+        className={`sticky top-0 left-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm ${
+          type !== 'deposits' && 'rounded-tl-lg'
+        }`}
+      >
         {/* Search bar */}
         <div className="relative flex h-full w-full grow items-center rounded border-2 bg-white px-2">
           <SearchIcon className="h-4 w-4 shrink-0 text-gray-9" />

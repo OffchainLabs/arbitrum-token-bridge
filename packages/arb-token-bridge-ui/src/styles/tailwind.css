@@ -425,3 +425,30 @@ input:checked + .slider:before {
   -webkit-animation-name: flipInX;
   animation-name: flipInX;
 }
+
+.roundedTabRight.selected::after {
+  height: 15px;
+  width: 15px;
+  position: absolute;
+  right: -15px;
+  bottom: 0;
+  background: url('../../public/images/RoundedTab.svg');
+  z-index: 50;
+  content: '';
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.roundedTabLeft.selected::before {
+  height: 15px;
+  width: 15px;
+  position: absolute;
+  left: -15px;
+  bottom: 0;
+  background: url('../../public/images/RoundedTab.svg');
+  z-index: 50;
+  content: '';
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform: rotateY(180deg);
+}
