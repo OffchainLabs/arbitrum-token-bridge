@@ -62,12 +62,6 @@ export default defineConfig({
       const l1Erc20Token = await erc20Contract.deploy()
       await l1Erc20Token.deployed()
 
-      // Mint ERC-20 token
-      // We need this to test token approval
-      // WETH is pre-approved so we need a new token
-      const mintedL1Erc20Token = await l1Erc20Token.mint()
-      await mintedL1Erc20Token.wait()
-
       // Deploy ERC-20 token to L2
       const l2Deploy = await erc20Bridger.deposit({
         amount: BigNumber.from(0),
@@ -76,6 +70,12 @@ export default defineConfig({
         l2Provider: arbProvider
       })
       await l2Deploy.wait()
+
+      // Mint ERC-20 token
+      // We need this to test token approval
+      // WETH is pre-approved so we need a new token
+      const mintedL1Erc20Token = await l1Erc20Token.mint()
+      await mintedL1Erc20Token.wait()
 
       // Send minted ERC-20 to the test wallet
       await l1Erc20Token
