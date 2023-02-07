@@ -81,10 +81,10 @@ describe('Deposit ERC20 Token', () => {
             .should('be.visible')
             .click({ scrollBehavior: false })
 
-          // Select the ERC20 token
+          // Select the WETH token
           cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
-          // ERC20 token should be selected now and popup should be closed after selection
+          // WETH token should be selected now and popup should be closed after selection
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
             .should('have.text', 'WETH')

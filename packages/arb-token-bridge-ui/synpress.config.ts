@@ -58,13 +58,17 @@ export default defineConfig({
       ) =>
         TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
 
-      // Deploy to L1 & mint test ERC-20 token
+      // Deploy ERC-20 token to L1
       const l1Erc20Token = await erc20Contract.deploy()
       await l1Erc20Token.deployed()
+
+      // Mint ERC-20 token
+      // We need this to test token approval
+      // WETH is pre-approved so we need a new token
       const mintedL1Erc20Token = await l1Erc20Token.mint()
       await mintedL1Erc20Token.wait()
 
-      // Deploy to L2
+      // Deploy ERC-20 token to L2
       const l2Deploy = await erc20Bridger.deposit({
         amount: BigNumber.from(0),
         erc20L1Address: l1Erc20Token.address,
