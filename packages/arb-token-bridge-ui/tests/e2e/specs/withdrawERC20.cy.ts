@@ -27,7 +27,7 @@ describe('Withdraw ERC20 Token', () => {
   })
 
   // Happy Path
-  context('User has some ERC20 and is on L2', () => {
+  context('User is on L2 and imports ERC-20', () => {
     // log in to metamask before withdrawal
     before(() => {
       // login to L2 chain for Local network
