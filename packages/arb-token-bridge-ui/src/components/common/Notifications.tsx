@@ -14,13 +14,21 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Notification({ children }: { children: React.ReactNode }) {
+function Notification({
+  infoIcon,
+  children
+}: {
+  infoIcon?: boolean
+  children: React.ReactNode
+}) {
   return (
     <div className="flex w-auto gap-2 whitespace-nowrap rounded-md bg-dark p-2 px-4 text-sm text-cyan">
-      <InformationCircleIcon
-        className="h-5 w-5 text-gray-10"
-        aria-hidden="true"
-      />
+      {infoIcon && (
+        <InformationCircleIcon
+          className="h-5 w-5 text-gray-10"
+          aria-hidden="true"
+        />
+      )}
       {children}
     </div>
   )
@@ -28,7 +36,7 @@ function Notification({ children }: { children: React.ReactNode }) {
 
 function ArbitrumBetaNotification() {
   return (
-    <Notification>
+    <Notification infoIcon>
       Arbitrum is in beta.{' '}
       <ExternalLink
         href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
@@ -45,7 +53,7 @@ function NitroDevnetNotification() {
 
   return (
     <>
-      <Notification>
+      <Notification infoIcon>
         <ExternalLink
           href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
           className="arb-hover"
