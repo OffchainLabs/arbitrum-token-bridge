@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import { resetSeenTimeStampCache } from '../../support/commands'
+import { resetSeenTimeStampCache } from '../../support/common'
 
 describe('Switch Networks', () => {
   before(() => {
@@ -19,7 +19,7 @@ describe('Switch Networks', () => {
   context('User is on test network L1', () => {
     // log in to metamask before deposit
     before(() => {
-      cy.login('L1')
+      cy.login({ networkType: 'L1' })
     })
 
     after(() => {

@@ -3,13 +3,13 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
 import {
   arbRpcUrl,
-  ERC20TokenAddressL2,
+  wethTokenAddressL2,
   getInitialERC20Balance,
   l2NetworkConfig,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache
 } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
@@ -36,13 +36,13 @@ describe('Withdraw ERC20 Token', () => {
     // log in to metamask before withdrawal
     before(() => {
       getInitialERC20Balance(
-        ERC20TokenAddressL2,
+        wethTokenAddressL2,
         l2NetworkConfig.l2MultiCall,
         arbRpcUrl
       ).then(val => (l2ERC20bal = formatAmount(val, { symbol: 'WETH' })))
 
       // login to L2 chain for Local network
-      cy.login('L2', false) // don't add new network, switch to exisiting
+      cy.login({ networkType: 'L2', addNewNetwork: false }) // don't add new network, switch to exisiting
     })
 
     after(() => {
@@ -75,7 +75,7 @@ describe('Withdraw ERC20 Token', () => {
       // open the Select Token popup
       cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
-        .type(ERC20TokenAddressL2, { scrollBehavior: false })
+        .type(wethTokenAddressL2, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
           cy.findByRole('button', { name: 'Add New Token' })
