@@ -45,8 +45,6 @@ export const fetchDeposits = async ({
 
   const latestL1BlockNumber = await l1Provider.getBlockNumber()
 
-  const t = new Date().getTime()
-
   if (!fromBlock) {
     fromBlock = 0
   }
@@ -90,25 +88,11 @@ export const fetchDeposits = async ({
     }
   ) as unknown as Transaction[]
 
-  const t1 = new Date().getTime()
-  console.log(
-    `*** done getting ETH deposit subgraph data, took ${
-      Math.round(t1 - t) / 1000
-    } seconds`
-  )
-
   const finalTransactions = (await Promise.all(
     ethDepositsFromSubgraph.map(depositTx =>
       updateAdditionalDepositData(depositTx, l1Provider, l2Provider)
     )
   )) as Transaction[]
-
-  const t2 = new Date().getTime()
-  console.log(
-    `*** done getting final ETH deposit additional data, took ${
-      Math.round(t2 - t1) / 1000
-    } seconds`
-  )
 
   return finalTransactions
 }

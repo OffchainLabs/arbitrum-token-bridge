@@ -10,7 +10,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
-import { getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 
 function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -123,13 +123,15 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
 
     if (typeof matchingL1Tx === 'undefined') {
       return (
-        <span className="whitespace-nowrap text-dark">L1: Not available</span>
+        <span className="whitespace-nowrap text-dark">
+          {getNetworkName(l1.network.chainID)}: : Not available
+        </span>
       )
     }
 
     return (
       <span className="whitespace-nowrap text-dark">
-        L1:{' '}
+        {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
           className="arb-hover text-blue-link"
@@ -143,7 +145,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
   return (
     <div className="flex flex-col space-y-1">
       <span className="whitespace-nowrap text-dark">
-        L2:{' '}
+        {getNetworkName(l2.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"

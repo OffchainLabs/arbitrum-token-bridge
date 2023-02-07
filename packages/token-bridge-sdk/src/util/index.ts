@@ -64,11 +64,8 @@ export async function getL1TokenData({
   const l1TokenDataCache = JSON.parse(
     sessionStorage.getItem('l1TokenDataCache') || '{}'
   )
-  if (l1TokenDataCache?.[erc20L1Address]) {
-    // if found in cache - then return this only
-    console.log('**** CACHE HIT FOR ****', erc20L1Address)
-    return l1TokenDataCache?.[erc20L1Address]
-  }
+  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
+  if (cachedTokenData) return cachedTokenData // successfully found the cache for the reqd token
 
   const l2Network = await getL2Network(l2Provider)
   const erc20Bridger = new Erc20Bridger(l2Network)
@@ -114,7 +111,6 @@ export async function getL1TokenData({
 
   // store the newly fetched final-token-data in cache
   try {
-    console.log('**** CACHE MISS FOR ****', erc20L1Address)
     l1TokenDataCache[erc20L1Address] = finalTokenData
     sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
   } catch (e) {

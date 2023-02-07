@@ -36,17 +36,8 @@ export const fetchWithdrawals = async ({
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
-  const t = new Date().getTime()
-
-  console.log('*** Getting withdrawal data ***')
-
   const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
     l2ChainID
-  )
-
-  console.log(
-    'Latest block number on L2 from subgraph:',
-    latestSubgraphBlockNumber
   )
 
   const [
@@ -134,12 +125,6 @@ export const fetchWithdrawals = async ({
     l2ToL1Txns.map(withdrawal =>
       updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
     )
-  )
-
-  console.log(
-    `*** done getting pending withdrawals and additional data, took ${
-      Math.round(new Date().getTime() - t) / 1000
-    } seconds`
   )
 
   return finalL2ToL1Txns as L2ToL1EventResultPlus[]

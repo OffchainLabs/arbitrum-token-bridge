@@ -188,7 +188,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 ): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
     account: walletAddress,
-    erc20L1Address: result.l1Token!,
+    erc20L1Address: result.l1Token,
     l1Provider,
     l2Provider
   })

@@ -33,7 +33,6 @@ export const fetchPendingTransactions = async ({
   pageSize?: number
   searchString?: string
 }) => {
-  console.log('***** START: fetching pending transactions *****')
   // fetch the first 100 deposits
   const deposits = await fetchDeposits({
     walletAddress,
@@ -42,9 +41,7 @@ export const fetchPendingTransactions = async ({
     pageNumber: 0,
     pageSize
   })
-  console.log('***** fetched pending deposits *****')
 
-  console.log('***** fetching pending withdrawals *****')
   // fetch the first 100 withdrawals
   const withdrawals = await fetchWithdrawals({
     walletAddress,
@@ -54,7 +51,6 @@ export const fetchPendingTransactions = async ({
     pageSize,
     gatewayAddresses
   })
-  console.log('***** fetched pending withdrawals *****')
 
   // filter out pending deposits
   const pendingDepositsMap: { [id: string]: boolean } = {}
@@ -87,7 +83,7 @@ export const fetchPendingTransactions = async ({
   )
 
   // merge those 2 and return back in 1 array which can be
-  console.log('***** transformed both deposits and withdrawals *****')
+
   const pendingMergedTransactions = [
     ...completeDepositData,
     ...completeWithdrawalData
@@ -98,7 +94,6 @@ export const fetchPendingTransactions = async ({
     return dayjs(creationDateA).isBefore(creationDateB) ? 1 : -1
   })
 
-  console.log('***** FINISH! returning sorted pending transactions *****')
   return { pendingDeposits, pendingWithdrawals, pendingMergedTransactions }
 }
 
