@@ -32,7 +32,7 @@ import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { trackEvent } from '../../util/AnalyticsUtils'
+import { trackEvent, isFathomNetworkName } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
   TransferPanelMainErrorMessage
@@ -339,6 +339,8 @@ export function TransferPanel() {
       return
     }
 
+    const l2NetworkName = getNetworkName(l2Network.chainID)
+
     // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
       setTimeout(() => {
@@ -475,6 +477,9 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
+                if (isFathomNetworkName(l2NetworkName)) {
+                  trackEvent(`Deposit to ${l2NetworkName}`)
+                }
               }
             }
           })
@@ -491,6 +496,9 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
+                if (isFathomNetworkName(l2NetworkName)) {
+                  trackEvent(`Deposit to ${l2NetworkName}`)
+                }
               }
             }
           })
@@ -575,6 +583,9 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
+                if (isFathomNetworkName(l2NetworkName)) {
+                  trackEvent(`Deposit to ${l2NetworkName}`)
+                }
               }
             }
           })
@@ -591,6 +602,9 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
+                if (isFathomNetworkName(l2NetworkName)) {
+                  trackEvent(`Deposit to ${l2NetworkName}`)
+                }
               }
             }
           })

@@ -13,6 +13,7 @@ import {
   FastBridgeNames
 } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
+import { getNetworkName } from './networks'
 
 declare global {
   interface Window {
@@ -25,11 +26,23 @@ declare global {
 type FastBridgeName = `${FastBridgeNames}`
 type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
 
+const FathomNetworkNames = ['Arbitrum One', 'Arbitrum Nova'] as const
+type AllNetworkNames = ReturnType<typeof getNetworkName>
+type FathomNetworkName = typeof FathomNetworkNames[number]
+export const isFathomNetworkName = (
+  networkName: AllNetworkNames
+): networkName is FathomNetworkName => {
+  return FathomNetworkNames.includes(networkName as FathomNetworkName)
+}
+
 export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
 export type FathomEvent =
   | `Connect Wallet Click: ${ProviderName}`
+  //
+  | `Deposit to ${FathomNetworkName}`
+  | `Withdrawal from ${FathomNetworkName}`
   //
   | `Explore: DeFi Project Click: ${ExploreArbitrumDeFiProjectName}`
   | `Explore: NFT Project Click: ${ExploreArbitrumNFTProjectName}`
@@ -54,6 +67,11 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
   'Connect Wallet Click: WalletConnect': 'QPDOCSPL',
+  //
+  'Deposit to Arbitrum One': 'UL9WSZQO',
+  'Deposit to Arbitrum Nova': 'QAIO4AJ1',
+  'Withdrawal from Arbitrum One': 'PACZDLXE',
+  'Withdrawal from Arbitrum Nova': 'MGEAJZ7A',
   //
   'Explore: DeFi Project Click: Uniswap': 'GD30QTVK',
   'Explore: DeFi Project Click: SushiSwap': '1FSKVH8U',
