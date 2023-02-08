@@ -463,6 +463,9 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
+            if (isFathomNetworkName(l2NetworkName)) {
+              trackEvent(`Deposit ERC-20 to ${l2NetworkName} (Smart Contract)`)
+            }
           }
 
           await latestToken.current.deposit({
@@ -477,8 +480,11 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
-                if (isFathomNetworkName(l2NetworkName)) {
-                  trackEvent(`Deposit to ${l2NetworkName}`)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Deposit ERC-20 to ${l2NetworkName} (EOA)`)
                 }
               }
             }
@@ -496,8 +502,11 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
-                if (isFathomNetworkName(l2NetworkName)) {
-                  trackEvent(`Deposit to ${l2NetworkName}`)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Deposit ETH to ${l2NetworkName} (EOA)`)
                 }
               }
             }
@@ -569,6 +578,11 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
+            if (isFathomNetworkName(l2NetworkName)) {
+              trackEvent(
+                `Withdraw ERC-20 from ${l2NetworkName} (Smart Contract)`
+              )
+            }
           }
 
           await latestToken.current.withdraw({
@@ -583,8 +597,11 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
-                if (isFathomNetworkName(l2NetworkName)) {
-                  trackEvent(`Withdrawal from ${l2NetworkName}`)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Withdraw ERC-20 from ${l2NetworkName} (EOA)`)
                 }
               }
             }
@@ -602,8 +619,11 @@ export function TransferPanel() {
                   payload: false
                 })
                 setTransferring(false)
-                if (isFathomNetworkName(l2NetworkName)) {
-                  trackEvent(`Withdrawal from ${l2NetworkName}`)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Withdraw ETH from ${l2NetworkName} (EOA)`)
                 }
               }
             }
