@@ -463,6 +463,7 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
+            // we can't call this inside the deposit method because tx is executed in an external app
             if (isFathomNetworkName(l2NetworkName)) {
               trackEvent(`Deposit ERC-20 to ${l2NetworkName} (Smart Contract)`)
             }
@@ -578,6 +579,7 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
+            // we can't call this inside the withdraw method because tx is executed in an external app
             if (isFathomNetworkName(l2NetworkName)) {
               trackEvent(
                 `Withdraw ERC-20 from ${l2NetworkName} (Smart Contract)`
