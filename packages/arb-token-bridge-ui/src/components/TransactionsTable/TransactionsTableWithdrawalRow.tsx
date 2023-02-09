@@ -124,7 +124,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
     if (typeof matchingL1Tx === 'undefined') {
       return (
         <span className="whitespace-nowrap text-dark">
-          {getNetworkName(l1.network.chainID)}: : Not available
+          {getNetworkName(l1.network.chainID)}: Not available
         </span>
       )
     }

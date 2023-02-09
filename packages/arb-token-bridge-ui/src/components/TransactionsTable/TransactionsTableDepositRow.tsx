@@ -77,9 +77,16 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
   }
 
   return (
-    <span className="whitespace-nowrap">
-      {tx.resolvedAt || tx.createdAt || 'N/A'}
-    </span>
+    <div className="flex flex-col">
+      <Tooltip content={<span>Creation Time</span>}>
+        <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+      </Tooltip>
+      {tx.resolvedAt && (
+        <Tooltip content={<span>Completion Time</span>}>
+          <span className="whitespace-nowrap">{tx.resolvedAt || 'N/A'}</span>
+        </Tooltip>
+      )}
+    </div>
   )
 }
 
