@@ -311,18 +311,19 @@ function TokenListsPanel() {
         })
 
         return (
-          <div key={tokenList.id} className="flex items-center space-x-3">
-            <div className="flex items-center">
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={() => toggleTokenList(tokenList, isActive)}
-                />
-                <span className="slider round"></span>
-              </label>
+          <label
+            key={tokenList.id}
+            className="flex items-center justify-start space-x-3"
+          >
+            <div className="switch">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={() => toggleTokenList(tokenList, isActive)}
+              />
+              <span className="slider round"></span>
             </div>
-            <div className="flex flex-row items-center space-x-1">
+            <div className="flex items-center space-x-1">
               <img
                 src={tokenList.logoURI}
                 alt={`${tokenList.name} Logo`}
@@ -330,7 +331,7 @@ function TokenListsPanel() {
               />
               <span className="text-sm text-gray-900">{tokenList.name}</span>
             </div>
-          </div>
+          </label>
         )
       })}
     </div>
