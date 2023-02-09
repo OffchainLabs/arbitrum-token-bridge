@@ -104,6 +104,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x123389C2f0e9194d9bA98c21E63c375B67614108',
       l1Address: '0x15874d65e649880c2614e7a480cb7c9A55787FF6',
       l2Address: '0x94293e4e6ab410E898aa68318D0A964106Ff3257'
+    },
+    {
+      symbol: 'RELAY',
+      l2CustomAddr: '0x1426CF37CAA89628C4DA2864e40cF75E6d66Ac6b',
+      l1Address: '0x5D843Fa9495d23dE997C394296ac7B4D721E841c',
+      l2Address: '0xaFB5E28Be361248c18bf26647C3D0F1f141129a7'
     }
   ],
   [ChainId.ArbitrumNova]: [
