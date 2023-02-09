@@ -1,9 +1,6 @@
-import { fetchTokenWithdrawalsFromSubgraph } from './fetchTokenWithdrawalsFromSubgraph'
 import { Provider } from '@ethersproject/providers'
-import { fetchETHWithdrawalsFromSubgraph } from './fetchETHWithdrawalsFromSubgraph'
 import { L2ToL1EventResultPlus } from '../hooks/arbTokenBridge.types'
 
-import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import {
@@ -111,101 +108,4 @@ export const fetchWithdrawals = async ({
   )
 
   return finalL2ToL1Txns as L2ToL1EventResultPlus[]
-}
-
-/* Fetch ETH withdrawals from subgraph */
-/* TODO : Add event logs as well */
-export const fetchETHWithdrawals = async ({
-  address,
-  fromBlock,
-  toBlock,
-  l1Provider,
-  l2Provider,
-  pageSize = 10,
-  pageNumber = 0,
-  searchString = ''
-}: {
-  address: string
-  fromBlock: number
-  toBlock: number
-  l1Provider: Provider
-  l2Provider: Provider
-  pageSize?: number
-  pageNumber?: number
-  searchString?: string
-}) => {
-  const l1ChainID = (await l1Provider.getNetwork()).chainId
-  const l2ChainID = (await l2Provider.getNetwork()).chainId
-
-  const latestSubgraphBlockNumber = await fetchL2BlockNumberFromSubgraph(
-    l2ChainID
-  )
-
-  const ethWithdrawals = await fetchETHWithdrawalsFromSubgraph({
-    address,
-    fromBlock: 0,
-    toBlock: latestSubgraphBlockNumber,
-    l2Provider,
-    pageSize,
-    pageNumber,
-    searchString
-  })
-
-  const l2ToL1Txns = await Promise.all(
-    ethWithdrawals.map(withdrawal =>
-      updateAdditionalWithdrawalData(
-        withdrawal as L2ToL1EventResultPlus,
-        l1Provider,
-        l2Provider
-      )
-    )
-  )
-
-  return l2ToL1Txns
-}
-
-/* Fetch Token withdrawals from subgraph */
-/* TODO : Add event logs as well */
-export const fetchTokenWithdrawals = async ({
-  address,
-  fromBlock,
-  toBlock,
-  l1Provider,
-  l2Provider,
-  pageSize = 10,
-  pageNumber = 0,
-  searchString = ''
-}: {
-  address: string
-  fromBlock: number
-  toBlock: number
-  l1Provider: Provider
-  l2Provider: Provider
-  pageSize?: number
-  pageNumber?: number
-  searchString?: string
-}) => {
-  const l2ChainID = (await l2Provider.getNetwork()).chainId
-
-  const latestSubgraphBlockNumber = await fetchL2BlockNumberFromSubgraph(
-    l2ChainID
-  )
-
-  const tokenWithdrawals = await fetchTokenWithdrawalsFromSubgraph({
-    address,
-    fromBlock: 0,
-    toBlock: latestSubgraphBlockNumber,
-    l2Provider,
-    pageSize,
-    pageNumber,
-    searchString
-  })
-
-  const l2ToL1Txns = await Promise.all(
-    tokenWithdrawals.map(withdrawal =>
-      updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
-    )
-  )
-
-  return l2ToL1Txns
 }

@@ -262,5 +262,4 @@ export interface ArbTokenBridge {
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
   setWithdrawalsInStore: (txns: L2ToL1EventResultPlus[]) => void
-  setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
 }

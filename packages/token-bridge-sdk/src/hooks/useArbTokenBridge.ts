@@ -11,8 +11,7 @@ import {
   EthBridger,
   Erc20Bridger,
   L1ToL2MessageStatus,
-  L2ToL1Message,
-  L2TransactionReceipt
+  L2ToL1Message
 } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
@@ -21,8 +20,6 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { getL1ERC20Address } from '../util/getL1ERC20Address'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
-  AddressToSymbol,
-  AddressToDecimals,
   ArbTokenBridge,
   AssetType,
   ContractStorage,
@@ -31,7 +28,6 @@ import {
   PendingWithdrawalsMap,
   TokenType,
   OutgoingMessageState,
-  WithdrawalInitiated,
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
@@ -39,34 +35,18 @@ import {
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
-import { getOutgoingMessageState } from '../util/withdrawals'
-import { fetchWithdrawals } from '../withdrawals/fetchWithdrawals'
+import { getL1TokenData } from '../util'
+import { getExecutedMessagesCacheKey } from '../util/withdrawals'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
 }
-
-const addressToSymbol: AddressToSymbol = {}
-const addressToDecimals: AddressToDecimals = {}
 
 class TokenDisabledError extends Error {
   constructor(msg: string) {
     super(msg)
     this.name = 'TokenDisabledError'
   }
-}
-
-function getExecutedMessagesCacheKey({
-  event,
-  l2ChainId
-}: {
-  event: L2ToL1EventResult
-  l2ChainId: number
-}) {
-  return isClassicL2ToL1TransactionEvent(event)
-    ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
-    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
 export interface TokenBridgeParams {
@@ -1027,112 +1007,6 @@ export const useArbTokenBridge = (
     }
   }
 
-  const getTokenSymbol = async (_l1Address: string) => {
-    const l1Address = _l1Address.toLocaleLowerCase()
-
-    const l1Symbol = addressToSymbol[l1Address]
-    if (l1Symbol) {
-      return l1Symbol
-    }
-
-    try {
-      const { symbol } = await getL1TokenData({
-        account: walletAddress,
-        erc20L1Address: l1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider,
-        throwOnInvalidERC20: false
-      })
-      addressToSymbol[l1Address] = symbol
-      return symbol
-    } catch (err) {
-      console.warn('could not get token symbol', err)
-      return '???'
-    }
-  }
-
-  const getTokenDecimals = async (_l1Address: string) => {
-    const l1Address = _l1Address.toLocaleLowerCase()
-
-    const l1Decimals = addressToDecimals[l1Address]
-    if (l1Decimals) {
-      return l1Decimals
-    }
-
-    try {
-      const { decimals } = await getL1TokenData({
-        account: walletAddress,
-        erc20L1Address: l1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider,
-        throwOnInvalidERC20: false
-      })
-      addressToDecimals[l1Address] = decimals
-      return decimals
-    } catch (err) {
-      console.warn('could not get token decimals', err)
-      return 18
-    }
-  }
-
-  async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-    result: WithdrawalInitiated
-  ): Promise<L2ToL1EventResultPlus | undefined> {
-    const symbol = await getTokenSymbol(result.l1Token)
-    const decimals = await getTokenDecimals(result.l1Token)
-
-    const txReceipt = await l2.provider.getTransactionReceipt(result.txHash)
-    const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-
-    // TODO: length != 1
-    const [event] = l2TxReceipt.getL2ToL1Events()
-
-    if (!event) {
-      return undefined
-    }
-
-    const outgoingMessageState = await getOutgoingMessageState(
-      event,
-      l1.provider,
-      l2.provider,
-      l2.network.chainID
-    )
-
-    return {
-      ...event,
-      type: AssetType.ERC20,
-      value: result._amount,
-      tokenAddress: result.l1Token,
-      outgoingMessageState,
-      symbol,
-      decimals,
-      l2TxHash: l2TxReceipt.transactionHash
-    }
-  }
-
-  const setInitialPendingWithdrawals = async (gatewayAddresses: string[]) => {
-    const pendingWithdrawals: PendingWithdrawalsMap = {}
-
-    // fetch the first 100 eth and first 100 token withdrawals
-    const finalL2ToL1Txns = await fetchWithdrawals({
-      walletAddress,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider,
-      gatewayAddresses,
-      pageSize: 100
-    })
-
-    // add the events to their respective places in the State
-    for (const event of finalL2ToL1Txns) {
-      pendingWithdrawals[getUniqueIdOrHashFromEvent(event).toString()] = event
-    }
-    const executedMessages = finalL2ToL1Txns.filter(
-      tx => tx.outgoingMessageState === OutgoingMessageState.EXECUTED
-    )
-    addToExecutedMessagesCache(executedMessages)
-    setPendingWithdrawalMap(pendingWithdrawals)
-  }
-
   function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
     const added: { [cacheKey: string]: boolean } = {}
 
@@ -1195,7 +1069,6 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
-    setWithdrawalsInStore,
-    setInitialPendingWithdrawals: setInitialPendingWithdrawals
+    setWithdrawalsInStore
   }
 }
