@@ -1,15 +1,10 @@
 import { Tab } from '@headlessui/react'
 import { Fragment } from 'react'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useAppState } from '../../state'
 import { getNetworkLogo, getNetworkName } from '../../util/networks'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 
 export const TransactionHistory = () => {
-  const {
-    app: { mergedTransactions, arbTokenBridge }
-  } = useAppState()
-
   const { l1, l2 } = useNetworksAndSigners()
 
   return (

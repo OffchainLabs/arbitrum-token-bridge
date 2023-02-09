@@ -29,14 +29,14 @@ const L1SubgraphClient = {
 const L2SubgraphClient = {
   ArbitrumOne: new ApolloClient({
     link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-arb1',
+      uri: 'https://thegraph.com/hosted-service/subgraph/gvladika/layer2-token-gateway-arb1',
       fetch
     }),
     cache: new InMemoryCache()
   }),
   ArbitrumGoerli: new ApolloClient({
     link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/fredlacs/layer2-token-gateway-nitro-goerli',
+      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/layer2-token-gateway-goerli',
       fetch
     }),
     cache: new InMemoryCache()

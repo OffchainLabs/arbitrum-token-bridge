@@ -33,10 +33,12 @@ export const updateAdditionalDepositData = async (
     // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
     const status = await ethDepositMessage.status()
     const isDeposited = status === EthDepositStatus.DEPOSITED
+
     const timestampCreated = depositTx.blockNumber
       ? (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
       : new Date().toISOString()
     const retryableCreationTxID = ethDepositMessage.l2DepositTxHash
+
     const l2BlockNum = isDeposited
       ? (await l2Provider.getTransaction(retryableCreationTxID)).blockNumber
       : null

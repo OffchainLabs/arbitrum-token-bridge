@@ -33,24 +33,32 @@ export const fetchPendingTransactions = async ({
   pageSize?: number
   searchString?: string
 }) => {
-  // fetch the first 100 deposits
-  const deposits = await fetchDeposits({
-    walletAddress,
-    l1Provider,
-    l2Provider,
-    pageNumber: 0,
-    pageSize
-  })
+  if (!walletAddress || !l1Provider || !l2Provider) {
+    return {
+      pendingDeposits: [],
+      pendingWithdrawals: [],
+      pendingMergedTransactions: []
+    }
+  }
 
-  // fetch the first 100 withdrawals
-  const withdrawals = await fetchWithdrawals({
-    walletAddress,
-    l1Provider,
-    l2Provider,
-    pageNumber: 0,
-    pageSize,
-    gatewayAddresses
-  })
+  // fetch the first [INITIAL_PAGE_SIZE] deposits and withdrawals
+  const [deposits, withdrawals] = await Promise.all([
+    fetchDeposits({
+      walletAddress,
+      l1Provider,
+      l2Provider,
+      pageNumber: 0,
+      pageSize
+    }),
+    fetchWithdrawals({
+      walletAddress,
+      l1Provider,
+      l2Provider,
+      pageNumber: 0,
+      pageSize,
+      gatewayAddresses
+    })
+  ])
 
   // filter out pending deposits
   const pendingDepositsMap: { [id: string]: boolean } = {}
@@ -121,9 +129,7 @@ export const usePendingTransactions = () => {
         gatewayAddresses: gatewaysToUse
       }),
     {
-      shouldRetryOnError: true,
-      errorRetryCount: 2,
-      errorRetryInterval: 1_000,
+      shouldRetryOnError: false,
       revalidateIfStale: false,
       revalidateOnFocus: false,
       revalidateOnReconnect: false

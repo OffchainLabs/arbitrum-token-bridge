@@ -1,5 +1,6 @@
 import { FetchTokenWithdrawalsFromSubgraphResult } from '../withdrawals/fetchTokenWithdrawalsFromSubgraph'
 import { Provider } from '@ethersproject/providers'
+import { BigNumber } from '@ethersproject/bignumber'
 import {
   AssetType,
   L2ToL1EventResult,
@@ -11,6 +12,7 @@ import {
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
+import { FetchWithdrawalsFromSubgraphResult } from 'withdrawals/fetchWithdrawalsFromSubgraph'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus | FetchTokenWithdrawalsFromSubgraphResult,
@@ -219,5 +221,64 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     symbol,
     decimals,
     l2TxHash: l2TxReceipt.transactionHash
+  }
+}
+
+export async function mapWithdrawalToL2ToL1EventResult(
+  // `l2TxHash` exists on result from subgraph
+  // `transactionHash` exists on result from event logs
+  withdrawal: FetchWithdrawalsFromSubgraphResult,
+  l1Provider: Provider,
+  l2Provider: Provider,
+  l2ChainId: number
+): Promise<L2ToL1EventResultPlus | undefined> {
+  // get transaction receipt
+
+  const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
+  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+
+  // TODO: length != 1
+  const [event] = l2TxReceipt.getL2ToL1Events()
+
+  if (!event) {
+    return undefined
+  }
+
+  const outgoingMessageState = await getOutgoingMessageState(
+    event,
+    l1Provider,
+    l2Provider,
+    l2ChainId
+  )
+
+  if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
+    // Token withdrawal
+    const { symbol, decimals } = await getL1TokenData({
+      account: withdrawal.sender,
+      erc20L1Address: withdrawal.l1Token.id,
+      l1Provider,
+      l2Provider
+    })
+    return {
+      ...event,
+      type: AssetType.ERC20,
+      value: BigNumber.from(withdrawal.tokenAmount),
+      tokenAddress: withdrawal.l1Token.id,
+      outgoingMessageState,
+      symbol,
+      decimals,
+      l2TxHash: l2TxReceipt.transactionHash
+    } as L2ToL1EventResultPlus
+  } else {
+    // Eth withdrawal
+    return {
+      ...event,
+      type: AssetType.ETH,
+      value: BigNumber.from(withdrawal.ethValue),
+      outgoingMessageState,
+      l2TxHash: l2TxReceipt.transactionHash,
+      symbol: 'ETH',
+      decimals: 18
+    } as L2ToL1EventResultPlus
   }
 }

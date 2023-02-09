@@ -9,10 +9,11 @@ import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromE
 import {
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapTokenWithdrawalFromSubgraphToL2ToL1EventResult,
+  mapWithdrawalToL2ToL1EventResult,
   tryFetchLatestSubgraphBlockNumber,
   updateAdditionalWithdrawalData
 } from '../util/withdrawals'
+import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
@@ -33,6 +34,8 @@ export const fetchWithdrawals = async ({
   pageSize?: number
   searchString?: string
 }) => {
+  if (!walletAddress || !l1Provider || !l2Provider) return []
+
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
@@ -41,13 +44,11 @@ export const fetchWithdrawals = async ({
   )
 
   const [
-    ethWithdrawalsFromSubgraph,
+    withdrawalsFromSubgraph,
     ethWithdrawalsFromEventLogs,
-    tokenWithdrawalsFromSubgraph,
     tokenWithdrawalsFromEventLogs
   ] = await Promise.all([
-    // ETH Withdrawals
-    fetchETHWithdrawalsFromSubgraph({
+    fetchWithdrawalsFromSubgraph({
       address: walletAddress,
       fromBlock: 0,
       toBlock: latestSubgraphBlockNumber,
@@ -62,16 +63,6 @@ export const fetchWithdrawals = async ({
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
-    // Token Withdrawals
-    fetchTokenWithdrawalsFromSubgraph({
-      address: walletAddress,
-      fromBlock: 0,
-      toBlock: latestSubgraphBlockNumber,
-      l2Provider: l2Provider,
-      pageNumber,
-      pageSize,
-      searchString
-    }),
     fetchTokenWithdrawalsFromEventLogs({
       address: walletAddress,
       fromBlock: latestSubgraphBlockNumber + 1,
@@ -83,8 +74,8 @@ export const fetchWithdrawals = async ({
 
   const l2ToL1Txns = (
     await Promise.all([
-      ...ethWithdrawalsFromSubgraph.map(withdrawal =>
-        mapETHWithdrawalToL2ToL1EventResult(
+      ...withdrawalsFromSubgraph.map(withdrawal =>
+        mapWithdrawalToL2ToL1EventResult(
           withdrawal,
           l1Provider,
           l2Provider,
@@ -93,14 +84,6 @@ export const fetchWithdrawals = async ({
       ),
       ...ethWithdrawalsFromEventLogs.map(withdrawal =>
         mapETHWithdrawalToL2ToL1EventResult(
-          withdrawal,
-          l1Provider,
-          l2Provider,
-          l2ChainID
-        )
-      ),
-      ...tokenWithdrawalsFromSubgraph.map(withdrawal =>
-        mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
           withdrawal,
           l1Provider,
           l2Provider,
