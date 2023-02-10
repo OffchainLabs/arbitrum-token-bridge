@@ -1,5 +1,4 @@
-import useSWR from 'swr'
-import React, { useState } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 import Loader from 'react-loader-spinner'
 
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
@@ -10,14 +9,9 @@ import {
   ChevronRightIcon,
   SearchIcon
 } from '@heroicons/react/outline'
-import { fetchDeposits, fetchWithdrawals } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
-import { useGateways } from '../../hooks/useGateways'
-import {
-  isDeposit,
-  transformDeposits,
-  transformWithdrawals
-} from '../../state/app/utils'
+import { isDeposit } from '../../state/app/utils'
+import { MergedTransaction } from '../../state/app/state'
 
 export type PageParams = {
   searchString: string
@@ -67,74 +61,35 @@ enum TableStatus {
 
 export type TransactionsTableProps = {
   type: 'deposits' | 'withdrawals'
+  pageParams: PageParams
+  setPageParams: Dispatch<SetStateAction<PageParams>>
+  transactions: MergedTransaction[]
+  loading: boolean
+  error: boolean
 }
 
 function validate_txhash(addr: string) {
   return /^0x([A-Fa-f0-9]{64})$/.test(addr)
 }
 
-export function TransactionsTable({ type }: TransactionsTableProps) {
+export function TransactionsTable({
+  type,
+  pageParams,
+  setPageParams,
+  transactions,
+  loading,
+  error
+}: TransactionsTableProps) {
   const {
     app: {
       arbTokenBridge: { walletAddress }
     }
   } = useAppState()
 
-  const { l1, l2, isSmartContractWallet } = useNetworksAndSigners()
+  const { isSmartContractWallet } = useNetworksAndSigners()
 
-  const [pageParams, setPageParams] = useState<PageParams>({
-    searchString: '',
-    pageNumber: 0,
-    pageSize: 10
-  })
-  const gatewaysToUse = useGateways()
   const [searchString, setSearchString] = useState(pageParams.searchString)
   const [searchError, setSearchError] = useState(false)
-
-  const fetchTransactions = async () => {
-    if (type === 'deposits') {
-      const transactions = await fetchDeposits({
-        walletAddress,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider,
-        ...pageParams
-      })
-
-      return transformDeposits(transactions)
-    } else {
-      const transactions = await fetchWithdrawals({
-        walletAddress,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider,
-        ...pageParams,
-        gatewayAddresses: gatewaysToUse
-      })
-      return transformWithdrawals(transactions)
-    }
-  }
-
-  const {
-    data: transactions = [],
-    isValidating: loading,
-    error: error
-  } = useSWR(
-    [
-      'transactions',
-      type,
-      l1.network.chainID,
-      l2.network.chainID,
-      pageParams.pageNumber,
-      pageParams.pageSize,
-      pageParams.searchString
-    ],
-    fetchTransactions,
-    {
-      shouldRetryOnError: false,
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false
-    }
-  )
 
   const disableNextBtn = loading || transactions.length < pageParams.pageSize // if transactions are less than pagesize
   const disablePrevBtn = loading || !pageParams.pageNumber // if page number is 0, then don't prev.

@@ -12,6 +12,16 @@ import {
 } from '../util/withdrawals'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 
+export type FetchWithdrawalsParams = {
+  walletAddress: string
+  l1Provider: Provider
+  l2Provider: Provider
+  gatewayAddresses: string[]
+  pageNumber?: number
+  pageSize?: number
+  searchString?: string
+}
+
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
@@ -22,15 +32,7 @@ export const fetchWithdrawals = async ({
   pageNumber = 0,
   pageSize,
   searchString
-}: {
-  walletAddress: string
-  l1Provider: Provider
-  l2Provider: Provider
-  gatewayAddresses: string[]
-  pageNumber?: number
-  pageSize?: number
-  searchString?: string
-}) => {
+}: FetchWithdrawalsParams) => {
   if (!walletAddress || !l1Provider || !l2Provider) return []
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId

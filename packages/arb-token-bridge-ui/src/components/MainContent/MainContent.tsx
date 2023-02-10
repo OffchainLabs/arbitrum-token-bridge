@@ -4,10 +4,11 @@ import { ExploreArbitrum } from './ExploreArbitrum'
 import { TransactionHistory } from '../common/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { PendingTransactions } from '../common/PendingTransactions'
 import { useAppState } from '../../state'
-import { usePendingTransactions } from '../../hooks/usePendingTransactions'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useDeposits } from '../../hooks/useDeposits'
+import { PageParams } from '../TransactionsTable/TransactionsTable'
+import { useWithdrawals } from '../../hooks/useWithdrawals'
 
 export const motionDivProps = {
   layout: true,
@@ -35,26 +36,53 @@ export function MainContent() {
   }
 
   const {
-    app: { mergedTransactions, arbTokenBridge }
+    app: { arbTokenBridge }
   } = useAppState()
 
+  const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
+    searchString: '',
+    pageNumber: 0,
+    pageSize: 10
+  })
+
+  const [withdrawalsPageParams, setWithdrawalsPageParams] =
+    useState<PageParams>({
+      searchString: '',
+      pageNumber: 0,
+      pageSize: 10
+    })
+
   const {
-    data: pendingTxns,
-    isValidating: fetchingPendingTxns,
-    error: errorFetchingPendingTxns
-  } = usePendingTransactions()
+    data: depositsData = {
+      deposits: [],
+      pendingDeposits: [],
+      transformedDeposits: []
+    },
+    isValidating: depositsLoading,
+    error: depositsError
+  } = useDeposits(depositsPageParams)
+
+  const {
+    data: withdrawalsData = {
+      withdrawals: [],
+      pendingWithdrawals: [],
+      transformedWithdrawals: []
+    },
+    isValidating: withdrawalsLoading,
+    error: withdrawalsError
+  } = useWithdrawals(withdrawalsPageParams)
 
   useEffect(() => {
-    // if pending deposits found, add them in the store
+    // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
     arbTokenBridge?.transactions?.setDepositsInStore?.(
-      pendingTxns?.pendingDeposits || []
+      depositsData.pendingDeposits
     )
+  }, [JSON.stringify(depositsData.pendingDeposits)]) // only run side effect on value change, not reference (Call stack exceeded)
 
-    // if pending withdrawals found, add them in the store
-    arbTokenBridge?.setWithdrawalsInStore?.(
-      pendingTxns?.pendingWithdrawals || []
-    )
-  }, [pendingTxns])
+  useEffect(() => {
+    // if pending withdrawals found, add them in the store - this will add them to pending div + start polling for their status
+    arbTokenBridge?.setWithdrawalsInStore?.(withdrawalsData.pendingWithdrawals)
+  }, [JSON.stringify(withdrawalsData.pendingWithdrawals)]) // only run side effect on value change, not reference (Call stack exceeded)
 
   return (
     <div className="flex w-full justify-center">
@@ -85,17 +113,21 @@ export function MainContent() {
         heading="Transaction History"
         onClose={closeTransactionHistory}
       >
-        <div className="flex flex-col justify-around gap-6">
-          {/* Pending transactions cards */}
-          <PendingTransactions
-            loading={fetchingPendingTxns}
-            transactions={mergedTransactions}
-            error={errorFetchingPendingTxns}
-          />
-
-          {/* Transaction history table */}
-          <TransactionHistory />
-        </div>
+        {/* Transaction history - pending transactions + history table */}
+        <TransactionHistory
+          {...{
+            depositsPageParams,
+            withdrawalsPageParams,
+            depositsData,
+            depositsLoading,
+            depositsError,
+            withdrawalsData,
+            withdrawalsLoading,
+            withdrawalsError,
+            setDepositsPageParams,
+            setWithdrawalsPageParams
+          }}
+        />
       </SidePanel>
     </div>
   )

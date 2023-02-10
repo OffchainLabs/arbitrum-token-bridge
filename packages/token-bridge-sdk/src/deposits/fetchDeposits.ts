@@ -18,6 +18,17 @@ export type DepositETHSubgraphResult = {
   blockCreatedAt: string
 }
 
+export type FetchDepositParams = {
+  walletAddress: string
+  fromBlock?: number
+  toBlock?: number
+  l1Provider: Provider
+  l2Provider: Provider
+  pageSize?: number
+  pageNumber?: number
+  searchString?: string
+}
+
 /* Fetch complete deposits - both ETH and Token deposits from subgraph into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 /* TODO : Add event logs as well */
@@ -30,16 +41,7 @@ export const fetchDeposits = async ({
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
-}: {
-  walletAddress: string
-  fromBlock?: number
-  toBlock?: number
-  l1Provider: Provider
-  l2Provider: Provider
-  pageSize?: number
-  pageNumber?: number
-  searchString?: string
-}): Promise<Transaction[]> => {
+}: FetchDepositParams): Promise<Transaction[]> => {
   if (!walletAddress || !l1Provider || !l2Provider) return []
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
