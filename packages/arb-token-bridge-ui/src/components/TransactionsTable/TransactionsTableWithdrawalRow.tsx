@@ -11,6 +11,7 @@ import { shortenTxHash } from '../../util/CommonUtils'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { InformationCircleIcon } from '@heroicons/react/outline'
 
 function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -50,7 +51,11 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="yellow">Confirmed</StatusBadge>
+          <Tooltip content={<span>Funds are ready to be claimed on L1</span>}>
+            <StatusBadge variant="yellow">
+              <InformationCircleIcon className="h-4 w-4" /> Confirmed
+            </StatusBadge>
+          </Tooltip>
         </div>
       )
 
@@ -59,7 +64,19 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
         return (
           <div className="flex flex-col space-y-1">
             <StatusBadge variant="green">Success</StatusBadge>
-            <StatusBadge variant="yellow">Executed</StatusBadge>
+            <Tooltip
+              content={
+                <span>
+                  Funds have been claimed on L1 but the corresponding
+                  transaction was not found
+                </span>
+              }
+            >
+              <StatusBadge variant="yellow">
+                <InformationCircleIcon className="h-4 w-4" />
+                Executed
+              </StatusBadge>
+            </Tooltip>
           </div>
         )
       }
