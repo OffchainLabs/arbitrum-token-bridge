@@ -432,7 +432,7 @@ input:checked + .slider:before {
   position: absolute;
   right: -15px;
   bottom: 0;
-  background: url('../../public/images/RoundedTab.svg');
+  background: url('/images/RoundedTab.svg');
   z-index: 50;
   content: '';
   background-size: contain;
@@ -445,7 +445,7 @@ input:checked + .slider:before {
   position: absolute;
   left: -15px;
   bottom: 0;
-  background: url('../../public/images/RoundedTab.svg');
+  background: url('/images/RoundedTab.svg');
   z-index: 50;
   content: '';
   background-size: contain;
