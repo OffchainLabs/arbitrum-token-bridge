@@ -67,8 +67,8 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
             <Tooltip
               content={
                 <span>
-                  Funds have been claimed on L1 but the corresponding
-                  transaction was not found
+                  Transaction successful: Funds have been claimed on L1, but the
+                  corresponding transaction was not found
                 </span>
               }
             >
