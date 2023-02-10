@@ -14,7 +14,6 @@ const L1SubgraphClient = {
       uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
       fetch
     }),
-
     cache: new InMemoryCache()
   }),
   ArbitrumGoerli: new ApolloClient({

@@ -90,13 +90,11 @@ export function WithdrawalL1TxStatus({
 
 export type WithdrawalCardContainerProps = {
   tx: MergedTransaction
-  dismissable?: boolean
   children: React.ReactNode
 }
 
 export function WithdrawalCardContainer({
   tx,
-  dismissable = false,
   children
 }: WithdrawalCardContainerProps) {
   const dispatch = useAppContextDispatch()
@@ -114,23 +112,10 @@ export function WithdrawalCardContainer({
     }
   }, [tx])
 
-  function dismiss() {
-    dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-  }
-
   return (
     <div
       className={`box-border w-full overflow-hidden rounded-xl border-4 border-purple-ethereum p-4 ${bgClassName}`}
     >
-      {dismissable && (
-        <button
-          className="arb-hover absolute top-4 right-4 text-lime-dark underline"
-          onClick={dismiss}
-        >
-          Dismiss
-        </button>
-      )}
-
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <img
@@ -142,7 +127,7 @@ export function WithdrawalCardContainer({
         <div className="z-20 w-full">{children}</div>
       </div>
 
-      {!isTransferPanelVisible && !dismissable && (
+      {!isTransferPanelVisible && (
         <button
           className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
           onClick={() => {

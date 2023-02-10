@@ -8,20 +8,13 @@ import {
   wethTokenAddressL2,
   getInitialERC20Balance,
   l2NetworkConfig,
-  zeroToLessThanOneETH,
-  resetSeenTimeStampCache
+  zeroToLessThanOneETH
 } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
-  before(() => {
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-  })
-
   beforeEach(() => {
     cy.restoreAppState()
   })

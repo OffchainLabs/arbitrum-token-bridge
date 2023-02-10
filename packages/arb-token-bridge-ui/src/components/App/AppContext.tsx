@@ -34,7 +34,6 @@ const AppContext = createContext<AppContextValue>([initialState, () => {}])
 
 type Action =
   | { type: 'set_current_l1_block_number'; payload: number }
-  | { type: 'set_tx_as_seen'; payload: string }
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }

@@ -1,9 +1,5 @@
 import { utils } from 'ethers'
-import {
-  getInitialETHBalance,
-  invalidTokenAddress,
-  resetSeenTimeStampCache
-} from '../../support/common'
+import { getInitialETHBalance, invalidTokenAddress } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
 const ERC20TokenAddressL2 = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
@@ -217,9 +213,8 @@ describe('Import token', () => {
 
   context('User import token through URL', () => {
     afterEach(() => {
-      // after all assertions are executed, logout and reset the account
+      // after all assertions are executed, logout the account
       cy.logout()
-      resetSeenTimeStampCache()
     })
 
     context('User uses L1 address', () => {

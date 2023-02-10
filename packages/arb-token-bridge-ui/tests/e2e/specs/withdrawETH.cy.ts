@@ -2,21 +2,13 @@
  * When user wants to bridge ETH from L2 to L1
  */
 
-import {
-  zeroToLessThanOneETH,
-  resetSeenTimeStampCache
-} from '../../support/common'
+import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
-  before(() => {
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-  })
 
   beforeEach(() => {
     cy.restoreAppState()

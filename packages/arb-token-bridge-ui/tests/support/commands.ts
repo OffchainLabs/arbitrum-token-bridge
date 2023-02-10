@@ -12,8 +12,7 @@ import {
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
-  startWebApp,
-  resetSeenTimeStampCache
+  startWebApp
 } from './common'
 
 export function login({
@@ -49,18 +48,7 @@ export const logout = () => {
 
 export const restoreAppState = () => {
   // restore local storage from previous test
-
-  cy.restoreLocalStorage().then(() => {
-    // check if there are proper values of cache timestamp
-    const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
-
-    cy.getLocalStorage(timestampKey).then(cacheSeenTimeStamp => {
-      // if proper value of cache-timestamp are not found between tests, set it
-      if (!cacheSeenTimeStamp) {
-        resetSeenTimeStampCache()
-      }
-    })
-  })
+  cy.restoreLocalStorage()
 }
 
 export const saveAppState = () => {

@@ -54,22 +54,10 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     return erc20L1Balances[tx.tokenAddress.toLowerCase()]
   }, [erc20L1Balances, ethL1Balance, tx])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-      // Disappears after 60 seconds
-    }, 60 * 1000)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
-  }, [tx.txId])
-
   const decimals = useTokenDecimals(bridgeTokens, tx.tokenAddress)
 
   return (
-    <WithdrawalCardContainer tx={tx} dismissable>
+    <WithdrawalCardContainer tx={tx}>
       <span className="text-4xl font-semibold text-blue-arbitrum">
         Success!
       </span>

@@ -8,8 +8,7 @@ import {
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
-  zeroToLessThanOneETH,
-  resetSeenTimeStampCache
+  zeroToLessThanOneETH
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
@@ -17,12 +16,6 @@ describe('Deposit ERC20 Token', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   const ERC20AmountToSend = 0.0001
-
-  before(() => {
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-  })
 
   beforeEach(() => {
     cy.restoreAppState()
