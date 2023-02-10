@@ -32,7 +32,7 @@ import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { trackEvent } from '../../util/AnalyticsUtils'
+import { trackEvent, isFathomNetworkName } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
   TransferPanelMainErrorMessage
@@ -339,6 +339,8 @@ export function TransferPanel() {
       return
     }
 
+    const l2NetworkName = getNetworkName(l2Network.chainID)
+
     // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
       setTimeout(() => {
@@ -461,6 +463,10 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
+            // we can't call this inside the deposit method because tx is executed in an external app
+            if (isFathomNetworkName(l2NetworkName)) {
+              trackEvent(`Deposit ERC-20 to ${l2NetworkName} (Smart Contract)`)
+            }
           }
 
           await latestToken.current.deposit({
@@ -475,6 +481,12 @@ export function TransferPanel() {
                   payload: true
                 })
                 setTransferring(false)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Deposit ERC-20 to ${l2NetworkName} (EOA)`)
+                }
               }
             }
           })
@@ -491,6 +503,12 @@ export function TransferPanel() {
                   payload: true
                 })
                 setTransferring(false)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Deposit ETH to ${l2NetworkName} (EOA)`)
+                }
               }
             }
           })
@@ -561,6 +579,12 @@ export function TransferPanel() {
 
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
+            // we can't call this inside the withdraw method because tx is executed in an external app
+            if (isFathomNetworkName(l2NetworkName)) {
+              trackEvent(
+                `Withdraw ERC-20 from ${l2NetworkName} (Smart Contract)`
+              )
+            }
           }
 
           await latestToken.current.withdraw({
@@ -575,6 +599,12 @@ export function TransferPanel() {
                   payload: true
                 })
                 setTransferring(false)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Withdraw ERC-20 from ${l2NetworkName} (EOA)`)
+                }
               }
             }
           })
@@ -591,6 +621,12 @@ export function TransferPanel() {
                   payload: true
                 })
                 setTransferring(false)
+                if (
+                  !isSmartContractWallet &&
+                  isFathomNetworkName(l2NetworkName)
+                ) {
+                  trackEvent(`Withdraw ETH from ${l2NetworkName} (EOA)`)
+                }
               }
             }
           })
