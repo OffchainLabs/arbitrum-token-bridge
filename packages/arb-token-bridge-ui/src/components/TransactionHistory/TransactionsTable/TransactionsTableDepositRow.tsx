@@ -66,8 +66,8 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
           <Tooltip
             content={
               <span>
-                Couldn't fetch transaction details, possibly because it is too
-                old. Please try again later.
+                Couldn&apos;t fetch transaction details, possibly because it is
+                too old. Please try again later.
               </span>
             }
           >

@@ -10,5 +10,8 @@ module.exports = {
   },
   // https://nextjs.org/docs/api-reference/next.config.js/exportPathMap#adding-a-trailing-slash
   trailingSlash: true,
-  productionBrowserSourceMaps: true
+  productionBrowserSourceMaps: true,
+  images: {
+    unoptimized: true // optimized images (next/images) don't work with `next export`. Keeping it unoptimized for now.
+  }
 }
