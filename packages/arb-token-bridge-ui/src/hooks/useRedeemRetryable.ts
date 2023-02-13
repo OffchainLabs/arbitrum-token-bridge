@@ -8,6 +8,8 @@ import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { isFathomNetworkName, trackEvent } from '../util/AnalyticsUtils'
+import { getNetworkName } from '../util/networks'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -19,9 +21,10 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     app: { arbTokenBridge }
   } = useAppState()
   const {
-    l1: { provider: l1Provider },
+    l1: { provider: l1Provider, network: l1Network },
     l2: { signer: l2Signer }
   } = useNetworksAndSigners()
+  const l1NetworkName = getNetworkName(l1Network.chainID)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -57,6 +60,11 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       return
     } finally {
       setIsRedeeming(false)
+
+      // track in analytics
+      if (isFathomNetworkName(l1NetworkName)) {
+        trackEvent(`Redeeming Retryable on ${l1NetworkName}`)
+      }
     }
 
     // update in store

@@ -25,6 +25,7 @@ import { getExplorerUrl } from '../../util/networks'
 import { useAppContextDispatch } from '../App/AppContext'
 import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
+import { trackEvent } from '../../util/AnalyticsUtils'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -155,6 +156,7 @@ export function HeaderAccountPopover() {
 
   function openTransactionHistory() {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
+    trackEvent('Opened Transaction History by Click')
   }
 
   const headerItemsClassName =

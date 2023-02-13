@@ -11,7 +11,15 @@ import { shortenTxHash } from '../../../util/CommonUtils'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import {
+  DotsVerticalIcon,
+  InformationCircleIcon
+} from '@heroicons/react/outline'
+import { isFathomNetworkName, trackEvent } from '../../../util/AnalyticsUtils'
+import { GET_HELP_LINK } from '../../../constants'
+import { useMemo } from 'react'
+import { Popover } from '@headlessui/react'
+import dayjs from 'dayjs'
 
 function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -205,13 +213,58 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
   )
 }
 
-function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
+const GetHelpButton = ({
+  variant,
+  onClick
+}: {
+  variant: 'primary' | 'secondary'
+  onClick: () => void
+}) => {
+  return (
+    <Tooltip
+      wrapperClassName=""
+      content={<span>Transaction failed (EXECUTE_CALL_EXCEPTION)</span>}
+    >
+      <Button
+        variant={variant}
+        onClick={onClick}
+        className={`${variant === 'secondary' ? 'bg-white px-4 py-3' : ''}`}
+      >
+        Get Help
+      </Button>
+    </Tooltip>
+  )
+}
+
+function WithdrawalRowAction({
+  tx,
+  isError
+}: {
+  tx: MergedTransaction
+  isError: boolean
+}) {
+  const {
+    isConnectedToArbitrum,
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
+  const l2NetworkName = getNetworkName(l2Network.chainID)
+
+  const getHelpOnError = () => {
+    window.open(GET_HELP_LINK, '_blank')
+
+    // track the button click
+    if (isFathomNetworkName(l2NetworkName)) {
+      trackEvent(`Tx error: Get Help clicked on ${l2NetworkName}`)
+    }
+  }
 
   if (tx.status === 'Unconfirmed') {
     return (
-      <Tooltip content={<span>Funds aren’t ready to claim yet.</span>}>
+      <Tooltip
+        wrapperClassName=""
+        content={<span>Funds aren’t ready to claim yet.</span>}
+      >
         <Button variant="primary" disabled>
           Claim
         </Button>
@@ -223,6 +276,7 @@ function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
     return (
       <Tooltip
         show={isConnectedToArbitrum || false}
+        wrapperClassName=""
         content={
           <span>
             Please connect to the L1 network to claim your withdrawal.
@@ -241,8 +295,30 @@ function WithdrawalRowAction({ tx }: { tx: MergedTransaction }) {
     )
   }
 
-  if (tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
-    return <span className="whitespace-nowrap">EXECUTE_CALL_EXCEPTION</span>
+  if (isError) {
+    const isTxOlderThan7Days =
+      dayjs().diff(dayjs(tx.createdAt, 'MMM DD, YYYY hh:mm A'), 'days') > 7
+
+    return (
+      <>
+        {isTxOlderThan7Days ? (
+          // show a dropdown menu with the button
+          <Popover>
+            <Popover.Button>
+              <DotsVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
+            </Popover.Button>
+            <Popover.Panel
+              className={'absolute top-4 z-50 rounded-md bg-white shadow-lg'}
+            >
+              <GetHelpButton variant="secondary" onClick={getHelpOnError} />
+            </Popover.Panel>
+          </Popover>
+        ) : (
+          // show a normal button outside
+          <GetHelpButton variant="primary" onClick={getHelpOnError} />
+        )}
+      </>
+    )
   }
 
   return null
@@ -261,8 +337,21 @@ export function TransactionsTableWithdrawalRow({
     return null
   }
 
+  const isError = useMemo(() => {
+    if (tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
+      return true
+    }
+    return false
+  }, [tx])
+
+  const bgClassName = isError ? 'bg-brick' : ''
+
   return (
-    <tr className={`bg-cyan text-sm text-dark even:bg-white ${className}`}>
+    <tr
+      className={`text-sm text-dark ${
+        !isError && `bg-cyan even:bg-white`
+      } ${bgClassName} ${className}`}
+    >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <WithdrawalRowStatus tx={tx} />
       </td>
@@ -279,8 +368,8 @@ export function TransactionsTableWithdrawalRow({
         <WithdrawalRowTxID tx={tx} />
       </td>
 
-      <td className="w-1/5 py-3 pl-3 pr-6">
-        <WithdrawalRowAction tx={tx} />
+      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
+        <WithdrawalRowAction tx={tx} isError={isError} />
       </td>
     </tr>
   )

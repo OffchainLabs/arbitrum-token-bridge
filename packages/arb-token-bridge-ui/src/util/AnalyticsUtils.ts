@@ -62,6 +62,12 @@ export type FathomEvent =
   | `Add to Google Calendar Click`
   //
   | 'Switch Network and Transfer'
+  //
+  | `Redeeming Retryable on ${FathomNetworkName}`
+  //
+  | `Opened Transaction History by Click`
+  //
+  | `Tx error: Get Help clicked on ${FathomNetworkName}`
 
 const eventToEventId: { [key in FathomEvent]: string } & {
   [key in FathomEventNonCanonicalTokens]: string
@@ -157,7 +163,15 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Move More Funds Click': 'YE1OYTL4',
   'Add to Google Calendar Click': 'CZTO23FP',
   //
-  'Switch Network and Transfer': '4F5SKZRG'
+  'Switch Network and Transfer': '4F5SKZRG',
+  // TODO: Once these events are confirmed by team - add their event ids
+  'Redeeming Retryable on Arbitrum One': '',
+  'Redeeming Retryable on Arbitrum Nova': '',
+  //
+  'Opened Transaction History by Click': '',
+  //
+  'Tx error: Get Help clicked on Arbitrum One': '',
+  'Tx error: Get Help clicked on Arbitrum Nova': ''
 }
 
 export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {

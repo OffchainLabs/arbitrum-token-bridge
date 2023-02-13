@@ -10,7 +10,10 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import { ExclamationCircleIcon } from '@heroicons/react/outline'
+import {
+  ExclamationCircleIcon,
+  InformationCircleIcon
+} from '@heroicons/react/outline'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -178,7 +181,9 @@ export function TransactionsTableDepositRow({
 
   return (
     <tr
-      className={`bg-cyan text-sm text-dark even:bg-white ${bgClassName} ${className}`}
+      className={`text-sm text-dark ${
+        !isError && `bg-cyan even:bg-white`
+      } ${bgClassName} ${className}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <DepositRowStatus tx={tx} />
@@ -196,7 +201,7 @@ export function TransactionsTableDepositRow({
         <DepositRowTxID tx={tx} />
       </td>
 
-      <td className="w-1/5 py-3 pl-3 pr-6">
+      <td className="w-1/5 py-3 pl-3 pr-6 text-right">
         {showRedeemRetryableButton && (
           <Tooltip
             show={!isConnectedToArbitrum}
@@ -212,7 +217,7 @@ export function TransactionsTableDepositRow({
               disabled={!isConnectedToArbitrum}
               onClick={() => redeem(tx)}
             >
-              Re-execute
+              Retry
             </Button>
           </Tooltip>
         )}
@@ -226,8 +231,8 @@ export function TransactionsTableDepositRow({
               </span>
             }
           >
-            <span className="text-md font-normal uppercase text-brick-dark">
-              Expired
+            <span className="text-md flex flex-nowrap items-center gap-1 font-normal uppercase text-brick-dark">
+              <InformationCircleIcon className="h-4 w-4" /> EXPIRED
             </span>
           </Tooltip>
         )}
