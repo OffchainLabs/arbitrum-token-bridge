@@ -86,6 +86,9 @@ export function DepositCardContainer({
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
+  const {
+    l1: { network: l1Network }
+  } = useNetworksAndSigners()
 
   const bgClassName = useMemo(() => {
     switch (tx.depositStatus) {
@@ -111,7 +114,7 @@ export function DepositCardContainer({
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <img
-          src={getNetworkLogo(ChainId.ArbitrumOne)}
+          src={getNetworkLogo(l1Network.chainID)}
           className="absolute left-0 top-1 z-10 h-6 max-h-[90px] lg:relative lg:top-0 lg:h-full lg:opacity-[40%]"
           alt="Deposit"
         />

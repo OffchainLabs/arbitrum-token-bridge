@@ -2,6 +2,7 @@ import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
+import Image from 'next/image'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
@@ -296,7 +297,15 @@ function MobileExternalLink({
 }
 
 const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
-  return <img src={src} alt={alt} className="max-w-8 mr-4 max-h-8" />
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      className="max-w-8 mr-4 max-h-8"
+      width={50}
+      height={50}
+    />
+  )
 }
 
 function HeaderMobile() {
@@ -314,8 +323,8 @@ function HeaderMobile() {
         ></div>
         <HeaderMenuMobile {...learnMenuProps}>
           <HeaderItemLogo
-            src={'../../../images/header/headerLogo_learn.webp'}
-            alt={`logo`}
+            src="/images/header/headerLogo_learn.webp"
+            alt="Learn"
           />
           Learn
         </HeaderMenuMobile>
@@ -332,29 +341,29 @@ function HeaderMobile() {
           ]}
         >
           <HeaderItemLogo
-            src={'../../../images/header/headerLogo_ecosystem.webp'}
-            alt={`logo`}
+            src="/images/header/headerLogo_ecosystem.webp"
+            alt="Ecosystem"
           />
           Ecosystem
         </HeaderMenuMobile>
         <HeaderMenuMobile {...explorersMenuProps}>
           <HeaderItemLogo
-            src={'../../../images/header/headerLogo_explorers.webp'}
-            alt={`logo`}
+            src="/images/header/headerLogo_explorers.webp"
+            alt="Explorers"
           />
           Explorers
         </HeaderMenuMobile>
         <HeaderMenuMobile {...chartsStatsMenuProps}>
           <HeaderItemLogo
-            src={'../../../images/header/headerLogo_chartsAndStats.webp'}
-            alt={`logo`}
+            src="/images/header/headerLogo_chartsAndStats.webp"
+            alt="Charts and Stats"
           />
           Charts & Stats
         </HeaderMenuMobile>
         <MobileExternalLink href={GET_HELP_LINK}>
           <HeaderItemLogo
-            src={'../../../images/header/headerLogo_help.webp'}
-            alt={`logo`}
+            src="/images/header/headerLogo_help.webp"
+            alt="Get Help"
           />
           Get Help
         </MobileExternalLink>
