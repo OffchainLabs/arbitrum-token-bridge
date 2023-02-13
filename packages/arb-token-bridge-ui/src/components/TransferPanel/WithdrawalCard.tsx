@@ -13,6 +13,7 @@ import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
+import { CheckCircleIcon } from '@heroicons/react/outline'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -37,9 +38,10 @@ export function WithdrawalL2TxStatus({
   return (
     <ExternalLink
       href={`${getExplorerUrl(l2Network.chainID)}/tx/${tx.txId}`}
-      className="arb-hover text-blue-link"
+      className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(tx.txId)}
+      <CheckCircleIcon className="h-4 w-4 text-green-500" />
     </ExternalLink>
   )
 }
@@ -81,9 +83,10 @@ export function WithdrawalL1TxStatus({
   return (
     <ExternalLink
       href={`${getExplorerUrl(l1Network.chainID)}/tx/${l1Tx.txId}`}
-      className="arb-hover text-blue-link"
+      className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}
+      <CheckCircleIcon className="h-4 w-4 text-green-500" />
     </ExternalLink>
   )
 }

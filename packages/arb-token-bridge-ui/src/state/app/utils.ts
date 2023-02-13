@@ -23,6 +23,10 @@ export const getDepositStatus = (tx: Transaction) => {
   if (tx.status === 'pending') {
     return DepositStatus.L1_PENDING
   }
+
+  if (tx.status === 'warning') {
+    return DepositStatus.ERROR_FETCHING_DETAILS
+  }
   // l1 succeeded...
   const { l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {

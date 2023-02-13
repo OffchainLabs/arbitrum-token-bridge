@@ -83,10 +83,10 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
       <div className="h-2" />
       <div className="flex flex-col font-light">
-        <span className="text-base text-lime-dark">
+        <span className="flex flex-nowrap gap-1 text-base text-lime-dark">
           L2 transaction: <WithdrawalL2TxStatus tx={tx} />
         </span>
-        <span className="text-base text-lime-dark">
+        <span className="flex flex-nowrap gap-1 text-base text-lime-dark">
           L1 transaction: <WithdrawalL1TxStatus tx={tx} />
         </span>
       </div>

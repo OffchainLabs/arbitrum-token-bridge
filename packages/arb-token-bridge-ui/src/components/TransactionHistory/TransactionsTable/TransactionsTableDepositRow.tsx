@@ -10,6 +10,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
+import { ExclamationCircleIcon } from '@heroicons/react/outline'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -55,6 +56,24 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="red">Failed</StatusBadge>
+        </div>
+      )
+
+    case DepositStatus.ERROR_FETCHING_DETAILS:
+      return (
+        <div className="flex flex-col space-y-1">
+          <Tooltip
+            content={
+              <span>
+                Couldn't get transaction details, possibly because it is too
+                old. Please try again later.
+              </span>
+            }
+          >
+            <StatusBadge variant="yellow">
+              <ExclamationCircleIcon className="h-4 w-4" /> Error
+            </StatusBadge>
+          </Tooltip>
         </div>
       )
 

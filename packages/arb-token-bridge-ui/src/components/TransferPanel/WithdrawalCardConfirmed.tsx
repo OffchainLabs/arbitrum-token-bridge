@@ -31,7 +31,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
           {/* Addresses */}
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="text-base text-blue-arbitrum">
+            <span className="flex flex-nowrap gap-1 text-base text-blue-arbitrum">
               L2 transaction: <WithdrawalL2TxStatus tx={tx} />
             </span>
             <span className="text-base text-blue-arbitrum">

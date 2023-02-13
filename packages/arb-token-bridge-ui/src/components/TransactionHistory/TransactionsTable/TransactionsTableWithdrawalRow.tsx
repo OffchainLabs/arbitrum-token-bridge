@@ -43,7 +43,7 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="yellow">Unconfirmed</StatusBadge>
+          <StatusBadge variant="yellow">Pending</StatusBadge>
         </div>
       )
 

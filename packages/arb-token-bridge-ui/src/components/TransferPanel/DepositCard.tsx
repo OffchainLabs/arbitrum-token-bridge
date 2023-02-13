@@ -13,6 +13,7 @@ import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
+import { CheckCircleIcon } from '@heroicons/react/outline'
 
 export function DepositL1TxStatus({
   tx
@@ -33,9 +34,10 @@ export function DepositL1TxStatus({
       return (
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
-          className="arb-hover text-blue-link"
+          className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.txId)}
+          <CheckCircleIcon className="h-4 w-4 text-green-500" />
         </ExternalLink>
       )
 
@@ -62,9 +64,12 @@ export function DepositL2TxStatus({
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${
             tx.l1ToL2MsgData?.l2TxID
           }`}
-          className="arb-hover text-blue-link"
+          className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}
+          {tx.l1ToL2MsgData?.l2TxID && (
+            <CheckCircleIcon className="h-4 w-4 text-green-500" />
+          )}
         </ExternalLink>
       )
 
