@@ -24,6 +24,7 @@ import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextDispatch } from '../App/AppContext'
 import { TransactionHistoryTooltip } from './TransactionHistoryTooltip'
+import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -104,7 +105,7 @@ export function HeaderAccountPopover() {
 
   // check local-storage for viewed flag
   const [txHistoryViewedOnce, setTxHistoryViewedOnce] =
-    useLocalStorage<boolean>('arbitrum:view-new-tx-history')
+    useNewFeatureIndicator('tx-history')
 
   useEffect(() => {
     async function resolveNameServiceInfo() {
