@@ -15,7 +15,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   return (
     <DepositCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
-        <div>
+        <div className="lg:ml-[4rem]">
           {/* Heading */}
           <span className="ml-[2rem] animate-pulse text-2xl text-blue-arbitrum lg:ml-0">
             Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}
@@ -24,7 +24,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
           {/* Addresses */}
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="text-base text-blue-arbitrum">
+            <span className="flex flex-nowrap gap-1 text-base text-blue-arbitrum">
               L1 transaction: <DepositL1TxStatus tx={tx} />
             </span>
             <span className="text-base text-blue-arbitrum">

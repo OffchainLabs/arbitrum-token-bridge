@@ -13,7 +13,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   return (
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
-        <div className="flex flex-col">
+        <div className="flex flex-col lg:ml-[4rem]">
           <span className="ml-[2rem] text-2xl  text-blue-arbitrum lg:ml-0">
             Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}
           </span>

@@ -22,7 +22,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   return (
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
-        <div>
+        <div className="lg:ml-[4rem]">
           {/* Heading */}
           <span className="ml-[2rem] text-2xl text-blue-arbitrum lg:ml-0">
             Funds are ready to claim!
