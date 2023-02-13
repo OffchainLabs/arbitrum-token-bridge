@@ -7,13 +7,9 @@ import {
 } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
-import { DepositStatus, MergedTransaction } from '../state/app/state'
-import {
-  outgoungStateToString,
-  transformDeposits,
-  transformWithdrawals
-} from '../state/app/utils'
-import { useGateways } from './useGateways'
+import { MergedTransaction } from '../state/app/state'
+import { outgoungStateToString, transformWithdrawals } from '../state/app/utils'
+import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type CompleteWithdrawalData = {
@@ -57,7 +53,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const l1Provider = l1.provider
   const l2Provider = l2.provider
 
-  const gatewaysToUse = useGateways()
+  const gatewaysToUse = useL2Gateways({ l2Provider })
 
   const {
     app: {
