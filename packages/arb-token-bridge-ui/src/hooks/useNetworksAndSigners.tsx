@@ -119,7 +119,11 @@ export type NetworksAndSignersProviderProps = {
 }
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
-export type ProviderName = 'MetaMask' | 'Coinbase Wallet' | 'WalletConnect'
+export type ProviderName =
+  | 'MetaMask'
+  | 'Coinbase Wallet'
+  | 'WalletConnect'
+  | 'Rainbow'
 
 function getProviderName(provider: any): ProviderName | null {
   if (provider.isMetaMask) {
@@ -132,6 +136,10 @@ function getProviderName(provider: any): ProviderName | null {
 
   if (provider.isWalletConnect) {
     return 'WalletConnect'
+  }
+
+  if (provider.isRainbow) {
+    return 'Rainbow'
   }
 
   return null

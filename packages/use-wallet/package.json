@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@ethersproject/providers": "^5.7.0",
-    "web3modal": "^1.9.7",
+    "web3modal": "^1.9.12",
     "zustand": "^4.0.0-rc.0"
   },
   "peerDependencies": {
