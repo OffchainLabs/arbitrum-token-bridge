@@ -41,7 +41,7 @@ export function WithdrawalL2TxStatus({
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(tx.txId)}
-      <CheckCircleIcon className="h-4 w-4 text-green-500" />
+      <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
     </ExternalLink>
   )
 }
@@ -86,7 +86,7 @@ export function WithdrawalL1TxStatus({
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}
-      <CheckCircleIcon className="h-4 w-4 text-green-500" />
+      <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
     </ExternalLink>
   )
 }

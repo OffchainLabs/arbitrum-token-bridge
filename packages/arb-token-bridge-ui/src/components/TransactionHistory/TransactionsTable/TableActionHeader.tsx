@@ -87,7 +87,7 @@ export const TableActionHeader = ({
         />
         {searchError ? (
           <span className="absolute bottom-0 right-4 bg-white p-[9px] text-xs text-red-400">
-            {`Oops! Seems like a wrong ${layerType} transaction hash.`}
+            {`Invalid ${layerType} tx ID`}
           </span>
         ) : null}
       </div>

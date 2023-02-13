@@ -37,7 +37,7 @@ export function DepositL1TxStatus({
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.txId)}
-          <CheckCircleIcon className="h-4 w-4 text-green-500" />
+          <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
         </ExternalLink>
       )
 
@@ -68,7 +68,7 @@ export function DepositL2TxStatus({
         >
           {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}
           {tx.l1ToL2MsgData?.l2TxID && (
-            <CheckCircleIcon className="h-4 w-4 text-green-500" />
+            <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
           )}
         </ExternalLink>
       )

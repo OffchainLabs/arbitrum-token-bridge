@@ -63,14 +63,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
-          <Tooltip
-            content={
-              <span>
-                Couldn&apos;t fetch transaction details, possibly because it is
-                too old. Please try again later.
-              </span>
-            }
-          >
+          <Tooltip content={<span>Unable to load historic transactions</span>}>
             <StatusBadge variant="yellow">
               <ExclamationCircleIcon className="h-4 w-4" /> Error
             </StatusBadge>
