@@ -251,9 +251,8 @@ export function trackEvent(
     return
   }
 
-  pushEventToStorage(event)
-
   if (isValidEventSequence(requiredSequence)) {
     window.fathom.trackGoal(eventToEventId[event])
   }
+  pushEventToStorage(event)
 }
