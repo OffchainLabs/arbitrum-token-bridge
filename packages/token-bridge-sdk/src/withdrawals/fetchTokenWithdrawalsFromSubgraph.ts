@@ -34,13 +34,16 @@ function filterOutNullValuesFromArray<TNotNull>(
 }
 
 /**
- * Fetches initiated token withdrawals from subgraph in range of [fromBlock, toBlock].
+ * Fetches initiated withdrawals (Tokens only) from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
  * @param query.address Account address
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2Provider Provider for the L2 network
+ * @param query.pageSize Fetch these many records from subgraph
+ * @param query.pageNumber Fetch records starting [pageNumber * pageSize] records
+ * @param query.searchString Searches records through the l2TxHash
  */
 export async function fetchTokenWithdrawalsFromSubgraph({
   address,

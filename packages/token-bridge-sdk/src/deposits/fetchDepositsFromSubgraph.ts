@@ -22,6 +22,19 @@ export type FetchDepositsFromSubgraphResult = {
   }
 }
 
+/**
+ * Fetches initiated deposits (ETH + Tokens) from subgraph in range of [fromBlock, toBlock] and pageParams.
+ *
+ * @param query Query params
+ * @param query.address Account address
+ * @param query.fromBlock Start at this block number (including)
+ * @param query.toBlock Stop at this block number (including)
+ * @param query.l2ChainId Chain id for the L2 network
+ * @param query.pageSize Fetch these many records from subgraph
+ * @param query.pageNumber Fetch records starting [pageNumber * pageSize] records
+ * @param query.searchString Searches records through the l1TxHash
+ */
+
 export const fetchDepositsFromSubgraph = async ({
   address,
   fromBlock,
