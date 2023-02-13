@@ -14,6 +14,8 @@ import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 
 export type FetchWithdrawalsParams = {
   walletAddress: string
+  fromBlock?: number
+  toBlock?: number
   l1Provider: Provider
   l2Provider: Provider
   gatewayAddresses: string[]
@@ -31,16 +33,25 @@ export const fetchWithdrawals = async ({
   gatewayAddresses,
   pageNumber = 0,
   pageSize,
-  searchString
+  searchString,
+  fromBlock,
+  toBlock
 }: FetchWithdrawalsParams) => {
   if (!walletAddress || !l1Provider || !l2Provider) return []
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
-  const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
-    l2ChainID
-  )
+  if (!fromBlock) {
+    fromBlock = 0
+  }
+
+  if (!toBlock) {
+    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
+      l2ChainID
+    )
+    toBlock = latestSubgraphBlockNumber
+  }
 
   const [
     withdrawalsFromSubgraph,
@@ -49,8 +60,8 @@ export const fetchWithdrawals = async ({
   ] = await Promise.all([
     fetchWithdrawalsFromSubgraph({
       address: walletAddress,
-      fromBlock: 0,
-      toBlock: latestSubgraphBlockNumber,
+      fromBlock: fromBlock,
+      toBlock: toBlock,
       l2Provider: l2Provider,
       pageNumber,
       pageSize,
@@ -58,13 +69,13 @@ export const fetchWithdrawals = async ({
     }),
     fetchETHWithdrawalsFromEventLogs({
       address: walletAddress,
-      fromBlock: latestSubgraphBlockNumber + 1,
+      fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
       address: walletAddress,
-      fromBlock: latestSubgraphBlockNumber + 1,
+      fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
       l2GatewayAddresses: gatewayAddresses

@@ -109,19 +109,48 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   }
 
   if (tx.status === 'Confirmed') {
-    return <span>Ready</span>
+    return (
+      <div className="flex flex-col">
+        <Tooltip content={<span>Creation Time</span>}>
+          <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+        </Tooltip>
+        {tx.resolvedAt && (
+          <Tooltip content={<span>L1 Transaction</span>}>
+            <span className="whitespace-nowrap">Ready</span>
+          </Tooltip>
+        )}
+      </div>
+    )
   }
 
   const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
 
   if (typeof matchingL1Tx === 'undefined') {
-    return <span>N/A</span>
+    return (
+      <div className="flex flex-col">
+        <Tooltip content={<span>L2 Transaction time</span>}>
+          <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+        </Tooltip>
+        {tx.resolvedAt && (
+          <Tooltip content={<span>Ready to claim funds on L1</span>}>
+            <span className="whitespace-nowrap">N/A</span>
+          </Tooltip>
+        )}
+      </div>
+    )
   }
 
   return (
-    <span className="whitespace-nowrap">
-      {matchingL1Tx.resolvedAt || matchingL1Tx.createdAt || 'N/A'}
-    </span>
+    <div className="flex flex-col">
+      <Tooltip content={<span>Creation Time</span>}>
+        <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+      </Tooltip>
+      {tx.resolvedAt && (
+        <Tooltip content={<span>L1 Transaction</span>}>
+          <span className="whitespace-nowrap">{tx.resolvedAt || 'N/A'}</span>
+        </Tooltip>
+      )}
+    </div>
   )
 }
 

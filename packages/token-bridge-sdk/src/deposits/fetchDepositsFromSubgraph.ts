@@ -82,36 +82,11 @@ export const fetchDepositsFromSubgraph = async ({
 
   const transactions: FetchDepositsFromSubgraphResult[] = res.data.deposits.map(
     (tx: FetchDepositsFromSubgraphResult) => {
-      const {
-        receiver,
-        sender,
-        sequenceNumber,
-        timestamp,
-        tokenAmount,
-        transactionHash,
-        type,
-        isClassic,
-        id,
-        ethValue,
-        blockCreatedAt,
-        l1Token
-      } = tx
-
       return {
-        receiver,
-        sender,
-        sequenceNumber,
-        timestamp,
-        tokenAmount,
-        transactionHash,
-        type,
-        isClassic,
-        id,
-        ethValue,
-        blockCreatedAt,
+        ...tx,
         l1Token: {
-          id: l1Token?.id,
-          symbol: l1Token?.symbol
+          id: tx?.l1Token?.id,
+          symbol: tx?.l1Token?.symbol
         }
       }
     }

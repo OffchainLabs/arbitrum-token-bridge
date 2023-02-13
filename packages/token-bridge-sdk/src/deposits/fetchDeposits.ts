@@ -47,13 +47,12 @@ export const fetchDeposits = async ({
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
 
-  const latestL1BlockNumber = await l1Provider.getBlockNumber()
-
   if (!fromBlock) {
     fromBlock = 0
   }
 
   if (!toBlock) {
+    const latestL1BlockNumber = await l1Provider.getBlockNumber()
     toBlock = latestL1BlockNumber
   }
 
