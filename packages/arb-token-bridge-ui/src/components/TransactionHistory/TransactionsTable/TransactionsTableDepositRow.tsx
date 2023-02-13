@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { StatusBadge } from '../common/StatusBadge'
-import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { shortenTxHash } from '../../util/CommonUtils'
-import { DepositCountdown } from '../common/DepositCountdown'
-import { ExternalLink } from '../common/ExternalLink'
-import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { DepositStatus, MergedTransaction } from '../../../state/app/state'
+import { StatusBadge } from '../../common/StatusBadge'
+import { useRedeemRetryable } from '../../../hooks/useRedeemRetryable'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { shortenTxHash } from '../../../util/CommonUtils'
+import { DepositCountdown } from '../../common/DepositCountdown'
+import { ExternalLink } from '../../common/ExternalLink'
+import { Button } from '../../common/Button'
+import { Tooltip } from '../../common/Tooltip'
+import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {

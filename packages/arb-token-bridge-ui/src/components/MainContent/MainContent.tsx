@@ -1,13 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
-import { TransactionHistory } from '../common/TransactionHistory'
+import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
 import { useEffect, useState } from 'react'
 import { useDeposits } from '../../hooks/useDeposits'
-import { PageParams } from '../TransactionsTable/TransactionsTable'
+import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 
 export const motionDivProps = {

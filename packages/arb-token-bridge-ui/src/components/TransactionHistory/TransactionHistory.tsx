@@ -8,7 +8,7 @@ import { getNetworkLogo, getNetworkName } from '../../util/networks'
 import {
   PageParams,
   TransactionsTable
-} from '../TransactionsTable/TransactionsTable'
+} from './TransactionsTable/TransactionsTable'
 import { PendingTransactions } from './PendingTransactions'
 
 export const TransactionHistory = ({

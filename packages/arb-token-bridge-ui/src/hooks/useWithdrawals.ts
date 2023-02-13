@@ -5,7 +5,7 @@ import {
   L2ToL1EventResultPlus,
   OutgoingMessageState
 } from 'token-bridge-sdk'
-import { PageParams } from '../components/TransactionsTable/TransactionsTable'
+import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import {

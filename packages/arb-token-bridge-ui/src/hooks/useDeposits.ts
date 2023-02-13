@@ -4,7 +4,7 @@ import {
   FetchDepositParams,
   Transaction
 } from 'token-bridge-sdk'
-import { PageParams } from '../components/TransactionsTable/TransactionsTable'
+import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import { transformDeposits } from '../state/app/utils'

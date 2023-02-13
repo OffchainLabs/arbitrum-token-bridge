@@ -1,6 +1,5 @@
 import Tippy from '@tippyjs/react'
 import { BellIcon, XIcon } from '@heroicons/react/outline'
-import useLocalStorage from '@rehooks/local-storage'
 
 export const TransactionHistoryTooltip = ({
   isVisible,

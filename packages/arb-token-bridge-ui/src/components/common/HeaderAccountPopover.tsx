@@ -23,8 +23,8 @@ import {
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextDispatch } from '../App/AppContext'
-import { TransactionHistoryTooltip } from './TransactionHistoryTooltip'
 import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
+import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }

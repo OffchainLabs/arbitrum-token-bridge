@@ -1,17 +1,11 @@
-import React, { Dispatch, SetStateAction, useState } from 'react'
-import Loader from 'react-loader-spinner'
+import React, { Dispatch, SetStateAction } from 'react'
 
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  SearchIcon
-} from '@heroicons/react/outline'
-import { useAppState } from '../../state'
-import { isDeposit } from '../../state/app/utils'
-import { MergedTransaction } from '../../state/app/state'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { useAppState } from '../../../state'
+import { isDeposit } from '../../../state/app/utils'
+import { MergedTransaction } from '../../../state/app/state'
 import { NoDataOverlay } from './NoDataOverlay'
 import { useMemo } from 'react'
 import { TableBodyLoading } from './TableBodyLoading'
