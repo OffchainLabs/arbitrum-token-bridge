@@ -23,6 +23,8 @@ declare global {
   }
 }
 
+const storageKey = 'arbitrum:fathomEventSequence'
+
 type AccountType = 'EOA' | 'Smart Contract'
 type TokenType = 'ETH' | 'ERC-20'
 type FastBridgeName = `${FastBridgeNames}`
@@ -35,6 +37,14 @@ export const isFathomNetworkName = (
   networkName: AllNetworkNames
 ): networkName is FathomNetworkName => {
   return FathomNetworkNames.includes(networkName as FathomNetworkName)
+}
+
+export enum FathomEventGroup {
+  ConnectWallet = 'CONNECT_WALLET',
+  Transfer = 'TRANSFER',
+  HistoryPage = 'HISTORY_PAGE',
+  CexClick = 'CEX_CLICK',
+  FiatClick = 'FIAT_CLICK'
 }
 
 export type FathomEventNonCanonicalTokens =
@@ -160,7 +170,79 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Switch Network and Transfer': '4F5SKZRG'
 }
 
-export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {
+// filters multiple events by groups
+const fathomEventToGroup = (
+  event: FathomEvent | FathomEventNonCanonicalTokens
+) => {
+  if (/Connect Wallet Click/.test(event)) {
+    return FathomEventGroup.ConnectWallet
+  }
+  if (/CEX Click/.test(event)) {
+    return FathomEventGroup.CexClick
+  }
+  // can make those more specific
+  if (/Deposit/.test(event) || /Withdrawal/.test(event)) {
+    return FathomEventGroup.Transfer
+  }
+  return undefined
+}
+
+// store recently executed group events
+function pushEventToStorage(
+  event: FathomEvent | FathomEventNonCanonicalTokens
+) {
+  const eventGroup = fathomEventToGroup(event)
+  if (!eventGroup) {
+    return
+  }
+
+  const stringifiedStorage = sessionStorage.getItem(storageKey)
+  if (!stringifiedStorage) {
+    sessionStorage.setItem(storageKey, '[]')
+  }
+  const storage = JSON.parse(String(stringifiedStorage))
+  if (!Array.isArray(storage)) {
+    throw new Error(
+      `Error in Fathom storage: expected an array but found '${stringifiedStorage}'.`
+    )
+  }
+  if (storage.length >= 20) {
+    // to avoid hitting the string length cap we remove the first item
+    storage.shift()
+  }
+  storage.push(eventGroup)
+  sessionStorage.setItem(storageKey, JSON.stringify(storage))
+}
+
+const isValidEventSequence = (sequence: FathomEventGroup[] = []): boolean => {
+  if (sequence.length === 0) {
+    return true
+  }
+
+  const stringifiedStorage = sessionStorage.getItem(storageKey)
+  const storage = JSON.parse(String(stringifiedStorage))
+  if (!Array.isArray(storage)) {
+    throw new Error(
+      `Error in Fathom storage: expected an array but found '${stringifiedStorage}'.`
+    )
+  }
+  if (sequence.length > storage.length) {
+    return false
+  }
+  // get last x items from storage, where x is the sequence length
+  const splicedStorage = storage.splice(storage.length - sequence.length)
+  // events must be the same
+  return JSON.stringify(splicedStorage) === JSON.stringify(sequence)
+}
+
+/**
+ * @param event - Fathom event
+ * @param requiredSequence - list of event groups that need to happen prior to this event (in order)
+ */
+export function trackEvent(
+  event: FathomEvent | FathomEventNonCanonicalTokens,
+  requiredSequence?: FathomEventGroup[]
+) {
   if (typeof window.fathom === 'undefined') {
     return
   }
@@ -169,5 +251,9 @@ export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {
     return
   }
 
-  window.fathom.trackGoal(eventToEventId[event])
+  pushEventToStorage(event)
+
+  if (isValidEventSequence(requiredSequence)) {
+    window.fathom.trackGoal(eventToEventId[event])
+  }
 }
