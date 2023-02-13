@@ -62,10 +62,11 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
     case DepositStatus.ERROR_FETCHING_DETAILS:
       return (
         <div className="flex flex-col space-y-1">
+          <StatusBadge variant="green">Success</StatusBadge>
           <Tooltip
             content={
               <span>
-                Couldn't get transaction details, possibly because it is too
+                Couldn't fetch transaction details, possibly because it is too
                 old. Please try again later.
               </span>
             }
