@@ -333,16 +333,16 @@ export function TransactionsTableWithdrawalRow({
 }) {
   const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
-  if (!L2ToL1MessageStatuses.includes(tx.status)) {
-    return null
-  }
-
   const isError = useMemo(() => {
     if (tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
       return true
     }
     return false
   }, [tx])
+
+  if (!L2ToL1MessageStatuses.includes(tx.status)) {
+    return null
+  }
 
   const bgClassName = isError ? 'bg-brick' : ''
 
