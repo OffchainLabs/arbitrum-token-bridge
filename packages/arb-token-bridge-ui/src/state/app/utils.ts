@@ -95,9 +95,9 @@ export const transformWithdrawals = (
         tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
           ? 'Failure'
           : outgoungStateToString[tx.outgoingMessageState],
-      createdAt: dayjs(
-        new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
-      ).format(TRANSACTIONS_DATE_FORMAT),
+      createdAt: dayjs(BigNumber.from(tx.timestamp).toNumber() * 1000).format(
+        TRANSACTIONS_DATE_FORMAT
+      ),
       createdAtTime:
         BigNumber.from(tx.timestamp).toNumber() * 1000 +
         (uniqueIdOrHash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
