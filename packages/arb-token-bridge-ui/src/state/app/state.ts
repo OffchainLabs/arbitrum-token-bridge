@@ -18,7 +18,7 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState } from '../../util'
 import {
-  filterAndSortTransactions,
+  filterDeposits,
   transformDeposits,
   transformWithdrawals
 } from './utils'
@@ -98,7 +98,7 @@ export const defaultState: AppState = {
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
-    return filterAndSortTransactions(
+    return filterDeposits(
       [...transactions],
       s.arbTokenBridge.walletAddress,
       s.l1NetworkChainId,

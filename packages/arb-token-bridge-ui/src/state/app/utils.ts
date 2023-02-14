@@ -114,26 +114,29 @@ export const transformWithdrawals = (
   })
 }
 
-export const filterAndSortTransactions = (
+export const filterDeposits = (
   transactions: Transaction[],
   walletAddress: string,
   l1ChainId: number | null,
   l2ChainId: number | null
-) => {
-  return transactions
-    .filter(tx => tx.sender === walletAddress)
-    .filter(tx => {
-      const matchesL1 = tx.l1NetworkID === String(l1ChainId)
-      const matchesL2 = tx.l2NetworkID === String(l2ChainId)
+): Transaction[] => {
+  const result = []
+  for (let i = transactions.length - 1; i > 0; i--) {
+    const tx = transactions[i]
+    const isSenderWallet = tx?.sender === walletAddress
+    const matchesL1 = tx?.l1NetworkID === String(l1ChainId)
 
-      // The `l2NetworkID` field was added later, so not all transactions will have it
-      if (typeof tx.l2NetworkID === 'undefined') {
-        return matchesL1
-      }
+    // The `l2NetworkID` field was added later, so not all transactions will have it
+    const matchesL2 =
+      tx?.l2NetworkID === String(l2ChainId) ||
+      (typeof tx?.l2NetworkID === 'undefined' && matchesL1)
 
-      return matchesL1 && matchesL2
-    })
-    .reverse()
+    if (isSenderWallet && matchesL1 && matchesL2) {
+      result.push(transactions[i]!)
+    }
+  }
+
+  return result
 }
 
 export const isDeposit = (tx: MergedTransaction) => {
