@@ -114,11 +114,11 @@ export const fetchWithdrawals = async ({
     .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
     .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
-  const finalL2ToL1Txns = await Promise.all(
+  const finalL2ToL1Txns: L2ToL1EventResultPlus[] = await Promise.all(
     l2ToL1Txns.map(withdrawal =>
       updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
     )
   )
 
-  return finalL2ToL1Txns as L2ToL1EventResultPlus[]
+  return finalL2ToL1Txns
 }

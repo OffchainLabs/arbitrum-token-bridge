@@ -21,7 +21,7 @@ export const PendingTransactions = ({
     tx =>
       (isDeposit(tx) &&
         (tx.status === 'pending' ||
-          tx.depositStatus == DepositStatus.L1_PENDING ||
+          tx.depositStatus === DepositStatus.L1_PENDING ||
           tx.depositStatus === DepositStatus.L2_PENDING)) ||
       (!isDeposit(tx) &&
         tx.status !== outgoungStateToString[OutgoingMessageState.EXECUTED])

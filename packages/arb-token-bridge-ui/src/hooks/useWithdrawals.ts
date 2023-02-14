@@ -36,7 +36,7 @@ const fetchCompleteWithdrawalData = async (
       completeTxData.status !==
         outgoungStateToString[OutgoingMessageState.EXECUTED]
     ) {
-      pendingWithdrawalMap.set(String(completeTxData.txId), true)
+      pendingWithdrawalMap.set(completeTxData.txId, true)
     }
   })
   const pendingWithdrawals = withdrawals.filter(tx =>

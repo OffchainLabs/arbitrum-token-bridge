@@ -132,7 +132,7 @@ export const filterDeposits = (
       (typeof tx?.l2NetworkID === 'undefined' && matchesL1)
 
     if (isSenderWallet && matchesL1 && matchesL2) {
-      result.push(transactions[i]!)
+      result.push(tx)
     }
   }
 

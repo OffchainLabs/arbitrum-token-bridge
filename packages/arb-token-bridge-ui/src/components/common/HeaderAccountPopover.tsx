@@ -160,7 +160,7 @@ export function HeaderAccountPopover() {
   }
 
   const headerItemsClassName =
-    'arb-hover flex w-full flex-row items-center space-x-2 px-[4rem] py-2 text-lg lg:text-base font-light text-white hover:bg-blue-arbitrum lg:px-4'
+    'arb-hover flex w-full flex-row items-center space-x-2 px-[4rem] py-2 text-lg lg:text-sm font-light text-white hover:bg-blue-arbitrum lg:px-4'
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -191,7 +191,7 @@ export function HeaderAccountPopover() {
       <Transition>
         <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
-          <div className="flex flex-row justify-between pb-2">
+          <div className="flex flex-row justify-between">
             <Transition show={showCopied}>
               <span className="absolute left-[90px] top-[2rem] z-10 text-xs font-light text-white">
                 Copied to clipboard!
@@ -222,7 +222,7 @@ export function HeaderAccountPopover() {
                   />
                 </div>
                 <div className="flex translate-y-[15px] transform flex-row items-center space-x-3">
-                  <span className="text-md max-w-[10rem] overflow-hidden text-ellipsis font-normal">
+                  <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
                   <DocumentDuplicateIcon className="h-4 w-4" />

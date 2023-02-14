@@ -22,7 +22,7 @@ import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
 import { TRANSACTIONS_DATE_FORMAT } from '../../../state/app/utils'
 
-function findMatchingL1Tx(
+export function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
   transactions: MergedTransaction[]
 ) {
@@ -37,7 +37,7 @@ function findMatchingL1Tx(
     const txUniqueId = BigNumber.from(l2ToL1Message.uniqueId)
     const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
 
-    return txUniqueId.toString() === _txUniqueId.toString()
+    return txUniqueId.eq(_txUniqueId)
   })
 }
 
@@ -229,7 +229,7 @@ const GetHelpButton = ({
       <Button
         variant={variant}
         onClick={onClick}
-        className={`${variant === 'secondary' ? 'bg-white px-4 py-3' : ''}`}
+        className={variant === 'secondary' ? 'bg-white px-4 py-3' : ''}
       >
         Get Help
       </Button>
@@ -264,7 +264,7 @@ function WithdrawalRowAction({
     return (
       <Tooltip
         wrapperClassName=""
-        content={<span>Funds aren’t ready to claim yet.</span>}
+        content={<span>Funds aren&apos;t ready to claim yet.</span>}
       >
         <Button variant="primary" disabled>
           Claim
@@ -334,16 +334,11 @@ export function TransactionsTableWithdrawalRow({
 }) {
   const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
-  const isError = useMemo(() => {
-    if (tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
-      return true
-    }
-    return false
-  }, [tx])
-
   if (!L2ToL1MessageStatuses.includes(tx.status)) {
     return null
   }
+
+  const isError = tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
 
   const bgClassName = isError ? 'bg-brick' : ''
 

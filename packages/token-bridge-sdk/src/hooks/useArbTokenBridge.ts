@@ -1023,7 +1023,7 @@ export const useArbTokenBridge = (
   }
 
   const setWithdrawalsInStore = (withdrawalTxns: L2ToL1EventResultPlus[]) => {
-    let pwMap = {} as PendingWithdrawalsMap
+    const pwMap = {} as PendingWithdrawalsMap
     withdrawalTxns.forEach(tx => {
       const id = getUniqueIdOrHashFromEvent(tx).toString()
       pwMap[id] = tx

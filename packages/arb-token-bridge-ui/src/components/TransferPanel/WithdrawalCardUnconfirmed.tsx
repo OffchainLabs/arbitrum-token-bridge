@@ -37,7 +37,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <Tooltip content={<span>Funds aren’t ready to claim yet.</span>}>
+        <Tooltip content={<span>Funds aren&apos;t ready to claim yet.</span>}>
           <Button variant="primary" className="my-4 text-lg" disabled>
             Claim {tx.value} {tx.asset.toUpperCase()}
           </Button>

@@ -14,6 +14,7 @@ import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/outline'
+import { findMatchingL1Tx } from '../TransactionHistory/TransactionsTable/TransactionsTableWithdrawalRow'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -58,19 +59,7 @@ export function WithdrawalL1TxStatus({
   } = useAppState()
 
   // Try to find the L1 transaction that matches the L2ToL1 message
-  const l1Tx = mergedTransactions.find(_tx => {
-    const l2ToL1MsgData = _tx.l2ToL1MsgData
-
-    if (typeof l2ToL1MsgData === 'undefined') {
-      return false
-    }
-
-    // To get rid of Proxy
-    const txUniqueId = BigNumber.from(tx.uniqueId)
-    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
-
-    return txUniqueId.toString() === _txUniqueId.toString()
-  })
+  const l1Tx = findMatchingL1Tx(tx, mergedTransactions)
 
   if (typeof l1Network === 'undefined') {
     return <span>Not available</span>

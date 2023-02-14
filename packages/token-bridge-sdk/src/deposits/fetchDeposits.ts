@@ -77,10 +77,10 @@ export const fetchDeposits = async ({
         l1NetworkID: String(l1ChainId),
         l2NetworkID: String(l2ChainId),
         blockNumber: Number(tx.blockCreatedAt),
-        timestampCreated: Number(tx.timestamp)
-      }
+        timestampCreated: tx.timestamp
+      } as Transaction
     }
-  ) as unknown as Transaction[]
+  )
 
   const finalTransactions = (await Promise.all(
     ethDepositsFromSubgraph.map(depositTx =>
