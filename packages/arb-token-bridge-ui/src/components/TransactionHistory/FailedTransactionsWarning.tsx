@@ -63,6 +63,10 @@ export const FailedTransactionsWarning = ({
       <span
         className="cursor-pointer text-sm text-blue-link underline"
         onClick={getHelpOnError}
+        onKeyDown={getHelpOnError}
+        aria-label="Get Help"
+        role="button"
+        tabIndex={0}
       >
         Get Help.
       </span>
