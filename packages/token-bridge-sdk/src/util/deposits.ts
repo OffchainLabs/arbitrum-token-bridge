@@ -22,6 +22,18 @@ export const updateAdditionalDepositData = async (
     )
     const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
 
+    // fetch timestamp creation date
+    let timestampCreated = new Date().toISOString()
+    if (depositTx.timestampCreated) {
+      // if timestamp is already there in Subgraphs, take it from there
+      timestampCreated = String(+depositTx.timestampCreated * 1000)
+    } else if (depositTx.blockNumber) {
+      // if timestamp not in subgraph, fallback to onchain data
+      timestampCreated = String(
+        (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
+      )
+    }
+
     // Check if deposit is ETH
     if (depositTx.assetName === AssetType.ETH) {
       // from the receipt - get the eth-deposit-message
@@ -35,9 +47,6 @@ export const updateAdditionalDepositData = async (
       const status = await ethDepositMessage.status()
       const isDeposited = status === EthDepositStatus.DEPOSITED
 
-      const timestampCreated = depositTx.blockNumber
-        ? (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
-        : new Date().toISOString()
       const retryableCreationTxID = ethDepositMessage.l2DepositTxHash
 
       const l2BlockNum = isDeposited
@@ -67,11 +76,6 @@ export const updateAdditionalDepositData = async (
       return updatedDepositTx
     } else {
       // else if the transaction is not ETH ie. it's a ERC20 token deposit
-
-      // fetch timestamp things
-      const timestampCreated = depositTx.blockNumber
-        ? (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
-        : new Date().toISOString()
 
       const updatedDepositTx = {
         ...depositTx,

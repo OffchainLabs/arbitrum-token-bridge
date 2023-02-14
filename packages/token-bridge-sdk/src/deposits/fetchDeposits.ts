@@ -8,16 +8,6 @@ import {
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
 
-export type DepositETHSubgraphResult = {
-  id: string
-  senderAliased: string
-  destAddr: string
-  value: string
-  msgData: string
-  transactionHash: string
-  blockCreatedAt: string
-}
-
 export type FetchDepositParams = {
   walletAddress: string
   fromBlock?: number
@@ -86,7 +76,8 @@ export const fetchDeposits = async ({
 
         l1NetworkID: String(l1ChainId),
         l2NetworkID: String(l2ChainId),
-        blockNumber: Number(tx.blockCreatedAt)
+        blockNumber: Number(tx.blockCreatedAt),
+        timestampCreated: Number(tx.timestamp)
       }
     }
   ) as unknown as Transaction[]

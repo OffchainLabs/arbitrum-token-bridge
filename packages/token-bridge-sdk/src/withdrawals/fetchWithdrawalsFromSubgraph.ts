@@ -1,5 +1,4 @@
 import { gql } from '@apollo/client'
-import { BigNumber } from '@ethersproject/bignumber'
 import { Provider } from '@ethersproject/providers'
 
 import { getL2SubgraphClient } from '../util/subgraph'

@@ -61,13 +61,13 @@ export const transformDeposits = (
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
-        ? dayjs(tx.timestampCreated).format(TRANSACTIONS_DATE_FORMAT)
+        ? dayjs(Number(tx.timestampCreated)).format(TRANSACTIONS_DATE_FORMAT)
         : null,
       createdAtTime: tx.timestampCreated
         ? dayjs(tx.timestampCreated).toDate().getTime()
         : null,
       resolvedAt: tx.timestampResolved
-        ? dayjs(tx.timestampResolved).format(TRANSACTIONS_DATE_FORMAT)
+        ? dayjs(Number(tx.timestampResolved)).format(TRANSACTIONS_DATE_FORMAT)
         : null,
       txId: tx.txID,
       asset: tx.assetName?.toLowerCase(),
