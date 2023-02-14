@@ -20,7 +20,7 @@ export function HeaderConnectWalletButton() {
       type="button"
       className="arb-hover flex w-full flex-row items-center rounded-full p-4 text-2xl font-medium text-white lg:bg-lime-dark lg:py-2 lg:px-4 lg:text-base lg:font-normal"
     >
-      <PlusCircleIcon className="mr-3 h-8 w-8 rounded-full bg-white p-1 text-black opacity-50" />
+      <PlusCircleIcon className="mr-3 h-8 w-8 rounded-full bg-white p-1 text-dark opacity-40" />
       Connect Wallet
     </button>
   )

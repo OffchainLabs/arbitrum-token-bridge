@@ -1,3 +1,9 @@
+/*
+  A small warning banner that we show when the user has had too many failed transactions in the past few days.
+  Format: "In the past [X] days, you had [Y] failed txns. Get Help."
+  This way users can seek help without going to the individual ticket id
+*/
+
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import dayjs from 'dayjs'
 import { GET_HELP_LINK } from '../../constants'
@@ -26,13 +32,14 @@ export const FailedTransactionsWarning = ({
       (!isDeposit(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
   )?.length
 
-  const daysPassedSinceFailure = dayjs().diff(
-    dayjs(
-      transactions[transactions.length - 1]?.createdAt,
-      TRANSACTIONS_DATE_FORMAT
-    ),
-    'days'
-  )
+  const daysPassedSinceFailure =
+    dayjs().diff(
+      dayjs(
+        transactions[transactions.length - 1]?.createdAt,
+        TRANSACTIONS_DATE_FORMAT
+      ),
+      'days'
+    ) || 1 // to avoid '0 days' passed issue
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')

@@ -189,7 +189,7 @@ export function HeaderAccountPopover() {
         </Popover.Button>
       </TransactionHistoryTooltip>
       <Transition>
-        <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-4 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+        <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
           <div className="flex flex-row justify-between pb-2">
             <Transition show={showCopied}>
@@ -214,7 +214,7 @@ export function HeaderAccountPopover() {
 
               {/* Actual image and account name */}
               <div className="relative z-10 flex flex-row items-center space-x-2">
-                <div className="box-content rounded-full border-[5px] border-dark">
+                <div className="box-content rounded-full border-[4px] border-dark">
                   <SafeImage
                     src={ensInfo.avatar || undefined}
                     className="h-14 w-14 rounded-full"
