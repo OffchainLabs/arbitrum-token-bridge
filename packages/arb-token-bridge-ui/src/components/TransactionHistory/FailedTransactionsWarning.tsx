@@ -1,8 +1,9 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import dayjs from 'dayjs'
 import { GET_HELP_LINK } from '../../constants'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { isDeposit } from '../../state/app/utils'
+import { isDeposit, TRANSACTIONS_DATE_FORMAT } from '../../state/app/utils'
 import { isFathomNetworkName, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 
@@ -25,6 +26,14 @@ export const FailedTransactionsWarning = ({
       (!isDeposit(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
   )?.length
 
+  const daysPassedSinceFailure = dayjs().diff(
+    dayjs(
+      transactions[transactions.length - 1]?.createdAt,
+      TRANSACTIONS_DATE_FORMAT
+    ),
+    'days'
+  )
+
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
 
@@ -40,7 +49,7 @@ export const FailedTransactionsWarning = ({
   return (
     <div className="flex items-center gap-1 rounded-md bg-orange p-2 text-base text-dark lg:flex-nowrap">
       <InformationCircleIcon className="h-4 w-4" />
-      In the current view, you have
+      In the past {daysPassedSinceFailure} days you had
       <span className="text-brick-dark">
         {numFailedTransactions} failed transactions.
       </span>
