@@ -26,7 +26,10 @@ const fetchCompleteWithdrawalData = async (
 
   // filter out pending withdrawals
   const pendingWithdrawalMap: { [id: string]: boolean } = {}
-  const completeWithdrawalData = transformWithdrawals(withdrawals)
+  const completeWithdrawalData = transformWithdrawals(
+    withdrawals.sort((msgA, msgB) => +msgB.timestamp - +msgA.timestamp)
+  )
+
   completeWithdrawalData.forEach(completeTxData => {
     if (
       completeTxData &&

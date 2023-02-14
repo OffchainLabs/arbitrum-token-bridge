@@ -9,6 +9,8 @@ import {
 } from 'token-bridge-sdk'
 import { DepositStatus, MergedTransaction } from './state'
 
+export const TRANSACTIONS_DATE_FORMAT = 'MMM DD, YYYY hh:mm A'
+
 export const outgoungStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
@@ -59,13 +61,13 @@ export const transformDeposits = (
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
-        ? dayjs(tx.timestampCreated).format('MMM DD, YYYY hh:mm A')
+        ? dayjs(tx.timestampCreated).format(TRANSACTIONS_DATE_FORMAT)
         : null,
       createdAtTime: tx.timestampCreated
         ? dayjs(tx.timestampCreated).toDate().getTime()
         : null,
       resolvedAt: tx.timestampResolved
-        ? dayjs(new Date(tx.timestampResolved)).format('MMM DD, YYYY hh:mm A')
+        ? dayjs(tx.timestampResolved).format(TRANSACTIONS_DATE_FORMAT)
         : null,
       txId: tx.txID,
       asset: tx.assetName?.toLowerCase(),
@@ -95,7 +97,7 @@ export const transformWithdrawals = (
           : outgoungStateToString[tx.outgoingMessageState],
       createdAt: dayjs(
         new Date(BigNumber.from(tx.timestamp).toNumber() * 1000)
-      ).format('MMM DD, YYYY hh:mm A'),
+      ).format(TRANSACTIONS_DATE_FORMAT),
       createdAtTime:
         BigNumber.from(tx.timestamp).toNumber() * 1000 +
         (uniqueIdOrHash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action

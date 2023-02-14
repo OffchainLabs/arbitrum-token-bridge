@@ -20,6 +20,7 @@ import { GET_HELP_LINK } from '../../../constants'
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
+import { TRANSACTIONS_DATE_FORMAT } from '../../../state/app/utils'
 
 function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -297,7 +298,7 @@ function WithdrawalRowAction({
 
   if (isError) {
     const isTxOlderThan7Days =
-      dayjs().diff(dayjs(tx.createdAt, 'MMM DD, YYYY hh:mm A'), 'days') > 7
+      dayjs().diff(dayjs(tx.createdAt, TRANSACTIONS_DATE_FORMAT), 'days') > 7
 
     return (
       <>
