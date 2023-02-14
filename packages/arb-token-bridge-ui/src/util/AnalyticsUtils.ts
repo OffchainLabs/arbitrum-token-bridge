@@ -68,6 +68,7 @@ export type FathomEvent =
   | `Opened Transaction History by Click`
   //
   | `Tx error: Get Help clicked on ${FathomNetworkName}`
+  | `Multiple Tx errors: Get Help clicked on ${FathomNetworkName}`
 
 const eventToEventId: { [key in FathomEvent]: string } & {
   [key in FathomEventNonCanonicalTokens]: string
@@ -171,7 +172,9 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Opened Transaction History by Click': '',
   //
   'Tx error: Get Help clicked on Arbitrum One': '',
-  'Tx error: Get Help clicked on Arbitrum Nova': ''
+  'Tx error: Get Help clicked on Arbitrum Nova': '',
+  'Multiple Tx errors: Get Help clicked on Arbitrum One': '',
+  'Multiple Tx errors: Get Help clicked on Arbitrum Nova': ''
 }
 
 export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {

@@ -10,6 +10,7 @@ import {
   TransactionsTable
 } from './TransactionsTable/TransactionsTable'
 import { PendingTransactions } from './PendingTransactions'
+import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -48,6 +49,9 @@ export const TransactionHistory = ({
         transactions={mergedTransactions}
         error={depositsError || withdrawalsError}
       />
+
+      {/* Warning to show when there are 3 or more failed transactions for the user */}
+      <FailedTransactionsWarning transactions={mergedTransactions} />
 
       {/* Transaction history table */}
       <div>

@@ -38,7 +38,7 @@ export enum DepositStatus {
   L2_FAILURE = 5,
   CREATION_FAILED = 6,
   EXPIRED = 7,
-  ERROR_FETCHING_DETAILS = 8 // when we're unable to fetch tx details coz of sdk errors
+  ERROR_FETCHING_DETAILS = 8 // when we're unable to fetch tx details coz of sdk errors (historical data)
 }
 
 export interface MergedTransaction {

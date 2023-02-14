@@ -207,7 +207,9 @@ export function TransactionsTableDepositRow({
             show={!isConnectedToArbitrum}
             content={
               <span>
-                Please connect to the L2 network to re-execute your deposit.
+                Please connect to the L2 network to re-execute your deposit. You
+                have 7 days to re-execute a failed tx. After that, the tx is no
+                longer recoverable.
               </span>
             }
           >
@@ -226,8 +228,8 @@ export function TransactionsTableDepositRow({
           <Tooltip
             content={
               <span>
-                When an L2 tx fails, you have 7 days to re-execute. After that
-                time period, the tx is no longer recoverable.
+                You have 7 days to re-execute a failed tx. After that, the tx is
+                no longer recoverable.
               </span>
             }
           >
