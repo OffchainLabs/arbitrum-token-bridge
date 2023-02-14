@@ -23,7 +23,7 @@ export const fetchCompleteDepositData = async (
   const deposits = await fetchDeposits(depositParams)
 
   // filter out pending deposits
-  const pendingDepositsMap: { [id: string]: boolean } = {}
+  const pendingDepositsMap = new Map<string, boolean>()
   // get their complete transformed data (so that we get their exact status)
   const completeDepositData = transformDeposits(deposits)
   completeDepositData.forEach(completeTxData => {
@@ -31,10 +31,10 @@ export const fetchCompleteDepositData = async (
       completeTxData &&
       completeTxData.depositStatus !== DepositStatus.L2_SUCCESS
     ) {
-      pendingDepositsMap[completeTxData.txId] = true
+      pendingDepositsMap.set(completeTxData.txId, true)
     }
   })
-  const pendingDeposits = deposits.filter(tx => pendingDepositsMap[tx.txID])
+  const pendingDeposits = deposits.filter(tx => pendingDepositsMap.get(tx.txID))
 
   return { deposits, pendingDeposits, transformedDeposits: completeDepositData }
 }

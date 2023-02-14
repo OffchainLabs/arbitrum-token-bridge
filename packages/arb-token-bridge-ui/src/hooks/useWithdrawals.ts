@@ -25,7 +25,7 @@ const fetchCompleteWithdrawalData = async (
   const withdrawals = await fetchWithdrawals(params)
 
   // filter out pending withdrawals
-  const pendingWithdrawalMap: { [id: string]: boolean } = {}
+  const pendingWithdrawalMap = new Map<string, boolean>()
   const completeWithdrawalData = transformWithdrawals(
     withdrawals.sort((msgA, msgB) => +msgB.timestamp - +msgA.timestamp)
   )
@@ -36,11 +36,11 @@ const fetchCompleteWithdrawalData = async (
       completeTxData.status !==
         outgoungStateToString[OutgoingMessageState.EXECUTED]
     ) {
-      pendingWithdrawalMap[String(completeTxData.txId)] = true
+      pendingWithdrawalMap.set(String(completeTxData.txId), true)
     }
   })
-  const pendingWithdrawals = withdrawals.filter(
-    tx => pendingWithdrawalMap[tx.l2TxHash!]
+  const pendingWithdrawals = withdrawals.filter(tx =>
+    pendingWithdrawalMap.get(tx.l2TxHash!)
   )
 
   return {
