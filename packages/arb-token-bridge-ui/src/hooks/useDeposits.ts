@@ -6,8 +6,8 @@ import {
 } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
-import { DepositStatus, MergedTransaction } from '../state/app/state'
-import { transformDeposits } from '../state/app/utils'
+import { MergedTransaction } from '../state/app/state'
+import { isPending, transformDeposits } from '../state/app/utils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type CompleteDepositData = {
@@ -27,10 +27,7 @@ export const fetchCompleteDepositData = async (
   // get their complete transformed data (so that we get their exact status)
   const completeDepositData = transformDeposits(deposits)
   completeDepositData.forEach(completeTxData => {
-    if (
-      completeTxData &&
-      completeTxData.depositStatus !== DepositStatus.L2_SUCCESS
-    ) {
+    if (isPending(completeTxData)) {
       pendingDepositsMap.set(completeTxData.txId, true)
     }
   })

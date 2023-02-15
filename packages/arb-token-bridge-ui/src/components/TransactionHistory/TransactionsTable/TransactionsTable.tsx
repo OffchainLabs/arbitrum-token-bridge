@@ -3,7 +3,6 @@ import React, { Dispatch, SetStateAction } from 'react'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { useAppState } from '../../../state'
 import { isDeposit } from '../../../state/app/utils'
 import { MergedTransaction } from '../../../state/app/state'
 import { NoDataOverlay } from './NoDataOverlay'
@@ -51,6 +50,7 @@ export type TransactionsTableProps = {
   transactions: MergedTransaction[]
   loading: boolean
   error: boolean
+  pendingTransactionsMap: Map<string, MergedTransaction>
 }
 
 export function TransactionsTable({
@@ -59,14 +59,9 @@ export function TransactionsTable({
   setPageParams,
   transactions,
   loading,
-  error
+  error,
+  pendingTransactionsMap
 }: TransactionsTableProps) {
-  const {
-    app: {
-      arbTokenBridge: { walletAddress }
-    }
-  } = useAppState()
-
   const { isSmartContractWallet } = useNetworksAndSigners()
 
   const status = useMemo(() => {
@@ -90,7 +85,8 @@ export function TransactionsTable({
           setPageParams,
           transactions,
           loading,
-          error
+          error,
+          pendingTransactionsMap
         }}
       />
 
@@ -120,19 +116,21 @@ export function TransactionsTable({
               <>
                 {transactions.length > 0 ? (
                   transactions.map((tx, index) => {
-                    const isFinalRow = index === transactions.length - 1
+                    const isLastRow = index === transactions.length - 1
+
+                    const finalTx = pendingTransactionsMap.get(tx.txId) ?? tx // if transaction is present in pending transactions, subscribe to that in this row, else show static subgraph table data
 
                     return isDeposit(tx) ? (
                       <TransactionsTableDepositRow
                         key={`${tx.txId}-${tx.direction}`}
-                        tx={tx}
-                        className={!isFinalRow ? 'border-b border-gray-1' : ''}
+                        tx={finalTx}
+                        className={!isLastRow ? 'border-b border-gray-1' : ''}
                       />
                     ) : (
                       <TransactionsTableWithdrawalRow
                         key={`${tx.txId}-${tx.direction}`}
-                        tx={tx}
-                        className={!isFinalRow ? 'border-b border-gray-1' : ''}
+                        tx={finalTx}
+                        className={!isLastRow ? 'border-b border-gray-1' : ''}
                       />
                     )
                   })

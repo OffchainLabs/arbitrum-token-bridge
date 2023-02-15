@@ -61,13 +61,10 @@ export const transformDeposits = (
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
-        ? dayjs(Number(tx.timestampCreated)).format(TRANSACTIONS_DATE_FORMAT)
-        : null,
-      createdAtTime: tx.timestampCreated
-        ? dayjs(tx.timestampCreated).toDate().getTime()
+        ? getStandardisedDate(tx.timestampCreated)
         : null,
       resolvedAt: tx.timestampResolved
-        ? dayjs(Number(tx.timestampResolved)).format(TRANSACTIONS_DATE_FORMAT)
+        ? getStandardisedDate(tx.timestampResolved)
         : null,
       txId: tx.txID,
       asset: tx.assetName?.toLowerCase(),
@@ -98,9 +95,6 @@ export const transformWithdrawals = (
       createdAt: dayjs(BigNumber.from(tx.timestamp).toNumber() * 1000).format(
         TRANSACTIONS_DATE_FORMAT
       ),
-      createdAtTime:
-        BigNumber.from(tx.timestamp).toNumber() * 1000 +
-        (uniqueIdOrHash ? 1000 : 0), // adding 60s for the sort function so that it comes before l2 action
       resolvedAt: null,
       txId: tx.l2TxHash || 'l2-tx-hash-not-found',
       asset: tx.symbol?.toLocaleLowerCase(),
@@ -154,6 +148,24 @@ export const isPending = (tx: MergedTransaction) => {
         tx.depositStatus === DepositStatus.L1_PENDING ||
         tx.depositStatus === DepositStatus.L2_PENDING)) ||
     (!isDeposit(tx) &&
-      tx.status !== outgoungStateToString[OutgoingMessageState.EXECUTED])
+      (tx.status === outgoungStateToString[OutgoingMessageState.UNCONFIRMED] ||
+        tx.status === outgoungStateToString[OutgoingMessageState.CONFIRMED]))
   )
+}
+
+export const isFailed = (tx: MergedTransaction) => {
+  return (
+    (isDeposit(tx) &&
+      (tx.status === 'pending' ||
+        tx.depositStatus == DepositStatus.L1_FAILURE ||
+        tx.depositStatus === DepositStatus.L2_FAILURE)) ||
+    (!isDeposit(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
+  )
+}
+
+export const getStandardisedDate = (dateString: string) => {
+  if (isNaN(Number(dateString)))
+    return dayjs(new Date(dateString)).format(TRANSACTIONS_DATE_FORMAT) // for ISOstring type of dates
+
+  return dayjs(Number(dateString)).format(TRANSACTIONS_DATE_FORMAT) // for timestamp type of date
 }

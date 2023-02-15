@@ -2,13 +2,12 @@ import useSWRImmutable from 'swr/immutable'
 import {
   fetchWithdrawals,
   FetchWithdrawalsParams,
-  L2ToL1EventResultPlus,
-  OutgoingMessageState
+  L2ToL1EventResultPlus
 } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
-import { outgoungStateToString, transformWithdrawals } from '../state/app/utils'
+import { isPending, transformWithdrawals } from '../state/app/utils'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
@@ -31,11 +30,7 @@ const fetchCompleteWithdrawalData = async (
   )
 
   completeWithdrawalData.forEach(completeTxData => {
-    if (
-      completeTxData &&
-      completeTxData.status !==
-        outgoungStateToString[OutgoingMessageState.EXECUTED]
-    ) {
+    if (isPending(completeTxData)) {
       pendingWithdrawalMap.set(completeTxData.txId, true)
     }
   })

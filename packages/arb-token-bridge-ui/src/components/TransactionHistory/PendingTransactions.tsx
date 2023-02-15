@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
 import { MergedTransaction } from '../../state/app/state'
-import { isDeposit, isPending } from '../../state/app/utils'
+import { isDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
@@ -16,8 +16,6 @@ export const PendingTransactions = ({
   loading: boolean
   error: boolean
 }) => {
-  const filteredTransactions = transactions?.filter(tx => isPending(tx))
-
   return (
     <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">
       {/* Heading */}
@@ -37,14 +35,14 @@ export const PendingTransactions = ({
       )}
 
       {/* No pending transactions */}
-      {!error && !loading && !filteredTransactions.length && (
+      {!error && !loading && !transactions.length && (
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
       )}
 
       {/* Transaction cards */}
-      {filteredTransactions?.map(tx =>
+      {transactions?.map(tx =>
         isDeposit(tx) ? (
           <motion.div key={tx.txId} {...motionDivProps}>
             <DepositCard key={tx.txId} tx={tx} />

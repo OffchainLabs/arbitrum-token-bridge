@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, Fragment, SetStateAction } from 'react'
+import { Dispatch, Fragment, SetStateAction, useMemo } from 'react'
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
@@ -11,6 +11,7 @@ import {
 } from './TransactionsTable/TransactionsTable'
 import { PendingTransactions } from './PendingTransactions'
 import { FailedTransactionsWarning } from './FailedTransactionsWarning'
+import { isFailed, isPending } from '../../state/app/utils'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -41,17 +42,34 @@ export const TransactionHistory = ({
     app: { mergedTransactions }
   } = useAppState()
 
+  const pendingTransactions = useMemo(() => {
+    return mergedTransactions?.filter(tx => isPending(tx))
+  }, [mergedTransactions])
+
+  const failedTransactions = useMemo(() => {
+    return mergedTransactions?.filter(tx => isFailed(tx))
+  }, [mergedTransactions])
+
+  const pendingTransactionsMap = useMemo(() => {
+    // map of all the pending transactions, so that tx rows can easily subscribe to live status without refetching table data
+    const pendingMap = new Map()
+    pendingTransactions.forEach(tx => {
+      pendingMap.set(tx.txId, tx)
+    })
+    return pendingMap
+  }, [pendingTransactions])
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
       <PendingTransactions
         loading={depositsLoading || withdrawalsLoading}
-        transactions={mergedTransactions}
+        transactions={pendingTransactions}
         error={depositsError || withdrawalsError}
       />
 
       {/* Warning to show when there are 3 or more failed transactions for the user */}
-      <FailedTransactionsWarning transactions={mergedTransactions} />
+      <FailedTransactionsWarning transactions={failedTransactions} />
 
       {/* Transaction history table */}
       <div>
@@ -104,6 +122,7 @@ export const TransactionHistory = ({
               transactions={depositsData.transformedDeposits}
               loading={depositsLoading}
               error={depositsError}
+              pendingTransactionsMap={pendingTransactionsMap}
             />
           </Tab.Panel>
           <Tab.Panel className="overflow-auto">
@@ -114,6 +133,7 @@ export const TransactionHistory = ({
               transactions={withdrawalsData.transformedWithdrawals}
               loading={withdrawalsLoading}
               error={withdrawalsError}
+              pendingTransactionsMap={pendingTransactionsMap}
             />
           </Tab.Panel>
         </Tab.Group>

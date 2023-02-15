@@ -19,10 +19,12 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { ConnectionState } from '../../util'
 import {
   filterDeposits,
+  TRANSACTIONS_DATE_FORMAT,
   transformDeposits,
   transformWithdrawals
 } from './utils'
 import { BigNumber } from 'ethers'
+import dayjs from 'dayjs'
 
 export enum WhiteListState {
   VERIFYING,
@@ -44,7 +46,6 @@ export enum DepositStatus {
 export interface MergedTransaction {
   direction: TxnType
   status: string
-  createdAtTime: number | null
   createdAt: string | null
   resolvedAt: string | null
   txId: string
@@ -139,7 +140,7 @@ export const defaultState: AppState = {
         if (_isEmpty(item.createdAt)) {
           return -1
         }
-        return item.createdAtTime
+        return dayjs(item.createdAt, TRANSACTIONS_DATE_FORMAT)
       })
     )
   }),

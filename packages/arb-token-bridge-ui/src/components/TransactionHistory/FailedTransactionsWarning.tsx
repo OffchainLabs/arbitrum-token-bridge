@@ -8,8 +8,8 @@ import { InformationCircleIcon } from '@heroicons/react/outline'
 import dayjs from 'dayjs'
 import { GET_HELP_LINK } from '../../constants'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { isDeposit, TRANSACTIONS_DATE_FORMAT } from '../../state/app/utils'
+import { MergedTransaction } from '../../state/app/state'
+import { TRANSACTIONS_DATE_FORMAT } from '../../state/app/utils'
 import { isFathomNetworkName, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 
@@ -23,14 +23,7 @@ export const FailedTransactionsWarning = ({
   } = useNetworksAndSigners()
   const l2NetworkName = getNetworkName(l2Network.chainID)
 
-  const numFailedTransactions = transactions?.filter(
-    tx =>
-      (isDeposit(tx) &&
-        (tx.status === 'pending' ||
-          tx.depositStatus == DepositStatus.L1_FAILURE ||
-          tx.depositStatus === DepositStatus.L2_FAILURE)) ||
-      (!isDeposit(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
-  )?.length
+  const numFailedTransactions = transactions?.length
 
   const daysPassedSinceFailure =
     dayjs().diff(
