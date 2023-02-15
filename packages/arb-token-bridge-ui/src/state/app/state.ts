@@ -81,7 +81,6 @@ export type AppState = {
   depositsTransformed: MergedTransaction[]
   withdrawalsTransformed: MergedTransaction[]
   mergedTransactions: MergedTransaction[]
-
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
   arbTokenBridgeLoaded: boolean

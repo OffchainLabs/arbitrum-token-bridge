@@ -142,3 +142,14 @@ export const filterDeposits = (
 export const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
+
+export const isPending = (tx: MergedTransaction) => {
+  return (
+    (isDeposit(tx) &&
+      (tx.status === 'pending' ||
+        tx.depositStatus === DepositStatus.L1_PENDING ||
+        tx.depositStatus === DepositStatus.L2_PENDING)) ||
+    (!isDeposit(tx) &&
+      tx.status !== outgoungStateToString[OutgoingMessageState.EXECUTED])
+  )
+}

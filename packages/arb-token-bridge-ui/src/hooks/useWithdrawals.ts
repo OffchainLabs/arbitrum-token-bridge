@@ -1,4 +1,4 @@
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 import {
   fetchWithdrawals,
   FetchWithdrawalsParams,
@@ -65,7 +65,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   } = useAppState()
 
   /* return the cached response for the complete pending transactions */
-  return useSWR(
+  return useSWRImmutable(
     [
       'withdrawals',
       walletAddress,
@@ -81,12 +81,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
         l2Provider: _l2Provider,
         gatewayAddresses: _gatewayAddresses,
         ...withdrawalPageParams
-      }),
-    {
-      shouldRetryOnError: false,
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false
-    }
+      })
   )
 }

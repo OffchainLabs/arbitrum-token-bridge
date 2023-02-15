@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import Loader from 'react-loader-spinner'
-import { OutgoingMessageState } from 'token-bridge-sdk'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { isDeposit, outgoungStateToString } from '../../state/app/utils'
+import { MergedTransaction } from '../../state/app/state'
+import { isDeposit, isPending } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
@@ -17,15 +16,7 @@ export const PendingTransactions = ({
   loading: boolean
   error: boolean
 }) => {
-  const filteredTransactions = transactions?.filter(
-    tx =>
-      (isDeposit(tx) &&
-        (tx.status === 'pending' ||
-          tx.depositStatus === DepositStatus.L1_PENDING ||
-          tx.depositStatus === DepositStatus.L2_PENDING)) ||
-      (!isDeposit(tx) &&
-        tx.status !== outgoungStateToString[OutgoingMessageState.EXECUTED])
-  )
+  const filteredTransactions = transactions?.filter(tx => isPending(tx))
 
   return (
     <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">

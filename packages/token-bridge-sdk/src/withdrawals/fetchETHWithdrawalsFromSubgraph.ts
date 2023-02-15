@@ -34,7 +34,12 @@ export async function fetchETHWithdrawalsFromSubgraph({
   pageNumber?: number
   searchString?: string
 }): Promise<(L2ToL1EventResult & { l2TxHash: string })[]> {
-  if (fromBlock === 0 && toBlock === 0) {
+  if (
+    typeof fromBlock !== 'undefined' &&
+    typeof toBlock !== 'undefined' &&
+    fromBlock >= toBlock
+  ) {
+    // if fromBlock > toBlock or both are equal / 0
     return []
   }
 
