@@ -9,10 +9,6 @@ import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
 
 type TableActionHeaderProps = TransactionsTableProps
 
-function validate_txhash(addr: string) {
-  return /^0x([A-Fa-f0-9]{64})$/.test(addr)
-}
-
 export const TableActionHeader = ({
   type,
   pageParams,
