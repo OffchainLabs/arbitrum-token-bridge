@@ -96,7 +96,7 @@ const updateAdditionalDepositDataETH = async ({
   // return the data to populate on UI
   const updatedDepositTx = {
     ...depositTx,
-    status: retryableCreationTxID ? 'success' : 'pending', // TODO :handle other cases here
+    status: retryableCreationTxID ? 'success' : 'pending',
     timestampCreated,
     timestampResolved,
     l1ToL2MsgData: {

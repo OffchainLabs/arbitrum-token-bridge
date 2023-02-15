@@ -121,15 +121,19 @@ export const filterDeposits = (
   l2ChainId: number | null
 ): Transaction[] => {
   const result = []
-  for (let i = transactions.length - 1; i > 0; i--) {
-    const tx = transactions[i]
-    const isSenderWallet = tx?.sender === walletAddress
-    const matchesL1 = tx?.l1NetworkID === String(l1ChainId)
+  for (const tx of transactions) {
+    const txSender = tx?.sender
+    const txL1NetworkID = tx?.l1NetworkID
+    const txL2NetworkID = tx?.l2NetworkID
+
+    const isSenderWallet = txSender === walletAddress
+    const matchesL1 = txL1NetworkID === String(l1ChainId)
 
     // The `l2NetworkID` field was added later, so not all transactions will have it
     const matchesL2 =
-      tx?.l2NetworkID === String(l2ChainId) ||
-      (typeof tx?.l2NetworkID === 'undefined' && matchesL1)
+      typeof txL2NetworkID === 'undefined'
+        ? matchesL1
+        : txL2NetworkID === String(l2ChainId)
 
     if (isSenderWallet && matchesL1 && matchesL2) {
       result.push(tx)
