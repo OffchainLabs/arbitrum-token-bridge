@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   SearchIcon
 } from '@heroicons/react/outline'
 import { TransactionsTableProps } from './TransactionsTable'
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
 
 type TableActionHeaderProps = TransactionsTableProps
 
@@ -23,10 +24,11 @@ export const TableActionHeader = ({
   const layerType = type === 'deposits' ? 'L1' : 'L2'
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
-  const [searchError, setSearchError] = useState(false)
 
   const disableNextBtn = loading || transactions.length < pageParams.pageSize // if transactions are less than pagesize
   const disablePrevBtn = loading || !pageParams.pageNumber // if page number is 0, then don't prev.
+
+  const searchStringDebounced = useDebouncedValue(searchString, 1500)
 
   const onClickNext = () => {
     if (!disableNextBtn) {
@@ -46,12 +48,8 @@ export const TableActionHeader = ({
     }
   }
 
-  const search = () => {
+  const search = (searchString: string) => {
     const trimmedSearchString = searchString.trim()
-    if (trimmedSearchString && !validate_txhash(trimmedSearchString)) {
-      setSearchError(true)
-      return
-    }
     // search logic - using `searchString`
     setPageParams(prevParams => ({
       ...prevParams,
@@ -60,6 +58,13 @@ export const TableActionHeader = ({
       searchString: trimmedSearchString
     }))
   }
+
+  useEffect(() => {
+    // when the debounced value of searchString changes, only then fire the actual search call
+    if (pageParams.searchString !== searchStringDebounced) {
+      search(searchStringDebounced)
+    }
+  }, [searchStringDebounced])
 
   return (
     <div
@@ -76,20 +81,9 @@ export const TableActionHeader = ({
           placeholder={`Search for ${layerType} transaction hash`}
           value={searchString}
           onChange={e => {
-            searchError ? setSearchError(false) : null
             setSearchString(e.target.value)
           }}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              search()
-            }
-          }}
         />
-        {searchError ? (
-          <span className="absolute bottom-0 right-4 bg-white p-[9px] text-xs text-red-400">
-            {`Invalid ${layerType} tx ID`}
-          </span>
-        ) : null}
       </div>
 
       {/* Pagination buttons */}

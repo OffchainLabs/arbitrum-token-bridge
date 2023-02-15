@@ -39,8 +39,8 @@ const fetchCompleteWithdrawalData = async (
       pendingWithdrawalMap.set(completeTxData.txId, true)
     }
   })
-  const pendingWithdrawals = withdrawals.filter(tx =>
-    pendingWithdrawalMap.get(tx.l2TxHash!)
+  const pendingWithdrawals = withdrawals.filter(
+    tx => tx.l2TxHash && pendingWithdrawalMap.get(tx.l2TxHash)
   )
 
   return {
