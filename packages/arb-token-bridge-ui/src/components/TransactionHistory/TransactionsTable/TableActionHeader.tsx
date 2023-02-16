@@ -6,6 +6,7 @@ import {
 } from '@heroicons/react/outline'
 import { TransactionsTableProps } from './TransactionsTable'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
+import Loader from 'react-loader-spinner'
 
 type TableActionHeaderProps = TransactionsTableProps
 
@@ -25,6 +26,7 @@ export const TableActionHeader = ({
   const disablePrevBtn = loading || !pageParams.pageNumber // if page number is 0, then don't prev.
 
   const searchStringDebounced = useDebouncedValue(searchString, 1500)
+  const trimmedSearchString = searchString.trim()
 
   const onClickNext = () => {
     if (!disableNextBtn) {
@@ -45,7 +47,6 @@ export const TableActionHeader = ({
   }
 
   const search = (searchString: string) => {
-    const trimmedSearchString = searchString.trim()
     // search logic - using `searchString`
     setPageParams(prevParams => ({
       ...prevParams,
@@ -61,6 +62,9 @@ export const TableActionHeader = ({
       search(searchStringDebounced)
     }
   }, [searchStringDebounced])
+
+  const showDebounceLoader =
+    (searchString && loading) || pageParams.searchString !== trimmedSearchString // for immediate UX feedback of search results fetching while typing
 
   return (
     <div
@@ -80,6 +84,9 @@ export const TableActionHeader = ({
             setSearchString(e.target.value)
           }}
         />
+        {showDebounceLoader && (
+          <Loader type="TailSpin" color="black" width={16} height={16} />
+        )}
       </div>
 
       {/* Pagination buttons */}

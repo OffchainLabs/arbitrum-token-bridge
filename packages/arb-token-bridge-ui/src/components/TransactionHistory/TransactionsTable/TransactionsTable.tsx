@@ -3,7 +3,7 @@ import React, { Dispatch, SetStateAction } from 'react'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { isDeposit } from '../../../state/app/utils'
+import { isDeposit, isPending } from '../../../state/app/utils'
 import { MergedTransaction } from '../../../state/app/state'
 import { NoDataOverlay } from './NoDataOverlay'
 import { useMemo } from 'react'
@@ -118,7 +118,9 @@ export function TransactionsTable({
                   transactions.map((tx, index) => {
                     const isLastRow = index === transactions.length - 1
 
-                    const finalTx = pendingTransactionsMap.get(tx.txId) ?? tx // if transaction is present in pending transactions, subscribe to that in this row, else show static subgraph table data
+                    const livePendingTx = pendingTransactionsMap.get(tx.txId)
+                    const finalTx =
+                      isPending(tx) && livePendingTx ? livePendingTx : tx // if transaction is present in pending transactions, subscribe to that in this row, else show static subgraph table data
 
                     return isDeposit(tx) ? (
                       <TransactionsTableDepositRow
