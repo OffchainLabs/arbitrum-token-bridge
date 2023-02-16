@@ -28,10 +28,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^3.1.0-beta.0":
-  version "3.1.0-beta.0"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.0-beta.0.tgz#65a5559cbced5c87feabf7ee91e0481c9d3af20d"
-  integrity sha512-bU1hJHUmO5vl+4xMfe/4Vg4KkVnhW8nExtc8+e4n9S9kxXikoUrp0ktEgCblJSlYfSc1Yk8p8GAi6dK+QF94KQ==
+"@arbitrum/sdk@^3.1.0-beta.2":
+  version "3.1.0-beta.2"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.0-beta.2.tgz#769a9822e6d1b967a06371f36039a29e6a63028c"
+  integrity sha512-Eum3HdoV/sz+GVH2Hr10dvhljKvHjmE8fbSshK0UJ31LqIt4Q3/gL2qdHWVkt2VicM8Ax+5RiY7co72c7S+rTg==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"

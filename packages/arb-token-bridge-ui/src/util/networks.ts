@@ -149,6 +149,7 @@ const defaultL2Network: L2Network = {
   partnerChainID: 1337,
   retryableLifetimeSeconds: 604800,
   nitroGenesisBlock: 0,
+  firstNitroBlock: 0,
   depositTimeout: 900000,
   tokenBridge: {
     l1CustomGateway: '0x3DF948c956e14175f43670407d5796b95Bb219D8',

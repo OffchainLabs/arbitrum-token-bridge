@@ -134,6 +134,7 @@ export const useArbTokenBridge = (
       setTransactionSuccess,
       updateTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
@@ -1375,6 +1376,7 @@ export const useArbTokenBridge = (
       addTransaction,
       addTransactions,
       fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
       fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
