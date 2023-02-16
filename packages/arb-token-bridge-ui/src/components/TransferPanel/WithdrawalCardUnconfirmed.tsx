@@ -13,8 +13,8 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   return (
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
-        <div className="flex flex-col lg:ml-[4rem]">
-          <span className="ml-[2rem] text-2xl  text-blue-arbitrum lg:ml-0">
+        <div className="flex flex-col lg:ml-[-2rem]">
+          <span className="ml-[2rem] text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
             Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}
           </span>
 
@@ -28,17 +28,21 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="flex flex-nowrap gap-1 text-base text-blue-arbitrum">
+            <span className="flex flex-nowrap gap-1 text-sm text-blue-arbitrum lg:text-base">
               L2 transaction: <WithdrawalL2TxStatus tx={tx} />
             </span>
-            <span className="text-base text-blue-arbitrum">
+            <span className="flex flex-nowrap gap-1 text-sm text-blue-arbitrum lg:text-base">
               L1 transaction: Will show after claiming
             </span>
           </div>
         </div>
 
         <Tooltip content={<span>Funds aren&apos;t ready to claim yet.</span>}>
-          <Button variant="primary" className="my-4 text-lg" disabled>
+          <Button
+            variant="primary"
+            className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
+            disabled
+          >
             Claim {tx.value} {tx.asset.toUpperCase()}
           </Button>
         </Tooltip>

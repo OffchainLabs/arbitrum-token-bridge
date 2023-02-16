@@ -112,15 +112,25 @@ export function DepositCardContainer({
     }
   }, [tx])
 
+  const borderColor = useMemo(() => {
+    switch (l2Network.chainID) {
+      case ChainId.ArbitrumNova:
+        return 'border-orange-arbitrum-nova'
+
+      default:
+        return 'border-blue-arbitrum-one'
+    }
+  }, [l2Network.chainID])
+
   return (
     <div
-      className={`box-border w-full overflow-hidden rounded-xl border-4 border-blue-link p-4 ${bgClassName}`}
+      className={`box-border w-full overflow-hidden rounded-xl border-4 ${borderColor} p-4 ${bgClassName}`}
     >
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <img
           src={getNetworkLogo(l2Network.chainID)}
-          className="absolute left-0 top-1 z-10 h-6 max-h-[90px] lg:top-0 lg:left-[-40px] lg:h-full lg:opacity-[40%]"
+          className="absolute left-0 top-[1px] z-10 h-6 max-h-[90px] p-[2px] lg:relative lg:top-0 lg:left-[-30px] lg:h-auto lg:max-w-[90px] lg:opacity-[60%]"
           alt="Deposit"
         />
         {/* Actual content */}
