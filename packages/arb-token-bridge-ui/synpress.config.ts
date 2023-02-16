@@ -10,9 +10,9 @@ import { registerLocalNetwork } from './src/util/networks'
 
 import {
   ethRpcUrl,
+  arbRpcUrl,
   wethTokenAddressL1,
-  wethTokenAddressL2,
-  arbRpcUrl
+  wethTokenAddressL2
 } from './tests/support/common'
 
 export default defineConfig({
@@ -46,6 +46,11 @@ export default defineConfig({
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
       const testWallet = Wallet.createRandom()
       const testWalletAddress = await testWallet.getAddress()
+      const l2Network = await getL2Network(wallet.connect(arbProvider))
+      const erc20Bridger = new Erc20Bridger(l2Network)
+      const erc20Contract = new TestERC20__factory().connect(
+        wallet.connect(ethProvider)
+      )
 
       const getWethContract = (
         provider: StaticJsonRpcProvider,
@@ -53,23 +58,29 @@ export default defineConfig({
       ) =>
         TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
 
-      // Deploy test ERC-20 token
-      const erc20Contract = new TestERC20__factory().connect(
-        wallet.connect(ethProvider)
-      )
+      // Deploy ERC-20 token to L1
       const l1Erc20Token = await erc20Contract.deploy()
       await l1Erc20Token.deployed()
 
-      const l2Network = await getL2Network(wallet.connect(arbProvider))
-      const erc20Bridger = new Erc20Bridger(l2Network)
-
-      // Deploy to L2
-      await erc20Bridger.deposit({
+      // Deploy ERC-20 token to L2
+      const l2Deploy = await erc20Bridger.deposit({
         amount: BigNumber.from(0),
         erc20L1Address: l1Erc20Token.address,
         l1Signer: wallet.connect(ethProvider),
         l2Provider: arbProvider
       })
+      await l2Deploy.wait()
+
+      // Mint ERC-20 token
+      // We need this to test token approval
+      // WETH is pre-approved so we need a new token
+      const mintedL1Erc20Token = await l1Erc20Token.mint()
+      await mintedL1Erc20Token.wait()
+
+      // Send minted ERC-20 to the test wallet
+      await l1Erc20Token
+        .connect(wallet.connect(ethProvider))
+        .transfer(testWalletAddress, BigNumber.from(50000000))
 
       on('before:run', async () => {
         let tx
@@ -98,7 +109,7 @@ export default defineConfig({
           value: utils.parseEther('0.1')
         })
 
-        // Approve ERC-20
+        // Approve WETH
         tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
           // L1 WETH gateway
           '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
@@ -126,6 +137,7 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
       'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
