@@ -4,12 +4,12 @@
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
-  wethTokenAddressL1,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
   zeroToLessThanOneETH,
-  resetSeenTimeStampCache
+  resetSeenTimeStampCache,
+  wethTokenAddressL1
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
