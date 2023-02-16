@@ -31,10 +31,31 @@ export const l2NetworkConfig = {
 
 export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const ERC20TokenName = 'IntArbTestToken'
+export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
 
 export const zeroToLessThanOneETH = /0(\.\d+)*( ETH)/
-export const zeroToLessThanOneERC20 = /0(\.\d+)*( LINK)/
+
+export const importTokenThroughUI = (address: string) => {
+  // Click on the ETH dropdown (Select token button)
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click({ scrollBehavior: false })
+
+  // open the Select Token popup
+  return cy
+    .findByPlaceholderText(/Search by token name/i)
+    .should('be.visible')
+    .type(address, { scrollBehavior: false })
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click({ scrollBehavior: false })
+    })
+}
 
 export async function getInitialETHBalance(
   rpcURL: string,

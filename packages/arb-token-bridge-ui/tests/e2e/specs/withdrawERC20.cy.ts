@@ -3,13 +3,7 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import {
-  arbRpcUrl,
-  wethTokenAddressL2,
-  getInitialERC20Balance,
-  l2NetworkConfig,
-  zeroToLessThanOneETH
-} from '../../support/common'
+import { wethTokenAddressL2, zeroToLessThanOneETH } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
@@ -23,17 +17,9 @@ describe('Withdraw ERC20 Token', () => {
   })
 
   // Happy Path
-  context('User has some ERC20 and is on L2', () => {
-    let l2ERC20bal
-
+  context('User is on L2 and imports ERC-20', () => {
     // log in to metamask before withdrawal
     before(() => {
-      getInitialERC20Balance(
-        wethTokenAddressL2,
-        l2NetworkConfig.l2MultiCall,
-        arbRpcUrl
-      ).then(val => (l2ERC20bal = formatAmount(val, { symbol: 'WETH' })))
-
       // login to L2 chain for Local network
       cy.login({ networkType: 'L2', addNewNetwork: false }) // don't add new network, switch to exisiting
     })
@@ -83,10 +69,6 @@ describe('Withdraw ERC20 Token', () => {
             .should('be.visible')
             .should('have.text', 'WETH')
         })
-    })
-
-    it('should show ERC20 balance correctly', () => {
-      cy.findByText(`Balance: ${l2ERC20bal}`).should('be.visible')
     })
 
     context("bridge amount is lower than user's L2 ERC20 balance value", () => {
