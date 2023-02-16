@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Restore cache
+      - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - uses: ./.github/actions/create-env-file
@@ -44,7 +44,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Restore cache
+      - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - uses: ./.github/actions/create-env-file
@@ -65,7 +65,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Restore cache
+      - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Run audit
@@ -79,7 +79,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Restore cache
+      - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Check formatting with Prettier
