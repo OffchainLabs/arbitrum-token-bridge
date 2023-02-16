@@ -22,6 +22,8 @@ import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
 import { isPending, TRANSACTIONS_DATE_FORMAT } from '../../../state/app/utils'
 
+const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
+
 export function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
   transactions: MergedTransaction[]
@@ -343,19 +345,16 @@ export function TransactionsTableWithdrawalRow({
     app: { mergedTransactions }
   } = useAppState()
 
-  const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
-
-  if (!L2ToL1MessageStatuses.includes(tx.status)) {
-    return null
-  }
-
   const isError = tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
-
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
     return ''
   }, [tx, isError])
+
+  if (!L2ToL1MessageStatuses.includes(tx.status)) {
+    return null
+  }
 
   return (
     <tr
