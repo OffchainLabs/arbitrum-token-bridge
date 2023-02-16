@@ -411,21 +411,25 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
   ) => {
+    const isCompletedEthDeposit =
+      isEthDeposit && status >= L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+
     const l2TxID = (() => {
+      if (isCompletedEthDeposit) {
+        return l1ToL2Msg.retryableCreationId
+      }
+
       if (status === L1ToL2MessageStatus.REDEEMED) {
         return l1ToL2Msg.l2TxHash
-      } else if (
-        isEthDeposit &&
-        status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-      ) {
-        return l1ToL2Msg.retryableCreationId /** for completed eth deposits, retryableCreationId is the l2txid */
-      } else {
-        return undefined
       }
+
+      return undefined
     })()
 
     updateTxnL1ToL2MsgData(txID, {
-      status,
+      status: isCompletedEthDeposit
+        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        : status,
       l2TxID,
       fetchingUpdate: false,
       retryableCreationTxID: l1ToL2Msg.retryableCreationId
