@@ -20,7 +20,7 @@ import { GET_HELP_LINK } from '../../../constants'
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
-import { TRANSACTIONS_DATE_FORMAT } from '../../../state/app/utils'
+import { isPending, TRANSACTIONS_DATE_FORMAT } from '../../../state/app/utils'
 
 export function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -41,10 +41,13 @@ export function findMatchingL1Tx(
   })
 }
 
-function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
+function WithdrawalRowStatus({
+  tx,
+  mergedTransactions
+}: {
+  tx: MergedTransaction
+  mergedTransactions: MergedTransaction[]
+}) {
   const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
 
   switch (tx.status) {
@@ -62,7 +65,7 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
           <StatusBadge variant="green">Success</StatusBadge>
           <Tooltip content={<span>Funds are ready to be claimed on L1</span>}>
             <StatusBadge variant="yellow">
-              <InformationCircleIcon className="h-4 w-4" /> Confirmed
+              Confirmed <InformationCircleIcon className="h-4 w-4" />
             </StatusBadge>
           </Tooltip>
         </div>
@@ -81,9 +84,9 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
                 </span>
               }
             >
-              <StatusBadge variant="yellow">
-                <InformationCircleIcon className="h-4 w-4" />
+              <StatusBadge variant="green">
                 Executed
+                <InformationCircleIcon className="h-4 w-4" />
               </StatusBadge>
             </Tooltip>
           </div>
@@ -104,11 +107,13 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   }
 }
 
-function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
-
+function WithdrawalRowTime({
+  tx,
+  mergedTransactions
+}: {
+  tx: MergedTransaction
+  mergedTransactions: MergedTransaction[]
+}) {
   if (tx.status === 'Unconfirmed') {
     return (
       <WithdrawalCountdown
@@ -150,13 +155,15 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col space-y-3">
       <Tooltip content={<span>Creation Time</span>}>
         <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
       </Tooltip>
-      {tx.resolvedAt && (
+      {matchingL1Tx?.createdAt && (
         <Tooltip content={<span>L1 Transaction</span>}>
-          <span className="whitespace-nowrap">{tx.resolvedAt || 'N/A'}</span>
+          <span className="whitespace-nowrap">
+            {matchingL1Tx?.createdAt || 'N/A'}
+          </span>
         </Tooltip>
       )}
     </div>
@@ -198,7 +205,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
   }
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="flex flex-col space-y-3">
       <span className="whitespace-nowrap text-dark">
         {getNetworkName(l2.network.chainID)}:{' '}
         <ExternalLink
@@ -332,6 +339,10 @@ export function TransactionsTableWithdrawalRow({
   tx: MergedTransaction
   className?: string
 }) {
+  const {
+    app: { mergedTransactions }
+  } = useAppState()
+
   const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
   if (!L2ToL1MessageStatuses.includes(tx.status)) {
@@ -340,20 +351,24 @@ export function TransactionsTableWithdrawalRow({
 
   const isError = tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
 
-  const bgClassName = isError ? 'bg-brick' : ''
+  const bgClassName = useMemo(() => {
+    if (isError) return 'bg-brick'
+    if (isPending(tx)) return 'bg-orange'
+    return ''
+  }, [tx, isError])
 
   return (
     <tr
       className={`text-sm text-dark ${
-        !isError && `bg-cyan even:bg-white`
+        !bgClassName && `bg-cyan even:bg-white`
       } ${bgClassName} ${className}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">
-        <WithdrawalRowStatus tx={tx} />
+        <WithdrawalRowStatus tx={tx} mergedTransactions={mergedTransactions} />
       </td>
 
       <td className="w-1/5 px-3 py-3">
-        <WithdrawalRowTime tx={tx} />
+        <WithdrawalRowTime tx={tx} mergedTransactions={mergedTransactions} />
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">

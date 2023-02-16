@@ -14,11 +14,12 @@ import {
   ExclamationCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/outline'
+import { isPending } from '../../../state/app/utils'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
-      return <StatusBadge variant="blue">Pending</StatusBadge>
+      return <StatusBadge variant="yellow">Pending</StatusBadge>
 
     case DepositStatus.L1_FAILURE:
       return <StatusBadge variant="red">Error</StatusBadge>
@@ -27,7 +28,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="blue">Pending</StatusBadge>
+          <StatusBadge variant="yellow">Pending</StatusBadge>
         </div>
       )
 
@@ -97,7 +98,7 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col space-y-3">
       <Tooltip content={<span>Creation Time</span>}>
         <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
       </Tooltip>
@@ -115,7 +116,7 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
   const l2TxHash = tx.l1ToL2MsgData?.l2TxID
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="flex flex-col space-y-3">
       <span className="whitespace-nowrap text-dark">
         {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
@@ -177,12 +178,16 @@ export function TransactionsTableDepositRow({
     [tx]
   )
 
-  const bgClassName = isError ? 'bg-brick' : ''
+  const bgClassName = useMemo(() => {
+    if (isError) return 'bg-brick'
+    if (isPending(tx)) return 'bg-orange'
+    return ''
+  }, [tx, isError])
 
   return (
     <tr
       className={`text-sm text-dark ${
-        !isError && `bg-cyan even:bg-white`
+        !bgClassName && `bg-cyan even:bg-white`
       } ${bgClassName} ${className}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">

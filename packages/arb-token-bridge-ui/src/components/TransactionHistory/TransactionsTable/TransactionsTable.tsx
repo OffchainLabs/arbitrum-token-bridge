@@ -126,13 +126,13 @@ export function TransactionsTable({
                       <TransactionsTableDepositRow
                         key={`${tx.txId}-${tx.direction}`}
                         tx={finalTx}
-                        className={!isLastRow ? 'border-b border-gray-1' : ''}
+                        className={!isLastRow ? 'border-b border-gray-5' : ''}
                       />
                     ) : (
                       <TransactionsTableWithdrawalRow
                         key={`${tx.txId}-${tx.direction}`}
                         tx={finalTx}
-                        className={!isLastRow ? 'border-b border-gray-1' : ''}
+                        className={!isLastRow ? 'border-b border-gray-5' : ''}
                       />
                     )
                   })
