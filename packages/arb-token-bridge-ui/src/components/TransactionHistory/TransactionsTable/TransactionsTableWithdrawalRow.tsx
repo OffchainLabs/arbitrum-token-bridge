@@ -271,7 +271,7 @@ function WithdrawalRowAction({
     return (
       <Tooltip
         wrapperClassName=""
-        content={<span>Funds aren&apos;t ready to claim yet.</span>}
+        content={<span>Funds aren&apos;t ready to claim yet</span>}
       >
         <Button variant="primary" disabled>
           Claim

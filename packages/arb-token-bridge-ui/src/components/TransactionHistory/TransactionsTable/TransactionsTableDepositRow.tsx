@@ -72,8 +72,8 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
               <span>Unable to load details of historic transactions</span>
             }
           >
-            <StatusBadge variant="yellow">
-              <ExclamationCircleIcon className="h-4 w-4" /> Error
+            <StatusBadge variant="gray">
+              N/A <ExclamationCircleIcon className="h-4 w-4" />
             </StatusBadge>
           </Tooltip>
         </div>

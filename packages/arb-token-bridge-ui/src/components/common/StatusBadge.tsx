@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface StatusBadgeProps {
-  variant?: 'blue' | 'yellow' | 'green' | 'red'
+  variant?: 'blue' | 'yellow' | 'green' | 'red' | 'gray'
   children: React.ReactNode
 }
 
@@ -9,7 +9,8 @@ const variants: Record<string, string> = {
   blue: 'bg-cyan text-cyan-dark',
   yellow: 'bg-orange text-orange-dark',
   green: 'bg-lime text-lime-dark',
-  red: 'bg-brick text-brick-dark border'
+  red: 'bg-brick text-brick-dark border',
+  gray: 'bg-gray-5 text-gray-9'
 }
 
 export function StatusBadge({
