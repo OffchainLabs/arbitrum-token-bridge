@@ -9,6 +9,8 @@ import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
+import { loadEnvironmentVariableWithFallback } from './index'
+
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
 if (typeof INFURA_KEY === 'undefined') {
@@ -50,11 +52,15 @@ type ExtendedWeb3Provider = Web3Provider & {
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]:
-    process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL,
+  [ChainId.Mainnet]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
+    fallback: MAINNET_INFURA_RPC_URL
+  }),
   // L1 Testnets
-  [ChainId.Goerli]:
-    process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL,
+  [ChainId.Goerli]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_GOERLI_RPC_URL,
+    fallback: GOERLI_INFURA_RPC_URL
+  }),
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
@@ -184,10 +190,14 @@ export function registerLocalNetwork(
 ) {
   const { l1Network, l2Network } = params
 
-  const l1NetworkRpcUrl =
-    process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL ?? 'http://localhost:8545'
-  const l2NetworkRpcUrl =
-    process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL ?? 'http://localhost:8547'
+  const l1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+    fallback: 'http://localhost:8545'
+  })
+  const l2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+    fallback: 'http://localhost:8547'
+  })
 
   try {
     rpcURLs[l1Network.chainID] = l1NetworkRpcUrl

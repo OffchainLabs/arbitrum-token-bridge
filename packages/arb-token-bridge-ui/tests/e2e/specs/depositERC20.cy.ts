@@ -3,13 +3,13 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { resetSeenTimeStampCache } from '../../support/commands'
 import {
-  ERC20TokenAddressL1,
   getInitialERC20Balance,
   ethRpcUrl,
   l1NetworkConfig,
-  zeroToLessThanOneETH
+  zeroToLessThanOneETH,
+  resetSeenTimeStampCache,
+  wethTokenAddressL1
 } from '../../support/common'
 
 describe('Deposit ERC20 Token', () => {
@@ -38,7 +38,7 @@ describe('Deposit ERC20 Token', () => {
     // log in to metamask before deposit
     before(() => {
       getInitialERC20Balance(
-        ERC20TokenAddressL1,
+        wethTokenAddressL1,
         l1NetworkConfig.l1MultiCall,
         ethRpcUrl
       ).then(
@@ -47,7 +47,7 @@ describe('Deposit ERC20 Token', () => {
             symbol: 'WETH'
           }))
       )
-      cy.login('L1')
+      cy.login({ networkType: 'L1', addNewNetwork: true })
     })
 
     after(() => {
@@ -73,7 +73,7 @@ describe('Deposit ERC20 Token', () => {
       // open the Select Token popup
       cy.findByPlaceholderText(/Search by token name/i)
         .should('be.visible')
-        .type(ERC20TokenAddressL1, { scrollBehavior: false })
+        .type(wethTokenAddressL1, { scrollBehavior: false })
         .then(() => {
           // Click on the Add new token button
 

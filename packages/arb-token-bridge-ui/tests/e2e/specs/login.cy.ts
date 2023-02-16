@@ -34,8 +34,8 @@ describe('Login Account', () => {
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
-  it('should connect wallet using MetaMask and show empty bridging summary successfully', () => {
-    cy.login('L1')
+  it('should connect wallet using MetaMask successfully', () => {
+    cy.login({ networkType: 'L1' })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
 

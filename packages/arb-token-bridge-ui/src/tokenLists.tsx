@@ -74,6 +74,20 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
+  },
+  // Dummy data required, otherwise useArbTokenBridge will return undefined bridgeTokens
+  // This will cause TokenImportDialog to hang and fail E2E
+  // TODO: remove list for chain ID 412346 after fix:
+  // https://github.com/OffchainLabs/arb-token-bridge/issues/564
+  {
+    id: 9,
+    // Local node
+    originChainID: 412346,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
+    name: 'Arbed CMC List',
+    isDefault: true,
+    logoURI:
+      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
   }
 ]
 

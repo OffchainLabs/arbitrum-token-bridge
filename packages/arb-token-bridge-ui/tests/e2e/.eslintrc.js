@@ -18,6 +18,8 @@ module.exports = {
       {
         assertFunctionNames: ['expect']
       }
-    ]
+    ],
+    // Cypress awaiting by default
+    'testing-library/await-async-query': 'off'
   }
 }
