@@ -6,6 +6,8 @@ import { isDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getNetworkName } from '../../util/networks'
 
 export const PendingTransactions = ({
   transactions,
@@ -16,14 +18,18 @@ export const PendingTransactions = ({
   loading: boolean
   error: boolean
 }) => {
+  const {
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
+
   return (
     <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">
       {/* Heading */}
-      <span className="flex items-center gap-x-3 text-xl text-white">
+      <span className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap text-xl text-white">
         {loading ? (
           <Loader type="TailSpin" color="white" width={20} height={20} />
         ) : null}
-        Pending Transactions
+        {getNetworkName(l2Network.chainID)} Pending Transactions
       </span>
 
       {/* Error loading transactions */}
