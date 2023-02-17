@@ -10,10 +10,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import {
-  ExclamationCircleIcon,
-  InformationCircleIcon
-} from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/outline'
 import { isPending } from '../../../state/app/utils'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
@@ -73,7 +70,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
             }
           >
             <StatusBadge variant="gray">
-              N/A <ExclamationCircleIcon className="h-4 w-4" />
+              <InformationCircleIcon className="h-4 w-4" /> n/a
             </StatusBadge>
           </Tooltip>
         </div>
@@ -99,12 +96,12 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>Creation Time</span>}>
-        <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+      <Tooltip content={<span>L1 Transaction Time</span>}>
+        <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
       </Tooltip>
       {tx.resolvedAt && (
-        <Tooltip content={<span>Completion Time</span>}>
-          <span className="whitespace-nowrap">{tx.resolvedAt || 'N/A'}</span>
+        <Tooltip content={<span>L2 Transaction Time</span>}>
+          <span className="whitespace-nowrap">{tx.resolvedAt || 'n/a'}</span>
         </Tooltip>
       )}
     </div>

@@ -90,10 +90,7 @@ export function TransactionsTable({
         }}
       />
 
-      {/* when there are no search results found */}
-      {noSearchResults ? <NoDataOverlay /> : null}
-
-      {!noSearchResults && (
+      {
         <table className="w-full overflow-hidden  rounded-b-lg bg-white">
           <thead className="text-left text-sm text-gray-10">
             <tr>
@@ -108,11 +105,16 @@ export function TransactionsTable({
           </thead>
 
           <tbody>
-            {status === TableStatus.LOADING && <TableBodyLoading />}
+            {status === TableStatus.LOADING ? <TableBodyLoading /> : null}
 
-            {status === TableStatus.ERROR && <TableBodyError />}
+            {status === TableStatus.ERROR ? <TableBodyError /> : null}
 
-            {status === TableStatus.SUCCESS && (
+            {/* when there are no search results found */}
+            {status === TableStatus.SUCCESS && noSearchResults ? (
+              <NoDataOverlay />
+            ) : null}
+
+            {status === TableStatus.SUCCESS && !noSearchResults ? (
               <>
                 {transactions.length > 0 ? (
                   transactions.map((tx, index) => {
@@ -146,10 +148,10 @@ export function TransactionsTable({
                   </EmptyTableRow>
                 )}
               </>
-            )}
+            ) : null}
           </tbody>
         </table>
-      )}
+      }
     </>
   )
 }

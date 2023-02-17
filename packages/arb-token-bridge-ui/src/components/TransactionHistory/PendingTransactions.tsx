@@ -30,7 +30,7 @@ export const PendingTransactions = ({
       {error && (
         <span className="flex gap-x-2 text-sm text-red-400">
           <InformationCircleIcon className="h-5 w-5" aria-hidden="true" />
-          Failed to load pending transactions
+          Failed to load pending transactions, please try refreshing the page
         </span>
       )}
 

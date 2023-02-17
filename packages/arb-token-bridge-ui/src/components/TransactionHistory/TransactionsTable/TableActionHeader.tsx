@@ -22,8 +22,11 @@ export const TableActionHeader = ({
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
 
-  const disableNextBtn = loading || transactions.length < pageParams.pageSize // if transactions are less than pagesize
+  const noMoreRecordsInNextPage = transactions.length < pageParams.pageSize
+  const disableNextBtn = loading || noMoreRecordsInNextPage // if transactions are less than pagesize
   const disablePrevBtn = loading || !pageParams.pageNumber // if page number is 0, then don't prev.
+  const hidePaginationBtns =
+    noMoreRecordsInNextPage && pageParams.pageNumber === 0 // hide the pagination buttons if there is no point of showing next/prev btns
 
   const searchStringDebounced = useDebouncedValue(searchString, 1500)
   const trimmedSearchString = searchString.trim()
@@ -78,7 +81,7 @@ export const TableActionHeader = ({
         <input
           className="text-normal h-full w-full p-2 font-light placeholder:text-gray-9"
           type="text"
-          placeholder={`Search for ${layerType} transaction hash`}
+          placeholder={`Search for a full or partial ${layerType} tx ID`}
           value={searchString}
           onChange={e => {
             setSearchString(e.target.value)
@@ -90,29 +93,35 @@ export const TableActionHeader = ({
       </div>
 
       {/* Pagination buttons */}
-      <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
-        <button
-          className={`rounded border border-gray-10 p-1 ${
-            disablePrevBtn ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'
-          }`}
-          onClick={onClickPrev}
-        >
-          <ChevronLeftIcon className="h-3 w-3" />
-        </button>
+      {!hidePaginationBtns && (
+        <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
+          <button
+            className={`rounded border border-gray-10 p-1 ${
+              disablePrevBtn
+                ? 'cursor-not-allowed opacity-30'
+                : 'cursor-pointer'
+            }`}
+            onClick={onClickPrev}
+          >
+            <ChevronLeftIcon className="h-3 w-3" />
+          </button>
 
-        <div className="whitespace-nowrap p-2">
-          Page {pageParams.pageNumber + 1}{' '}
+          <div className="whitespace-nowrap p-2">
+            Page {pageParams.pageNumber + 1}{' '}
+          </div>
+
+          <button
+            className={`rounded border border-gray-10 p-1 ${
+              disableNextBtn
+                ? 'cursor-not-allowed opacity-30'
+                : 'cursor-pointer'
+            }`}
+            onClick={onClickNext}
+          >
+            <ChevronRightIcon className="h-3 w-3" />
+          </button>
         </div>
-
-        <button
-          className={`rounded border border-gray-10 p-1 ${
-            disableNextBtn ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'
-          }`}
-          onClick={onClickNext}
-        >
-          <ChevronRightIcon className="h-3 w-3" />
-        </button>
-      </div>
+      )}
     </div>
   )
 }

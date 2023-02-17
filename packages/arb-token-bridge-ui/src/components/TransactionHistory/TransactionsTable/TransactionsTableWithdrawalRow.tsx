@@ -67,7 +67,7 @@ function WithdrawalRowStatus({
           <StatusBadge variant="green">Success</StatusBadge>
           <Tooltip content={<span>Funds are ready to be claimed on L1</span>}>
             <StatusBadge variant="yellow">
-              Confirmed <InformationCircleIcon className="h-4 w-4" />
+              <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
           </Tooltip>
         </div>
@@ -87,8 +87,7 @@ function WithdrawalRowStatus({
               }
             >
               <StatusBadge variant="green">
-                Executed
-                <InformationCircleIcon className="h-4 w-4" />
+                <InformationCircleIcon className="h-4 w-4" /> Executed
               </StatusBadge>
             </Tooltip>
           </div>
@@ -127,11 +126,11 @@ function WithdrawalRowTime({
   if (tx.status === 'Confirmed') {
     return (
       <div className="flex flex-col">
-        <Tooltip content={<span>Creation Time</span>}>
-          <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+        <Tooltip content={<span>L2 Transaction Time</span>}>
+          <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>L1 Transaction</span>}>
+          <Tooltip content={<span>L1 Transaction Time</span>}>
             <span className="whitespace-nowrap">Ready</span>
           </Tooltip>
         )}
@@ -145,11 +144,11 @@ function WithdrawalRowTime({
     return (
       <div className="flex flex-col">
         <Tooltip content={<span>L2 Transaction time</span>}>
-          <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+          <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
         </Tooltip>
         {tx.resolvedAt && (
           <Tooltip content={<span>Ready to claim funds on L1</span>}>
-            <span className="whitespace-nowrap">N/A</span>
+            <span className="whitespace-nowrap">n/a</span>
           </Tooltip>
         )}
       </div>
@@ -158,13 +157,13 @@ function WithdrawalRowTime({
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>Creation Time</span>}>
-        <span className="whitespace-nowrap">{tx.createdAt || 'N/A'}</span>
+      <Tooltip content={<span>L2 Transaction Time</span>}>
+        <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
       </Tooltip>
       {matchingL1Tx?.createdAt && (
-        <Tooltip content={<span>L1 Transaction</span>}>
+        <Tooltip content={<span>L1 Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            {matchingL1Tx?.createdAt || 'N/A'}
+            {matchingL1Tx?.createdAt || 'n/a'}
           </span>
         </Tooltip>
       )}
