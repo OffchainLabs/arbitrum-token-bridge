@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-
+import dayjs from 'dayjs'
 import { useAppState } from '../../../state'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
@@ -19,8 +19,8 @@ import { isFathomNetworkName, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
-import dayjs from 'dayjs'
-import { isPending, TRANSACTIONS_DATE_FORMAT } from '../../../state/app/utils'
+import { isPending } from '../../../state/app/utils'
+import { TransactionDateTime } from './TransactionsTable'
 
 const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
 
@@ -81,13 +81,13 @@ function WithdrawalRowStatus({
             <Tooltip
               content={
                 <span>
-                  Transaction successful: Funds have been claimed on L1, but the
-                  corresponding transaction was not found
+                  Executed: Funds have been claimed on L1, but the corresponding
+                  Tx ID was not found
                 </span>
               }
             >
-              <StatusBadge variant="green">
-                <InformationCircleIcon className="h-4 w-4" /> Executed
+              <StatusBadge variant="gray">
+                <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
             </Tooltip>
           </div>
@@ -127,7 +127,7 @@ function WithdrawalRowTime({
     return (
       <div className="flex flex-col">
         <Tooltip content={<span>L2 Transaction Time</span>}>
-          <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
+          <TransactionDateTime standardisedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
           <Tooltip content={<span>L1 Transaction Time</span>}>
@@ -144,7 +144,7 @@ function WithdrawalRowTime({
     return (
       <div className="flex flex-col">
         <Tooltip content={<span>L2 Transaction time</span>}>
-          <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
+          <TransactionDateTime standardisedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
           <Tooltip content={<span>Ready to claim funds on L1</span>}>
@@ -158,12 +158,12 @@ function WithdrawalRowTime({
   return (
     <div className="flex flex-col space-y-3">
       <Tooltip content={<span>L2 Transaction Time</span>}>
-        <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
+        <TransactionDateTime standardisedDate={tx.createdAt} />
       </Tooltip>
       {matchingL1Tx?.createdAt && (
         <Tooltip content={<span>L1 Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            {matchingL1Tx?.createdAt || 'n/a'}
+            <TransactionDateTime standardisedDate={matchingL1Tx?.createdAt} />
           </span>
         </Tooltip>
       )}
@@ -305,8 +305,7 @@ function WithdrawalRowAction({
   }
 
   if (isError) {
-    const isTxOlderThan7Days =
-      dayjs().diff(dayjs(tx.createdAt, TRANSACTIONS_DATE_FORMAT), 'days') > 7
+    const isTxOlderThan7Days = dayjs().diff(dayjs(tx.createdAt), 'days') > 7
 
     return (
       <>

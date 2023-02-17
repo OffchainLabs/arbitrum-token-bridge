@@ -3,7 +3,12 @@ import React, { Dispatch, SetStateAction } from 'react'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { isDeposit, isPending } from '../../../state/app/utils'
+import {
+  getStandardisedDate,
+  getStandardisedTime,
+  isDeposit,
+  isPending
+} from '../../../state/app/utils'
 import { MergedTransaction } from '../../../state/app/state'
 import { NoDataOverlay } from './NoDataOverlay'
 import { useMemo } from 'react'
@@ -17,7 +22,7 @@ export type PageParams = {
   pageSize: number
 }
 
-export function EmptyTableRow({ children }: { children: React.ReactNode }) {
+export const EmptyTableRow = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       {/* Single empty row to set column width */}
@@ -34,6 +39,26 @@ export function EmptyTableRow({ children }: { children: React.ReactNode }) {
         </td>
       </tr>
     </>
+  )
+}
+
+export const TransactionDateTime = ({
+  standardisedDate
+}: {
+  standardisedDate: string | null
+}) => {
+  // Standardised formatted date-time component used across transaction rows
+
+  if (!standardisedDate) return <span className="whitespace-nowrap">n/a</span>
+  return (
+    <div className="flex flex-nowrap gap-1">
+      <span className="whitespace-nowrap">
+        {getStandardisedDate(standardisedDate)}
+      </span>
+      <span className="whitespace-nowrap opacity-60">
+        {getStandardisedTime(standardisedDate)}
+      </span>
+    </div>
   )
 }
 

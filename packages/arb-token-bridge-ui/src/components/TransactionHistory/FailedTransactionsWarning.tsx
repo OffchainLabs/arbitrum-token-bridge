@@ -9,7 +9,6 @@ import dayjs from 'dayjs'
 import { GET_HELP_LINK } from '../../constants'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
-import { TRANSACTIONS_DATE_FORMAT } from '../../state/app/utils'
 import { isFathomNetworkName, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 
@@ -27,12 +26,9 @@ export const FailedTransactionsWarning = ({
 
   const daysPassedSinceFailure =
     dayjs().diff(
-      dayjs(
-        transactions[transactions.length - 1]?.createdAt,
-        TRANSACTIONS_DATE_FORMAT
-      ),
+      dayjs(transactions[transactions.length - 1]?.createdAt),
       'days'
-    ) || 1 // to avoid '0 days' passed issue
+    ) || 1 // to avoid '0 days passed since' issue
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')

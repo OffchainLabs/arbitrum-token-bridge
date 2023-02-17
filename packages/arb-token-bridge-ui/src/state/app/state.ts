@@ -19,7 +19,6 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { ConnectionState } from '../../util'
 import {
   filterDeposits,
-  TRANSACTIONS_DATE_FORMAT,
   transformDeposits,
   transformWithdrawals
 } from './utils'
@@ -140,7 +139,7 @@ export const defaultState: AppState = {
         if (_isEmpty(item.createdAt)) {
           return -1
         }
-        return dayjs(item.createdAt, TRANSACTIONS_DATE_FORMAT)
+        return dayjs(item.createdAt).unix() // numeric format
       })
     )
   }),

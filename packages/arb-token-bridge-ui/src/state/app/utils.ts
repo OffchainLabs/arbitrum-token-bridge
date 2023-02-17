@@ -9,7 +9,8 @@ import {
 } from 'token-bridge-sdk'
 import { DepositStatus, MergedTransaction } from './state'
 
-export const TRANSACTIONS_DATE_FORMAT = 'MMM DD, YYYY hh:mm A'
+export const TX_DATE_FORMAT = 'MMM DD, YYYY'
+export const TX_TIME_FORMAT = 'hh:mm A'
 
 export const outgoungStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
@@ -61,10 +62,10 @@ export const transformDeposits = (
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
-        ? getStandardisedDate(tx.timestampCreated)
+        ? getStandardisedTimestamp(tx.timestampCreated)
         : null,
       resolvedAt: tx.timestampResolved
-        ? getStandardisedDate(tx.timestampResolved)
+        ? getStandardisedTimestamp(tx.timestampResolved)
         : null,
       txId: tx.txID,
       asset: tx.assetName?.toLowerCase(),
@@ -92,8 +93,8 @@ export const transformWithdrawals = (
         tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
           ? 'Failure'
           : outgoungStateToString[tx.outgoingMessageState],
-      createdAt: dayjs(BigNumber.from(tx.timestamp).toNumber() * 1000).format(
-        TRANSACTIONS_DATE_FORMAT
+      createdAt: getStandardisedTimestamp(
+        String(BigNumber.from(tx.timestamp).toNumber() * 1000)
       ),
       resolvedAt: null,
       txId: tx.l2TxHash || 'l2-tx-hash-not-found',
@@ -163,9 +164,17 @@ export const isFailed = (tx: MergedTransaction) => {
   )
 }
 
-export const getStandardisedDate = (dateString: string) => {
-  if (isNaN(Number(dateString)))
-    return dayjs(new Date(dateString)).format(TRANSACTIONS_DATE_FORMAT) // for ISOstring type of dates
+export const getStandardisedTimestamp = (dateString: string) => {
+  // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
 
-  return dayjs(Number(dateString)).format(TRANSACTIONS_DATE_FORMAT) // for timestamp type of date
+  if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).format() // for ISOstring type of dates -> dayjs timestamp
+  return dayjs(Number(dateString)).format() // for timestamp type of date -> dayjs timestamp
+}
+
+export const getStandardisedTime = (standatdisedTimestamp: string) => {
+  return dayjs(standatdisedTimestamp).format(TX_TIME_FORMAT) // dayjs timestamp -> time
+}
+
+export const getStandardisedDate = (standatdisedTimestamp: string) => {
+  return dayjs(standatdisedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
 }

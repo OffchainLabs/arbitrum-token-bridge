@@ -12,6 +12,7 @@ import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { isPending } from '../../../state/app/utils'
+import { TransactionDateTime } from './TransactionsTable'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -97,11 +98,11 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
   return (
     <div className="flex flex-col space-y-3">
       <Tooltip content={<span>L1 Transaction Time</span>}>
-        <span className="whitespace-nowrap">{tx.createdAt || 'n/a'}</span>
+        <TransactionDateTime standardisedDate={tx.createdAt} />
       </Tooltip>
       {tx.resolvedAt && (
         <Tooltip content={<span>L2 Transaction Time</span>}>
-          <span className="whitespace-nowrap">{tx.resolvedAt || 'n/a'}</span>
+          <TransactionDateTime standardisedDate={tx.resolvedAt} />
         </Tooltip>
       )}
     </div>

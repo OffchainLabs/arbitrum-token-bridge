@@ -10,7 +10,7 @@ const variants: Record<string, string> = {
   yellow: 'bg-orange text-orange-dark',
   green: 'bg-lime text-lime-dark',
   red: 'bg-brick text-brick-dark border',
-  gray: 'bg-gray-5 text-gray-9'
+  gray: 'bg-gray-5 text-gray-10'
 }
 
 export function StatusBadge({
