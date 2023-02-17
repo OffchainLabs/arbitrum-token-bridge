@@ -22,8 +22,6 @@ import { Popover } from '@headlessui/react'
 import { isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 
-const L2ToL1MessageStatuses = ['Unconfirmed', 'Confirmed', 'Executed']
-
 export function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
   transactions: MergedTransaction[]
@@ -94,7 +92,6 @@ function WithdrawalRowStatus({
         )
       }
 
-      // TODO: Handle failure on L1
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
@@ -102,6 +99,13 @@ function WithdrawalRowStatus({
         </div>
       )
     }
+
+    case 'Failure':
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="red">Failed</StatusBadge>
+        </div>
+      )
 
     default:
       return null
@@ -230,18 +234,13 @@ const GetHelpButton = ({
   onClick: () => void
 }) => {
   return (
-    <Tooltip
-      wrapperClassName=""
-      content={<span>Transaction failed (EXECUTE_CALL_EXCEPTION)</span>}
+    <Button
+      variant={variant}
+      onClick={onClick}
+      className={variant === 'secondary' ? 'bg-white px-4 py-3' : ''}
     >
-      <Button
-        variant={variant}
-        onClick={onClick}
-        className={variant === 'secondary' ? 'bg-white px-4 py-3' : ''}
-      >
-        Get Help
-      </Button>
-    </Tooltip>
+      Get Help
+    </Button>
   )
 }
 
@@ -343,16 +342,13 @@ export function TransactionsTableWithdrawalRow({
     app: { mergedTransactions }
   } = useAppState()
 
-  const isError = tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
+  const isError = tx.status === 'Failure'
+
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
     return ''
   }, [tx, isError])
-
-  if (!L2ToL1MessageStatuses.includes(tx.status)) {
-    return null
-  }
 
   return (
     <tr

@@ -20,7 +20,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return <StatusBadge variant="yellow">Pending</StatusBadge>
 
     case DepositStatus.L1_FAILURE:
-      return <StatusBadge variant="red">Error</StatusBadge>
+      return <StatusBadge variant="red">Failed</StatusBadge>
 
     case DepositStatus.L2_PENDING:
       return (
@@ -34,7 +34,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="red">Error</StatusBadge>
+          <StatusBadge variant="red">Failed</StatusBadge>
         </div>
       )
 
@@ -42,7 +42,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <div className="flex flex-col space-y-1">
           <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="yellow">Error</StatusBadge>
+          <StatusBadge variant="red">Failed</StatusBadge>
         </div>
       )
 
@@ -177,10 +177,11 @@ export function TransactionsTableDepositRow({
   )
 
   const bgClassName = useMemo(() => {
-    if (isError) return 'bg-brick'
+    if (isError || showRedeemRetryableButton || showRetryableExpiredText)
+      return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
     return ''
-  }, [tx, isError])
+  }, [tx, isError, showRedeemRetryableButton, showRetryableExpiredText])
 
   return (
     <tr
@@ -204,10 +205,11 @@ export function TransactionsTableDepositRow({
         <DepositRowTxID tx={tx} />
       </td>
 
-      <td className="w-1/5 py-3 pl-3 pr-6 text-right">
+      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
         {showRedeemRetryableButton && (
           <Tooltip
             show={!isConnectedToArbitrum}
+            wrapperClassName=""
             content={
               <span>
                 Please connect to the L2 network to re-execute your deposit. You
@@ -229,6 +231,7 @@ export function TransactionsTableDepositRow({
 
         {showRetryableExpiredText && (
           <Tooltip
+            wrapperClassName=""
             content={
               <span>
                 You have 7 days to re-execute a failed tx. After that, the tx is

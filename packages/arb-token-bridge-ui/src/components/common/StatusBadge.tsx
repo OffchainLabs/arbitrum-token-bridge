@@ -9,7 +9,7 @@ const variants: Record<string, string> = {
   blue: 'bg-cyan text-cyan-dark',
   yellow: 'bg-orange text-orange-dark',
   green: 'bg-lime text-lime-dark',
-  red: 'bg-brick text-brick-dark border',
+  red: 'bg-brick text-brick-dark border border-brick-dark',
   gray: 'bg-gray-5 text-gray-10'
 }
 

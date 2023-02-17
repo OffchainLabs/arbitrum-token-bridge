@@ -45,7 +45,8 @@ export const FailedTransactionsWarning = ({
   return (
     <div className="flex items-center gap-1 rounded-md bg-orange p-2 text-base text-dark lg:flex-nowrap">
       <InformationCircleIcon className="h-4 w-4" />
-      In the past {daysPassedSinceFailure} days you had
+      In the past {daysPassedSinceFailure}{' '}
+      {daysPassedSinceFailure < 2 ? 'day' : 'days'} you had
       <span className="text-brick-dark">
         {numFailedTransactions} failed transactions.
       </span>
