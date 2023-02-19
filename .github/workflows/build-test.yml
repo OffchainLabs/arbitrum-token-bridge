@@ -18,10 +18,33 @@ jobs:
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Restore node_modules
+        uses: OffchainLabs/actions/node-modules/restore@main
+
+      - name: Build
+        run: yarn build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            ./packages/arb-token-bridge-ui/build
+            ./packages/token-bridge-sdk/dist
+            ./packages/use-wallet/dist
+
   test-sdk:
     name: "Test SDK"
     runs-on: ubuntu-latest
-    needs: install
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -33,8 +56,11 @@ jobs:
         with:
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-      - name: Build
-        run: yarn build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./packages
 
       - name: Test
         run: yarn test:ci:sdk
@@ -42,7 +68,7 @@ jobs:
   test-ui:
     name: "Test UI"
     runs-on: ubuntu-latest
-    needs: install
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -54,8 +80,11 @@ jobs:
         with:
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-      - name: Build
-        run: yarn build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./packages
 
       - name: Test
         run: yarn test:ci:ui
