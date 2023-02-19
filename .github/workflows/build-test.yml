@@ -29,6 +29,13 @@ jobs:
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          directory: ./packages/arb-token-bridge-ui/
+          file_name: .env.local
+
       - name: Build
         run: yarn build
 
@@ -37,6 +44,7 @@ jobs:
         with:
           name: build-artifacts
           path: |
+            ./packages/arb-token-bridge-ui/.env.local
             ./packages/arb-token-bridge-ui/build
             ./packages/token-bridge-sdk/dist
             ./packages/use-wallet/dist
@@ -51,10 +59,6 @@ jobs:
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
-
-      - uses: ./.github/actions/create-env-file
-        with:
-          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v3
@@ -75,10 +79,6 @@ jobs:
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
-
-      - uses: ./.github/actions/create-env-file
-        with:
-          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v3
