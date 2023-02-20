@@ -114,4 +114,4 @@ jobs:
       - name: Delete build artifacts
         uses: geekyeggo/delete-artifact@v2
         with:
-            name: build-artifacts
+          name: build-artifacts
