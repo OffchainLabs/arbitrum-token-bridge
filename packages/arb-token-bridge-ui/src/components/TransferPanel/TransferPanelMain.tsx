@@ -39,6 +39,7 @@ import {
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
+import { Input } from '../common/atoms/input/Input'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -869,8 +870,8 @@ export function TransferPanelMain({
                   Destination Address
                   {!isSmartContractWallet ? ' (optional)' : ''}
                 </span>
-                <input
-                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                <Input
+                  className="mt-1"
                   placeholder="Enter destination address"
                   defaultValue={destinationAddress}
                   spellCheck={false}

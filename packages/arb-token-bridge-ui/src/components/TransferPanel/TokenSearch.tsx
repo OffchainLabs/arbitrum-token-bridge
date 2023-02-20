@@ -25,6 +25,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
+import { Input } from '../common/atoms/input/Input'
 
 enum Panel {
   TOKENS,
@@ -503,7 +504,7 @@ function TokensPanel({
     <div className="flex flex-col space-y-3">
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <input
+          <Input
             id="newTokenAddress"
             value={newToken}
             onChange={e => {
@@ -511,16 +512,15 @@ function TokensPanel({
               setNewToken(e.target.value)
             }}
             placeholder="Search by token name, symbol, L1 or L2 address"
-            className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
 
           <Button
             type="submit"
-            variant="secondary"
+            variant="primary"
             loading={isAddingToken}
             loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-gray-4 py-1 text-gray-9"
+            className="border border-gray-4 py-1 text-white"
             aria-label="Add New Token"
           >
             Add
