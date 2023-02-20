@@ -61,10 +61,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./packages
+        uses: ./.github/actions/download-build-artifacts
 
       - name: Test
         run: yarn test:ci:sdk
@@ -81,10 +78,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
-          path: ./packages
+        uses: ./.github/actions/download-build-artifacts
 
       - name: Test
         run: yarn test:ci:ui
