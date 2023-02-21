@@ -106,6 +106,9 @@ jobs:
       - name: Build
         run: yarn build
 
+      - name: Remove immutable
+        run: chattr -i ./packages/arb-token-bridge-ui/.env.local
+
       - name: Chown workspace
         run: chown -R $(whoami) .
 
