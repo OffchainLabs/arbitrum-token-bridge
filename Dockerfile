@@ -7,11 +7,13 @@ WORKDIR /app
 COPY package.json ./
 COPY yarn.lock ./
 
-FROM base AS dependencies
-COPY packages/arb-token-bridge-ui packages/arb-token-bridge-ui
-COPY packages/use-wallet packages/use-wallet
-COPY packages/token-bridge-sdk packages/token-bridge-sdk
+COPY packages/arb-token-bridge-ui/package.json packages/arb-token-bridge-ui/
+COPY packages/use-wallet/package.json packages/use-wallet/
+COPY packages/token-bridge-sdk/package.json packages/token-bridge-sdk/
 
 FROM base as test
-RUN npm install
+RUN npm install --production
+COPY packages/arb-token-bridge-ui/dist packages/arb-token-bridge-ui/
+COPY packages/use-wallet/dist packages/use-wallet/
+COPY packages/token-bridge-sdk/dist packages/token-bridge-sdk/
 COPY . .
