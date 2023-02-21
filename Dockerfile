@@ -15,11 +15,9 @@ RUN cd ./packages/use-wallet && npm build
 RUN cd ./packages/token-bridge-sdk && npm build
 RUN cd ./packages/arb-token-bridge-ui && npm build
 
-RUN ls ./packages/arb-token-bridge-ui/
-
 FROM base as test
 RUN npm install --production
-COPY packages/arb-token-bridge-ui/dist packages/arb-token-bridge-ui/
-COPY packages/use-wallet/dist packages/use-wallet/
-COPY packages/token-bridge-sdk/dist packages/token-bridge-sdk/
+COPY packages/arb-token-bridge-ui/build packages/arb-token-bridge-ui/
+COPY packages/use-wallet/build packages/use-wallet/
+COPY packages/token-bridge-sdk/build packages/token-bridge-sdk/
 COPY . .
