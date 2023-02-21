@@ -1,5 +1,3 @@
-import Loader from 'react-loader-spinner'
-
 export type InputShape = 'box' | 'pill'
 export type InputSize = 'medium' | 'large'
 
