@@ -65,7 +65,6 @@ const sanitizeAmountQueryParam = (amount: string) => {
   if (isNaN(Number(amount))) {
     // return original string if the string is `max` (case-insensitive)
     // it doesn't show on the input[type=number] field because it isn't in the allowed chars
-    console.log('ISNAN NO')
     return isMax(amount) ? amount : ''
   }
 

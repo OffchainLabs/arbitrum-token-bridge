@@ -448,9 +448,7 @@ export function TransferPanelMain({
     } catch (error) {
       console.error(error)
     } finally {
-      requestAnimationFrame(() => {
-        setLoadingMaxAmount(false)
-      })
+      setLoadingMaxAmount(false)
     }
   }, [
     estimateGas,
