@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  synpress:
+    container_name: synpress-test
+    build: .
+    environment:
+      - DISPLAY=display:0.0
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - DEBUG=${DEBUG}
+      - CYPRESS_DOCKER_RUN=true
+      - CI=${CI}
+    depends_on:
+      - display
+      - video
+    entrypoint: []
+    working_dir: /app
+    volumes:
+      - ./docker/videos:/app/tests/e2e/videos
+      - ./docker/screenshots:/app/tests/e2e/screenshots
+    command: >
+      bash -c 'echo -n "======> local noVNC URL: http://localhost:8080/vnc.html?autoconnect=true " && npx wait-on http://display:8080 && echo -n "======> remote noVNC URL: " && curl -s ngrok:4040/api/tunnels | jq -r .tunnels[0].public_url && npm run test:e2e'
+    networks:
+      - x11
+
+  display:
+    container_name: display
+    image: synthetixio/display:016121eafdfff448414894d0ca5a50b1d72b62eb-base
+    environment:
+      - RUN_XTERM=no
+      - DISPLAY_WIDTH=${DISPLAY_WIDTH}
+      - DISPLAY_HEIGHT=${DISPLAY_HEIGHT}
+    ports:
+      - '8080:8080'
+    networks:
+      - x11
+
+  video:
+    container_name: video
+    image: synthetixio/video:457bb48776c3b14de232d9dda620ba9188dc40ac-base
+    volumes:
+      - ./docker/videos-ci:/videos
+    environment:
+      - FILE_NAME=CI-full-video.mp4
+      - SE_SCREEN_WIDTH=${SE_SCREEN_WIDTH}
+      - SE_SCREEN_HEIGHT=${SE_SCREEN_HEIGHT}
+    depends_on:
+      - display
+    networks:
+      - x11
+
+networks:
+  x11:
