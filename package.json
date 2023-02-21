@@ -28,7 +28,8 @@
   "dependencies": {
     "env-cmd": "^10.1.0",
     "start-server-and-test": "^1.15.4",
-    "serve": "^14.2.0"
+    "serve": "^14.2.0",
+    "microbundle": "^0.14.2"
   },
   "devDependencies": {
     "audit-ci": "^6.3.0"
