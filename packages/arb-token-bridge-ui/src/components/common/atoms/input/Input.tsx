@@ -1,5 +1,5 @@
 /*
-   Zero-styling abstraction of HTML Input tag used in our projects
+   Minimal-styling abstraction of HTML Input tag used in our projects, will inherit the height and width of it's container
 */
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
