@@ -369,6 +369,7 @@ export function TransferPanelMain({
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
+  const isMaxAmount = amount.toLowerCase() === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -804,12 +805,12 @@ export function TransferPanelMain({
           <TransferPanelMainInput
             maxButtonProps={{
               visible: maxButtonVisible,
-              loading: loadingMaxAmount,
+              loading: isMaxAmount || loadingMaxAmount,
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageText}
             disabled={isSwitchingL2Chain}
-            value={amount}
+            value={isMaxAmount ? '' : amount}
             onChange={e => {
               setAmount(e.target.value)
             }}
