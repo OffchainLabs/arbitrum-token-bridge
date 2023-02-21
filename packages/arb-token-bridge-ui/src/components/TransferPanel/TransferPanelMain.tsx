@@ -5,7 +5,6 @@ import {
   ChevronUpIcon,
   SwitchVerticalIcon
 } from '@heroicons/react/outline'
-import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
@@ -40,6 +39,7 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { InputRow } from '../common/molecules/InputRow/InputRow'
+import { Loader } from '../common/atoms/loader/Loader'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -231,10 +231,6 @@ function NetworkContainer({
   )
 }
 
-function StyledLoader() {
-  return <Loader type="TailSpin" color="white" height={16} width={16} />
-}
-
 function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const {
     app: { arbTokenBridge }
@@ -253,7 +249,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
   if (!balance) {
-    return <StyledLoader />
+    return <Loader color="white" />
   }
 
   return (
@@ -280,7 +276,7 @@ function TokenBalance({
   }
 
   if (!balance) {
-    return <StyledLoader />
+    return <Loader color="white" />
   }
 
   return (
@@ -769,7 +765,7 @@ export function TransferPanelMain({
           <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
-              <StyledLoader />
+              <Loader color="white" />
             ) : (
               <>
                 <TokenBalance
@@ -827,7 +823,7 @@ export function TransferPanelMain({
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
-              <StyledLoader />
+              <Loader color="white" />
             ) : (
               <>
                 <TokenBalance
