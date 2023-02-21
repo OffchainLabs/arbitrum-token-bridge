@@ -134,7 +134,6 @@ export function TransferPanel() {
   const amountNum = parseFloat(amount) // just a numerical variant of amount
   const setAmount = useCallback(
     (newAmount: string) => {
-      console.log('SETTING AMOUNT TO ', amount)
       setQueryParams({ amount: newAmount })
     },
     [setQueryParams]
