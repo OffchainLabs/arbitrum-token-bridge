@@ -61,11 +61,6 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             value={value}
             lang="en"
             onChange={e => {
-              const newValue = e.target.value.replace(/[,]/g, '.')
-              e.target.value = newValue
-              if (isNaN(Number(newValue)) && newValue !== '.') {
-                return
-              }
               if (onChange) onChange(e)
             }}
             {...rest}

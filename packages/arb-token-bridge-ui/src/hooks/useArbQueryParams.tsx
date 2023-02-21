@@ -56,28 +56,30 @@ const sanitizeAmountQueryParam = (amount: string) => {
     return amount
   }
 
+  const parsedAmount = amount.replace(/[,]/g, '.')
+
   // add 0 to values starting with .
-  if (amount.startsWith('.')) {
-    return `0${amount}`
+  if (parsedAmount.startsWith('.')) {
+    return `0${parsedAmount}`
   }
 
   // to catch strings like `amount=asdf` from the URL
-  if (isNaN(Number(amount))) {
+  if (isNaN(Number(parsedAmount))) {
     // return original string if the string is `max` (case-insensitive)
     // it doesn't show on the input[type=number] field because it isn't in the allowed chars
-    return isMax(amount) ? amount : ''
+    return isMax(parsedAmount) ? parsedAmount : ''
   }
 
   // to reach here they must be a number
   // check for negative sign at first char
-  if (amount.startsWith('-')) {
-    return String(Math.abs(Number(amount)))
+  if (parsedAmount.startsWith('-')) {
+    return String(Math.abs(Number(parsedAmount)))
   }
 
   // replace leading zeros
   // this regex finds 1 or more 0s before any digits including 0
   // but the digits are not captured into the result string
-  return amount.replace(/^0+(?=\d)/, '')
+  return parsedAmount.replace(/^0+(?=\d)/, '')
 }
 
 // Our custom query param type for Amount field - will be parsed and returned as a string,
