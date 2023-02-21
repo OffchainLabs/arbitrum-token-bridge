@@ -7,9 +7,9 @@ WORKDIR /app
 COPY package.json ./
 COPY yarn.lock ./
 
-FROM base as test
-RUN npm install
-COPY . .
 COPY packages/arb-token-bridge-ui packages/arb-token-bridge-ui
 COPY packages/use-wallet packages/use-wallet
 
+FROM base as test
+RUN npm install --force
+COPY . .
