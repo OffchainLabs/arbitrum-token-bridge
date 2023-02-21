@@ -44,8 +44,8 @@
     "lint:fix": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "getUnusedComponents": "ts-prune | grep ' default$'",
-    "e2e:open": "env-cmd -f yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "env-cmd -f yarn synpress run --configFile synpress.config.ts"
+    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
+    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts"
   },
   "browserslist": {
     "production": [

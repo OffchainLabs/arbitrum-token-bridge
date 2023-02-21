@@ -13,7 +13,8 @@
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "test:ci:sdk": "yarn workspace token-bridge-sdk test:ci",
     "test:ci:ui": "yarn workspace arb-token-bridge-ui test:ci",
-    "test:e2e": "yarn workspace arb-token-bridge-ui e2e:run --browser chrome",
+    "start:server": "serve dist",
+    "test:e2e": "start-server-and-test 'npm run build && npm run start:server' http-get://localhost:3000 'synpress run'",
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "serve": "serve -s packages/arb-token-bridge-ui/build"
@@ -25,7 +26,9 @@
     "packages/*"
   ],
   "dependencies": {
-    "env-cmd": "^10.1.0"
+    "env-cmd": "^10.1.0",
+    "start-server-and-test": "^1.15.4",
+    "serve": "^14.2.0"
   },
   "devDependencies": {
     "audit-ci": "^6.3.0"
