@@ -30,11 +30,10 @@ export enum AmountQueryParamEnum {
 
 export const useArbQueryParams = () => {
   /*
-  returns [
-              queryParams (getter for all query state variables),
-              setQueryParams (setter for all query state variables)
-          ]
-
+    returns [
+      queryParams (getter for all query state variables),
+      setQueryParams (setter for all query state variables)
+    ]
   */
   return useQueryParams({
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
@@ -57,10 +56,16 @@ const sanitizeAmountQueryParam = (amount: string) => {
     return amount
   }
 
+  // add 0 to values starting with .
+  if (amount.startsWith('.')) {
+    return `0${amount}`
+  }
+
   // to catch strings like `amount=asdf` from the URL
   if (isNaN(Number(amount))) {
     // return original string if the string is `max` (case-insensitive)
     // it doesn't show on the input[type=number] field because it isn't in the allowed chars
+    console.log('ISNAN NO')
     return isMax(amount) ? amount : ''
   }
 
@@ -68,11 +73,6 @@ const sanitizeAmountQueryParam = (amount: string) => {
   // check for negative sign at first char
   if (amount.startsWith('-')) {
     return String(Math.abs(Number(amount)))
-  }
-
-  // add 0 to values starting with .
-  if (amount.startsWith('.')) {
-    return `0${amount}`
   }
 
   // replace leading zeros
