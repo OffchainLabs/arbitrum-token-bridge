@@ -56,7 +56,7 @@ const sanitizeAmountQueryParam = (amount: string) => {
     return amount
   }
 
-  const parsedAmount = amount.replace(/[,]/g, '.')
+  const parsedAmount = amount.replace(/[,]/g, '.').toLowerCase()
 
   // add 0 to values starting with .
   if (parsedAmount.startsWith('.')) {

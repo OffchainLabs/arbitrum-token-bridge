@@ -369,7 +369,7 @@ export function TransferPanelMain({
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
-  const isMaxAmount = amount.toLowerCase() === AmountQueryParamEnum.MAX
+  const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -468,10 +468,10 @@ export function TransferPanelMain({
   useEffect(() => {
     setQueryParams({ amount })
 
-    if (amount.toLowerCase() === AmountQueryParamEnum.MAX) {
+    if (isMaxAmount) {
       setMaxAmount()
     }
-  }, [amount, setMaxAmount, setQueryParams])
+  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
