@@ -10,3 +10,6 @@ COPY yarn.lock ./
 FROM base as test
 RUN npm install
 COPY . .
+COPY ./node_modules ./packages/arb-token-bridge-ui/node_modules
+COPY ./node_modules ./packages/token-bridge-sdk/node_modules
+COPY ./node_modules ./packages/use-wallet/node_modules
