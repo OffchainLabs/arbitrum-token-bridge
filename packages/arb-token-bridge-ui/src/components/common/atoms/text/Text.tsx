@@ -16,6 +16,7 @@ export type TextVariant =
 export type TextProps = React.HTMLAttributes<HTMLSpanElement> & {
   variant?: TextVariant
   noWrap?: boolean
+  error?: boolean
   children: ReactNode
 }
 
@@ -52,10 +53,11 @@ const getClassNameFromVariant = (variant: TextVariant | undefined) => {
 }
 
 export const Text = (props: TextProps) => {
-  const { children, variant, noWrap, ...rest } = props
+  const { children, variant, noWrap, error, ...rest } = props
 
   const className = `${getClassNameFromVariant(variant)} ${props.className} 
-  ${noWrap ? 'whitespace-nowrap' : ''}`.trim()
+  ${noWrap ? 'whitespace-nowrap' : ''}
+  ${error ? 'text-brick' : ''} `.trim()
 
   return (
     <span className={className} {...rest}>

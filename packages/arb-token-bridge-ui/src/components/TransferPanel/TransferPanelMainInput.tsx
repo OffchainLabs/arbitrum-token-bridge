@@ -1,5 +1,6 @@
 import Loader from 'react-loader-spinner'
 import { Input } from '../common/atoms/input/Input'
+import { InputRow } from '../common/molecules/InputRow/InputRow'
 
 import { TokenButton } from './TokenButton'
 
@@ -42,18 +43,18 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
 
   return (
-    <Input
+    <InputRow
       inputSize="large"
       type="number"
       placeholder="Enter amount"
       errorMessage={errorMessage}
-      leftComponent={
+      leftChildren={
         <>
           <TokenButton />
           <div className="h-full border-r border-gray-4" />
         </>
       }
-      rightComponent={maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
+      rightChildren={maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
       {...rest}
     />
   )

@@ -25,7 +25,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
-import { Input } from '../common/atoms/input/Input'
+import { InputRow } from '../common/molecules/InputRow/InputRow'
 
 enum Panel {
   TOKENS,
@@ -504,7 +504,7 @@ function TokensPanel({
     <div className="flex flex-col space-y-3">
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <Input
+          <InputRow
             id="newTokenAddress"
             value={newToken}
             onChange={e => {
