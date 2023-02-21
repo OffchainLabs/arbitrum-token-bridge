@@ -8,7 +8,6 @@ COPY package.json ./
 COPY yarn.lock ./
 
 COPY packages/arb-token-bridge-ui packages/arb-token-bridge-ui
-COPY packages/use-wallet packages/use-wallet
 COPY packages/token-bridge-sdk packages/token-bridge-sdk
 
 FROM base as test
