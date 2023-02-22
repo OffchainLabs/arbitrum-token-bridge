@@ -21,4 +21,5 @@ RUN npm install
 # COPY ./packages/use-wallet/build ./packages/use-wallet/
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
 COPY . .
+RUN cypress install
 
