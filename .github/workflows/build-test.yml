@@ -135,6 +135,7 @@ jobs:
           PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           SKIP_METAMASK_SETUP: true
           NETWORK_NAME: localhost
+          file_name: .e2e.env
 
       - name: Build
         run: yarn build
