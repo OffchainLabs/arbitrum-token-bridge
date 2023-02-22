@@ -22,4 +22,5 @@ RUN CYPRESS_CACHE_FOLDER=~/.cache/Cypress npm install
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
 COPY . .
 RUN cp -R ./packages/arb-token-bridge-ui/tests/ ./tests/
+RUN cp ./packages/arb-token-bridge-ui/synpress.config.ts ./synpress.config.ts
 
