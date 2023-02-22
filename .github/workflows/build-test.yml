@@ -126,8 +126,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: install
+      - name: Install
         run: yarn install
+
+      - uses: ./.github/actions/create-env-file
+        with:
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
       - name: Build
         run: yarn build
