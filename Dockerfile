@@ -17,7 +17,7 @@ COPY ./packages/token-bridge-sdk/package.json ./packages/token-bridge-sdk/
 
 FROM base as test
 RUN npm install --production
-COPY ./packages/arb-token-bridge-ui/build ./packages/arb-token-bridge-ui/
-COPY ./packages/use-wallet/build ./packages/use-wallet/
-COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
+# COPY ./packages/arb-token-bridge-ui/build ./packages/arb-token-bridge-ui/
+# COPY ./packages/use-wallet/build ./packages/use-wallet/
+# COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
 COPY . .
