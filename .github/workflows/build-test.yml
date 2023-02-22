@@ -126,6 +126,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: install
+        run: yarn install
+
       - name: Build
         run: yarn build
         
