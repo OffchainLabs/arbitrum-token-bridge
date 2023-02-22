@@ -28,7 +28,7 @@
   "dependencies": {
     "env-cmd": "^10.1.0",
     "start-server-and-test": "^1.15.4",
-    "serve": "^14.2.0",
+    "serve": "^13.0.4",
     "microbundle": "^0.14.2",
     "react": "^18.2.0",
     "web3modal": "^1.9.7",
