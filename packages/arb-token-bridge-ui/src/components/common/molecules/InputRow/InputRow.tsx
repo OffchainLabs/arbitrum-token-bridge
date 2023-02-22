@@ -1,5 +1,5 @@
 /*
-    A composable row of [Left child]-[Input field]-[Right Component] used extensively in our project
+    A composable row of [Left child]-[Input field]-[Right Child] used extensively in our project
     eg. Token selection dropdown + amount input
     eg. Input field with search/other icons prepended or buttons (like MAX) embedded
     eg. Inputs with error message

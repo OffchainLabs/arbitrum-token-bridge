@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useLatest } from 'react-use'
 import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
-import Loader from 'react-loader-spinner'
 import Tippy from '@tippyjs/react'
 
 import { useActions, useAppState } from '../../state'
@@ -16,6 +15,7 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl } from '../../util/networks'
+import { Loader } from '../common/atoms/loader/Loader'
 
 enum ImportStatus {
   LOADING,
@@ -264,7 +264,7 @@ export function TokenImportDialog({
     return (
       <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
         <div className="flex h-48 items-center justify-center md:min-w-[692px]">
-          <Loader type="Oval" color="#000" height={32} width={32} />
+          <Loader color="black" size="medium" />
         </div>
       </Dialog>
     )

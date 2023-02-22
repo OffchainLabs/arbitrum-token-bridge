@@ -1,9 +1,9 @@
-import Loader from 'react-loader-spinner'
+import { Loader } from './atoms/loader/Loader'
 
 export function HeaderNetworkLoadingIndicator() {
   return (
     <div className="rounded-full p-3 lg:bg-dark lg:p-2">
-      <Loader type="TailSpin" height={32} width={32} color="white" />
+      <Loader color="white" size="medium" />
     </div>
   )
 }

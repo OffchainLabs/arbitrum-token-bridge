@@ -1,10 +1,10 @@
 import React from 'react'
-import Loader from 'react-loader-spinner'
 
 import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { Loader } from '../common/atoms/loader/Loader'
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
@@ -65,7 +65,7 @@ export function TransactionsTable({
         {status === 'loading' && (
           <EmptyTableRow>
             <div className="flex flex-row items-center space-x-3">
-              <Loader type="TailSpin" color="black" width={16} height={16} />
+              <Loader color="black" size="small" />
               <span className="text-sm font-medium">Loading transactions</span>
             </div>
           </EmptyTableRow>

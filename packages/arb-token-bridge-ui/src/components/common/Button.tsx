@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
-import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
+import { Loader } from './atoms/loader/Loader'
 
 type ButtonVariant = 'primary' | 'secondary'
 
@@ -67,7 +67,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         >
           {showLoader && (
             <Loader
-              type="TailSpin"
               color={loadingProps?.loaderColor || 'white'}
               width={loadingProps?.loaderWidth || 16}
               height={loadingProps?.loaderHeight || 16}

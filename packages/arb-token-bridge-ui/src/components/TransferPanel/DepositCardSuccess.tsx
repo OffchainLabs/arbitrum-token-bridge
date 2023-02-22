@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react'
-import Loader from 'react-loader-spinner'
 import { constants } from 'ethers'
 
 import { useAppState } from '../../state'
@@ -14,6 +13,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useBalance } from 'token-bridge-sdk'
+import { Loader } from '../common/atoms/loader/Loader'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
@@ -104,7 +104,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
               })}
             </span>
           ) : (
-            <Loader type="Oval" height={16} width={16} color="black" />
+            <Loader color="black" size="small" />
           )}
         </div>
       </span>
