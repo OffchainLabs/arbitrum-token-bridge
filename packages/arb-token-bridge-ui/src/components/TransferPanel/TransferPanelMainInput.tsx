@@ -37,7 +37,7 @@ export type TransferPanelMainInputProps =
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, value, onChange, ...rest } = props
+  const { errorMessage, maxButtonProps, ...rest } = props
   const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
 
   const borderClassName =
@@ -58,11 +58,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             inputMode="decimal"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-9 sm:text-3xl"
-            value={value}
             lang="en"
-            onChange={e => {
-              if (onChange) onChange(e)
-            }}
             {...rest}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
