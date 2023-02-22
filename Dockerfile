@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM synthetixio/docker-e2e:16.19-ubuntu as base
+FROM synthetixio/docker-e2e:18.13-ubuntu as base
 
 RUN mkdir /app
 WORKDIR /app
@@ -21,5 +21,4 @@ RUN npm install
 # COPY ./packages/use-wallet/build ./packages/use-wallet/
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
 COPY . .
-RUN yarn cypress install --force
 
