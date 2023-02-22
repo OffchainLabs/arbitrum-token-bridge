@@ -1,5 +1,5 @@
-import React, { Dispatch, SetStateAction } from 'react'
-
+import React, { Dispatch, SetStateAction, useMemo } from 'react'
+import dayjs from 'dayjs'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
@@ -11,7 +11,6 @@ import {
 } from '../../../state/app/utils'
 import { MergedTransaction } from '../../../state/app/state'
 import { NoDataOverlay } from './NoDataOverlay'
-import { useMemo } from 'react'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
@@ -89,6 +88,44 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   const { isSmartContractWallet } = useNetworksAndSigners()
 
+  const _transactions: MergedTransaction[] = useMemo(() => {
+    // if it is page 1, and a newly added transaction has come in (from local-storage)
+    // prepend that to the start of the list, till it starts coming from the subgraph as well (generally after a minute or 2)
+
+    if (!pageParams.pageNumber && transactions?.[0]) {
+      console.log('NEW TRANSACTION DETECTED', pendingTransactionsMap.values())
+
+      const firstSubgraphTransactionTimestamp = dayjs(
+        transactions[0]['createdAt']
+      )
+
+      const newerTransactions: MergedTransaction[] = []
+
+      pendingTransactionsMap.forEach(tx => {
+        // only check pending deposits if you're on deposits, and vice-versa
+        const isMatchingPage =
+          (isDeposit(tx) && type === 'deposits') ||
+          (!isDeposit(tx) && type !== 'deposits')
+        if (!isMatchingPage) return
+
+        // check if the pending tx is newer than the latest subgraph date
+        const pendingTxCreationDate = dayjs(tx.createdAt)
+        const isTxAfterSubgraphTxs =
+          pendingTxCreationDate.isAfter(firstSubgraphTransactionTimestamp) &&
+          tx.createdAt !== transactions[0]?.['createdAt']
+
+        if (isTxAfterSubgraphTxs) {
+          newerTransactions.push(tx)
+        }
+      })
+
+      // if newer txns found, append it to the existing subgraph transactions
+      return [...newerTransactions, ...transactions]
+    }
+
+    return transactions
+  }, [transactions, pendingTransactionsMap])
+
   const status = useMemo(() => {
     if (loading) return TableStatus.LOADING
     if (error) return TableStatus.ERROR
@@ -141,23 +178,27 @@ export function TransactionsTable({
 
             {status === TableStatus.SUCCESS && !noSearchResults ? (
               <>
-                {transactions.length > 0 ? (
-                  transactions.map((tx, index) => {
-                    const isLastRow = index === transactions.length - 1
+                {_transactions.length > 0 ? (
+                  _transactions.map((tx, index) => {
+                    const isLastRow = index === _transactions.length - 1
 
                     const livePendingTx = pendingTransactionsMap.get(tx.txId)
+
+                    // if transaction is present in pending transactions, subscribe to that in this row,
+                    // this will make sure the row updates with any updates in the pending tx state
+                    // else show static subgraph table data
                     const finalTx =
-                      isPending(tx) && livePendingTx ? livePendingTx : tx // if transaction is present in pending transactions, subscribe to that in this row, else show static subgraph table data
+                      isPending(tx) && livePendingTx ? livePendingTx : tx
 
                     return isDeposit(tx) ? (
                       <TransactionsTableDepositRow
-                        key={`${tx.txId}-${tx.direction}`}
+                        key={`${finalTx.txId}-${finalTx.direction}`}
                         tx={finalTx}
                         className={!isLastRow ? 'border-b border-gray-5' : ''}
                       />
                     ) : (
                       <TransactionsTableWithdrawalRow
-                        key={`${tx.txId}-${tx.direction}`}
+                        key={`${finalTx.txId}-${finalTx.direction}`}
                         tx={finalTx}
                         className={!isLastRow ? 'border-b border-gray-5' : ''}
                       />
