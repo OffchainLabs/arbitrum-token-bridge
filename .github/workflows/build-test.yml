@@ -136,8 +136,8 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: "Install the Cypress binary"
-        run: yarn test:ci:e2e:install
+      # - name: "Install the Cypress binary"
+      #   run: yarn test:ci:e2e:install
         
       - name: Run e2e tests
         run: |
