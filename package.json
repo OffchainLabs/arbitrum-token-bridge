@@ -15,7 +15,7 @@
     "test:ci:ui": "yarn workspace arb-token-bridge-ui test:ci",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
     "start:server": "serve -s packages/arb-token-bridge-ui/build",
-    "test:e2e": "start-server-and-test 'npm run build && npm run start:server' http-get://localhost:3000 'synpress run'",
+    "test:e2e": "start-server-and-test 'npm run build && npm run start:server' http-get://localhost:3000 'synpress run --project ./packages/arb-token-bridge-ui/'",
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "serve": "serve -s packages/arb-token-bridge-ui/build"
