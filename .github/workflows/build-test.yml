@@ -132,12 +132,6 @@ jobs:
       - uses: ./.github/actions/create-env-file
         with:
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          PRIVATE_KEY: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          NEXT_PUBLIC_PRIVATE_KEY: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          SKIP_METAMASK_SETUP: true
-          NETWORK_NAME: localhost
-          file_name: .e2e.env
 
       - name: Build
         run: yarn build
@@ -147,12 +141,14 @@ jobs:
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          NETWORK_NAME: mainnet
+          PRIVATE_KEY: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
+          PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
+          NETWORK_NAME: localhost
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
           NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
+          SKIP_METAMASK_SETUP: true
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
