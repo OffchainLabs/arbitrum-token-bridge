@@ -25,7 +25,7 @@ import {
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useWallet } from '@arbitrum/use-wallet'
 
-import { ChainId, chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
@@ -35,6 +35,7 @@ export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
   NOT_CONNECTED = 'not_connected',
   NOT_SUPPORTED = 'not_supported',
+  BLOCKED = 'blocked',
   CONNECTED = 'connected'
 }
 
@@ -44,6 +45,9 @@ export type UseNetworksAndSignersLoadingOrErrorStatus =
 
 export type UseNetworksAndSignersNotSupportedStatus =
   UseNetworksAndSignersStatus.NOT_SUPPORTED
+
+export type UseNetworksAndSignersBlockedStatus =
+  UseNetworksAndSignersStatus.BLOCKED
 
 const defaultStatus =
   typeof window.web3 === 'undefined'
@@ -57,6 +61,11 @@ export type UseNetworksAndSignersLoadingOrErrorResult = {
 export type UseNetworksAndSignersNotSupportedResult = {
   status: UseNetworksAndSignersStatus.NOT_SUPPORTED
   chainId: number // the current unsupported chainId which is connected to UI
+}
+
+export type UseNetworksAndSignersBlockedResult = {
+  status: UseNetworksAndSignersStatus.BLOCKED
+  address: string
 }
 
 export type UseNetworksAndSignersConnectedResult = {
@@ -80,6 +89,7 @@ export type UseNetworksAndSignersResult =
   | UseNetworksAndSignersLoadingOrErrorResult
   | UseNetworksAndSignersConnectedResult
   | UseNetworksAndSignersNotSupportedResult
+  | UseNetworksAndSignersBlockedResult
 
 export const NetworksAndSignersContext = createContext<
   UseNetworksAndSignersConnectedResult | undefined
@@ -100,6 +110,7 @@ export function useNetworksAndSigners() {
 export type FallbackProps =
   | { status: UseNetworksAndSignersLoadingOrErrorStatus }
   | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
+  | { status: UseNetworksAndSignersStatus.BLOCKED; address: string }
 
 export type NetworksAndSignersProviderProps = {
   /**
@@ -135,6 +146,10 @@ function getProviderName(provider: any): ProviderName | null {
   }
 
   return null
+}
+
+async function screen(address: string): Promise<boolean> {
+  return new Promise(r => setTimeout(() => r(true), 100))
 }
 
 export function NetworksAndSignersProvider(
@@ -178,6 +193,13 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
+      const shouldBlock = await screen(address)
+
+      if (shouldBlock) {
+        setResult({ status: UseNetworksAndSignersStatus.BLOCKED, address })
+        return
+      }
+
       const providerChainId = (await web3Provider.getNetwork()).chainId
       const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
 
@@ -315,6 +337,10 @@ export function NetworksAndSignersProvider(
   }, [provider, account, network, update])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
+    if (result.status === UseNetworksAndSignersStatus.BLOCKED) {
+      return props.fallback(result)
+    }
+
     const fallbackProps =
       result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
         ? {

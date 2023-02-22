@@ -10,6 +10,7 @@ import { TokenBridgeParams } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import { WelcomeDialog } from './WelcomeDialog'
+import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
@@ -22,7 +23,6 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
@@ -237,6 +237,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
+  const [blockedDialogProps] = useDialog({ defaultIsOpen: true })
 
   async function showConnectionModal() {
     try {
@@ -273,6 +274,15 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             <Button variant="primary" onClick={showConnectionModal}>
               Connect Wallet
             </Button>
+          </AppConnectionFallbackContainer>
+        </>
+      )
+
+    case UseNetworksAndSignersStatus.BLOCKED:
+      return (
+        <>
+          <AppConnectionFallbackContainer>
+            <BlockedDialog {...blockedDialogProps} address={props.address} />
           </AppConnectionFallbackContainer>
         </>
       )
