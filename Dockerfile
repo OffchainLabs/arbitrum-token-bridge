@@ -21,4 +21,5 @@ RUN CYPRESS_CACHE_FOLDER=~/.cache/Cypress npm install
 # COPY ./packages/use-wallet/build ./packages/use-wallet/
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
 COPY . .
+RUN cp -R ./packages/arb-token-bridge-ui/tests/ ./tests/
 
