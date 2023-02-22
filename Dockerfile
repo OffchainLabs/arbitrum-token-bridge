@@ -16,7 +16,7 @@ COPY ./packages/token-bridge-sdk/package.json ./packages/token-bridge-sdk/
 # RUN cd ./packages/arb-token-bridge-ui && npm build
 
 FROM base as test
-RUN npm install --production
+RUN npm install --legacy-peer-deps
 # COPY ./packages/arb-token-bridge-ui/build ./packages/arb-token-bridge-ui/
 # COPY ./packages/use-wallet/build ./packages/use-wallet/
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
