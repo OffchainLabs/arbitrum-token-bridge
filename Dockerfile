@@ -16,7 +16,7 @@ COPY yarn.lock ./
 # RUN cd ./packages/arb-token-bridge-ui && npm build
 
 FROM base as test
-RUN npm install
+RUN CYPRESS_CACHE_FOLDER=/root/.cache/Cypress npm install
 # COPY ./packages/arb-token-bridge-ui/build ./packages/arb-token-bridge-ui/
 # COPY ./packages/use-wallet/build ./packages/use-wallet/
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
