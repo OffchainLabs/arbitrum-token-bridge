@@ -99,15 +99,12 @@ jobs:
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
-      - uses: ./.github/actions/create-env-file
-        with:
-          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+      # - uses: ./.github/actions/create-env-file
+      #   with:
+      #     NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
-      - name: Build
-        run: yarn build
-
-      - name: Remove
-        run: rm ./packages/arb-token-bridge-ui/.env.local
+      # - name: Remove
+      #   run: rm ./packages/arb-token-bridge-ui/.env.local
 
       - name: Chown workspace
         run: chown -R $(whoami) .
@@ -129,6 +126,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Build
+        run: yarn build
+        
       - name: Run e2e tests
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
