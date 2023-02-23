@@ -130,7 +130,8 @@ jobs:
         with:
           NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
       
-      - uses: ./.github/actions/create-env-file
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1.3
         with:
           PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           SKIP_METAMASK_SETUP: true
