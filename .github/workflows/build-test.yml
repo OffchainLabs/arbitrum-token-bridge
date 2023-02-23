@@ -136,8 +136,8 @@ jobs:
           SKIP_METAMASK_SETUP: true
           NETWORK_NAME: localhost
           NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
-        directory: ./packages/arb-token-bridge-ui/
-        file_name: .e2e.env
+          directory: ./packages/arb-token-bridge-ui/
+          file_name: .e2e.env
 
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
