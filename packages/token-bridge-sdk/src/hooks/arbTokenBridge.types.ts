@@ -8,7 +8,8 @@ import {
 } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  L1ToL2MessageReader as IL1ToL2MessageReader
+  L1ToL2MessageReader,
+  L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
@@ -230,7 +231,13 @@ export interface TransactionActions {
   ) => void
   fetchAndUpdateL1ToL2MsgStatus: (
     txID: string,
-    l1ToL2Msg: IL1ToL2MessageReader,
+    l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
+  ) => void
+  fetchAndUpdateL1ToL2MsgClassicStatus: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReaderClassic,
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
   ) => void
@@ -250,6 +257,7 @@ export type ArbTokenBridgeTransactions = {
   | 'updateTransaction'
   | 'addTransactions'
   | 'fetchAndUpdateL1ToL2MsgStatus'
+  | 'fetchAndUpdateL1ToL2MsgClassicStatus'
   | 'fetchAndUpdateEthDepositMessageStatus'
   | 'setDepositsInStore'
 >

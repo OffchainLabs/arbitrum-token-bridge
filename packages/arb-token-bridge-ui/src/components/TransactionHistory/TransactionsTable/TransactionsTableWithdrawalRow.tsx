@@ -54,17 +54,23 @@ function WithdrawalRowStatus({
     case 'Unconfirmed':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="yellow">Pending</StatusBadge>
+          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
+            Pending
+          </StatusBadge>
         </div>
       )
 
     case 'Confirmed':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
+          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+            Success
+          </StatusBadge>
           <Tooltip content={<span>Funds are ready to be claimed on L1</span>}>
-            <StatusBadge variant="yellow">
+            <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
               <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
           </Tooltip>
@@ -75,7 +81,9 @@ function WithdrawalRowStatus({
       if (typeof matchingL1Tx === 'undefined') {
         return (
           <div className="flex flex-col space-y-1">
-            <StatusBadge variant="green">Success</StatusBadge>
+            <StatusBadge variant="green" aria-label="L2 Transaction Status">
+              Success
+            </StatusBadge>
             <Tooltip
               content={
                 <span>
@@ -84,7 +92,7 @@ function WithdrawalRowStatus({
                 </span>
               }
             >
-              <StatusBadge variant="gray">
+              <StatusBadge variant="gray" aria-label="L1 Transaction Status">
                 <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
             </Tooltip>
@@ -94,8 +102,12 @@ function WithdrawalRowStatus({
 
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="green">Success</StatusBadge>
+          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
         </div>
       )
     }
@@ -103,7 +115,9 @@ function WithdrawalRowStatus({
     case 'Failure':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="red">Failed</StatusBadge>
+          <StatusBadge variant="red" aria-label="L2 Transaction Status">
+            Failed
+          </StatusBadge>
         </div>
       )
 
@@ -197,7 +211,10 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
     }
 
     return (
-      <span className="whitespace-nowrap text-dark">
+      <span
+        className="whitespace-nowrap text-dark"
+        aria-label="L1 Transaction Link"
+      >
         {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
@@ -211,7 +228,10 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <span className="whitespace-nowrap text-dark">
+      <span
+        className="whitespace-nowrap text-dark"
+        aria-label="L2 Transaction Link"
+      >
         {getNetworkName(l2.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}

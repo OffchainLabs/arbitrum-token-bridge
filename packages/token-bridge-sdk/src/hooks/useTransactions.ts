@@ -6,7 +6,8 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
   EthDepositStatus,
-  L1ToL2MessageReader as IL1ToL2MessageReader
+  L1ToL2MessageReader,
+  L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 type Action =
@@ -379,7 +380,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const fetchAndUpdateL1ToL2MsgStatus = async (
     txID: string,
-    l1ToL2Msg: IL1ToL2MessageReader,
+    l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
     currentStatus: L1ToL2MessageStatus
   ) => {
@@ -407,6 +408,37 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
     updateTxnL1ToL2MsgData(txID, {
       status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
+    })
+  }
+
+  const fetchAndUpdateL1ToL2MsgClassicStatus = async (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReaderClassic,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
+  ) => {
+    const isCompletedEthDeposit =
+      isEthDeposit && status >= L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+
+    const l2TxID = (() => {
+      if (isCompletedEthDeposit) {
+        return l1ToL2Msg.retryableCreationId
+      }
+
+      if (status === L1ToL2MessageStatus.REDEEMED) {
+        return l1ToL2Msg.l2TxHash
+      }
+
+      return undefined
+    })()
+
+    updateTxnL1ToL2MsgData(txID, {
+      status: isCompletedEthDeposit
+        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        : status,
       l2TxID,
       fetchingUpdate: false,
       retryableCreationTxID: l1ToL2Msg.retryableCreationId
@@ -532,6 +564,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       removeTransaction,
       addFailedTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
   ]

@@ -17,47 +17,73 @@ import { TransactionDateTime } from './TransactionsTable'
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
-      return <StatusBadge variant="yellow">Pending</StatusBadge>
+      return (
+        <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
+          Pending
+        </StatusBadge>
+      )
 
     case DepositStatus.L1_FAILURE:
-      return <StatusBadge variant="red">Failed</StatusBadge>
+      return (
+        <StatusBadge variant="red" aria-label="L1 Transaction Status">
+          Failed
+        </StatusBadge>
+      )
 
     case DepositStatus.L2_PENDING:
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="yellow">Pending</StatusBadge>
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
+            Pending
+          </StatusBadge>
         </div>
       )
 
     case DepositStatus.CREATION_FAILED:
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="red">Failed</StatusBadge>
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="red" aria-label="L2 Transaction Status">
+            Failed
+          </StatusBadge>
         </div>
       )
 
     case DepositStatus.L2_FAILURE:
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="red">Failed</StatusBadge>
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="red" aria-label="L2 Transaction Status">
+            Failed
+          </StatusBadge>
         </div>
       )
 
     case DepositStatus.L2_SUCCESS:
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <StatusBadge variant="green">Success</StatusBadge>
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+            Success
+          </StatusBadge>
         </div>
       )
 
     case DepositStatus.EXPIRED:
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="red">Failed</StatusBadge>
+          <StatusBadge variant="red" aria-label="L1 Transaction Status">
+            Failed
+          </StatusBadge>
         </div>
       )
 
@@ -115,7 +141,10 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <span className="whitespace-nowrap text-dark">
+      <span
+        className="whitespace-nowrap text-dark"
+        aria-label="L1 Transaction Link"
+      >
         {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
@@ -126,7 +155,10 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       </span>
 
       {l2TxHash && (
-        <span className="whitespace-nowrap text-dark">
+        <span
+          className="whitespace-nowrap text-dark"
+          aria-label="L2 Transaction Link"
+        >
           {getNetworkName(l2.network.chainID)}:{' '}
           <ExternalLink
             href={`${getExplorerUrl(l2.network.chainID)}/tx/${l2TxHash}`}

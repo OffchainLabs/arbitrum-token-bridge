@@ -1,8 +1,7 @@
 import React from 'react'
 
-interface StatusBadgeProps {
+export type StatusBadgeProps = React.HTMLAttributes<HTMLDivElement> & {
   variant?: 'blue' | 'yellow' | 'green' | 'red' | 'gray'
-  children: React.ReactNode
 }
 
 const variants: Record<string, string> = {
@@ -15,11 +14,13 @@ const variants: Record<string, string> = {
 
 export function StatusBadge({
   variant = 'blue',
-  children
+  children,
+  ...props
 }: StatusBadgeProps): JSX.Element {
   return (
     <div
       className={`w-max rounded-full px-3 py-1 text-sm ${variants[variant]} flex flex-nowrap items-center gap-1`}
+      {...props}
     >
       {children}
     </div>

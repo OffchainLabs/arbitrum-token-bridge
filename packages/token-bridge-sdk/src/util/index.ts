@@ -3,7 +3,7 @@ import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
 import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { Erc20Bridger, MultiCaller, getL2Network } from '@arbitrum/sdk'
+import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -67,8 +67,7 @@ export async function getL1TokenData({
   const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
   if (cachedTokenData) return cachedTokenData // successfully found the cache for the reqd token
 
-  const l2Network = await getL2Network(l2Provider)
-  const erc20Bridger = new Erc20Bridger(l2Network)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
   const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
     erc20L1Address,

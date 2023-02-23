@@ -19,13 +19,13 @@ import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextDispatch } from '../App/AppContext'
 import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { shortenAddress } from '../../util/CommonUtils'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -137,9 +137,7 @@ export function HeaderAccountPopover() {
       return ''
     }
 
-    const len = account.length
-
-    return `${account.substring(0, 5)}...${account.substring(len - 4, len)}`
+    return shortenAddress(account)
   }, [account])
 
   function copy(value: string) {
