@@ -134,6 +134,7 @@ export const useArbTokenBridge = (
       setTransactionSuccess,
       updateTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
@@ -141,10 +142,8 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
 
-  const ethBridger = useMemo(() => new EthBridger(l2.network), [l2.network])
-  const erc20Bridger = useMemo(() => new Erc20Bridger(l2.network), [l2.network])
-
   async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
     return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider)
   }
 
@@ -154,6 +153,7 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
     return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1.provider)
   }
 
@@ -163,6 +163,7 @@ export const useArbTokenBridge = (
    * @returns
    */
   async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
     return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider)
   }
 
@@ -175,6 +176,8 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => {
+    const ethBridger = await EthBridger.fromProvider(l2.provider)
+
     let tx: L1EthDepositTransaction
 
     try {
@@ -226,6 +229,8 @@ export const useArbTokenBridge = (
   }
 
   async function depositEthEstimateGas({ amount }: { amount: BigNumber }) {
+    const ethBridger = await EthBridger.fromProvider(l2.provider)
+
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
       from: walletAddress
@@ -249,6 +254,8 @@ export const useArbTokenBridge = (
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) {
+    const ethBridger = await EthBridger.fromProvider(l2.provider)
+
     const tx = await ethBridger.withdraw({
       amount,
       l2Signer,
@@ -321,6 +328,8 @@ export const useArbTokenBridge = (
   }
 
   async function withdrawEthEstimateGas({ amount }: { amount: BigNumber }) {
+    const ethBridger = await EthBridger.fromProvider(l2.provider)
+
     const withdrawalRequest = await ethBridger.getWithdrawalRequest({
       amount,
       destinationAddress: walletAddress,
@@ -344,6 +353,8 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     l1Signer: Signer
   }) => {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
       l1Signer
@@ -378,6 +389,8 @@ export const useArbTokenBridge = (
   }: {
     erc20L1Address: string
   }) => {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
     const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
       erc20L1Address,
       l1.provider
@@ -445,6 +458,8 @@ export const useArbTokenBridge = (
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string
   }) {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
     const { symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
@@ -565,6 +580,8 @@ export const useArbTokenBridge = (
     txLifecycle?: L2ContractCallTransactionLifecycle
     destinationAddress?: string
   }) {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
     const provider = l2Signer.provider
     const isSmartContractAddress =
       provider && (await provider.getCode(String(erc20L1Address))).length < 2
@@ -669,6 +686,7 @@ export const useArbTokenBridge = (
     amount: BigNumber
     erc20L1Address: string
   }) {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
     const estimatedL1Gas = BigNumber.from(160_000)
 
     const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
@@ -1358,6 +1376,7 @@ export const useArbTokenBridge = (
       addTransaction,
       addTransactions,
       fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
       fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
