@@ -35,8 +35,33 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+      const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
 
-      if (depositTx.asset === AssetType.ETH) {
+      const isEthDeposit = depositTx.asset === AssetType.ETH
+
+      // Classic messages
+      if (l1TxReceiptIsClassic) {
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(
+          l2Provider
+        )
+
+        if (!l1ToL2Msg) {
+          return
+        }
+
+        const status = await l1ToL2Msg.status()
+
+        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgClassicStatus(
+          depositTx.txId,
+          l1ToL2Msg,
+          isEthDeposit,
+          status
+        )
+
+        return
+      }
+
+      if (isEthDeposit) {
         const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
         if (!ethDepositMessage) {
@@ -74,7 +99,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
    */
-  const checkAndAddMissingL1ToL2Messagges = useCallback(async () => {
+  const checkAndAddMissingL1ToL2Messages = useCallback(async () => {
     const l1DepositsWithUntrackedL2Messages =
       actions.app.l1DepositsWithUntrackedL2Messages()
 
@@ -89,8 +114,33 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+      const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
 
-      if (depositTx.assetType === AssetType.ETH) {
+      const isEthDeposit = depositTx.assetType === AssetType.ETH
+
+      // Classic messages
+      if (l1TxReceiptIsClassic) {
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(
+          l2Provider
+        )
+
+        if (!l1ToL2Msg) {
+          return
+        }
+
+        const status = await l1ToL2Msg.status()
+
+        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgClassicStatus(
+          depositTx.txID,
+          l1ToL2Msg,
+          isEthDeposit,
+          status
+        )
+
+        return
+      }
+
+      if (isEthDeposit) {
         const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
         if (!ethDepositMessage) {
@@ -103,6 +153,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       } else {
         const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+
         if (!l1ToL2Msg) {
           return
         }
@@ -120,7 +171,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
   }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
-    checkAndAddMissingL1ToL2Messagges,
+    checkAndAddMissingL1ToL2Messages,
     5000
   )
 

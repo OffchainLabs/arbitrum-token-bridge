@@ -3,8 +3,10 @@ import {
   connectToApp,
   login,
   logout,
+  openAccountPopover,
   restoreAppState,
-  saveAppState
+  saveAppState,
+  closeLowBalanceDialog
 } from '../support/commands'
 import { NetworkType } from '../support/common'
 
@@ -25,6 +27,8 @@ declare global {
       logout(): typeof logout
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
+      openAccountPopover(): typeof openAccountPopover
+      closeLowBalanceDialog(): typeof closeLowBalanceDialog
     }
   }
 }
