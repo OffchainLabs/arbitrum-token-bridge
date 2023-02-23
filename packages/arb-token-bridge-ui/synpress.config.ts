@@ -41,6 +41,8 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       registerLocalNetwork()
 
+      console.log('custom key: ', process.env.PRIVATE_KEY_CUSTOM);
+
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
