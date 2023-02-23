@@ -208,6 +208,7 @@ export function NetworksAndSignersProvider(
 
       if (blocked) {
         setResult({ status: UseNetworksAndSignersStatus.BLOCKED, address })
+        trackEvent('Address Block')
         return
       }
 
