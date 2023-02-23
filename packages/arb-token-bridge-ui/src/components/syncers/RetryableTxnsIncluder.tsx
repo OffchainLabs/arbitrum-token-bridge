@@ -35,8 +35,33 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+      const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
 
-      if (depositTx.asset === AssetType.ETH) {
+      const isEthDeposit = depositTx.asset === AssetType.ETH
+
+      // Classic messages
+      if (l1TxReceiptIsClassic) {
+        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(
+          l2Provider
+        )
+
+        if (!l1ToL2Msg) {
+          return
+        }
+
+        const status = await l1ToL2Msg.status()
+
+        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgClassicStatus(
+          depositTx.txId,
+          l1ToL2Msg,
+          isEthDeposit,
+          status
+        )
+
+        return
+      }
+
+      if (isEthDeposit) {
         const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
 
         if (!ethDepositMessage) {
