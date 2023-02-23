@@ -3,6 +3,11 @@ import {
   L1ToL2MessageStatus,
   EthDepositStatus
 } from '@arbitrum/sdk'
+import {
+  EthDepositMessage,
+  L1ToL2MessageReader,
+  L1ToL2MessageReaderClassic
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { Transaction } from '../hooks/useTransactions'
@@ -34,11 +39,31 @@ export const updateAdditionalDepositData = async (
       )
     }
 
+    const isEthDeposit = depositTx.assetName === AssetType.ETH
+    const { l1ToL2Msg, isClassic } = await getRetyableMessageDataFromTxID({
+      depositTxId: depositTx.txID,
+      l1Provider,
+      l2Provider,
+      isEthDeposit
+    })
+
+    if (isClassic) {
+      const updatedDepositTx = updateAdditionalDepositDataClassic({
+        depositTx,
+        l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
+        isEthDeposit,
+        timestampCreated,
+        l2Provider
+      })
+
+      return updatedDepositTx
+    }
+
     // Check if deposit is ETH
-    if (depositTx.assetName === AssetType.ETH) {
+    if (isEthDeposit) {
       const updatedDepositTx = await updateAdditionalDepositDataETH({
         depositTx,
-        l1TxReceipt,
+        ethDepositMessage: l1ToL2Msg as EthDepositMessage,
         l2Provider,
         timestampCreated
       })
@@ -48,9 +73,9 @@ export const updateAdditionalDepositData = async (
       // else if the transaction is not ETH ie. it's a ERC20 token deposit
       const updatedDepositTx = await updateAdditionalDepositDataToken({
         depositTx,
-        l1TxReceipt,
-        l2Provider,
-        timestampCreated
+        l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
+        timestampCreated,
+        l2Provider
       })
       return updatedDepositTx
     }
@@ -63,22 +88,15 @@ export const updateAdditionalDepositData = async (
 
 const updateAdditionalDepositDataETH = async ({
   depositTx,
-  l1TxReceipt,
+  ethDepositMessage,
   l2Provider,
   timestampCreated
 }: {
   depositTx: Transaction
+  ethDepositMessage: EthDepositMessage
   timestampCreated: string
   l2Provider: Provider
-  l1TxReceipt: L1TransactionReceipt
 }) => {
-  // from the receipt - get the eth-deposit-message
-  const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
-
-  if (!ethDepositMessage) {
-    return
-  }
-
   // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
   const status = await ethDepositMessage.status()
   const isDeposited = status === EthDepositStatus.DEPOSITED
@@ -114,26 +132,19 @@ const updateAdditionalDepositDataETH = async ({
 
 const updateAdditionalDepositDataToken = async ({
   depositTx,
+  l1ToL2Msg,
   timestampCreated,
-  l1TxReceipt,
   l2Provider
 }: {
   depositTx: Transaction
   timestampCreated: string
   l2Provider: Provider
-  l1TxReceipt: L1TransactionReceipt
+  l1ToL2Msg: L1ToL2MessageReader
 }) => {
   const updatedDepositTx = {
     ...depositTx,
     timestampCreated
   }
-
-  // get l1 to l2 message for status fields
-  const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
-  if (!l1ToL2Msg) {
-    return updatedDepositTx
-  }
-
   const res = await l1ToL2Msg.waitForStatus()
 
   const l2TxID = (() => {
@@ -172,4 +183,120 @@ const updateAdditionalDepositDataToken = async ({
   }
 
   return completeDepositTx
+}
+
+const updateAdditionalDepositDataClassic = async ({
+  depositTx,
+  l1ToL2Msg,
+  isEthDeposit,
+  timestampCreated,
+  l2Provider
+}: {
+  depositTx: Transaction
+  timestampCreated: string
+  l2Provider: Provider
+  isEthDeposit: boolean
+  l1ToL2Msg: L1ToL2MessageReaderClassic
+}) => {
+  const updatedDepositTx = {
+    ...depositTx,
+    timestampCreated
+  }
+
+  const status = await l1ToL2Msg.status()
+
+  const isCompletedEthDeposit =
+    isEthDeposit && status >= L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+
+  const l2TxID = (() => {
+    if (isCompletedEthDeposit) {
+      return l1ToL2Msg.retryableCreationId
+    }
+
+    if (status === L1ToL2MessageStatus.REDEEMED) {
+      return l1ToL2Msg.l2TxHash
+    }
+
+    return undefined
+  })()
+
+  const l1ToL2MsgData = {
+    status: status,
+    l2TxID,
+    fetchingUpdate: false,
+    retryableCreationTxID: l1ToL2Msg.retryableCreationId
+  }
+
+  const l2BlockNum = l2TxID
+    ? (await l2Provider.getTransaction(l2TxID)).blockNumber
+    : null
+
+  const timestampResolved = l2BlockNum
+    ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
+    : null
+
+  const completeDepositTx = {
+    ...updatedDepositTx,
+    status: l2TxID ? 'success' : 'pending', // TODO :handle other cases here
+    timestampCreated,
+    timestampResolved,
+    l1ToL2MsgData: l1ToL2MsgData
+  }
+
+  console.log('COMPLETE', completeDepositTx)
+  return completeDepositTx
+}
+
+export const getRetyableMessageDataFromTxID = async ({
+  depositTxId,
+  isEthDeposit,
+  l1Provider,
+  l2Provider
+}: {
+  depositTxId: string
+  l1Provider: Provider
+  isEthDeposit: boolean
+  l2Provider: Provider
+}): Promise<{
+  isClassic?: boolean
+  l1ToL2Msg?:
+    | L1ToL2MessageReaderClassic
+    | EthDepositMessage
+    | L1ToL2MessageReader
+}> => {
+  const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
+
+  // TODO: Handle tx not found
+  if (!depositTxReceipt) {
+    return {}
+  }
+
+  const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+  const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
+
+  if (l1TxReceiptIsClassic) {
+    // classic (pre-nitro) deposit - both eth + token
+    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(l2Provider)
+    return {
+      isClassic: true,
+      l1ToL2Msg: l1ToL2Msg
+    }
+  } else {
+    // post-nitro handling
+    if (isEthDeposit) {
+      // nitro eth deposit
+      const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+      return {
+        isClassic: false,
+        l1ToL2Msg: ethDepositMessage
+      }
+    } else {
+      // nitro token deposit
+      const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+      return {
+        isClassic: false,
+        l1ToL2Msg: l1ToL2Msg
+      }
+    }
+  }
 }

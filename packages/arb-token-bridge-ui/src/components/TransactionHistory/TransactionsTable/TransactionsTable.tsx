@@ -96,7 +96,7 @@ export function TransactionsTable({
     if (!pageParams.pageNumber) {
       const noTransactionInSubgraph = !transactions?.[0]
       const firstSubgraphTransactionTimestamp = noTransactionInSubgraph
-        ? dayjs('0') // very old arbitrary date
+        ? dayjs(0) // very old arbitrary date
         : dayjs(transactions[0]?.['createdAt'])
 
       const newerTransactions: MergedTransaction[] = []

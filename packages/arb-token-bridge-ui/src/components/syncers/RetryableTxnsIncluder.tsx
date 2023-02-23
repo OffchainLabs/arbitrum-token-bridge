@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react'
+import { L1ToL2MessageStatus, EthDepositStatus } from '@arbitrum/sdk'
 import {
-  L1TransactionReceipt,
-  L1ToL2MessageStatus,
-  EthDepositStatus
-} from '@arbitrum/sdk'
-import { AssetType } from 'token-bridge-sdk'
-
+  EthDepositMessage,
+  L1ToL2MessageReader,
+  L1ToL2MessageReaderClassic
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { AssetType, getRetyableMessageDataFromTxID } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -21,80 +21,63 @@ export function RetryableTxnsIncluder(): JSX.Element {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
 
-  const checkAndUpdateFailedRetryables = useCallback(async () => {
-    const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
+  const fetchAndUpdateDepositStatus = useCallback(
+    async (depositTxId, depositAssetType) => {
+      const isEthDeposit = depositAssetType === AssetType.ETH
 
-    for (const depositTx of failedRetryablesToRedeem) {
-      const depositTxReceipt = await l1Provider.getTransactionReceipt(
-        depositTx.txId
-      )
+      const { l1ToL2Msg, isClassic } = await getRetyableMessageDataFromTxID({
+        depositTxId,
+        isEthDeposit,
+        l1Provider,
+        l2Provider
+      })
 
-      // TODO: Handle tx not found
-      if (!depositTxReceipt) {
-        return
-      }
+      if (!l1ToL2Msg) return
 
-      const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-      const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
-
-      const isEthDeposit = depositTx.asset === AssetType.ETH
+      const status = await l1ToL2Msg?.status()
 
       // Classic messages
-      if (l1TxReceiptIsClassic) {
-        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(
-          l2Provider
-        )
-
-        if (!l1ToL2Msg) {
-          return
-        }
-
-        const status = await l1ToL2Msg.status()
-
+      if (isClassic) {
         arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgClassicStatus(
-          depositTx.txId,
-          l1ToL2Msg,
+          depositTxId,
+          l1ToL2Msg as L1ToL2MessageReaderClassic,
           isEthDeposit,
-          status
+          status as L1ToL2MessageStatus
         )
-
         return
       }
 
+      // Non-classic - Eth deposit
       if (isEthDeposit) {
-        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
-
-        if (!ethDepositMessage) {
-          return
-        }
-
-        const status = await ethDepositMessage.status()
-
         if (status !== EthDepositStatus.DEPOSITED) {
           arbTokenBridge?.transactions.fetchAndUpdateEthDepositMessageStatus(
-            depositTx.txId,
-            ethDepositMessage
+            depositTxId,
+            l1ToL2Msg as EthDepositMessage
           )
         }
       } else {
-        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
-        if (!l1ToL2Msg) {
-          return
-        }
-
-        const status = await l1ToL2Msg.status()
-
+        // Non-classic - Token deposit
         if (status !== L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2) {
           arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
-            depositTx.txId,
-            l1ToL2Msg,
+            depositTxId,
+            l1ToL2Msg as L1ToL2MessageReader,
             false,
-            status
+            status as L1ToL2MessageStatus
           )
         }
       }
+    },
+    [l1Provider, l2Provider]
+  )
+
+  const checkAndUpdateFailedRetryables = useCallback(async () => {
+    const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
+    for (const depositTx of failedRetryablesToRedeem) {
+      const depositTxId = depositTx.txId
+      const depositAssetType = depositTx.asset
+      fetchAndUpdateDepositStatus(depositTxId, depositAssetType)
     }
-  }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
+  }, [arbTokenBridge?.transactions?.addTransactions])
 
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
@@ -104,71 +87,11 @@ export function RetryableTxnsIncluder(): JSX.Element {
       actions.app.l1DepositsWithUntrackedL2Messages()
 
     for (const depositTx of l1DepositsWithUntrackedL2Messages) {
-      const depositTxReceipt = await l1Provider.getTransactionReceipt(
-        depositTx.txID
-      )
-
-      // TODO: Handle tx not found
-      if (!depositTxReceipt) {
-        return
-      }
-
-      const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-      const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
-
-      const isEthDeposit = depositTx.assetType === AssetType.ETH
-
-      // Classic messages
-      if (l1TxReceiptIsClassic) {
-        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(
-          l2Provider
-        )
-
-        if (!l1ToL2Msg) {
-          return
-        }
-
-        const status = await l1ToL2Msg.status()
-
-        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgClassicStatus(
-          depositTx.txID,
-          l1ToL2Msg,
-          isEthDeposit,
-          status
-        )
-
-        return
-      }
-
-      if (isEthDeposit) {
-        const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
-
-        if (!ethDepositMessage) {
-          return
-        }
-
-        arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
-          depositTx.txID,
-          ethDepositMessage
-        )
-      } else {
-        const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
-
-        if (!l1ToL2Msg) {
-          return
-        }
-
-        const status = await l1ToL2Msg.status()
-
-        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgStatus(
-          depositTx.txID,
-          l1ToL2Msg,
-          false,
-          status
-        )
-      }
+      const depositTxId = depositTx.txID
+      const depositAssetType = depositTx.assetType
+      fetchAndUpdateDepositStatus(depositTxId, depositAssetType)
     }
-  }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
+  }, [arbTokenBridge?.transactions?.addTransactions])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messages,
