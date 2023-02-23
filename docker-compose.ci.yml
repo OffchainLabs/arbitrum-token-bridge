@@ -48,9 +48,9 @@ services:
       - SE_SCREEN_HEIGHT=${SE_SCREEN_HEIGHT}
     depends_on:
       - display
-    # networks:
-    #   - x11
-    network_mode: host
+    networks:
+      - x11
+    # network_mode: host
 
-# networks:
-#   x11:
+networks:
+  x11:
