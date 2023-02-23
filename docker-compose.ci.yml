@@ -20,8 +20,8 @@ services:
       - ./docker/screenshots:/app/tests/e2e/screenshots
     command: >
       bash -c 'echo -n "======> local noVNC URL: http://localhost:8080/vnc.html?autoconnect=true " && npx wait-on http://display:8080 && echo -n "======> remote noVNC URL: " && curl -s ngrok:4040/api/tunnels | jq -r .tunnels[0].public_url && npm run test:e2e'
-    networks:
-      - x11
+    # networks:
+    #   - x11
     network_mode: host
 
   display:
@@ -33,8 +33,8 @@ services:
       - DISPLAY_HEIGHT=${DISPLAY_HEIGHT}
     # ports:
     #   - '8080:8080'
-    networks:
-      - x11
+    # networks:
+    #   - x11
     network_mode: host
 
   video:
@@ -48,9 +48,9 @@ services:
       - SE_SCREEN_HEIGHT=${SE_SCREEN_HEIGHT}
     depends_on:
       - display
-    networks:
-      - x11
+    # networks:
+    #   - x11
     network_mode: host
 
-networks:
-  x11:
+# networks:
+#   x11:
