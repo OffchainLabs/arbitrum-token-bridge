@@ -159,8 +159,8 @@ jobs:
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env.local
 
-      - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@main
+      # - name: Set up the local node
+        
 
       - name: Install
         run: yarn install
@@ -169,6 +169,7 @@ jobs:
         run: yarn build
         
       - name: Run e2e tests
+        uses: OffchainLabs/actions/run-nitro-test-node@main
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
         env:
