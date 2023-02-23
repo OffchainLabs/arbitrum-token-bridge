@@ -133,29 +133,29 @@ jobs:
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          SKIP_METAMASK_SETUP: true
-          NETWORK_NAME: localhost
-          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+          envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
+          envkey_SKIP_METAMASK_SETUP: true
+          envkey_NETWORK_NAME: localhost
+          envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           directory: ./packages/arb-token-bridge-ui/
           file_name: .e2e.env
 
       - name: Make .env.local
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          SKIP_METAMASK_SETUP: true
-          NETWORK_NAME: localhost
-          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+          envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
+          envkey_SKIP_METAMASK_SETUP: true
+          envkey_NETWORK_NAME: localhost
+          envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           file_name: .env.local
 
       - name: Make .env.local (in workspace)
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          SKIP_METAMASK_SETUP: true
-          NETWORK_NAME: localhost
-          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+          envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
+          envkey_SKIP_METAMASK_SETUP: true
+          envkey_NETWORK_NAME: localhost
+          envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env.local
 
