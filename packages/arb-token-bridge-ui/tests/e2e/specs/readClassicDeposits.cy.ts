@@ -89,12 +89,12 @@ describe('Read classic deposit messages', () => {
 
         cy.findByLabelText(/l1 transaction link/i).should(
           'contain',
-          `L1: ${shortenTxHash(l1TxHash)}`
+          `${shortenTxHash(l1TxHash)}`
         )
 
         cy.findByLabelText(/l2 transaction link/i).should(
           'contain',
-          `L2: ${shortenTxHash(l2TxHash)}`
+          `${shortenTxHash(l2TxHash)}`
         )
       })
     })
@@ -144,12 +144,12 @@ describe('Read classic deposit messages', () => {
 
         cy.findByLabelText(/l1 transaction link/i).should(
           'contain',
-          `L1: ${shortenTxHash(l1TxHash)}`
+          `${shortenTxHash(l1TxHash)}`
         )
 
         cy.findByLabelText(/l2 transaction link/i).should(
           'contain',
-          `L2: ${shortenTxHash(l2TxHash)}`
+          `${shortenTxHash(l2TxHash)}`
         )
       })
     })

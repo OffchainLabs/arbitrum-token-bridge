@@ -74,7 +74,7 @@ export type TransactionsTableProps = {
   transactions: MergedTransaction[]
   loading: boolean
   error: boolean
-  pendingTransactionsMap: Map<string, MergedTransaction>
+  localCachedTransactionMap: Map<string, MergedTransaction>
 }
 
 export function TransactionsTable({
@@ -84,7 +84,7 @@ export function TransactionsTable({
   transactions,
   loading,
   error,
-  pendingTransactionsMap
+  localCachedTransactionMap
 }: TransactionsTableProps) {
   const { isSmartContractWallet } = useNetworksAndSigners()
 
@@ -92,14 +92,16 @@ export function TransactionsTable({
     // if it is page 1, and a newly added transaction has come in (from local-storage)
     // prepend that to the start of the list, till it starts coming from the subgraph as well (generally after a minute or 2)
 
-    if (!pageParams.pageNumber && transactions?.[0]) {
-      const firstSubgraphTransactionTimestamp = dayjs(
-        transactions[0]['createdAt']
-      )
+    // if first page
+    if (!pageParams.pageNumber) {
+      const noTransactionInSubgraph = !transactions?.[0]
+      const firstSubgraphTransactionTimestamp = noTransactionInSubgraph
+        ? dayjs('0') // very old arbitrary date
+        : dayjs(transactions[0]?.['createdAt'])
 
       const newerTransactions: MergedTransaction[] = []
 
-      pendingTransactionsMap.forEach(tx => {
+      localCachedTransactionMap?.forEach(tx => {
         // only check pending deposits if you're on deposits, and vice-versa
         const isMatchingPage =
           (isDeposit(tx) && type === 'deposits') ||
@@ -122,7 +124,7 @@ export function TransactionsTable({
     }
 
     return transactions
-  }, [transactions, pendingTransactionsMap])
+  }, [transactions, localCachedTransactionMap])
 
   const status = useMemo(() => {
     if (loading) return TableStatus.LOADING
@@ -146,7 +148,7 @@ export function TransactionsTable({
           transactions,
           loading,
           error,
-          pendingTransactionsMap
+          localCachedTransactionMap
         }}
       />
 
@@ -180,15 +182,32 @@ export function TransactionsTable({
                   _transactions.map((tx, index) => {
                     const isLastRow = index === _transactions.length - 1
 
-                    const livePendingTx = pendingTransactionsMap.get(tx.txId)
+                    const locallyCachedTx = localCachedTransactionMap.get(
+                      tx.txId
+                    )
 
                     // if transaction is present in pending transactions, subscribe to that in this row,
                     // this will make sure the row updates with any updates in the pending tx state
                     // else show static subgraph table data
-                    const finalTx =
-                      isPending(tx) && livePendingTx ? livePendingTx : tx
 
-                    return isDeposit(tx) ? (
+                    const finalTx = (() => {
+                      //if transaction not present in subgraph, but present in local-cache
+                      // example - in our `readClassicDeposit` test - where we are not relying at subgraph at all
+                      if (!tx && locallyCachedTx) {
+                        return locallyCachedTx
+                      }
+
+                      // if it's a pending transaction, then definitely subscibe to the locally-cached transaction
+                      if (tx && isPending(tx) && locallyCachedTx) {
+                        return locallyCachedTx
+                      }
+
+                      // else show the normal, static subgraph tx only
+                      // eg. transaction is not pending, or not present locally, just show the subgraph one then
+                      return tx
+                    })()
+
+                    return isDeposit(finalTx) ? (
                       <TransactionsTableDepositRow
                         key={`${finalTx.txId}-${finalTx.direction}`}
                         tx={finalTx}
