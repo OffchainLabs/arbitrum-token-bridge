@@ -43,7 +43,7 @@ export default defineConfig({
 
       console.log('custom key: ', process.env.PRIVATE_KEY_CUSTOM);
       console.log('SKIP_METAMASK_SETUP: ', process.env.SKIP_METAMASK_SETUP);
-      console.log('infura: ', process.env.NEXT_PUBLIC_INFURA_KEY);
+      console.log('infura:  ', process.env.NEXT_PUBLIC_INFURA_KEY);
 
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
