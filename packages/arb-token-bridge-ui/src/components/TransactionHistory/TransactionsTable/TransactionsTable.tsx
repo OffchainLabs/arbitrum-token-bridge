@@ -93,8 +93,6 @@ export function TransactionsTable({
     // prepend that to the start of the list, till it starts coming from the subgraph as well (generally after a minute or 2)
 
     if (!pageParams.pageNumber && transactions?.[0]) {
-      console.log('NEW TRANSACTION DETECTED', pendingTransactionsMap.values())
-
       const firstSubgraphTransactionTimestamp = dayjs(
         transactions[0]['createdAt']
       )
