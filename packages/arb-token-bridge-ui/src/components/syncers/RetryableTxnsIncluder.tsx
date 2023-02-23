@@ -99,7 +99,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
    */
-  const checkAndAddMissingL1ToL2Messagges = useCallback(async () => {
+  const checkAndAddMissingL1ToL2Messages = useCallback(async () => {
     const l1DepositsWithUntrackedL2Messages =
       actions.app.l1DepositsWithUntrackedL2Messages()
 
@@ -171,7 +171,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
   }, [arbTokenBridge?.transactions?.addTransactions, l1Provider, l2Provider])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
-    checkAndAddMissingL1ToL2Messagges,
+    checkAndAddMissingL1ToL2Messages,
     5000
   )
 
