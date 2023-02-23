@@ -31,6 +31,8 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
+import { ApiResponse as ScreenApiResponse } from '../pages/api/screen'
+
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
   NOT_CONNECTED = 'not_connected',
@@ -148,8 +150,17 @@ function getProviderName(provider: any): ProviderName | null {
   return null
 }
 
-async function screen(address: string): Promise<boolean> {
-  return new Promise(r => setTimeout(() => r(true), 100))
+async function isBlocked(address: string): Promise<boolean> {
+  const body = JSON.stringify({ address })
+
+  try {
+    const response = await fetch('/api/screen', { method: 'POST', body })
+    const responseJson: ScreenApiResponse = await response.json()
+
+    return responseJson.blocked
+  } catch (error) {
+    return false
+  }
 }
 
 export function NetworksAndSignersProvider(
@@ -193,9 +204,9 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(
     async (web3Provider: Web3Provider, address: string) => {
-      const shouldBlock = await screen(address)
+      const blocked = await isBlocked(address)
 
-      if (shouldBlock) {
+      if (blocked) {
         setResult({ status: UseNetworksAndSignersStatus.BLOCKED, address })
         return
       }
