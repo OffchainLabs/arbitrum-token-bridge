@@ -126,21 +126,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - uses: ./.github/actions/create-env-file
+        with:
+          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+      
+      - uses: ./.github/actions/create-env-file
+        with:
+          PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
+          SKIP_METAMASK_SETUP: true
+          NETWORK_NAME: localhost
+          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+        directory: ./packages/arb-token-bridge-ui/
+        file_name: .e2e.env
+
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
 
       - name: Install
         run: yarn install
 
-      - uses: ./.github/actions/create-env-file
-        with:
-          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
-
       - name: Build
         run: yarn build
-
-      # - name: "Install the Cypress binary"
-      #   run: yarn test:ci:e2e:install
         
       - name: Run e2e tests
         run: |
