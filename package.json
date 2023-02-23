@@ -10,6 +10,7 @@
     "build:ui": "yarn workspace arb-token-bridge-ui build",
     "build:sdk": "yarn workspace token-bridge-sdk build",
     "build:wallet": "yarn workspace @arbitrum/use-wallet build",
+    "build": "yarn build:wallet && yarn build:sdk && yarn build:ui",
     "start:ui": "yarn workspace arb-token-bridge-ui start",
     "start": "yarn build:sdk && yarn build:wallet && yarn start:ui",
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
