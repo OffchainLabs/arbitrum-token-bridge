@@ -162,6 +162,9 @@ jobs:
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
 
+      - name: Install
+        run: yarn install
+
       - name: Build
         run: yarn build
 
