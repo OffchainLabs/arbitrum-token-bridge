@@ -85,7 +85,7 @@ describe('Approve token', () => {
       cy.wait(15000)
       cy.confirmMetamaskTransaction().then(() => {
         cy.findByText(
-          `Moving 0.000000000001 ${ERC20TokenSymbol} to Arbitrum...`
+          `Moving 0.000000000001 ${ERC20TokenSymbol} to Arbitrum`
         ).should('be.visible')
       })
     })
