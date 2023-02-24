@@ -5,9 +5,8 @@ import { AmountQueryParam } from '../useArbQueryParams'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
-    // only digits, e, +, or - are allowed in input[type="number"]
-    // but for +, the value returned by the input field is still without +
-    // we don't want to include the + cases because we don't want to test the browser's native implementation
+    // input[type="text"] allows any character
+    // we allow both dot and comma for decimal separator
 
     const getEncodeResult = (value: string) => AmountQueryParam.encode(value)
 
@@ -21,20 +20,29 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getEncodeResult('0')).toBe('0')
       expect(getEncodeResult('0.000')).toBe('0.000')
 
+      expect(getEncodeResult('1,0234')).toBe('1.0234')
+      expect(getEncodeResult('0,0234')).toBe('0.0234')
+      expect(getEncodeResult('0,0')).toBe('0.0')
+      expect(getEncodeResult('0,000')).toBe('0.000')
+
       expect(getEncodeResult('1e1')).toBe('1e1')
       expect(getEncodeResult('1.0234e4')).toBe('1.0234e4')
       expect(getEncodeResult('1.0234e-4')).toBe('1.0234e-4')
+      expect(getEncodeResult('1,0234e4')).toBe('1.0234e4')
+      expect(getEncodeResult('1,0234e-4')).toBe('1.0234e-4')
 
       expect(getEncodeResult('max')).toBe('max')
-      expect(getEncodeResult('mAx')).toBe('mAx')
-      expect(getEncodeResult('MAX')).toBe('MAX')
-      expect(getEncodeResult('MAx')).toBe('MAx')
+      expect(getEncodeResult('mAx')).toBe('max')
+      expect(getEncodeResult('MAX')).toBe('max')
+      expect(getEncodeResult('MAx')).toBe('max')
     })
 
     it('should return the absolute positive value after encoding', () => {
       expect(getEncodeResult('-0.234')).toBe('0.234')
+      expect(getEncodeResult('-0,234')).toBe('0.234')
       expect(getEncodeResult('-0')).toBe('0')
       expect(getEncodeResult('-0.123123')).toBe('0.123123')
+      expect(getEncodeResult('-0,123123')).toBe('0.123123')
       expect(getEncodeResult('-1')).toBe('1')
       expect(getEncodeResult('-10')).toBe('10')
     })
@@ -44,13 +52,12 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       // but the tests are here in case we change the input type in the future
       expect(getEncodeResult('random')).toBe('')
       expect(getEncodeResult('null')).toBe('')
-      expect(getEncodeResult('1,234')).toBe('')
-      expect(getEncodeResult('-1,234')).toBe('')
       expect(getEncodeResult('1dfk')).toBe('')
       expect(getEncodeResult('da24')).toBe('')
 
       // these should never come into encode from the input[type=number]
       // but the tests are here in case we change the input type in the future
+      expect(getEncodeResult('1.23.0')).toBe('')
       expect(getEncodeResult('1,23,0')).toBe('')
       expect(getEncodeResult('0,null,123')).toBe('')
       expect(getEncodeResult('some, text')).toBe('')
@@ -71,6 +78,13 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getEncodeResult('00002.123')).toBe('2.123')
       expect(getEncodeResult('.0234')).toBe('0.0234')
       expect(getEncodeResult('123.123000')).toBe('123.123000')
+
+      expect(getEncodeResult('00,001')).toBe('0.001')
+      expect(getEncodeResult('00,000')).toBe('0.000')
+      expect(getEncodeResult(',1')).toBe('0.1')
+      expect(getEncodeResult('00002,123')).toBe('2.123')
+      expect(getEncodeResult(',0234')).toBe('0.0234')
+      expect(getEncodeResult('123,123000')).toBe('123.123000')
     })
   })
 
@@ -87,14 +101,21 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('0')).toBe('0')
       expect(getDecodeResult('0.000')).toBe('0.000')
 
+      expect(getDecodeResult('1,0234')).toBe('1.0234')
+      expect(getDecodeResult('0,0234')).toBe('0.0234')
+      expect(getDecodeResult('0,0')).toBe('0.0')
+      expect(getDecodeResult('0,000')).toBe('0.000')
+
       expect(getDecodeResult('1e1')).toBe('1e1')
       expect(getDecodeResult('1.0234e4')).toBe('1.0234e4')
       expect(getDecodeResult('1.0234e-4')).toBe('1.0234e-4')
+      expect(getDecodeResult('1,0234e4')).toBe('1.0234e4')
+      expect(getDecodeResult('1,0234e-4')).toBe('1.0234e-4')
 
       expect(getDecodeResult('max')).toBe('max')
-      expect(getDecodeResult('mAx')).toBe('mAx')
-      expect(getDecodeResult('MAX')).toBe('MAX')
-      expect(getDecodeResult('MAx')).toBe('MAx')
+      expect(getDecodeResult('mAx')).toBe('max')
+      expect(getDecodeResult('MAX')).toBe('max')
+      expect(getDecodeResult('MAx')).toBe('max')
     })
 
     it('should return the absolute positive value after decoding', () => {
@@ -103,17 +124,19 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('-0.123123')).toBe('0.123123')
       expect(getDecodeResult('-1')).toBe('1')
       expect(getDecodeResult('-10')).toBe('10')
+
+      expect(getDecodeResult('-0,234')).toBe('0.234')
+      expect(getDecodeResult('-0,123123')).toBe('0.123123')
     })
 
     it('should return an empty string after decoding', () => {
       expect(getDecodeResult('random')).toBe('')
       expect(getDecodeResult('null')).toBe('')
-      expect(getDecodeResult('1,234')).toBe('')
-      expect(getDecodeResult('-1,234')).toBe('')
       expect(getDecodeResult('1dfk')).toBe('')
       expect(getDecodeResult('da24')).toBe('')
 
       expect(getDecodeResult('1,23,0')).toBe('')
+      expect(getDecodeResult('1.23.0')).toBe('')
       expect(getDecodeResult('0,null,123')).toBe('')
       expect(getDecodeResult('some, text')).toBe('')
 
@@ -130,6 +153,13 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('00002.123')).toBe('2.123')
       expect(getDecodeResult('.0234')).toBe('0.0234')
       expect(getDecodeResult('123.123000')).toBe('123.123000')
+
+      expect(getDecodeResult('00,001')).toBe('0.001')
+      expect(getDecodeResult('00,000')).toBe('0.000')
+      expect(getDecodeResult(',1')).toBe('0.1')
+      expect(getDecodeResult('00002,123')).toBe('2.123')
+      expect(getDecodeResult(',0234')).toBe('0.0234')
+      expect(getDecodeResult('123,123000')).toBe('123.123000')
     })
   })
 })

@@ -5,7 +5,7 @@ import synpressPlugins from '@synthetixio/synpress/plugins'
 import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
-import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
+import { Erc20Bridger } from '@arbitrum/sdk'
 import { registerLocalNetwork } from './src/util/networks'
 
 import {
@@ -50,8 +50,7 @@ export default defineConfig({
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
       const testWallet = Wallet.createRandom()
       const testWalletAddress = await testWallet.getAddress()
-      const l2Network = await getL2Network(wallet.connect(arbProvider))
-      const erc20Bridger = new Erc20Bridger(l2Network)
+      const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
       const erc20Contract = new TestERC20__factory().connect(
         wallet.connect(ethProvider)
       )
@@ -143,6 +142,7 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
+      'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
       'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'

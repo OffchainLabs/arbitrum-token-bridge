@@ -36,7 +36,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export -o build/",
+    "build": "next build",
     "start": "next start",
     "test": "jest --watch",
     "test:ci": "jest --ci",

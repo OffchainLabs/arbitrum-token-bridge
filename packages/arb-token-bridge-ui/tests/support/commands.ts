@@ -15,6 +15,7 @@ import {
   startWebApp,
   resetSeenTimeStampCache
 } from './common'
+import { shortenAddress } from '../../src/util/CommonUtils'
 
 export function login({
   networkType,
@@ -79,10 +80,24 @@ export const connectToApp = () => {
   cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click()
 }
 
+export const closeLowBalanceDialog = () => {
+  cy.findByRole('button', { name: /go to bridge/i })
+    .should('be.visible')
+    .click()
+}
+
+export const openAccountPopover = () => {
+  cy.findByRole('button', { name: shortenAddress(Cypress.env('ADDRESS')) })
+    .should('be.visible')
+    .click()
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
   restoreAppState,
-  saveAppState
+  saveAppState,
+  openAccountPopover,
+  closeLowBalanceDialog
 })
