@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
+import { utils } from 'ethers'
 
 function loadEnvironmentVariable(key: string): string {
   const value = process.env[key]
@@ -31,20 +32,33 @@ function isBlocked(response: ExternalApiResponse): boolean {
   return response.some(result => result.addressRiskIndicators.length > 0)
 }
 
-export type ApiResponse = { blocked: boolean }
+export type ApiResponseSuccess = {
+  blocked: boolean
+}
+
+export type ApiResponseError = {
+  message: string
+}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse>
+  res: NextApiResponse<ApiResponseSuccess | ApiResponseError>
 ) {
   if (req.method !== 'POST') {
-    res.status(400)
+    res.status(400).send({ message: 'invalid_method' })
+    return
+  }
+
+  const address = req.body.address
+
+  if (typeof address !== 'string' || !utils.isAddress(address)) {
+    res.status(400).send({ message: 'invalid_address' })
     return
   }
 
   const requestData = [
-    { address: req.body.address, chain: 'ethereum' },
-    { address: req.body.address, chain: 'arbitrum' }
+    { address, chain: 'ethereum' },
+    { address, chain: 'arbitrum' }
   ]
 
   // todo: retry a couple of times in case of error?

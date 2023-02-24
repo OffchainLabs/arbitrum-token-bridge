@@ -31,7 +31,7 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
-import { ApiResponse as ScreenApiResponse } from '../pages/api/screen'
+import { ApiResponseSuccess } from '../pages/api/screen'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -154,8 +154,12 @@ async function isBlocked(address: string): Promise<boolean> {
   const body = JSON.stringify({ address })
 
   try {
-    const response = await fetch('/api/screen', { method: 'POST', body })
-    const responseJson: ScreenApiResponse = await response.json()
+    const response = await fetch('/api/screen', {
+      method: 'POST',
+      body,
+      headers: { 'Content-Type': 'application/json' }
+    })
+    const responseJson: ApiResponseSuccess = await response.json()
 
     return responseJson.blocked
   } catch (error) {
