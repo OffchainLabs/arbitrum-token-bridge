@@ -438,7 +438,7 @@ export function TransferPanel() {
             l2Provider: l2Provider
           })
 
-          if (!allowance.gte(amountRaw)) {
+          if (!BigNumber.from(allowance).gte(amountRaw)) {
             const waitForInput = openTokenApprovalDialog()
             const confirmed = await waitForInput()
 

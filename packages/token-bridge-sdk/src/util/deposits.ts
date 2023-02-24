@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react'
 import {
   L1TransactionReceipt,
   L1ToL2MessageStatus,
@@ -21,12 +22,6 @@ export const updateAdditionalDepositData = async (
   // 2. on the basis of those, finally calculate the status of the transaction
 
   try {
-    // fetch L1 transaction receipt
-    const depositTxReceipt = await l1Provider.getTransactionReceipt(
-      depositTx.txID
-    )
-    const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-
     // fetch timestamp creation date
     let timestampCreated = new Date().toISOString()
     if (depositTx.timestampCreated) {
@@ -82,6 +77,7 @@ export const updateAdditionalDepositData = async (
   } catch (e) {
     // error fetching transaction details through RPC, possibly because SDK doesn't support classic retryable transactions yet
     console.log(e)
+    Sentry.captureException(e)
     return { ...depositTx, status: 'warning' }
   }
 }
@@ -264,6 +260,7 @@ export const getRetyableMessageDataFromTxID = async ({
     | EthDepositMessage
     | L1ToL2MessageReader
 }> => {
+  // fetch L1 transaction receipt
   const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
 
   // TODO: Handle tx not found

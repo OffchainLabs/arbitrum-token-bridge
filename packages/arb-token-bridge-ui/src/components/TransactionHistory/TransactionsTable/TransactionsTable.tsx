@@ -190,7 +190,7 @@ export function TransactionsTable({
                     // this will make sure the row updates with any updates in the pending tx state
                     // else show static subgraph table data
 
-                    const finalTx = (() => {
+                    const finalTx: MergedTransaction = (() => {
                       //if transaction not present in subgraph, but present in local-cache
                       // example - in our `readClassicDeposit` test - where we are not relying at subgraph at all
                       if (!tx && locallyCachedTx) {
@@ -198,7 +198,12 @@ export function TransactionsTable({
                       }
 
                       // if it's a pending transaction, then definitely subscibe to the locally-cached transaction
-                      if (tx && isPending(tx) && locallyCachedTx) {
+                      if (
+                        tx &&
+                        isPending(tx) &&
+                        isDeposit(tx) &&
+                        locallyCachedTx
+                      ) {
                         return locallyCachedTx
                       }
 
