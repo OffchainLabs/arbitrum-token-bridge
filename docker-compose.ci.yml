@@ -31,11 +31,11 @@ services:
       - RUN_XTERM=no
       - DISPLAY_WIDTH=${DISPLAY_WIDTH}
       - DISPLAY_HEIGHT=${DISPLAY_HEIGHT}
-    # ports:
-    #   - '8080:8080'
-    # networks:
-    #   - x11
-    network_mode: host
+    ports:
+      - '8080:8080'
+    networks:
+      - x11
+    # network_mode: host
 
   video:
     container_name: video
