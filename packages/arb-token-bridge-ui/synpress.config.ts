@@ -52,11 +52,15 @@ export default defineConfig({
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
       console.log({ arbProvider })
       const testWallet = Wallet.createRandom()
+      console.log('Test wallet created')
       const testWalletAddress = await testWallet.getAddress()
       const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
+      console.log('erc20Bridger created')
       const erc20Contract = new TestERC20__factory().connect(
         wallet.connect(ethProvider)
       )
+
+      console.log('erc20Contract created')
 
       const getWethContract = (
         provider: StaticJsonRpcProvider,
