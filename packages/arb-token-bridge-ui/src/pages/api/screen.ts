@@ -28,7 +28,7 @@ type ExternalApiResponse = [
 
 function isBlocked(response: ExternalApiResponse): boolean {
   // Block in case the address has any risk indicators on either network
-  return response.some(screened => screened.addressRiskIndicators.length > 0)
+  return response.some(result => result.addressRiskIndicators.length > 0)
 }
 
 export type ApiResponse = { blocked: boolean }
