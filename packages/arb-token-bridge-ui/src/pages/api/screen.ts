@@ -26,8 +26,8 @@ type ExternalApiResponse = [
   }
 ]
 
-// todo: double-check criteria
 function isBlocked(response: ExternalApiResponse): boolean {
+  // Block in case the address has any risk indicators on either network
   return response.some(screened => screened.addressRiskIndicators.length > 0)
 }
 
