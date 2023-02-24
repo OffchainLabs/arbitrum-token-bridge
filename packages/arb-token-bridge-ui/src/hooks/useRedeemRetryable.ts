@@ -46,7 +46,9 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       })
     } catch (error: any) {
       setIsRedeeming(false)
-      return alert(error.message)
+      return alert(
+        `There was an error, here is more information: ${error.message}`
+      )
     }
 
     try {
@@ -54,7 +56,9 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       await tx.wait()
     } catch (error: any) {
       if (error.code !== 4001) {
-        alert(error.message)
+        return alert(
+          `There was an error, here is more information: ${error.message}`
+        )
       }
 
       return
