@@ -39,15 +39,18 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      console.log('Synpress config start')
+
       registerLocalNetwork()
 
-      console.log('custom key: ', process.env.PRIVATE_KEY_CUSTOM);
-      console.log('SKIP_METAMASK_SETUP: ', process.env.SKIP_METAMASK_SETUP);
-      console.log('infura:  ', process.env.NEXT_PUBLIC_INFURA_KEY);
+      console.log('Local network registered')
 
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
+      console.log('wallet created')
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
+      console.log({ ethProvider })
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
+      console.log({ arbProvider })
       const testWallet = Wallet.createRandom()
       const testWalletAddress = await testWallet.getAddress()
       const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)

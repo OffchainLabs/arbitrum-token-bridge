@@ -190,14 +190,19 @@ export function registerLocalNetwork(
 ) {
   const { l1Network, l2Network } = params
 
+  console.log('Adding custom network...')
+
   const l1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
-    fallback: 'http://localhost:8545'
+    fallback: 'http://dockerhost:8545'
   })
   const l2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
-    fallback: 'http://localhost:8547'
+    fallback: 'http://dockerhost:8547'
   })
+
+  console.log({ l1NetworkRpcUrl })
+  console.log({ l2NetworkRpcUrl })
 
   try {
     rpcURLs[l1Network.chainID] = l1NetworkRpcUrl
