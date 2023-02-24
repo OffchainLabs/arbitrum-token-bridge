@@ -20,9 +20,12 @@ services:
       - ./docker/screenshots:/app/tests/e2e/screenshots
     command: >
       bash -c 'echo -n "======> local noVNC URL: http://localhost:8080/vnc.html?autoconnect=true " && npx wait-on http://display:8080 && echo -n "======> remote noVNC URL: " && curl -s ngrok:4040/api/tunnels | jq -r .tunnels[0].public_url && npm run test:e2e'
-    # networks:
-    #   - x11
-    network_mode: host
+    ports:
+      - '8545'
+      - '8547'
+    networks:
+      - x11
+    # network_mode: host
 
   display:
     container_name: display
