@@ -21,7 +21,7 @@ services:
     command: >
       bash -c 'echo -n "======> local noVNC URL: http://localhost:8080/vnc.html?autoconnect=true " && npx wait-on http://display:8080 && echo -n "======> remote noVNC URL: " && curl -s ngrok:4040/api/tunnels | jq -r .tunnels[0].public_url && npm run test:e2e'
     networks:
-      - nitro
+      - nitro_default
 
   display:
     container_name: display
@@ -33,7 +33,7 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - nitro
+      - nitro_default
 
   video:
     container_name: video
@@ -47,9 +47,8 @@ services:
     depends_on:
       - display
     networks:
-      - nitro
+      - nitro_default
 
 networks:
-  nitro:
-    external:
-      name: nitro_default
+  nitro_default:
+    external: true
