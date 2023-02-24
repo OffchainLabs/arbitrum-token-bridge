@@ -129,7 +129,7 @@ jobs:
       - uses: ./.github/actions/create-env-file
         with:
           NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
-      
+
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
         with:
@@ -162,12 +162,9 @@ jobs:
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
 
-      - name: Install
-        run: yarn install
-
       - name: Build
         run: yarn build
-        
+
       - name: Run e2e tests
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
