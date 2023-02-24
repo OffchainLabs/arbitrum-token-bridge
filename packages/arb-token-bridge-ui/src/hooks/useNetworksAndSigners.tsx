@@ -151,20 +151,17 @@ function getProviderName(provider: any): ProviderName | null {
 }
 
 async function isBlocked(address: string): Promise<boolean> {
-  const body = JSON.stringify({ address })
+  const response = await fetch('/api/screen', {
+    method: 'POST',
+    body: JSON.stringify({ address }),
+    headers: { 'Content-Type': 'application/json' }
+  })
 
-  try {
-    const response = await fetch('/api/screen', {
-      method: 'POST',
-      body,
-      headers: { 'Content-Type': 'application/json' }
-    })
-    const responseJson: ApiResponseSuccess = await response.json()
-
-    return responseJson.blocked
-  } catch (error) {
+  if (!response.ok) {
     return false
   }
+
+  return ((await response.json()) as ApiResponseSuccess).blocked
 }
 
 export function NetworksAndSignersProvider(

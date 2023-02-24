@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { utils } from 'ethers'
+import withRetry from 'fetch-retry'
 
 function loadEnvironmentVariable(key: string): string {
   const value = process.env[key]
@@ -61,21 +62,35 @@ export default async function handler(
     { address, chain: 'arbitrum' }
   ]
 
-  // todo: retry a couple of times in case of error?
-  try {
-    const response: ExternalApiResponse = await (
-      await fetch(apiEndpoint, {
-        method: 'POST',
-        body: JSON.stringify(requestData),
-        headers: {
-          Authorization: `Basic ${basicAuth}`,
-          'Content-Type': 'application/json'
-        }
-      })
-    ).json()
+  const response = await withRetry(fetch)(apiEndpoint, {
+    method: 'POST',
+    body: JSON.stringify(requestData),
+    headers: {
+      Authorization: `Basic ${basicAuth}`,
+      'Content-Type': 'application/json'
+    },
+    // fetch-retry (https://github.com/jonbern/fetch-retry)
+    retryOn: (attempt, error, response) => {
+      // Retry 3 times
+      if (attempt > 2) {
+        return false
+      }
 
-    res.status(200).send({ blocked: isBlocked(response) })
-  } catch (error) {
+      // Retry in case of a network error or if the request isn't successful
+      if (error || (response && response.status >= 400)) {
+        return true
+      }
+
+      return false
+    }
+  })
+
+  if (!response.ok) {
     res.status(200).send({ blocked: false })
+    return
   }
+
+  res.status(200).send({
+    blocked: isBlocked((await response.json()) as ExternalApiResponse)
+  })
 }
