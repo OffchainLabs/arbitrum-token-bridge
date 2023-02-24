@@ -8,8 +8,8 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 
-export const ethRpcUrl = 'http://localhost:8545'
-export const arbRpcUrl = 'http://localhost:8547'
+export const ethRpcUrl = 'http://dockerhost:8545'
+export const arbRpcUrl = 'http://dockerhost:8547'
 
 export const l1NetworkConfig = {
   networkName: 'localhost',
