@@ -280,11 +280,9 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 
     case UseNetworksAndSignersStatus.BLOCKED:
       return (
-        <>
-          <AppConnectionFallbackContainer>
-            <BlockedDialog {...blockedDialogProps} address={props.address} />
-          </AppConnectionFallbackContainer>
-        </>
+        <AppConnectionFallbackContainer>
+          <BlockedDialog {...blockedDialogProps} address={props.address} />
+        </AppConnectionFallbackContainer>
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
