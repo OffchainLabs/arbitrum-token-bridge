@@ -29,10 +29,7 @@ export function findMatchingL1Tx(
   return transactions.find(_tx => {
     const l2ToL1MsgData = _tx.l2ToL1MsgData
 
-    if (
-      typeof l2ToL1MsgData?.uniqueId === 'undefined' ||
-      typeof l2ToL1Message?.uniqueId === 'undefined'
-    ) {
+    if (!(l2ToL1MsgData?.uniqueId && l2ToL1Message?.uniqueId)) {
       return false
     }
 
@@ -207,7 +204,8 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
 
     if (typeof matchingL1Tx === 'undefined') {
       return (
-        <span className="whitespace-nowrap text-dark">
+        <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
+          <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
           {getNetworkName(l1.network.chainID)}: Not available
         </span>
       )
@@ -215,9 +213,10 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
 
     return (
       <span
-        className="whitespace-nowrap text-dark"
+        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label="L1 Transaction Link"
       >
+        <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
         {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
@@ -232,9 +231,10 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
   return (
     <div className="flex flex-col space-y-3">
       <span
-        className="whitespace-nowrap text-dark"
+        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label="L2 Transaction Link"
       >
+        <span className="rounded-md  px-2 text-xs text-gray-9">Step 1</span>
         {getNetworkName(l2.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
