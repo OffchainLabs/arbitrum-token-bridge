@@ -127,28 +127,29 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
         <div className="flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2">
           <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
-          <div className="flex flex-col">
-            <span className="text-sm font-light text-cyan-dark">
-              After approval, you’ll see a second prompt in your wallet for the
-              standard L2 deposit fee.{' '}
-              <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
-                className="underline"
-              >
-                Learn more.
-              </ExternalLink>
-            </span>
-
-            {allowance && !allowance.isZero() ? (
-              <span className="mt-4 text-sm font-light text-cyan-dark">
-                Your current allowance for this token
-                <span className="font-medium"> ({allowanceParsed}) </span>
-                is less than the amount you are trying to bridge
-                <span className="font-medium"> ({amount}) </span>.
-              </span>
-            ) : null}
-          </div>
+          <span className="text-sm font-light text-cyan-dark">
+            After approval, you’ll see a second prompt in your wallet for the
+            standard L2 deposit fee.{' '}
+            <ExternalLink
+              href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
+              className="underline"
+            >
+              Learn more.
+            </ExternalLink>
+          </span>
         </div>
+
+        {allowance && !allowance.isZero() ? (
+          <div className="flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2">
+            <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
+            <span className="text-sm font-light text-cyan-dark">
+              Your current allowance for this token
+              <span className="font-medium"> ({allowanceParsed}) </span>
+              is less than the amount you are trying to bridge
+              <span className="font-medium"> ({amount})</span>.
+            </span>
+          </div>
+        ) : null}
       </div>
     </Dialog>
   )
