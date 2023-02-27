@@ -237,7 +237,6 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
-  const [blockedDialogProps] = useDialog({ defaultIsOpen: true })
 
   async function showConnectionModal() {
     try {
@@ -281,7 +280,15 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
     case UseNetworksAndSignersStatus.BLOCKED:
       return (
         <AppConnectionFallbackContainer>
-          <BlockedDialog {...blockedDialogProps} address={props.address} />
+          <BlockedDialog
+            address={props.address}
+            isOpen={true}
+            // ignoring until we use the package
+            // https://github.com/OffchainLabs/config-monorepo/pull/11
+            //
+            // eslint-disable-next-line
+            onClose={() => {}}
+          />
         </AppConnectionFallbackContainer>
       )
 
