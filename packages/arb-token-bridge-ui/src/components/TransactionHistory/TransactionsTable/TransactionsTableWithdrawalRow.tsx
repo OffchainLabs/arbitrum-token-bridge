@@ -21,6 +21,7 @@ import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import { isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
+import { formatAmount } from '../../../util/NumberUtils'
 
 export function findMatchingL1Tx(
   l2ToL1Message: MergedTransaction,
@@ -388,7 +389,7 @@ export function TransactionsTableWithdrawalRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {tx.value} {tx.asset.toUpperCase()}
+        {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()}
       </td>
 
       <td className="w-1/5 px-3 py-3">

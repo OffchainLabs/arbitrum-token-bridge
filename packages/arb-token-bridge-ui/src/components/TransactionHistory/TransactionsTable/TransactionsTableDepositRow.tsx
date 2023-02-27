@@ -13,6 +13,7 @@ import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
+import { formatAmount } from '../../../util/NumberUtils'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -232,7 +233,7 @@ export function TransactionsTableDepositRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {tx.value} {tx.asset.toUpperCase()}
+        {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()}
       </td>
 
       <td className="w-1/5 px-3 py-3">

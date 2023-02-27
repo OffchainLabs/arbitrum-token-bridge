@@ -7,6 +7,7 @@ import {
   DepositL1TxStatus,
   DepositL2TxStatus
 } from './DepositCard'
+import { formatAmount } from '../../util/NumberUtils'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l2 } = useNetworksAndSigners()
@@ -18,7 +19,8 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
         <div className="lg:ml-[-2rem]">
           {/* Heading */}
           <span className="ml-[2rem] animate-pulse text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
-            Moving {tx.value} {tx.asset.toUpperCase()} to {networkName}
+            Moving {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()} to{' '}
+            {networkName}
           </span>
 
           {/* Addresses */}

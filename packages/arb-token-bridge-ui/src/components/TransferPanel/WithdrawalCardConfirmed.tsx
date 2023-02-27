@@ -6,6 +6,7 @@ import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
+import { formatAmount } from '../../util/NumberUtils'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { isConnectedToArbitrum } = useNetworksAndSigners()
@@ -56,7 +57,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
             onClick={() => claim(tx)}
             className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
           >
-            Claim {tx.value} {tx.asset.toUpperCase()}
+            Claim {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()}
           </Button>
         </Tooltip>
       </div>

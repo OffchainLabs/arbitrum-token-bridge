@@ -68,7 +68,7 @@ export const transformDeposits = (
         ? getStandardisedTimestamp(tx.timestampResolved)
         : null,
       txId: tx.txID,
-      asset: tx.assetName?.toLowerCase(),
+      asset: tx.assetName?.toLowerCase() || '',
       value: tx.value,
       uniqueId: null, // not needed
       isWithdrawal: false,
@@ -98,7 +98,7 @@ export const transformWithdrawals = (
       ),
       resolvedAt: null,
       txId: tx.l2TxHash || 'l2-tx-hash-not-found',
-      asset: tx.symbol?.toLocaleLowerCase(),
+      asset: tx.symbol?.toLocaleLowerCase() || '',
       value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
       uniqueId: uniqueIdOrHash,
       isWithdrawal: true,
