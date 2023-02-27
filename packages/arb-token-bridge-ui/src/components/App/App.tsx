@@ -51,7 +51,7 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
-import { Loader } from '../common/atoms/loader/Loader'
+import { Loader } from '../common/atoms/Loader'
 
 declare global {
   interface Window {

@@ -1,6 +1,4 @@
-import { Loader } from '../common/atoms/loader/Loader'
-import { InputRow } from '../common/molecules/InputRow/InputRow'
-
+import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -13,7 +11,7 @@ function MaxButton(props: MaxButtonProps) {
   if (loading) {
     return (
       <div className="px-3">
-        <Loader color="#999999" size="small" />
+        <Loader color="#999999" />
       </div>
     )
   }
@@ -21,7 +19,7 @@ function MaxButton(props: MaxButtonProps) {
   return (
     <button
       type="button"
-      className={`p-2 text-sm font-light text-gray-9 ${className} pr-3`}
+      className={`p-2 text-sm font-light text-gray-9 ${className}`}
       {...rest}
     >
       MAX
@@ -41,21 +39,32 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const { errorMessage, maxButtonProps, ...rest } = props
   const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
 
+  const borderClassName =
+    typeof errorMessage !== 'undefined'
+      ? 'border border-[#cd0000]'
+      : 'border border-gray-9'
+
   return (
-    <InputRow
-      inputSize="large"
-      type="text"
-      inputMode="decimal"
-      placeholder="Enter amount"
-      errorMessage={errorMessage}
-      leftChildren={
-        <>
-          <TokenButton />
-          <div className="h-full border-r border-gray-4" />
-        </>
-      }
-      rightChildren={maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
-      {...rest}
-    />
+    <>
+      <div
+        className={`flex h-16 flex-row items-center rounded-lg bg-white ${borderClassName}`}
+      >
+        <TokenButton />
+        <div className="h-full border-r border-gray-4" />
+        <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
+          <input
+            type="number"
+            placeholder="Enter amount"
+            className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-9 sm:text-3xl"
+            {...rest}
+          />
+          {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
+        </div>
+      </div>
+
+      {typeof errorMessage !== 'undefined' && (
+        <span className="text-sm text-brick">{errorMessage}</span>
+      )}
+    </>
   )
 }

@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { Loader } from './atoms/loader/Loader'
+import { Loader } from './atoms/Loader'
 
 type ButtonVariant = 'primary' | 'secondary'
 

@@ -4,7 +4,7 @@ import { MergedTransaction } from '../../state/app/state'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { Loader } from '../common/atoms/loader/Loader'
+import { Loader } from '../common/atoms/Loader'
 
 const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'

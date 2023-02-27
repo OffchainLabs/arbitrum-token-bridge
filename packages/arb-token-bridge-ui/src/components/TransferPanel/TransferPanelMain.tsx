@@ -38,8 +38,7 @@ import {
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
-import { InputRow } from '../common/molecules/InputRow/InputRow'
-import { Loader } from '../common/atoms/loader/Loader'
+import { Loader } from '../common/atoms/Loader'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -231,6 +230,10 @@ function NetworkContainer({
   )
 }
 
+function StyledLoader() {
+  return <Loader color="white" size="small" />
+}
+
 function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const {
     app: { arbTokenBridge }
@@ -249,7 +252,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
   if (!balance) {
-    return <Loader color="white" />
+    return <StyledLoader />
   }
 
   return (
@@ -276,7 +279,7 @@ function TokenBalance({
   }
 
   if (!balance) {
-    return <Loader color="white" />
+    return <StyledLoader />
   }
 
   return (
@@ -366,7 +369,6 @@ export function TransferPanelMain({
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
-  const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -382,93 +384,14 @@ export function TransferPanelMain({
     setQueryParams({ l2ChainId })
   }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
 
-  const estimateGas = useCallback(
-    async (
-      weiValue: BigNumber
-    ): Promise<{
-      estimatedL1Gas: BigNumber
-      estimatedL2Gas: BigNumber
-      estimatedL2SubmissionCost: BigNumber
-    }> => {
-      if (isDepositMode) {
-        const result = await arbTokenBridge.eth.depositEstimateGas({
-          amount: weiValue
-        })
-
-        return result
-      }
-
-      const result = await arbTokenBridge.eth.withdrawEstimateGas({
-        amount: weiValue
-      })
-
-      return { ...result, estimatedL2SubmissionCost: constants.Zero }
-    },
-    [arbTokenBridge.eth, isDepositMode]
-  )
-
-  const setMaxAmount = useCallback(async () => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-
-    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
-
-    if (selectedToken) {
-      if (!tokenBalance) {
-        return
-      }
-
-      // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
-      return
-    }
-
-    if (!ethBalance) {
-      return
-    }
-
-    try {
-      setLoadingMaxAmount(true)
-      const result = await estimateGas(ethBalance)
-
-      const estimatedL1GasFees = calculateEstimatedL1GasFees(
-        result.estimatedL1Gas,
-        l1GasPrice
-      )
-      const estimatedL2GasFees = calculateEstimatedL2GasFees(
-        result.estimatedL2Gas,
-        l2GasPrice,
-        result.estimatedL2SubmissionCost
-      )
-
-      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoadingMaxAmount(false)
-    }
-  }, [
-    estimateGas,
-    ethL1Balance,
-    ethL2Balance,
-    isDepositMode,
-    l1GasPrice,
-    l2GasPrice,
-    selectedToken,
-    setAmount,
-    tokenBalances.l1,
-    tokenBalances.l2
-  ])
-
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
 
-    if (isMaxAmount) {
+    if (amount.toLowerCase() === AmountQueryParamEnum.MAX) {
       setMaxAmount()
     }
-  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+  }, [amount, setMaxAmount, setQueryParams])
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
@@ -586,6 +509,26 @@ export function TransferPanelMain({
     setTo(newTo)
 
     actions.app.setIsDepositMode(!app.isDepositMode)
+  }
+
+  async function estimateGas(weiValue: BigNumber): Promise<{
+    estimatedL1Gas: BigNumber
+    estimatedL2Gas: BigNumber
+    estimatedL2SubmissionCost: BigNumber
+  }> {
+    if (isDepositMode) {
+      const result = await arbTokenBridge.eth.depositEstimateGas({
+        amount: weiValue
+      })
+
+      return result
+    }
+
+    const result = await arbTokenBridge.eth.withdrawEstimateGas({
+      amount: weiValue
+    })
+
+    return { ...result, estimatedL2SubmissionCost: constants.Zero }
   }
 
   type NetworkListboxesProps = {
@@ -774,6 +717,50 @@ export function TransferPanelMain({
     }
   }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to])
 
+  async function setMaxAmount() {
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+
+    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+
+    if (selectedToken) {
+      if (!tokenBalance) {
+        return
+      }
+
+      // For tokens, we can set the max amount, and have the gas summary component handle the rest
+      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
+      return
+    }
+
+    if (!ethBalance) {
+      return
+    }
+
+    try {
+      setLoadingMaxAmount(true)
+      const result = await estimateGas(ethBalance)
+
+      const estimatedL1GasFees = calculateEstimatedL1GasFees(
+        result.estimatedL1Gas,
+        l1GasPrice
+      )
+      const estimatedL2GasFees = calculateEstimatedL2GasFees(
+        result.estimatedL2Gas,
+        l2GasPrice,
+        result.estimatedL2SubmissionCost
+      )
+
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
+
+      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoadingMaxAmount(false)
+    }
+  }
+
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
@@ -781,7 +768,7 @@ export function TransferPanelMain({
           <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
-              <Loader color="white" />
+              <StyledLoader />
             ) : (
               <>
                 <TokenBalance
@@ -802,15 +789,13 @@ export function TransferPanelMain({
           <TransferPanelMainInput
             maxButtonProps={{
               visible: maxButtonVisible,
-              loading: isMaxAmount || loadingMaxAmount,
+              loading: loadingMaxAmount,
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageText}
             disabled={isSwitchingL2Chain}
-            value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
           />
 
           {isDepositMode && selectedToken && (
@@ -841,7 +826,7 @@ export function TransferPanelMain({
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
-              <Loader color="white" />
+              <StyledLoader />
             ) : (
               <>
                 <TokenBalance
@@ -884,8 +869,8 @@ export function TransferPanelMain({
                   Destination Address
                   {!isSmartContractWallet ? ' (optional)' : ''}
                 </span>
-                <InputRow
-                  className="mt-1"
+                <input
+                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
                   placeholder="Enter destination address"
                   defaultValue={destinationAddress}
                   spellCheck={false}

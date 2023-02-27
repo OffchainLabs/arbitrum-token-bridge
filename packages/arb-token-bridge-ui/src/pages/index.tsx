@@ -2,7 +2,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
-import { Loader } from '../components/common/atoms/loader/Loader'
+import { Loader } from '../components/common/atoms/Loader'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,

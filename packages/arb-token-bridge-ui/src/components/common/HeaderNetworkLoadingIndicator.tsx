@@ -1,4 +1,4 @@
-import { Loader } from './atoms/loader/Loader'
+import { Loader } from './atoms/Loader'
 
 export function HeaderNetworkLoadingIndicator() {
   return (

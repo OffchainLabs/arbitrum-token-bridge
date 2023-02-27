@@ -14,7 +14,6 @@ import {
   useTokenLists
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
-import { shortenAddress } from '../../util/CommonUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -25,8 +24,7 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
-import { InputRow } from '../common/molecules/InputRow/InputRow'
-import { Loader } from '../common/atoms/loader/Loader'
+import { Loader } from '../common/atoms/Loader'
 
 enum Panel {
   TOKENS,
@@ -45,6 +43,11 @@ function TokenLogoFallback() {
       ?
     </div>
   )
+}
+
+function shortenAddress(address: string) {
+  const len = address.length
+  return `${address.substring(0, 5)}...${address.substring(len - 4, len)}`
 }
 
 interface TokenRowProps {
@@ -495,7 +498,7 @@ function TokensPanel({
     <div className="flex flex-col space-y-3">
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <InputRow
+          <input
             id="newTokenAddress"
             value={newToken}
             onChange={e => {
@@ -503,6 +506,7 @@ function TokensPanel({
               setNewToken(e.target.value)
             }}
             placeholder="Search by token name, symbol, L1 or L2 address"
+            className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
 
           <Button
@@ -645,7 +649,12 @@ export function TokenSearch({
         <div className="flex justify-end pt-6">
           {isFetchingTokenLists ? (
             <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
-              <Loader color="rgb(40, 160, 240)" size="small" />
+              <Loader
+                type="Oval"
+                color="rgb(40, 160, 240)"
+                height={16}
+                width={16}
+              />
               Fetching Tokens...
             </span>
           ) : (
