@@ -7,7 +7,7 @@ import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-
+import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
@@ -51,7 +51,6 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { isTestingEnvironment } from '../../util/CommonUtils'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
-import { Loader } from '../common/atoms/Loader'
 
 declare global {
   interface Window {

@@ -4,7 +4,7 @@ import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-
+import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -25,7 +25,6 @@ import {
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl } from '../../util/networks'
-import { Loader } from '../common/atoms/Loader'
 
 enum Panel {
   TOKENS,

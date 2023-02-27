@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-
+import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { useAppContextDispatch } from '../App/AppContext'
@@ -12,7 +12,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from 'token-bridge-sdk'
-import { Loader } from '../common/atoms/Loader'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {

@@ -3,7 +3,7 @@ import { useLatest } from 'react-use'
 import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
 import { ExclamationCircleIcon } from '@heroicons/react/outline'
 import Tippy from '@tippyjs/react'
-
+import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
   useTokensFromLists,
@@ -15,7 +15,6 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { Loader } from '../common/atoms/Loader'
 
 enum ImportStatus {
   LOADING,
