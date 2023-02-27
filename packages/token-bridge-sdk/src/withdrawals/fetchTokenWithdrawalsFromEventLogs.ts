@@ -1,5 +1,5 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
-import { getL2Network, Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger } from '@arbitrum/sdk'
 
 /**
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
@@ -24,8 +24,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   l2Provider: Provider
   l2GatewayAddresses?: string[]
 }) {
-  const l2Network = await getL2Network(l2Provider)
-  const erc20Bridger = new Erc20Bridger(l2Network)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
   return (
     await Promise.all(

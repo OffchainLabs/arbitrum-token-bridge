@@ -21,6 +21,7 @@ import {
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { PendingWithdrawalsLoadedState } from '../../util'
+import { shortenAddress } from '../../util/CommonUtils'
 import {
   TransactionsTable,
   TransactionsDataStatus
@@ -170,9 +171,7 @@ export function HeaderAccountPopover() {
       return ''
     }
 
-    const len = account.length
-
-    return `${account.substring(0, 5)}...${account.substring(len - 4, len)}`
+    return shortenAddress(account)
   }, [account])
 
   function copy(value: string) {

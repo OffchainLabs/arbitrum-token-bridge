@@ -44,7 +44,8 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   return (
     <InputRow
       inputSize="large"
-      type="number"
+      type="text"
+      inputMode="decimal"
       placeholder="Enter amount"
       errorMessage={errorMessage}
       leftChildren={

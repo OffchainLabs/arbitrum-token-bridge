@@ -23,19 +23,17 @@
 
 #### Dev Build
 
-1. (back in root dir:) `yarn start_sdk`
+1. (back in root dir:) `yarn dev:sdk`
 
 2. Open new terminal tab
 
-3. `yarn start_ui`
+3. `yarn dev:ui`
 
 4. Visit `http://localhost:3000/`
 
 #### Local Production Build
 
-1. install `serve`: `npm install -g serve`
-2. (back in root dir:) `yarn build`
-3. `yarn serve`
+1. Run `yarn start`
 
 #### Run End-to-End Tests
 
