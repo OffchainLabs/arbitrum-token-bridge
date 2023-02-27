@@ -10,6 +10,7 @@ import { TokenBridgeParams } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import { WelcomeDialog } from './WelcomeDialog'
+import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
@@ -21,7 +22,6 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
@@ -272,6 +272,21 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </Button>
           </AppConnectionFallbackContainer>
         </>
+      )
+
+    case UseNetworksAndSignersStatus.BLOCKED:
+      return (
+        <AppConnectionFallbackContainer>
+          <BlockedDialog
+            address={props.address}
+            isOpen={true}
+            // ignoring until we use the package
+            // https://github.com/OffchainLabs/config-monorepo/pull/11
+            //
+            // eslint-disable-next-line
+            onClose={() => {}}
+          />
+        </AppConnectionFallbackContainer>
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
