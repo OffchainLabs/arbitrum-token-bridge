@@ -14,6 +14,7 @@ import {
   useTokenLists
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
+import { shortenAddress } from '../../util/CommonUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -43,11 +44,6 @@ function TokenLogoFallback() {
       ?
     </div>
   )
-}
-
-function shortenAddress(address: string) {
-  const len = address.length
-  return `${address.substring(0, 5)}...${address.substring(len - 4, len)}`
 }
 
 interface TokenRowProps {
