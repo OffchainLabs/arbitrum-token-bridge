@@ -644,12 +644,7 @@ export function TokenSearch({
         <div className="flex justify-end pt-6">
           {isFetchingTokenLists ? (
             <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
-              <Loader
-                type="Oval"
-                color="rgb(40, 160, 240)"
-                height={16}
-                width={16}
-              />
+              <Loader color="rgb(40, 160, 240)" height={16} width={16} />
               Fetching Tokens...
             </span>
           ) : (
