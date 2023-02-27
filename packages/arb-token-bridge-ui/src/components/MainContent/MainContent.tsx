@@ -11,7 +11,6 @@ import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
-import { Text, TextAllVariants } from '../common/atoms/text/Text'
 
 const motionDivProps = {
   layout: true,

@@ -15,7 +15,7 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { Loader } from '../common/atoms/loader/Loader'
+import { Loader } from '../common/atoms/Loader'
 
 enum ImportStatus {
   LOADING,

@@ -13,7 +13,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useBalance } from 'token-bridge-sdk'
-import { Loader } from '../common/atoms/loader/Loader'
+import { Loader } from '../common/atoms/Loader'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
