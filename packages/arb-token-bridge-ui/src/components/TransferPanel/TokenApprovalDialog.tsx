@@ -15,14 +15,18 @@ import { getExplorerUrl, isNetwork } from '../../util/networks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
+  allowance: BigNumber | null
+  amount: string
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { isOpen, token } = props
+  const { allowance, amount, isOpen, token } = props
   const {
     app: { arbTokenBridge }
   } = useAppState()
 
+  const allowanceParsed =
+    allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
@@ -120,6 +124,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           checked={checked}
           onChange={setChecked}
         />
+
+        <div className="flex flex-row items-center space-x-2 py-3 px-2">
+          <span className="text-sm">
+            Your current allowance for this token
+            <span className="font-medium"> ({allowanceParsed}) </span>
+            is less than the amount you are trying to bridge
+            <span className="font-medium"> ({amount}) </span>.
+          </span>
+        </div>
 
         <div className="flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2">
           <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
