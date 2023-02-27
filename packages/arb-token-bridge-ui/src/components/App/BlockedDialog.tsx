@@ -26,7 +26,10 @@ export function BlockedDialog(props: UseDialogProps & { address: string }) {
         <span>This address is affiliated with a blocked activity.</span>
         <span>
           If you think this was an error, you can request a review with{' '}
-          <ExternalLink href="mailto:support@arbitrum.io">
+          <ExternalLink
+            href="mailto:support@arbitrum.io"
+            className="arb-hover underline"
+          >
             support@arbitrum.io
           </ExternalLink>
         </span>
