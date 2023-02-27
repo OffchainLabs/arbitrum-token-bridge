@@ -29,7 +29,10 @@ export function findMatchingL1Tx(
   return transactions.find(_tx => {
     const l2ToL1MsgData = _tx.l2ToL1MsgData
 
-    if (typeof l2ToL1MsgData === 'undefined') {
+    if (
+      typeof l2ToL1MsgData?.uniqueId === 'undefined' ||
+      typeof l2ToL1Message?.uniqueId === 'undefined'
+    ) {
       return false
     }
 
