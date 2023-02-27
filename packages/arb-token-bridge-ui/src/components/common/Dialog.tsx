@@ -34,13 +34,23 @@ export type UseDialogResult = [
   OtherDialogInfo
 ]
 
-export function useDialog(): UseDialogResult {
+/**
+ * Initial parameters for the dialog.
+ */
+type UseDialogParams = {
+  /**
+   * Whether the dialog should be open by default.
+   */
+  defaultIsOpen?: boolean
+}
+
+export function useDialog(params?: UseDialogParams): UseDialogResult {
   const resolveRef = useRef<(value: boolean | PromiseLike<boolean>) => void>()
 
   // Whether the dialog is currently open
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(params?.defaultIsOpen ?? false)
   // Whether the dialog was ever open
-  const [didOpen, setDidOpen] = useState(false)
+  const [didOpen, setDidOpen] = useState(params?.defaultIsOpen ?? false)
 
   const openDialog: OpenDialogFunction = useCallback(() => {
     setIsOpen(true)
