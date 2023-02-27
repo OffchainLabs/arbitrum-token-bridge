@@ -41,6 +41,8 @@ export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
 export type FathomEvent =
+  | 'Address Block'
+  //
   | `Connect Wallet Click: ${ProviderName}`
   //
   | `Deposit ${TokenType} to ${FathomNetworkName} (${AccountType})`
@@ -66,6 +68,8 @@ export type FathomEvent =
 const eventToEventId: { [key in FathomEvent]: string } & {
   [key in FathomEventNonCanonicalTokens]: string
 } = {
+  'Address Block': 'KG4YHGXC',
+  //
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
   'Connect Wallet Click: WalletConnect': 'QPDOCSPL',

@@ -17,6 +17,7 @@
     "boring-avatars": "^1.7.0",
     "dayjs": "^1.10.6",
     "ethers": "^5.6.0",
+    "fetch-retry": "^5.0.3",
     "framer-motion": "^4.1.17",
     "lodash-es": "^4.17.21",
     "next": "^13.1.5",
