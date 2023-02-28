@@ -190,7 +190,10 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
     } catch (error: any) {
-      return alert(error.message)
+      if (txLifecycle?.onTxError) {
+        txLifecycle.onTxError(error)
+      }
+      return error.message
     }
 
     addTransaction({
@@ -254,20 +257,19 @@ export const useArbTokenBridge = (
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) {
-    const ethBridger = await EthBridger.fromProvider(l2.provider)
-
-    const tx = await ethBridger.withdraw({
-      amount,
-      l2Signer,
-      destinationAddress: walletAddress,
-      from: walletAddress
-    })
-
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
-    }
-
     try {
+      const ethBridger = await EthBridger.fromProvider(l2.provider)
+
+      const tx = await ethBridger.withdraw({
+        amount,
+        l2Signer,
+        destinationAddress: walletAddress,
+        from: walletAddress
+      })
+
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx)
+      }
       addTransaction({
         type: 'withdraw',
         status: 'pending',
@@ -322,8 +324,11 @@ export const useArbTokenBridge = (
       }
 
       return receipt
-    } catch (e) {
-      console.error('withdrawEth err', e)
+    } catch (error) {
+      if (txLifecycle?.onTxError) {
+        txLifecycle.onTxError(error)
+      }
+      console.error('withdrawEth err', error)
     }
   }
 
@@ -460,66 +465,71 @@ export const useArbTokenBridge = (
   }) {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
-    const { symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
-      erc20L1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+    try {
+      const { symbol, decimals } = await getL1TokenData({
+        account: walletAddress,
+        erc20L1Address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
 
-    const depositRequest = await erc20Bridger.getDepositRequest({
-      l1Provider: l1.provider,
-      l2Provider: l2.provider,
-      from: walletAddress,
-      erc20L1Address,
-      destinationAddress,
-      amount
-    })
+      const depositRequest = await erc20Bridger.getDepositRequest({
+        l1Provider: l1.provider,
+        l2Provider: l2.provider,
+        from: walletAddress,
+        erc20L1Address,
+        destinationAddress,
+        amount
+      })
 
-    const tx = await erc20Bridger.deposit({
-      ...depositRequest,
-      l1Signer
-    })
+      const tx = await erc20Bridger.deposit({
+        ...depositRequest,
+        l1Signer
+      })
 
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx)
+      }
+      addTransaction({
+        type: 'deposit-l1',
+        status: 'pending',
+        value: utils.formatUnits(amount, decimals),
+        txID: tx.hash,
+        assetName: symbol,
+        assetType: AssetType.ERC20,
+        tokenAddress: erc20L1Address,
+        sender: walletAddress,
+        l1NetworkID,
+        l2NetworkID
+      })
+
+      const receipt = await tx.wait()
+
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
+      }
+
+      const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
+      if (!l1ToL2Msg) {
+        return
+      }
+
+      const l1ToL2MsgData: L1ToL2MessageData = {
+        fetchingUpdate: false,
+        status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
+        retryableCreationTxID: l1ToL2Msg.retryableCreationId,
+        l2TxID: undefined
+      }
+
+      updateTransaction(receipt, tx, l1ToL2MsgData)
+      updateTokenData(erc20L1Address)
+
+      return receipt
+    } catch (error) {
+      if (txLifecycle?.onTxError) {
+        txLifecycle.onTxError(error)
+      }
     }
-
-    addTransaction({
-      type: 'deposit-l1',
-      status: 'pending',
-      value: utils.formatUnits(amount, decimals),
-      txID: tx.hash,
-      assetName: symbol,
-      assetType: AssetType.ERC20,
-      tokenAddress: erc20L1Address,
-      sender: walletAddress,
-      l1NetworkID,
-      l2NetworkID
-    })
-
-    const receipt = await tx.wait()
-
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(receipt)
-    }
-
-    const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
-    if (!l1ToL2Msg) {
-      return
-    }
-
-    const l1ToL2MsgData: L1ToL2MessageData = {
-      fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-      l2TxID: undefined
-    }
-
-    updateTransaction(receipt, tx, l1ToL2MsgData)
-    updateTokenData(erc20L1Address)
-
-    return receipt
   }
 
   async function depositTokenEstimateGas() {
@@ -580,60 +590,59 @@ export const useArbTokenBridge = (
     txLifecycle?: L2ContractCallTransactionLifecycle
     destinationAddress?: string
   }) {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-
-    const provider = l2Signer.provider
-    const isSmartContractAddress =
-      provider && (await provider.getCode(String(erc20L1Address))).length < 2
-    if (isSmartContractAddress && !destinationAddress) {
-      throw new Error(`Missing destination address`)
-    }
-
-    if (typeof bridgeTokens === 'undefined') {
-      return
-    }
-    const bridgeToken = bridgeTokens[erc20L1Address]
-
-    const { symbol, decimals } = await (async () => {
-      if (bridgeToken) {
-        const { symbol, decimals } = bridgeToken
-        return { symbol, decimals }
-      }
-      const { symbol, decimals } = await getL1TokenData({
-        account: walletAddress,
-        erc20L1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
-      })
-      addToken(erc20L1Address)
-      return { symbol, decimals }
-    })()
-
-    const tx = await erc20Bridger.withdraw({
-      l2Signer,
-      erc20l1Address: erc20L1Address,
-      destinationAddress: destinationAddress ?? walletAddress,
-      amount
-    })
-
-    if (txLifecycle?.onTxSubmit) {
-      txLifecycle.onTxSubmit(tx)
-    }
-
-    addTransaction({
-      type: 'withdraw',
-      status: 'pending',
-      value: utils.formatUnits(amount, decimals),
-      txID: tx.hash,
-      assetName: symbol,
-      assetType: AssetType.ERC20,
-      sender: walletAddress,
-      blockNumber: tx.blockNumber,
-      l1NetworkID,
-      l2NetworkID
-    })
-
     try {
+      const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
+      const provider = l2Signer.provider
+      const isSmartContractAddress =
+        provider && (await provider.getCode(String(erc20L1Address))).length < 2
+      if (isSmartContractAddress && !destinationAddress) {
+        throw new Error(`Missing destination address`)
+      }
+
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
+      const bridgeToken = bridgeTokens[erc20L1Address]
+
+      const { symbol, decimals } = await (async () => {
+        if (bridgeToken) {
+          const { symbol, decimals } = bridgeToken
+          return { symbol, decimals }
+        }
+        const { symbol, decimals } = await getL1TokenData({
+          account: walletAddress,
+          erc20L1Address,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
+        addToken(erc20L1Address)
+        return { symbol, decimals }
+      })()
+
+      const tx = await erc20Bridger.withdraw({
+        l2Signer,
+        erc20l1Address: erc20L1Address,
+        destinationAddress: destinationAddress ?? walletAddress,
+        amount
+      })
+
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx)
+      }
+
+      addTransaction({
+        type: 'withdraw',
+        status: 'pending',
+        value: utils.formatUnits(amount, decimals),
+        txID: tx.hash,
+        assetName: symbol,
+        assetType: AssetType.ERC20,
+        sender: walletAddress,
+        blockNumber: tx.blockNumber,
+        l1NetworkID,
+        l2NetworkID
+      })
       const receipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {
@@ -674,8 +683,11 @@ export const useArbTokenBridge = (
       }
       updateTokenData(erc20L1Address)
       return receipt
-    } catch (err) {
-      console.warn('withdraw token err', err)
+    } catch (error) {
+      if (txLifecycle?.onTxError) {
+        txLifecycle.onTxError(error)
+      }
+      console.warn('withdraw token err', error)
     }
   }
 

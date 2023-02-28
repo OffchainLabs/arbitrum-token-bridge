@@ -49,6 +49,7 @@ export enum AssetType {
 export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
   onTxSubmit: (tx: Tx) => void
   onTxConfirm: (txReceipt: TxReceipt) => void
+  onTxError: (error: any) => void
 }>
 
 export type L1EthDepositTransactionLifecycle = TransactionLifecycle<

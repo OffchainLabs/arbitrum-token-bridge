@@ -5,6 +5,7 @@ import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
+import * as Sentry from '@sentry/react'
 
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
@@ -40,6 +41,15 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import { userRejectedToast } from '../common/Toast'
+
+const onTxError = (error: any) => {
+  if (error.code === 'ACTION_REJECTED') {
+    userRejectedToast()
+  } else {
+    Sentry.captureException(error)
+  }
+}
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -487,7 +497,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Deposit ERC-20 to ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         } else {
@@ -509,7 +520,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Deposit ETH to ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         }
@@ -605,7 +617,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Withdraw ERC-20 from ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         } else {
@@ -627,7 +640,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Withdraw ETH from ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         }
