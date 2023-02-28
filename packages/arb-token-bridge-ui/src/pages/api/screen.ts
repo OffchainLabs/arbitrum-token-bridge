@@ -2,17 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { utils } from 'ethers'
 import withRetry from 'fetch-retry'
 
-const isProduction = process.env.NODE_ENV === 'production'
-
 function loadEnvironmentVariable(key: string): string {
   const value = process.env[key]
 
   if (typeof value === 'undefined') {
-    if (isProduction) {
-      throw new Error(`Missing "${key}" environment variable`)
-    }
-
-    return ''
+    throw new Error(`Missing "${key}" environment variable`)
   }
 
   return value
@@ -51,13 +45,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponseSuccess | ApiResponseError>
 ) {
-  if (!isProduction) {
-    res.status(200).send({
-      blocked: false
-    })
-    return
-  }
-
   if (req.method !== 'POST') {
     res.status(400).send({ message: 'invalid_method' })
     return
