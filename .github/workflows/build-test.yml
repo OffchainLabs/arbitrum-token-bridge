@@ -137,6 +137,8 @@ jobs:
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NETWORK_NAME: localhost
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
           directory: ./packages/arb-token-bridge-ui/
           file_name: .e2e.env
 
@@ -147,6 +149,8 @@ jobs:
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NETWORK_NAME: localhost
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
           file_name: .env.local
 
       - name: Make .env.local (in workspace)
@@ -156,6 +160,8 @@ jobs:
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NETWORK_NAME: localhost
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
+          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env.local
 
@@ -181,6 +187,8 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
           NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
+          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
           SKIP_METAMASK_SETUP: true
 
       - name: Archive e2e artifacts
