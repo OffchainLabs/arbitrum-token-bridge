@@ -244,7 +244,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 })
               ) : (
                 <div className="mr-2">
-                  <Loader color="rgb(40, 160, 240)" size="small" />
+                  <Loader color="#28A0F0" size="small" />
                 </div>
               )}
             </span>
@@ -644,7 +644,7 @@ export function TokenSearch({
         <div className="flex justify-end pt-6">
           {isFetchingTokenLists ? (
             <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
-              <Loader color="rgb(40, 160, 240)" size="small" />
+              <Loader color="#28A0F0" size="small" />
               Fetching Tokens...
             </span>
           ) : (

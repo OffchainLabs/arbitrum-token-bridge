@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { Loader } from './atoms/Loader'
+import { Loader, LoaderProps } from './atoms/Loader'
 
 type ButtonVariant = 'primary' | 'secondary'
 
@@ -19,8 +19,7 @@ const disabledClassName = 'disabled:bg-gray-5 disabled:text-white'
 
 type ButtonLoadingProps = Partial<{
   loaderColor: string
-  loaderWidth: string
-  loaderHeight: string
+  loaderSize: LoaderProps['size']
 }>
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -68,8 +67,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {showLoader && (
             <Loader
               color={loadingProps?.loaderColor || 'white'}
-              width={loadingProps?.loaderWidth || 16}
-              height={loadingProps?.loaderHeight || 16}
+              size={loadingProps?.loaderSize || 'small'}
             />
           )}
           <span>{children}</span>

@@ -30,7 +30,7 @@ export const Loader = (props: LoaderProps) => {
 
   return (
     <Spinner
-      type={`${loaderType ?? 'TailSpin'}`} // we should only be using this 1 variant for consistency across product, unless explicitly needed
+      type={`${loaderType || 'TailSpin'}`} // we should only be using this 1 variant for consistency across product, unless explicitly needed
       height={sizeInPx}
       width={sizeInPx}
       color={color}
