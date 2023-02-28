@@ -12,6 +12,7 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { Transaction } from '../hooks/useTransactions'
+import { getL1TokenData } from '../util'
 
 export const updateAdditionalDepositData = async (
   depositTx: Transaction,
@@ -73,6 +74,7 @@ export const updateAdditionalDepositData = async (
         depositTx,
         l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
         timestampCreated,
+        l1Provider,
         l2Provider
       })
       return updatedDepositTx
@@ -133,10 +135,12 @@ const updateAdditionalDepositDataToken = async ({
   depositTx,
   l1ToL2Msg,
   timestampCreated,
+  l1Provider,
   l2Provider
 }: {
   depositTx: Transaction
   timestampCreated: string
+  l1Provider: Provider
   l2Provider: Provider
   l1ToL2Msg: L1ToL2MessageReader
 }) => {
@@ -144,6 +148,20 @@ const updateAdditionalDepositDataToken = async ({
     ...depositTx,
     timestampCreated
   }
+
+  // fallback to on-chain token information if subgraph doesn't have it
+  const { sender, tokenAddress, assetName } = updatedDepositTx
+  if (!assetName && tokenAddress) {
+    const { symbol } = await getL1TokenData({
+      account: sender,
+      erc20L1Address: tokenAddress,
+      l1Provider,
+      l2Provider,
+      throwOnInvalidERC20: false
+    })
+    updatedDepositTx.assetName = symbol
+  }
+
   const res = await l1ToL2Msg.waitForStatus()
 
   const l2TxID = (() => {
@@ -242,7 +260,6 @@ const updateAdditionalDepositDataClassic = async ({
     l1ToL2MsgData: l1ToL2MsgData
   }
 
-  console.log('COMPLETE', completeDepositTx)
   return completeDepositTx
 }
 
