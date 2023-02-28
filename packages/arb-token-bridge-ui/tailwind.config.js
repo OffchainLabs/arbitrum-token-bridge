@@ -5,6 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        error: '#CD0000',
         // Blue
         'blue-arbitrum': '#2D374B',
         'blue-link': '#1366C1',

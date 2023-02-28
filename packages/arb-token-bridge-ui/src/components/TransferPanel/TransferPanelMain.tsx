@@ -39,6 +39,7 @@ import {
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
+import { userRejectedToast } from '../common/Toast'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -660,7 +661,9 @@ export function TransferPanelMain({
               setTo(l1.network)
             } catch (error: any) {
               // 4001 - User rejected the request
-              if (error.code !== 4001) {
+              if (error.code === 4001) {
+                userRejectedToast()
+              } else {
                 Sentry.captureException(error)
               }
             }
@@ -696,7 +699,9 @@ export function TransferPanelMain({
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
                 // 4001 - User rejected the request
-                if (error.code !== 4001) {
+                if (error.code === 4001) {
+                  userRejectedToast()
+                } else {
                   Sentry.captureException(error)
                 }
               }
@@ -736,7 +741,9 @@ export function TransferPanelMain({
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
             // 4001 - User rejected the request
-            if (error.code !== 4001) {
+            if (error.code === 4001) {
+              userRejectedToast()
+            } else {
               Sentry.captureException(error)
             }
           }
@@ -768,7 +775,9 @@ export function TransferPanelMain({
             setTo(network)
           } catch (error: any) {
             // 4001 - User rejected the request
-            if (error.code !== 4001) {
+            if (error.code === 4001) {
+              userRejectedToast()
+            } else {
               Sentry.captureException(error)
             }
           }

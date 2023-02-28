@@ -4,6 +4,9 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { Toast } from './Toast'
+
+import 'react-toastify/dist/ReactToastify.css'
 
 function Moon() {
   const { width } = useWindowSize()
@@ -37,6 +40,8 @@ export function Layout(props: LayoutProps) {
       <div className="bg-gradient-overlay z-20 flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>
       </div>
+
+      <Toast />
 
       <Footer />
 
