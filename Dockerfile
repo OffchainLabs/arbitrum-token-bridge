@@ -21,7 +21,6 @@ RUN CYPRESS_CACHE_FOLDER=~/.cache/Cypress npm install
 # COPY ./packages/use-wallet/build ./packages/use-wallet/
 # COPY ./packages/token-bridge-sdk/build ./packages/token-bridge-sdk/
 COPY . .
-RUN apt update && apt-get install docker-ce && docker network ls
-RUN apt update && apt install curl && curl http://localhost:8545
+
 
 
