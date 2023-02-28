@@ -151,6 +151,10 @@ function getProviderName(provider: any): ProviderName | null {
 }
 
 async function isBlocked(address: string): Promise<boolean> {
+  if (process.env.NODE_ENV !== 'production') {
+    return false
+  }
+
   const response = await fetch('/api/screen', {
     method: 'POST',
     body: JSON.stringify({ address }),
