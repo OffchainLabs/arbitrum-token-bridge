@@ -34,12 +34,15 @@ export const updateAdditionalDepositData = async (
       )
     }
 
+    const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
+
     const isEthDeposit = depositTx.assetName === AssetType.ETH
-    const { l1ToL2Msg, isClassic } = await getRetyableMessageDataFromTxID({
+    const { l1ToL2Msg } = await getRetyableMessageDataFromTxID({
       depositTxId: depositTx.txID,
       l1Provider,
       l2Provider,
-      isEthDeposit
+      isEthDeposit,
+      isClassic
     })
 
     if (isClassic) {
@@ -247,12 +250,14 @@ export const getRetyableMessageDataFromTxID = async ({
   depositTxId,
   isEthDeposit,
   l1Provider,
-  l2Provider
+  l2Provider,
+  isClassic
 }: {
   depositTxId: string
   l1Provider: Provider
   isEthDeposit: boolean
   l2Provider: Provider
+  isClassic?: boolean
 }): Promise<{
   isClassic?: boolean
   l1ToL2Msg?:
@@ -269,16 +274,16 @@ export const getRetyableMessageDataFromTxID = async ({
   }
 
   const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-  const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
 
-  if (l1TxReceiptIsClassic) {
-    // classic (pre-nitro) deposit - both eth + token
+  const getClassicDepositMessage = async () => {
     const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(l2Provider)
     return {
       isClassic: true,
       l1ToL2Msg: l1ToL2Msg
     }
-  } else {
+  }
+
+  const getNitroDepositMessage = async () => {
     // post-nitro handling
     if (isEthDeposit) {
       // nitro eth deposit
@@ -295,5 +300,28 @@ export const getRetyableMessageDataFromTxID = async ({
         l1ToL2Msg: l1ToL2Msg
       }
     }
+  }
+
+  if (typeof isClassic === 'undefined') {
+    // it is unknown whether the transaction isClassic or not. eg. in RetrybleTxnIncluder
+
+    // first check if the tx is classic or not
+    const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
+
+    if (l1TxReceiptIsClassic) {
+      // classic (pre-nitro) deposit - both eth + token
+      return getClassicDepositMessage()
+    } else {
+      // post nitro deposit
+      return getNitroDepositMessage()
+    }
+  } else if (isClassic === true) {
+    // isClassic is true and it is known before-hand
+    // return the classic receipt
+    return getClassicDepositMessage()
+  } else {
+    // isClassic is false and it is known before-hand
+    // return the eth-or-token deposit message
+    return getNitroDepositMessage()
   }
 }

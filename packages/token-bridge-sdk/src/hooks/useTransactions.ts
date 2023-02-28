@@ -100,6 +100,7 @@ type TransactionBase = {
   timestampCreated?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
+  isClassic?: boolean
 }
 
 export interface Transaction extends TransactionBase {
