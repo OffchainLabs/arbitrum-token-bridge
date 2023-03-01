@@ -4,6 +4,7 @@ import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getBlockTime, getConfirmPeriodBlocks } from '../../util/networks'
 import dayjs from 'dayjs'
+import { Tooltip } from './Tooltip'
 
 export function WithdrawalCountdown({
   nodeBlockDeadline
@@ -31,7 +32,11 @@ export function WithdrawalCountdown({
     const withdrawalDate = dayjs().add(withdrawalTimeInSeconds, 'second')
     const remainingTime = dayjs().to(withdrawalDate, true)
 
-    return <span>~{remainingTime} remaining</span>
+    return (
+      <span className="animate-pulse whitespace-nowrap">
+        ~{remainingTime} remaining
+      </span>
+    )
   }
 
   if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
@@ -51,36 +56,39 @@ export function WithdrawalCountdown({
 
   if (daysLeft > 0) {
     return (
-      <span>
-        {`~${blocksRemaining} blocks (~${daysLeft} day${
-          daysLeft === 1 ? '' : 's'
-        })`}{' '}
-        remaining
-      </span>
+      <Tooltip
+        content={<span> {`~${blocksRemaining} blocks remaining`} </span>}
+      >
+        <span className="animate-pulse whitespace-nowrap">
+          {`~${daysLeft} day${daysLeft === 1 ? '' : 's'}`} remaining
+        </span>
+      </Tooltip>
     )
   }
 
   if (hoursLeft > 0) {
     return (
-      <span>
-        {`~${blocksRemaining} blocks (~${hoursLeft} hour${
-          hoursLeft === 1 ? '' : 's'
-        })`}{' '}
-        remaining
-      </span>
+      <Tooltip
+        content={<span> {`~${blocksRemaining} blocks remaining`} </span>}
+      >
+        <span className="animate-pulse whitespace-nowrap">
+          {`~${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`} remaining
+        </span>
+      </Tooltip>
     )
   }
 
   if (minutesLeft === 0) {
-    return <span>About an hour</span>
+    return (
+      <span className="animate-pulse whitespace-nowrap">About an hour</span>
+    )
   }
 
   return (
-    <span>
-      {`~${blocksRemaining} blocks (~${minutesLeft} minute${
-        minutesLeft === 1 ? '' : 's'
-      })`}{' '}
-      remaining
-    </span>
+    <Tooltip content={<span> {`~${blocksRemaining} blocks remaining`} </span>}>
+      <span className="animate-pulse whitespace-nowrap">
+        {`~${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}`} remaining
+      </span>
+    </Tooltip>
   )
 }

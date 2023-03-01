@@ -7,13 +7,15 @@ import {
   getStandardisedDate,
   getStandardisedTime,
   isDeposit,
-  isPending
+  isPending,
+  isWithdrawal
 } from '../../../state/app/utils'
 import { MergedTransaction } from '../../../state/app/state'
 import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
+import { useAppState } from '../../../state'
 
 export type PageParams = {
   searchString: string
@@ -74,7 +76,7 @@ export type TransactionsTableProps = {
   transactions: MergedTransaction[]
   loading: boolean
   error: boolean
-  localCachedTransactionMap: Map<string, MergedTransaction>
+  pendingTransactions: MergedTransaction[]
 }
 
 export function TransactionsTable({
@@ -84,47 +86,65 @@ export function TransactionsTable({
   transactions,
   loading,
   error,
-  localCachedTransactionMap
+  pendingTransactions
 }: TransactionsTableProps) {
   const { isSmartContractWallet } = useNetworksAndSigners()
 
+  const {
+    app: { mergedTransactions: locallyStoredTransactions }
+  } = useAppState()
+
+  // Generating the list of final transactions which will be displayed in the table
   const _transactions: MergedTransaction[] = useMemo(() => {
-    // if it is page 1, and a newly added transaction has come in (from local-storage)
-    // prepend that to the start of the list, till it starts coming from the subgraph as well (generally after a minute or 2)
+    // for easier understanding - let's call `transactions` prop as they are - the one's fetched from subgraph.
+    const subgraphTransactions = transactions
 
-    // if first page
-    if (!pageParams.pageNumber) {
-      const noTransactionInSubgraph = !transactions?.[0]
-      const firstSubgraphTransactionTimestamp = noTransactionInSubgraph
-        ? dayjs(0) // very old arbitrary date
-        : dayjs(transactions[0]?.['createdAt'])
+    // if it is not first page, ignore everything and just show the transactions from subgraph, we assume there are no fresh txns here.
+    if (pageParams.pageNumber) return subgraphTransactions
 
-      const newerTransactions: MergedTransaction[] = []
+    // else,
+    // if it is page 1, and a freshly added transaction has been identified (ie. a txn which is newer than the first subgraph txn in our list),
+    // prepend the fresh txn to the start of the list for instant UX, till it starts coming from the subgraph as well (generally after a minute or 2)
 
-      localCachedTransactionMap?.forEach(tx => {
-        // only check pending deposits if you're on deposits, and vice-versa
-        const isMatchingPage =
-          (isDeposit(tx) && type === 'deposits') ||
-          (!isDeposit(tx) && type !== 'deposits')
-        if (!isMatchingPage) return
+    // if there are no transactions from subgraph - our freshly added txns should be the only one's added to the list.
+    const noTransactionInSubgraph = !subgraphTransactions?.[0]
+    const firstSubgraphTransactionTimestamp = noTransactionInSubgraph
+      ? dayjs(0) // very old arbitrary date
+      : dayjs(subgraphTransactions[0]?.['createdAt'])
 
-        // check if the pending tx is newer than the latest subgraph date
-        const pendingTxCreationDate = dayjs(tx.createdAt)
-        const isTxAfterSubgraphTxs =
-          pendingTxCreationDate.isAfter(firstSubgraphTransactionTimestamp) &&
-          tx.createdAt !== transactions[0]?.['createdAt']
+    const newerTransactions: MergedTransaction[] = []
 
-        if (isTxAfterSubgraphTxs) {
-          newerTransactions.push(tx)
-        }
-      })
+    locallyStoredTransactions?.forEach(tx => {
+      // only check deposit txns if you're on deposits' tab, and vice-versa
+      const isMatchingTab =
+        (isDeposit(tx) && type === 'deposits') ||
+        (isWithdrawal(tx) && type === 'withdrawals')
+      if (!isMatchingTab) return
 
-      // if newer txns found, append it to the existing subgraph transactions
-      return [...newerTransactions, ...transactions]
-    }
+      // check if the local-state tx is newer than the latest subgraph date
+      const pendingTxCreationDate = dayjs(tx.createdAt)
+      const isTxAfterSubgraphTxs =
+        pendingTxCreationDate.isAfter(firstSubgraphTransactionTimestamp) &&
+        tx.createdAt !== subgraphTransactions[0]?.['createdAt']
 
-    return transactions
-  }, [transactions, localCachedTransactionMap])
+      if (isTxAfterSubgraphTxs) {
+        newerTransactions.push(tx)
+      }
+    })
+
+    // if newer txns found, append it to the existing subgraph transactions
+    return [...newerTransactions.reverse(), ...subgraphTransactions]
+  }, [transactions, JSON.stringify(locallyStoredTransactions || [])])
+
+  const pendingTransactionsMap = useMemo(() => {
+    // map of all the locally-stored pending transactions
+    // so that tx rows can easily subscribe to live-local status without refetching table data
+    const pendingTxMap = new Map<string, MergedTransaction>()
+    pendingTransactions.forEach(tx => {
+      pendingTxMap.set(tx.txId, tx)
+    })
+    return pendingTxMap
+  }, [JSON.stringify(locallyStoredTransactions || [])])
 
   const status = useMemo(() => {
     if (loading) return TableStatus.LOADING
@@ -141,15 +161,11 @@ export function TransactionsTable({
     <>
       {/* search and pagination buttons */}
       <TableActionHeader
-        {...{
-          type,
-          pageParams,
-          setPageParams,
-          transactions,
-          loading,
-          error,
-          localCachedTransactionMap
-        }}
+        type={type}
+        pageParams={pageParams}
+        setPageParams={setPageParams}
+        transactions={transactions}
+        loading={loading}
       />
 
       {
@@ -182,49 +198,33 @@ export function TransactionsTable({
                   _transactions.map((tx, index) => {
                     const isLastRow = index === _transactions.length - 1
 
-                    const locallyCachedTx = localCachedTransactionMap.get(
-                      tx.txId
-                    )
-
                     // if transaction is present in pending transactions, subscribe to that in this row,
                     // this will make sure the row updates with any updates in the pending tx state
                     // else show static subgraph table data
-
-                    const finalTx: MergedTransaction = (() => {
-                      //if transaction not present in subgraph, but present in local-cache
-                      // example - in our `readClassicDeposit` test - where we are not relying at subgraph at all
-                      if (!tx && locallyCachedTx) {
-                        return locallyCachedTx
-                      }
-
-                      // if it's a pending transaction, then definitely subscibe to the locally-cached transaction
-                      if (
-                        tx &&
-                        isPending(tx) &&
-                        isDeposit(tx) &&
-                        locallyCachedTx
-                      ) {
-                        return locallyCachedTx
-                      }
-
-                      // else show the normal, static subgraph tx only
-                      // eg. transaction is not pending, or not present locally, just show the subgraph one then
-                      return tx
-                    })()
-
-                    return isDeposit(finalTx) ? (
-                      <TransactionsTableDepositRow
-                        key={`${finalTx.txId}-${finalTx.direction}`}
-                        tx={finalTx}
-                        className={!isLastRow ? 'border-b border-gray-5' : ''}
-                      />
-                    ) : (
-                      <TransactionsTableWithdrawalRow
-                        key={`${finalTx.txId}-${finalTx.direction}`}
-                        tx={finalTx}
-                        className={!isLastRow ? 'border-b border-gray-5' : ''}
-                      />
+                    const pendingTransaction = pendingTransactionsMap.get(
+                      tx.txId
                     )
+                    const finalTx = pendingTransaction ? pendingTransaction : tx
+
+                    if (isDeposit(finalTx)) {
+                      return (
+                        <TransactionsTableDepositRow
+                          key={`${finalTx.txId}-${finalTx.direction}`}
+                          tx={finalTx}
+                          className={!isLastRow ? 'border-b border-gray-5' : ''}
+                        />
+                      )
+                    } else if (isWithdrawal(finalTx)) {
+                      return (
+                        <TransactionsTableWithdrawalRow
+                          key={`${finalTx.txId}-${finalTx.direction}`}
+                          tx={finalTx}
+                          className={!isLastRow ? 'border-b border-gray-5' : ''}
+                        />
+                      )
+                    } else {
+                      return null
+                    }
                   })
                 ) : (
                   <EmptyTableRow>

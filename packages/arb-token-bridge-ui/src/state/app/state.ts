@@ -18,7 +18,7 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState } from '../../util'
 import {
-  filterDeposits,
+  filterTransactions,
   transformDeposits,
   transformWithdrawals
 } from './utils'
@@ -97,7 +97,7 @@ export const defaultState: AppState = {
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
-    return filterDeposits(
+    return filterTransactions(
       [...transactions],
       s.arbTokenBridge.walletAddress,
       s.l1NetworkChainId,
@@ -124,7 +124,12 @@ export const defaultState: AppState = {
     )
   }),
   depositsTransformed: derived((s: AppState) => {
-    return transformDeposits(s.sortedTransactions)
+    return transformDeposits(
+      s.sortedTransactions.filter(
+        // only take the deposit transactions, rest `outbox`, `approve` etc should not come
+        tx => tx.type === 'deposit' || tx.type === 'deposit-l1'
+      )
+    )
   }),
   withdrawalsTransformed: derived((s: AppState) => {
     return transformWithdrawals(

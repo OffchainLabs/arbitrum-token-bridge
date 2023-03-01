@@ -19,37 +19,15 @@ import { isFathomNetworkName, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
-import { isPending } from '../../../state/app/utils'
+import {
+  findMatchingL1TxForWithdrawal,
+  isPending
+} from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 
-export function findMatchingL1Tx(
-  l2ToL1Message: MergedTransaction,
-  transactions: MergedTransaction[]
-) {
-  return transactions.find(_tx => {
-    const l2ToL1MsgData = _tx.l2ToL1MsgData
-
-    if (!(l2ToL1MsgData?.uniqueId && l2ToL1Message?.uniqueId)) {
-      return false
-    }
-
-    // To get rid of Proxy
-    const txUniqueId = BigNumber.from(l2ToL1Message.uniqueId)
-    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
-
-    return txUniqueId.eq(_txUniqueId)
-  })
-}
-
-function WithdrawalRowStatus({
-  tx,
-  mergedTransactions
-}: {
-  tx: MergedTransaction
-  mergedTransactions: MergedTransaction[]
-}) {
-  const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
+function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
+  const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
 
   switch (tx.status) {
     case 'Unconfirmed':
@@ -127,24 +105,24 @@ function WithdrawalRowStatus({
   }
 }
 
-function WithdrawalRowTime({
-  tx,
-  mergedTransactions
-}: {
-  tx: MergedTransaction
-  mergedTransactions: MergedTransaction[]
-}) {
+function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   if (tx.status === 'Unconfirmed') {
     return (
-      <WithdrawalCountdown
-        nodeBlockDeadline={tx.nodeBlockDeadline || 'NODE_NOT_CREATED'}
-      />
+      <div className="flex flex-col space-y-3">
+        <Tooltip content={<span>L2 Transaction Time</span>}>
+          <TransactionDateTime standardisedDate={tx.createdAt} />
+        </Tooltip>
+
+        <WithdrawalCountdown
+          nodeBlockDeadline={tx.nodeBlockDeadline || 'NODE_NOT_CREATED'}
+        />
+      </div>
     )
   }
 
   if (tx.status === 'Confirmed') {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col space-y-3">
         <Tooltip content={<span>L2 Transaction Time</span>}>
           <TransactionDateTime standardisedDate={tx.createdAt} />
         </Tooltip>
@@ -157,11 +135,11 @@ function WithdrawalRowTime({
     )
   }
 
-  const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
+  const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
 
   if (typeof matchingL1Tx === 'undefined') {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col space-y-3">
         <Tooltip content={<span>L2 Transaction time</span>}>
           <TransactionDateTime standardisedDate={tx.createdAt} />
         </Tooltip>
@@ -201,7 +179,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    const matchingL1Tx = findMatchingL1Tx(tx, mergedTransactions)
+    const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
 
     if (typeof matchingL1Tx === 'undefined') {
       return (
@@ -381,11 +359,11 @@ export function TransactionsTableWithdrawalRow({
       } ${bgClassName} ${className}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">
-        <WithdrawalRowStatus tx={tx} mergedTransactions={mergedTransactions} />
+        <WithdrawalRowStatus tx={tx} />
       </td>
 
       <td className="w-1/5 px-3 py-3">
-        <WithdrawalRowTime tx={tx} mergedTransactions={mergedTransactions} />
+        <WithdrawalRowTime tx={tx} />
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">

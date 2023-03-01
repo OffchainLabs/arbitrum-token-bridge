@@ -109,7 +109,8 @@ export const transformWithdrawals = (
   })
 }
 
-export const filterDeposits = (
+// filter the transactions based on current wallet address and network ID's
+export const filterTransactions = (
   transactions: Transaction[],
   walletAddress: string,
   l1ChainId: number | null,
@@ -142,13 +143,17 @@ export const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
 
+export const isWithdrawal = (tx: MergedTransaction) => {
+  return tx.direction === 'withdraw' || tx.direction === 'outbox'
+}
+
 export const isPending = (tx: MergedTransaction) => {
   return (
     (isDeposit(tx) &&
       (tx.status === 'pending' ||
         tx.depositStatus === DepositStatus.L1_PENDING ||
         tx.depositStatus === DepositStatus.L2_PENDING)) ||
-    (!isDeposit(tx) &&
+    (isWithdrawal(tx) &&
       (tx.status === outgoungStateToString[OutgoingMessageState.UNCONFIRMED] ||
         tx.status === outgoungStateToString[OutgoingMessageState.CONFIRMED]))
   )
@@ -157,10 +162,10 @@ export const isPending = (tx: MergedTransaction) => {
 export const isFailed = (tx: MergedTransaction) => {
   return (
     (isDeposit(tx) &&
-      (tx.status === 'pending' ||
+      (tx.status === 'failure' ||
         tx.depositStatus == DepositStatus.L1_FAILURE ||
         tx.depositStatus === DepositStatus.L2_FAILURE)) ||
-    (!isDeposit(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
+    (isWithdrawal(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
   )
 }
 
@@ -177,4 +182,31 @@ export const getStandardisedTime = (standatdisedTimestamp: string) => {
 
 export const getStandardisedDate = (standatdisedTimestamp: string) => {
   return dayjs(standatdisedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
+}
+
+export const findMatchingL1TxForWithdrawal = (
+  withdrawalTxn: MergedTransaction
+) => {
+  // finds the corresponding L1 transaction for withdrawal
+
+  const cachedTransactions: Transaction[] = JSON.parse(
+    window.localStorage.getItem('arbTransactions') || '[]'
+  )
+  const outboxTransactions = transformDeposits(
+    cachedTransactions.filter(tx => tx.type === 'outbox')
+  )
+
+  return outboxTransactions.find(_tx => {
+    const l2ToL1MsgData = _tx.l2ToL1MsgData
+
+    if (!(l2ToL1MsgData?.uniqueId && withdrawalTxn?.uniqueId)) {
+      return false
+    }
+
+    // To get rid of Proxy
+    const txUniqueId = BigNumber.from(withdrawalTxn.uniqueId)
+    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
+
+    return txUniqueId.eq(_txUniqueId)
+  })
 }

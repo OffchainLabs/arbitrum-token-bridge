@@ -14,7 +14,7 @@ import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/outline'
-import { findMatchingL1Tx } from '../TransactionHistory/TransactionsTable/TransactionsTableWithdrawalRow'
+import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -54,12 +54,9 @@ export function WithdrawalL1TxStatus({
 }): JSX.Element {
   const { l1 } = useNetworksAndSigners()
   const { network: l1Network } = l1
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
 
   // Try to find the L1 transaction that matches the L2ToL1 message
-  const l1Tx = findMatchingL1Tx(tx, mergedTransactions)
+  const l1Tx = findMatchingL1TxForWithdrawal(tx)
 
   if (typeof l1Network === 'undefined') {
     return <span>Not available</span>

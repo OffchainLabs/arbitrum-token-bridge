@@ -8,15 +8,17 @@ import { TransactionsTableProps } from './TransactionsTable'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
 import Loader from 'react-loader-spinner'
 
-type TableActionHeaderProps = TransactionsTableProps
+type TableActionHeaderProps = Omit<
+  TransactionsTableProps,
+  'error' | 'pendingTransactions'
+>
 
 export const TableActionHeader = ({
   type,
   pageParams,
   setPageParams,
   transactions,
-  loading,
-  error
+  loading
 }: TableActionHeaderProps) => {
   const layerType = type === 'deposits' ? 'L1' : 'L2'
 

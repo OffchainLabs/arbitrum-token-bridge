@@ -50,16 +50,6 @@ export const TransactionHistory = ({
     return mergedTransactions?.filter(tx => isFailed(tx))
   }, [mergedTransactions])
 
-  const localCachedTransactionMap = useMemo(() => {
-    // map of all the locally-cached transactions
-    // so that tx rows can easily subscribe to live-local status without refetching table data
-    const localTxMap = new Map()
-    mergedTransactions.forEach(tx => {
-      localTxMap.set(tx.txId, tx)
-    })
-    return localTxMap
-  }, [JSON.stringify(mergedTransactions || [])])
-
   return (
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
@@ -123,7 +113,7 @@ export const TransactionHistory = ({
               transactions={depositsData.transformedDeposits}
               loading={depositsLoading}
               error={depositsError}
-              localCachedTransactionMap={localCachedTransactionMap}
+              pendingTransactions={pendingTransactions}
             />
           </Tab.Panel>
           <Tab.Panel className="overflow-auto">
@@ -134,7 +124,7 @@ export const TransactionHistory = ({
               transactions={withdrawalsData.transformedWithdrawals}
               loading={withdrawalsLoading}
               error={withdrawalsError}
-              localCachedTransactionMap={localCachedTransactionMap}
+              pendingTransactions={pendingTransactions}
             />
           </Tab.Panel>
         </Tab.Group>
