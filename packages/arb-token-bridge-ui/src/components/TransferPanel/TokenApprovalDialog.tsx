@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { BigNumber, constants, utils } from 'ethers'
 import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
+import { ExclamationIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -15,14 +16,18 @@ import { getExplorerUrl, isNetwork } from '../../util/networks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
+  allowance: BigNumber | null
+  amount: string
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { isOpen, token } = props
+  const { allowance, amount, isOpen, token } = props
   const {
     app: { arbTokenBridge }
   } = useAppState()
 
+  const allowanceParsed =
+    allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
@@ -68,6 +73,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
     setChecked(false)
   }
+
+  const displayAllowanceWarning = allowance && !allowance.isZero()
 
   return (
     <Dialog
@@ -121,18 +128,37 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           onChange={setChecked}
         />
 
-        <div className="flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2">
-          <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
-          <span className="text-sm font-light text-cyan-dark">
-            After approval, you’ll see a second prompt in your wallet for the
-            standard L2 deposit fee.{' '}
-            <ExternalLink
-              href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
-              className="underline"
-            >
-              Learn more.
-            </ExternalLink>
-          </span>
+        <div className="flex flex-col md:max-w-[490px]">
+          {displayAllowanceWarning && (
+            <div className="flex flex-row items-center space-x-2 rounded-lg bg-yellow-50 py-3 px-2">
+              <ExclamationIcon className="h-8 w-8 text-yellow-400" />
+              <span className="text-sm font-light">
+                You are seeing this dialog because the current allowance you
+                have set for this token
+                <span className="font-medium"> ({allowanceParsed}) </span>
+                is less than the amount you are trying to bridge
+                <span className="font-medium"> ({amount})</span>.
+              </span>
+            </div>
+          )}
+
+          <div
+            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2 ${
+              displayAllowanceWarning && 'mt-4'
+            }`}
+          >
+            <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
+            <span className="text-sm font-light text-cyan-dark">
+              After approval, you’ll see a second prompt in your wallet for the
+              standard L2 deposit fee.{' '}
+              <ExternalLink
+                href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
+                className="underline"
+              >
+                Learn more.
+              </ExternalLink>
+            </span>
+          </div>
         </div>
       </div>
     </Dialog>
