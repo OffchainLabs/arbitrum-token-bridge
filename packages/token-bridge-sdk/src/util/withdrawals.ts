@@ -1,4 +1,3 @@
-import { FetchTokenWithdrawalsFromSubgraphResult } from '../withdrawals/fetchTokenWithdrawalsFromSubgraph'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import {
@@ -15,7 +14,7 @@ import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
 import { FetchWithdrawalsFromSubgraphResult } from 'withdrawals/fetchWithdrawalsFromSubgraph'
 
 export const updateAdditionalWithdrawalData = async (
-  withdrawalTx: L2ToL1EventResultPlus | FetchTokenWithdrawalsFromSubgraphResult,
+  withdrawalTx: L2ToL1EventResultPlus,
   l1Provider: Provider,
   l2Provider: Provider
 ) => {
@@ -52,36 +51,6 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     outgoingMessageState,
     decimals: 18,
     l2TxHash: event.l2TxHash || event.transactionHash
-  }
-}
-
-export async function mapTokenWithdrawalFromSubgraphToL2ToL1EventResult(
-  result: FetchTokenWithdrawalsFromSubgraphResult,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l2ChainId: number
-): Promise<L2ToL1EventResultPlus> {
-  const { symbol, decimals } = await getL1TokenData({
-    account: result.caller,
-    erc20L1Address: result.tokenAddress!,
-    l1Provider,
-    l2Provider
-  })
-
-  const outgoingMessageState = await getOutgoingMessageState(
-    result,
-    l1Provider,
-    l2Provider,
-    l2ChainId
-  )
-
-  return {
-    ...result,
-    value: result.amount,
-    type: AssetType.ERC20,
-    symbol,
-    decimals,
-    outgoingMessageState
   }
 }
 

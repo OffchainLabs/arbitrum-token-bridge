@@ -100,20 +100,20 @@ export function TransactionsTable({
     const subgraphTransactions = transactions
 
     // if it is not first page, ignore everything and just show the transactions from subgraph, we assume there are no fresh txns here.
-    if (pageParams.pageNumber) return subgraphTransactions
+    if (pageParams.pageNumber > 0) return subgraphTransactions
 
     // else,
     // if it is page 1, and a freshly added transaction has been identified (ie. a txn which is newer than the first subgraph txn in our list),
     // prepend the fresh txn to the start of the list for instant UX, till it starts coming from the subgraph as well (generally after a minute or 2)
 
     // if there are no transactions from subgraph - our freshly added txns should be the only one's added to the list.
-    const noTransactionInSubgraph = !subgraphTransactions?.[0]
+    const noTransactionInSubgraph = subgraphTransactions.length === 0
     const firstSubgraphTransactionTimestamp = noTransactionInSubgraph
       ? dayjs(0) // very old arbitrary date
       : dayjs(subgraphTransactions[0]?.['createdAt'])
 
+    // start identifying newer transactions
     const newerTransactions: MergedTransaction[] = []
-
     locallyStoredTransactions?.forEach(tx => {
       // only check deposit txns if you're on deposits' tab, and vice-versa
       const isMatchingTab =

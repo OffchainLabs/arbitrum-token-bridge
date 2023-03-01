@@ -34,7 +34,6 @@ import {
   Transaction,
   L1ToL2MessageData
 } from './useTransactions'
-import { FetchTokenWithdrawalsFromSubgraphResult } from 'withdrawals'
 
 export { OutgoingMessageState }
 
