@@ -41,12 +41,9 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { userRejectedToast } from '../common/Toast'
 
 const onTxError = (error: any) => {
-  if (error.code === 'ACTION_REJECTED') {
-    userRejectedToast()
-  } else {
+  if (error.code !== 'ACTION_REJECTED') {
     Sentry.captureException(error)
   }
 }

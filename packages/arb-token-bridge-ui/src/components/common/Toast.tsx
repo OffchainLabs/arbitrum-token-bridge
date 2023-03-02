@@ -1,7 +1,7 @@
 import { ToastContainer, toast } from 'react-toastify'
 
-export const userRejectedToast = () => {
-  toast.error('User rejected transaction')
+export const errorToast = (message: string) => {
+  toast.error(message)
 }
 
 export const Toast = () => {
