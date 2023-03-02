@@ -170,6 +170,8 @@ export function TransferPanel() {
     return isDepositMode ? ethL1Balance : ethL2Balance
   }, [ethL1Balance, ethL2Balance, isDepositMode])
 
+  const [allowance, setAllowance] = useState<BigNumber | null>(null)
+
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
       return
@@ -446,6 +448,7 @@ export function TransferPanel() {
           })
 
           if (!allowance.gte(amountRaw)) {
+            setAllowance(allowance)
             const waitForInput = openTokenApprovalDialog()
             const confirmed = await waitForInput()
 
@@ -859,6 +862,8 @@ export function TransferPanel() {
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
+        amount={amount}
+        allowance={allowance}
         token={selectedToken}
       />
 
