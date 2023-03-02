@@ -100,7 +100,9 @@ export function TransactionsTable({
     const subgraphTransactions = transactions
 
     // if it is not first page, ignore everything and just show the transactions from subgraph, we assume there are no fresh txns here.
-    if (pageParams.pageNumber > 0) return subgraphTransactions
+    // or if user has searched for something, ignore appending extra txns ahead of search-results
+    if (pageParams.searchString || pageParams.pageNumber > 0)
+      return subgraphTransactions
 
     // else,
     // if it is page 1, and a freshly added transaction has been identified (ie. a txn which is newer than the first subgraph txn in our list),

@@ -10,8 +10,5 @@ module.exports = {
   },
 
   distDir: 'build',
-  productionBrowserSourceMaps: true,
-  images: {
-    unoptimized: true // optimized images (next/images) don't work with `next export`. Keeping it unoptimized for now.
-  }
+  productionBrowserSourceMaps: true
 }
