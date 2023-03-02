@@ -3,7 +3,6 @@ import Loader from 'react-loader-spinner'
 
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
-import { useAppContextDispatch } from '../App/AppContext'
 import {
   WithdrawalCardContainer,
   WithdrawalL1TxStatus,
@@ -19,7 +18,6 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     app: { arbTokenBridge }
   } = useAppState()
   const { walletAddress, bridgeTokens } = arbTokenBridge
-  const dispatch = useAppContextDispatch()
   const { l1 } = useNetworksAndSigners()
   const {
     eth: [ethL1Balance],

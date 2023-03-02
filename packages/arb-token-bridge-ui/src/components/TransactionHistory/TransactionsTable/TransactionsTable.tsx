@@ -7,7 +7,6 @@ import {
   getStandardisedDate,
   getStandardisedTime,
   isDeposit,
-  isPending,
   isWithdrawal
 } from '../../../state/app/utils'
 import { MergedTransaction } from '../../../state/app/state'
@@ -94,6 +93,9 @@ export function TransactionsTable({
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
 
+  // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
+  const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])
+
   // Generating the list of final transactions which will be displayed in the table
   const _transactions: MergedTransaction[] = useMemo(() => {
     // for easier understanding - let's call `transactions` prop as they are - the one's fetched from subgraph.
@@ -136,7 +138,7 @@ export function TransactionsTable({
 
     // if newer txns found, append it to the existing subgraph transactions
     return [...newerTransactions.reverse(), ...subgraphTransactions]
-  }, [transactions, JSON.stringify(locallyStoredTransactions || [])])
+  }, [transactions, localTransactionsKey])
 
   const pendingTransactionsMap = useMemo(() => {
     // map of all the locally-stored pending transactions
@@ -146,7 +148,7 @@ export function TransactionsTable({
       pendingTxMap.set(tx.txId, tx)
     })
     return pendingTxMap
-  }, [JSON.stringify(locallyStoredTransactions || [])])
+  }, [localTransactionsKey])
 
   const status = useMemo(() => {
     if (loading) return TableStatus.LOADING

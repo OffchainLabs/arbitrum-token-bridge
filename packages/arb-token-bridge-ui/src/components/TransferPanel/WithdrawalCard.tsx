@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react'
-import { BigNumber } from 'ethers'
 
 import { ExternalLink } from '../common/ExternalLink'
-import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'

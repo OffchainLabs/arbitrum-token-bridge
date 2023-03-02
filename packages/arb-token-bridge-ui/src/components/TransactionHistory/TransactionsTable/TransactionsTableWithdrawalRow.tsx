@@ -1,6 +1,4 @@
-import { BigNumber } from 'ethers'
 import dayjs from 'dayjs'
-import { useAppState } from '../../../state'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
@@ -169,9 +167,6 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
 }
 
 function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
 
   function L1TxInfo() {
@@ -340,10 +335,6 @@ export function TransactionsTableWithdrawalRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
-
   const isError = tx.status === 'Failure'
 
   const bgClassName = useMemo(() => {

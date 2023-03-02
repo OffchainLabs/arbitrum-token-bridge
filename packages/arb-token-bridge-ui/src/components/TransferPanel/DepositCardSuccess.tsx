@@ -9,7 +9,6 @@ import {
   DepositL1TxStatus,
   DepositL2TxStatus
 } from './DepositCard'
-import { useAppContextDispatch } from '../App/AppContext'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
@@ -21,7 +20,6 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
       arbTokenBridge: { walletAddress, bridgeTokens, token }
     }
   } = useAppState()
-  const dispatch = useAppContextDispatch()
   const {
     l2: { provider: L2Provider }
   } = useNetworksAndSigners()

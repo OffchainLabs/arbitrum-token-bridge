@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { L1ToL2MessageStatus, EthDepositStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
   L1ToL2MessageReader,

@@ -51,7 +51,7 @@ export const TableActionHeader = ({
     }
   }
 
-  const search = (searchString: string) => {
+  const search = () => {
     // search logic - using `searchString`
     setPageParams(prevParams => ({
       ...prevParams,
@@ -64,7 +64,7 @@ export const TableActionHeader = ({
   useEffect(() => {
     // when the debounced value of searchString changes, only then fire the actual search call
     if (pageParams.searchString !== searchStringDebounced) {
-      search(searchStringDebounced)
+      search()
     }
   }, [searchStringDebounced])
 

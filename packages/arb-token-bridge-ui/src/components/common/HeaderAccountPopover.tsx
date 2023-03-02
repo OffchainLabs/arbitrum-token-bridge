@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useCopyToClipboard, useLocalStorage } from 'react-use'
+import { useCopyToClipboard } from 'react-use'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Popover } from '@headlessui/react'
 import {
