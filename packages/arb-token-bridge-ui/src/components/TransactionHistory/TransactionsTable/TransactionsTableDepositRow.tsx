@@ -233,7 +233,7 @@ export function TransactionsTableDepositRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()}
+        {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
       </td>
 
       <td className="w-1/5 px-3 py-3">

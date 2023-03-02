@@ -15,7 +15,7 @@ export type FetchDepositsFromSubgraphResult = {
   blockCreatedAt: string
   l1Token?: {
     symbol: string
-    decimals: string
+    decimals: number
     id: string
     name: string
     registeredAtBlock: string
@@ -98,17 +98,7 @@ export const fetchDepositsFromSubgraph = async ({
     `
   })
 
-  const transactions: FetchDepositsFromSubgraphResult[] = res.data.deposits.map(
-    (tx: FetchDepositsFromSubgraphResult) => {
-      return {
-        ...tx,
-        l1Token: {
-          id: tx?.l1Token?.id,
-          symbol: tx?.l1Token?.symbol
-        }
-      }
-    }
-  )
+  const transactions: FetchDepositsFromSubgraphResult[] = res.data.deposits
 
   return transactions
 }

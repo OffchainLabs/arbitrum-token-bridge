@@ -19,8 +19,9 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
         <div className="lg:ml-[-2rem]">
           {/* Heading */}
           <span className="ml-[2rem] animate-pulse text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
-            Moving {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()} to{' '}
-            {networkName}
+            Moving{' '}
+            {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}{' '}
+            to {networkName}
           </span>
 
           {/* Addresses */}

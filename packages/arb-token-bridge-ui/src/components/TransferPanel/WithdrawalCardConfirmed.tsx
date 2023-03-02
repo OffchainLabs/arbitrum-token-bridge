@@ -57,7 +57,8 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
             onClick={() => claim(tx)}
             className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
           >
-            Claim {formatAmount(Number(tx.value))} {tx.asset.toUpperCase()}
+            Claim{' '}
+            {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
           </Button>
         </Tooltip>
       </div>

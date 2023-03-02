@@ -63,8 +63,9 @@ export const fetchDeposits = async ({
       return {
         type: 'deposit-l1',
         status: 'pending',
-        value: utils.formatEther(
-          isEthDeposit ? tx.ethValue : tx.tokenAmount || 0
+        value: utils.formatUnits(
+          (isEthDeposit ? tx.ethValue : tx.tokenAmount) || 0,
+          isEthDeposit ? 18 : tx?.l1Token?.decimals || 18
         ),
         txID: tx.transactionHash,
         tokenAddress: isEthDeposit ? null : tx?.l1Token?.id,
