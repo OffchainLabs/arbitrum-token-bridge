@@ -27,9 +27,6 @@ export const getDepositStatus = (tx: Transaction) => {
     return DepositStatus.L1_PENDING
   }
 
-  if (tx.status === 'warning') {
-    return DepositStatus.ERROR_FETCHING_DETAILS
-  }
   // l1 succeeded...
   const { l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
@@ -62,10 +59,10 @@ export const transformDeposits = (
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
-        ? getStandardisedTimestamp(tx.timestampCreated)
+        ? getStandardizedTimestamp(tx.timestampCreated)
         : null,
       resolvedAt: tx.timestampResolved
-        ? getStandardisedTimestamp(tx.timestampResolved)
+        ? getStandardizedTimestamp(tx.timestampResolved)
         : null,
       txId: tx.txID,
       asset: tx.assetName?.toLowerCase() || '',
@@ -93,7 +90,7 @@ export const transformWithdrawals = (
         tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
           ? 'Failure'
           : outgoungStateToString[tx.outgoingMessageState],
-      createdAt: getStandardisedTimestamp(
+      createdAt: getStandardizedTimestamp(
         String(BigNumber.from(tx.timestamp).toNumber() * 1000)
       ),
       resolvedAt: null,
@@ -118,9 +115,9 @@ export const filterTransactions = (
 ): Transaction[] => {
   const result = []
   for (const tx of transactions) {
-    const txSender = tx?.sender
-    const txL1NetworkID = tx?.l1NetworkID
-    const txL2NetworkID = tx?.l2NetworkID
+    const txSender = tx.sender
+    const txL1NetworkID = tx.l1NetworkID
+    const txL2NetworkID = tx.l2NetworkID
 
     const isSenderWallet = txSender === walletAddress
     const matchesL1 = txL1NetworkID === String(l1ChainId)
@@ -169,18 +166,18 @@ export const isFailed = (tx: MergedTransaction) => {
   )
 }
 
-export const getStandardisedTimestamp = (dateString: string) => {
+export const getStandardizedTimestamp = (dateString: string) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
 
   if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).format() // for ISOstring type of dates -> dayjs timestamp
   return dayjs(Number(dateString)).format() // for timestamp type of date -> dayjs timestamp
 }
 
-export const getStandardisedTime = (standatdisedTimestamp: string) => {
+export const getStandardizedTime = (standatdisedTimestamp: string) => {
   return dayjs(standatdisedTimestamp).format(TX_TIME_FORMAT) // dayjs timestamp -> time
 }
 
-export const getStandardisedDate = (standatdisedTimestamp: string) => {
+export const getStandardizedDate = (standatdisedTimestamp: string) => {
   return dayjs(standatdisedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
 }
 

@@ -112,15 +112,10 @@ export function DepositCardContainer({
     }
   }, [tx])
 
-  const borderColor = useMemo(() => {
-    switch (l2Network.chainID) {
-      case ChainId.ArbitrumNova:
-        return 'border-orange-arbitrum-nova'
-
-      default:
-        return 'border-blue-arbitrum-one'
-    }
-  }, [l2Network.chainID])
+  const borderColor =
+    l2Network?.chainID === ChainId.ArbitrumNova
+      ? 'border-orange-arbitrum-nova'
+      : 'border-blue-arbitrum-one'
 
   return (
     <div

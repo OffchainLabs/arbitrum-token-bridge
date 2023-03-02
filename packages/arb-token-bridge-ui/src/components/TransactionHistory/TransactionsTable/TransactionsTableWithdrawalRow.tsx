@@ -108,7 +108,7 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
     return (
       <div className="flex flex-col space-y-3">
         <Tooltip content={<span>L2 Transaction Time</span>}>
-          <TransactionDateTime standardisedDate={tx.createdAt} />
+          <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
         <WithdrawalCountdown
@@ -122,7 +122,7 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
     return (
       <div className="flex flex-col space-y-3">
         <Tooltip content={<span>L2 Transaction Time</span>}>
-          <TransactionDateTime standardisedDate={tx.createdAt} />
+          <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
           <Tooltip content={<span>L1 Transaction Time</span>}>
@@ -139,7 +139,7 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
     return (
       <div className="flex flex-col space-y-3">
         <Tooltip content={<span>L2 Transaction time</span>}>
-          <TransactionDateTime standardisedDate={tx.createdAt} />
+          <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
           <Tooltip content={<span>Ready to claim funds on L1</span>}>
@@ -153,12 +153,12 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   return (
     <div className="flex flex-col space-y-3">
       <Tooltip content={<span>L2 Transaction Time</span>}>
-        <TransactionDateTime standardisedDate={tx.createdAt} />
+        <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
       {matchingL1Tx?.createdAt && (
         <Tooltip content={<span>L1 Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            <TransactionDateTime standardisedDate={matchingL1Tx?.createdAt} />
+            <TransactionDateTime standardizedDate={matchingL1Tx?.createdAt} />
           </span>
         </Tooltip>
       )}
@@ -208,7 +208,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label="L2 Transaction Link"
       >
-        <span className="rounded-md  px-2 text-xs text-gray-9">Step 1</span>
+        <span className="rounded-md px-2 text-xs text-gray-9">Step 1</span>
         {getNetworkName(l2.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
@@ -346,8 +346,8 @@ export function TransactionsTableWithdrawalRow({
   return (
     <tr
       className={`text-sm text-dark ${
-        !bgClassName && `bg-cyan even:bg-white`
-      } ${bgClassName} ${className}`}
+        bgClassName || `bg-cyan even:bg-white`
+      } ${className}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <WithdrawalRowStatus tx={tx} />

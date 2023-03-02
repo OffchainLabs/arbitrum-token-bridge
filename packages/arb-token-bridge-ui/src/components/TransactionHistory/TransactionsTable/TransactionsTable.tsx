@@ -4,8 +4,8 @@ import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import {
-  getStandardisedDate,
-  getStandardisedTime,
+  getStandardizedDate,
+  getStandardizedTime,
   isDeposit,
   isWithdrawal
 } from '../../../state/app/utils'
@@ -43,20 +43,20 @@ export const EmptyTableRow = ({ children }: { children: React.ReactNode }) => {
 }
 
 export const TransactionDateTime = ({
-  standardisedDate
+  standardizedDate
 }: {
-  standardisedDate: string | null
+  standardizedDate: string | null
 }) => {
-  // Standardised formatted date-time component used across transaction rows
+  // Standardized formatted date-time component used across transaction rows
 
-  if (!standardisedDate) return <span className="whitespace-nowrap">n/a</span>
+  if (!standardizedDate) return <span className="whitespace-nowrap">n/a</span>
   return (
     <div className="flex flex-nowrap gap-1">
       <span className="whitespace-nowrap">
-        {getStandardisedDate(standardisedDate)}
+        {getStandardizedDate(standardizedDate)}
       </span>
       <span className="whitespace-nowrap opacity-60">
-        {getStandardisedTime(standardisedDate)}
+        {getStandardizedTime(standardizedDate)}
       </span>
     </div>
   )
@@ -150,16 +150,17 @@ export function TransactionsTable({
     return pendingTxMap
   }, [localTransactionsKey])
 
-  const status = useMemo(() => {
+  const status = (() => {
     if (loading) return TableStatus.LOADING
     if (error) return TableStatus.ERROR
     return TableStatus.SUCCESS
-  }, [loading, error])
+  })()
 
-  const noSearchResults =
+  const noSearchResults = !!(
     pageParams?.searchString?.length &&
     status === TableStatus.SUCCESS &&
     !transactions?.length
+  )
 
   return (
     <>
@@ -187,16 +188,16 @@ export function TransactionsTable({
           </thead>
 
           <tbody>
-            {status === TableStatus.LOADING ? <TableBodyLoading /> : null}
+            {status === TableStatus.LOADING && <TableBodyLoading />}
 
-            {status === TableStatus.ERROR ? <TableBodyError /> : null}
+            {status === TableStatus.ERROR && <TableBodyError />}
 
             {/* when there are no search results found */}
-            {status === TableStatus.SUCCESS && noSearchResults ? (
+            {status === TableStatus.SUCCESS && noSearchResults && (
               <NoDataOverlay />
-            ) : null}
+            )}
 
-            {status === TableStatus.SUCCESS && !noSearchResults ? (
+            {status === TableStatus.SUCCESS && !noSearchResults && (
               <>
                 {_transactions.length > 0 ? (
                   _transactions.map((tx, index) => {
@@ -240,7 +241,7 @@ export function TransactionsTable({
                   </EmptyTableRow>
                 )}
               </>
-            ) : null}
+            )}
           </tbody>
         </table>
       }

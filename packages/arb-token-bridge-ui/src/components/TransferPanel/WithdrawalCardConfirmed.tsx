@@ -23,9 +23,9 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   return (
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
-        <div className="lg:ml-[-2rem]">
+        <div className="lg:-ml-8">
           {/* Heading */}
-          <span className="ml-[2rem] text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
+          <span className="ml-8 text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
             Funds are ready to claim!
           </span>
 
@@ -55,10 +55,16 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
             loading={isClaiming}
             disabled={isClaimButtonDisabled}
             onClick={() => claim(tx)}
-            className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
+            className="absolute right-0 bottom-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
           >
-            Claim{' '}
-            {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
+            <div className="flex flex-nowrap ">
+              Claim{' '}
+              <span className="hidden lg:flex">
+                {formatAmount(Number(tx.value), {
+                  symbol: tx.asset.toUpperCase()
+                })}
+              </span>
+            </div>
           </Button>
         </Tooltip>
       </div>

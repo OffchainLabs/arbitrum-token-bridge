@@ -28,12 +28,7 @@ type Action =
     }
   | { type: 'SET_TRANSACTIONS'; transactions: Transaction[] }
 
-export type TxnStatus =
-  | 'pending'
-  | 'success'
-  | 'failure'
-  | 'confirmed'
-  | 'warning'
+export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
 /** @interface
  * Transaction

@@ -88,22 +88,6 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         </div>
       )
 
-    case DepositStatus.ERROR_FETCHING_DETAILS:
-      return (
-        <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green">Success</StatusBadge>
-          <Tooltip
-            content={
-              <span>Unable to load details of historic transactions</span>
-            }
-          >
-            <StatusBadge variant="gray">
-              <InformationCircleIcon className="h-4 w-4" /> n/a
-            </StatusBadge>
-          </Tooltip>
-        </div>
-      )
-
     default:
       return null
   }
@@ -125,11 +109,11 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
   return (
     <div className="flex flex-col space-y-3">
       <Tooltip content={<span>L1 Transaction Time</span>}>
-        <TransactionDateTime standardisedDate={tx.createdAt} />
+        <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
       {tx.resolvedAt && (
         <Tooltip content={<span>L2 Transaction Time</span>}>
-          <TransactionDateTime standardisedDate={tx.resolvedAt} />
+          <TransactionDateTime standardizedDate={tx.resolvedAt} />
         </Tooltip>
       )}
     </div>
@@ -146,7 +130,7 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label="L1 Transaction Link"
       >
-        <span className="rounded-md  px-2 text-xs text-gray-9">Step 1</span>
+        <span className="rounded-md px-2 text-xs text-gray-9">Step 1</span>
         {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
@@ -221,8 +205,8 @@ export function TransactionsTableDepositRow({
   return (
     <tr
       className={`text-sm text-dark ${
-        !bgClassName && `bg-cyan even:bg-white`
-      } ${bgClassName} ${className}`}
+        bgClassName || `bg-cyan even:bg-white`
+      } ${className}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <DepositRowStatus tx={tx} />

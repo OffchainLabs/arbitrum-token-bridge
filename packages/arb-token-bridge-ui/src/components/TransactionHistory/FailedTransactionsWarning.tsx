@@ -39,7 +39,8 @@ export const FailedTransactionsWarning = ({
     }
   }
 
-  // don't show this if user doesn't have failed transactions
+  // according to the specs, we have kept 3 errors as the minimum threshold to show this bar
+  // don't show this if user doesn't have less than 3 failed transactions
   if (numFailedTransactions < 3) return null
 
   return (
@@ -50,7 +51,7 @@ export const FailedTransactionsWarning = ({
       <span className="text-brick-dark">
         {numFailedTransactions} failed transactions.
       </span>
-      <span
+      <div
         className="cursor-pointer text-sm text-blue-link underline"
         onClick={getHelpOnError}
         onKeyDown={getHelpOnError}
@@ -59,7 +60,7 @@ export const FailedTransactionsWarning = ({
         tabIndex={0}
       >
         Get Help.
-      </span>
+      </div>
     </div>
   )
 }

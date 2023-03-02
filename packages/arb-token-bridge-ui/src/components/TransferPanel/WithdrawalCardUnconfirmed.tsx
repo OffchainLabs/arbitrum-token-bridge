@@ -15,7 +15,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="flex flex-col lg:ml-[-2rem]">
-          <span className="ml-[2rem] text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
+          <span className="ml-8 text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
             Moving{' '}
             {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}{' '}
             to {networkName}
@@ -46,8 +46,14 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
             disabled
           >
-            Claim{' '}
-            {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
+            <div className="flex flex-nowrap ">
+              Claim{' '}
+              <span className="hidden lg:flex">
+                {formatAmount(Number(tx.value), {
+                  symbol: tx.asset.toUpperCase()
+                })}
+              </span>
+            </div>
           </Button>
         </Tooltip>
       </div>

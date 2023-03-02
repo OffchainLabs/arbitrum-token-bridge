@@ -26,9 +26,9 @@ export const PendingTransactions = ({
     <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">
       {/* Heading */}
       <span className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap text-xl text-white">
-        {loading ? (
+        {loading && (
           <Loader type="TailSpin" color="white" width={20} height={20} />
-        ) : null}
+        )}
         {getNetworkName(l2Network.chainID)} Pending Transactions
       </span>
 
