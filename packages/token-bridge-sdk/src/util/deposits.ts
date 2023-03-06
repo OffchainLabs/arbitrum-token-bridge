@@ -18,7 +18,7 @@ export const updateAdditionalDepositData = async (
   depositTx: Transaction,
   l1Provider: Provider,
   l2Provider: Provider
-) => {
+): Promise<Transaction> => {
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
 
@@ -83,7 +83,7 @@ export const updateAdditionalDepositData = async (
     // error fetching transaction details through RPC, possibly because SDK doesn't support classic retryable transactions yet
     console.log(e)
     Sentry.captureException(e)
-    return { ...depositTx, status: 'warning' }
+    return { ...depositTx }
   }
 }
 
@@ -97,7 +97,7 @@ const updateAdditionalDepositDataETH = async ({
   ethDepositMessage: EthDepositMessage
   timestampCreated: string
   l2Provider: Provider
-}) => {
+}): Promise<Transaction> => {
   // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
   const status = await ethDepositMessage.status()
   const isDeposited = status === EthDepositStatus.DEPOSITED
@@ -113,18 +113,21 @@ const updateAdditionalDepositDataETH = async ({
     : null
 
   // return the data to populate on UI
-  const updatedDepositTx = {
+  const updatedDepositTx: Transaction = {
     ...depositTx,
     status: retryableCreationTxID ? 'success' : 'pending',
     timestampCreated,
-    timestampResolved,
+    timestampResolved: timestampResolved
+      ? String(timestampResolved)
+      : undefined,
     l1ToL2MsgData: {
       status: isDeposited
         ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
         : L1ToL2MessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
       // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited ? ethDepositMessage.l2DepositTxHash : undefined
+      l2TxID: isDeposited ? ethDepositMessage.l2DepositTxHash : undefined,
+      fetchingUpdate: false
     }
   }
 
@@ -143,7 +146,7 @@ const updateAdditionalDepositDataToken = async ({
   l1Provider: Provider
   l2Provider: Provider
   l1ToL2Msg: L1ToL2MessageReader
-}) => {
+}): Promise<Transaction> => {
   const updatedDepositTx = {
     ...depositTx,
     timestampCreated
@@ -191,11 +194,13 @@ const updateAdditionalDepositDataToken = async ({
     ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
     : null
 
-  const completeDepositTx = {
+  const completeDepositTx: Transaction = {
     ...updatedDepositTx,
     status: l1ToL2Msg.retryableCreationId ? 'success' : 'pending', // TODO :handle other cases here
     timestampCreated,
-    timestampResolved,
+    timestampResolved: timestampResolved
+      ? String(timestampResolved)
+      : undefined,
     l1ToL2MsgData: l1ToL2MsgData
   }
 
@@ -214,7 +219,7 @@ const updateAdditionalDepositDataClassic = async ({
   l2Provider: Provider
   isEthDeposit: boolean
   l1ToL2Msg: L1ToL2MessageReaderClassic
-}) => {
+}): Promise<Transaction> => {
   const updatedDepositTx = {
     ...depositTx,
     timestampCreated
@@ -252,11 +257,13 @@ const updateAdditionalDepositDataClassic = async ({
     ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
     : null
 
-  const completeDepositTx = {
+  const completeDepositTx: Transaction = {
     ...updatedDepositTx,
     status: l2TxID ? 'success' : 'pending', // TODO :handle other cases here
     timestampCreated,
-    timestampResolved,
+    timestampResolved: timestampResolved
+      ? String(timestampResolved)
+      : undefined,
     l1ToL2MsgData: l1ToL2MsgData
   }
 

@@ -56,9 +56,25 @@ export const fetchDeposits = async ({
     searchString
   })
 
-  const ethDepositsFromSubgraph = depositsFromSubgraph.map(
+  const ethDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
     (tx: FetchDepositsFromSubgraphResult) => {
-      const isEthDeposit = !tx?.l1Token?.id
+      const isEthDeposit = tx.type === 'EthDeposit'
+
+      const assetDetails = {
+        asset: 'ETH',
+        assetName: 'ETH',
+        assetType: AssetType.ETH,
+        tokenAddress: ''
+      }
+
+      if (isEthDeposit) {
+        const symbol = tx.l1Token?.symbol || ''
+
+        assetDetails.asset = symbol
+        assetDetails.assetName = symbol
+        assetDetails.assetType = AssetType.ERC20
+        assetDetails.tokenAddress = tx?.l1Token?.id || ''
+      }
 
       return {
         type: 'deposit-l1',
@@ -68,27 +84,27 @@ export const fetchDeposits = async ({
           isEthDeposit ? 18 : tx?.l1Token?.decimals || 18
         ),
         txID: tx.transactionHash,
-        tokenAddress: isEthDeposit ? null : tx?.l1Token?.id,
+        tokenAddress: assetDetails.tokenAddress,
         sender: walletAddress,
 
-        asset: isEthDeposit ? 'ETH' : tx?.l1Token?.symbol,
-        assetName: isEthDeposit ? 'ETH' : tx?.l1Token?.symbol,
-        assetType: isEthDeposit ? AssetType.ETH : AssetType.ERC20,
+        asset: assetDetails.asset,
+        assetName: assetDetails.assetName,
+        assetType: assetDetails.assetType,
 
         l1NetworkID: String(l1ChainId),
         l2NetworkID: String(l2ChainId),
         blockNumber: Number(tx.blockCreatedAt),
         timestampCreated: tx.timestamp,
         isClassic: tx.isClassic
-      } as Transaction
+      }
     }
   )
 
-  const finalTransactions = (await Promise.all(
+  const finalTransactions: Transaction[] = await Promise.all(
     ethDepositsFromSubgraph.map(depositTx =>
       updateAdditionalDepositData(depositTx, l1Provider, l2Provider)
     )
-  )) as Transaction[]
+  )
 
   return finalTransactions
 }
