@@ -197,49 +197,51 @@ export function TransactionsTable({
               <NoDataOverlay />
             )}
 
+            {/* when there are no transactions present */}
+            {status === TableStatus.SUCCESS &&
+              !noSearchResults &&
+              !_transactions.length && (
+                <EmptyTableRow>
+                  <span className="text-sm font-medium">
+                    {isSmartContractWallet
+                      ? 'You can see tx history in your smart contract wallet'
+                      : 'No transactions'}
+                  </span>
+                </EmptyTableRow>
+              )}
+
+            {/* finally, when transactions are present, show rows */}
             {status === TableStatus.SUCCESS && !noSearchResults && (
               <>
-                {_transactions.length > 0 ? (
-                  _transactions.map((tx, index) => {
-                    const isLastRow = index === _transactions.length - 1
+                {_transactions.map((tx, index) => {
+                  const isLastRow = index === _transactions.length - 1
 
-                    // if transaction is present in pending transactions, subscribe to that in this row,
-                    // this will make sure the row updates with any updates in the pending tx state
-                    // else show static subgraph table data
-                    const pendingTransaction = pendingTransactionsMap.get(
-                      tx.txId
+                  // if transaction is present in pending transactions, subscribe to that in this row,
+                  // this will make sure the row updates with any updates in the pending tx state
+                  // else show static subgraph table data
+                  const pendingTransaction = pendingTransactionsMap.get(tx.txId)
+                  const finalTx = pendingTransaction ? pendingTransaction : tx
+
+                  if (isDeposit(finalTx)) {
+                    return (
+                      <TransactionsTableDepositRow
+                        key={`${finalTx.txId}-${finalTx.direction}`}
+                        tx={finalTx}
+                        className={!isLastRow ? 'border-b border-gray-5' : ''}
+                      />
                     )
-                    const finalTx = pendingTransaction ? pendingTransaction : tx
-
-                    if (isDeposit(finalTx)) {
-                      return (
-                        <TransactionsTableDepositRow
-                          key={`${finalTx.txId}-${finalTx.direction}`}
-                          tx={finalTx}
-                          className={!isLastRow ? 'border-b border-gray-5' : ''}
-                        />
-                      )
-                    } else if (isWithdrawal(finalTx)) {
-                      return (
-                        <TransactionsTableWithdrawalRow
-                          key={`${finalTx.txId}-${finalTx.direction}`}
-                          tx={finalTx}
-                          className={!isLastRow ? 'border-b border-gray-5' : ''}
-                        />
-                      )
-                    } else {
-                      return null
-                    }
-                  })
-                ) : (
-                  <EmptyTableRow>
-                    <span className="text-sm font-medium">
-                      {isSmartContractWallet
-                        ? 'You can see tx history in your smart contract wallet'
-                        : 'No transactions'}
-                    </span>
-                  </EmptyTableRow>
-                )}
+                  } else if (isWithdrawal(finalTx)) {
+                    return (
+                      <TransactionsTableWithdrawalRow
+                        key={`${finalTx.txId}-${finalTx.direction}`}
+                        tx={finalTx}
+                        className={!isLastRow ? 'border-b border-gray-5' : ''}
+                      />
+                    )
+                  } else {
+                    return null
+                  }
+                })}
               </>
             )}
           </tbody>

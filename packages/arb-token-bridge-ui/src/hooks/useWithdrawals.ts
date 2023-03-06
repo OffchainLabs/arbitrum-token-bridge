@@ -69,7 +69,9 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       l1Provider,
       l2Provider,
       gatewaysToUse,
-      ...Object.values(withdrawalPageParams || {})
+      withdrawalPageParams.pageNumber,
+      withdrawalPageParams.pageSize,
+      withdrawalPageParams.searchString
     ],
     (
       _,
@@ -77,14 +79,18 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _l1Provider,
       _l2Provider,
       _gatewayAddresses,
-      ..._withdrawalPageParams
+      _pageNumber,
+      _pageSize,
+      _searchString
     ) =>
       fetchCompleteWithdrawalData({
         walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         gatewayAddresses: _gatewayAddresses,
-        ..._withdrawalPageParams
+        pageNumber: _pageNumber,
+        pageSize: _pageSize,
+        searchString: _searchString
       })
   )
 }
