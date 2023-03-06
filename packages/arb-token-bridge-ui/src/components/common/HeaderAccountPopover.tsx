@@ -154,7 +154,7 @@ export function HeaderAccountPopover() {
 
   function openTransactionHistory() {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
-    trackEvent('Opened Transaction History by Click')
+    trackEvent('Open Transaction History Click')
   }
 
   const headerItemsClassName =

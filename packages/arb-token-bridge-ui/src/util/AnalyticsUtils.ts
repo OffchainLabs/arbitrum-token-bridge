@@ -65,12 +65,12 @@ export type FathomEvent =
   //
   | 'Switch Network and Transfer'
   //
-  | `Redeeming Retryable on ${FathomNetworkName}`
+  | `Redeem Retryable on ${FathomNetworkName}`
   //
-  | `Opened Transaction History by Click`
+  | `Open Transaction History Click`
   //
-  | `Tx error: Get Help clicked on ${FathomNetworkName}`
-  | `Multiple Tx errors: Get Help clicked on ${FathomNetworkName}`
+  | `Tx Error: Get Help Click on ${FathomNetworkName}`
+  | `Multiple Tx Error: Get Help Click on ${FathomNetworkName}`
 
 const eventToEventId: { [key in FathomEvent]: string } & {
   [key in FathomEventNonCanonicalTokens]: string
@@ -169,16 +169,16 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Add to Google Calendar Click': 'CZTO23FP',
   //
   'Switch Network and Transfer': '4F5SKZRG',
-  // TODO: Once these events are confirmed by team - add their event ids
-  'Redeeming Retryable on Arbitrum One': '',
-  'Redeeming Retryable on Arbitrum Nova': '',
   //
-  'Opened Transaction History by Click': '',
+  'Redeem Retryable on Arbitrum One': 'UHPNE3XJ',
+  'Redeem Retryable on Arbitrum Nova': 'AQDHUKER',
   //
-  'Tx error: Get Help clicked on Arbitrum One': '',
-  'Tx error: Get Help clicked on Arbitrum Nova': '',
-  'Multiple Tx errors: Get Help clicked on Arbitrum One': '',
-  'Multiple Tx errors: Get Help clicked on Arbitrum Nova': ''
+  'Open Transaction History Click': 'BNE3W7KB',
+  //
+  'Tx Error: Get Help Click on Arbitrum One': 'HT1BWVVI',
+  'Tx Error: Get Help Click on Arbitrum Nova': 'XD5VYLPU',
+  'Multiple Tx Error: Get Help Click on Arbitrum One': 'CWMVRSXW',
+  'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
 }
 
 export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {

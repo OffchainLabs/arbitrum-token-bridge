@@ -260,7 +260,7 @@ function WithdrawalRowAction({
 
     // track the button click
     if (isFathomNetworkName(l2NetworkName)) {
-      trackEvent(`Tx error: Get Help clicked on ${l2NetworkName}`)
+      trackEvent(`Tx Error: Get Help Click on ${l2NetworkName}`)
     }
   }
 

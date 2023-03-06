@@ -35,7 +35,7 @@ export const FailedTransactionsWarning = ({
 
     // track the button click
     if (isFathomNetworkName(l2NetworkName)) {
-      trackEvent(`Multiple Tx errors: Get Help clicked on ${l2NetworkName}`)
+      trackEvent(`Multiple Tx Error: Get Help Click on ${l2NetworkName}`)
     }
   }
 

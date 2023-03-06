@@ -67,7 +67,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
 
       // track in analytics
       if (isFathomNetworkName(l1NetworkName)) {
-        trackEvent(`Redeeming Retryable on ${l1NetworkName}`)
+        trackEvent(`Redeem Retryable on ${l1NetworkName}`)
       }
     }
 
