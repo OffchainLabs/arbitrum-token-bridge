@@ -76,7 +76,7 @@ export const updateAdditionalDepositData = async (
       l2Provider
     })
   } catch (e) {
-    // error fetching transaction details through RPC, possibly because SDK doesn't support classic retryable transactions yet
+    // error fetching transaction details
     console.log(e)
     Sentry.captureException(e)
     return { ...depositTx }
