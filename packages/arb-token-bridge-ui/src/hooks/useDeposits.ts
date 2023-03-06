@@ -31,7 +31,9 @@ export const fetchCompleteDepositData = async (
       pendingDepositsMap.set(completeTxData.txId, true)
     }
   })
-  const pendingDeposits = deposits.filter(tx => pendingDepositsMap.get(tx.txID))
+  const pendingDeposits = deposits.filter(
+    tx => typeof pendingDepositsMap.get(tx.txID) !== 'undefined'
+  )
 
   return { deposits, pendingDeposits, transformedDeposits: completeDepositData }
 }
@@ -57,12 +59,12 @@ export const useDeposits = (depositPageParams: PageParams) => {
       l2Provider,
       ...Object.values(depositPageParams || {})
     ],
-    (_, _walletAddress, _l1Provider, _l2Provider) =>
+    (_, _walletAddress, _l1Provider, _l2Provider, ..._depositPageParams) =>
       fetchCompleteDepositData({
         walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
-        ...depositPageParams
+        ..._depositPageParams
       })
   )
 }

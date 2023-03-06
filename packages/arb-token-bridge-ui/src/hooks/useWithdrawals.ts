@@ -35,7 +35,9 @@ const fetchCompleteWithdrawalData = async (
     }
   })
   const pendingWithdrawals = withdrawals.filter(
-    tx => tx.l2TxHash && pendingWithdrawalMap.get(tx.l2TxHash)
+    tx =>
+      tx.l2TxHash &&
+      typeof pendingWithdrawalMap.get(tx.l2TxHash) !== 'undefined'
   )
 
   return {
@@ -69,13 +71,20 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       gatewaysToUse,
       ...Object.values(withdrawalPageParams || {})
     ],
-    (_, _walletAddress, _l1Provider, _l2Provider, _gatewayAddresses) =>
+    (
+      _,
+      _walletAddress,
+      _l1Provider,
+      _l2Provider,
+      _gatewayAddresses,
+      ..._withdrawalPageParams
+    ) =>
       fetchCompleteWithdrawalData({
         walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         gatewayAddresses: _gatewayAddresses,
-        ...withdrawalPageParams
+        ..._withdrawalPageParams
       })
   )
 }
