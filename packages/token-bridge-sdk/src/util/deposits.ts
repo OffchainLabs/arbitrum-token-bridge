@@ -47,38 +47,33 @@ export const updateAdditionalDepositData = async (
     })
 
     if (isClassic) {
-      const updatedDepositTx = updateAdditionalDepositDataClassic({
+      return updateAdditionalDepositDataClassic({
         depositTx,
         l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
         isEthDeposit,
         timestampCreated,
         l2Provider
       })
-
-      return updatedDepositTx
     }
 
     // Check if deposit is ETH
     if (isEthDeposit) {
-      const updatedDepositTx = await updateAdditionalDepositDataETH({
+      return updateAdditionalDepositDataETH({
         depositTx,
         ethDepositMessage: l1ToL2Msg as EthDepositMessage,
         l2Provider,
         timestampCreated
       })
-
-      return updatedDepositTx
-    } else {
-      // else if the transaction is not ETH ie. it's a ERC20 token deposit
-      const updatedDepositTx = await updateAdditionalDepositDataToken({
-        depositTx,
-        l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
-        timestampCreated,
-        l1Provider,
-        l2Provider
-      })
-      return updatedDepositTx
     }
+
+    // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
+    return updateAdditionalDepositDataToken({
+      depositTx,
+      l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
+      timestampCreated,
+      l1Provider,
+      l2Provider
+    })
   } catch (e) {
     // error fetching transaction details through RPC, possibly because SDK doesn't support classic retryable transactions yet
     console.log(e)
@@ -172,13 +167,10 @@ const updateAdditionalDepositDataToken = async ({
 
   const res = await l1ToL2Msg.waitForStatus()
 
-  const l2TxID = (() => {
-    if (res.status === L1ToL2MessageStatus.REDEEMED) {
-      return res.l2TxReceipt.transactionHash
-    } else {
-      return undefined
-    }
-  })()
+  const l2TxID =
+    res.status === L1ToL2MessageStatus.REDEEMED
+      ? res.l2TxReceipt.transactionHash
+      : undefined
 
   const l1ToL2MsgData = {
     status: res.status,
@@ -206,7 +198,7 @@ const updateAdditionalDepositDataToken = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData: l1ToL2MsgData
+    l1ToL2MsgData
   }
 
   return completeDepositTx
@@ -248,7 +240,7 @@ const updateAdditionalDepositDataClassic = async ({
   })()
 
   const l1ToL2MsgData = {
-    status: status,
+    status,
     l2TxID,
     fetchingUpdate: false,
     retryableCreationTxID: l1ToL2Msg.retryableCreationId
@@ -269,7 +261,7 @@ const updateAdditionalDepositDataClassic = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData: l1ToL2MsgData
+    l1ToL2MsgData
   }
 
   return completeDepositTx
@@ -326,31 +318,22 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
       const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
       return {
         isClassic: false,
-        l1ToL2Msg: l1ToL2Msg
+        l1ToL2Msg
       }
     }
   }
 
-  if (typeof isClassic === 'undefined') {
-    // it is unknown whether the transaction isClassic or not. eg. in RetrybleTxnIncluder
+  const safeIsClassic =
+    typeof isClassic !== 'undefined'
+      ? isClassic
+      : // it is unknown whether the transaction isClassic or not, so fetch the result
+        await l1TxReceipt.isClassic(l2Provider)
 
-    // first check if the tx is classic or not
-    const l1TxReceiptIsClassic = await l1TxReceipt.isClassic(l2Provider)
-
-    if (l1TxReceiptIsClassic) {
-      // classic (pre-nitro) deposit - both eth + token
-      return getClassicDepositMessage()
-    } else {
-      // post nitro deposit
-      return getNitroDepositMessage()
-    }
-  } else if (isClassic === true) {
-    // isClassic is true and it is known before-hand
-    // return the classic receipt
+  if (safeIsClassic) {
+    // classic (pre-nitro) deposit - both eth + token
     return getClassicDepositMessage()
-  } else {
-    // isClassic is false and it is known before-hand
-    // return the eth-or-token deposit message
-    return getNitroDepositMessage()
   }
+
+  // post-nitro deposit - both eth + token
+  return getNitroDepositMessage()
 }

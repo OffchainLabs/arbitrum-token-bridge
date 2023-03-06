@@ -229,16 +229,16 @@ export async function mapWithdrawalToL2ToL1EventResult(
       decimals,
       l2TxHash: l2TxReceipt.transactionHash
     } as L2ToL1EventResultPlus
-  } else {
-    // Eth withdrawal
-    return {
-      ...event,
-      type: AssetType.ETH,
-      value: BigNumber.from(withdrawal.ethValue),
-      outgoingMessageState,
-      l2TxHash: l2TxReceipt.transactionHash,
-      symbol: 'ETH',
-      decimals: 18
-    } as L2ToL1EventResultPlus
   }
+
+  // Else, Eth withdrawal
+  return {
+    ...event,
+    type: AssetType.ETH,
+    value: BigNumber.from(withdrawal.ethValue),
+    outgoingMessageState,
+    l2TxHash: l2TxReceipt.transactionHash,
+    symbol: 'ETH',
+    decimals: 18
+  } as L2ToL1EventResultPlus
 }
