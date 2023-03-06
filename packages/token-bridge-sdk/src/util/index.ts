@@ -66,10 +66,11 @@ export async function getL1TokenData({
   )
   const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
   if (cachedTokenData)
+    // successfully found the cache for the reqd token
     return {
       ...cachedTokenData,
       allowance: BigNumber.from(cachedTokenData.allowance || 0) // return allowance in a bignumber format, which would've been flattened by sessionStorage
-    } // successfully found the cache for the reqd token
+    }
 
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 

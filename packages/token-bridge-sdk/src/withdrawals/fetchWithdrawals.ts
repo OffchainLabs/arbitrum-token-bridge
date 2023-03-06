@@ -39,7 +39,6 @@ export const fetchWithdrawals = async ({
 }: FetchWithdrawalsParams) => {
   if (!walletAddress || !l1Provider || !l2Provider) return []
 
-  const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
   if (!fromBlock) {
