@@ -7,6 +7,7 @@ import {
   fetchDepositsFromSubgraph,
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
+import { tryFetchLatestSubgraphBlockNumber } from '../util/subgraph'
 
 export type FetchDepositParams = {
   walletAddress: string
@@ -42,7 +43,19 @@ export const fetchDeposits = async ({
   }
 
   if (!toBlock) {
-    const latestL1BlockNumber = await l1Provider.getBlockNumber()
+    // if toBlock hasn't been provided by the user
+
+    // fetch the latest L1 block number thorough subgraph first
+    let latestL1BlockNumber = await tryFetchLatestSubgraphBlockNumber(
+      'L1',
+      l2ChainId
+    )
+
+    // if the previous call returns 0, then fetch the latest block on-chain
+    if (!latestL1BlockNumber) {
+      latestL1BlockNumber = await l1Provider.getBlockNumber()
+    }
+
     toBlock = latestL1BlockNumber
   }
 

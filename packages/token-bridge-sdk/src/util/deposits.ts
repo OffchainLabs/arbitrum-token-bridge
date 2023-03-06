@@ -27,7 +27,7 @@ export const updateAdditionalDepositData = async (
     let timestampCreated = new Date().toISOString()
     if (depositTx.timestampCreated) {
       // if timestamp is already there in Subgraphs, take it from there
-      timestampCreated = String(+depositTx.timestampCreated * 1000)
+      timestampCreated = String(Number(depositTx.timestampCreated) * 1000)
     } else if (depositTx.blockNumber) {
       // if timestamp not in subgraph, fallback to onchain data
       timestampCreated = String(
@@ -99,6 +99,9 @@ const updateAdditionalDepositDataETH = async ({
   l2Provider: Provider
 }): Promise<Transaction> => {
   // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
+
+  if (!ethDepositMessage) return depositTx
+
   const status = await ethDepositMessage.status()
   const isDeposited = status === EthDepositStatus.DEPOSITED
 
@@ -164,6 +167,8 @@ const updateAdditionalDepositDataToken = async ({
     })
     updatedDepositTx.assetName = symbol
   }
+
+  if (!l1ToL2Msg) return updatedDepositTx
 
   const res = await l1ToL2Msg.waitForStatus()
 

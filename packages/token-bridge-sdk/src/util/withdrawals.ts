@@ -10,7 +10,7 @@ import {
 } from '../hooks/arbTokenBridge.types'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
-import { fetchL2BlockNumberFromSubgraph } from '../util/subgraph'
+import { fetchBlockNumberFromSubgraph } from '../util/subgraph'
 import { FetchWithdrawalsFromSubgraphResult } from 'withdrawals/fetchWithdrawalsFromSubgraph'
 
 export const updateAdditionalWithdrawalData = async (
@@ -138,17 +138,6 @@ export async function attachNodeBlockDeadlineToEvent(
     } else {
       throw e
     }
-  }
-}
-
-export async function tryFetchLatestSubgraphBlockNumber(
-  l2ChainID: number
-): Promise<number> {
-  try {
-    return await fetchL2BlockNumberFromSubgraph(l2ChainID)
-  } catch (error) {
-    // In case the subgraph is not supported or down, fall back to fetching everything through event logs
-    return 0
   }
 }
 

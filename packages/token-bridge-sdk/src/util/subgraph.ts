@@ -72,7 +72,7 @@ export function getL2SubgraphClient(l2ChainId: number) {
 }
 
 // TODO: Codegen types
-type FetchL2BlockNumberFromSubgraphQueryResult = {
+type FetchBlockNumberFromSubgraphQueryResult = {
   data: {
     _meta: {
       block: {
@@ -82,11 +82,14 @@ type FetchL2BlockNumberFromSubgraphQueryResult = {
   }
 }
 
-export async function fetchL2BlockNumberFromSubgraph(
+export const fetchBlockNumberFromSubgraph = async (
+  chainType: 'L1' | 'L2',
   l2ChainId: number
-): Promise<number> {
-  const queryResult: FetchL2BlockNumberFromSubgraphQueryResult =
-    await getL2SubgraphClient(l2ChainId).query({
+): Promise<number> => {
+  const queryResult: FetchBlockNumberFromSubgraphQueryResult =
+    await (chainType === 'L2' ? getL2SubgraphClient : getL1SubgraphClient)(
+      l2ChainId
+    ).query({
       query: gql`
         {
           _meta {
@@ -99,4 +102,16 @@ export async function fetchL2BlockNumberFromSubgraph(
     })
 
   return queryResult.data._meta.block.number
+}
+
+export const tryFetchLatestSubgraphBlockNumber = async (
+  chainType: 'L1' | 'L2',
+  l2ChainID: number
+): Promise<number> => {
+  try {
+    return await fetchBlockNumberFromSubgraph(chainType, l2ChainID)
+  } catch (error) {
+    // In case the subgraph is not supported or down, fall back to fetching everything through event logs
+    return 0
+  }
 }

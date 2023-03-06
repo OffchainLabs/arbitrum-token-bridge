@@ -7,10 +7,10 @@ import {
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
   mapWithdrawalToL2ToL1EventResult,
-  tryFetchLatestSubgraphBlockNumber,
   updateAdditionalWithdrawalData
 } from '../util/withdrawals'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
+import { tryFetchLatestSubgraphBlockNumber } from './../util/subgraph'
 
 export type FetchWithdrawalsParams = {
   walletAddress: string
@@ -47,7 +47,11 @@ export const fetchWithdrawals = async ({
   }
 
   if (!toBlock) {
+    // if toBlock hasn't been provided by the user
+
+    // fetch the latest L2 block number thorough subgraph
     const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
+      'L2',
       l2ChainID
     )
     toBlock = latestSubgraphBlockNumber
