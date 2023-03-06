@@ -37,7 +37,8 @@ export const updateAdditionalDepositData = async (
 
     const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
-    const isEthDeposit = depositTx.assetName === AssetType.ETH
+    const isEthDeposit = depositTx.assetType === AssetType.ETH
+
     const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
       depositTxId: depositTx.txID,
       l1Provider,
@@ -313,13 +314,13 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
         isClassic: false,
         l1ToL2Msg: ethDepositMessage
       }
-    } else {
-      // nitro token deposit
-      const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
-      return {
-        isClassic: false,
-        l1ToL2Msg
-      }
+    }
+
+    // Else, nitro token deposit
+    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+    return {
+      isClassic: false,
+      l1ToL2Msg
     }
   }
 

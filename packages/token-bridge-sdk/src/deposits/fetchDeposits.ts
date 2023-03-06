@@ -80,7 +80,8 @@ export const fetchDeposits = async ({
         tokenAddress: ''
       }
 
-      if (isEthDeposit) {
+      if (!isEthDeposit) {
+        // update some values for token deposit
         const symbol = tx.l1Token?.symbol || ''
 
         assetDetails.asset = symbol
