@@ -38,7 +38,7 @@ export const updateAdditionalDepositData = async (
     const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
     const isEthDeposit = depositTx.assetName === AssetType.ETH
-    const { l1ToL2Msg } = await getRetyableMessageDataFromTxID({
+    const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
       depositTxId: depositTx.txID,
       l1Provider,
       l2Provider,
@@ -275,12 +275,12 @@ const updateAdditionalDepositDataClassic = async ({
   return completeDepositTx
 }
 
-export const getRetyableMessageDataFromTxID = async ({
+export const getL1ToL2MessageDataFromL1TxHash = async ({
   depositTxId,
   isEthDeposit,
   l1Provider,
   l2Provider,
-  isClassic
+  isClassic // optional: if we already know if tx is classic (eg. through subgraph) then no need to re-check in this fn
 }: {
   depositTxId: string
   l1Provider: Provider

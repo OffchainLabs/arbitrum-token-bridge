@@ -57,4 +57,4 @@ export {
 } from './deposits/fetchDeposits'
 
 export { fetchBlockNumberFromSubgraph } from './util/subgraph'
-export { getRetyableMessageDataFromTxID } from './util/deposits'
+export { getL1ToL2MessageDataFromL1TxHash } from './util/deposits'

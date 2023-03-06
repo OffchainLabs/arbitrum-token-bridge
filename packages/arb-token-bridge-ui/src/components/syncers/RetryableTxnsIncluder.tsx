@@ -5,7 +5,7 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
-import { AssetType, getRetyableMessageDataFromTxID } from 'token-bridge-sdk'
+import { AssetType, getL1ToL2MessageDataFromL1TxHash } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -25,7 +25,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
     async (depositTxId, depositAssetType) => {
       const isEthDeposit = depositAssetType === AssetType.ETH
 
-      const { l1ToL2Msg, isClassic } = await getRetyableMessageDataFromTxID({
+      const { l1ToL2Msg, isClassic } = await getL1ToL2MessageDataFromL1TxHash({
         depositTxId,
         isEthDeposit,
         l1Provider,
