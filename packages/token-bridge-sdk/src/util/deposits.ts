@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react'
 import {
   L1TransactionReceipt,
   L1ToL2MessageStatus,
@@ -22,65 +21,58 @@ export const updateAdditionalDepositData = async (
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
 
-  try {
-    // fetch timestamp creation date
-    let timestampCreated = new Date().toISOString()
-    if (depositTx.timestampCreated) {
-      // if timestamp is already there in Subgraphs, take it from there
-      timestampCreated = String(Number(depositTx.timestampCreated) * 1000)
-    } else if (depositTx.blockNumber) {
-      // if timestamp not in subgraph, fallback to onchain data
-      timestampCreated = String(
-        (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
-      )
-    }
+  // fetch timestamp creation date
+  let timestampCreated = new Date().toISOString()
+  if (depositTx.timestampCreated) {
+    // if timestamp is already there in Subgraphs, take it from there
+    timestampCreated = String(Number(depositTx.timestampCreated) * 1000)
+  } else if (depositTx.blockNumber) {
+    // if timestamp not in subgraph, fallback to onchain data
+    timestampCreated = String(
+      (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
+    )
+  }
 
-    const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
+  const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
-    const isEthDeposit = depositTx.assetType === AssetType.ETH
+  const isEthDeposit = depositTx.assetType === AssetType.ETH
 
-    const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
-      depositTxId: depositTx.txID,
-      l1Provider,
-      l2Provider,
-      isEthDeposit,
-      isClassic
-    })
+  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+    depositTxId: depositTx.txID,
+    l1Provider,
+    l2Provider,
+    isEthDeposit,
+    isClassic
+  })
 
-    if (isClassic) {
-      return updateAdditionalDepositDataClassic({
-        depositTx,
-        l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
-        isEthDeposit,
-        timestampCreated,
-        l2Provider
-      })
-    }
-
-    // Check if deposit is ETH
-    if (isEthDeposit) {
-      return updateAdditionalDepositDataETH({
-        depositTx,
-        ethDepositMessage: l1ToL2Msg as EthDepositMessage,
-        l2Provider,
-        timestampCreated
-      })
-    }
-
-    // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-    return updateAdditionalDepositDataToken({
+  if (isClassic) {
+    return updateAdditionalDepositDataClassic({
       depositTx,
-      l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
+      l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
+      isEthDeposit,
       timestampCreated,
-      l1Provider,
       l2Provider
     })
-  } catch (e) {
-    // error fetching transaction details
-    console.log(e)
-    Sentry.captureException(e)
-    return { ...depositTx }
   }
+
+  // Check if deposit is ETH
+  if (isEthDeposit) {
+    return updateAdditionalDepositDataETH({
+      depositTx,
+      ethDepositMessage: l1ToL2Msg as EthDepositMessage,
+      l2Provider,
+      timestampCreated
+    })
+  }
+
+  // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
+  return updateAdditionalDepositDataToken({
+    depositTx,
+    l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
+    timestampCreated,
+    l1Provider,
+    l2Provider
+  })
 }
 
 const updateAdditionalDepositDataETH = async ({
