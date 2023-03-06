@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -65,7 +65,11 @@ export async function getL1TokenData({
     sessionStorage.getItem('l1TokenDataCache') || '{}'
   )
   const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
-  if (cachedTokenData) return cachedTokenData // successfully found the cache for the reqd token
+  if (cachedTokenData)
+    return {
+      ...cachedTokenData,
+      allowance: BigNumber.from(cachedTokenData.allowance || 0) // return allowance in a bignumber format, which would've been flattened by sessionStorage
+    } // successfully found the cache for the reqd token
 
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
