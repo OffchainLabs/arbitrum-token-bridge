@@ -5,7 +5,8 @@ import {
   L2ToL1EventResultPlus,
   Transaction,
   OutgoingMessageState,
-  getUniqueIdOrHashFromEvent
+  getUniqueIdOrHashFromEvent,
+  NodeBlockDeadlineStatusTypes
 } from 'token-bridge-sdk'
 import { DepositStatus, MergedTransaction } from './state'
 
@@ -87,7 +88,8 @@ export const transformWithdrawals = (
     return {
       direction: 'outbox',
       status:
-        tx.nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION'
+        tx.nodeBlockDeadline ===
+        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
           ? 'Failure'
           : outgoungStateToString[tx.outgoingMessageState],
       createdAt: getStandardizedTimestamp(
@@ -162,7 +164,9 @@ export const isFailed = (tx: MergedTransaction) => {
       (tx.status === 'failure' ||
         tx.depositStatus == DepositStatus.L1_FAILURE ||
         tx.depositStatus === DepositStatus.L2_FAILURE)) ||
-    (isWithdrawal(tx) && tx.nodeBlockDeadline == 'EXECUTE_CALL_EXCEPTION')
+    (isWithdrawal(tx) &&
+      tx.nodeBlockDeadline ==
+        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION)
   )
 }
 

@@ -66,10 +66,15 @@ export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
   L2TransactionReceipt
 >
 
+export enum NodeBlockDeadlineStatusTypes {
+  NODE_NOT_CREATED,
+  EXECUTE_CALL_EXCEPTION
+}
+
 export type NodeBlockDeadlineStatus =
   | number
-  | 'NODE_NOT_CREATED'
-  | 'EXECUTE_CALL_EXCEPTION'
+  | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
+  | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 

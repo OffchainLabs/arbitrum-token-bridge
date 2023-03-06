@@ -15,7 +15,8 @@ export type {
 export {
   TokenType,
   AssetType,
-  OutgoingMessageState
+  OutgoingMessageState,
+  NodeBlockDeadlineStatusTypes
 } from './hooks/arbTokenBridge.types'
 
 export { useBalance } from './hooks/useBalance'

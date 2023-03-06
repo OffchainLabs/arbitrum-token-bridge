@@ -5,12 +5,12 @@ import {
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatus,
+  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../hooks/arbTokenBridge.types'
 import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
-import { fetchBlockNumberFromSubgraph } from '../util/subgraph'
 import { FetchWithdrawalsFromSubgraphResult } from 'withdrawals/fetchWithdrawalsFromSubgraph'
 
 export const updateAdditionalWithdrawalData = async (
@@ -121,7 +121,8 @@ export async function attachNodeBlockDeadlineToEvent(
     const errorMessage = err && (err.message || err.error?.message)
 
     if (errorMessage.includes(expectedError)) {
-      const nodeBlockDeadline: NodeBlockDeadlineStatus = 'NODE_NOT_CREATED'
+      const nodeBlockDeadline: NodeBlockDeadlineStatus =
+        NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
       return {
         ...event,
         nodeBlockDeadline
@@ -130,7 +131,7 @@ export async function attachNodeBlockDeadlineToEvent(
       // in classic we simulate `executeTransaction` in `hasExecuted`
       // which might revert if the L2 to L1 call fail
       const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        'EXECUTE_CALL_EXCEPTION'
+        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
       return {
         ...event,
         nodeBlockDeadline

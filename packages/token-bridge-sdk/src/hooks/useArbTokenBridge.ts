@@ -31,7 +31,8 @@ import {
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle
+  L2ContractCallTransactionLifecycle,
+  NodeBlockDeadlineStatusTypes
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
@@ -281,7 +282,7 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: 'ETH',
           decimals: 18,
-          nodeBlockDeadline: 'NODE_NOT_CREATED',
+          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }
 
@@ -633,7 +634,7 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: symbol,
           decimals: decimals,
-          nodeBlockDeadline: 'NODE_NOT_CREATED',
+          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }
 

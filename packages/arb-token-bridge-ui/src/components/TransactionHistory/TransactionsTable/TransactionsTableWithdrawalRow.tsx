@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { NodeBlockDeadlineStatusTypes } from 'token-bridge-sdk'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
@@ -112,7 +113,10 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
         </Tooltip>
 
         <WithdrawalCountdown
-          nodeBlockDeadline={tx.nodeBlockDeadline || 'NODE_NOT_CREATED'}
+          nodeBlockDeadline={
+            tx.nodeBlockDeadline ||
+            NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
+          }
         />
       </div>
     )

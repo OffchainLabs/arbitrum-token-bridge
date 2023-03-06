@@ -1,4 +1,7 @@
-import { NodeBlockDeadlineStatus } from 'token-bridge-sdk'
+import {
+  NodeBlockDeadlineStatus,
+  NodeBlockDeadlineStatusTypes
+} from 'token-bridge-sdk'
 
 import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -27,7 +30,7 @@ export function WithdrawalCountdown({
   const blockTime = getBlockTime(l1Network.chainID) ?? 15
   const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.chainID)
 
-  if (nodeBlockDeadline === 'NODE_NOT_CREATED') {
+  if (nodeBlockDeadline === NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED) {
     const withdrawalTimeInSeconds = confirmPeriodBlocks * blockTime
     const withdrawalDate = dayjs().add(withdrawalTimeInSeconds, 'second')
     const remainingTime = dayjs().to(withdrawalDate, true)
@@ -39,7 +42,7 @@ export function WithdrawalCountdown({
     )
   }
 
-  if (nodeBlockDeadline === 'EXECUTE_CALL_EXCEPTION') {
+  if (nodeBlockDeadline === NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED) {
     return <span>Failure</span>
   }
 
