@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import { twMerge } from 'tailwind-merge'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
@@ -13,7 +12,8 @@ import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { getExplorerUrl } from '../../util/networks'
+import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
+import { CheckCircleIcon } from '@heroicons/react/outline'
 
 export function DepositL1TxStatus({
   tx
@@ -34,9 +34,10 @@ export function DepositL1TxStatus({
       return (
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
-          className="arb-hover text-blue-link"
+          className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.txId)}
+          <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
         </ExternalLink>
       )
 
@@ -63,9 +64,12 @@ export function DepositL2TxStatus({
           href={`${getExplorerUrl(l2.network.chainID)}/tx/${
             tx.l1ToL2MsgData?.l2TxID
           }`}
-          className="arb-hover text-blue-link"
+          className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}
+          {tx.l1ToL2MsgData?.l2TxID && (
+            <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
+          )}
         </ExternalLink>
       )
 
@@ -76,19 +80,20 @@ export function DepositL2TxStatus({
 
 export type DepositCardContainerProps = {
   tx: MergedTransaction
-  dismissable?: boolean
   children: React.ReactNode
 }
 
 export function DepositCardContainer({
   tx,
-  dismissable = false,
   children
 }: DepositCardContainerProps) {
   const dispatch = useAppContextDispatch()
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
+  const {
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
 
   const bgClassName = useMemo(() => {
     switch (tx.depositStatus) {
@@ -107,48 +112,34 @@ export function DepositCardContainer({
     }
   }, [tx])
 
-  const dismissButtonClassName = useMemo(() => {
-    switch (tx.depositStatus) {
-      case DepositStatus.L1_FAILURE:
-      case DepositStatus.CREATION_FAILED:
-        return 'text-brick-dark'
-
-      case DepositStatus.L2_SUCCESS:
-        return 'text-lime-dark'
-
-      default:
-        return ''
-    }
-  }, [tx])
-
-  function dismiss() {
-    dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-  }
+  const borderColor =
+    l2Network?.chainID === ChainId.ArbitrumNova
+      ? 'border-orange-arbitrum-nova'
+      : 'border-blue-arbitrum-one'
 
   return (
-    <div className={`w-full p-6 pb-12 sm:pb-6 lg:rounded-xl ${bgClassName}`}>
-      {dismissable && (
-        <button
-          className={twMerge(
-            'arb-hover absolute top-4 right-4 underline',
-            dismissButtonClassName
-          )}
-          onClick={dismiss}
-        >
-          Dismiss
-        </button>
-      )}
+    <div
+      className={`box-border w-full overflow-hidden rounded-xl border-4 ${borderColor} p-4 ${bgClassName}`}
+    >
+      <div className="relative flex flex-col items-center gap-6 lg:flex-row">
+        {/* Logo watermark */}
+        <img
+          src={getNetworkLogo(l2Network.chainID)}
+          className="absolute left-0 top-[1px] z-10 h-6 max-h-[90px] p-[2px] lg:relative lg:top-0 lg:left-[-30px] lg:h-auto lg:max-w-[90px] lg:opacity-[60%]"
+          alt="Deposit"
+        />
+        {/* Actual content */}
+        <div className="z-20 w-full">{children}</div>
+      </div>
 
-      <div className="flex flex-col space-y-3">{children}</div>
-
-      {!isTransferPanelVisible && !dismissable && (
+      {!isTransferPanelVisible && (
         <button
-          className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
+          className="arb-hover absolute bottom-4 right-4 text-blue-link underline"
           onClick={() => {
             trackEvent('Move More Funds Click')
             dispatch({
-              type: 'layout.set_is_transfer_panel_visible',
-              payload: true
+              type: 'layout.set_txhistory_panel_visible',
+              payload: false
             })
           }}
         >

@@ -3,22 +3,12 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import {
-  wethTokenAddressL2,
-  zeroToLessThanOneETH,
-  resetSeenTimeStampCache
-} from '../../support/common'
+import { wethTokenAddressL2, zeroToLessThanOneETH } from '../../support/common'
 
 describe('Withdraw ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
-  before(() => {
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-  })
-
   beforeEach(() => {
     cy.restoreAppState()
   })
@@ -151,7 +141,7 @@ describe('Withdraw ERC20 Token', () => {
               cy.findAllByText(
                 `Moving ${formatAmount(0.0001, {
                   symbol: 'WETH'
-                })} to Ethereum...`
+                })} to Ethereum`
               ).should('be.visible')
             })
           })

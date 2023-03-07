@@ -19,6 +19,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  getNetworkLogo,
   getNetworkName,
   isNetwork,
   switchChain
@@ -92,20 +93,6 @@ function NetworkListbox({
     return 'bg-[rgba(101,109,123,0.8)]'
   }, [value])
 
-  const getOptionImageSrc = useCallback((network: L1Network | L2Network) => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
-
-    if (!isArbitrum) {
-      return '/EthereumLogo.webp'
-    }
-
-    if (isArbitrumNova) {
-      return '/ArbitrumNovaLogo.webp'
-    }
-
-    return '/ArbitrumOneLogo.svg'
-  }, [])
-
   const getOptionClassName = useCallback(
     (index: number) => {
       if (index === 0) {
@@ -160,7 +147,7 @@ function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <img
-                    src={getOptionImageSrc(option)}
+                    src={getNetworkLogo(option.chainID)}
                     alt={`${getNetworkName(option.chainID)} logo`}
                     className="max-w-8 max-h-9"
                   />
