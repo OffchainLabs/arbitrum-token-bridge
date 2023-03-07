@@ -31,15 +31,6 @@ export const FailedTransactionsWarning = ({
       'days'
     ) || 1 // to avoid '0 days passed since' issue
 
-  const getHelpOnError = () => {
-    window.open(GET_HELP_LINK, '_blank')
-
-    // track the button click
-    if (isFathomNetworkName(l2NetworkName)) {
-      trackEvent(`Multiple Tx Error: Get Help Click on ${l2NetworkName}`)
-    }
-  }
-
   // according to the specs, we have kept 3 errors as the minimum threshold to show this bar
   // don't show this if user doesn't have less than 3 failed transactions
   if (numFailedTransactions < 3) return null
