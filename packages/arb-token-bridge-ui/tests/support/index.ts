@@ -8,7 +8,7 @@ Cypress.Keyboard.defaults({
 
 before(() => {
   cy.setupMetamask(Cypress.env('PRIVATE_KEY'), {
-    networkName: 'localhost',
+    networkName: 'localhost-eth',
     rpcUrl: 'http://geth:8545',
     chainId: 1337,
     symbol: 'ETH',

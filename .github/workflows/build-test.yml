@@ -135,7 +135,7 @@ jobs:
         with:
           envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           envkey_SKIP_METAMASK_SETUP: true
-          envkey_NETWORK_NAME: localhost
+          envkey_NETWORK_NAME: localhost-eth
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
@@ -147,7 +147,7 @@ jobs:
         with:
           envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           envkey_SKIP_METAMASK_SETUP: true
-          envkey_NETWORK_NAME: localhost
+          envkey_NETWORK_NAME: localhost-eth
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
@@ -158,7 +158,7 @@ jobs:
         with:
           envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           envkey_SKIP_METAMASK_SETUP: true
-          envkey_NETWORK_NAME: localhost
+          envkey_NETWORK_NAME: localhost-eth
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
@@ -182,7 +182,7 @@ jobs:
           PRIVATE_KEY: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
-          NETWORK_NAME: localhost
+          NETWORK_NAME: localhost-eth
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
