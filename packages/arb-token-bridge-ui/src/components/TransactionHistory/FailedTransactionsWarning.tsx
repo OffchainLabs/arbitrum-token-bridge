@@ -11,6 +11,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { isFathomNetworkName, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 
 export const FailedTransactionsWarning = ({
   transactions
@@ -51,16 +52,17 @@ export const FailedTransactionsWarning = ({
       <span className="text-brick-dark">
         {numFailedTransactions} failed transactions.
       </span>
-      <div
-        className="cursor-pointer text-sm text-blue-link underline"
-        onClick={getHelpOnError}
-        onKeyDown={getHelpOnError}
-        aria-label="Get Help"
-        role="button"
-        tabIndex={0}
+      <ExternalLink
+        href={GET_HELP_LINK}
+        className="arb-hover cursor-pointer text-sm text-blue-link underline"
+        onClick={() => {
+          if (isFathomNetworkName(l2NetworkName)) {
+            trackEvent(`Multiple Tx Error: Get Help Click on ${l2NetworkName}`)
+          }
+        }}
       >
         Get Help.
-      </div>
+      </ExternalLink>
     </div>
   )
 }

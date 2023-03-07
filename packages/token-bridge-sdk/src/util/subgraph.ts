@@ -86,10 +86,13 @@ export const fetchBlockNumberFromSubgraph = async (
   chainType: 'L1' | 'L2',
   l2ChainId: number
 ): Promise<number> => {
+  const subgraphClient =
+    chainType === 'L2'
+      ? getL2SubgraphClient(l2ChainId)
+      : getL1SubgraphClient(l2ChainId)
+
   const queryResult: FetchBlockNumberFromSubgraphQueryResult =
-    await (chainType === 'L2' ? getL2SubgraphClient : getL1SubgraphClient)(
-      l2ChainId
-    ).query({
+    await subgraphClient.query({
       query: gql`
         {
           _meta {
