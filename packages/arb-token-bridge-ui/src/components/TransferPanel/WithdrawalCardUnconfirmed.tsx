@@ -46,7 +46,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
             disabled
           >
-            <div className="flex flex-nowrap ">
+            <div className="flex flex-nowrap whitespace-pre">
               Claim{' '}
               <span className="hidden lg:flex">
                 {formatAmount(Number(tx.value), {
