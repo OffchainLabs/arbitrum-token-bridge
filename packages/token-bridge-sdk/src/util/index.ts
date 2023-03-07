@@ -66,7 +66,7 @@ export async function getL1TokenData({
   )
   const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
   if (cachedTokenData)
-    // successfully found the cache for the reqd token
+    // successfully found the cache for the required token
     return {
       ...cachedTokenData,
       allowance: BigNumber.from(cachedTokenData.allowance || 0) // return allowance in a bignumber format, which would've been flattened by sessionStorage

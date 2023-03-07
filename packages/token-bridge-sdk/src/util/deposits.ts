@@ -316,11 +316,7 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     }
   }
 
-  const safeIsClassic =
-    typeof isClassic !== 'undefined'
-      ? isClassic
-      : // it is unknown whether the transaction isClassic or not, so fetch the result
-        await l1TxReceipt.isClassic(l2Provider)
+  const safeIsClassic = isClassic ?? (await l1TxReceipt.isClassic(l2Provider)) // if it is unknown whether the transaction isClassic or not, fetch the result
 
   if (safeIsClassic) {
     // classic (pre-nitro) deposit - both eth + token
