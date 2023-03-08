@@ -152,7 +152,6 @@ export default defineConfig({
       // 'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
       // 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
-    testIsolation: false,
     supportFile: 'tests/support/index.ts'
   }
 })

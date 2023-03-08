@@ -6,6 +6,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
   l1NetworkConfig,
+  l2NetworkConfig,
   ethRpcUrl,
   arbRpcUrl
 } from './../../support/common'
@@ -17,6 +18,7 @@ describe('Login Account', () => {
   before(() => {
     cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
     cy.addMetamaskNetwork(l1NetworkConfig)
+    cy.addMetamaskNetwork(l2NetworkConfig)
     getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
@@ -31,7 +33,7 @@ describe('Login Account', () => {
   })
 
   it('should show connect wallet if not logged in', () => {
-    cy.visit('/', { qs: { l2ChainId: '412346' } })
+    cy.visit('/')
     cy.findByText('Agree to terms').should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
@@ -43,6 +45,7 @@ describe('Login Account', () => {
   })
 
   it('should show L1 and L2 ETH balances correctly', () => {
+    cy.login({ networkType: 'L1' })
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
   })
