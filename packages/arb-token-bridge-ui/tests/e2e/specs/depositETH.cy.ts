@@ -109,7 +109,7 @@ describe('Deposit ETH', () => {
     // TODO => test for bridge amount higher than user's L1 ETH balance
   })
 
-  // TODO
+  // TODO 
   context('user has some ETH and is on L2', () => {})
   // TODO
   context('user has some ETH and is on wrong chain', () => {})
