@@ -14,9 +14,10 @@ import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
 
-if (process.env.NODE_ENV !== 'production') {
-  registerLocalNetwork()
-}
+// if (process.env.NODE_ENV !== 'production') {
+//   registerLocalNetwork()
+// }
+registerLocalNetwork()
 
 dayjs.extend(relativeTime)
 

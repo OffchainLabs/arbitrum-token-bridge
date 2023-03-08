@@ -41,9 +41,9 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       console.log('Synpress config start')
 
-      registerLocalNetwork()
+      // registerLocalNetwork()
 
-      console.log('Local network registered')
+      // console.log('Local network registered')
 
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       console.log('base wallet address: ', wallet.address);
