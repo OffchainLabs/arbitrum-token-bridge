@@ -83,6 +83,13 @@ describe('Deposit ETH', () => {
               .last()
               .contains(/(\d*)(\.\d+)*( ETH)/)
               .should('be.visible')
+          })
+      })
+
+      it('should deposit successfully', () => {
+        cy.findByPlaceholderText('Enter amount')
+          .type('0.0001', { scrollBehavior: false })
+          .then(() => {
             cy.findByRole('button', {
               name: 'Move funds to Arbitrum'
             }).click({ scrollBehavior: false })
