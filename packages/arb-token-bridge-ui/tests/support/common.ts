@@ -91,24 +91,12 @@ export const setupMetamaskNetwork = (
     } else {
       // L2 network already added
       // switch to Arbitrum goerli network
-      cy.getNetwork().then(connectedNetwork => {
-        if (
-          (connectedNetwork as typeof l2NetworkConfig).networkName !==
-          l2NetworkConfig.networkName
-        ) {
-          return cy.changeMetamaskNetwork(l2NetworkConfig.networkName)
-        }
-      })
+      return cy.changeMetamaskNetwork(l2NetworkConfig.networkName)
     }
   } else {
     //else, stick to the original l1 network
     cy.getNetwork().then(connectedNetwork => {
-      if (
-        (connectedNetwork as typeof l1NetworkConfig).networkName !==
-        l1NetworkConfig.networkName
-      ) {
-        return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
-      }
+      return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
     })
   }
 }

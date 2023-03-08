@@ -28,8 +28,17 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
-  setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-    startWebApp(url, query)
+  cy.getNetwork().then(connectedNetwork => {
+    if (
+      (connectedNetwork as typeof l1NetworkConfig).networkName !==
+      l1NetworkConfig.networkName
+    ) {
+      setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
+        startWebApp(url, query)
+      })
+    } else {
+      startWebApp(url, query)
+    }
   })
 }
 
