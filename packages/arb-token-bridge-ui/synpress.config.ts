@@ -41,7 +41,7 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       console.log('Synpress config start')
 
-      // registerLocalNetwork()
+      registerLocalNetwork()
 
       // console.log('Local network registered')
 
