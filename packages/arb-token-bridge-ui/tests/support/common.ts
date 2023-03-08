@@ -120,13 +120,3 @@ export const startWebApp = (
   cy.connectToApp()
   acceptMetamaskAccess()
 }
-
-export const resetSeenTimeStampCache = () => {
-  const dataKey = 'arbitrum:bridge:seen-txs'
-  const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
-
-  cy.setLocalStorage(dataKey, JSON.stringify([]))
-  cy.setLocalStorage(timestampKey, new Date().toISOString())
-
-  cy.saveLocalStorage()
-}

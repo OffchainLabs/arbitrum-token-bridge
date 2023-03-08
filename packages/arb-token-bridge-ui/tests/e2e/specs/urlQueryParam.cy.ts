@@ -3,11 +3,7 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import {
-  ethRpcUrl,
-  getInitialETHBalance,
-  resetSeenTimeStampCache
-} from '../../support/common'
+import { ethRpcUrl, getInitialETHBalance } from '../../support/common'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -18,9 +14,6 @@ describe('User enters site with query params on URL', () => {
     getInitialETHBalance(ethRpcUrl, Cypress.env('ADDRESS')).then(
       val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 })))
     )
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
     // log in to metamask before test
     cy.login({ networkType: 'L1' })
     // save state once otherwise `restoreAppState` in beforeEach would clear it
@@ -209,14 +202,14 @@ describe('User enters site with query params on URL', () => {
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })
-    it('?amount=0.00001 should set transfer panel amount to 0.00001', () => {
+    it('?amount=0.0001 should set transfer panel amount to 0.0001', () => {
       cy.visit('/', {
         qs: {
-          amount: '0.00001'
+          amount: '0.0001'
         }
       })
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.00001')
+      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.0001')
     })
     it('?amount=123,3,43 should not set transfer panel amount', () => {
       cy.visit('/', {

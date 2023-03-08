@@ -14,13 +14,13 @@ const baseQuery = {
 }
 
 export function getQueryCoveringClassicOnlyWithoutResults() {
-  return { ...baseQuery, fromBlock: 0, toBlock: 20961063 }
+  return { ...baseQuery, fromBlock: 0, toBlock: 19416899 }
 }
 
 export function getQueryCoveringClassicOnlyWithResults() {
-  return { ...baseQuery, fromBlock: 20961064, toBlock: 22207816 }
+  return { ...baseQuery, fromBlock: 19416900, toBlock: 20961064 }
 }
 
 export function getQueryCoveringClassicAndNitroWithResults() {
-  return { ...baseQuery, fromBlock: 20961064, toBlock: 35134792 }
+  return { ...baseQuery, fromBlock: 21114936, toBlock: 35108652 }
 }

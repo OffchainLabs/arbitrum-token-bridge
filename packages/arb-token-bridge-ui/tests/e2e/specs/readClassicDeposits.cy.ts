@@ -1,7 +1,6 @@
 import { Transaction, AssetType } from 'token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
-import { resetSeenTimeStampCache } from '../../support/common'
 import { shortenTxHash } from '../../../src/util/CommonUtils'
 
 type MockClassicDepositTransactionParams = {
@@ -39,11 +38,6 @@ describe('Read classic deposit messages', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
-  before(() => {
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-  })
 
   beforeEach(() => {
     cy.restoreAppState()
@@ -77,7 +71,7 @@ describe('Read classic deposit messages', () => {
 
       cy.changeMetamaskNetwork('mainnet').then(() => {
         cy.closeLowBalanceDialog()
-        cy.openAccountPopover()
+        cy.openTransactionsPanel()
 
         const l1TxHash =
           '0x00000a813d47f2c478dcc3298d5361cb3aed817648f25cace6d0c1a59d2b8309'
@@ -95,12 +89,12 @@ describe('Read classic deposit messages', () => {
 
         cy.findByLabelText(/l1 transaction link/i).should(
           'contain',
-          `L1: ${shortenTxHash(l1TxHash)}`
+          `${shortenTxHash(l1TxHash)}`
         )
 
         cy.findByLabelText(/l2 transaction link/i).should(
           'contain',
-          `L2: ${shortenTxHash(l2TxHash)}`
+          `${shortenTxHash(l2TxHash)}`
         )
       })
     })
@@ -132,7 +126,7 @@ describe('Read classic deposit messages', () => {
 
       cy.changeMetamaskNetwork('mainnet').then(() => {
         cy.closeLowBalanceDialog()
-        cy.openAccountPopover()
+        cy.openTransactionsPanel()
 
         const l1TxHash =
           '0x000153c231eb9fd3690b5e818fb671bdd09d678fe46b16b8f694f3beb9cf6db1'
@@ -150,12 +144,12 @@ describe('Read classic deposit messages', () => {
 
         cy.findByLabelText(/l1 transaction link/i).should(
           'contain',
-          `L1: ${shortenTxHash(l1TxHash)}`
+          `${shortenTxHash(l1TxHash)}`
         )
 
         cy.findByLabelText(/l2 transaction link/i).should(
           'contain',
-          `L2: ${shortenTxHash(l2TxHash)}`
+          `${shortenTxHash(l2TxHash)}`
         )
       })
     })

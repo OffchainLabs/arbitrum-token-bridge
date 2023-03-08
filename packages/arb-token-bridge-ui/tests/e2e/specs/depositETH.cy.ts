@@ -2,21 +2,13 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
-import {
-  zeroToLessThanOneETH,
-  resetSeenTimeStampCache
-} from '../../support/common'
+import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
-  before(() => {
-    // before this spec, make sure the cache is fresh
-    // otherwise pending transactions from last ran specs will leak in this
-    resetSeenTimeStampCache()
-  })
 
   beforeEach(() => {
     cy.restoreAppState()
@@ -101,15 +93,13 @@ describe('Deposit ETH', () => {
             // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
             // because the element is already in view and does not require scrolling
             // https://github.com/cypress-io/cypress/issues/23898
-
             cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
                 `Moving ${formatAmount(0.0001, {
                   symbol: 'ETH'
-                })} to Arbitrum...`
+                })} to Arbitrum`
               ).should('be.visible')
             })
-          })
       })
     })
 

@@ -15,7 +15,8 @@ export type {
 export {
   TokenType,
   AssetType,
-  OutgoingMessageState
+  OutgoingMessageState,
+  NodeBlockDeadlineStatusTypes
 } from './hooks/arbTokenBridge.types'
 
 export { useBalance } from './hooks/useBalance'
@@ -46,3 +47,15 @@ export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
 
 export { useGasPrice } from './hooks/useGasPrice'
+export {
+  fetchWithdrawals,
+  type FetchWithdrawalsParams
+} from './withdrawals/fetchWithdrawals'
+
+export {
+  fetchDeposits,
+  type FetchDepositParams
+} from './deposits/fetchDeposits'
+
+export { fetchBlockNumberFromSubgraph } from './util/subgraph'
+export { getL1ToL2MessageDataFromL1TxHash } from './util/deposits'
