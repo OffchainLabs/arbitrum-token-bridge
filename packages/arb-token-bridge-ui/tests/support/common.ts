@@ -95,9 +95,7 @@ export const setupMetamaskNetwork = (
     }
   } else {
     //else, stick to the original l1 network
-    cy.getNetwork().then(connectedNetwork => {
-      return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
-    })
+    return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
   }
 }
 
@@ -120,7 +118,7 @@ export const startWebApp = (
     qs
   })
   cy.connectToApp()
-  // acceptMetamaskAccess()
+  acceptMetamaskAccess()
 }
 
 export const resetSeenTimeStampCache = () => {
