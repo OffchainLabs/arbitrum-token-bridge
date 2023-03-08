@@ -42,7 +42,7 @@ describe('Login Account', () => {
     cy.findByText('Bridging summary will appear here.').should('be.visible')
   })
 
-  it('should show L1 and L2 ETH balances correctly', () => {
+  it('should show L1 and L2 ETH balances correctly', function () {
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
   })
