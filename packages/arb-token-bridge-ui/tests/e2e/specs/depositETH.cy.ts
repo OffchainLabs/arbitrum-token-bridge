@@ -83,33 +83,36 @@ describe('Deposit ETH', () => {
               .last()
               .contains(/(\d*)(\.\d+)*( ETH)/)
               .should('be.visible')
-            cy.findByRole('button', {
-              name: 'Move funds to Arbitrum'
-            }).click({ scrollBehavior: false })
-            // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
-            // cypress by default tries to scroll the element into view even when it is already in view
-            // for unknown reasons, probably due to our root div's overflow:hidden CSS property,
-            // cypress would wrongly scroll the div and bring the element to the top of the view
-            // and in turn include the full moon into the view, cropping the header out of visible area
-            // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
-            // because the element is already in view and does not require scrolling
-            // https://github.com/cypress-io/cypress/issues/23898
-
-            cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText(
-                `Moving ${formatAmount(0.0001, {
-                  symbol: 'ETH'
-                })} to Arbitrum...`
-              ).should('be.visible')
-            })
           })
+      })
+
+      it('should deposit successfully', () => {
+        cy.findByRole('button', {
+          name: 'Move funds to Arbitrum'
+        }).click({ scrollBehavior: false })
+        // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
+        // cypress by default tries to scroll the element into view even when it is already in view
+        // for unknown reasons, probably due to our root div's overflow:hidden CSS property,
+        // cypress would wrongly scroll the div and bring the element to the top of the view
+        // and in turn include the full moon into the view, cropping the header out of visible area
+        // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
+        // because the element is already in view and does not require scrolling
+        // https://github.com/cypress-io/cypress/issues/23898
+
+        cy.confirmMetamaskTransaction().then(() => {
+          cy.findByText(
+            `Moving ${formatAmount(0.0001, {
+              symbol: 'ETH'
+            })} to Arbitrum...`
+          ).should('be.visible')
+        })
       })
     })
 
     // TODO => test for bridge amount higher than user's L1 ETH balance
   })
 
-  // TODO 
+  // TODO
   context('user has some ETH and is on L2', () => {})
   // TODO
   context('user has some ETH and is on wrong chain', () => {})
