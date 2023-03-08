@@ -46,7 +46,7 @@ export default defineConfig({
       console.log('Local network registered')
 
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
-      console.log('wallet created')
+      console.log('base wallet address: ', wallet.address);
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       console.log({ ethProvider })
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
