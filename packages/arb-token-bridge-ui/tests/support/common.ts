@@ -120,7 +120,7 @@ export const startWebApp = (
     qs
   })
   cy.connectToApp()
-  acceptMetamaskAccess()
+  // acceptMetamaskAccess()
 }
 
 export const resetSeenTimeStampCache = () => {
