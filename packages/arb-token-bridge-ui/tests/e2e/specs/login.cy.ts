@@ -5,6 +5,7 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
+  l1NetworkConfig,
   ethRpcUrl,
   arbRpcUrl
 } from './../../support/common'
@@ -14,6 +15,8 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(() => {
+    cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
+    cy.addMetamaskNetwork(l1NetworkConfig)
     getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )

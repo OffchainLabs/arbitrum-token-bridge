@@ -176,7 +176,6 @@ jobs:
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRIVATE_KEY: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
           NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           COMPOSE_DOCKER_CLI_BUILD: 1
