@@ -68,6 +68,7 @@ export type FathomEvent =
   | `Redeem Retryable on ${FathomNetworkName}`
   //
   | `Open Transaction History Click`
+  | `Open Transaction History Click: Withdrawals Ready Banner`
   //
   | `Tx Error: Get Help Click on ${FathomNetworkName}`
   | `Multiple Tx Error: Get Help Click on ${FathomNetworkName}`
@@ -174,6 +175,7 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Redeem Retryable on Arbitrum Nova': 'AQDHUKER',
   //
   'Open Transaction History Click': 'BNE3W7KB',
+  'Open Transaction History Click: Withdrawals Ready Banner': 'I9AMOFHA',
   //
   'Tx Error: Get Help Click on Arbitrum One': 'HT1BWVVI',
   'Tx Error: Get Help Click on Arbitrum Nova': 'XD5VYLPU',
