@@ -11,25 +11,16 @@ describe('Deposit ETH', () => {
   // because it is cleared between each `it` cypress test
 
   beforeEach(() => {
-    cy.restoreAppState()
+    // cy.restoreAppState()
     cy.login({ networkType: 'L1' })
   })
   afterEach(() => {
-    cy.saveAppState()
+    // cy.saveAppState()
+    cy.logout()
   })
 
   // Happy Path
   context('User has some ETH and is on L1', () => {
-    // log in to metamask before deposit
-    before(() => {
-      cy.login({ networkType: 'L1' })
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
-    })
-
     it('should show L1 and L2 chains correctly', () => {
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
@@ -85,14 +76,6 @@ describe('Deposit ETH', () => {
             cy.findByRole('button', {
               name: 'Move funds to Arbitrum'
             }).click({ scrollBehavior: false })
-            // https://docs.cypress.io/guides/core-concepts/interacting-with-elements#Scrolling
-            // cypress by default tries to scroll the element into view even when it is already in view
-            // for unknown reasons, probably due to our root div's overflow:hidden CSS property,
-            // cypress would wrongly scroll the div and bring the element to the top of the view
-            // and in turn include the full moon into the view, cropping the header out of visible area
-            // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
-            // because the element is already in view and does not require scrolling
-            // https://github.com/cypress-io/cypress/issues/23898
             cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
                 `Moving ${formatAmount(0.0001, {
@@ -100,20 +83,21 @@ describe('Deposit ETH', () => {
                 })} to Arbitrum`
               ).should('be.visible')
             })
+          })
       })
+
+      // TODO => test for bridge amount higher than user's L1 ETH balance
     })
 
-    // TODO => test for bridge amount higher than user's L1 ETH balance
+    // TODO
+    context('user has some ETH and is on L2', () => {})
+    // TODO
+    context('user has some ETH and is on wrong chain', () => {})
+    // TODO
+    context('user has 0 ETH and is on L1', () => {})
+    // TODO
+    context('user has 0 ETH and is on L2', () => {})
+    // TODO
+    context('user has 0 ETH and is on wrong chain', () => {})
   })
-
-  // TODO
-  context('user has some ETH and is on L2', () => {})
-  // TODO
-  context('user has some ETH and is on wrong chain', () => {})
-  // TODO
-  context('user has 0 ETH and is on L1', () => {})
-  // TODO
-  context('user has 0 ETH and is on L2', () => {})
-  // TODO
-  context('user has 0 ETH and is on wrong chain', () => {})
 })

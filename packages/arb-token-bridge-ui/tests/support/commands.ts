@@ -27,17 +27,8 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
-  cy.getNetwork().then(connectedNetwork => {
-    if (
-      (connectedNetwork as typeof l1NetworkConfig).networkName !==
-      l1NetworkConfig.networkName
-    ) {
-      setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
-        startWebApp(url, query)
-      })
-    } else {
-      startWebApp(url, query)
-    }
+  setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
+    startWebApp(url, query)
   })
 }
 
@@ -45,13 +36,13 @@ export function login({
 export const logout = () => {
   cy.switchToCypressWindow().then(() => {
     cy.changeMetamaskNetwork(l1NetworkConfig.networkName).then(() => {
-  // disconnect-metamask-wallet hangs if already not connected to metamask,
-  // so we do it while logout instead of before login.
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    // cy.switchToCypressWindow().then(() => {
-    cy.resetMetamaskAccount()
-    // })
-  })
+      // disconnect-metamask-wallet hangs if already not connected to metamask,
+      // so we do it while logout instead of before login.
+      cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+        // cy.switchToCypressWindow().then(() => {
+        cy.resetMetamaskAccount()
+        // })
+      })
     })
   })
 }

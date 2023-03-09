@@ -7,6 +7,10 @@ Cypress.Keyboard.defaults({
   keystrokeDelay: 50
 })
 
+before(() => {
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
+})
+
 // before(() => {
 //   cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
 //   // cy.setupMetamask(Cypress.env('PRIVATE_KEY'), {

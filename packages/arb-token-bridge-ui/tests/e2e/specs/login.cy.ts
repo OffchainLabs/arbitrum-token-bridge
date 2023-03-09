@@ -15,8 +15,7 @@ describe('Login Account', () => {
   let l1ETHbal
   let l2ETHbal
 
-  before(() => {
-    cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
+  before(function () {
     cy.addMetamaskNetwork(l1NetworkConfig)
     cy.addMetamaskNetwork(l2NetworkConfig)
     getInitialETHBalance(ethRpcUrl).then(
@@ -39,13 +38,9 @@ describe('Login Account', () => {
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
-  it('should connect wallet using MetaMask successfully', () => {
+  it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({ networkType: 'L1' })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
-  })
-
-  it('should show L1 and L2 ETH balances correctly', () => {
-    cy.login({ networkType: 'L1' })
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
   })

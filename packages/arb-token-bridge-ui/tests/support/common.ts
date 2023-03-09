@@ -10,9 +10,11 @@ export type NetworkType = 'L1' | 'L2'
 
 export const ethRpcUrl = 'http://geth:8545'
 export const arbRpcUrl = 'http://sequencer:8547'
+// export const ethRpcUrl = 'http://localhost:8545'
+// export const arbRpcUrl = 'http://localhost:8547'
 
 export const l1NetworkConfig = {
-  networkName: 'eth-localhost',
+  networkName: 'localhost',
   rpcUrl: ethRpcUrl,
   chainId: '1337',
   symbol: 'ETH',
@@ -114,6 +116,8 @@ export const startWebApp = (
   qs: { [s: string]: string } = {}
 ) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
+  // clear local storage for terms to always have it pop up
+  cy.clearLocalStorage('arbitrum:bridge:tos-v1')
   cy.visit(url, {
     qs
   })
