@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react'
-import { BigNumber } from 'ethers'
 
 import { ExternalLink } from '../common/ExternalLink'
-import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
@@ -12,7 +10,9 @@ import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
-import { getExplorerUrl } from '../../util/networks'
+import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
+import { CheckCircleIcon } from '@heroicons/react/outline'
+import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -37,9 +37,10 @@ export function WithdrawalL2TxStatus({
   return (
     <ExternalLink
       href={`${getExplorerUrl(l2Network.chainID)}/tx/${tx.txId}`}
-      className="arb-hover text-blue-link"
+      className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(tx.txId)}
+      <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
     </ExternalLink>
   )
 }
@@ -51,24 +52,9 @@ export function WithdrawalL1TxStatus({
 }): JSX.Element {
   const { l1 } = useNetworksAndSigners()
   const { network: l1Network } = l1
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
 
   // Try to find the L1 transaction that matches the L2ToL1 message
-  const l1Tx = mergedTransactions.find(_tx => {
-    const l2ToL1MsgData = _tx.l2ToL1MsgData
-
-    if (typeof l2ToL1MsgData === 'undefined') {
-      return false
-    }
-
-    // To get rid of Proxy
-    const txUniqueId = BigNumber.from(tx.uniqueId)
-    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
-
-    return txUniqueId.toString() === _txUniqueId.toString()
-  })
+  const l1Tx = findMatchingL1TxForWithdrawal(tx)
 
   if (typeof l1Network === 'undefined') {
     return <span>Not available</span>
@@ -81,22 +67,21 @@ export function WithdrawalL1TxStatus({
   return (
     <ExternalLink
       href={`${getExplorerUrl(l1Network.chainID)}/tx/${l1Tx.txId}`}
-      className="arb-hover text-blue-link"
+      className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}
+      <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
     </ExternalLink>
   )
 }
 
 export type WithdrawalCardContainerProps = {
   tx: MergedTransaction
-  dismissable?: boolean
   children: React.ReactNode
 }
 
 export function WithdrawalCardContainer({
   tx,
-  dismissable = false,
   children
 }: WithdrawalCardContainerProps) {
   const dispatch = useAppContextDispatch()
@@ -114,31 +99,29 @@ export function WithdrawalCardContainer({
     }
   }, [tx])
 
-  function dismiss() {
-    dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-  }
-
   return (
-    <div className={`w-full p-6 pb-12 sm:pb-6 lg:rounded-xl ${bgClassName}`}>
-      {dismissable && (
-        <button
-          className="arb-hover absolute top-4 right-4 text-lime-dark underline"
-          onClick={dismiss}
-        >
-          Dismiss
-        </button>
-      )}
+    <div
+      className={`box-border w-full overflow-hidden rounded-xl border-4 border-purple-ethereum p-4 ${bgClassName}`}
+    >
+      <div className="relative flex flex-col items-center gap-6 lg:flex-row">
+        {/* Logo watermark */}
+        <img
+          src={getNetworkLogo(ChainId.Mainnet)}
+          className="absolute left-0 top-[1px] z-10 h-6 max-h-[90px] p-[2px] lg:relative lg:top-0 lg:left-[-30px] lg:h-auto lg:max-w-[90px] lg:opacity-[60%]"
+          alt="Withdrawal"
+        />
+        {/* Actual content */}
+        <div className="z-20 w-full">{children}</div>
+      </div>
 
-      <div className="flex flex-col space-y-3">{children}</div>
-
-      {!isTransferPanelVisible && !dismissable && (
+      {!isTransferPanelVisible && (
         <button
           className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
           onClick={() => {
             trackEvent('Move More Funds Click')
             dispatch({
-              type: 'layout.set_is_transfer_panel_visible',
-              payload: true
+              type: 'layout.set_txhistory_panel_visible',
+              payload: false
             })
           }}
         >

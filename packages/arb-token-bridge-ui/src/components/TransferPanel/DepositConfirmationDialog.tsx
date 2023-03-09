@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { XIcon } from '@heroicons/react/outline'
+import { DocumentDuplicateIcon, XIcon } from '@heroicons/react/outline'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Button } from '../common/Button'
@@ -18,7 +18,6 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import CustomClipboardCopyIcon from '../../assets/copy.svg'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function DepositConfirmationDialog(
@@ -163,7 +162,7 @@ export function DepositConfirmationDialog(
                           : `Copy link for ${tokenSymbol} bridge`}
                       </span>
                       {!showCopied && (
-                        <CustomClipboardCopyIcon className="h-6 w-6" />
+                        <DocumentDuplicateIcon className="h-4 w-4" />
                       )}
                     </div>
                   </button>

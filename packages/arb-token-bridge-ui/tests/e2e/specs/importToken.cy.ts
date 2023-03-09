@@ -2,7 +2,6 @@ import { utils } from 'ethers'
 import {
   getInitialETHBalance,
   invalidTokenAddress,
-  resetSeenTimeStampCache,
   ERC20TokenName,
   ERC20TokenSymbol,
   importTokenThroughUI
@@ -198,9 +197,8 @@ describe('Import token', () => {
 
   context('User import token through URL', () => {
     afterEach(() => {
-      // after all assertions are executed, logout and reset the account
+      // after all assertions are executed, logout the account
       cy.logout()
-      resetSeenTimeStampCache()
     })
 
     context('User uses L1 address', () => {

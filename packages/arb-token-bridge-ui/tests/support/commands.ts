@@ -12,8 +12,7 @@ import {
   l1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
-  startWebApp,
-  resetSeenTimeStampCache
+  startWebApp
 } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
 
@@ -50,18 +49,7 @@ export const logout = () => {
 
 export const restoreAppState = () => {
   // restore local storage from previous test
-
-  cy.restoreLocalStorage().then(() => {
-    // check if there are proper values of cache timestamp
-    const timestampKey = 'arbitrum:bridge:seen-txs:created-at'
-
-    cy.getLocalStorage(timestampKey).then(cacheSeenTimeStamp => {
-      // if proper value of cache-timestamp are not found between tests, set it
-      if (!cacheSeenTimeStamp) {
-        resetSeenTimeStampCache()
-      }
-    })
-  })
+  cy.restoreLocalStorage()
 }
 
 export const saveAppState = () => {
@@ -86,8 +74,12 @@ export const closeLowBalanceDialog = () => {
     .click()
 }
 
-export const openAccountPopover = () => {
+export const openTransactionsPanel = () => {
   cy.findByRole('button', { name: shortenAddress(Cypress.env('ADDRESS')) })
+    .should('be.visible')
+    .click()
+
+  cy.findByRole('button', { name: /transactions/i })
     .should('be.visible')
     .click()
 }
@@ -98,6 +90,6 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  openAccountPopover,
+  openTransactionsPanel,
   closeLowBalanceDialog
 })

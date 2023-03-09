@@ -1,21 +1,25 @@
 import { useMemo } from 'react'
 
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { StatusBadge } from '../common/StatusBadge'
-import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { shortenTxHash } from '../../util/CommonUtils'
-import { DepositCountdown } from '../common/DepositCountdown'
-import { ExternalLink } from '../common/ExternalLink'
-import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
-import { getExplorerUrl } from '../../util/networks'
+import { DepositStatus, MergedTransaction } from '../../../state/app/state'
+import { StatusBadge } from '../../common/StatusBadge'
+import { useRedeemRetryable } from '../../../hooks/useRedeemRetryable'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { shortenTxHash } from '../../../util/CommonUtils'
+import { DepositCountdown } from '../../common/DepositCountdown'
+import { ExternalLink } from '../../common/ExternalLink'
+import { Button } from '../../common/Button'
+import { Tooltip } from '../../common/Tooltip'
+import { getExplorerUrl, getNetworkName } from '../../../util/networks'
+import { InformationCircleIcon } from '@heroicons/react/outline'
+import { isPending } from '../../../state/app/utils'
+import { TransactionDateTime } from './TransactionsTable'
+import { formatAmount } from '../../../util/NumberUtils'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
       return (
-        <StatusBadge variant="blue" aria-label="L1 Transaction Status">
+        <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
           Pending
         </StatusBadge>
       )
@@ -23,7 +27,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
     case DepositStatus.L1_FAILURE:
       return (
         <StatusBadge variant="red" aria-label="L1 Transaction Status">
-          Error
+          Failed
         </StatusBadge>
       )
 
@@ -33,7 +37,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
           <StatusBadge variant="green" aria-label="L1 Transaction Status">
             Success
           </StatusBadge>
-          <StatusBadge variant="blue" aria-label="L2 Transaction Status">
+          <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
             Pending
           </StatusBadge>
         </div>
@@ -46,7 +50,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
             Success
           </StatusBadge>
           <StatusBadge variant="red" aria-label="L2 Transaction Status">
-            Error
+            Failed
           </StatusBadge>
         </div>
       )
@@ -57,8 +61,8 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
           <StatusBadge variant="green" aria-label="L1 Transaction Status">
             Success
           </StatusBadge>
-          <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
-            Error
+          <StatusBadge variant="red" aria-label="L2 Transaction Status">
+            Failed
           </StatusBadge>
         </div>
       )
@@ -102,7 +106,18 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
     )
   }
 
-  return <span>{tx.resolvedAt || tx.createdAt || 'N/A'}</span>
+  return (
+    <div className="flex flex-col space-y-3">
+      <Tooltip content={<span>L1 Transaction Time</span>}>
+        <TransactionDateTime standardizedDate={tx.createdAt} />
+      </Tooltip>
+      {tx.resolvedAt && (
+        <Tooltip content={<span>L2 Transaction Time</span>}>
+          <TransactionDateTime standardizedDate={tx.resolvedAt} />
+        </Tooltip>
+      )}
+    </div>
+  )
 }
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
@@ -110,9 +125,13 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
   const l2TxHash = tx.l1ToL2MsgData?.l2TxID
 
   return (
-    <div className="flex flex flex-col flex-col space-y-1">
-      <span className="text-dark" aria-label="L1 Transaction Link">
-        L1:{' '}
+    <div className="flex flex-col space-y-3">
+      <span
+        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+        aria-label="L1 Transaction Link"
+      >
+        <span className="rounded-md px-2 text-xs text-gray-9">Step 1</span>
+        {getNetworkName(l1.network.chainID)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
@@ -122,8 +141,12 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       </span>
 
       {l2TxHash && (
-        <span className="text-dark" aria-label="L2 Transaction Link">
-          L2:{' '}
+        <span
+          className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+          aria-label="L2 Transaction Link"
+        >
+          <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
+          {getNetworkName(l2.network.chainID)}:{' '}
           <ExternalLink
             href={`${getExplorerUrl(l2.network.chainID)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
@@ -172,10 +195,19 @@ export function TransactionsTableDepositRow({
     [tx]
   )
 
-  const bgClassName = isError ? 'bg-brick' : ''
+  const bgClassName = useMemo(() => {
+    if (isError || showRedeemRetryableButton || showRetryableExpiredText)
+      return 'bg-brick'
+    if (isPending(tx)) return 'bg-orange'
+    return ''
+  }, [tx, isError, showRedeemRetryableButton, showRetryableExpiredText])
 
   return (
-    <tr className={`text-sm text-dark ${bgClassName} ${className}`}>
+    <tr
+      className={`text-sm text-dark ${
+        bgClassName || `bg-cyan even:bg-white`
+      } ${className}`}
+    >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <DepositRowStatus tx={tx} />
       </td>
@@ -184,21 +216,24 @@ export function TransactionsTableDepositRow({
         <DepositRowTime tx={tx} />
       </td>
 
-      <td className="w-1/5 px-3 py-3">
-        {tx.value} {tx.asset.toUpperCase()}
+      <td className="w-1/5 whitespace-nowrap px-3 py-3">
+        {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
       </td>
 
       <td className="w-1/5 px-3 py-3">
         <DepositRowTxID tx={tx} />
       </td>
 
-      <td className="w-1/5 py-3 pl-3 pr-6">
+      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
         {showRedeemRetryableButton && (
           <Tooltip
             show={!isConnectedToArbitrum}
+            wrapperClassName=""
             content={
               <span>
-                Please connect to the L2 network to re-execute your deposit.
+                Please connect to the L2 network to re-execute your deposit. You
+                have 7 days to re-execute a failed tx. After that, the tx is no
+                longer recoverable.
               </span>
             }
           >
@@ -208,22 +243,23 @@ export function TransactionsTableDepositRow({
               disabled={!isConnectedToArbitrum}
               onClick={() => redeem(tx)}
             >
-              Re-execute
+              Retry
             </Button>
           </Tooltip>
         )}
 
         {showRetryableExpiredText && (
           <Tooltip
+            wrapperClassName=""
             content={
               <span>
-                When an L2 tx fails, you have 7 days to re-execute. After that
-                time period, the tx is no longer recoverable.
+                You have 7 days to re-execute a failed tx. After that, the tx is
+                no longer recoverable.
               </span>
             }
           >
-            <span className="text-md font-normal uppercase text-brick-dark">
-              Expired
+            <span className="text-md flex flex-nowrap items-center gap-1 font-normal uppercase text-brick-dark">
+              <InformationCircleIcon className="h-4 w-4" /> EXPIRED
             </span>
           </Tooltip>
         )}

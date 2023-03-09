@@ -2,7 +2,6 @@ import { useEffect, useMemo } from 'react'
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
-import { useAppContextDispatch } from '../App/AppContext'
 import {
   WithdrawalCardContainer,
   WithdrawalL1TxStatus,
@@ -18,7 +17,6 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     app: { arbTokenBridge }
   } = useAppState()
   const { walletAddress, bridgeTokens } = arbTokenBridge
-  const dispatch = useAppContextDispatch()
   const { l1 } = useNetworksAndSigners()
   const {
     eth: [ethL1Balance],
@@ -53,22 +51,10 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
     return erc20L1Balances[tx.tokenAddress.toLowerCase()]
   }, [erc20L1Balances, ethL1Balance, tx])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      dispatch({ type: 'set_tx_as_seen', payload: tx.txId })
-      // Disappears after 60 seconds
-    }, 60 * 1000)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-    // It's safe to omit `dispatch` from the dependency array: https://reactjs.org/docs/hooks-reference.html#usereducer
-  }, [tx.txId])
-
   const decimals = useTokenDecimals(bridgeTokens, tx.tokenAddress)
 
   return (
-    <WithdrawalCardContainer tx={tx} dismissable>
+    <WithdrawalCardContainer tx={tx}>
       <span className="text-4xl font-semibold text-blue-arbitrum">
         Success!
       </span>
@@ -94,10 +80,10 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
       <div className="h-2" />
       <div className="flex flex-col font-light">
-        <span className="text-lg text-lime-dark">
+        <span className="flex flex-nowrap gap-1 text-base text-lime-dark">
           L2 transaction: <WithdrawalL2TxStatus tx={tx} />
         </span>
-        <span className="text-lg text-lime-dark">
+        <span className="flex flex-nowrap gap-1 text-base text-lime-dark">
           L1 transaction: <WithdrawalL1TxStatus tx={tx} />
         </span>
       </div>

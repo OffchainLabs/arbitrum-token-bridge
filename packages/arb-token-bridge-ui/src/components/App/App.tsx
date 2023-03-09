@@ -19,7 +19,6 @@ import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
-import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { useDialog } from '../common/Dialog'
@@ -48,7 +47,6 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { isTestingEnvironment } from '../../util/CommonUtils'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 
@@ -120,10 +118,9 @@ const AppContent = (): JSX.Element => {
 
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
+
       <TokenListSyncer />
       <BalanceUpdater />
-      {!isTestingEnvironment && <PWLoadedUpdater />}
-
       <Notifications />
       <MainContent />
     </>

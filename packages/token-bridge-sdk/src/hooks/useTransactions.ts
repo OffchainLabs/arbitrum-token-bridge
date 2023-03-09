@@ -26,6 +26,7 @@ type Action =
       txID: string
       l1ToL2MsgData: L1ToL2MessageData
     }
+  | { type: 'SET_TRANSACTIONS'; transactions: Transaction[] }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -94,6 +95,7 @@ type TransactionBase = {
   timestampCreated?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
+  isClassic?: boolean
 }
 
 export interface Transaction extends TransactionBase {
@@ -260,6 +262,9 @@ function reducer(state: Transaction[], action: Action) {
     }
     case 'UPDATE_L1TOL2MSG_DATA': {
       return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
+    }
+    case 'SET_TRANSACTIONS': {
+      return action.transactions
     }
     default:
       return state
@@ -521,6 +526,22 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
+  const setDepositsInStore = (newTransactions: Transaction[]) => {
+    // appends the state with a new set of transactions
+    // useful when you want to display some transactions fetched from subgraph without worrying about existing state
+
+    let transactionsMap: { [id: string]: Transaction } = {}
+
+    ;[...transactions, ...newTransactions].forEach(tx => {
+      transactionsMap[tx.txID] = tx
+    })
+
+    return dispatch({
+      type: 'SET_TRANSACTIONS',
+      transactions: Object.values(transactionsMap)
+    })
+  }
+
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))
   }, [state])
@@ -530,6 +551,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     {
       addTransaction,
       addTransactions,
+      setDepositsInStore,
       setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,
