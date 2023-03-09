@@ -51,7 +51,9 @@ export const logout = () => {
   //   // })
   // })
   cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    cy.resetMetamaskAccount()
+    cy.resetMetamaskAccount().then(() => {
+      cy.changeMetamaskNetwork('goerli')
+    })
   })
 }
 
