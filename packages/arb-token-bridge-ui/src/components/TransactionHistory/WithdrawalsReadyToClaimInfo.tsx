@@ -26,21 +26,21 @@ export const WithdrawalsReadyToClaimInfo = () => {
 
   const dispatch = useAppContextDispatch()
 
-  const numPendingClaimTransactions = mergedTransactions.filter(
+  const numWithdrawalsReadyToClaim = mergedTransactions.filter(
     tx =>
       isPending(tx) &&
       tx.status === outgoungStateToString[OutgoingMessageState.CONFIRMED]
   ).length
 
   // don't show this if user doesn't have anything to claim
-  if (numPendingClaimTransactions === 0) return null
+  if (numWithdrawalsReadyToClaim === 0) return null
 
   return (
     <div className="flex items-center gap-1 rounded-md bg-lime p-2 text-base text-lime-dark lg:flex-nowrap">
       <CheckCircleIcon className="h-4 w-4" />
       You have
-      <span className="font-bold">{numPendingClaimTransactions}</span>
-      {`${numPendingClaimTransactions > 1 ? 'withdrawals' : 'withdrawal'}`}{' '}
+      <span className="font-bold">{numWithdrawalsReadyToClaim}</span>
+      {`${numWithdrawalsReadyToClaim > 1 ? 'withdrawals' : 'withdrawal'}`}{' '}
       <span className="font-bold">ready to claim.</span>
       <ExternalLink
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
