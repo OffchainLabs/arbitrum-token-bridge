@@ -9,7 +9,7 @@
 
 import '@testing-library/cypress/add-commands'
 import {
-  l1NetworkConfig,
+  getL1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
   startWebApp
@@ -35,7 +35,7 @@ export function login({
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
   cy.switchToCypressWindow().then(() => {
-    cy.changeMetamaskNetwork(l1NetworkConfig.networkName).then(() => {
+    cy.changeMetamaskNetwork(getL1NetworkConfig().networkName).then(() => {
       // disconnect-metamask-wallet hangs if already not connected to metamask,
       // so we do it while logout instead of before login.
       cy.disconnectMetamaskWalletFromAllDapps().then(() => {
