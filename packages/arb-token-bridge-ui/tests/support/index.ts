@@ -1,10 +1,9 @@
 import './commands'
 import '@synthetixio/synpress/support'
 import 'cypress-localstorage-commands'
-import { l1NetworkConfig } from './common';
 
 Cypress.Keyboard.defaults({
-  keystrokeDelay: 50
+  keystrokeDelay: 250
 })
 
 before(() => {

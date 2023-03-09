@@ -138,7 +138,7 @@ jobs:
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_SCREENING_API_ENDPOINT: '/'
+          envkey_IS_E2E_TEST: true
           directory: ./packages/arb-token-bridge-ui/
           file_name: .e2e.env
 
@@ -150,7 +150,7 @@ jobs:
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_SCREENING_API_ENDPOINT: '/'
+          envkey_IS_E2E_TEST: true
           file_name: .env.local
 
       - name: Make .env.local (in workspace)
@@ -161,7 +161,7 @@ jobs:
           envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_SCREENING_API_ENDPOINT: '/'
+          envkey_IS_E2E_TEST: true
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env.local
 
@@ -187,7 +187,7 @@ jobs:
           NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_SCREENING_API_ENDPOINT: '/'
+          envkey_IS_E2E_TEST: true
           SKIP_METAMASK_SETUP: true
           envkey_SKIP_METAMASK_SETUP: true
 

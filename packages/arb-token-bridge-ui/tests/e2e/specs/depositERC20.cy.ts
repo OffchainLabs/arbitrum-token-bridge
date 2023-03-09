@@ -62,7 +62,7 @@ describe('Deposit ERC20 Token', () => {
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .type(wethTokenAddressL1, { scrollBehavior: false, delay: 500 })
+          .type(wethTokenAddressL1, { scrollBehavior: false })
           .then(() => {
             // Click on the Add new token button
 
