@@ -14,7 +14,6 @@ describe('Withdraw ETH', () => {
     cy.addMetamaskNetwork(getL2NetworkConfig())
   })
   beforeEach(() => {
-    cy.login({ networkType: 'L2' })
     // cy.restoreAppState()
   })
   afterEach(() => {
@@ -87,6 +86,7 @@ describe('Withdraw ETH', () => {
 
       it('should show withdrawal confirmation and withdraw', () => {
         typeAmountIntoInput().then(() => {
+          cy.login({ networkType: 'L2' })
           cy.findByRole('button', {
             name: /Move funds to Ethereum/i
           })
