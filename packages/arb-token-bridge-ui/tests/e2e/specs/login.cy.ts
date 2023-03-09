@@ -5,10 +5,8 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
-  l2NetworkConfig,
-  metamaskLocalL1RpcUrl,
-  ethRpcUrl,
-  arbRpcUrl
+  getL2NetworkConfig,
+  metamaskLocalL1RpcUrl
 } from './../../support/common'
 
 describe('Login Account', () => {
@@ -16,11 +14,11 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(function () {
-    cy.addMetamaskNetwork(l2NetworkConfig)
-    getInitialETHBalance(ethRpcUrl).then(
+    cy.addMetamaskNetwork(getL2NetworkConfig())
+    getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
-    getInitialETHBalance(arbRpcUrl).then(
+    getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(
       val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
   })
@@ -40,7 +38,7 @@ describe('Login Account', () => {
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({
       networkType: 'L1',
-      addNewNetwork: ethRpcUrl !== metamaskLocalL1RpcUrl
+      addNewNetwork: Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl
     })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')

@@ -8,7 +8,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { registerLocalNetwork } from './src/util/networks'
 
-import { wethTokenAddressL1, wethTokenAddressL2, ethRpcUrl, arbRpcUrl } from './tests/support/common'
+import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -34,7 +34,11 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+      const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
       console.log('Synpress config start')
+      console.log({ ethRpcUrl })
+      console.log({ arbRpcUrl })
 
       registerLocalNetwork()
 
@@ -113,8 +117,8 @@ export default defineConfig({
         )
         await tx.wait()
       })
-      config.env.ETH_RPC = ethRpcUrl
-      config.env.ARB_RPC = arbRpcUrl
+      config.env.ETH_RPC_URL = ethRpcUrl
+      config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ADDRESS = testWalletAddress
       config.env.PRIVATE_KEY = testWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -132,8 +136,8 @@ export default defineConfig({
       // order of running the tests...
       'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
-      'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}' // withdraw ETH
-      // 'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
+      'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
+      'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       // 'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
       // 'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       // 'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20

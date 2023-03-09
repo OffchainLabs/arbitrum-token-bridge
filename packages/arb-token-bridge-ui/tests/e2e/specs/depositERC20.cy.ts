@@ -5,8 +5,7 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
-  ethRpcUrl,
-  l1NetworkConfig,
+  getL1NetworkConfig,
   zeroToLessThanOneETH,
   wethTokenAddressL1
 } from '../../support/common'
@@ -18,10 +17,12 @@ describe('Deposit ERC20 Token', () => {
   const ERC20AmountToSend = 0.0001
 
   beforeEach(() => {
-    cy.restoreAppState()
+    cy.login({ networkType: 'L1' })
+    // cy.restoreAppState()
   })
   afterEach(() => {
-    cy.saveAppState()
+    cy.logout()
+    // cy.saveAppState()
   })
 
   // Happy Path
@@ -32,20 +33,14 @@ describe('Deposit ERC20 Token', () => {
     before(() => {
       getInitialERC20Balance(
         wethTokenAddressL1,
-        l1NetworkConfig.l1MultiCall,
-        ethRpcUrl
+        getL1NetworkConfig().l1MultiCall,
+        Cypress.env('ETH_RPC_URL')
       ).then(
         val =>
           (l1ERC20bal = formatAmount(val, {
             symbol: 'WETH'
           }))
       )
-      cy.login({ networkType: 'L1', addNewNetwork: true })
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
@@ -56,40 +51,40 @@ describe('Deposit ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should add ERC20 token correctly', () => {
-      // Click on the ETH dropdown (Select token button)
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
-        .click({ scrollBehavior: false })
+    it('should bridge ERC-20 successfully', () => {
+      context('should add a new token', () => {
+        // Click on the ETH dropdown (Select token button)
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+          .click({ scrollBehavior: false })
 
-      // open the Select Token popup
-      cy.findByPlaceholderText(/Search by token name/i)
-        .should('be.visible')
-        .type(wethTokenAddressL1, { scrollBehavior: false })
-        .then(() => {
-          // Click on the Add new token button
+        // open the Select Token popup
+        cy.findByPlaceholderText(/Search by token name/i)
+          .should('be.visible')
+          .type(wethTokenAddressL1, { scrollBehavior: false })
+          .then(() => {
+            // Click on the Add new token button
 
-          cy.findByRole('button', { name: 'Add New Token' })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
+            cy.findByRole('button', { name: 'Add New Token' })
+              .should('be.visible')
+              .click({ scrollBehavior: false })
 
-          // Select the WETH token
-          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
+            // Select the WETH token
+            cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
-          // WETH token should be selected now and popup should be closed after selection
-          cy.findByRole('button', { name: 'Select Token' })
-            .should('be.visible')
-            .should('have.text', 'WETH')
-        })
-    })
+            // WETH token should be selected now and popup should be closed after selection
+            cy.findByRole('button', { name: 'Select Token' })
+              .should('be.visible')
+              .should('have.text', 'WETH')
+          })
+      })
 
-    it('should show ERC20 balance correctly', () => {
-      cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
-    })
+      context('should show ERC-20 balance correctly', () => {
+        cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
+      })
 
-    context("bridge amount is lower than user's L1 ERC20 balance value", () => {
-      it('should show summary', () => {
+      context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
           .type(String(ERC20AmountToSend), { scrollBehavior: false })
           .then(() => {
@@ -118,7 +113,7 @@ describe('Deposit ERC20 Token', () => {
           })
       })
 
-      it('should deposit successfully', () => {
+      context('should deposit successfully', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })

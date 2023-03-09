@@ -9,30 +9,32 @@ import { MultiCaller } from '@arbitrum/sdk'
 export type NetworkType = 'L1' | 'L2'
 
 export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
-export const ethRpcUrl =
-  process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL || metamaskLocalL1RpcUrl
-export const arbRpcUrl =
-  process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL || 'http://localhost:8547'
 
-export const l1NetworkConfig = {
-  // reuse built-in Metamask network if possible
-  // we add a new network in CI because of a different rpc url
-  networkName:
-    ethRpcUrl === metamaskLocalL1RpcUrl ? 'localhost' : 'custom-localhost',
-  rpcUrl: ethRpcUrl,
-  chainId: '1337',
-  symbol: 'ETH',
-  isTestnet: true,
-  l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+export const getL1NetworkConfig = () => {
+  return {
+    // reuse built-in Metamask network if possible
+    // we add a new network in CI because of a different rpc url
+    networkName:
+      Cypress.env('ETH_RPC_URL') === metamaskLocalL1RpcUrl
+        ? 'localhost'
+        : 'custom-localhost',
+    rpcUrl: Cypress.env('ETH_RPC_URL'),
+    chainId: '1337',
+    symbol: 'ETH',
+    isTestnet: true,
+    l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+  }
 }
 
-export const l2NetworkConfig = {
-  networkName: 'arbitrum-localhost',
-  rpcUrl: arbRpcUrl,
-  chainId: '412346',
-  symbol: 'ETH',
-  isTestnet: true,
-  l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+export const getL2NetworkConfig = () => {
+  return {
+    networkName: 'arbitrum-localhost',
+    rpcUrl: Cypress.env('ARB_RPC_URL') || 'http://localhost:8545',
+    chainId: '412346',
+    symbol: 'ETH',
+    isTestnet: true,
+    l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+  }
 }
 
 export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
@@ -90,7 +92,8 @@ export const setupMetamaskNetwork = (
 ) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
-  const networkConfig = networkType === 'L1' ? l1NetworkConfig : l2NetworkConfig
+  const networkConfig =
+    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
 
   if (addNewNetwork) {
     return cy.addMetamaskNetwork(networkConfig)
