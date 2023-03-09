@@ -8,12 +8,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { registerLocalNetwork } from './src/util/networks'
 
-import {
-  ethRpcUrl,
-  arbRpcUrl,
-  wethTokenAddressL1,
-  wethTokenAddressL2
-} from './tests/support/common'
+import { wethTokenAddressL1, wethTokenAddressL2, ethRpcUrl, arbRpcUrl } from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -25,7 +20,7 @@ export default defineConfig({
   },
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: false,
+  video: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
   viewportWidth: 1366,
@@ -43,24 +38,15 @@ export default defineConfig({
 
       registerLocalNetwork()
 
-      // console.log('Local network registered')
-
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
-      console.log('base wallet address: ', wallet.address);
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
-      console.log({ ethProvider })
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
-      console.log({ arbProvider })
       const testWallet = Wallet.createRandom()
-      console.log('Test wallet created')
       const testWalletAddress = await testWallet.getAddress()
       const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
-      console.log('erc20Bridger created')
       const erc20Contract = new TestERC20__factory().connect(
         wallet.connect(ethProvider)
       )
-
-      console.log('erc20Contract created')
 
       const getWethContract = (
         provider: StaticJsonRpcProvider,
@@ -127,6 +113,8 @@ export default defineConfig({
         )
         await tx.wait()
       })
+      config.env.ETH_RPC = ethRpcUrl
+      config.env.ARB_RPC = arbRpcUrl
       config.env.ADDRESS = testWalletAddress
       config.env.PRIVATE_KEY = testWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -144,7 +132,7 @@ export default defineConfig({
       // order of running the tests...
       'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
-      // 'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
+      'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}' // withdraw ETH
       // 'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       // 'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
       // 'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20

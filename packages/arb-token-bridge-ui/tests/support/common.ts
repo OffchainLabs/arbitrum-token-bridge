@@ -8,13 +8,17 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 
-export const ethRpcUrl = 'http://geth:8545'
-export const arbRpcUrl = 'http://sequencer:8547'
-// export const ethRpcUrl = 'http://localhost:8545'
-// export const arbRpcUrl = 'http://localhost:8547'
+export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
+export const ethRpcUrl =
+  process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL || metamaskLocalL1RpcUrl
+export const arbRpcUrl =
+  process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL || 'http://localhost:8547'
 
 export const l1NetworkConfig = {
-  networkName: 'eth-localhost',
+  // reuse built-in Metamask network if possible
+  // we add a new network in CI because of a different rpc url
+  networkName:
+    ethRpcUrl === metamaskLocalL1RpcUrl ? 'localhost' : 'custom-localhost',
   rpcUrl: ethRpcUrl,
   chainId: '1337',
   symbol: 'ETH',
@@ -86,18 +90,12 @@ export const setupMetamaskNetwork = (
 ) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
-  if (networkType === 'L2') {
-    if (addNewNetwork) {
-      // add and switch to Arbitrum goerli network
-      return cy.addMetamaskNetwork(l2NetworkConfig)
-    } else {
-      // L2 network already added
-      // switch to Arbitrum goerli network
-      return cy.changeMetamaskNetwork(l2NetworkConfig.networkName)
-    }
+  const networkConfig = networkType === 'L1' ? l1NetworkConfig : l2NetworkConfig
+
+  if (addNewNetwork) {
+    return cy.addMetamaskNetwork(networkConfig)
   } else {
-    //else, stick to the original l1 network
-    return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
+    return cy.changeMetamaskNetwork(networkConfig.networkName)
   }
 }
 
