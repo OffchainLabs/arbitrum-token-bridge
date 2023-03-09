@@ -29,7 +29,7 @@ module.exports = {
 // https://securityheaders.com
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.usefathom.com *.arbitrum.io;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' cdn.usefathom.com *.arbitrum.io *.sentry.io;
   child-src *.youtube.com *.google.com *.twitter.com;
   style-src 'self' 'unsafe-inline' *.googleapis.com;
   img-src * blob: data:;
