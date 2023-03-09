@@ -25,7 +25,7 @@ describe('Login Account', () => {
     )
   })
 
-  after(() => {
+  afterEach(() => {
     // after all assertions are executed, logout and reset the account
     cy.logout()
   })
