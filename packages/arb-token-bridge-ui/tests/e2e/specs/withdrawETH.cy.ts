@@ -53,6 +53,7 @@ describe('Withdraw ETH', () => {
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show summary', () => {
+        cy.visit('/')
         typeAmountIntoInput().then(() => {
           cy.findByText('You’re moving')
             .siblings()
