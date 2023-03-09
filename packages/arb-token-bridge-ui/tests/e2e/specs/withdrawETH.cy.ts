@@ -11,12 +11,7 @@ describe('Withdraw ETH', () => {
   // because it is cleared between each `it` cypress test
 
   beforeEach(() => {
-    cy.login({ networkType: 'L2' })
     // cy.restoreAppState()
-  })
-  afterEach(() => {
-    cy.logout()
-    // cy.saveAppState()
   })
 
   const typeAmountIntoInput = () => {
@@ -33,12 +28,13 @@ describe('Withdraw ETH', () => {
     //   cy.login({ networkType: 'L2' }) // add new L2 network
     // })
 
-    after(() => {
+    afterEach(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
     })
 
     it('should show form fields correctly', () => {
+      cy.login({ networkType: 'L2', addNewNetwork: true })
       cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 
@@ -51,6 +47,7 @@ describe('Withdraw ETH', () => {
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show summary', () => {
+        cy.login({ networkType: 'L2' })
         typeAmountIntoInput().then(() => {
           cy.findByText('You’re moving')
             .siblings()
@@ -83,6 +80,7 @@ describe('Withdraw ETH', () => {
       })
 
       it('should show withdrawal confirmation and withdraw', () => {
+        cy.login({ networkType: 'L2' })
         typeAmountIntoInput().then(() => {
           cy.findByRole('button', {
             name: /Move funds to Ethereum/i

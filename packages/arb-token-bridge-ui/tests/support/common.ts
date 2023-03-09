@@ -22,18 +22,18 @@ export const getL1NetworkConfig = () => {
     chainId: '1337',
     symbol: 'ETH',
     isTestnet: true,
-    l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
   }
 }
 
 export const getL2NetworkConfig = () => {
   return {
     networkName: 'arbitrum-localhost',
-    rpcUrl: Cypress.env('ARB_RPC_URL') || 'http://localhost:8545',
+    rpcUrl: Cypress.env('ARB_RPC_URL'),
     chainId: '412346',
     symbol: 'ETH',
     isTestnet: true,
-    l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
   }
 }
 

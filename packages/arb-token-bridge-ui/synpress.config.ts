@@ -134,7 +134,6 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
-      'tests/e2e/specs/**/addMetamaskNetworks.cy.{js,jsx,ts,tsx}', // metamask networks
       'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH

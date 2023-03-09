@@ -10,20 +10,16 @@ describe('Withdraw ERC20 Token', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
   beforeEach(() => {
-    cy.restoreAppState()
+    cy.login({ networkType: 'L2' })
+    // cy.restoreAppState()
   })
   afterEach(() => {
-    cy.saveAppState()
+    cy.logout()
+    // cy.saveAppState()
   })
 
   // Happy Path
   context('User is on L2 and imports ERC-20', () => {
-    // log in to metamask before withdrawal
-    before(() => {
-      // login to L2 chain for Local network
-      cy.login({ networkType: 'L2', addNewNetwork: false }) // don't add new network, switch to exisiting
-    })
-
     after(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()
@@ -44,35 +40,35 @@ describe('Withdraw ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should add ERC20 token correctly', () => {
-      // Click on the ETH dropdown (Select token button)
-      cy.findByRole('button', { name: 'Select Token' })
-        .should('be.visible')
-        .should('have.text', 'ETH')
-        .click({ scrollBehavior: false })
+    it('should withdraw ERC-20 successfully', () => {
+      context('should add ERC-20 correctly', () => {
+        // Click on the ETH dropdown (Select token button)
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+          .click({ scrollBehavior: false })
 
-      // open the Select Token popup
-      cy.findByPlaceholderText(/Search by token name/i)
-        .should('be.visible')
-        .type(wethTokenAddressL2, { scrollBehavior: false })
-        .then(() => {
-          // Click on the Add new token button
-          cy.findByRole('button', { name: 'Add New Token' })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
+        // open the Select Token popup
+        cy.findByPlaceholderText(/Search by token name/i)
+          .should('be.visible')
+          .type(wethTokenAddressL2, { scrollBehavior: false })
+          .then(() => {
+            // Click on the Add new token button
+            cy.findByRole('button', { name: 'Add New Token' })
+              .should('be.visible')
+              .click({ scrollBehavior: false })
 
-          // Select the WETH token
-          cy.findAllByText('WETH').first().click({ scrollBehavior: false })
+            // Select the WETH token
+            cy.findAllByText('WETH').first().click({ scrollBehavior: false })
 
-          // WETH token should be selected now and popup should be closed after selection
-          cy.findByRole('button', { name: 'Select Token' })
-            .should('be.visible')
-            .should('have.text', 'WETH')
-        })
-    })
+            // WETH token should be selected now and popup should be closed after selection
+            cy.findByRole('button', { name: 'Select Token' })
+              .should('be.visible')
+              .should('have.text', 'WETH')
+          })
+      })
 
-    context("bridge amount is lower than user's L2 ERC20 balance value", () => {
-      it('should show summary', () => {
+      context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
           .type('0.0001', { scrollBehavior: false })
           .then(() => {
@@ -101,7 +97,7 @@ describe('Withdraw ERC20 Token', () => {
           })
       })
 
-      it('should show a clickable withdraw button', () => {
+      context('should show clickable withdraw button', () => {
         cy.findByRole('button', {
           name: /Move funds to Ethereum/i
         })
@@ -110,7 +106,7 @@ describe('Withdraw ERC20 Token', () => {
           .click({ scrollBehavior: false })
       })
 
-      it('should show withdraw successfully', () => {
+      context('should withdraw successfully', () => {
         cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
 
         // the Continue withdrawal button should be disabled at first
