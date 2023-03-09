@@ -40,7 +40,8 @@ export const PendingClaimsInfo = () => {
       <CheckCircleIcon className="h-4 w-4" />
       You have
       <span className="font-bold">{numPendingClaimTransactions}</span>
-      withdrawals <span className="font-bold">ready to claim.</span>
+      {`${numPendingClaimTransactions > 1 ? 'withdrawals' : 'withdrawal'}`}{' '}
+      <span className="font-bold">ready to claim.</span>
       <ExternalLink
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
         onClick={() => {
