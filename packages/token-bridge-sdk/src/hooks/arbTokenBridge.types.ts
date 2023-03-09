@@ -67,10 +67,15 @@ export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
   L2TransactionReceipt
 >
 
+export enum NodeBlockDeadlineStatusTypes {
+  NODE_NOT_CREATED,
+  EXECUTE_CALL_EXCEPTION
+}
+
 export type NodeBlockDeadlineStatus =
   | number
-  | 'NODE_NOT_CREATED'
-  | 'EXECUTE_CALL_EXCEPTION'
+  | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
+  | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 
@@ -214,6 +219,8 @@ export interface ArbTokenBridgeToken {
 
 export interface TransactionActions {
   addFailedTransaction: (transaction: FailedTransaction) => void
+
+  setDepositsInStore: (transactions: Transaction[]) => void
   setTransactionSuccess: (txID: string) => void
   setTransactionFailure: (txID?: string) => void
   removeTransaction: (txID: string) => void
@@ -257,6 +264,7 @@ export type ArbTokenBridgeTransactions = {
   | 'fetchAndUpdateL1ToL2MsgStatus'
   | 'fetchAndUpdateL1ToL2MsgClassicStatus'
   | 'fetchAndUpdateEthDepositMessageStatus'
+  | 'setDepositsInStore'
 >
 
 export interface ArbTokenBridge {
@@ -266,5 +274,5 @@ export interface ArbTokenBridge {
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
+  setWithdrawalsInStore: (txns: L2ToL1EventResultPlus[]) => void
 }

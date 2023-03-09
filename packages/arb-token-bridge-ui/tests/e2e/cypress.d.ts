@@ -3,7 +3,7 @@ import {
   connectToApp,
   login,
   logout,
-  openAccountPopover,
+  openTransactionsPanel,
   restoreAppState,
   saveAppState,
   closeLowBalanceDialog
@@ -27,7 +27,7 @@ declare global {
       logout(): typeof logout
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
-      openAccountPopover(): typeof openAccountPopover
+      openTransactionsPanel(): typeof openTransactionsPanel
       closeLowBalanceDialog(): typeof closeLowBalanceDialog
     }
   }

@@ -2,6 +2,7 @@ import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
+import Image from 'next/image'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
@@ -12,7 +13,7 @@ import {
 } from './HeaderMenu'
 import { GET_HELP_LINK } from '../../constants'
 
-const defaultHeaderClassName = 'z-50 flex h-[80px] justify-center lg:bg-black'
+const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
 function toHeaderMenuProps(
   links: { title: string; link: string }[]
@@ -116,7 +117,7 @@ function DesktopExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="arb-hover hidden text-base text-white lg:block"
+      className="arb-hover hidden whitespace-nowrap text-base text-white lg:block lg:pr-4"
       {...props}
     >
       {children}
@@ -287,11 +288,23 @@ function MobileExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="arb-hover py-3 text-2xl font-medium text-white"
+      className="arb-hover flex w-full flex-row flex-nowrap items-center space-x-4 p-4 py-3 text-2xl font-medium text-white"
       {...props}
     >
       {children}
     </ExternalLink>
+  )
+}
+
+const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      className="max-w-8 mr-4 max-h-8"
+      width={50}
+      height={50}
+    />
   )
 }
 
@@ -303,12 +316,18 @@ function HeaderMobile() {
           <MenuIcon.Close />
         </Disclosure.Button>
       </div>
-      <div className="flex min-h-screen flex-col items-center space-y-3 bg-blue-arbitrum pt-4">
+      <div className="flex min-h-screen flex-col items-center space-y-3 bg-dark">
         <div
           id="header-content-root"
-          className="flex w-full flex-col items-center space-y-3"
+          className="flex w-full flex-col-reverse items-center space-y-3"
         ></div>
-        <HeaderMenuMobile {...learnMenuProps}>Learn</HeaderMenuMobile>
+        <HeaderMenuMobile {...learnMenuProps}>
+          <HeaderItemLogo
+            src="/images/header/headerLogo_learn.webp"
+            alt="Learn"
+          />
+          Learn
+        </HeaderMenuMobile>
         <HeaderMenuMobile
           items={[
             {
@@ -321,13 +340,33 @@ function HeaderMobile() {
             }
           ]}
         >
+          <HeaderItemLogo
+            src="/images/header/headerLogo_ecosystem.webp"
+            alt="Ecosystem"
+          />
           Ecosystem
         </HeaderMenuMobile>
-        <HeaderMenuMobile {...explorersMenuProps}>Explorers</HeaderMenuMobile>
+        <HeaderMenuMobile {...explorersMenuProps}>
+          <HeaderItemLogo
+            src="/images/header/headerLogo_explorers.webp"
+            alt="Explorers"
+          />
+          Explorers
+        </HeaderMenuMobile>
         <HeaderMenuMobile {...chartsStatsMenuProps}>
+          <HeaderItemLogo
+            src="/images/header/headerLogo_chartsAndStats.webp"
+            alt="Charts and Stats"
+          />
           Charts & Stats
         </HeaderMenuMobile>
-        <MobileExternalLink href={GET_HELP_LINK}>Get Help</MobileExternalLink>
+        <MobileExternalLink href={GET_HELP_LINK}>
+          <HeaderItemLogo
+            src="/images/header/headerLogo_help.webp"
+            alt="Get Help"
+          />
+          Get Help
+        </MobileExternalLink>
       </div>
     </div>
   )
