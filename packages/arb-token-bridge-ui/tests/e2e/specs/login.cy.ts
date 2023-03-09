@@ -5,7 +5,7 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
-  getL2NetworkConfig,
+  getL1NetworkConfig,
   metamaskLocalL1RpcUrl
 } from './../../support/common'
 
@@ -14,7 +14,9 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(function () {
-    cy.addMetamaskNetwork(getL2NetworkConfig())
+    if (Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl) {
+      cy.addMetamaskNetwork(getL1NetworkConfig())
+    }
     getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
@@ -36,10 +38,7 @@ describe('Login Account', () => {
   })
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
-    cy.login({
-      networkType: 'L1',
-      addNewNetwork: Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl
-    })
+    cy.login({ networkType: 'L1' })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
