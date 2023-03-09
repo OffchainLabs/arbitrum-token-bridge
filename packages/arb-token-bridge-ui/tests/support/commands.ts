@@ -45,11 +45,12 @@ export const logout = () => {
   //     })
   //   })
   // })
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    // cy.switchToCypressWindow().then(() => {
-    cy.resetMetamaskAccount()
-    // })
-  })
+  // cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+  //   // cy.switchToCypressWindow().then(() => {
+  //   cy.resetMetamaskAccount()
+  //   // })
+  // })
+  cy.disconnectMetamaskWalletFromAllDapps()
 }
 
 export const restoreAppState = () => {
