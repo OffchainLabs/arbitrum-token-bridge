@@ -14,7 +14,7 @@ export const arbRpcUrl = 'http://sequencer:8547'
 // export const arbRpcUrl = 'http://localhost:8547'
 
 export const l1NetworkConfig = {
-  networkName: 'localhost',
+  networkName: 'eth-localhost',
   rpcUrl: ethRpcUrl,
   chainId: '1337',
   symbol: 'ETH',

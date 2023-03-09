@@ -5,7 +5,6 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialETHBalance,
-  l1NetworkConfig,
   l2NetworkConfig,
   ethRpcUrl,
   arbRpcUrl
@@ -16,7 +15,6 @@ describe('Login Account', () => {
   let l2ETHbal
 
   before(function () {
-    cy.addMetamaskNetwork(l1NetworkConfig)
     cy.addMetamaskNetwork(l2NetworkConfig)
     getInitialETHBalance(ethRpcUrl).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
@@ -39,7 +37,7 @@ describe('Login Account', () => {
   })
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
-    cy.login({ networkType: 'L1' })
+    cy.login({ networkType: 'L1', addNewNetwork: true })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
