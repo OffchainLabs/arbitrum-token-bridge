@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
+import { PendingClaimsInfo } from '../TransactionHistory/PendingClaimsInfo'
 
 export const motionDivProps = {
   layout: true,
@@ -87,6 +88,9 @@ export function MainContent() {
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
+        {/* if the user has some pending claim txns, show that bar here */}
+        <PendingClaimsInfo />
+
         <AnimatePresence>
           <motion.div
             key="transfer-panel"
