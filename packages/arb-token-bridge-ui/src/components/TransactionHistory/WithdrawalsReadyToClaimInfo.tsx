@@ -13,7 +13,7 @@ import { getNetworkName } from '../../util/networks'
 import { useAppContextDispatch } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
 
-export const PendingClaimsInfo = () => {
+export const WithdrawalsReadyToClaimInfo = () => {
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -33,7 +33,7 @@ export const PendingClaimsInfo = () => {
   ).length
 
   // don't show this if user doesn't have anything to claim
-  if (!numPendingClaimTransactions) return null
+  if (numPendingClaimTransactions === 0) return null
 
   return (
     <div className="flex items-center gap-1 rounded-md bg-lime p-2 text-base text-lime-dark lg:flex-nowrap">
