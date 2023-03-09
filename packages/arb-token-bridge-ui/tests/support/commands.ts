@@ -50,7 +50,9 @@ export const logout = () => {
   //   cy.resetMetamaskAccount()
   //   // })
   // })
-  cy.disconnectMetamaskWalletFromAllDapps()
+  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+    cy.resetMetamaskAccount()
+  })
 }
 
 export const restoreAppState = () => {
