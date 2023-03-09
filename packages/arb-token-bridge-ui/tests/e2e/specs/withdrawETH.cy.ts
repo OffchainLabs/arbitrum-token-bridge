@@ -2,7 +2,7 @@
  * When user wants to bridge ETH from L2 to L1
  */
 
-import { zeroToLessThanOneETH, getL2NetworkConfig } from '../../support/common'
+import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
@@ -10,10 +10,8 @@ describe('Withdraw ETH', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
-  before(() => {
-    cy.addMetamaskNetwork(getL2NetworkConfig())
-  })
   beforeEach(() => {
+    cy.login({ networkType: 'L2' })
     // cy.restoreAppState()
   })
   afterEach(() => {
@@ -53,7 +51,6 @@ describe('Withdraw ETH', () => {
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show summary', () => {
-        cy.visit('/')
         typeAmountIntoInput().then(() => {
           cy.findByText('You’re moving')
             .siblings()
@@ -87,7 +84,6 @@ describe('Withdraw ETH', () => {
 
       it('should show withdrawal confirmation and withdraw', () => {
         typeAmountIntoInput().then(() => {
-          cy.login({ networkType: 'L2' })
           cy.findByRole('button', {
             name: /Move funds to Ethereum/i
           })

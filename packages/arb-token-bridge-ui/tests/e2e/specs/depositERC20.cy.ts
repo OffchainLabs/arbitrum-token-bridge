@@ -33,7 +33,7 @@ describe('Deposit ERC20 Token', () => {
     before(() => {
       getInitialERC20Balance(
         wethTokenAddressL1,
-        getL1NetworkConfig().l1MultiCall,
+        getL1NetworkConfig().multiCall,
         Cypress.env('ETH_RPC_URL')
       ).then(
         val =>
@@ -62,7 +62,7 @@ describe('Deposit ERC20 Token', () => {
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .type(wethTokenAddressL1, { scrollBehavior: false })
+          .type(wethTokenAddressL1, { scrollBehavior: false, delay: 500 })
           .then(() => {
             // Click on the Add new token button
 

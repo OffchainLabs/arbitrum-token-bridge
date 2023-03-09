@@ -3,20 +3,13 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import {
-  getInitialETHBalance,
-  getL1NetworkConfig,
-  metamaskLocalL1RpcUrl
-} from './../../support/common'
+import { getInitialETHBalance } from './../../support/common'
 
 describe('Login Account', () => {
   let l1ETHbal
   let l2ETHbal
 
   before(function () {
-    if (Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl) {
-      cy.addMetamaskNetwork(getL1NetworkConfig())
-    }
     getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
