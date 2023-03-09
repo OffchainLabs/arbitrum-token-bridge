@@ -2,10 +2,10 @@
     Standardised loading spinner atom
 */
 
-import Spinner, { LoaderProps as SpinnerProps } from 'react-loader-spinner'
+import { TailSpin } from 'react-loader-spinner'
+import { BaseProps } from 'react-loader-spinner/dist/type'
 
-export type LoaderProps = Omit<SpinnerProps, 'type'> & {
-  type?: SpinnerProps['type']
+export type LoaderProps = BaseProps & {
   size?: 'small' | 'medium' | 'large'
 }
 
@@ -23,18 +23,8 @@ const getSizeByLoaderProps = (loaderSize: LoaderProps['size'] | undefined) => {
   }
 }
 
-export const Loader = (props: LoaderProps) => {
-  const { type: loaderType, size, color, ...rest } = props
-
+export const Loader = ({ size, color, ...rest }: LoaderProps) => {
   const sizeInPx = getSizeByLoaderProps(size)
 
-  return (
-    <Spinner
-      type={`${loaderType || 'TailSpin'}`} // we should only be using this 1 variant for consistency across product, unless explicitly needed
-      height={sizeInPx}
-      width={sizeInPx}
-      color={color}
-      {...rest}
-    />
-  )
+  return <TailSpin height={sizeInPx} width={sizeInPx} color={color} {...rest} />
 }
