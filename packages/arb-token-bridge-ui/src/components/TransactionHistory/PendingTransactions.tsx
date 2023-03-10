@@ -15,6 +15,7 @@ import {
 } from '../../util/networks'
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
+import { ExternalLink } from '../common/ExternalLink'
 
 export const PendingTransactions = ({
   transactions,
@@ -59,17 +60,17 @@ export const PendingTransactions = ({
 
         {/* For mainnets, show the corresponding network to switch - One < > Nova */}
         {!isNetwork(l2Network.chainID).isTestnet && (
-          <div
+          <ExternalLink
+            className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
               switchChain({
                 chainId: Number(switchNetworkMapping[l2Network.chainID]),
                 provider: provider as Web3Provider
               })
             }}
-            className="arb-hover cursor-pointer text-sm text-white underline"
           >{`See ${getNetworkName(
             Number(switchNetworkMapping[l2Network.chainID])
-          )}`}</div>
+          )}`}</ExternalLink>
         )}
       </div>
 
