@@ -7,7 +7,14 @@ import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName } from '../../util/networks'
+import {
+  ChainId,
+  getNetworkName,
+  isNetwork,
+  switchChain
+} from '../../util/networks'
+import { useWallet } from '@arbitrum/use-wallet'
+import { Web3Provider } from '@ethersproject/providers'
 
 export const PendingTransactions = ({
   transactions,
@@ -19,18 +26,52 @@ export const PendingTransactions = ({
   error: boolean
 }) => {
   const {
+    l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
+  const { provider } = useWallet()
+
+  const bgClassName =
+    l2Network.chainID === ChainId.ArbitrumNova
+      ? 'bg-gray-10'
+      : 'bg-blue-arbitrum'
+
+  const switchNetworkMapping: { [chainId: number]: number } = {
+    [ChainId.ArbitrumOne]: ChainId.ArbitrumNova,
+    [ChainId.ArbitrumNova]: ChainId.ArbitrumOne
+  }
 
   return (
-    <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">
+    <div
+      className={`relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
+    >
       {/* Heading */}
-      <span className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap text-xl text-white">
-        {loading && (
-          <Loader type="TailSpin" color="white" width={20} height={20} />
+      <div className="flex items-center justify-between text-lg text-white">
+        <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
+          {loading && (
+            <Loader type="TailSpin" color="white" width={20} height={20} />
+          )}
+          Pending Transactions:{' '}
+          {`${getNetworkName(l2Network.chainID)}/${getNetworkName(
+            l1Network.chainID
+          )}`}
+        </div>
+
+        {/* For mainnets, show the corresponding network to switch - One < > Nova */}
+        {!isNetwork(l2Network.chainID).isTestnet && (
+          <div
+            onClick={() => {
+              switchChain({
+                chainId: Number(switchNetworkMapping[l2Network.chainID]),
+                provider: provider as Web3Provider
+              })
+            }}
+            className="arb-hover cursor-pointer text-sm text-white underline"
+          >{`See ${getNetworkName(
+            Number(switchNetworkMapping[l2Network.chainID])
+          )}`}</div>
         )}
-        {getNetworkName(l2Network.chainID)} Pending Transactions
-      </span>
+      </div>
 
       {/* Error loading transactions */}
       {error && (
