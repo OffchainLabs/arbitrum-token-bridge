@@ -61,8 +61,8 @@ describe('Deposit ERC20 Token', () => {
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
+          .typeRecursively(wethTokenAddressL1)
           .should('be.visible')
-          .type(wethTokenAddressL1, { scrollBehavior: false })
           .then(() => {
             // Click on the Add new token button
 
@@ -86,7 +86,7 @@ describe('Deposit ERC20 Token', () => {
 
       context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
-          .type(String(ERC20AmountToSend), { scrollBehavior: false })
+          .typeRecursively(String(ERC20AmountToSend))
           .then(() => {
             cy.findByText('You’re moving')
               .siblings()

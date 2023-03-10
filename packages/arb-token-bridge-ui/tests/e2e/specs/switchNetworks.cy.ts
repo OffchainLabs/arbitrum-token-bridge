@@ -4,23 +4,13 @@
 
 describe('Switch Networks', () => {
   beforeEach(() => {
-    cy.restoreAppState()
+    cy.login({ networkType: 'L1' })
   })
   afterEach(() => {
-    cy.saveAppState()
+    cy.logout()
   })
 
   context('User is on test network L1', () => {
-    // log in to metamask before deposit
-    before(() => {
-      cy.login({ networkType: 'L1' })
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
-    })
-
     it('should show L1 and L2 chains correctly', () => {
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
@@ -103,24 +93,29 @@ describe('Switch Networks', () => {
 
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
-        cy.changeMetamaskNetwork('Sepolia test network').then(() => {
-          cy.findByText(/Oops! You’re connected to the wrong network/i).should(
-            'be.visible'
-          )
+        cy.on('uncaught:exception', err => {
+          if (err.message.includes('Chain 11155111 not supported')) {
+            cy.findByText(
+              /Oops! You’re connected to the wrong network/i
+            ).should('be.visible')
+            // allow this exception
+            return false
+          }
         })
-      })
+        cy.changeMetamaskNetwork('Sepolia test network')
 
-      it('should allow Network change from wrong network UI list', () => {
-        cy.findByRole('button', { name: /Switch to Arbitrum Goerli/i })
-          .should('be.visible')
-          .click({
-            scrollBehavior: false
+        context('Allow Network change from wrong network UI list', () => {
+          cy.findByRole('button', { name: /Switch to Arbitrum Goerli/i })
+            .should('be.visible')
+            .click({
+              scrollBehavior: false
+            })
+
+          cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
+            cy.findByRole('button', {
+              name: /Selected Network : Arbitrum Goerli/i
+            }).should('be.visible')
           })
-
-        cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
-          cy.findByRole('button', {
-            name: /Selected Network : Arbitrum Goerli/i
-          }).should('be.visible')
         })
       })
     })

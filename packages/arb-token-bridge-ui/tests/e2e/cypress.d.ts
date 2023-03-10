@@ -1,3 +1,4 @@
+/* global JQuery */
 import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
@@ -29,6 +30,7 @@ declare global {
       saveAppState(): typeof saveAppState
       openTransactionsPanel(): typeof openTransactionsPanel
       closeLowBalanceDialog(): typeof closeLowBalanceDialog
+      typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
     }
   }
 }

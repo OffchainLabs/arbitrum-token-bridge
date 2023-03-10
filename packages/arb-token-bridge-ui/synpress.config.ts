@@ -20,7 +20,6 @@ export default defineConfig({
   },
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
   viewportWidth: 1366,
@@ -34,13 +33,10 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      registerLocalNetwork()
+
       const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
       const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-      console.log('Synpress config start')
-      console.log({ ethRpcUrl })
-      console.log({ arbRpcUrl })
-
-      registerLocalNetwork()
 
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
@@ -139,10 +135,10 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
-      // 'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
-      // 'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
-      // 'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
-      // 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
+      'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
+      'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
+      'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
+      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'
   }

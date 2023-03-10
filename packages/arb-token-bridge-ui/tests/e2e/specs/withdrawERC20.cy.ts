@@ -9,6 +9,9 @@ describe('Withdraw ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
+
+  const ERC20ToWithdraw = 0.0001
+
   beforeEach(() => {
     cy.login({ networkType: 'L2' })
     // cy.restoreAppState()
@@ -51,7 +54,7 @@ describe('Withdraw ERC20 Token', () => {
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .type(wethTokenAddressL2, { scrollBehavior: false })
+          .typeRecursively(wethTokenAddressL2)
           .then(() => {
             // Click on the Add new token button
             cy.findByRole('button', { name: 'Add New Token' })
@@ -70,12 +73,12 @@ describe('Withdraw ERC20 Token', () => {
 
       context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
-          .type('0.0001', { scrollBehavior: false })
+          .typeRecursively(String(ERC20ToWithdraw))
           .then(() => {
             cy.findByText('You’re moving')
               .siblings()
               .last()
-              .contains(formatAmount(0.0001, { symbol: 'WETH' }))
+              .contains(formatAmount(ERC20ToWithdraw, { symbol: 'WETH' }))
               .should('be.visible')
             cy.findByText(/You’ll pay in gas/i)
               .siblings()

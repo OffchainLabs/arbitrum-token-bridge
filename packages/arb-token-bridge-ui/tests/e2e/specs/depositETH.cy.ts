@@ -10,6 +10,8 @@ describe('Deposit ETH', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
+  const ETHAmountToDeposit = 0.0001
+
   beforeEach(() => {
     // cy.restoreAppState()
     cy.login({ networkType: 'L1' })
@@ -37,7 +39,7 @@ describe('Deposit ETH', () => {
           // to circumvent this bug with cypress, scrollBehaviour should be set false for this element
           // because the element is already in view and does not require scrolling
           // https://github.com/cypress-io/cypress/issues/23898
-          .type('0.0001', { scrollBehavior: false })
+          .typeRecursively(String(ETHAmountToDeposit))
           .then(() => {
             cy.findByText('You’re moving')
               .siblings()
@@ -71,7 +73,7 @@ describe('Deposit ETH', () => {
 
       it('should deposit successfully', () => {
         cy.findByPlaceholderText('Enter amount')
-          .type('0.0001', { scrollBehavior: false })
+          .typeRecursively(String(ETHAmountToDeposit))
           .then(() => {
             cy.findByRole('button', {
               name: 'Move funds to Arbitrum'

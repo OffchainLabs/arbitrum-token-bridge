@@ -8,8 +8,8 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { recurse } from 'cypress-recurse'
 import {
-  getL1NetworkConfig,
   NetworkType,
   setupMetamaskNetwork,
   startWebApp
@@ -32,26 +32,39 @@ export function login({
   })
 }
 
+Cypress.Commands.add(
+  'typeRecursively',
+  { prevSubject: true },
+  (subject, text: string) => {
+    recurse(
+      // the commands to repeat, and they yield the input element
+      () =>
+        cy
+          .wrap(subject)
+          .clear({ scrollBehavior: false })
+          .type(text, { scrollBehavior: false }),
+      // the predicate takes the output of the above commands
+      // and returns a boolean. If it returns true, the recursion stops
+      $input => $input.val() === text,
+      {
+        log: false,
+        // delay between iterations, not keystrokes
+        delay: 500,
+      }
+    )
+      // the recursion yields whatever the command function yields
+      // and we can confirm that the text was entered correctly
+      .should('have.value', text)
+  }
+)
+
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
-  // cy.switchToCypressWindow().then(() => {
-  //   cy.changeMetamaskNetwork(getL1NetworkConfig().networkName).then(() => {
-  //     // disconnect-metamask-wallet hangs if already not connected to metamask,
-  //     // so we do it while logout instead of before login.
-  //     cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-  //       // cy.switchToCypressWindow().then(() => {
-  //       cy.resetMetamaskAccount()
-  //       // })
-  //     })
-  //   })
-  // })
-  // cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-  //   // cy.switchToCypressWindow().then(() => {
-  //   cy.resetMetamaskAccount()
-  //   // })
-  // })
   cy.disconnectMetamaskWalletFromAllDapps().then(() => {
     cy.resetMetamaskAccount().then(() => {
+      // resetMetamaskAccount doesn't seem to remove the connected network in CI
+      // changeMetamaskNetwork fails if already connected to the desired network
+      // as a workaround we switch to another network after all the tests
       cy.changeMetamaskNetwork('goerli')
     })
   })
