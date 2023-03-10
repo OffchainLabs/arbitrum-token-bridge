@@ -13,7 +13,7 @@ import { DepositStatus, MergedTransaction } from './state'
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A'
 
-export const outgoungStateToString = {
+export const outgoingStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
   [OutgoingMessageState.EXECUTED]: 'Executed'
@@ -91,7 +91,7 @@ export const transformWithdrawals = (
         tx.nodeBlockDeadline ===
         NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
           ? 'Failure'
-          : outgoungStateToString[tx.outgoingMessageState],
+          : outgoingStateToString[tx.outgoingMessageState],
       createdAt: getStandardizedTimestamp(
         String(BigNumber.from(tx.timestamp).toNumber() * 1000)
       ),
@@ -153,8 +153,8 @@ export const isPending = (tx: MergedTransaction) => {
         tx.depositStatus === DepositStatus.L1_PENDING ||
         tx.depositStatus === DepositStatus.L2_PENDING)) ||
     (isWithdrawal(tx) &&
-      (tx.status === outgoungStateToString[OutgoingMessageState.UNCONFIRMED] ||
-        tx.status === outgoungStateToString[OutgoingMessageState.CONFIRMED]))
+      (tx.status === outgoingStateToString[OutgoingMessageState.UNCONFIRMED] ||
+        tx.status === outgoingStateToString[OutgoingMessageState.CONFIRMED]))
   )
 }
 
@@ -168,6 +168,18 @@ export const isFailed = (tx: MergedTransaction) => {
       tx.nodeBlockDeadline ==
         NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION)
   )
+}
+
+export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
+  return (
+    isWithdrawal(tx) &&
+    isPending(tx) &&
+    tx.status === outgoingStateToString[OutgoingMessageState.CONFIRMED]
+  )
+}
+
+export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
+  return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
 export const getStandardizedTimestamp = (dateString: string) => {
