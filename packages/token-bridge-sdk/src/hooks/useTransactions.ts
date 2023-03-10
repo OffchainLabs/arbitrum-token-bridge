@@ -6,7 +6,8 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
   EthDepositStatus,
-  L1ToL2MessageReader as IL1ToL2MessageReader
+  L1ToL2MessageReader,
+  L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 type Action =
@@ -25,6 +26,7 @@ type Action =
       txID: string
       l1ToL2MsgData: L1ToL2MessageData
     }
+  | { type: 'SET_TRANSACTIONS'; transactions: Transaction[] }
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -93,6 +95,7 @@ type TransactionBase = {
   timestampCreated?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
+  isClassic?: boolean
 }
 
 export interface Transaction extends TransactionBase {
@@ -260,6 +263,9 @@ function reducer(state: Transaction[], action: Action) {
     case 'UPDATE_L1TOL2MSG_DATA': {
       return updateTxnL1ToL2Msg(state, action.txID, action.l1ToL2MsgData)
     }
+    case 'SET_TRANSACTIONS': {
+      return action.transactions
+    }
     default:
       return state
   }
@@ -370,7 +376,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
   const fetchAndUpdateL1ToL2MsgStatus = async (
     txID: string,
-    l1ToL2Msg: IL1ToL2MessageReader,
+    l1ToL2Msg: L1ToL2MessageReader,
     isEthDeposit: boolean,
     currentStatus: L1ToL2MessageStatus
   ) => {
@@ -398,6 +404,37 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
 
     updateTxnL1ToL2MsgData(txID, {
       status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: l1ToL2Msg.retryableCreationId
+    })
+  }
+
+  const fetchAndUpdateL1ToL2MsgClassicStatus = async (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReaderClassic,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
+  ) => {
+    const isCompletedEthDeposit =
+      isEthDeposit && status >= L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+
+    const l2TxID = (() => {
+      if (isCompletedEthDeposit) {
+        return l1ToL2Msg.retryableCreationId
+      }
+
+      if (status === L1ToL2MessageStatus.REDEEMED) {
+        return l1ToL2Msg.l2TxHash
+      }
+
+      return undefined
+    })()
+
+    updateTxnL1ToL2MsgData(txID, {
+      status: isCompletedEthDeposit
+        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        : status,
       l2TxID,
       fetchingUpdate: false,
       retryableCreationTxID: l1ToL2Msg.retryableCreationId
@@ -489,6 +526,22 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
+  const setDepositsInStore = (newTransactions: Transaction[]) => {
+    // appends the state with a new set of transactions
+    // useful when you want to display some transactions fetched from subgraph without worrying about existing state
+
+    let transactionsMap: { [id: string]: Transaction } = {}
+
+    ;[...transactions, ...newTransactions].forEach(tx => {
+      transactionsMap[tx.txID] = tx
+    })
+
+    return dispatch({
+      type: 'SET_TRANSACTIONS',
+      transactions: Object.values(transactionsMap)
+    })
+  }
+
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))
   }, [state])
@@ -498,6 +551,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     {
       addTransaction,
       addTransactions,
+      setDepositsInStore,
       setTransactionSuccess,
       setTransactionFailure,
       clearPendingTransactions,
@@ -506,6 +560,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       removeTransaction,
       addFailedTransaction,
       fetchAndUpdateL1ToL2MsgStatus,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
       fetchAndUpdateEthDepositMessageStatus
     }
   ]

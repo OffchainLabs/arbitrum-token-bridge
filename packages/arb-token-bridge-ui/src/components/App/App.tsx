@@ -10,6 +10,7 @@ import { TokenBridgeParams } from 'token-bridge-sdk'
 import Loader from 'react-loader-spinner'
 
 import { WelcomeDialog } from './WelcomeDialog'
+import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
@@ -19,10 +20,8 @@ import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
-import { PWLoadedUpdater } from '../syncers/PWLoadedUpdater'
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
 import {
   useNetworksAndSigners,
@@ -49,7 +48,6 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { isTestingEnvironment } from '../../util/CommonUtils'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 
@@ -121,10 +119,9 @@ const AppContent = (): JSX.Element => {
 
       <PendingTransactionsUpdater />
       <RetryableTxnsIncluder />
+
       <TokenListSyncer />
       <BalanceUpdater />
-      {!isTestingEnvironment && <PWLoadedUpdater />}
-
       <Notifications />
       <MainContent />
     </>
@@ -275,6 +272,21 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </Button>
           </AppConnectionFallbackContainer>
         </>
+      )
+
+    case UseNetworksAndSignersStatus.BLOCKED:
+      return (
+        <AppConnectionFallbackContainer>
+          <BlockedDialog
+            address={props.address}
+            isOpen={true}
+            // ignoring until we use the package
+            // https://github.com/OffchainLabs/config-monorepo/pull/11
+            //
+            // eslint-disable-next-line
+            onClose={() => {}}
+          />
+        </AppConnectionFallbackContainer>
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:

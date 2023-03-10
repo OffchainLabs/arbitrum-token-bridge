@@ -15,6 +15,7 @@ import {
   useTokenLists
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
+import { shortenAddress } from '../../util/CommonUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -43,11 +44,6 @@ function TokenLogoFallback() {
       ?
     </div>
   )
-}
-
-function shortenAddress(address: string) {
-  const len = address.length
-  return `${address.substring(0, 5)}...${address.substring(len - 4, len)}`
 }
 
 interface TokenRowProps {
@@ -520,7 +516,7 @@ function TokensPanel({
             loading={isAddingToken}
             loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-gray-4 py-1 text-gray-9"
+            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-6"
             aria-label="Add New Token"
           >
             Add

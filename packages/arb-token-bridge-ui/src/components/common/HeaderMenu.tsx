@@ -3,7 +3,7 @@ import { Disclosure, Popover } from '@headlessui/react'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
-import { ChevronDownIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline'
 
 export type HeaderMenuItem = {
   title: string
@@ -21,7 +21,7 @@ export function HeaderMenuDesktop(
   return (
     <Popover as="div" className="relative inline-block text-left">
       <div>
-        <Popover.Button className="arb-hover hidden items-center rounded-md text-base text-white lg:inline-flex lg:p-1">
+        <Popover.Button className="arb-hover hidden items-center whitespace-nowrap rounded-md text-base text-white lg:inline-flex lg:p-1">
           {props.children}
 
           {props.items?.length && (
@@ -86,12 +86,12 @@ export function HeaderMenuMobile(
       {({ open }) => (
         <div className="w-full">
           <Disclosure.Button
-            className={`arb-hover flex w-full items-center justify-center py-3 ${
+            className={`arb-hover flex w-full items-center justify-start p-4 ${
               open && `bg-white`
             }`}
           >
             <span
-              className={`text-2xl font-medium text-white ${
+              className={`flex flex-row flex-nowrap items-center space-x-4 text-2xl font-medium text-white ${
                 open && `text-blue-arbitrum`
               }`}
             >
@@ -99,15 +99,25 @@ export function HeaderMenuMobile(
             </span>
 
             {props.items?.length && (
-              <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 grow-0 text-white" />
+              <>
+                {!open ? (
+                  <ChevronDownIcon
+                    className={`ml-2 h-4 w-4 shrink-0 grow-0 text-white`}
+                  />
+                ) : (
+                  <ChevronUpIcon
+                    className={`ml-2 h-4 w-4 shrink-0 grow-0 text-dark`}
+                  />
+                )}
+              </>
             )}
           </Disclosure.Button>
           <Disclosure.Panel>
-            <ul className="space-y-4 pt-4 pb-8">
+            <ul className="space-y-4 pt-4 pb-4">
               {props.items.map((item, index) => (
                 <li
                   key={index}
-                  className="text-center text-2xl font-light text-white"
+                  className="px-[4rem] text-left text-lg font-light text-white"
                 >
                   <ExternalLink
                     href={item.anchorProps?.href}

@@ -34,7 +34,7 @@ export function Layout(props: LayoutProps) {
     >
       <Header />
 
-      <div className="bg-gradient-overlay z-20 flex min-h-[calc(100vh-80px)] flex-col">
+      <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>
       </div>
 

@@ -1,24 +1,26 @@
 import React from 'react'
 
-interface StatusBadgeProps {
-  variant?: 'blue' | 'yellow' | 'green' | 'red'
-  children: React.ReactNode
+export type StatusBadgeProps = React.HTMLAttributes<HTMLDivElement> & {
+  variant?: 'blue' | 'yellow' | 'green' | 'red' | 'gray'
 }
 
 const variants: Record<string, string> = {
-  blue: 'bg-cyan text-cyan-dark border border-cyan-dark',
-  yellow: 'bg-orange text-orange-dark border border-orange-dark',
-  green: 'bg-lime text-lime-dark border border-lime-dark',
-  red: 'bg-brick text-brick-dark border border-brick-dark'
+  blue: 'bg-cyan text-cyan-dark',
+  yellow: 'bg-orange text-orange-dark',
+  green: 'bg-lime text-lime-dark',
+  red: 'bg-brick text-brick-dark border border-brick-dark',
+  gray: 'bg-gray-5 text-gray-10'
 }
 
 export function StatusBadge({
   variant = 'blue',
-  children
+  children,
+  ...props
 }: StatusBadgeProps): JSX.Element {
   return (
     <div
-      className={`w-max rounded-full px-3 py-1 text-sm ${variants[variant]}`}
+      className={`w-max rounded-full px-3 py-1 text-sm ${variants[variant]} flex flex-nowrap items-center gap-1`}
+      {...props}
     >
       {children}
     </div>
