@@ -69,7 +69,7 @@ export const TransactionStatusInfo = ({
             } ready to claim`}
           </span>
         ) : null}
-        <span>.</span>
+        <span className="-ml-1">.</span>
       </div>
 
       {/* open tx history panel cta */}
