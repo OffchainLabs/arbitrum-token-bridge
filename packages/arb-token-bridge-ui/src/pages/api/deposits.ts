@@ -8,11 +8,13 @@ import {
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
   body: {
-    address: string
-    search: string
     l2ChainId: number
-    page: number
-    pageSize: number
+    address?: string
+    search?: string
+    page?: number
+    pageSize?: number
+    fromBlock?: number
+    toBlock?: number
   }
 }
 
