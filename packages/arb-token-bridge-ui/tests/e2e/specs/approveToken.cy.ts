@@ -63,7 +63,7 @@ describe('Approve token', () => {
           cy.findByRole('button', {
             name: /Pay approval fee of/
           }).click({ scrollBehavior: false })
-          cy.confirmMetamaskPermissionToSpend()
+          cy.confirmMetamaskPermissionToSpend('1')
         })
 
       context('Deposit token', () => {

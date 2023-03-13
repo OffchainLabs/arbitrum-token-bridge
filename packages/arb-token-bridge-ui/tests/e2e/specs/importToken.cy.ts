@@ -185,7 +185,7 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click({ scrollBehavior: false, force: true })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
@@ -224,7 +224,7 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click({ scrollBehavior: false, force: true })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
