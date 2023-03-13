@@ -3,7 +3,7 @@ import '@synthetixio/synpress/support'
 import 'cypress-localstorage-commands'
 
 Cypress.Keyboard.defaults({
-  keystrokeDelay: 100
+  keystrokeDelay: 300
 })
 
 before(() => {
