@@ -48,8 +48,7 @@ Cypress.Commands.add(
       $input => $input.val() === text,
       {
         log: false,
-        // delay between iterations, not keystrokes
-        delay: 500,
+        timeout: 60000,
       }
     )
       // the recursion yields whatever the command function yields
