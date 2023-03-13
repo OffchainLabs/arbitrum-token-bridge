@@ -1,6 +1,3 @@
-import { gql } from '@apollo/client'
-import { getL1SubgraphClient } from '../util/subgraph'
-
 export type FetchDepositsFromSubgraphResult = {
   receiver: string
   sender: string
@@ -57,44 +54,28 @@ export const fetchDepositsFromSubgraph = async ({
     return []
   }
 
-  const res = await getL1SubgraphClient(l2ChainId).query({
-    query: gql`{
-        deposits(
-          where: {
-            sender: "${address}",
-            blockCreatedAt_gte: ${fromBlock},
-            blockCreatedAt_lte: ${toBlock}
-            ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
-          }
-          orderBy: blockCreatedAt
-          orderDirection: desc
-          first: ${pageSize},
-          skip: ${pageNumber * pageSize}
-        ) {
-          receiver
-          sender
-          sequenceNumber
-          timestamp
-          tokenAmount
-          transactionHash
-          type
-          isClassic
-          id
-          ethValue
-          blockCreatedAt
-          l1Token {
-            symbol
-            decimals    
-            id
-            name
-            registeredAtBlock
-          }                  
-        }
-      }
-    `
+  // if dev environment, eg. tests, then prepend localhost
+  // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
+  const dev = process.env.NODE_ENV !== 'production'
+  const server = dev ? 'http://localhost:3000' : ''
+
+  const response = await fetch(`${server}/api/deposits`, {
+    method: 'POST',
+    body: JSON.stringify({
+      address,
+      fromBlock,
+      toBlock,
+      l2ChainId,
+      pageSize,
+      page: pageNumber,
+      search: searchString
+    }),
+    headers: { 'Content-Type': 'application/json' }
   })
 
-  const transactions: FetchDepositsFromSubgraphResult[] = res.data.deposits
+  const transactions: FetchDepositsFromSubgraphResult[] = (
+    await response.json()
+  ).data
 
   return transactions
 }
