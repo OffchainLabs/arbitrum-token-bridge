@@ -54,8 +54,7 @@ export const fetchDepositsFromSubgraph = async ({
     return []
   }
 
-  // if dev environment, eg. tests, then prepend localhost
-  // relative path api/deposits won't be accessible here because it is present in different NextJs package <token-bridge-ui>
+  // if dev environment, eg. tests, then prepend actual running environment
   // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
   const baseUrl =
     window.location.origin.indexOf('localhost') > -1
