@@ -11,7 +11,7 @@ function MaxButton(props: MaxButtonProps) {
   if (loading) {
     return (
       <div className="px-3">
-        <Loader color="#999999" />
+        <Loader color="#999999" size="small" />
       </div>
     )
   }
