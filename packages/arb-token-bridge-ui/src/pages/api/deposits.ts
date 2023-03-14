@@ -7,22 +7,20 @@ import {
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
-  body: {
-    l2ChainId: number
+  query: {
+    l2ChainId: string
     address?: string
     search?: string
-    page?: number
-    pageSize?: number
-    fromBlock?: number
-    toBlock?: number
+    page?: string
+    pageSize?: string
+    fromBlock?: string
+    toBlock?: string
   }
 }
 
-// Standard response design inspired by https://github.com/omniti-labs/jsend
 type DepositsResponse = {
-  status: 'success' | 'error'
   data: FetchDepositsFromSubgraphResult[]
-  message?: string
+  message?: string // in case of any error
 }
 
 export default async function handler(
@@ -34,15 +32,14 @@ export default async function handler(
       address,
       search = '',
       l2ChainId,
-      page = 0,
-      pageSize = 10,
+      page = '0',
+      pageSize = '10',
       fromBlock,
       toBlock
-    } = req.body
+    } = req.query
 
     if (!l2ChainId) {
       res.status(400).json({
-        status: 'error',
         message: 'Incomplete request: <l2ChainId> is required',
         data: []
       })
@@ -50,7 +47,7 @@ export default async function handler(
       return
     }
 
-    const subgraphResult = await getL1SubgraphClient(l2ChainId).query({
+    const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
         deposits(
           where: {
@@ -59,12 +56,12 @@ export default async function handler(
             
             ${
               typeof fromBlock !== 'undefined'
-                ? `blockCreatedAt_gte: ${fromBlock}`
+                ? `blockCreatedAt_gte: ${Number(fromBlock)}`
                 : ''
             }
             ${
               typeof toBlock !== 'undefined'
-                ? `blockCreatedAt_lte: ${toBlock}`
+                ? `blockCreatedAt_lte: ${Number(toBlock)}`
                 : ''
             }
   
@@ -72,8 +69,8 @@ export default async function handler(
           }
           orderBy: blockCreatedAt
           orderDirection: desc
-          first: ${pageSize},
-          skip: ${page * pageSize}
+          first: ${Number(pageSize)},
+          skip: ${Number(page) * Number(pageSize)}
         ) {
           receiver
           sender
@@ -101,10 +98,9 @@ export default async function handler(
     const transactions: FetchDepositsFromSubgraphResult[] =
       subgraphResult.data.deposits
 
-    res.status(200).json({ status: 'success', data: transactions })
+    res.status(200).json({ data: transactions })
   } catch (error: any) {
     res.status(500).json({
-      status: 'error',
       message: error?.message ?? 'Something went wrong',
       data: []
     })
