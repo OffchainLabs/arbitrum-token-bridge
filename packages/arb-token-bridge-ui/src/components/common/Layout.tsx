@@ -41,7 +41,7 @@ export function Layout(props: LayoutProps) {
         <main>{props.children}</main>
       </div>
 
-      <Toast />
+      {/* <Toast /> */}
 
       <Footer />
 
