@@ -1,5 +1,3 @@
-import axios from 'axios'
-
 export type FetchDepositsFromSubgraphResult = {
   receiver: string
   sender: string
@@ -64,21 +62,31 @@ export const fetchDepositsFromSubgraph = async ({
       ? 'http://localhost:3000'
       : window.location.origin
 
-  const response = await axios.get(`${baseUrl}/api/deposits`, {
-    params: {
-      address,
-      fromBlock,
-      toBlock,
-      l2ChainId,
-      pageSize,
-      page: pageNumber,
-      search: searchString
-    },
-    headers: { 'Content-Type': 'application/json' }
-  })
+  const urlParams = new URLSearchParams(
+    JSON.parse(
+      JSON.stringify({
+        address,
+        fromBlock,
+        toBlock,
+        l2ChainId,
+        pageSize,
+        page: pageNumber,
+        search: searchString
+      })
+    )
+  )
 
-  const transactions: FetchDepositsFromSubgraphResult[] = (await response.data)
-    .data
+  const response = await fetch(
+    `${baseUrl}/api/deposits?${urlParams.toString()}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    }
+  )
+
+  const transactions: FetchDepositsFromSubgraphResult[] = (
+    await response.json()
+  ).data
 
   return transactions
 }
