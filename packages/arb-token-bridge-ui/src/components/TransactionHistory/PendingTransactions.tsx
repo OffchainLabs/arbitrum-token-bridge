@@ -17,6 +17,17 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { ExternalLink } from '../common/ExternalLink'
 
+const getOtherL2NetworkChainId = (chainId: number) => {
+  if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
+    throw new Error(
+      `[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`
+    )
+  }
+  return isNetwork(chainId).isArbitrumOne
+    ? ChainId.ArbitrumNova
+    : ChainId.ArbitrumOne
+}
+
 export const PendingTransactions = ({
   transactions,
   loading,
@@ -32,22 +43,16 @@ export const PendingTransactions = ({
   } = useNetworksAndSigners()
   const { provider } = useWallet()
 
-  const bgClassName =
-    l2Network.chainID === ChainId.ArbitrumNova
-      ? 'bg-gray-10'
-      : 'bg-blue-arbitrum'
-
-  const switchNetworkMapping: { [chainId: number]: number } = {
-    [ChainId.ArbitrumOne]: ChainId.ArbitrumNova,
-    [ChainId.ArbitrumNova]: ChainId.ArbitrumOne
-  }
+  const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
+    ? 'bg-gray-10'
+    : 'bg-blue-arbitrum'
 
   return (
     <div
       className={`relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
     >
       {/* Heading */}
-      <div className="flex items-center justify-between text-lg text-white">
+      <div className="flex items-center justify-between text-base text-white lg:text-lg">
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && (
             <Loader type="TailSpin" color="white" width={20} height={20} />
@@ -64,12 +69,12 @@ export const PendingTransactions = ({
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
               switchChain({
-                chainId: Number(switchNetworkMapping[l2Network.chainID]),
+                chainId: getOtherL2NetworkChainId(l2Network.chainID),
                 provider: provider as Web3Provider
               })
             }}
           >{`See ${getNetworkName(
-            Number(switchNetworkMapping[l2Network.chainID])
+            getOtherL2NetworkChainId(l2Network.chainID)
           )}`}</ExternalLink>
         )}
       </div>
