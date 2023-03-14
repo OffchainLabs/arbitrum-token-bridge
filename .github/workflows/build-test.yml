@@ -110,8 +110,9 @@ jobs:
     name: "Clean Up"
     runs-on: ubuntu-latest
     needs: [test-sdk, test-ui]
+    if: always()
     steps:
       - name: Delete build artifacts
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: build-artifacts
+        run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
