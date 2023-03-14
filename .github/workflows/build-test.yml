@@ -83,7 +83,8 @@ jobs:
 
       - name: Download build artifacts
         uses: actions/cache/restore@v3
-        with: |
+        with:
+          path: |
             ./packages/arb-token-bridge-ui/build
             ./packages/token-bridge-sdk/dist
             ./packages/use-wallet/dist
