@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import Loader from 'react-loader-spinner'
 import { constants } from 'ethers'
-
+import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -90,7 +89,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
               })}
             </span>
           ) : (
-            <Loader type="Oval" height={16} width={16} color="black" />
+            <Loader color="black" size="small" />
           )}
         </div>
       </span>
