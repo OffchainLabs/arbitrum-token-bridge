@@ -9,6 +9,7 @@ on:
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   install:
@@ -117,5 +118,3 @@ jobs:
 
       - name: Delete build artifacts
         run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
