@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
-import { WithdrawalsReadyToClaimInfo } from '../TransactionHistory/WithdrawalsReadyToClaimInfo'
+import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
 export const motionDivProps = {
   layout: true,
@@ -88,8 +88,8 @@ export function MainContent() {
   return (
     <div className="flex w-full justify-center">
       <div className="w-full max-w-screen-lg flex-col space-y-6">
-        {/* if the user has some pending claim txns, show that bar here */}
-        <WithdrawalsReadyToClaimInfo />
+        {/* if the user has some pending claim txns or retryables to redeem, show that banner here */}
+        <TransactionStatusInfo deposits={depositsData.transformedDeposits} />
 
         <AnimatePresence>
           <motion.div
