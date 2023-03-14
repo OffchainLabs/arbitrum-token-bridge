@@ -62,8 +62,6 @@ export const fetchDepositsFromSubgraph = async ({
       ? 'http://localhost:3000'
       : window.location.origin
 
-  console.log('TEST: window location - ', window.location.origin, baseUrl)
-
   const response = await fetch(`${baseUrl}/api/deposits`, {
     method: 'POST',
     body: JSON.stringify({
