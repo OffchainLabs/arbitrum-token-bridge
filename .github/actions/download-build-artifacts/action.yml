@@ -9,4 +9,4 @@ runs:
       with:
         path: ./packages
         fail-on-cache-miss: true
-        key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+        key: "build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}"
