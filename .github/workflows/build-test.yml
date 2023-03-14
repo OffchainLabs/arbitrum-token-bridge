@@ -35,14 +35,14 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Cache build artifacts
+        uses: actions/cache@v3
         with:
-          name: build-artifacts
           path: |
             ./packages/arb-token-bridge-ui/build
             ./packages/token-bridge-sdk/dist
             ./packages/use-wallet/dist
+          key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
 
   test-sdk:
     name: "Test SDK"
