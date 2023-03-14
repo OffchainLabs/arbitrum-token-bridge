@@ -8,4 +8,5 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: ./packages
+        fail-on-cache-miss: true
         key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
