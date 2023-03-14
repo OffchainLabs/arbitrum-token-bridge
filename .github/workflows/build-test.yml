@@ -131,7 +131,7 @@ jobs:
         run: gh extension install actions/gh-actions-cache
       
       - name: List our what we got
-        run: gh actions-cache list -B ci-build-step
+        run: gh actions-cache list
 
       - name: Delete build artifacts
         run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }} --confirm
