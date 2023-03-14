@@ -37,6 +37,7 @@ jobs:
         run: yarn build
 
       - name: Cache build artifacts
+        id: cache-build
         uses: actions/cache/save@v3
         with:
           path: |
@@ -61,7 +62,7 @@ jobs:
         with:
           path: ./packages
           fail-on-cache-miss: true
-          key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ${{ steps.cache-build.outputs.cache-primary-key }}
 
       - name: Test
         run: yarn test:ci:sdk
@@ -82,7 +83,7 @@ jobs:
         with:
           path: ./packages
           fail-on-cache-miss: true
-          key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ${{ steps.cache-build.outputs.cache-primary-key }}
 
       - name: Test
         run: yarn test:ci:ui
