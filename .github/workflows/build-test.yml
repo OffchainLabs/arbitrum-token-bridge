@@ -60,7 +60,10 @@ jobs:
       - name: Download build artifacts
         uses: actions/cache/restore@v3
         with:
-          path: ./packages
+          path: |
+            ./packages/arb-token-bridge-ui/build
+            ./packages/token-bridge-sdk/dist
+            ./packages/use-wallet/dist
           fail-on-cache-miss: true
           enableCrossOsArchive: true
           key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
