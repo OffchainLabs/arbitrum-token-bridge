@@ -57,7 +57,11 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: ./.github/actions/download-build-artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: ./packages
+          fail-on-cache-miss: true
+          key: "build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}"
 
       - name: Test
         run: yarn test:ci:sdk
@@ -74,7 +78,11 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: ./.github/actions/download-build-artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: ./packages
+          fail-on-cache-miss: true
+          key: "build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}"
 
       - name: Test
         run: yarn test:ci:ui
