@@ -44,7 +44,7 @@ jobs:
             ./packages/arb-token-bridge-ui/build
             ./packages/token-bridge-sdk/dist
             ./packages/use-wallet/dist
-          key: "build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}"
+          key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
 
   test-sdk:
     name: "Test SDK"
@@ -58,11 +58,11 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: actions/cache/restore@v3.3.1
+        uses: actions/cache/restore@v3
         with:
           path: ./packages
           fail-on-cache-miss: true
-          key: ${{ steps.cache-build.outputs.cache-primary-key }}
+          key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Test
         run: yarn test:ci:sdk
@@ -79,11 +79,11 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: actions/cache/restore@v3.3.1
+        uses: actions/cache/restore@v3
         with:
           path: ./packages
           fail-on-cache-miss: true
-          key: ${{ steps.cache-build.outputs.cache-primary-key }}
+          key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Test
         run: yarn test:ci:ui
