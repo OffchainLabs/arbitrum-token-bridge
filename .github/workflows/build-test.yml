@@ -112,6 +112,9 @@ jobs:
     needs: [test-sdk, test-ui]
     if: always()
     steps:
+      - name: Install gh-actions-cache
+        run: gh extension install actions/gh-actions-cache
+
       - name: Delete build artifacts
         run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
         env:
