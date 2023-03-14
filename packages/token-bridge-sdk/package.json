@@ -56,6 +56,7 @@
     "jest": "^27.5.1",
     "jsdoc-to-markdown": "^6.0.1",
     "prettier": "^2.7.1",
+    "start-server-and-test": "^2.0.0",
     "ts-jest": "^27.1.4",
     "typescript": "^4.3.5"
   },
