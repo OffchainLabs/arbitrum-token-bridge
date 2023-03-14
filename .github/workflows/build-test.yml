@@ -65,7 +65,6 @@ jobs:
             ./packages/token-bridge-sdk/dist
             ./packages/use-wallet/dist
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
           key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Test
@@ -84,10 +83,11 @@ jobs:
 
       - name: Download build artifacts
         uses: actions/cache/restore@v3
-        with:
-          path: ./packages
+        with: |
+            ./packages/arb-token-bridge-ui/build
+            ./packages/token-bridge-sdk/dist
+            ./packages/use-wallet/dist
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
           key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Test
@@ -132,9 +132,6 @@ jobs:
 
       - name: Install gh-actions-cache
         run: gh extension install actions/gh-actions-cache
-      
-      - name: List our what we got
-        run: gh actions-cache list
 
       - name: Delete build artifacts
         run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }} --confirm
