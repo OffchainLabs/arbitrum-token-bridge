@@ -37,7 +37,7 @@ jobs:
         run: yarn build
 
       - name: Start UI and Test
-        run: yarn start-test http://localhost:3000 'yarn test:ci:sdk'
+        run: yarn start-test 'dev:ui' http://localhost:3000 'yarn test:ci:sdk'
 
   test-ui:
     name: "Test UI"
