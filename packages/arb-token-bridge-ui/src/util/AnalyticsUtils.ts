@@ -41,6 +41,8 @@ export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
 export type FathomEvent =
+  | 'Address Block'
+  //
   | `Connect Wallet Click: ${ProviderName}`
   //
   | `Deposit ${TokenType} to ${FathomNetworkName} (${AccountType})`
@@ -62,10 +64,20 @@ export type FathomEvent =
   | `Add to Google Calendar Click`
   //
   | 'Switch Network and Transfer'
+  //
+  | `Redeem Retryable on ${FathomNetworkName}`
+  //
+  | `Open Transaction History Click`
+  | `Open Transaction History Click: Tx Info Banner`
+  //
+  | `Tx Error: Get Help Click on ${FathomNetworkName}`
+  | `Multiple Tx Error: Get Help Click on ${FathomNetworkName}`
 
 const eventToEventId: { [key in FathomEvent]: string } & {
   [key in FathomEventNonCanonicalTokens]: string
 } = {
+  'Address Block': 'KG4YHGXC',
+  //
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
   'Connect Wallet Click: WalletConnect': 'QPDOCSPL',
@@ -157,7 +169,18 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Move More Funds Click': 'YE1OYTL4',
   'Add to Google Calendar Click': 'CZTO23FP',
   //
-  'Switch Network and Transfer': '4F5SKZRG'
+  'Switch Network and Transfer': '4F5SKZRG',
+  //
+  'Redeem Retryable on Arbitrum One': 'UHPNE3XJ',
+  'Redeem Retryable on Arbitrum Nova': 'AQDHUKER',
+  //
+  'Open Transaction History Click': 'BNE3W7KB',
+  'Open Transaction History Click: Tx Info Banner': 'I9AMOFHA',
+  //
+  'Tx Error: Get Help Click on Arbitrum One': 'HT1BWVVI',
+  'Tx Error: Get Help Click on Arbitrum Nova': 'XD5VYLPU',
+  'Multiple Tx Error: Get Help Click on Arbitrum One': 'CWMVRSXW',
+  'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
 }
 
 export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {

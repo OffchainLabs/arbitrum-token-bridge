@@ -108,10 +108,10 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
 
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="text-lg text-orange-dark">
+            <span className="text-base text-orange-dark">
               L1 transaction: <DepositL1TxStatus tx={tx} />
             </span>
-            <span className="text-lg text-orange-dark">
+            <span className="text-base text-orange-dark">
               L2 transaction:{' '}
               {isRedeeming ? 'Pending...' : 'Failed. Try re-executing.'}
             </span>

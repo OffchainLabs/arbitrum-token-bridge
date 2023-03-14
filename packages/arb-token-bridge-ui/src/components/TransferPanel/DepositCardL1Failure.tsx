@@ -14,7 +14,7 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
   const [, copyToClipboard] = useCopyToClipboard()
 
   return (
-    <DepositCardContainer tx={tx} dismissable>
+    <DepositCardContainer tx={tx}>
       <span className="text-4xl font-semibold text-brick-dark">
         Something went wrong
       </span>
@@ -36,7 +36,7 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
           )
         }}
       >
-        <span className="text-lg text-brick-dark">
+        <span className="text-base text-brick-dark">
           L1 transaction:{' '}
           <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
         </span>

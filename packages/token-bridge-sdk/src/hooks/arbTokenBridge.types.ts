@@ -8,7 +8,8 @@ import {
 } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  L1ToL2MessageReader as IL1ToL2MessageReader
+  L1ToL2MessageReader,
+  L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { ERC20 } from '@arbitrum/sdk/dist/lib/abi/ERC20'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
@@ -65,10 +66,15 @@ export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
   L2TransactionReceipt
 >
 
+export enum NodeBlockDeadlineStatusTypes {
+  NODE_NOT_CREATED,
+  EXECUTE_CALL_EXCEPTION
+}
+
 export type NodeBlockDeadlineStatus =
   | number
-  | 'NODE_NOT_CREATED'
-  | 'EXECUTE_CALL_EXCEPTION'
+  | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
+  | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 
@@ -212,6 +218,8 @@ export interface ArbTokenBridgeToken {
 
 export interface TransactionActions {
   addFailedTransaction: (transaction: FailedTransaction) => void
+
+  setDepositsInStore: (transactions: Transaction[]) => void
   setTransactionSuccess: (txID: string) => void
   setTransactionFailure: (txID?: string) => void
   removeTransaction: (txID: string) => void
@@ -227,7 +235,13 @@ export interface TransactionActions {
   ) => void
   fetchAndUpdateL1ToL2MsgStatus: (
     txID: string,
-    l1ToL2Msg: IL1ToL2MessageReader,
+    l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
+  ) => void
+  fetchAndUpdateL1ToL2MsgClassicStatus: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReaderClassic,
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
   ) => void
@@ -247,7 +261,9 @@ export type ArbTokenBridgeTransactions = {
   | 'updateTransaction'
   | 'addTransactions'
   | 'fetchAndUpdateL1ToL2MsgStatus'
+  | 'fetchAndUpdateL1ToL2MsgClassicStatus'
   | 'fetchAndUpdateEthDepositMessageStatus'
+  | 'setDepositsInStore'
 >
 
 export interface ArbTokenBridge {
@@ -257,5 +273,5 @@ export interface ArbTokenBridge {
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions
   pendingWithdrawalsMap: PendingWithdrawalsMap
-  setInitialPendingWithdrawals: (gatewayAddresses: string[]) => Promise<void>
+  setWithdrawalsInStore: (txns: L2ToL1EventResultPlus[]) => void
 }

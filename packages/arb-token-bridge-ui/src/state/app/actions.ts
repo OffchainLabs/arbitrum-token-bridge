@@ -1,7 +1,7 @@
 import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { Context } from '..'
-import { ConnectionState, PendingWithdrawalsLoadedState } from '../../util'
+import { ConnectionState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
 
 export const setConnectionState = (
@@ -48,7 +48,6 @@ export const reset = ({ state }: Context, newChainId: number) => {
   state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
-  state.app.pwLoadedState = PendingWithdrawalsLoadedState.LOADING
 }
 
 export const setWarningTokens = (
@@ -56,13 +55,6 @@ export const setWarningTokens = (
   warningTokens: WarningTokens
 ) => {
   state.app.warningTokens = warningTokens
-}
-
-export const setPWLoadingState = (
-  { state }: Context,
-  pwLoadingState: PendingWithdrawalsLoadedState
-) => {
-  state.app.pwLoadedState = pwLoadingState
 }
 
 export const setWhitelistState = (

@@ -42,7 +42,11 @@ module.exports = {
         'orange-dark': '#60461F',
 
         // Purple
-        'purple-ethereum': '#454A75'
+        'purple-ethereum': '#454A75',
+
+        // Chain specific themes
+        'orange-arbitrum-nova': '#EF8220',
+        'blue-arbitrum-one': '#7EC6F6'
       },
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"
@@ -53,7 +57,7 @@ module.exports = {
     extend: {
       display: ['group-hover'],
       textColor: ['disabled'],
-      backgroundColor: ['active', 'disabled'],
+      backgroundColor: ['active', 'disabled', 'even'],
       boxShadow: ['active'],
       opacity: ['active', 'disabled'],
       margin: ['active'],
