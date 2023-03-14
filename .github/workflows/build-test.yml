@@ -38,7 +38,7 @@ jobs:
 
       - name: Cache build artifacts
         id: cache-build
-        uses: actions/cache/save@v3.3.1
+        uses: actions/cache/save@v3
         with:
           path: |
             ./packages/arb-token-bridge-ui/build
