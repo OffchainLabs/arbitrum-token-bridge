@@ -38,7 +38,7 @@ jobs:
 
       - name: Cache build artifacts
         id: cache-build
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v3.3.1
         with:
           path: |
             ./packages/arb-token-bridge-ui/build
@@ -58,7 +58,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v3.3.1
         with:
           path: ./packages
           fail-on-cache-miss: true
@@ -79,7 +79,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Download build artifacts
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v3.3.1
         with:
           path: ./packages
           fail-on-cache-miss: true
