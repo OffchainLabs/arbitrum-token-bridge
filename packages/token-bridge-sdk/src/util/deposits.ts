@@ -172,8 +172,7 @@ const updateAdditionalDepositDataToken = async ({
     retryableCreationTxID: l1ToL2Msg.retryableCreationId
   }
 
-  const isDeposited =
-    l1ToL2MsgData.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+  const isDeposited = l1ToL2MsgData.status === L1ToL2MessageStatus.REDEEMED
 
   const l2BlockNum = isDeposited
     ? (await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId))
