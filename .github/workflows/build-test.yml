@@ -33,9 +33,6 @@ jobs:
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
-      - name: Build
-        run: yarn build
-
       - name: Cache build artifacts
         id: cache-build
         uses: actions/cache/save@v3
@@ -45,6 +42,9 @@ jobs:
             ./packages/token-bridge-sdk/dist
             ./packages/use-wallet/dist
           key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Build
+        run: yarn build
 
   test-sdk:
     name: "Test SDK"
