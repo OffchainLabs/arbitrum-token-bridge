@@ -4,6 +4,8 @@ import * as Sentry from '@sentry/react'
 import { BrowserTracing } from '@sentry/tracing'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+import timeZone from 'dayjs/plugin/timezone'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -14,12 +16,16 @@ import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
 
-// if (process.env.NODE_ENV !== 'production') {
-//   registerLocalNetwork()
-// }
-registerLocalNetwork()
+if (
+  process.env.NODE_ENV !== 'production' ||
+  process.env.NEXT_PUBLIC_IS_E2E_TEST
+) {
+  registerLocalNetwork()
+}
 
 dayjs.extend(relativeTime)
+dayjs.extend(timeZone)
+dayjs.extend(advancedFormat)
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,

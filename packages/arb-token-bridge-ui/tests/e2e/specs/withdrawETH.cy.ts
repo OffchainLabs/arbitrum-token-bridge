@@ -24,12 +24,6 @@ describe('Withdraw ETH', () => {
 
   // Happy Path
   context('user has some ETH and is on L2', () => {
-    // log in to metamask before withdrawal
-    // before(() => {
-    //   // login to L2 chain for Arb Goerli network
-    //   cy.login({ networkType: 'L2' }) // add new L2 network
-    // })
-
     afterEach(() => {
       // after all assertions are executed, logout and reset the account
       cy.logout()

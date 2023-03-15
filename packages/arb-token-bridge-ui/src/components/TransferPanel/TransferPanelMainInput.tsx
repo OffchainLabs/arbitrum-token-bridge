@@ -1,5 +1,4 @@
-import Loader from 'react-loader-spinner'
-
+import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -12,7 +11,7 @@ function MaxButton(props: MaxButtonProps) {
   if (loading) {
     return (
       <div className="px-3">
-        <Loader type="TailSpin" color="#999999" height={16} width={16} />
+        <Loader color="#999999" size="small" />
       </div>
     )
   }

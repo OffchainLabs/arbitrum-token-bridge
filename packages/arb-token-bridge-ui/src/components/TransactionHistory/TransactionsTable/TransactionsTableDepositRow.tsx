@@ -11,7 +11,7 @@ import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-import { isPending } from '../../../state/app/utils'
+import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 
@@ -186,7 +186,7 @@ export function TransactionsTableDepositRow({
   }, [tx])
 
   const showRedeemRetryableButton = useMemo(
-    () => tx.depositStatus === DepositStatus.L2_FAILURE,
+    () => isDepositReadyToRedeem(tx),
     [tx]
   )
 
