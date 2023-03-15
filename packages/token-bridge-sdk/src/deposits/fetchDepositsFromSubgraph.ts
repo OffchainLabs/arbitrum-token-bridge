@@ -32,6 +32,10 @@ export type FetchDepositsFromSubgraphResult = {
  * @param query.searchString Searches records through the l1TxHash
  */
 
+const sanitizeQueryParams = (data: any) => {
+  return JSON.parse(JSON.stringify(data))
+}
+
 export const fetchDepositsFromSubgraph = async ({
   address,
   fromBlock,
@@ -62,17 +66,15 @@ export const fetchDepositsFromSubgraph = async ({
       : window.location.origin
 
   const urlParams = new URLSearchParams(
-    JSON.parse(
-      JSON.stringify({
-        address,
-        fromBlock,
-        toBlock,
-        l2ChainId,
-        pageSize,
-        page: pageNumber,
-        search: searchString
-      })
-    )
+    sanitizeQueryParams({
+      address,
+      fromBlock,
+      toBlock,
+      l2ChainId,
+      pageSize,
+      page: pageNumber,
+      search: searchString
+    })
   )
 
   const response = await fetch(
