@@ -9,7 +9,7 @@ import {
 type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
     l2ChainId: string
-    address?: string
+    address: string
     search?: string
     page?: string
     pageSize?: string
@@ -38,22 +38,23 @@ export default async function handler(
       toBlock
     } = req.query
 
-    if (!l2ChainId) {
+    // validate the request parameters
+    if (!l2ChainId || !address) {
+      let errorMessage = []
+      if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
+      if (!address) errorMessage.push('<address> is required')
+
       res.status(400).json({
-        message: 'Incomplete request: <l2ChainId> is required',
+        message: `Incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
-
-      return
     }
 
     const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
-      query: gql`{
+      query: gql(`{
         deposits(
-          where: {
-            
-            ${typeof address !== 'undefined' ? `sender: "${address}"` : ''}
-            
+          where: {            
+            sender: "${address}"          
             ${
               typeof fromBlock !== 'undefined'
                 ? `blockCreatedAt_gte: ${Number(fromBlock)}`
@@ -63,8 +64,7 @@ export default async function handler(
               typeof toBlock !== 'undefined'
                 ? `blockCreatedAt_lte: ${Number(toBlock)}`
                 : ''
-            }
-  
+            }  
             ${search ? `transactionHash_contains: "${search}"` : ''}
           }
           orderBy: blockCreatedAt
@@ -92,7 +92,7 @@ export default async function handler(
           }                  
         }
       }
-    `
+    `)
     })
 
     const transactions: FetchDepositsFromSubgraphResult[] =
