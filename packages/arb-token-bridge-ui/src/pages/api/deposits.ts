@@ -40,7 +40,7 @@ export default async function handler(
 
     // validate the request parameters
     if (!l2ChainId || !address) {
-      let errorMessage = []
+      const errorMessage = []
       if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
       if (!address) errorMessage.push('<address> is required')
 
