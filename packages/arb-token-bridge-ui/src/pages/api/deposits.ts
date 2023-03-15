@@ -38,6 +38,14 @@ export default async function handler(
       toBlock
     } = req.query
 
+    // validate method
+    if (req.method !== 'GET') {
+      res
+        .status(400)
+        .send({ message: `invalid_method: ${req.method}`, data: [] })
+      return
+    }
+
     // validate the request parameters
     if (!l2ChainId || !address) {
       const errorMessage = []
@@ -45,7 +53,7 @@ export default async function handler(
       if (!address) errorMessage.push('<address> is required')
 
       res.status(400).json({
-        message: `Incomplete request: ${errorMessage.join(', ')}`,
+        message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
     }
