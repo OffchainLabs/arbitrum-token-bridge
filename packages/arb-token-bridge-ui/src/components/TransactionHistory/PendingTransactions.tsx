@@ -1,13 +1,32 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-import Loader from 'react-loader-spinner'
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName } from '../../util/networks'
+import {
+  ChainId,
+  getNetworkName,
+  isNetwork,
+  switchChain
+} from '../../util/networks'
+import { useWallet } from '@arbitrum/use-wallet'
+import { Web3Provider } from '@ethersproject/providers'
+import { ExternalLink } from '../common/ExternalLink'
+import { Loader } from '../common/atoms/Loader'
+
+const getOtherL2NetworkChainId = (chainId: number) => {
+  if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
+    throw new Error(
+      `[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`
+    )
+  }
+  return isNetwork(chainId).isArbitrumOne
+    ? ChainId.ArbitrumNova
+    : ChainId.ArbitrumOne
+}
 
 export const PendingTransactions = ({
   transactions,
@@ -19,18 +38,44 @@ export const PendingTransactions = ({
   error: boolean
 }) => {
   const {
+    l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
+  const { provider } = useWallet()
+
+  const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
+    ? 'bg-gray-10'
+    : 'bg-blue-arbitrum'
 
   return (
-    <div className="relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg bg-blue-arbitrum p-4">
+    <div
+      className={`relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
+    >
       {/* Heading */}
-      <span className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap text-xl text-white">
-        {loading && (
-          <Loader type="TailSpin" color="white" width={20} height={20} />
+      <div className="flex items-center justify-between text-base text-white lg:text-lg">
+        <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
+          {loading && <Loader color="white" size="small" />}
+          Pending Transactions:{' '}
+          {`${getNetworkName(l2Network.chainID)}/${getNetworkName(
+            l1Network.chainID
+          )}`}
+        </div>
+
+        {/* For mainnets, show the corresponding network to switch - One < > Nova */}
+        {!isNetwork(l2Network.chainID).isTestnet && (
+          <ExternalLink
+            className="arb-hover cursor-pointer text-sm text-white underline"
+            onClick={() => {
+              switchChain({
+                chainId: getOtherL2NetworkChainId(l2Network.chainID),
+                provider: provider as Web3Provider
+              })
+            }}
+          >{`See ${getNetworkName(
+            getOtherL2NetworkChainId(l2Network.chainID)
+          )}`}</ExternalLink>
         )}
-        {getNetworkName(l2Network.chainID)} Pending Transactions
-      </span>
+      </div>
 
       {/* Error loading transactions */}
       {error && (

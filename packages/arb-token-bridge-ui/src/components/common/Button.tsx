@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
-import Loader from 'react-loader-spinner'
 import { twMerge } from 'tailwind-merge'
+import { Loader, LoaderProps } from './atoms/Loader'
 
 type ButtonVariant = 'primary' | 'secondary'
 
@@ -20,8 +20,7 @@ const disabledClassName =
 
 type ButtonLoadingProps = Partial<{
   loaderColor: string
-  loaderWidth: string
-  loaderHeight: string
+  loaderSize: LoaderProps['size']
 }>
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -68,10 +67,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         >
           {showLoader && (
             <Loader
-              type="TailSpin"
               color={loadingProps?.loaderColor || 'white'}
-              width={loadingProps?.loaderWidth || 16}
-              height={loadingProps?.loaderHeight || 16}
+              size={loadingProps?.loaderSize || 'small'}
             />
           )}
           <span>{children}</span>

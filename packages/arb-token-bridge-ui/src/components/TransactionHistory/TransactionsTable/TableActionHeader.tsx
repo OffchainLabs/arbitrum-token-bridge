@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/outline'
 import { TransactionsTableProps } from './TransactionsTable'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
-import Loader from 'react-loader-spinner'
+import { Loader } from '../../common/atoms/Loader'
 
 type TableActionHeaderProps = Omit<
   TransactionsTableProps,
@@ -89,9 +89,7 @@ export const TableActionHeader = ({
             setSearchString(e.target.value)
           }}
         />
-        {showDebounceLoader && (
-          <Loader type="TailSpin" color="black" width={16} height={16} />
-        )}
+        {showDebounceLoader && <Loader color="black" size="small" />}
       </div>
 
       {/* Pagination buttons */}
