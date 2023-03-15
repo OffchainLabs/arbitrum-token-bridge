@@ -132,10 +132,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - uses: ./.github/actions/create-env-file
-        with:
-          NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
-
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
         with:
