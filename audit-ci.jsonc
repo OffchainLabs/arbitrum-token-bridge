@@ -17,6 +17,8 @@
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-block>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-vm>async-eventemitter>async
-    "GHSA-fwr7-v2mv-hh25"
+    // https://github.com/advisories/GHSA-p8p7-x288-28g6
+    "GHSA-fwr7-v2mv-hh25",
+    "GHSA-p8p7-x288-28g6"
   ]
 }
