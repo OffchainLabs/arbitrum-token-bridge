@@ -26,7 +26,7 @@ function Moon() {
 export const DAOBanner = () => {
   return (
     <div className="bg-gradient py-4 px-4 text-center text-white">
-      <span className="">
+      <span>
         The Arbitrum DAO has been announced. Delegate applications are open.{' '}
         <ExternalLink
           href="https://arbitrum.foundation"
