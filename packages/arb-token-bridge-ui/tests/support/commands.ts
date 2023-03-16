@@ -9,11 +9,7 @@
 
 import '@testing-library/cypress/add-commands'
 import { recurse } from 'cypress-recurse'
-import {
-  NetworkType,
-  setupMetamaskNetwork,
-  startWebApp
-} from './common'
+import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
 import { shortenAddress } from '../../src/util/CommonUtils'
 
 export function login({
@@ -48,7 +44,7 @@ Cypress.Commands.add(
       $input => $input.val() === text,
       {
         log: false,
-        timeout: 180_000,
+        timeout: 180_000
       }
     )
       // the recursion yields whatever the command function yields

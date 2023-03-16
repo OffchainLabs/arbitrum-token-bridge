@@ -117,7 +117,7 @@ describe('Import token', () => {
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
           .typeRecursively('UNI')
-        cy.findByText('Uniswap').click({ scrollBehavior: false })
+        cy.findAllByText('Uniswap').first().click({ scrollBehavior: false })
 
         // UNI token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })
