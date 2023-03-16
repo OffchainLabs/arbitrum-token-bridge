@@ -12,6 +12,7 @@ module.exports = {
         // Blue
         'blue-arbitrum': '#2D374B',
         'blue-link': '#1366C1',
+        'blue-arb-one': '#002086',
 
         // Brick
         brick: '#FFDDD6',
