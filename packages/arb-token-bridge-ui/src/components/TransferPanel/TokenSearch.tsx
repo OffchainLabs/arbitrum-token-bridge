@@ -1,11 +1,10 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
-import Loader from 'react-loader-spinner'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-
+import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -245,12 +244,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 })
               ) : (
                 <div className="mr-2">
-                  <Loader
-                    type="Oval"
-                    color="rgb(40, 160, 240)"
-                    height={14}
-                    width={14}
-                  />
+                  <Loader color="#28A0F0" size="small" />
                 </div>
               )}
             </span>
@@ -650,12 +644,7 @@ export function TokenSearch({
         <div className="flex justify-end pt-6">
           {isFetchingTokenLists ? (
             <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
-              <Loader
-                type="Oval"
-                color="rgb(40, 160, 240)"
-                height={16}
-                width={16}
-              />
+              <Loader color="#28A0F0" size="small" />
               Fetching Tokens...
             </span>
           ) : (
