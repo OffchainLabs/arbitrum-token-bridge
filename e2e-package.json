@@ -24,9 +24,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "dependencies": {
     "@ethersproject/providers": "^5.7.0",
     "chalk": "^4.1.2",
