@@ -4,6 +4,10 @@ module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      backgroundImage: {
+        gradient:
+          'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)'
+      },
       colors: {
         // Blue
         'blue-arbitrum': '#2D374B',
