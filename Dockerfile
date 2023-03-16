@@ -4,7 +4,8 @@ FROM synthetixio/docker-e2e:18.13-ubuntu as base
 RUN mkdir /app
 WORKDIR /app
 
-COPY package.json ./
+COPY e2e-package.json ./
+RUN mv ./e2e-package.json ./package.json
 COPY yarn.lock ./
 
 FROM base as test
