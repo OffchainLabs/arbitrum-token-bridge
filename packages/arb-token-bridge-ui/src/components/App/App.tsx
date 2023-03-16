@@ -70,7 +70,7 @@ const AppContent = (): JSX.Element => {
       return { imageSrc: '/HeaderArbitrumLogoGoerli.webp', className }
     }
 
-    return { imageSrc: '/HeaderArbitrumLogoMainnet.webp', className }
+    return { imageSrc: '/HeaderArbitrumLogoMainnet.svg', className }
   }, [l1.network])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {

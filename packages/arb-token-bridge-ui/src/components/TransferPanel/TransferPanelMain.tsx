@@ -194,14 +194,14 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp')`,
+        backgroundImage: `url('/ArbitrumNovaLogo.svg')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url('/TransparentArbitrumOneLogo.webp')`,
-      backgroundClassName: 'bg-blue-arbitrum'
+      backgroundImage: `url('/ArbitrumOneLogo.svg')`,
+      backgroundClassName: 'bg-blue-arb-one'
     }
   }, [network])
 
