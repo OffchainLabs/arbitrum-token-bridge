@@ -34,7 +34,10 @@ describe('Import token', () => {
 
         // Select the ERC-20 token
         cy.findByText('Added by User').should('exist')
-        cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+        // cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+        cy.findByText(ERC20TokenName).trigger('click', {
+          scrollBehavior: false
+        })
 
         // ERC-20 token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })
@@ -49,7 +52,10 @@ describe('Import token', () => {
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
-        cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+        // cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+        cy.findByText(ERC20TokenName).trigger('click', {
+          scrollBehavior: false
+        })
 
         // ERC-20 token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })
@@ -185,7 +191,10 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false, force: true })
+          .trigger('click', {
+            scrollBehavior: false
+          })
+          // .click({ scrollBehavior: false, force: true })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
@@ -224,7 +233,10 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false, force: true })
+          .trigger('click', {
+            scrollBehavior: false
+          })
+          // .click({ scrollBehavior: false, force: true })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
@@ -254,7 +266,10 @@ describe('Import token', () => {
         // Close modal
         cy.findByRole('button', { name: 'Dialog Cancel' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .trigger('click', {
+            scrollBehavior: false
+          })
+          // .click({ scrollBehavior: false })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
