@@ -42,22 +42,6 @@ function Notification({
   )
 }
 
-function ArbitrumDAONotification() {
-  return (
-    <Notification infoIcon mode="light">
-      <span className="inline-block">
-        The Arbitrum DAO has been announced. Delegate applications are open.{' '}
-        <ExternalLink
-          href="https://arbitrum.foundation"
-          className="arb-hover underline"
-        >
-          Learn more.
-        </ExternalLink>
-      </span>
-    </Notification>
-  )
-}
-
 function NitroDevnetNotification() {
   const handleTwitterClick = useTwitter()
 
@@ -82,11 +66,10 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
+  const { isGoerli } = isNetwork(l1.network.chainID)
 
   return (
     <NotificationContainer>
-      {isMainnet && <ArbitrumDAONotification />}
       {isGoerli && <NitroDevnetNotification />}
     </NotificationContainer>
   )
