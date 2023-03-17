@@ -85,7 +85,6 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
   },
-
   // Dummy data required, otherwise useArbTokenBridge will return undefined bridgeTokens
   // This will cause TokenImportDialog to hang and fail E2E
   // TODO: remove list for chain ID 412346 after fix:
