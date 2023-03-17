@@ -60,10 +60,7 @@ export const fetchDepositsFromSubgraph = async ({
 
   // if dev environment, eg. tests, then prepend actual running environment
   // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
-  const baseUrl =
-    window.location.origin.indexOf('localhost') > -1
-      ? 'http://localhost:3000'
-      : window.location.origin
+  const baseUrl = process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
