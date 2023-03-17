@@ -65,7 +65,7 @@ export const TransactionHistory = ({
       {/* Transaction history table */}
       <div>
         <Tab.Group>
-          <Tab.List className={'flex flex-row'}>
+          <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <Tab as={Fragment}>
               {({ selected }) => (
                 <button
@@ -78,7 +78,7 @@ export const TransactionHistory = ({
                   {selected && (
                     <img
                       src={getNetworkLogo(l2.network.chainID)}
-                      className="max-w-6 max-h-6"
+                      className="max-w-6 h-6"
                       alt="Deposit"
                     />
                   )}
@@ -98,7 +98,7 @@ export const TransactionHistory = ({
                   {selected && (
                     <img
                       src={getNetworkLogo(l1.network.chainID)}
-                      className="max-w-6 max-h-6"
+                      className="max-w-6 h-6"
                       alt="Withdraw"
                     />
                   )}
