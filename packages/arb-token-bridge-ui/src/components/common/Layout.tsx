@@ -4,6 +4,7 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { ExternalLink } from './ExternalLink'
 
 function Moon() {
   const { width } = useWindowSize()
@@ -22,6 +23,22 @@ function Moon() {
   )
 }
 
+export const DAOBanner = () => {
+  return (
+    <div className="bg-gradient py-4 px-4 text-center text-white">
+      <span>
+        The Arbitrum DAO has been announced. Delegate applications are open.{' '}
+        <ExternalLink
+          href="https://arbitrum.foundation"
+          className="arb-hover underline"
+        >
+          Learn more.
+        </ExternalLink>
+      </span>
+    </div>
+  )
+}
+
 export type LayoutProps = {
   children: React.ReactNode
 }
@@ -32,6 +49,7 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
+      <DAOBanner />
       <Header />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">

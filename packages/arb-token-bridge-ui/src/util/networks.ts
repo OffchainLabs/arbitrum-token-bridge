@@ -291,7 +291,7 @@ export function getNetworkLogo(chainId: number) {
       return '/ArbitrumOneLogo.svg'
 
     case ChainId.ArbitrumNova:
-      return '/ArbitrumNovaLogo.webp'
+      return '/ArbitrumNovaLogo.svg'
 
     default:
       return '/EthereumLogo.webp'
