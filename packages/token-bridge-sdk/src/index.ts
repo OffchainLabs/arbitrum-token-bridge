@@ -57,5 +57,12 @@ export {
   type FetchDepositParams
 } from './deposits/fetchDeposits'
 
-export { fetchBlockNumberFromSubgraph } from './util/subgraph'
+export { type FetchDepositsFromSubgraphResult } from './deposits/fetchDepositsFromSubgraph'
+
+export {
+  fetchBlockNumberFromSubgraph,
+  getL1SubgraphClient,
+  getL2SubgraphClient,
+  tryFetchLatestSubgraphBlockNumber
+} from './util/subgraph'
 export { getL1ToL2MessageDataFromL1TxHash } from './util/deposits'
