@@ -101,6 +101,7 @@ export const TableActionHeader = ({
                 ? 'cursor-not-allowed opacity-30'
                 : 'cursor-pointer'
             }`}
+            aria-label={`load previous ${type}`}
             onClick={onClickPrev}
           >
             <ChevronLeftIcon className="h-3 w-3" />
@@ -116,6 +117,7 @@ export const TableActionHeader = ({
                 ? 'cursor-not-allowed opacity-30'
                 : 'cursor-pointer'
             }`}
+            aria-label={`load next ${type}`}
             onClick={onClickNext}
           >
             <ChevronRightIcon className="h-3 w-3" />

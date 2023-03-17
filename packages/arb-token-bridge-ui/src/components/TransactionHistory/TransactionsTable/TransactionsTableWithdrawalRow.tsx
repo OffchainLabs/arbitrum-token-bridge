@@ -352,6 +352,7 @@ export function TransactionsTableWithdrawalRow({
       className={`text-sm text-dark ${
         bgClassName || `bg-cyan even:bg-white`
       } ${className}`}
+      id={`withdrawal-row-${tx.txId}`}
     >
       <td className="w-1/5 py-3 pl-6 pr-3">
         <WithdrawalRowStatus tx={tx} />
