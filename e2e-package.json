@@ -11,7 +11,7 @@
     "build": "yarn build:wallet && yarn build:sdk && yarn build:ui",
     "start": "yarn build && yarn workspace arb-token-bridge-ui start",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
-    "test:e2e": "start-server-and-test 'yarn start' http-get://localhost:3000 'synpress run --project ./packages/arb-token-bridge-ui/ --configFile synpress.config.ts'"
+    "test:ci:e2e": "start-server-and-test 'yarn start' http-get://localhost:3000 'synpress run --project ./packages/arb-token-bridge-ui/ --configFile synpress.config.ts'"
   },
   "keywords": [],
   "author": "",
