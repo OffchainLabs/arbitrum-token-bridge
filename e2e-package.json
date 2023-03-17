@@ -5,21 +5,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev:sdk": "yarn workspace token-bridge-sdk watch",
-    "dev:ui": "yarn workspace arb-token-bridge-ui dev",
     "build:wallet": "yarn workspace @arbitrum/use-wallet build",
     "build:sdk": "yarn workspace token-bridge-sdk build",
     "build:ui": "yarn workspace arb-token-bridge-ui build",
     "build": "yarn build:wallet && yarn build:sdk && yarn build:ui",
     "start": "yarn build && yarn workspace arb-token-bridge-ui start",
-    "audit:ci": "audit-ci --config ./audit-ci.jsonc",
-    "test:ci:sdk": "yarn workspace token-bridge-sdk test:ci",
-    "test:ci:ui": "yarn workspace arb-token-bridge-ui test:ci",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
-    "test:e2e": "start-server-and-test 'yarn start' http-get://localhost:3000 'env-cmd -f ./packages/arb-token-bridge-ui/.e2e.env synpress run --project ./packages/arb-token-bridge-ui/ --configFile synpress.config.ts'",
-    "test:e2e:local": "yarn workspace arb-token-bridge-ui e2e:run --browser chrome",
-    "prettier:check": "./node_modules/.bin/prettier --check .",
-    "prettier:format": "./node_modules/.bin/prettier --write ."
+    "test:e2e": "start-server-and-test 'yarn start' http-get://localhost:3000 'synpress run --project ./packages/arb-token-bridge-ui/ --configFile synpress.config.ts'"
   },
   "keywords": [],
   "author": "",
