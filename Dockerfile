@@ -8,7 +8,7 @@ COPY package.json ./
 COPY yarn.lock ./
 
 FROM base as test
-# RUN CYPRESS_CACHE_FOLDER=~/.cache/Cypress npm install
+RUN npm install
 COPY . .
 
 
