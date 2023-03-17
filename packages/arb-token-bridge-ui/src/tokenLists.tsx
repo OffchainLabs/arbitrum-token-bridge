@@ -11,9 +11,19 @@ export interface BridgeTokenList {
   name: string
   isDefault: boolean
   logoURI: string
+  isArbitrumTokenTokenList?: boolean
 }
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
+  {
+    id: 0,
+    originChainID: 0, // This token list spans all Arbitrum chains and their L1 counterparts
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
+    name: 'Arbitrum Token',
+    isDefault: true,
+    logoURI: 'https://arbitrum.foundation/logo.png',
+    isArbitrumTokenTokenList: true
+  },
   {
     id: 1,
     originChainID: 42161,
@@ -75,6 +85,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI:
       'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
   },
+
   // Dummy data required, otherwise useArbTokenBridge will return undefined bridgeTokens
   // This will cause TokenImportDialog to hang and fail E2E
   // TODO: remove list for chain ID 412346 after fix:
@@ -144,7 +155,10 @@ export function fetchTokenLists(
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
     const requestListArray = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList => bridgeTokenList.originChainID === forL2ChainId
+      bridgeTokenList =>
+        bridgeTokenList.originChainID === forL2ChainId ||
+        // Always load the Arbitrum Token token list
+        bridgeTokenList.isArbitrumTokenTokenList
     )
 
     Promise.all(

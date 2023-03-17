@@ -271,9 +271,14 @@ function TokenListsPanel() {
       return []
     }
 
-    return BRIDGE_TOKEN_LISTS.filter(
-      tokenList => tokenList.originChainID === l2Network.chainID
-    )
+    return BRIDGE_TOKEN_LISTS.filter(tokenList => {
+      // Don't show the Arbitrum Token token list, because it's special and can't be disabled
+      if (tokenList.isArbitrumTokenTokenList) {
+        return false
+      }
+
+      return tokenList.originChainID === l2Network.chainID
+    })
   }, [l2Network])
 
   const toggleTokenList = (
