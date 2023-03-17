@@ -170,11 +170,11 @@ jobs:
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
 
-      - name: Install
-        run: yarn install
+      # - name: Install
+      #   run: yarn install
 
-      - name: Build
-        run: yarn build
+      # - name: Build
+      #   run: yarn build
 
       - name: Run e2e tests
         run: |
@@ -186,12 +186,12 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
-          NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
-          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
-          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          SKIP_METAMASK_SETUP: true
-          envkey_SKIP_METAMASK_SETUP: true
+          # NGROK_AUTH: ${{ secrets.NGROK_AUTH }}
+          # envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          # envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
+          # envkey_NEXT_PUBLIC_IS_E2E_TEST: true
+          # SKIP_METAMASK_SETUP: true
+          # envkey_SKIP_METAMASK_SETUP: true
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
