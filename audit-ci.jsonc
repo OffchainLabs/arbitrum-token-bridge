@@ -2,8 +2,6 @@
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
   "allowlist": [
-    // react-scripts needs upgrade from v4 to v5. Waiting for migration to nextjs
-    "*|arb-token-bridge-ui>react-scripts>*",
     // https://github.com/advisories/GHSA-7gc6-qh9x-w6h8
     // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>cross-fetch
@@ -17,7 +15,6 @@
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-block>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-vm>async-eventemitter>async
-    // https://github.com/advisories/GHSA-p8p7-x288-28g6
     "GHSA-fwr7-v2mv-hh25",
     // https://github.com/advisories/GHSA-p8p7-x288-28g6
     // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.

@@ -53,8 +53,8 @@ jobs:
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
 
-      - name: Test
-        run: yarn test:ci:sdk
+      - name: Start UI and Test
+        run: yarn start-test 'dev:ui' http://localhost:3000 'yarn test:ci:sdk'
 
   test-ui:
     name: "Test UI"
