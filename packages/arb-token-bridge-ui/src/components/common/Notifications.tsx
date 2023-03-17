@@ -3,6 +3,7 @@ import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -16,35 +17,28 @@ function NotificationContainer({ children }: { children: React.ReactNode }) {
 
 function Notification({
   infoIcon,
-  children
+  children,
+  mode = 'dark'
 }: {
   infoIcon?: boolean
+  mode?: 'light' | 'dark'
   children: React.ReactNode
 }) {
   return (
-    <div className="flex w-auto gap-2 whitespace-nowrap rounded-md bg-dark p-2 px-4 text-sm text-cyan">
+    <div
+      className={twMerge(
+        'mx-2 flex w-auto gap-2 rounded-md p-2 px-4 text-sm',
+        mode === 'light' ? 'bg-cyan text-dark' : 'bg-dark text-cyan'
+      )}
+    >
       {infoIcon && (
         <InformationCircleIcon
-          className="h-5 w-5 text-gray-10"
+          className="inline-block h-5 w-5 text-gray-10"
           aria-hidden="true"
         />
       )}
       {children}
     </div>
-  )
-}
-
-function ArbitrumBetaNotification() {
-  return (
-    <Notification infoIcon>
-      Arbitrum is in beta.{' '}
-      <ExternalLink
-        href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
-        className="arb-hover mx-2 underline"
-      >
-        Learn more.
-      </ExternalLink>
-    </Notification>
   )
 }
 
@@ -72,11 +66,10 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
+  const { isGoerli } = isNetwork(l1.network.chainID)
 
   return (
     <NotificationContainer>
-      {isMainnet && <ArbitrumBetaNotification />}
       {isGoerli && <NitroDevnetNotification />}
     </NotificationContainer>
   )

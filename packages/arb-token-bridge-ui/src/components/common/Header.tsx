@@ -156,7 +156,7 @@ function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
       id="header-image"
       src={props.src}
       alt={props.alt || 'Arbitrum logo'}
-      className={twMerge('-ml-2 w-56 lg:ml-0 lg:w-60', props.className || '')}
+      className={twMerge('-ml-2 w-40 lg:ml-0', props.className || '')}
     />
   )
 }
@@ -208,7 +208,7 @@ export function Header() {
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <HeaderImageElement src="/HeaderArbitrumLogoMainnet.webp" />
+            <HeaderImageElement src="/HeaderArbitrumLogoMainnet.svg" />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
