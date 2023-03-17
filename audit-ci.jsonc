@@ -18,7 +18,10 @@
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-block>async
     // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-vm>async-eventemitter>async
     // https://github.com/advisories/GHSA-p8p7-x288-28g6
-    "GHSA-p8p7-x288-28g6",
-    "GHSA-fwr7-v2mv-hh25"
+    "GHSA-fwr7-v2mv-hh25",
+    // https://github.com/advisories/GHSA-p8p7-x288-28g6
+    // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
+    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>request
+    "GHSA-p8p7-x288-28g6"
   ]
 }
