@@ -163,11 +163,6 @@ jobs:
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
-      - name: Build
-        run: yarn build
-        env:
-          NEXT_PUBLIC_IS_E2E_TEST: true
-
       - name: Run e2e tests
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
