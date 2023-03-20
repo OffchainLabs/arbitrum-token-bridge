@@ -185,7 +185,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             <span className="text-base font-medium text-gray-900">
               {tokenSymbol}
             </span>
-            <span className="text-xs text-gray-500">{tokenName}</span>
+            <span
+              data-testid={`token-${tokenName}`}
+              className="text-xs text-gray-500"
+            >
+              {tokenName}
+            </span>
           </div>
           {token && (
             <div className="flex flex-col items-start space-y-1">
