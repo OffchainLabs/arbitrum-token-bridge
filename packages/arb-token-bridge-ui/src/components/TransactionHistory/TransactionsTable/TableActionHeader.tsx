@@ -96,6 +96,7 @@ export const TableActionHeader = ({
       {!hidePaginationBtns && (
         <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
           <button
+            disabled={disablePrevBtn}
             className={`rounded border border-gray-10 p-1 ${
               disablePrevBtn
                 ? 'cursor-not-allowed opacity-30'
@@ -112,6 +113,7 @@ export const TableActionHeader = ({
           </div>
 
           <button
+            disabled={disableNextBtn}
             className={`rounded border border-gray-10 p-1 ${
               disableNextBtn
                 ? 'cursor-not-allowed opacity-30'

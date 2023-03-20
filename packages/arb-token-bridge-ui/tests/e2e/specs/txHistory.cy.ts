@@ -33,6 +33,11 @@ describe('Transaction History', () => {
 
   // Test deposits pagination works
   it('should paginate deposits', () => {
+    // check that initially previous button should be disabled
+    cy.findByRole('button', { name: /load previous deposits/i })
+      .should('be.visible')
+      .should('be.disabled')
+
     // go to next page
     cy.findByRole('button', { name: /load next deposits/i })
       .should('be.visible')
@@ -90,6 +95,11 @@ describe('Transaction History', () => {
 
   // Test withdrawal pagination works
   it('should paginate withdrawals', () => {
+    // check that initially previous button should be disabled
+    cy.findByRole('button', { name: /load previous withdrawals/i })
+      .should('be.visible')
+      .should('be.disabled')
+
     // go to next page
     cy.findByRole('button', { name: /load next withdrawals/i })
       .should('be.visible')
