@@ -19,7 +19,9 @@ import { Loader } from '../common/atoms/Loader'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
-    console.warn(`[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`)
+    throw new Error(
+      `[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`
+    )
   }
   return isNetwork(chainId).isArbitrumOne
     ? ChainId.ArbitrumNova
