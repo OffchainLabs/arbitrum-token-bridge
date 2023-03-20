@@ -7,22 +7,12 @@ const WITHDRAWAL_SEARCH_IDENTIFIER = /Search for a full or partial L2 tx ID/i
 
 describe('Transaction History', () => {
   before(() => {
-    // Connect to goerli and not local-network
-    cy.clearLocalStorage()
-    cy.importMetamaskAccount(Cypress.env('PRIVATE_KEY_TX_HISTORY'))
-    cy.switchMetamaskAccount(3)
     cy.changeMetamaskNetwork('goerli')
     startWebApp()
   })
 
   after(() => {
-    // reset the network state to original
-    // after all assertions are executed, logout and reset the account
-    cy.switchMetamaskAccount(2)
     cy.logout()
-    cy.clearLocalStorage()
-    startWebApp()
-    cy.reload()
   })
 
   // Open tx history panel

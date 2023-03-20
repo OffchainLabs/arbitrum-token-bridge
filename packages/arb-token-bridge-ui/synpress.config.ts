@@ -45,8 +45,8 @@ export default defineConfig({
       const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
-      const testWallet = Wallet.createRandom()
-      const testWalletAddress = await testWallet.getAddress()
+      const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
+      const userWalletAddress = await userWallet.getAddress()
       const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
       const erc20Contract = new TestERC20__factory().connect(
         wallet.connect(ethProvider)
@@ -56,7 +56,7 @@ export default defineConfig({
         provider: StaticJsonRpcProvider,
         tokenAddress: string
       ) =>
-        TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
+        TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 
       // Deploy ERC-20 token to L1
       const l1Erc20Token = await erc20Contract.deploy()
@@ -80,20 +80,20 @@ export default defineConfig({
       // Send minted ERC-20 to the test wallet
       await l1Erc20Token
         .connect(wallet.connect(ethProvider))
-        .transfer(testWalletAddress, BigNumber.from(50000000))
+        .transfer(userWalletAddress, BigNumber.from(50000000))
 
       on('before:run', async () => {
         let tx
         // Fund the test wallet. We do this to run tests on a small amount of ETH.
         // Fund L1
         tx = await wallet.connect(ethProvider).sendTransaction({
-          to: testWalletAddress,
-          value: utils.parseEther('123.45678')
+          to: userWalletAddress,
+          value: utils.parseEther('1')
         })
         await tx.wait()
         // Fund L2
         tx = await wallet.connect(arbProvider).sendTransaction({
-          to: testWalletAddress,
+          to: userWalletAddress,
           value: utils.parseEther('0.5')
         })
         await tx.wait()
@@ -117,15 +117,14 @@ export default defineConfig({
         )
         await tx.wait()
       })
-      config.env.ADDRESS = testWalletAddress
-      config.env.PRIVATE_KEY = testWallet.privateKey
+      config.env.ADDRESS = userWalletAddress
+      config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1Erc20Token.address
       config.env.ERC20_TOKEN_ADDRESS_L2 = await erc20Bridger.getL2ERC20Address(
         l1Erc20Token.address,
         ethProvider
       )
-      config.env.PRIVATE_KEY_TX_HISTORY = process.env.PRIVATE_KEY_TX_HISTORY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       return config
