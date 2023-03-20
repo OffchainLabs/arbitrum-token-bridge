@@ -117,7 +117,6 @@ function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        disabled={disabled}
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
       >
         <span>
