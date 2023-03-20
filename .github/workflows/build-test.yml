@@ -110,10 +110,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
-      - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
 
       - name: Chown workspace
         run: chown -R $(whoami) .
@@ -172,6 +168,11 @@ jobs:
 
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
+
+      - name: Restore node_modules
+        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Restore build artifacts
+        uses: ./.github/actions/build-artifacts/restore
 
       # - name: Install
       #   run: yarn install
