@@ -151,7 +151,6 @@ function getProviderName(provider: any): ProviderName | null {
 }
 
 async function isBlocked(address: string): Promise<boolean> {
-  console.log('IS E2E: ', process.env.NEXT_PUBLIC_IS_E2E_TEST)
   if (
     process.env.NODE_ENV !== 'production' ||
     process.env.NEXT_PUBLIC_IS_E2E_TEST
