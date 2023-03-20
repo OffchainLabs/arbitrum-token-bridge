@@ -13,11 +13,9 @@ describe('Deposit ETH', () => {
   const ETHAmountToDeposit = 0.0001
 
   beforeEach(() => {
-    // cy.restoreAppState()
     cy.login({ networkType: 'L1' })
   })
   afterEach(() => {
-    // cy.saveAppState()
     cy.logout()
   })
 

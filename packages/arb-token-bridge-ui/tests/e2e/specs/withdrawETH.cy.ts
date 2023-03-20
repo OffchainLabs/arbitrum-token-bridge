@@ -10,10 +10,6 @@ describe('Withdraw ETH', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
-  beforeEach(() => {
-    // cy.restoreAppState()
-  })
-
   const ETHToWithdraw = 0.0001
 
   const typeAmountIntoInput = () => {

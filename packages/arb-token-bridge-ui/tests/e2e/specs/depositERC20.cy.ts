@@ -18,11 +18,9 @@ describe('Deposit ERC20 Token', () => {
 
   beforeEach(() => {
     cy.login({ networkType: 'L1' })
-    // cy.restoreAppState()
   })
   afterEach(() => {
     cy.logout()
-    // cy.saveAppState()
   })
 
   // Happy Path

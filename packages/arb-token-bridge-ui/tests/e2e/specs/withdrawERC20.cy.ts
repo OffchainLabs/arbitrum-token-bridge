@@ -14,11 +14,9 @@ describe('Withdraw ERC20 Token', () => {
 
   beforeEach(() => {
     cy.login({ networkType: 'L2' })
-    // cy.restoreAppState()
   })
   afterEach(() => {
     cy.logout()
-    // cy.saveAppState()
   })
 
   // Happy Path

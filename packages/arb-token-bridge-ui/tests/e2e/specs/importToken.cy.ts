@@ -34,7 +34,6 @@ describe('Import token', () => {
 
         // Select the ERC-20 token
         cy.findByText('Added by User').should('exist')
-        // cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
         cy.findByText(ERC20TokenName).trigger('click', {
           scrollBehavior: false,
           force: true
@@ -53,7 +52,6 @@ describe('Import token', () => {
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
-        // cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
         cy.findByText(ERC20TokenName).trigger('click', {
           scrollBehavior: false,
           force: true
@@ -204,7 +202,6 @@ describe('Import token', () => {
               scrollBehavior: false,
               force: true
             })
-            // .click({ scrollBehavior: false, force: true })
             .then(() => {
               cy.findByRole('button', { name: 'Select Token' })
                 .should('be.visible')
@@ -253,7 +250,6 @@ describe('Import token', () => {
               scrollBehavior: false,
               force: true
             })
-            // .click({ scrollBehavior: false, force: true })
             .then(() => {
               cy.findByRole('button', { name: 'Select Token' })
                 .should('be.visible')
@@ -288,7 +284,6 @@ describe('Import token', () => {
             scrollBehavior: false,
             force: true
           })
-          // .click({ scrollBehavior: false })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
