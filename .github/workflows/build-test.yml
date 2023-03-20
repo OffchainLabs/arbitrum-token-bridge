@@ -35,8 +35,8 @@ jobs:
 
       - name: Build
         run: yarn build
-          env:
-            NEXT_PUBLIC_IS_E2E_TEST: true
+        env:
+          NEXT_PUBLIC_IS_E2E_TEST: true
 
       - name: Cache build artifacts
         uses: ./.github/actions/build-artifacts/cache
