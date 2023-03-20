@@ -156,7 +156,7 @@ async function isBlocked(address: string): Promise<boolean> {
   }
 
   const searchParams = new URLSearchParams({ address })
-  const response = await fetch('/api/screen' + searchParams, {
+  const response = await fetch('/api/screenings' + searchParams, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
   })
