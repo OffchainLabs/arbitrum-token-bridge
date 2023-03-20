@@ -9,10 +9,20 @@ describe('Transaction History', () => {
   before(() => {
     // Connect to goerli and not local-network
     cy.clearLocalStorage()
-    cy.importMetamaskAccount(process.env.PRIVATE_KEY_TX_HISTORY)
+    cy.importMetamaskAccount(Cypress.env('PRIVATE_KEY_TX_HISTORY'))
     cy.switchMetamaskAccount(3)
     cy.changeMetamaskNetwork('goerli')
     startWebApp()
+  })
+
+  after(() => {
+    // reset the network state to original
+    // after all assertions are executed, logout and reset the account
+    cy.switchMetamaskAccount(2)
+    cy.logout()
+    cy.clearLocalStorage()
+    startWebApp()
+    cy.reload()
   })
 
   // Open tx history panel
@@ -69,7 +79,7 @@ describe('Transaction History', () => {
     // search for invalid address substring
     cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER)
       .clear()
-      .type('randomInvalidTransactionHash', { scrollBehavior: false })
+      .type('invalidTransactionHash', { scrollBehavior: false })
       .then(() => {
         cy.findByText(
           /Oops! Looks like nothing matched your search query/i
@@ -126,7 +136,7 @@ describe('Transaction History', () => {
     // search for invalid address substring
     cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER)
       .clear()
-      .type('randomInvalidTransactionHash', { scrollBehavior: false })
+      .type('invalidTransactionHash', { scrollBehavior: false })
       .then(() => {
         cy.findByText(
           /Oops! Looks like nothing matched your search query/i

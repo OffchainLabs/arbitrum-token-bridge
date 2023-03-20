@@ -125,6 +125,7 @@ export default defineConfig({
         l1Erc20Token.address,
         ethProvider
       )
+      config.env.PRIVATE_KEY_TX_HISTORY = process.env.PRIVATE_KEY_TX_HISTORY
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       return config
@@ -137,10 +138,10 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
       'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
-      'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'
