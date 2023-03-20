@@ -174,12 +174,6 @@ jobs:
       - name: Restore build artifacts
         uses: ./.github/actions/build-artifacts/restore
 
-      # - name: Install
-      #   run: yarn install
-
-      # - name: Build
-      #   run: yarn build
-
       - name: Run e2e tests
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
