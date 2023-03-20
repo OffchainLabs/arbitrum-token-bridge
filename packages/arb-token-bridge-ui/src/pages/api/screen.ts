@@ -12,6 +12,8 @@ function loadEnvironmentVariable(key: string): string {
   return value
 }
 
+const ONE_WEEK_IN_SECONDS = 60 * 60 * 24 * 7
+
 const apiEndpoint = loadEnvironmentVariable('SCREENING_API_ENDPOINT')
 const apiKey = loadEnvironmentVariable('SCREENING_API_KEY')
 
@@ -89,6 +91,10 @@ export default async function handler(
     res.status(200).send({ blocked: false })
     return
   }
+
+  // https://vercel.com/docs/concepts/functions/serverless-functions/edge-caching#cache-control
+  // https://vercel.com/docs/concepts/functions/serverless-functions/edge-caching#recommended-cache-control
+  res.setHeader('Cache-Control', `max-age=0, s-maxage=${ONE_WEEK_IN_SECONDS}`)
 
   res.status(200).send({
     blocked: isBlocked((await response.json()) as ExternalApiResponse)
