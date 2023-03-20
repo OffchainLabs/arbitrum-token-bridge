@@ -145,11 +145,19 @@ jobs:
           directory: ./packages/arb-token-bridge-ui/
           file_name: .e2e.env
 
+      - name: Make .env
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
+          directory: ./packages/arb-token-bridge-ui/
+          file_name: .env
+      
       - name: Make .env.local
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          file_name: .env
+          directory: ./packages/arb-token-bridge-ui/
+          file_name: .env.local
 
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
