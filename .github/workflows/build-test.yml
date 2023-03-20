@@ -153,8 +153,9 @@ jobs:
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
-      - name: Restore build artifacts
-        uses: ./.github/actions/build-artifacts/restore
+
+      - name: Build
+        run: yarn build
 
       - name: Run e2e tests
         run: |
