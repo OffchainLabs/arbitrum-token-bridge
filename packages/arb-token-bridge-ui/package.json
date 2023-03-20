@@ -39,7 +39,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "NEXT_PUBLIC_IS_E2E_TEST=true next start",
     "test": "jest --watch",
     "test:ci": "jest --ci",
     "lint": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}'",
