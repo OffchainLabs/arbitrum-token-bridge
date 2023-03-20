@@ -158,6 +158,8 @@ async function isBlocked(address: string): Promise<boolean> {
     return false
   }
 
+  return false
+
   const response = await fetch('/api/screen', {
     method: 'POST',
     body: JSON.stringify({ address }),
