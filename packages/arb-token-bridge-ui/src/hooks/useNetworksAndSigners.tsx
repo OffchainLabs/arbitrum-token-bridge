@@ -31,7 +31,7 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
-import { ApiResponseSuccess } from '../pages/api/screen'
+import { ApiResponseSuccess } from '../pages/api/screenings'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -159,11 +159,9 @@ async function isBlocked(address: string): Promise<boolean> {
     return false
   }
 
-  return false
-
-  const response = await fetch('/api/screen', {
-    method: 'POST',
-    body: JSON.stringify({ address }),
+  const searchParams = new URLSearchParams({ address })
+  const response = await fetch('/api/screenings?' + searchParams, {
+    method: 'GET',
     headers: { 'Content-Type': 'application/json' }
   })
 
