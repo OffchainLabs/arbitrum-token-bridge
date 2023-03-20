@@ -146,7 +146,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          file_name: .env.local
+          file_name: .env
 
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
