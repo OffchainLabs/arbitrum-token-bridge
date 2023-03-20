@@ -47,12 +47,12 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponseSuccess | ApiResponseError>
 ) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'GET') {
     res.status(400).send({ message: 'invalid_method' })
     return
   }
 
-  const address = req.body.address
+  const address = req.query.address
 
   if (typeof address !== 'string' || !utils.isAddress(address)) {
     res.status(400).send({ message: 'invalid_address' })
