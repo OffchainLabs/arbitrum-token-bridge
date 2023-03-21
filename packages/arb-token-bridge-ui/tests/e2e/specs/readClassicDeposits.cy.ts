@@ -50,6 +50,7 @@ describe('Read classic deposit messages', () => {
   context('User has classic ETH deposit transaction', () => {
     // log in to metamask
     before(() => {
+      cy.changeMetamaskNetwork('mainnet')
       cy.login({ networkType: 'L1' })
     })
 
@@ -94,7 +95,7 @@ describe('Read classic deposit messages', () => {
 
   context('User has classic ERC-20 deposit transaction', () => {
     // log in to metamask
-    beforeEach(() => {
+    before(() => {
       cy.changeMetamaskNetwork('mainnet')
       cy.login({ networkType: 'L1' })
     })
@@ -117,34 +118,26 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.changeMetamaskNetwork('mainnet').then(() => {
-        cy.closeLowBalanceDialog()
-        cy.openTransactionsPanel()
+      cy.closeLowBalanceDialog()
+      cy.openTransactionsPanel()
 
-        const l1TxHash =
-          '0x000153c231eb9fd3690b5e818fb671bdd09d678fe46b16b8f694f3beb9cf6db1'
-        const l2TxHash =
-          '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'
+      const l1TxHash =
+        '0x000153c231eb9fd3690b5e818fb671bdd09d678fe46b16b8f694f3beb9cf6db1'
+      const l2TxHash =
+        '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'
 
-        cy.findByLabelText(/l1 transaction status/i).should(
-          'contain',
-          'Success'
-        )
-        cy.findByLabelText(/l2 transaction status/i).should(
-          'contain',
-          'Success'
-        )
+      cy.findByLabelText(/l1 transaction status/i).should('contain', 'Success')
+      cy.findByLabelText(/l2 transaction status/i).should('contain', 'Success')
 
-        cy.findByLabelText(/l1 transaction link/i).should(
-          'contain',
-          `${shortenTxHash(l1TxHash)}`
-        )
+      cy.findByLabelText(/l1 transaction link/i).should(
+        'contain',
+        `${shortenTxHash(l1TxHash)}`
+      )
 
-        cy.findByLabelText(/l2 transaction link/i).should(
-          'contain',
-          `${shortenTxHash(l2TxHash)}`
-        )
-      })
+      cy.findByLabelText(/l2 transaction link/i).should(
+        'contain',
+        `${shortenTxHash(l2TxHash)}`
+      )
     })
   })
 })
