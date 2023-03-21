@@ -121,6 +121,8 @@ export default defineConfig({
         )
         await tx.wait()
       })
+      config.env.ETH_RPC_URL = ethRpcUrl
+      config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
