@@ -1,7 +1,4 @@
-import { gql } from '@apollo/client'
-import { Provider } from '@ethersproject/providers'
-
-import { getL2SubgraphClient } from '../util/subgraph'
+import { sanitizeQueryParams } from './../util'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
@@ -35,7 +32,7 @@ export async function fetchWithdrawalsFromSubgraph({
   address,
   fromBlock,
   toBlock,
-  l2Provider,
+  l2ChainId,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
@@ -43,7 +40,7 @@ export async function fetchWithdrawalsFromSubgraph({
   address: string
   fromBlock: number
   toBlock: number
-  l2Provider: Provider
+  l2ChainId: number
   pageSize?: number
   pageNumber?: number
   searchString?: string
@@ -53,66 +50,33 @@ export async function fetchWithdrawalsFromSubgraph({
     return []
   }
 
-  const l2ChainId = (await l2Provider.getNetwork()).chainId
+  // if dev environment, eg. tests, then prepend actual running environment
+  // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
+  const baseUrl = process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
 
-  const res = await getL2SubgraphClient(l2ChainId).query({
-    query: gql`{
-        withdrawals(
-            where: {
-            sender: "${address}",
-            l2BlockNum_gte: ${fromBlock},
-            l2BlockNum_lte: ${toBlock},
-            ${searchString ? `l2TxHash_contains: "${searchString}"` : ''}
-            }
-            orderBy: l2BlockTimestamp
-            orderDirection: desc
-            first: ${pageSize},
-            skip: ${pageNumber * pageSize}
-        ) {
-            id,
-            type,
-            sender,
-            receiver,
-            ethValue,
-            l1Token {
-                id
-            },
-            tokenAmount,
-            isClassic,
-            l2BlockTimestamp,
-            l2TxHash,
-            l2BlockNum
-        }
-    }`
-  })
+  const urlParams = new URLSearchParams(
+    sanitizeQueryParams({
+      address,
+      fromBlock,
+      toBlock,
+      l2ChainId,
+      pageSize,
+      page: pageNumber,
+      search: searchString
+    })
+  )
 
-  return res.data.withdrawals.map((eventData: any) => {
-    const {
-      id,
-      type,
-      sender,
-      receiver,
-      ethValue,
-      l1Token,
-      tokenAmount,
-      isClassic,
-      l2BlockTimestamp,
-      l2TxHash,
-      l2BlockNum
-    } = eventData
-
-    return {
-      id,
-      type,
-      sender,
-      receiver,
-      ethValue,
-      l1Token,
-      tokenAmount,
-      isClassic,
-      l2BlockTimestamp,
-      l2TxHash,
-      l2BlockNum
+  const response = await fetch(
+    `${baseUrl}/api/withdrawals?${urlParams.toString()}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     }
-  })
+  )
+
+  const transactions: FetchWithdrawalsFromSubgraphResult[] = (
+    await response.json()
+  ).data
+
+  return transactions
 }

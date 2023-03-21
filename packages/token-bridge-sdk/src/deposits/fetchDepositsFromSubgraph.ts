@@ -1,3 +1,5 @@
+import { sanitizeQueryParams } from './../util'
+
 export type FetchDepositsFromSubgraphResult = {
   receiver: string
   sender: string
@@ -31,10 +33,6 @@ export type FetchDepositsFromSubgraphResult = {
  * @param query.pageNumber Fetch records starting [pageNumber * pageSize] records
  * @param query.searchString Searches records through the l1TxHash
  */
-
-const sanitizeQueryParams = (data: any) => {
-  return JSON.parse(JSON.stringify(data))
-}
 
 export const fetchDepositsFromSubgraph = async ({
   address,
