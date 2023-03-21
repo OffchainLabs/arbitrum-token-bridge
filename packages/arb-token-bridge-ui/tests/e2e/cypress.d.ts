@@ -21,6 +21,7 @@ declare global {
       connectToApp(): typeof connectToApp
       login(options: {
         networkType: NetworkType
+        networkName?: string
         addNewNetwork?: boolean
         url?: string
         query?: { [s: string]: string }

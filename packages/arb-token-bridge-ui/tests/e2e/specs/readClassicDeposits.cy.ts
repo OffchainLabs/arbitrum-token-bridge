@@ -50,8 +50,7 @@ describe('Read classic deposit messages', () => {
   context('User has classic ETH deposit transaction', () => {
     // log in to metamask
     before(() => {
-      cy.changeMetamaskNetwork('mainnet')
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'L1', networkName: 'mainnet' })
     })
 
     after(() => {
@@ -96,8 +95,7 @@ describe('Read classic deposit messages', () => {
   context('User has classic ERC-20 deposit transaction', () => {
     // log in to metamask
     before(() => {
-      cy.changeMetamaskNetwork('mainnet')
-      cy.login({ networkType: 'L1' })
+      cy.login({ networkType: 'L1', networkName: 'mainnet' })
     })
 
     after(() => {

@@ -88,7 +88,8 @@ export async function getInitialERC20Balance(
 
 export const setupMetamaskNetwork = (
   networkType: NetworkType,
-  addNewNetwork?: boolean
+  networkName: string,
+  addNewNetwork?: boolean,
 ) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
@@ -98,7 +99,7 @@ export const setupMetamaskNetwork = (
   if (addNewNetwork) {
     return cy.addMetamaskNetwork(networkConfig)
   } else {
-    return cy.changeMetamaskNetwork(networkConfig.networkName)
+    return cy.changeMetamaskNetwork(networkName ?? networkConfig.networkName)
   }
 }
 

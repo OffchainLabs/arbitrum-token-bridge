@@ -14,16 +14,18 @@ import { shortenAddress } from '../../src/util/CommonUtils'
 
 export function login({
   networkType,
+  networkName,
   addNewNetwork = false,
   url,
   query
 }: {
   networkType: NetworkType
+  networkName?: string
   addNewNetwork?: boolean
   url?: string
   query?: { [s: string]: string }
 }) {
-  setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
+  setupMetamaskNetwork(networkType, networkName, addNewNetwork).then(() => {
     startWebApp(url, query)
   })
 }

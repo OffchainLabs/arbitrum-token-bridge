@@ -92,7 +92,7 @@ describe('Switch Networks', () => {
     })
 
     context('Test Networks list in Wrong Network UI', () => {
-      it('should show wrong network UI', { retries: 4 }, () => {
+      it('should show wrong network UI', () => {
         cy.on('uncaught:exception', err => {
           if (err.message.includes('Chain 11155111 not supported')) {
             cy.findByText(
