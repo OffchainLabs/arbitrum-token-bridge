@@ -4,6 +4,8 @@ import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
 
+export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
+
 export interface BridgeTokenList {
   id: number
   originChainID: number
@@ -16,7 +18,7 @@ export interface BridgeTokenList {
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
-    id: 0,
+    id: SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
     originChainID: 0, // This token list spans all Arbitrum chains and their L1 counterparts
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
     name: 'Arbitrum Token',

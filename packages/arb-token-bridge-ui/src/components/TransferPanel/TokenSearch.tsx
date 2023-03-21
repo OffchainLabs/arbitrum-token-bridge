@@ -2,6 +2,7 @@ import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
 import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
+import { BadgeCheckIcon } from '@heroicons/react/solid'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import { Loader } from '../common/atoms/Loader'
@@ -11,7 +12,8 @@ import {
   BridgeTokenList,
   listIdsToNames,
   addBridgeTokenListToBridge,
-  useTokenLists
+  useTokenLists,
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
@@ -24,7 +26,8 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
-import { getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { Tooltip } from '../common/Tooltip'
 
 enum Panel {
   TOKENS,
@@ -110,6 +113,14 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     erc20L2Balances
   ])
 
+  const isArbitrumToken = useMemo(() => {
+    if (!token) {
+      return false
+    }
+
+    return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
+  }, [token])
+
   const tokenListInfo = useMemo(() => {
     if (!token) {
       return null
@@ -164,6 +175,14 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     return tokenHasL2Address
   }, [isDepositMode, tokenHasL2Address])
 
+  const arbitrumTokenTooltipContent = useMemo(() => {
+    const networkName = getNetworkName(
+      isDepositMode ? l1Network.chainID : l2Network.chainID
+    )
+
+    return <span>This is the official Arbitrum token on {networkName}.</span>
+  }, [isDepositMode, l1Network, l2Network])
+
   return (
     <button
       type="button"
@@ -186,6 +205,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {tokenSymbol}
             </span>
             <span className="text-xs text-gray-500">{tokenName}</span>
+
+            {isArbitrumToken && (
+              <Tooltip content={arbitrumTokenTooltipContent}>
+                <BadgeCheckIcon className="h-4 w-4 text-blue-link" />
+              </Tooltip>
+            )}
           </div>
           {token && (
             <div className="flex flex-col items-start space-y-1">
