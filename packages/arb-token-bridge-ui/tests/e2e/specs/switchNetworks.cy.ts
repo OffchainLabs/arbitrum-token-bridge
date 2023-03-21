@@ -93,10 +93,10 @@ describe('Switch Networks', () => {
 
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
+        cy.changeMetamaskNetwork('Sepolia test network')
         cy.findByText(/Oops! You’re connected to the wrong network/i).should(
           'be.visible'
         )
-        cy.changeMetamaskNetwork('Sepolia test network')
 
         context('Allow Network change from wrong network UI list', () => {
           cy.findByRole('button', { name: /Switch to Arbitrum Goerli/i })

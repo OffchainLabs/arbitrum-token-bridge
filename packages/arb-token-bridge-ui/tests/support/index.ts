@@ -3,7 +3,8 @@ import '@synthetixio/synpress/support'
 import 'cypress-localstorage-commands'
 
 Cypress.Keyboard.defaults({
-  keystrokeDelay: 300
+  // tests are flaky in CI with low keystroke delay
+  keystrokeDelay: process.env.NODE_ENV === 'development' ? 50 : 300
 })
 
 before(() => {

@@ -12,7 +12,8 @@ import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
-  retries: 4,
+  // in CI cynpress might sometimes need to try multiple times
+  retries: process.env.NODE_ENV === 'development' ? 1 : 4,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: false,
