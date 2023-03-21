@@ -1,4 +1,4 @@
-import { sanitizeQueryParams } from './../util'
+import { getBaseUrl, sanitizeQueryParams } from './../util'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
@@ -50,10 +50,6 @@ export async function fetchWithdrawalsFromSubgraph({
     return []
   }
 
-  // if dev environment, eg. tests, then prepend actual running environment
-  // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
-  const baseUrl = process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
-
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       address,
@@ -67,7 +63,7 @@ export async function fetchWithdrawalsFromSubgraph({
   )
 
   const response = await fetch(
-    `${baseUrl}/api/withdrawals?${urlParams.toString()}`,
+    `${getBaseUrl()}/api/withdrawals?${urlParams.toString()}`,
     {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }

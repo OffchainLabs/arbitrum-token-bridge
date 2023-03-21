@@ -166,3 +166,9 @@ export function isClassicL2ToL1TransactionEvent(
 export const sanitizeQueryParams = (data: any) => {
   return JSON.parse(JSON.stringify(data))
 }
+
+export const getBaseUrl = () => {
+  // if dev environment, eg. tests, then prepend actual running environment
+  // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
+  return process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
+}
