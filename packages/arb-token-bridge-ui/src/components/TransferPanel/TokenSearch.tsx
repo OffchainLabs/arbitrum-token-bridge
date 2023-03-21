@@ -185,12 +185,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             <span className="text-base font-medium text-gray-900">
               {tokenSymbol}
             </span>
-            <span
-              data-testid={`token-${tokenName}`}
-              className="text-xs text-gray-500"
-            >
-              {tokenName}
-            </span>
+            <span className="text-xs text-gray-500">{tokenName}</span>
           </div>
           {token && (
             <div className="flex flex-col items-start space-y-1">
@@ -523,7 +518,7 @@ function TokensPanel({
         </div>
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
-      <div className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]">
+      <div className="tokenSearchList flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]">
         <AutoSizer disableHeight>
           {({ width }) => (
             <List

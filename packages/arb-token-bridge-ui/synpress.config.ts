@@ -23,7 +23,6 @@ export default defineConfig({
     runMode: 0,
     openMode: 0
   },
-  watchForFileChanges: true,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: false,

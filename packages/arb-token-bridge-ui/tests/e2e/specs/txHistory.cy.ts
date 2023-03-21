@@ -25,7 +25,7 @@ describe('Transaction History', () => {
   it('should load deposits', () => {
     cy.findByRole('tab', { name: 'show deposit transactions' })
       .should('be.visible')
-      .click()
+      .click({ scrollBehavior: false })
       .should('have.class', 'selected')
 
     cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).should('have.length.above', 0)
@@ -42,7 +42,7 @@ describe('Transaction History', () => {
     cy.findByRole('button', { name: /load next deposits/i })
       .should('be.visible')
       .should('not.be.disabled')
-      .click()
+      .click({ scrollBehavior: false })
     cy.findByText(/page 2/i).should('be.visible')
     cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).should('have.length.above', 0)
 
@@ -50,7 +50,7 @@ describe('Transaction History', () => {
     cy.findByRole('button', { name: /load previous deposits/i })
       .should('be.visible')
       .should('not.be.disabled')
-      .click()
+      .click({ scrollBehavior: false })
     cy.findByText(/page 1/i).should('be.visible')
     cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).should('have.length.above', 0)
   })
@@ -87,7 +87,7 @@ describe('Transaction History', () => {
   it('should load withdrawals', () => {
     cy.findByRole('tab', { name: 'show withdrawal transactions' })
       .should('be.visible')
-      .click()
+      .click({ scrollBehavior: false })
       .should('have.class', 'selected')
 
     cy.findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER).should('have.length.above', 0)
@@ -104,7 +104,7 @@ describe('Transaction History', () => {
     cy.findByRole('button', { name: /load next withdrawals/i })
       .should('be.visible')
       .should('not.be.disabled')
-      .click()
+      .click({ scrollBehavior: false })
     cy.findByText(/page 2/i).should('be.visible')
     cy.findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER).should('have.length.above', 0)
 
@@ -112,7 +112,7 @@ describe('Transaction History', () => {
     cy.findByRole('button', { name: /load previous withdrawals/i })
       .should('be.visible')
       .should('not.be.disabled')
-      .click()
+      .click({ scrollBehavior: false })
     cy.findByText(/page 1/i).should('be.visible')
     cy.findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER).should('have.length.above', 0)
   })
