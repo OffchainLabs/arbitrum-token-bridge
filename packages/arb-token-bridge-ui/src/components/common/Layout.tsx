@@ -4,7 +4,7 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Toast } from './Toast'
+// import { Toast } from './Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
 
