@@ -24,6 +24,13 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l2Address: '0x912CE59144191C1204E64559FE8253a0e49E6548'
     }
   ],
+  [ChainId.ArbitrumNova]: [
+    {
+      symbol: 'ARB',
+      l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
+      l2Address: '0xf823C3cD3CeBE0a1fA952ba88Dc9EEf8e0Bf46AD'
+    }
+  ],
   [ChainId.ArbitrumGoerli]: [
     {
       symbol: 'GRT',
