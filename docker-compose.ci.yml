@@ -9,8 +9,6 @@ services:
       - PRIVATE_KEY=${PRIVATE_KEY}
       - DEBUG=${DEBUG}
       - CYPRESS_DOCKER_RUN=true
-      - NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL=http://geth:8545
-      - NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL=http://sequencer:8547
       - CI=${CI}
     depends_on:
       - display
