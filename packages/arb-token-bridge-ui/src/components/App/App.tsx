@@ -7,8 +7,7 @@ import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from 'token-bridge-sdk'
-import Loader from 'react-loader-spinner'
-
+import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
@@ -71,7 +70,7 @@ const AppContent = (): JSX.Element => {
       return { imageSrc: '/HeaderArbitrumLogoGoerli.webp', className }
     }
 
-    return { imageSrc: '/HeaderArbitrumLogoMainnet.webp', className }
+    return { imageSrc: '/HeaderArbitrumLogoMainnet.svg', className }
   }, [l1.network])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
@@ -253,7 +252,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 
           <AppConnectionFallbackContainer>
             <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
-              <Loader type="TailSpin" color="white" height={44} width={44} />
+              <Loader color="white" size="large" />
             </div>
           </AppConnectionFallbackContainer>
         </>

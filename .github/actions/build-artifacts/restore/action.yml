@@ -1,0 +1,15 @@
+name: Restore build artifacts
+description: Restore build artifacts
+
+runs:
+  using: composite
+  steps:
+    - name: Restore build artifacts
+      uses: actions/cache/restore@v3
+      with:
+        path: |
+          ./packages/arb-token-bridge-ui/build
+          ./packages/token-bridge-sdk/dist
+          ./packages/use-wallet/dist
+        key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+        fail-on-cache-miss: true

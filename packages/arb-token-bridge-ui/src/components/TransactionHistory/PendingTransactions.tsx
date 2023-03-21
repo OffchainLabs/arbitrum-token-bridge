@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/outline'
-import Loader from 'react-loader-spinner'
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
@@ -16,12 +15,11 @@ import {
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { ExternalLink } from '../common/ExternalLink'
+import { Loader } from '../common/atoms/Loader'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
-    throw new Error(
-      `[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`
-    )
+    console.warn(`[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`)
   }
   return isNetwork(chainId).isArbitrumOne
     ? ChainId.ArbitrumNova
@@ -54,9 +52,7 @@ export const PendingTransactions = ({
       {/* Heading */}
       <div className="flex items-center justify-between text-base text-white lg:text-lg">
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
-          {loading && (
-            <Loader type="TailSpin" color="white" width={20} height={20} />
-          )}
+          {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}
           {`${getNetworkName(l2Network.chainID)}/${getNetworkName(
             l1Network.chainID

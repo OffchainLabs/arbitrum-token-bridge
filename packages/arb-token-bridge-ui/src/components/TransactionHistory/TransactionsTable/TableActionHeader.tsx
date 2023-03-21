@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/outline'
 import { TransactionsTableProps } from './TransactionsTable'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
-import Loader from 'react-loader-spinner'
+import { Loader } from '../../common/atoms/Loader'
 
 type TableActionHeaderProps = Omit<
   TransactionsTableProps,
@@ -89,20 +89,20 @@ export const TableActionHeader = ({
             setSearchString(e.target.value)
           }}
         />
-        {showDebounceLoader && (
-          <Loader type="TailSpin" color="black" width={16} height={16} />
-        )}
+        {showDebounceLoader && <Loader color="black" size="small" />}
       </div>
 
       {/* Pagination buttons */}
       {!hidePaginationBtns && (
         <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
           <button
+            disabled={disablePrevBtn}
             className={`rounded border border-gray-10 p-1 ${
               disablePrevBtn
                 ? 'cursor-not-allowed opacity-30'
                 : 'cursor-pointer'
             }`}
+            aria-label={`load previous ${type}`}
             onClick={onClickPrev}
           >
             <ChevronLeftIcon className="h-3 w-3" />
@@ -113,11 +113,13 @@ export const TableActionHeader = ({
           </div>
 
           <button
+            disabled={disableNextBtn}
             className={`rounded border border-gray-10 p-1 ${
               disableNextBtn
                 ? 'cursor-not-allowed opacity-30'
                 : 'cursor-pointer'
             }`}
+            aria-label={`load next ${type}`}
             onClick={onClickNext}
           >
             <ChevronRightIcon className="h-3 w-3" />

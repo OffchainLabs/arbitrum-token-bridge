@@ -5,7 +5,7 @@ import {
   ChevronUpIcon,
   SwitchVerticalIcon
 } from '@heroicons/react/outline'
-import Loader from 'react-loader-spinner'
+import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
@@ -194,14 +194,14 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/TransparentArbitrumNovaLogo.webp')`,
+        backgroundImage: `url('/ArbitrumNovaLogo.svg')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url('/TransparentArbitrumOneLogo.webp')`,
-      backgroundClassName: 'bg-blue-arbitrum'
+      backgroundImage: `url('/ArbitrumOneLogo.svg')`,
+      backgroundClassName: 'bg-blue-arb-one'
     }
   }, [network])
 
@@ -218,7 +218,7 @@ function NetworkContainer({
 }
 
 function StyledLoader() {
-  return <Loader type="TailSpin" color="white" height={16} width={16} />
+  return <Loader color="white" size="small" />
 }
 
 function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
