@@ -73,13 +73,15 @@ describe('Transaction History', () => {
 
     // search for invalid address substring
     cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER)
-      .clear()
+      .clear({ scrollBehavior: false })
       .type('invalidTransactionHash', { scrollBehavior: false })
       .then(() => {
         cy.findByText(
           /Oops! Looks like nothing matched your search query/i
         ).should('be.visible')
-        cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER).clear()
+        cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER).clear({
+          scrollBehavior: false
+        })
       })
   })
 
@@ -135,13 +137,15 @@ describe('Transaction History', () => {
 
     // search for invalid address substring
     cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER)
-      .clear()
+      .clear({ scrollBehavior: false })
       .type('invalidTransactionHash', { scrollBehavior: false })
       .then(() => {
         cy.findByText(
           /Oops! Looks like nothing matched your search query/i
         ).should('be.visible')
-        cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER).clear()
+        cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER).clear({
+          scrollBehavior: false
+        })
       })
   })
 })

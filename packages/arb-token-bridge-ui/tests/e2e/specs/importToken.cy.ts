@@ -122,7 +122,7 @@ describe('Import token', () => {
           .should('be.visible')
           .click({ scrollBehavior: false })
 
-        cy.findByText('Arbed CMC List').should('be.visible')
+        cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
         cy.findByLabelText('Arbed CMC List')
           .as('tokenListToggle')
           .parent()
@@ -130,6 +130,7 @@ describe('Import token', () => {
         cy.get('@tokenListToggle').should('be.checked')
 
         cy.findByRole('button', { name: 'Back to Select Token' })
+          .scrollIntoView()
           .should('be.visible')
           .click({ scrollBehavior: false })
 
@@ -138,7 +139,7 @@ describe('Import token', () => {
           .should('be.visible')
           .type('UNI', { scrollBehavior: false })
 
-        cy.get('.tokenSearchList')
+        cy.get('[data-cy="tokenSearchList"]')
           .first()
           .within(() => {
             // cy.get() will only search for elements within .tokenSearchList,

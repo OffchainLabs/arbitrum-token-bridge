@@ -78,7 +78,7 @@ export default defineConfig({
       const mintedL1Erc20Token = await l1Erc20Token.mint()
       await mintedL1Erc20Token.wait()
 
-      // Send minted ERC-20 to the test localWallet
+      // Send minted ERC-20 to the test userWallet
       await l1Erc20Token
         .connect(localWallet.connect(ethProvider))
         .transfer(userWalletAddress, BigNumber.from(50000000))
