@@ -169,6 +169,8 @@ export function HeaderAccountPopover() {
         <Popover.Button
           className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0"
           onClick={() => setTxHistoryViewedOnce(true)}
+          role="button"
+          aria-label={`Account Header Button`}
         >
           <div>
             <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">

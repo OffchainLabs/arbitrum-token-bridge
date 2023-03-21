@@ -518,7 +518,10 @@ function TokensPanel({
         </div>
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
-      <div className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]">
+      <div
+        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
+        data-cy="tokenSearchList"
+      >
         <AutoSizer disableHeight>
           {({ width }) => (
             <List
