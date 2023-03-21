@@ -136,7 +136,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_PRIVATE_KEY_CUSTOM: b6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_E2E_INFURA_KEY }}
+          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
@@ -147,7 +147,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_E2E_INFURA_KEY }}
+          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env
 
