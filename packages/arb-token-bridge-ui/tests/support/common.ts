@@ -88,7 +88,7 @@ export async function getInitialERC20Balance(
 
 export const setupMetamaskNetwork = (
   networkType: NetworkType,
-  networkName: string,
+  networkName?: string,
   addNewNetwork?: boolean,
 ) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)

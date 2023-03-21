@@ -10,7 +10,6 @@
 import '@testing-library/cypress/add-commands'
 import { recurse } from 'cypress-recurse'
 import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
-import { shortenAddress } from '../../src/util/CommonUtils'
 
 export function login({
   networkType,
