@@ -145,6 +145,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_NEXT_PUBLIC_IS_E2E_TEST: true
+          envkey_NEXT_PUBLIC_INFURA_KEY: c4d82badccd443c4922660ad72c76c6e
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env
 
