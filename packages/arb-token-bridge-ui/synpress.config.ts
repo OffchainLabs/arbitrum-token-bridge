@@ -13,7 +13,7 @@ import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
 export default defineConfig({
   userAgent: 'synpress',
   // in CI cynpress might sometimes need to try multiple times
-  retries: process.env.NODE_ENV === 'development' ? 1 : 0,
+  retries: process.env.NODE_ENV === 'development' ? 1 : 4,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: false,
@@ -122,6 +122,7 @@ export default defineConfig({
         )
         await tx.wait()
       })
+      config.env.NODE_ENV = process.env.NODE_ENV
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ADDRESS = userWalletAddress
@@ -142,13 +143,13 @@ export default defineConfig({
       'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
-      // 'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
-      // 'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
-      // // 'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
-      // 'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
-      // 'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
-      // 'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
-      // 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
+      'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
+      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      // 'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
+      'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
+      'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
+      'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
+      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
     supportFile: 'tests/support/index.ts'
   }

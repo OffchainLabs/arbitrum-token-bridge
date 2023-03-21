@@ -4,7 +4,7 @@ import 'cypress-localstorage-commands'
 
 Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: process.env.NODE_ENV === 'development' ? 50 : 300
+  keystrokeDelay: Cypress.env('NODE_ENV') === 'development' ? 50 : 300
 })
 
 before(() => {
