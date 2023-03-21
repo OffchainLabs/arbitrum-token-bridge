@@ -352,6 +352,12 @@ export async function switchChain({
 
     onSuccess?.()
   } catch (err: any) {
+    // User cancelled the switch
+    if (err.code === 4001) {
+      onError?.(err)
+      return
+    }
+
     if (err.code === 4902) {
       // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
       // This error code indicates that the chain has not been added to MetaMask.
@@ -372,6 +378,9 @@ export async function switchChain({
         ])
       } catch (err: any) {
         onError?.(err)
+        if (err.code === 4001) {
+          return
+        }
         Sentry.captureException(err)
       }
 
