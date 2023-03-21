@@ -1,8 +1,12 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
-import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
-import { BadgeCheckIcon } from '@heroicons/react/solid'
+import {
+  CheckCircleIcon,
+  XIcon,
+  ArrowSmLeftIcon,
+  ExclamationCircleIcon
+} from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import { Loader } from '../common/atoms/Loader'
@@ -121,6 +125,17 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
   }, [token])
 
+  const isPotentialFakeArbitrumToken = useMemo(() => {
+    if (!token || isArbitrumToken) {
+      return false
+    }
+
+    return (
+      token.name.toLowerCase().includes('arb') ||
+      token.symbol.toLowerCase().includes('arb')
+    )
+  }, [token, isArbitrumToken])
+
   const tokenListInfo = useMemo(() => {
     if (!token) {
       return null
@@ -208,7 +223,16 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isArbitrumToken && (
               <Tooltip content={arbitrumTokenTooltipContent}>
-                <BadgeCheckIcon className="h-4 w-4 text-blue-link" />
+                <div className="flex items-center space-x-1 rounded-full bg-lime py-1 px-2">
+                  <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
+                  <span className="text-xs text-lime-dark">Official token</span>
+                </div>
+              </Tooltip>
+            )}
+
+            {isPotentialFakeArbitrumToken && (
+              <Tooltip content="This token may potentially be impersonating the Arbitrum token.">
+                <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
               </Tooltip>
             )}
           </div>
