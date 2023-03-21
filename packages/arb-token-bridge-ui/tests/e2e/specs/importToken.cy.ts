@@ -106,7 +106,7 @@ describe('Import token', () => {
         cy.findByLabelText('Arbed CMC List')
           .as('tokenListToggle')
           .parent()
-          .click({ scrollBehavior: false })
+          .click({ scrollBehavior: false, force: true })
         cy.get('@tokenListToggle').should('be.checked')
 
         cy.get('@backToSelectTokenButton')

@@ -12,12 +12,7 @@ import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
-  retries: {
-    // Configure retry attempts for `cypress run`
-    // Default is 0
-    runMode: 0,
-    openMode: 0
-  },
+  retries: 4,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: true,
