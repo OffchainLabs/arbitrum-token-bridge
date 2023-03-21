@@ -32,6 +32,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
+import { StatusBadge } from '../common/StatusBadge'
 
 enum Panel {
   TOKENS,
@@ -131,8 +132,8 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     }
 
     return (
-      token.name.toLowerCase().includes('arb') ||
-      token.symbol.toLowerCase().includes('arb')
+      token.name.toLowerCase().startsWith('arb') ||
+      token.symbol.toLowerCase().startsWith('arb')
     )
   }, [token, isArbitrumToken])
 
@@ -223,15 +224,15 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isArbitrumToken && (
               <Tooltip content={arbitrumTokenTooltipContent}>
-                <div className="flex items-center space-x-1 rounded-full bg-lime py-1 px-2">
-                  <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
-                  <span className="text-xs text-lime-dark">Official token</span>
-                </div>
+                <StatusBadge variant="green">
+                  <CheckCircleIcon className="h-4 w-4" />
+                  <span className="text-xs">Official token</span>
+                </StatusBadge>
               </Tooltip>
             )}
 
             {isPotentialFakeArbitrumToken && (
-              <Tooltip content="This token may potentially be impersonating the Arbitrum token.">
+              <Tooltip content="This token is different from the official Arbitrum token.">
                 <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
               </Tooltip>
             )}
