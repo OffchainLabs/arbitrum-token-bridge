@@ -75,7 +75,7 @@ export const closeLowBalanceDialog = () => {
 }
 
 export const openTransactionsPanel = () => {
-  cy.findByRole('button', { name: shortenAddress(Cypress.env('ADDRESS')) })
+  cy.findByRole('button', { name: /account header button/i })
     .should('be.visible')
     .click()
 
