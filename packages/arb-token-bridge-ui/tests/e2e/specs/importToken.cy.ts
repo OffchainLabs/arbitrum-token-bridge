@@ -101,26 +101,30 @@ describe('Import token', () => {
           .should('be.visible')
           .click({ scrollBehavior: false })
 
-        cy.findByRole('button', { name: 'Back to Select Token' })
-          .as('backToSelectTokenButton')
-          .scrollIntoView()
-
-        cy.findByText('Arbed CMC List').should('be.visible')
+        cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
         cy.findByLabelText('Arbed CMC List')
           .as('tokenListToggle')
           .parent()
           .click({ scrollBehavior: false })
         cy.get('@tokenListToggle').should('be.checked')
 
-        cy.get('@backToSelectTokenButton')
+        cy.findByRole('button', { name: 'Back to Select Token' })
+          .scrollIntoView()
           .should('be.visible')
           .click({ scrollBehavior: false })
 
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .typeRecursively('UNI')
-        cy.findAllByText('Uniswap').first().click({ scrollBehavior: false })
+          .type('UNI', { scrollBehavior: false })
+
+        cy.get('[data-cy="tokenSearchList"]')
+          .first()
+          .within(() => {
+            // cy.get() will only search for elements within .tokenSearchList,
+            // not within the entire document, fixing the multiple Uniswap text issue
+            cy.findByText('Uniswap').click({ scrollBehavior: false })
+          })
 
         // UNI token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })

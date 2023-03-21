@@ -93,15 +93,9 @@ describe('Switch Networks', () => {
 
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
-        cy.on('uncaught:exception', err => {
-          if (err.message.includes('Chain 11155111 not supported')) {
-            cy.findByText(
-              /Oops! You’re connected to the wrong network/i
-            ).should('be.visible')
-            // allow this exception
-            return false
-          }
-        })
+        cy.findByText(/Oops! You’re connected to the wrong network/i).should(
+          'be.visible'
+        )
         cy.changeMetamaskNetwork('Sepolia test network')
 
         context('Allow Network change from wrong network UI list', () => {

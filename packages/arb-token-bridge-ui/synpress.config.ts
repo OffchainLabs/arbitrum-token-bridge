@@ -35,21 +35,24 @@ export default defineConfig({
       const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
       const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 
-      const wallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
-      const testWallet = Wallet.createRandom()
-      const testWalletAddress = await testWallet.getAddress()
+
+      const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
+      const userWallet = Wallet.createRandom()
+      // const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
+      const userWalletAddress = await userWallet.getAddress()
+
       const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
       const erc20Contract = new TestERC20__factory().connect(
-        wallet.connect(ethProvider)
+        localWallet.connect(ethProvider)
       )
 
       const getWethContract = (
         provider: StaticJsonRpcProvider,
         tokenAddress: string
       ) =>
-        TestWETH9__factory.connect(tokenAddress, testWallet.connect(provider))
+        TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
 
       // Deploy ERC-20 token to L1
       const l1Erc20Token = await erc20Contract.deploy()
@@ -59,7 +62,7 @@ export default defineConfig({
       const l2Deploy = await erc20Bridger.deposit({
         amount: BigNumber.from(0),
         erc20L1Address: l1Erc20Token.address,
-        l1Signer: wallet.connect(ethProvider),
+        l1Signer: localWallet.connect(ethProvider),
         l2Provider: arbProvider
       })
       await l2Deploy.wait()
@@ -70,26 +73,34 @@ export default defineConfig({
       const mintedL1Erc20Token = await l1Erc20Token.mint()
       await mintedL1Erc20Token.wait()
 
-      // Send minted ERC-20 to the test wallet
+      // Send minted ERC-20 to the test userWallet
       await l1Erc20Token
-        .connect(wallet.connect(ethProvider))
-        .transfer(testWalletAddress, BigNumber.from(50000000))
+        .connect(localWallet.connect(ethProvider))
+        .transfer(userWalletAddress, BigNumber.from(50000000))
 
       on('before:run', async () => {
         let tx
-        // Fund the test wallet. We do this to run tests on a small amount of ETH.
-        // Fund L1
-        tx = await wallet.connect(ethProvider).sendTransaction({
-          to: testWalletAddress,
-          value: utils.parseEther('123.45678')
-        })
-        await tx.wait()
-        // Fund L2
-        tx = await wallet.connect(arbProvider).sendTransaction({
-          to: testWalletAddress,
-          value: utils.parseEther('0.5')
-        })
-        await tx.wait()
+        // Fund the userWallet. We do this to run tests on a small amount of ETH.
+
+        // Fund L1 (only if the balance is less than 1 eth)
+        const l1Balance = await ethProvider.getBalance(userWalletAddress)
+        if (l1Balance.lt(utils.parseEther('1'))) {
+          tx = await localWallet.connect(ethProvider).sendTransaction({
+            to: userWalletAddress,
+            value: utils.parseEther('1')
+          })
+          await tx.wait()
+        }
+
+        // Fund L2 (only if the balance is less than 0.5 eth)
+        const l2Balance = await arbProvider.getBalance(userWalletAddress)
+        if (l2Balance.lt(utils.parseEther('0.5'))) {
+          tx = await localWallet.connect(arbProvider).sendTransaction({
+            to: userWalletAddress,
+            value: utils.parseEther('0.5')
+          })
+          await tx.wait()
+        }
 
         // Wrap ETH to test ERC-20 transactions
         // L1
@@ -110,10 +121,8 @@ export default defineConfig({
         )
         await tx.wait()
       })
-      config.env.ETH_RPC_URL = ethRpcUrl
-      config.env.ARB_RPC_URL = arbRpcUrl
-      config.env.ADDRESS = testWalletAddress
-      config.env.PRIVATE_KEY = testWallet.privateKey
+      config.env.ADDRESS = userWalletAddress
+      config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1Erc20Token.address
       config.env.ERC20_TOKEN_ADDRESS_L2 = await erc20Bridger.getL2ERC20Address(
@@ -132,6 +141,7 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      // 'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
       'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
