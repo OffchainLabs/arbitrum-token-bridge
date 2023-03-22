@@ -58,6 +58,7 @@ export {
 } from './deposits/fetchDeposits'
 
 export { type FetchDepositsFromSubgraphResult } from './deposits/fetchDepositsFromSubgraph'
+export { type FetchWithdrawalsFromSubgraphResult } from './withdrawals/fetchWithdrawalsFromSubgraph'
 
 export {
   fetchBlockNumberFromSubgraph,

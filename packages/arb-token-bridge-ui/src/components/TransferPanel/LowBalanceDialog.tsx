@@ -17,6 +17,7 @@ import {
   FiatOnRampName
 } from './LowBalanceDialogContent'
 import { useBalance } from 'token-bridge-sdk'
+import Image from 'next/image'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -57,10 +58,12 @@ function ExternalLinkCard({
       <div className="flex flex-col space-y-1 rounded-lg border border-gray-6 bg-white p-1">
         <div className="flex w-full justify-between">
           <div className="w-4" />
-          <img
+          <Image
             src={imageSrc}
             alt={title}
             className="mt-2 h-10 w-10 rounded-full"
+            width="40"
+            height="40"
           />
           <ExternalLinkIcon className="h-4 w-4 text-gray-6" />
         </div>
