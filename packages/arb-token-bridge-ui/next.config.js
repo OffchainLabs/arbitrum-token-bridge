@@ -8,9 +8,6 @@ module.exports = {
 
     return config
   },
-  images: {
-    domains: ['www.mexc.com']
-  },
   distDir: 'build',
   productionBrowserSourceMaps: true
 }

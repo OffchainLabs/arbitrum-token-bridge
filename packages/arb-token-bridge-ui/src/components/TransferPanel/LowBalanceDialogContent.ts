@@ -21,11 +21,6 @@ export const LowBalanceDialogContent = {
       imageSrc: '/images/projects/crypto-com-logo.webp'
     },
     {
-      href: 'https://www.huobi.com',
-      title: 'Huobi',
-      imageSrc: '/images/projects/huobi-global__trashed-logo.webp'
-    },
-    {
       href: 'https://www.kucoin.com',
       title: 'Kucoin',
       imageSrc: '/images/projects/kucoin-logo.webp'
@@ -33,7 +28,7 @@ export const LowBalanceDialogContent = {
     {
       href: 'https://www.mexc.com',
       title: 'MEXC',
-      imageSrc: 'https://www.mexc.com/sites/favicon.png'
+      imageSrc: '/images/projects/mexc-exchange-logo.webp'
     },
     {
       href: 'https://www.okx.com',
