@@ -12,7 +12,7 @@ describe('Login Account', () => {
   let l1ETHbal
   let l2ETHbal
 
-  before(function () {
+  before(() => {
     getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
       val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
     )
@@ -36,6 +36,8 @@ describe('Login Account', () => {
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({
       networkType: 'L1',
+      // we add a new network if RPC is different to already set up MetaMask local network
+      // this is the case for CI where we use a different RPC url
       addNewNetwork: Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl
     })
     cy.findByText('Bridging summary will appear here.').should('be.visible')

@@ -151,6 +151,16 @@ jobs:
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env
 
+      - name: Make synpress .env
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_CYPRESS_GROUP: medium-resolution
+          envkey_DISPLAY_HEIGHT: 768
+          DISPLAY_WIDTH: 1366
+          SE_SCREEN_HEIGHT: 768
+          SE_SCREEN_WIDTH: 1366
+          file_name: medium-res.env
+
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
 
