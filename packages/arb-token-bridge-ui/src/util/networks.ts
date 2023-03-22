@@ -10,6 +10,7 @@ import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
 import { loadEnvironmentVariableWithFallback } from './index'
+import { isUserRejectedError } from './isUserRejectedError'
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -352,8 +353,7 @@ export async function switchChain({
 
     onSuccess?.()
   } catch (err: any) {
-    // User cancelled the switch
-    if (err.code === 4001) {
+    if (isUserRejectedError(err)) {
       onError?.(err)
       return
     }
@@ -378,7 +378,7 @@ export async function switchChain({
         ])
       } catch (err: any) {
         onError?.(err)
-        if (err.code === 4001) {
+        if (isUserRejectedError(err)) {
           return
         }
         Sentry.captureException(err)
