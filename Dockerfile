@@ -10,6 +10,3 @@ COPY yarn.lock ./
 FROM base as test
 RUN npm install
 COPY . .
-
-
-
