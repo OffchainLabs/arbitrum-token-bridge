@@ -37,6 +37,20 @@ services:
     networks:
       - nitro_default
 
+  video:
+    container_name: video
+    image: synthetixio/video:457bb48776c3b14de232d9dda620ba9188dc40ac-base
+    volumes:
+      - ./docker/videos-ci:/videos
+    environment:
+      - FILE_NAME=CI-full-video.mp4
+      - SE_SCREEN_WIDTH=${SE_SCREEN_WIDTH}
+      - SE_SCREEN_HEIGHT=${SE_SCREEN_HEIGHT}
+    depends_on:
+      - display
+    networks:
+      - nitro_default
+
 networks:
   nitro_default:
     external: true
