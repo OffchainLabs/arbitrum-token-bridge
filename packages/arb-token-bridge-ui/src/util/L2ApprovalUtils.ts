@@ -17,6 +17,18 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       symbol: 'GRT',
       l1Address: '0xc944e90c64b2c07662a292be6244bdf05cda44a7',
       l2Address: '0x9623063377AD1B27544C965cCd7342f7EA7e88C7'
+    },
+    {
+      symbol: 'ARB',
+      l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
+      l2Address: '0x912CE59144191C1204E64559FE8253a0e49E6548'
+    }
+  ],
+  [ChainId.ArbitrumNova]: [
+    {
+      symbol: 'ARB',
+      l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
+      l2Address: '0xf823C3cD3CeBE0a1fA952ba88Dc9EEf8e0Bf46AD'
     }
   ],
   [ChainId.ArbitrumGoerli]: [
