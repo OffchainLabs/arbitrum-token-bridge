@@ -156,9 +156,9 @@ jobs:
         with:
           envkey_CYPRESS_GROUP: medium-resolution
           envkey_DISPLAY_HEIGHT: 768
-          DISPLAY_WIDTH: 1366
-          SE_SCREEN_HEIGHT: 768
-          SE_SCREEN_WIDTH: 1366
+          envkey_DISPLAY_WIDTH: 1366
+          envkey_SE_SCREEN_HEIGHT: 768
+          envkey_SE_SCREEN_WIDTH: 1366
           file_name: medium-res.env
 
       - name: Set up the local node
