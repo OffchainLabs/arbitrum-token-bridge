@@ -39,11 +39,8 @@ export default defineConfig({
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
 
-      console.log('var: ', process.env.NEXT_PUBLIC_PRIVATE_KEY_CUSTOM)
-
-      const localWallet = new Wallet(process.env.NEXT_PUBLIC_PRIVATE_KEY_CUSTOM!)
-      const userWallet = Wallet.createRandom()
-      // const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
+      const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
+      const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
       const userWalletAddress = await userWallet.getAddress()
 
       const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
@@ -147,7 +144,7 @@ export default defineConfig({
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
       'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
-      // 'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
+      'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
       'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param

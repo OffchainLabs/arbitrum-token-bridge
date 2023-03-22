@@ -9,7 +9,6 @@ on:
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-  NEXT_PUBLIC_E2E_PRIVATE_KEY: ${{ secrets.NEXT_PUBLIC_E2E_PRIVATE_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
@@ -135,8 +134,9 @@ jobs:
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          envkey_NEXT_PUBLIC_PRIVATE_KEY_CUSTOM: ${{ secrets.NEXT_PUBLIC_E2E_PRIVATE_KEY }}
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+          envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          envkey_NEXT_PUBLIC_INFURA_KEY: $NEXT_PUBLIC_INFURA_KEY
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
@@ -147,7 +147,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v1.3
         with:
           envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          envkey_NEXT_PUBLIC_INFURA_KEY: $NEXT_PUBLIC_INFURA_KEY
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env
 
