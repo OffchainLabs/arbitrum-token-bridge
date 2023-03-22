@@ -196,7 +196,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       isDepositMode ? l1Network.chainID : l2Network.chainID
     )
 
-    return <span>This is the official Arbitrum token on {networkName}.</span>
+    return (
+      <span>
+        This is the official Arbitrum token on {networkName}. Please beware of
+        fake tokens trying to impersonate it.
+      </span>
+    )
   }, [isDepositMode, l1Network, l2Network])
 
   return (
@@ -226,14 +231,14 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               <Tooltip content={arbitrumTokenTooltipContent}>
                 <StatusBadge variant="green">
                   <CheckCircleIcon className="h-4 w-4" />
-                  <span className="text-xs">Official token</span>
+                  <span className="text-xs">Official ARB token</span>
                 </StatusBadge>
               </Tooltip>
             )}
 
             {isPotentialFakeArbitrumToken && (
-              <Tooltip content="This token is different from the official Arbitrum token.">
-                <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
+              <Tooltip content="This token is different from the official Arbitrum token (ARB).">
+                <ExclamationCircleIcon className="h-4 w-4 text-brick-dark" />
               </Tooltip>
             )}
           </div>
@@ -458,12 +463,18 @@ function TokensPanel({
     ]
     return tokens
       .filter(address => {
+        // Derive the token object from the address string
+        const token = tokensFromUser[address] || tokensFromLists[address]
+
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH
           if (address === ETH_IDENTIFIER) {
             return true
           }
+
+          // Always show official ARB token
+          if (token?.name?.toLowerCase() === 'arbitrum') return true
 
           const balance = getBalance(address)
           // Only show tokens with a balance greater than zero
@@ -473,8 +484,6 @@ function TokensPanel({
         if (address === ETH_IDENTIFIER) {
           return 'ethereumeth'.includes(tokenSearch)
         }
-
-        const token = tokensFromUser[address] || tokensFromLists[address]
 
         if (!token) {
           return false
