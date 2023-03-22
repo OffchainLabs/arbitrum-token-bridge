@@ -238,7 +238,10 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
-                <ExclamationCircleIcon className="h-4 w-4 text-brick-dark" />
+                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
+                  <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
+                  <span className="text-xs text-gray-10">Careful</span>
+                </div>
               </Tooltip>
             )}
           </div>
