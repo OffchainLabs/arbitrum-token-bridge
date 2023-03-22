@@ -39,7 +39,9 @@ export default defineConfig({
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
 
-      const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
+      console.log('var: ', process.env.NEXT_PUBLIC_PRIVATE_KEY_CUSTOM)
+
+      const localWallet = new Wallet(process.env.NEXT_PUBLIC_PRIVATE_KEY_CUSTOM!)
       const userWallet = Wallet.createRandom()
       // const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
       const userWalletAddress = await userWallet.getAddress()
