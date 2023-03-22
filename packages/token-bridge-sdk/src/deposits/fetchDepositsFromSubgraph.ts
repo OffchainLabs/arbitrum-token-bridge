@@ -1,4 +1,4 @@
-import { getBaseUrl, sanitizeQueryParams } from './../util'
+import { getAPIBaseUrl, sanitizeQueryParams } from './../util'
 
 export type FetchDepositsFromSubgraphResult = {
   receiver: string
@@ -68,13 +68,10 @@ export const fetchDepositsFromSubgraph = async ({
     })
   )
 
-  const response = await fetch(
-    `${getBaseUrl()}/api/deposits?${urlParams.toString()}`,
-    {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
+  const response = await fetch(`${getAPIBaseUrl()}/api/deposits?${urlParams}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  })
 
   const transactions: FetchDepositsFromSubgraphResult[] = (
     await response.json()

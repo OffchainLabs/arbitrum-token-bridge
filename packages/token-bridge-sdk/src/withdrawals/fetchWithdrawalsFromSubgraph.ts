@@ -1,4 +1,4 @@
-import { getBaseUrl, sanitizeQueryParams } from './../util'
+import { getAPIBaseUrl, sanitizeQueryParams } from './../util'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
@@ -23,7 +23,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
  * @param query.address Account address
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
- * @param query.l2Provider Provider for the L2 network
+ * @param query.l2ChainId ChainId for the L2 network
  * @param query.pageSize Fetch these many records from subgraph
  * @param query.pageNumber Fetch records starting [pageNumber * pageSize] records
  * @param query.searchString Searches records through the l2TxHash
@@ -63,7 +63,7 @@ export async function fetchWithdrawalsFromSubgraph({
   )
 
   const response = await fetch(
-    `${getBaseUrl()}/api/withdrawals?${urlParams.toString()}`,
+    `${getAPIBaseUrl()}/api/withdrawals?${urlParams}`,
     {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
