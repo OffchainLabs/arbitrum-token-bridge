@@ -477,7 +477,10 @@ function TokensPanel({
           }
 
           // Always show official ARB token
-          if (token?.name?.toLowerCase() === 'arbitrum') return true
+          if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
+            console.log('HELLO', token)
+            return true
+          }
 
           const balance = getBalance(address)
           // Only show tokens with a balance greater than zero
