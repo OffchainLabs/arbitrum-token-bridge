@@ -10,6 +10,7 @@ import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import { ArbitrumStats } from './ArbitrumStats'
 
 export const motionDivProps = {
   layout: true,
@@ -30,7 +31,7 @@ export const motionDivProps = {
 export function MainContent() {
   const dispatch = useAppContextDispatch()
   const {
-    layout: { isTransactionHistoryPanelVisible }
+    layout: { isTransactionHistoryPanelVisible, isArbitrumStatsVisible }
   } = useAppContextState()
   function closeTransactionHistory() {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
@@ -111,7 +112,6 @@ export function MainContent() {
           </>
         </AnimatePresence>
       </div>
-
       <SidePanel
         isOpen={isTransactionHistoryPanelVisible}
         heading="Transaction History"
@@ -133,6 +133,9 @@ export function MainContent() {
           }}
         />
       </SidePanel>
+
+      {/* Toggle-able Stats for nerds */}
+      {isArbitrumStatsVisible && <ArbitrumStats />}
     </div>
   )
 }

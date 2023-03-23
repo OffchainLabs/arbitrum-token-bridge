@@ -15,6 +15,7 @@ type AppContextState = {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
+    isArbitrumStatsVisible: boolean
   }
 }
 
@@ -23,7 +24,8 @@ const initialState: AppContextState = {
   layout: {
     isTransferPanelVisible: true,
     isTransferring: false,
-    isTransactionHistoryPanelVisible: false
+    isTransactionHistoryPanelVisible: false,
+    isArbitrumStatsVisible: false
   }
 }
 
@@ -37,6 +39,7 @@ type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
+  | { type: 'layout.set_arbitrumstats_panel_visible'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
@@ -55,6 +58,15 @@ function reducer(state: AppContextState, action: Action) {
         layout: {
           ...state.layout,
           isTransactionHistoryPanelVisible: action.payload
+        }
+      }
+
+    case 'layout.set_arbitrumstats_panel_visible':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          isArbitrumStatsVisible: action.payload
         }
       }
 

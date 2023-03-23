@@ -7,7 +7,8 @@ import {
   ExternalLinkIcon,
   LogoutIcon,
   DocumentTextIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  ChartBarIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -157,6 +158,10 @@ export function HeaderAccountPopover() {
     trackEvent('Open Transaction History Click')
   }
 
+  function openArbitrumStats() {
+    dispatch({ type: 'layout.set_arbitrumstats_panel_visible', payload: true })
+  }
+
   const headerItemsClassName =
     'arb-hover flex w-full flex-row items-center space-x-2 px-[4rem] py-2 text-lg lg:text-sm font-light text-white hover:bg-blue-arbitrum lg:px-4'
 
@@ -255,6 +260,15 @@ export function HeaderAccountPopover() {
               <ExternalLinkIcon className="h-4 w-4 text-white" />
               <span>Explorer</span>
             </ExternalLink>
+
+            {/* Arbitrum stats button */}
+            <button
+              className={headerItemsClassName}
+              onClick={openArbitrumStats}
+            >
+              <ChartBarIcon className="h-4 w-4 text-white" />
+              <span>Stats for nerds</span>
+            </button>
 
             {/* Disconnect button */}
             <button className={headerItemsClassName} onClick={disconnectWallet}>
