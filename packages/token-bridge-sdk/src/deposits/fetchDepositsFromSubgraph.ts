@@ -68,6 +68,11 @@ export const fetchDepositsFromSubgraph = async ({
     })
   )
 
+  console.log(
+    'Test: final deposits url:',
+    `${getAPIBaseUrl()}/api/deposits?${urlParams}`
+  )
+
   const response = await fetch(`${getAPIBaseUrl()}/api/deposits?${urlParams}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
