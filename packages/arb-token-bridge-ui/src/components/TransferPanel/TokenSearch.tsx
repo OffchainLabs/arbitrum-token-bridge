@@ -478,7 +478,6 @@ function TokensPanel({
 
           // Always show official ARB token
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
-            console.log('HELLO', token)
             return true
           }
 
