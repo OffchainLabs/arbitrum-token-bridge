@@ -79,9 +79,8 @@ describe('Import token', () => {
 
     context('User uses token symbol', () => {
       it('should import token', () => {
-        cy.login({ networkType: 'L1' })
         // we don't have the token list locally so we test on mainnet
-        cy.changeMetamaskNetwork('mainnet')
+        cy.login({ networkType: 'L1', networkName: 'mainnet' })
 
         // click low balance pop up if shown
         if (isLowBalanceMainnet) {
