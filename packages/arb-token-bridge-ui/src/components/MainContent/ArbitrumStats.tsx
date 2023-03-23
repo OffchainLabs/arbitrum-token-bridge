@@ -55,7 +55,7 @@ export const ArbitrumStats = () => {
   }
 
   return (
-    <div className="fixed right-0 bottom-0 z-50 m-4 flex flex-col gap-2 whitespace-nowrap rounded-md bg-[#000000e6] p-4 text-xs text-gray-8">
+    <div className="fixed right-0 bottom-0 z-50 m-4 flex flex-col gap-2 whitespace-nowrap rounded-md bg-[#000000d1] p-4 font-mono text-xs text-gray-8">
       <div className="section flex flex-col">
         <span className="text-md text-white">
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
@@ -67,7 +67,9 @@ export const ArbitrumStats = () => {
           &gt; Block :{' '}
           {currentL1BlockNumber ? currentL1BlockNumber : 'Loading...'}
         </span>
-        <span>&gt; Gas price : {currentL1GasPriceGwei} Gwei</span>
+        <span>
+          &gt; Gas price : {Number(currentL1GasPriceGwei).toFixed(2)} Gwei
+        </span>
         <span>
           &gt; Activity :{' '}
           <span className={`${currentL1Activity.className}`}>
@@ -87,7 +89,9 @@ export const ArbitrumStats = () => {
           &gt; Block :{' '}
           {currentL2BlockNumber ? currentL2BlockNumber : 'Loading...'}
         </span>
-        <span>&gt; Gas price : {currentL2GasPriceGwei} Gwei</span>
+        <span>
+          &gt; Gas price : {Number(currentL2GasPriceGwei).toFixed(2)} Gwei
+        </span>
         <span>
           &gt; Activity :{' '}
           <span className={`${currentL2Activity.className}`}>
