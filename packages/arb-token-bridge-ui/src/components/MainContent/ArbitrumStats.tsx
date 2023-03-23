@@ -4,7 +4,7 @@ import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName } from '../../util/networks'
-import { formatUSD } from '../../util/NumberUtils'
+// import { formatUSD } from '../../util/NumberUtils'
 import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
@@ -36,16 +36,16 @@ export const ArbitrumStats = () => {
   const currentL1GasPrice = useGasPrice({ provider: l1.provider })
   const currentL1GasPriceEth = utils.formatEther(currentL1GasPrice)
   const currentL1GasPriceGwei = utils.formatUnits(currentL1GasPrice, 'gwei')
-  const currentL1GasPriceUSD = formatUSD(ethToUSD(Number(currentL1GasPriceEth)))
+  // const currentL1GasPriceUSD = formatUSD(ethToUSD(Number(currentL1GasPriceEth)))
   const currentL1Activity = getActivityThresholdL1(
     Number(currentL1GasPriceGwei || 0)
   )
 
   const currentL2GasPrice = useGasPrice({ provider: l2.provider })
   const currentL2GasPriceEth = utils.formatEther(currentL2GasPrice)
-  const currentL2GasPriceWei = utils.formatUnits(currentL2GasPrice)
+  // const currentL2GasPriceWei = utils.formatUnits(currentL2GasPrice)
   const currentL2GasPriceGwei = utils.formatUnits(currentL2GasPrice, 'gwei')
-  const currentL2GasPriceUSD = formatUSD(ethToUSD(Number(currentL2GasPriceEth)))
+  // const currentL2GasPriceUSD = formatUSD(ethToUSD(Number(currentL2GasPriceEth)))
   const currentL2Activity = getActivityThresholdL2(
     Number(currentL2GasPriceGwei || 0)
   )
