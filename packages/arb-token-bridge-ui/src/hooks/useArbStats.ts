@@ -1,11 +1,12 @@
 import useSWR from 'swr'
+import { getAPIBaseUrl } from 'token-bridge-sdk/dist/util'
 import { ArbStats } from '../pages/api/arbstats'
 
 export const useArbStats = () => {
   return useSWR(
     'arbstats',
     async () => {
-      const response = await fetch(`/api/arbstats`, {
+      const response = await fetch(`${getAPIBaseUrl()}/api/arbstats`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })
