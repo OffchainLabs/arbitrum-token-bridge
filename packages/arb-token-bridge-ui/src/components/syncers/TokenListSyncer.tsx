@@ -26,11 +26,17 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList =>
+    const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
+      // Always load the Arbitrum Token token list
+      if (bridgeTokenList.isArbitrumTokenTokenList) {
+        return true
+      }
+
+      return (
         bridgeTokenList.originChainID === l2Network.chainID &&
         bridgeTokenList.isDefault
-    )
+      )
+    })
 
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
