@@ -40,6 +40,7 @@ import {
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -646,8 +647,7 @@ export function TransferPanelMain({
               setFrom(network)
               setTo(l1.network)
             } catch (error: any) {
-              // 4001 - User rejected the request
-              if (error.code !== 4001) {
+              if (!isUserRejectedError(error)) {
                 Sentry.captureException(error)
               }
             }
@@ -682,8 +682,7 @@ export function TransferPanelMain({
                 })
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
-                // 4001 - User rejected the request
-                if (error.code !== 4001) {
+                if (!isUserRejectedError(error)) {
                   Sentry.captureException(error)
                 }
               }
@@ -722,8 +721,7 @@ export function TransferPanelMain({
             })
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
-            // 4001 - User rejected the request
-            if (error.code !== 4001) {
+            if (!isUserRejectedError(error)) {
               Sentry.captureException(error)
             }
           }
@@ -754,8 +752,7 @@ export function TransferPanelMain({
             setFrom(l1.network)
             setTo(network)
           } catch (error: any) {
-            // 4001 - User rejected the request
-            if (error.code !== 4001) {
+            if (!isUserRejectedError(error)) {
               Sentry.captureException(error)
             }
           }
