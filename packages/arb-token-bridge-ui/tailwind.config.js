@@ -2,6 +2,7 @@
 module.exports = {
   mode: 'jit',
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  plugins: [require('@headlessui/tailwindcss')],
   theme: {
     extend: {
       backgroundImage: {

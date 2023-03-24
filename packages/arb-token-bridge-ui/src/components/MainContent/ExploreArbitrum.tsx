@@ -4,7 +4,7 @@ import { ExternalLinkIcon } from '@heroicons/react/outline'
 import { Tab } from '@headlessui/react'
 
 import { Button } from '../common/Button'
-import { TabButton } from '../common/Tab'
+import { tabButtonClassName } from '../common/Tab'
 import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -171,14 +171,8 @@ export function ExploreArbitrum() {
         }
       >
         <Tab.List className="bg-blue-arbitrum">
-          <Tab as={Fragment}>
-            {({ selected }) => (
-              <TabButton selected={selected}>Explore</TabButton>
-            )}
-          </Tab>
-          <Tab as={Fragment}>
-            {({ selected }) => <TabButton selected={selected}>Play</TabButton>}
-          </Tab>
+          <Tab className={tabButtonClassName}>Explore</Tab>
+          <Tab className={tabButtonClassName}>Play</Tab>
         </Tab.List>
 
         <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">

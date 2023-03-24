@@ -11,7 +11,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
-import { TabButton } from '../common/Tab'
+import { tabButtonClassName } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
@@ -108,19 +108,9 @@ export function WithdrawalConfirmationDialog(
 
           <Tab.List className="bg-blue-arbitrum">
             {isArbitrumOne && (
-              <Tab as={Fragment}>
-                {({ selected }) => (
-                  <TabButton selected={selected}>
-                    Use a third-party bridge
-                  </TabButton>
-                )}
-              </Tab>
+              <Tab className={tabButtonClassName}>Use a third-party bridge</Tab>
             )}
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <TabButton selected={selected}>Use Arbitrum’s bridge</TabButton>
-              )}
-            </Tab>
+            <Tab className={tabButtonClassName}>Use Arbitrum’s bridge</Tab>
           </Tab.List>
 
           {isArbitrumOne && (

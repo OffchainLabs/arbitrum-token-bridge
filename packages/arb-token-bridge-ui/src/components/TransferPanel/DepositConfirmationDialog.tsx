@@ -13,7 +13,7 @@ import {
   FastBridgeNames,
   getFastBridges
 } from '../../util/fastBridges'
-import { TabButton } from '../common/Tab'
+import { tabButtonClassName } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -84,19 +84,11 @@ export function DepositConfirmationDialog(
 
           <Tab.List className="bg-blue-arbitrum">
             {isArbitrumOne && (
-              <Tab as={Fragment}>
-                {({ selected }) => (
-                  <TabButton selected={selected}>
-                    Use a third-party bridge
-                  </TabButton>
-                )}
+              <Tab className={tabButtonClassName}>
+                Explore Use a third-party bridge
               </Tab>
             )}
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <TabButton selected={selected}>Use Arbitrum’s bridge</TabButton>
-              )}
-            </Tab>
+            <Tab className={tabButtonClassName}>Use Arbitrum’s bridge</Tab>
           </Tab.List>
 
           {isArbitrumOne && tokenSymbol && (

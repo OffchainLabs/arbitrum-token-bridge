@@ -66,45 +66,29 @@ export const TransactionHistory = ({
       <div>
         <Tab.Group>
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <button
-                  aria-label="show deposit transactions"
-                  className={`${
-                    !selected ? 'arb-hover text-white' : 'selected bg-white'
-                  } roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base`}
-                >
-                  {/* Deposits */}
-                  {selected && (
-                    <img
-                      src={getNetworkLogo(l2.network.chainID)}
-                      className="max-w-6 h-6"
-                      alt="Deposit"
-                    />
-                  )}
-                  {`To ${getNetworkName(l2.network.chainID)}`}
-                </button>
-              )}
+            <Tab
+              aria-label="show deposit transactions"
+              className="ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white"
+            >
+              {/* Deposits */}
+              <img
+                src={getNetworkLogo(l2.network.chainID)}
+                className="max-w-6 h-6 ui-not-selected:hidden"
+                alt="Deposit"
+              />
+              {`To ${getNetworkName(l2.network.chainID)}`}
             </Tab>
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <button
-                  aria-label="show withdrawal transactions"
-                  className={`${
-                    !selected ? 'arb-hover text-white' : 'selected bg-white'
-                  } roundedTabRight roundedTabLeft relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base`}
-                >
-                  {/* Withdrawals */}
-                  {selected && (
-                    <img
-                      src={getNetworkLogo(l1.network.chainID)}
-                      className="max-w-6 h-6"
-                      alt="Withdraw"
-                    />
-                  )}
-                  {`To ${getNetworkName(l1.network.chainID)}`}
-                </button>
-              )}
+            <Tab
+              aria-label="show withdrawal transactions"
+              className="ui-not-selected:arb-hover roundedTabRight roundedTabLeft relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white"
+            >
+              {/* Withdrawals */}
+              <img
+                src={getNetworkLogo(l1.network.chainID)}
+                className="max-w-6 h-6 ui-not-selected:hidden"
+                alt="Withdraw"
+              />
+              {`To ${getNetworkName(l1.network.chainID)}`}
             </Tab>
           </Tab.List>
           <Tab.Panel className="overflow-auto">
