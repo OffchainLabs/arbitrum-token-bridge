@@ -221,7 +221,7 @@ export function HeaderAccountPopover() {
                     fallback={<CustomBoringAvatar size={56} name={account} />}
                   />
                 </div>
-                <div className="flex translate-y-[15px] transform flex-row items-center space-x-3">
+                <div className="flex translate-y-[15px] flex-row items-center space-x-3">
                   <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
