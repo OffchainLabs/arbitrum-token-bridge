@@ -1,5 +1,6 @@
 import { utils } from 'ethers'
 import { useGasPrice } from 'token-bridge-sdk'
+import { useArbStats } from '../../hooks/useArbStats'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -30,6 +31,12 @@ export const ArbitrumStats = () => {
 
   const currentL1BlockNumber = useBlockNumber(l1.provider)
   const currentL2BlockNumber = useBlockNumber(l2.provider)
+
+  const {
+    data: arbStats,
+    isValidating: arbStatsLoading,
+    error: arbStatsError
+  } = useArbStats()
 
   const { ethToUSD } = useETHPrice()
 
@@ -71,7 +78,7 @@ export const ArbitrumStats = () => {
           &gt; Gas price : {Number(currentL1GasPriceGwei).toFixed(2)} Gwei
         </span>
         <span>
-          &gt; Activity :{' '}
+          &gt; Gas cost :{' '}
           <span className={`${currentL1Activity.className}`}>
             {currentL1Activity.activity}
           </span>
@@ -93,10 +100,13 @@ export const ArbitrumStats = () => {
           &gt; Gas price : {Number(currentL2GasPriceGwei).toFixed(2)} Gwei
         </span>
         <span>
-          &gt; Activity :{' '}
+          &gt; Gas cost :{' '}
           <span className={`${currentL2Activity.className}`}>
             {currentL2Activity.activity}
           </span>
+        </span>
+        <span>
+          &gt; TPS : {arbStatsLoading ? 'Loading...' : arbStats?.tps || '-'}
         </span>
       </div>
 
