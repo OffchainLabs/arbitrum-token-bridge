@@ -110,12 +110,12 @@ export const ArbitrumStats = () => {
         </span>
       </div>
 
-      <div
+      <button
         className="absolute right-4 top-4 cursor-pointer"
         onClick={closeArbitrumStats}
       >
         [x]
-      </div>
+      </button>
     </div>
   )
 }

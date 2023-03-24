@@ -1,19 +1,9 @@
 // Connects to arbiscan and scrapes some nice info which we can show on our UI as well
 
-const axios = require('axios')
-const cheerio = require('cheerio')
+import axios from 'axios'
+import cheerio from 'cheerio'
 
 import { NextApiRequest, NextApiResponse } from 'next'
-
-const parseProperText = (text: string) => {
-  return (
-    text
-      ?.replaceAll('\n', '')
-      ?.split(' ')
-      .filter((char: string) => char !== '')
-      .join(' ') ?? ''
-  )
-}
 
 export type ArbStats = {
   tps: string
