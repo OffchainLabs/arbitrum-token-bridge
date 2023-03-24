@@ -4,6 +4,8 @@ import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
 
+export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
+
 export interface BridgeTokenList {
   id: number
   originChainID: number
@@ -11,9 +13,19 @@ export interface BridgeTokenList {
   name: string
   isDefault: boolean
   logoURI: string
+  isArbitrumTokenTokenList?: boolean
 }
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
+  {
+    id: SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
+    originChainID: 0, // This token list spans all Arbitrum chains and their L1 counterparts
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
+    name: 'Arbitrum Token',
+    isDefault: true,
+    logoURI: 'https://arbitrum.foundation/logo.png',
+    isArbitrumTokenTokenList: true
+  },
   {
     id: 1,
     originChainID: 42161,
@@ -144,7 +156,10 @@ export function fetchTokenLists(
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
     const requestListArray = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList => bridgeTokenList.originChainID === forL2ChainId
+      bridgeTokenList =>
+        bridgeTokenList.originChainID === forL2ChainId ||
+        // Always load the Arbitrum Token token list
+        bridgeTokenList.isArbitrumTokenTokenList
     )
 
     Promise.all(
