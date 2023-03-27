@@ -13,7 +13,7 @@ export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
     return (
       <Tab
         ref={ref}
-        className={`${tabButtonClassName} ${props.className}`}
+        className={`${tabButtonClassName} ${props.className ?? ''}`}
         {...props}
       >
         {props.children}
@@ -21,5 +21,3 @@ export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
     )
   }
 )
-
-TabButton.displayName = 'TabButton'
