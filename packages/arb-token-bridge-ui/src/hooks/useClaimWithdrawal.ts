@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type UseClaimWithdrawalResult = {
@@ -51,7 +52,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     }
 
     // Don't show any alert in case user denies the signature
-    if (err?.code === 4001) {
+    if (isUserRejectedError(err)) {
       return
     }
 

@@ -10,6 +10,7 @@ import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { isFathomNetworkName, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -55,13 +56,13 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       const tx = await retryableTicket.redeem()
       await tx.wait()
     } catch (error: any) {
-      if (error.code !== 4001) {
-        return alert(
-          `There was an error, here is more information: ${error.message}`
-        )
+      if (isUserRejectedError(error)) {
+        return
       }
 
-      return
+      return alert(
+        `There was an error, here is more information: ${error.message}`
+      )
     } finally {
       setIsRedeeming(false)
 
