@@ -213,7 +213,7 @@ input:checked + .slider:before {
   animation-name: flipInX;
 }
 
-.roundedTabRight.selected::after {
+.roundedTabRight[data-headlessui-state~='selected']::after {
   height: 15px;
   width: 15px;
   position: absolute;
@@ -226,7 +226,7 @@ input:checked + .slider:before {
   background-repeat: no-repeat;
 }
 
-.roundedTabLeft.selected::before {
+.roundedTabLeft[data-headlessui-state~='selected']::before {
   height: 15px;
   width: 15px;
   position: absolute;
@@ -238,4 +238,8 @@ input:checked + .slider:before {
   background-size: contain;
   background-repeat: no-repeat;
   transform: rotateY(180deg);
+}
+
+.roundedTab:not([data-headlessui-state~='selected']) > img {
+  display: none;
 }
