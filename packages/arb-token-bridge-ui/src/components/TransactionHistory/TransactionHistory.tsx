@@ -77,7 +77,7 @@ export const TransactionHistory = ({
               {/* Deposits */}
               <img
                 src={getNetworkLogo(l2.network.chainID)}
-                className="max-w-6 h-6"
+                className="h-6 max-w-6"
                 alt="Deposit"
               />
               {`To ${getNetworkName(l2.network.chainID)}`}
@@ -89,7 +89,7 @@ export const TransactionHistory = ({
               {/* Withdrawals */}
               <img
                 src={getNetworkLogo(l1.network.chainID)}
-                className="max-w-6 h-6"
+                className="h-6 max-w-6"
                 alt="Withdraw"
               />
               {`To ${getNetworkName(l1.network.chainID)}`}
