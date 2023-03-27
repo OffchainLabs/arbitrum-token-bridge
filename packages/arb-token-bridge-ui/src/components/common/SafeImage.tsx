@@ -1,6 +1,4 @@
-import { useState, useEffect, ImgHTMLAttributes } from 'react'
-
-import { sanitizeImageSrc } from '../../util'
+import { useState, ImgHTMLAttributes } from 'react'
 
 export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   fallback?: JSX.Element
@@ -8,30 +6,40 @@ export type SafeImageProps = ImgHTMLAttributes<HTMLImageElement> & {
 
 export function SafeImage(props: SafeImageProps) {
   const { fallback = null, src, ...imgProps } = props
-  const [validImageSrc, setValidImageSrc] = useState<false | string>(false)
+  const [validImageSrc, setValidImageSrc] = useState<boolean>(true)
 
-  useEffect(() => {
-    const image = new Image()
+  // useEffect(() => {
+  //   const image = new Image()
 
-    if (typeof src === 'undefined') {
-      setValidImageSrc(false)
-    } else {
-      const sanitizedImageSrc = sanitizeImageSrc(src)
+  //   if (typeof src === 'undefined') {
+  //     setValidImageSrc(null)
+  //   } else if (typeof src === 'string') {
+  //     const sanitizedImageSrc = sanitizeImageSrc(src)
 
-      image.onerror = () => setValidImageSrc(false)
-      image.onload = () => setValidImageSrc(sanitizedImageSrc)
-      image.src = sanitizedImageSrc
-    }
+  //     image.onerror = () => setValidImageSrc(null)
+  //     image.onload = () => setValidImageSrc(sanitizedImageSrc)
+  //     image.src = sanitizedImageSrc
+  //   }
 
-    return function cleanup() {
-      // Abort previous loading
-      image.src = ''
-    }
-  }, [src])
+  //   return function cleanup() {
+  //     // Abort previous loading
+  //     image.src = ''
+  //   }
+  // }, [src])
 
-  if (!validImageSrc) {
+  if (!validImageSrc || !src) {
     return fallback
   }
 
-  return <img {...imgProps} src={validImageSrc} alt={props.alt || ''} />
+  return (
+    // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
+    // It would throw error if it's loaded from external domains
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      {...imgProps}
+      src={src}
+      alt={props.alt || ''}
+      onError={() => setValidImageSrc(false)}
+    />
+  )
 }

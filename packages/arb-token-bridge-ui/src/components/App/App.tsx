@@ -49,6 +49,7 @@ import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
+import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 
 declare global {
   interface Window {
@@ -233,7 +234,6 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
-
   async function showConnectionModal() {
     try {
       await connect(modalProviderOpts)
@@ -305,7 +305,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             layout="row"
             imgProps={{
               className: 'sm:w-[300px]',
-              src: '/images/arbinaut-fixing-spaceship.webp',
+              src: FixingSpaceship,
               alt: 'Arbinaut fixing a spaceship'
             }}
           >

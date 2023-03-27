@@ -13,6 +13,7 @@ import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/outline'
 import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
+import Image from 'next/image'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -105,7 +106,7 @@ export function WithdrawalCardContainer({
     >
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
-        <img
+        <Image
           src={getNetworkLogo(ChainId.Mainnet)}
           className="absolute left-0 top-[1px] z-10 h-6 max-h-[90px] p-[2px] lg:relative lg:top-0 lg:left-[-30px] lg:h-auto lg:max-w-[90px] lg:opacity-[60%]"
           alt="Withdrawal"

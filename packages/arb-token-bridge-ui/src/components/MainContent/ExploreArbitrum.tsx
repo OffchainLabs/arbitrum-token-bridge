@@ -8,12 +8,13 @@ import { TabButton } from '../common/Tab'
 import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
-
+import ArbitrumOneLogo from '../../../public/ArbitrumOneLogo.svg'
 import {
   ExploreArbitrumContent,
   ExploreArbitrumDeFiProjectName,
   ExploreArbitrumNFTProjectName
 } from './ExploreArbitrumContent'
+import Image from 'next/image'
 
 preloadImages([
   ...ExploreArbitrumContent.defi.map(p => p.imageSrc),
@@ -90,10 +91,10 @@ function ProjectCard({
       </div>
       <div className="flex flex-row justify-between space-x-2 rounded-bl-xl rounded-br-xl bg-[rgba(0,0,0,0.29)] p-4 backdrop-blur-sm backdrop-filter">
         <p className="self-center font-light text-white">{description}</p>
-        <img
-          src="/ArbitrumOneLogo.svg"
+        <Image
+          src={ArbitrumOneLogo}
           alt="Arbitrum logo"
-          className="h-8 self-end"
+          className="w-8 self-end"
         />
       </div>
     </ExternalLink>

@@ -41,6 +41,7 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
+import Image from 'next/image'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -147,7 +148,7 @@ function NetworkListbox({
                 disabled={option.disabled}
               >
                 <div className="flex h-8 w-8 items-center justify-center">
-                  <img
+                  <Image
                     src={getNetworkLogo(option.chainID)}
                     alt={`${getNetworkName(option.chainID)} logo`}
                     className="max-w-8 max-h-9"

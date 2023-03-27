@@ -12,6 +12,7 @@ import {
 import { PendingTransactions } from './PendingTransactions'
 import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
+import Image from 'next/image'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -76,9 +77,9 @@ export const TransactionHistory = ({
                 >
                   {/* Deposits */}
                   {selected && (
-                    <img
+                    <Image
                       src={getNetworkLogo(l2.network.chainID)}
-                      className="max-w-6 h-6"
+                      className="h-6 w-auto"
                       alt="Deposit"
                     />
                   )}
@@ -96,9 +97,9 @@ export const TransactionHistory = ({
                 >
                   {/* Withdrawals */}
                   {selected && (
-                    <img
+                    <Image
                       src={getNetworkLogo(l1.network.chainID)}
-                      className="max-w-6 h-6"
+                      className="h-6 w-auto"
                       alt="Withdraw"
                     />
                   )}

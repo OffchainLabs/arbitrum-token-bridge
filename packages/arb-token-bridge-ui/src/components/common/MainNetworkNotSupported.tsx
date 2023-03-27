@@ -1,5 +1,6 @@
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
+import Image from 'next/image'
 import {
   ChainId,
   getNetworkLogo,
@@ -58,10 +59,10 @@ export const MainNetworkNotSupported = ({
         >
           <div className="flex flex-row items-center justify-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center">
-              <img
+              <Image
                 src={getNetworkLogo(Number(chainId))}
                 alt={`${getNetworkName(Number(chainId))} logo`}
-                className="max-w-8 max-h-8"
+                className="h-full w-auto"
               />
             </div>
             <span> {`Switch to ${getNetworkName(Number(chainId))}`}</span>

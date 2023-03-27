@@ -64,7 +64,6 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
-    "@svgr/webpack": "^6.5.1",
     "@synthetixio/synpress": "^3.0.5",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",

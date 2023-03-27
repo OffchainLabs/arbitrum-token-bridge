@@ -15,6 +15,8 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl } from '../../util/networks'
+import Image from 'next/image'
+import GrumpyCat from '@/images/grumpy-cat.webp'
 
 enum ImportStatus {
   LOADING,
@@ -287,7 +289,7 @@ export function TokenImportDialog({
               </span>
             </div>
             <div className="flex w-full justify-center py-4">
-              <img src="/images/grumpy-cat.webp" alt="Grumpy cat" />
+              <Image src={GrumpyCat} alt="Grumpy cat" />
             </div>
           </div>
         </div>
