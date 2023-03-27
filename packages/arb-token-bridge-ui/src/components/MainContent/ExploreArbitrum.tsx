@@ -1,10 +1,10 @@
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
 import { ExternalLinkIcon } from '@heroicons/react/outline'
 import { Tab } from '@headlessui/react'
 
 import { Button } from '../common/Button'
-import { tabButtonClassName } from '../common/Tab'
+import { TabButton } from '../common/Tab'
 import { ExternalLink } from '../common/ExternalLink'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -171,8 +171,8 @@ export function ExploreArbitrum() {
         }
       >
         <Tab.List className="bg-blue-arbitrum">
-          <Tab className={tabButtonClassName}>Explore</Tab>
-          <Tab className={tabButtonClassName}>Play</Tab>
+          <TabButton>Explore</TabButton>
+          <TabButton>Play</TabButton>
         </Tab.List>
 
         <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">

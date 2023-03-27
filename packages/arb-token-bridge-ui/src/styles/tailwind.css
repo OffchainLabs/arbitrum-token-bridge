@@ -452,3 +452,7 @@ input:checked + .slider:before {
   background-repeat: no-repeat;
   transform: rotateY(180deg);
 }
+
+.roundedTab:not([data-headlessui-state~='selected']) > img {
+  display: none;
+}

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import {
   CheckIcon,
   XIcon,
@@ -11,7 +11,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
-import { tabButtonClassName } from '../common/Tab'
+import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
@@ -107,10 +107,8 @@ export function WithdrawalConfirmationDialog(
           </div>
 
           <Tab.List className="bg-blue-arbitrum">
-            {isArbitrumOne && (
-              <Tab className={tabButtonClassName}>Use a third-party bridge</Tab>
-            )}
-            <Tab className={tabButtonClassName}>Use Arbitrum’s bridge</Tab>
+            {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
+            <TabButton>Use Arbitrum’s bridge</TabButton>
           </Tab.List>
 
           {isArbitrumOne && (

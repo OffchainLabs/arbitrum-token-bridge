@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { DocumentDuplicateIcon, XIcon } from '@heroicons/react/outline'
@@ -13,7 +13,7 @@ import {
   FastBridgeNames,
   getFastBridges
 } from '../../util/fastBridges'
-import { tabButtonClassName } from '../common/Tab'
+import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -83,12 +83,8 @@ export function DepositConfirmationDialog(
           </div>
 
           <Tab.List className="bg-blue-arbitrum">
-            {isArbitrumOne && (
-              <Tab className={tabButtonClassName}>
-                Explore Use a third-party bridge
-              </Tab>
-            )}
-            <Tab className={tabButtonClassName}>Use Arbitrum’s bridge</Tab>
+            {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
+            <TabButton>Use Arbitrum’s bridge</TabButton>
           </Tab.List>
 
           {isArbitrumOne && tokenSymbol && (

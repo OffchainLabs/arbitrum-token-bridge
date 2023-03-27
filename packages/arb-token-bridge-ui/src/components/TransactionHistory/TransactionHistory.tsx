@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, Fragment, SetStateAction, useMemo } from 'react'
+import { Dispatch, SetStateAction, useMemo } from 'react'
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
@@ -12,6 +12,7 @@ import {
 import { PendingTransactions } from './PendingTransactions'
 import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
+import { TabButton } from '../common/Tab'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -50,6 +51,9 @@ export const TransactionHistory = ({
     return mergedTransactions?.filter(tx => isFailed(tx))
   }, [mergedTransactions])
 
+  const roundedTabClasses =
+    'roundedTab ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white'
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
@@ -66,30 +70,30 @@ export const TransactionHistory = ({
       <div>
         <Tab.Group>
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
-            <Tab
+            <TabButton
               aria-label="show deposit transactions"
-              className="ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white"
+              className={`${roundedTabClasses}`}
             >
               {/* Deposits */}
               <img
                 src={getNetworkLogo(l2.network.chainID)}
-                className="max-w-6 h-6 ui-not-selected:hidden"
+                className="max-w-6 h-6"
                 alt="Deposit"
               />
               {`To ${getNetworkName(l2.network.chainID)}`}
-            </Tab>
-            <Tab
+            </TabButton>
+            <TabButton
               aria-label="show withdrawal transactions"
-              className="ui-not-selected:arb-hover roundedTabRight roundedTabLeft relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white"
+              className={`${roundedTabClasses} roundedTabLeft`}
             >
               {/* Withdrawals */}
               <img
                 src={getNetworkLogo(l1.network.chainID)}
-                className="max-w-6 h-6 ui-not-selected:hidden"
+                className="max-w-6 h-6"
                 alt="Withdraw"
               />
               {`To ${getNetworkName(l1.network.chainID)}`}
-            </Tab>
+            </TabButton>
           </Tab.List>
           <Tab.Panel className="overflow-auto">
             <TransactionsTable
