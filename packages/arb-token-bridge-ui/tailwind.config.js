@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  mode: 'jit',
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
   plugins: [require('@headlessui/tailwindcss')],
   theme: {
@@ -57,19 +56,6 @@ module.exports = {
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"
       }
-    }
-  },
-  variants: {
-    extend: {
-      display: ['group-hover'],
-      textColor: ['disabled'],
-      backgroundColor: ['active', 'disabled', 'even'],
-      boxShadow: ['active'],
-      opacity: ['active', 'disabled'],
-      margin: ['active'],
-      ringWidth: ['focus-visible'],
-      ringColor: ['focus-visible'],
-      borderWidth: ['disabled']
     }
   }
 }
