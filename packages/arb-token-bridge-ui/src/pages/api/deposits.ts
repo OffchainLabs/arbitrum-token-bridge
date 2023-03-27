@@ -47,11 +47,11 @@ export default async function handler(
     }
 
     // validate the request parameters
-    if (!l2ChainId || !address) {
-      const errorMessage = []
-      if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
-      if (!address) errorMessage.push('<address> is required')
+    const errorMessage = []
+    if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
+    if (!address) errorMessage.push('<address> is required')
 
+    if (errorMessage.length) {
       res.status(400).json({
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []

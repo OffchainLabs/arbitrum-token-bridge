@@ -1,7 +1,12 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
-import { XIcon, ArrowSmLeftIcon } from '@heroicons/react/outline'
+import {
+  CheckCircleIcon,
+  XIcon,
+  ArrowSmLeftIcon,
+  ExclamationCircleIcon
+} from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import { Loader } from '../common/atoms/Loader'
@@ -11,7 +16,8 @@ import {
   BridgeTokenList,
   listIdsToNames,
   addBridgeTokenListToBridge,
-  useTokenLists
+  useTokenLists,
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
@@ -24,7 +30,9 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
-import { getExplorerUrl } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { Tooltip } from '../common/Tooltip'
+import { StatusBadge } from '../common/StatusBadge'
 
 enum Panel {
   TOKENS,
@@ -110,6 +118,25 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     erc20L2Balances
   ])
 
+  const isArbitrumToken = useMemo(() => {
+    if (!token) {
+      return false
+    }
+
+    return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
+  }, [token])
+
+  const isPotentialFakeArbitrumToken = useMemo(() => {
+    if (!token || isArbitrumToken) {
+      return false
+    }
+
+    return (
+      token.name.toLowerCase().startsWith('arb') ||
+      token.symbol.toLowerCase().startsWith('arb')
+    )
+  }, [token, isArbitrumToken])
+
   const tokenListInfo = useMemo(() => {
     if (!token) {
       return null
@@ -164,6 +191,19 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     return tokenHasL2Address
   }, [isDepositMode, tokenHasL2Address])
 
+  const arbitrumTokenTooltipContent = useMemo(() => {
+    const networkName = getNetworkName(
+      isDepositMode ? l1Network.chainID : l2Network.chainID
+    )
+
+    return (
+      <span>
+        This is the official Arbitrum token on {networkName}. Please beware of
+        fake tokens trying to impersonate it.
+      </span>
+    )
+  }, [isDepositMode, l1Network, l2Network])
+
   return (
     <button
       type="button"
@@ -176,7 +216,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-8 w-8 flex-grow-0 rounded-full"
+          className="h-8 w-8 grow-0 rounded-full"
           fallback={<TokenLogoFallback />}
         />
 
@@ -186,6 +226,24 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {tokenSymbol}
             </span>
             <span className="text-xs text-gray-500">{tokenName}</span>
+
+            {isArbitrumToken && (
+              <Tooltip content={arbitrumTokenTooltipContent}>
+                <StatusBadge variant="green">
+                  <CheckCircleIcon className="h-4 w-4" />
+                  <span className="text-xs">Official ARB token</span>
+                </StatusBadge>
+              </Tooltip>
+            )}
+
+            {isPotentialFakeArbitrumToken && (
+              <Tooltip content="This token is different from the official Arbitrum token (ARB).">
+                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
+                  <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
+                  <span className="text-xs text-gray-10">Careful</span>
+                </div>
+              </Tooltip>
+            )}
           </div>
           {token && (
             <div className="flex flex-col items-start space-y-1">
@@ -271,9 +329,14 @@ function TokenListsPanel() {
       return []
     }
 
-    return BRIDGE_TOKEN_LISTS.filter(
-      tokenList => tokenList.originChainID === l2Network.chainID
-    )
+    return BRIDGE_TOKEN_LISTS.filter(tokenList => {
+      // Don't show the Arbitrum Token token list, because it's special and can't be disabled
+      if (tokenList.isArbitrumTokenTokenList) {
+        return false
+      }
+
+      return tokenList.originChainID === l2Network.chainID
+    })
   }, [l2Network])
 
   const toggleTokenList = (
@@ -403,10 +466,18 @@ function TokensPanel({
     ]
     return tokens
       .filter(address => {
+        // Derive the token object from the address string
+        const token = tokensFromUser[address] || tokensFromLists[address]
+
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH
           if (address === ETH_IDENTIFIER) {
+            return true
+          }
+
+          // Always show official ARB token
+          if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
             return true
           }
 
@@ -418,8 +489,6 @@ function TokensPanel({
         if (address === ETH_IDENTIFIER) {
           return 'ethereumeth'.includes(tokenSearch)
         }
-
-        const token = tokensFromUser[address] || tokensFromLists[address]
 
         if (!token) {
           return false

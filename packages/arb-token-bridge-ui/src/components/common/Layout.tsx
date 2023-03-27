@@ -30,12 +30,13 @@ export const DAOBanner = () => {
   return (
     <div className="bg-gradient py-4 px-4 text-center text-white">
       <span>
-        The Arbitrum DAO has been announced. Delegate applications are open.{' '}
+        Arbitrum One and Arbitrum Nova are now under decentralized governance.
+        Learn more about Arbitrum DAO{' '}
         <ExternalLink
           href="https://arbitrum.foundation"
           className="arb-hover underline"
         >
-          Learn more.
+          here.
         </ExternalLink>
       </span>
     </div>
