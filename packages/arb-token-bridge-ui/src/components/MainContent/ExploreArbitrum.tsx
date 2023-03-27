@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
 import { ExternalLinkIcon } from '@heroicons/react/outline'
 import { Tab } from '@headlessui/react'
@@ -171,14 +171,8 @@ export function ExploreArbitrum() {
         }
       >
         <Tab.List className="bg-blue-arbitrum">
-          <Tab as={Fragment}>
-            {({ selected }) => (
-              <TabButton selected={selected}>Explore</TabButton>
-            )}
-          </Tab>
-          <Tab as={Fragment}>
-            {({ selected }) => <TabButton selected={selected}>Play</TabButton>}
-          </Tab>
+          <TabButton>Explore</TabButton>
+          <TabButton>Play</TabButton>
         </Tab.List>
 
         <Tab.Panel className="flex flex-col space-y-4 px-8 py-4">

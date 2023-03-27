@@ -65,7 +65,7 @@ export const fetchWithdrawals = async ({
       address: walletAddress,
       fromBlock: fromBlock,
       toBlock: toBlock,
-      l2Provider: l2Provider,
+      l2ChainId: l2ChainID,
       pageNumber,
       pageSize,
       searchString

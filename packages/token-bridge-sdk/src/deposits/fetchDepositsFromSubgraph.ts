@@ -1,3 +1,5 @@
+import { getAPIBaseUrl, sanitizeQueryParams } from './../util'
+
 export type FetchDepositsFromSubgraphResult = {
   receiver: string
   sender: string
@@ -32,10 +34,6 @@ export type FetchDepositsFromSubgraphResult = {
  * @param query.searchString Searches records through the l1TxHash
  */
 
-const sanitizeQueryParams = (data: any) => {
-  return JSON.parse(JSON.stringify(data))
-}
-
 export const fetchDepositsFromSubgraph = async ({
   address,
   fromBlock,
@@ -58,10 +56,6 @@ export const fetchDepositsFromSubgraph = async ({
     return []
   }
 
-  // if dev environment, eg. tests, then prepend actual running environment
-  // Resolves: next-js-error-only-absolute-urls-are-supported in test:ci:sdk
-  const baseUrl = process.env.NODE_ENV === 'test' ? 'http://localhost:3000' : ''
-
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       address,
@@ -74,13 +68,10 @@ export const fetchDepositsFromSubgraph = async ({
     })
   )
 
-  const response = await fetch(
-    `${baseUrl}/api/deposits?${urlParams.toString()}`,
-    {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
+  const response = await fetch(`${getAPIBaseUrl()}/api/deposits?${urlParams}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  })
 
   const transactions: FetchDepositsFromSubgraphResult[] = (
     await response.json()

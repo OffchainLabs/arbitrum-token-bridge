@@ -169,6 +169,8 @@ export function HeaderAccountPopover() {
         <Popover.Button
           className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0"
           onClick={() => setTxHistoryViewedOnce(true)}
+          role="button"
+          aria-label={`Account Header Button`}
         >
           <div>
             <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
@@ -219,7 +221,7 @@ export function HeaderAccountPopover() {
                     fallback={<CustomBoringAvatar size={56} name={account} />}
                   />
                 </div>
-                <div className="flex translate-y-[15px] transform flex-row items-center space-x-3">
+                <div className="flex translate-y-[15px] flex-row items-center space-x-3">
                   <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>
