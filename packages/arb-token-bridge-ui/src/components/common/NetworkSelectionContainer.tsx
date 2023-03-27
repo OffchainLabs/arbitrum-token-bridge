@@ -34,11 +34,6 @@ export const NetworkSelectionContainer = ({
     close?.() //close the popover after option-click
   }
 
-  console.log(
-    'a',
-    supportedNetworks.map(i => getNetworkLogo(Number(i)))
-  )
-
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0">
