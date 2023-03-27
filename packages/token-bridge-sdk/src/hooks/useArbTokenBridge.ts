@@ -36,11 +36,22 @@ import {
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData } from '../util'
-import { getExecutedMessagesCacheKey } from '../util/withdrawals'
+import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
+}
+
+export function getExecutedMessagesCacheKey({
+  event,
+  l2ChainId
+}: {
+  event: L2ToL1EventResult
+  l2ChainId: number
+}) {
+  return isClassicL2ToL1TransactionEvent(event)
+    ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
+    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
 class TokenDisabledError extends Error {

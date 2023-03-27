@@ -1,13 +1,13 @@
 import useSWRImmutable from 'swr/immutable'
-import {
-  fetchWithdrawals,
-  FetchWithdrawalsParams,
-  L2ToL1EventResultPlus
-} from 'token-bridge-sdk'
+import { L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformWithdrawals } from '../state/app/utils'
+import {
+  FetchWithdrawalsParams,
+  fetchWithdrawals
+} from '../util/withdrawals/fetchWithdrawals'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 

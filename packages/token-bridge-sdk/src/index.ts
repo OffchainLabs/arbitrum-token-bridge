@@ -1,23 +1,5 @@
 export * from './hooks/useArbTokenBridge'
-export type {
-  ArbTokenBridge,
-  BridgeBalance,
-  L2ToL1EventResult,
-  L2ToL1EventResultPlus,
-  BridgeToken,
-  ERC20BridgeToken,
-  PendingWithdrawalsMap,
-  ContractStorage,
-  NodeBlockDeadlineStatus,
-  L1TokenData,
-  L2TokenData
-} from './hooks/arbTokenBridge.types'
-export {
-  TokenType,
-  AssetType,
-  OutgoingMessageState,
-  NodeBlockDeadlineStatusTypes
-} from './hooks/arbTokenBridge.types'
+export * from './hooks/arbTokenBridge.types'
 
 export { useBalance } from './hooks/useBalance'
 
@@ -47,23 +29,3 @@ export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
 
 export { useGasPrice } from './hooks/useGasPrice'
-export {
-  fetchWithdrawals,
-  type FetchWithdrawalsParams
-} from './withdrawals/fetchWithdrawals'
-
-export {
-  fetchDeposits,
-  type FetchDepositParams
-} from './deposits/fetchDeposits'
-
-export { type FetchDepositsFromSubgraphResult } from './deposits/fetchDepositsFromSubgraph'
-export { type FetchWithdrawalsFromSubgraphResult } from './withdrawals/fetchWithdrawalsFromSubgraph'
-
-export {
-  fetchBlockNumberFromSubgraph,
-  getL1SubgraphClient,
-  getL2SubgraphClient,
-  tryFetchLatestSubgraphBlockNumber
-} from './util/subgraph'
-export { getL1ToL2MessageDataFromL1TxHash } from './util/deposits'
