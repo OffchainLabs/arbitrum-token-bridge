@@ -99,7 +99,8 @@ export function HeaderAccountPopover() {
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const { openTransactionHistoryPanel } = useAppContextActions()
+  const { openTransactionHistoryPanel, openArbitrumStats } =
+    useAppContextActions()
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
@@ -156,10 +157,6 @@ export function HeaderAccountPopover() {
   function openTransactionHistory() {
     openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click')
-  }
-
-  function openArbitrumStats() {
-    dispatch({ type: 'layout.set_arbitrumstats_panel_visible', payload: true })
   }
 
   const headerItemsClassName =

@@ -6,7 +6,7 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName } from '../../util/networks'
 // import { formatUSD } from '../../util/NumberUtils'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
   if (!gasPrice) gasPrice = 0
@@ -25,7 +25,7 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 }
 
 export const ArbitrumStats = () => {
-  const dispatch = useAppContextDispatch()
+  const { closeArbitrumStats } = useAppContextActions()
 
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -56,10 +56,6 @@ export const ArbitrumStats = () => {
   const currentL2Activity = getActivityThresholdL2(
     Number(currentL2GasPriceGwei || 0)
   )
-
-  function closeArbitrumStats() {
-    dispatch({ type: 'layout.set_arbitrumstats_panel_visible', payload: false })
-  }
 
   return (
     <div className="fixed right-0 bottom-0 z-50 m-4 flex flex-col gap-2 whitespace-nowrap rounded-md bg-[#000000d1] p-4 font-[monospace] text-xs text-gray-8">

@@ -132,10 +132,20 @@ export const useAppContextActions = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
 
+  const openArbitrumStats = () => {
+    dispatch({ type: 'layout.set_arbitrumstats_panel_visible', payload: true })
+  }
+
+  const closeArbitrumStats = () => {
+    dispatch({ type: 'layout.set_arbitrumstats_panel_visible', payload: false })
+  }
+
   return {
     setTransferring,
     setCurrentL1BlockNumber,
     openTransactionHistoryPanel,
-    closeTransactionHistoryPanel
+    closeTransactionHistoryPanel,
+    openArbitrumStats,
+    closeArbitrumStats
   }
 }
