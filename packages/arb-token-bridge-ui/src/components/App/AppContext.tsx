@@ -75,7 +75,7 @@ export function AppContextProvider({
   children: React.ReactNode
 }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { setCurrentL1BlockNumber } = useAppContextActions(dispatch)
+  const { setCurrentL1BlockNumber } = useAppContextActions(dispatch) // override `dispatch` here because this is currently outside of app-context
 
   const { l1 } = useNetworksAndSigners()
   const currentL1BlockNumber = useBlockNumber(l1.provider)
