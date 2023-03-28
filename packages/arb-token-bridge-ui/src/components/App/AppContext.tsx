@@ -75,7 +75,7 @@ export function AppContextProvider({
   children: React.ReactNode
 }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { setCurrentL1BlockNumber } = useAppContextActions()
+  const { setCurrentL1BlockNumber } = useAppContextActions(dispatch)
 
   const { l1 } = useNetworksAndSigners()
   const currentL1BlockNumber = useBlockNumber(l1.provider)
@@ -97,9 +97,10 @@ export function useAppContextState(): AppContextState {
 }
 
 // exports actions in a more readable and succinct format
-// deprecates the direct use of `dispatch` in code
-export const useAppContextActions = () => {
-  const [, dispatch] = useContext(AppContext)
+// deprecates the direct use of `dispatch` in code, unless trying to override
+export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
+  const [, dispatchContext] = useContext(AppContext)
+  const dispatch = dispatchOverride ?? dispatchContext
 
   const setTransferring = (payload: boolean) => {
     dispatch({ type: 'layout.set_is_transferring', payload })
