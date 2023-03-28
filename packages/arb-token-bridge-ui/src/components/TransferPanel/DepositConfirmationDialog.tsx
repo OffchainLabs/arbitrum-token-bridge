@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { DocumentDuplicateIcon, XIcon } from '@heroicons/react/outline'
@@ -83,20 +83,8 @@ export function DepositConfirmationDialog(
           </div>
 
           <Tab.List className="bg-blue-arbitrum">
-            {isArbitrumOne && (
-              <Tab as={Fragment}>
-                {({ selected }) => (
-                  <TabButton selected={selected}>
-                    Use a third-party bridge
-                  </TabButton>
-                )}
-              </Tab>
-            )}
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <TabButton selected={selected}>Use Arbitrum’s bridge</TabButton>
-              )}
-            </Tab>
+            {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
+            <TabButton>Use Arbitrum’s bridge</TabButton>
           </Tab.List>
 
           {isArbitrumOne && tokenSymbol && (
