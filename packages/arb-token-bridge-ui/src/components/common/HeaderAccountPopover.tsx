@@ -22,7 +22,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { useAppContextDispatch } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -99,7 +99,7 @@ export function HeaderAccountPopover() {
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const dispatch = useAppContextDispatch()
+  const { openTransactionHistoryPanel } = useAppContextActions()
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
@@ -154,7 +154,7 @@ export function HeaderAccountPopover() {
   }
 
   function openTransactionHistory() {
-    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
+    openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click')
   }
 
@@ -226,7 +226,7 @@ export function HeaderAccountPopover() {
                     fallback={<CustomBoringAvatar size={56} name={account} />}
                   />
                 </div>
-                <div className="flex translate-y-[15px] transform flex-row items-center space-x-3">
+                <div className="flex translate-y-[15px] flex-row items-center space-x-3">
                   <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm font-normal">
                     {ensInfo.name ?? udInfo.name ?? accountShort}
                   </span>

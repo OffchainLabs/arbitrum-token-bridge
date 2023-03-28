@@ -11,7 +11,7 @@ export function HeaderNetworkNotSupported() {
         <span className="text-2xl text-brick lg:text-base">Wrong network</span>
         <ChevronDownIcon className="h-4 w-4" />
       </div>
-      <span className="max-w-64 p-2 text-left text-sm text-brick lg:hidden lg:text-center">
+      <span className="p-2 text-left text-sm text-brick lg:hidden lg:text-center">
         Please change your network in your wallet to either Mainnet or Arbitrum
       </span>
     </div>

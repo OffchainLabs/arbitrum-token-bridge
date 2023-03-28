@@ -28,7 +28,7 @@ const Alert = ({
       }`}
     >
       <div className="flex">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {type === 'red' && (
             <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
           )}
