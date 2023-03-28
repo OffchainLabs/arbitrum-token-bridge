@@ -3,7 +3,7 @@ import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { ExploreArbitrum } from './ExploreArbitrum'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
 import { useEffect, useState } from 'react'
 import { useDeposits } from '../../hooks/useDeposits'
@@ -28,13 +28,10 @@ export const motionDivProps = {
 }
 
 export function MainContent() {
-  const dispatch = useAppContextDispatch()
+  const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
-  function closeTransactionHistory() {
-    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
-  }
 
   const {
     app: { arbTokenBridge }
@@ -115,7 +112,7 @@ export function MainContent() {
       <SidePanel
         isOpen={isTransactionHistoryPanelVisible}
         heading="Transaction History"
-        onClose={closeTransactionHistory}
+        onClose={closeTransactionHistoryPanel}
       >
         {/* Transaction history - pending transactions + history table */}
         <TransactionHistory

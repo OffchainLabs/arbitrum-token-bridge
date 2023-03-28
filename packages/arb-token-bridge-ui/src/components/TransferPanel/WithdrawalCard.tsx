@@ -9,7 +9,7 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/outline'
 import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
@@ -84,7 +84,7 @@ export function WithdrawalCardContainer({
   tx,
   children
 }: WithdrawalCardContainerProps) {
-  const dispatch = useAppContextDispatch()
+  const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
@@ -119,10 +119,7 @@ export function WithdrawalCardContainer({
           className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
           onClick={() => {
             trackEvent('Move More Funds Click')
-            dispatch({
-              type: 'layout.set_txhistory_panel_visible',
-              payload: false
-            })
+            closeTransactionHistoryPanel()
           }}
         >
           Move more funds
