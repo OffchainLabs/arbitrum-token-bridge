@@ -43,7 +43,7 @@ export const ExploreArbitrumContent = {
       name: 'TreasureDAO',
       description:
         'Engage your inner gamer with Treasure’s decentralized video game console and ecosystem of metaverses connected by $MAGIC',
-      href: 'https://marketplace.treasure.lol',
+      href: 'https://treasure.lol',
       imageSrc: '/images/explore-arbitrum/defi/treasuredao.webp'
     },
     {
