@@ -943,30 +943,25 @@ export const useArbTokenBridge = (
       l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
     })
 
-    try {
-      const rec = await res.wait()
+    const rec = await res.wait()
 
-      if (rec.status === 1) {
-        setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache([event])
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          const pendingWithdrawal = newPendingWithdrawalsMap[id]
-          if (pendingWithdrawal) {
-            pendingWithdrawal.outgoingMessageState =
-              OutgoingMessageState.EXECUTED
-          }
+    if (rec.status === 1) {
+      setTransactionSuccess(rec.transactionHash)
+      addToExecutedMessagesCache([event])
+      setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+        const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
+        const pendingWithdrawal = newPendingWithdrawalsMap[id]
+        if (pendingWithdrawal) {
+          pendingWithdrawal.outgoingMessageState = OutgoingMessageState.EXECUTED
+        }
 
-          return newPendingWithdrawalsMap
-        })
-      } else {
-        setTransactionFailure(rec.transactionHash)
-      }
-
-      return rec
-    } catch (err) {
-      console.warn('WARNING: token outbox execute failed:', err)
+        return newPendingWithdrawalsMap
+      })
+    } else {
+      setTransactionFailure(rec.transactionHash)
     }
+
+    return rec
   }
 
   async function triggerOutboxEth({
@@ -1000,30 +995,25 @@ export const useArbTokenBridge = (
       l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
     })
 
-    try {
-      const rec = await res.wait()
+    const rec = await res.wait()
 
-      if (rec.status === 1) {
-        setTransactionSuccess(rec.transactionHash)
-        addToExecutedMessagesCache([event])
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-          const pendingWithdrawal = newPendingWithdrawalsMap[id]
-          if (pendingWithdrawal) {
-            pendingWithdrawal.outgoingMessageState =
-              OutgoingMessageState.EXECUTED
-          }
+    if (rec.status === 1) {
+      setTransactionSuccess(rec.transactionHash)
+      addToExecutedMessagesCache([event])
+      setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
+        const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
+        const pendingWithdrawal = newPendingWithdrawalsMap[id]
+        if (pendingWithdrawal) {
+          pendingWithdrawal.outgoingMessageState = OutgoingMessageState.EXECUTED
+        }
 
-          return newPendingWithdrawalsMap
-        })
-      } else {
-        setTransactionFailure(rec.transactionHash)
-      }
-
-      return rec
-    } catch (err) {
-      console.warn('WARNING: ETH outbox execute failed:', err)
+        return newPendingWithdrawalsMap
+      })
+    } else {
+      setTransactionFailure(rec.transactionHash)
     }
+
+    return rec
   }
 
   function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {

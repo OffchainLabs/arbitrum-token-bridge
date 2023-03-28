@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import * as Sentry from '@sentry/react'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
@@ -46,7 +46,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       }
     } catch (error: any) {
       err = error
-      console.warn(err)
+      Sentry.captureException(err)
     } finally {
       setIsClaiming(false)
     }
