@@ -82,7 +82,7 @@ export function AppContextProvider({
 
   useEffect(() => {
     setCurrentL1BlockNumber(currentL1BlockNumber)
-  }, [currentL1BlockNumber, setCurrentL1BlockNumber])
+  }, [currentL1BlockNumber])
 
   return (
     <AppContext.Provider value={[state, dispatch]}>
