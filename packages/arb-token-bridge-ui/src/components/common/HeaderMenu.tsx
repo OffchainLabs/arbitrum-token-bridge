@@ -86,7 +86,7 @@ export function HeaderMenuMobile(
       {({ open }) => (
         <div className="w-full">
           <Disclosure.Button
-            className={`arb-hover flex w-full items-center justify-start p-4 ${
+            className={`arb-hover flex w-full items-center justify-start px-6 py-3 ${
               open && `bg-white`
             }`}
           >
