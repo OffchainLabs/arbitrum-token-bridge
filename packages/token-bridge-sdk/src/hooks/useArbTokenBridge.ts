@@ -966,6 +966,7 @@ export const useArbTokenBridge = (
       return rec
     } catch (err) {
       console.warn('WARNING: token outbox execute failed:', err)
+      throw err // throw error so that it propagates to Sentry in UI
     }
   }
 
@@ -1023,6 +1024,7 @@ export const useArbTokenBridge = (
       return rec
     } catch (err) {
       console.warn('WARNING: ETH outbox execute failed:', err)
+      throw err // throw error so that it propagates to Sentry in UI
     }
   }
 
