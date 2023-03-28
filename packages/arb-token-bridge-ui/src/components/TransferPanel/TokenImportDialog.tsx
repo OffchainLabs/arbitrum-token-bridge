@@ -346,8 +346,10 @@ export function TokenImportDialog({
               alt={`${tokenToImport?.name} logo`}
             />
           )}
-          <span className="text-xl font-bold">{tokenToImport?.symbol}</span>
-          <span className="mt-0 mb-4">{tokenToImport?.name}</span>
+          <span className="text-xl font-bold leading-6">
+            {tokenToImport?.symbol}
+          </span>
+          <span className="mb-3 mt-0">{tokenToImport?.name}</span>
           <a
             href={`${getExplorerUrl(l1.network.chainID)}/token/${
               tokenToImport?.address
@@ -361,7 +363,7 @@ export function TokenImportDialog({
           </a>
 
           {status === ImportStatus.UNKNOWN && (
-            <div className="flex w-full justify-start pt-4">
+            <div className="flex w-full justify-center pt-4">
               <Tippy
                 theme="light"
                 content={
@@ -387,7 +389,7 @@ export function TokenImportDialog({
             </div>
           )}
 
-          <div className="mt-4 flex w-full justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-dark">
+          <div className="mt-6 flex w-full justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-dark">
             <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-dark" />
             <p>
               The bridge does not support tokens with non-standard behaviour in
