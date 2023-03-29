@@ -151,7 +151,7 @@ function NetworkListbox({
                   <Image
                     src={getNetworkLogo(option.chainID)}
                     alt={`${getNetworkName(option.chainID)} logo`}
-                    className="max-h-9 max-w-8"
+                    className="max-h-9 w-auto"
                   />
                 </div>
                 <span>{getNetworkName(option.chainID)}</span>

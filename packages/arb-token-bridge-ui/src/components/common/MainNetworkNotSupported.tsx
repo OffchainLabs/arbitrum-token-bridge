@@ -63,7 +63,6 @@ export const MainNetworkNotSupported = ({
                 src={getNetworkLogo(Number(chainId))}
                 alt={`${getNetworkName(Number(chainId))} logo`}
                 className="h-full w-auto"
-                // className="max-h-8 max-w-8"
               />
             </div>
             <span> {`Switch to ${getNetworkName(Number(chainId))}`}</span>
