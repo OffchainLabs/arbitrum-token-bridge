@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import * as Sentry from '@sentry/react'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -62,72 +62,78 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     })
   }
 
-  async function claim(tx: MergedTransaction) {
-    if (isClaiming) {
-      return
-    }
-
-    if (tx.uniqueId === null) {
-      return alert("Can't find withdrawal")
-    }
-
-    let res, err
-
-    setIsClaiming(true)
-
-    try {
-      // check if the withdrawal is definitely ready to be claimed
-      const outgoingMessageState = await getOutgoingMessageStateFromTxHash({
-        txHash: tx.txId,
-        l2Provider,
-        l1Provider,
-        l2ChainID
-      })
-      if (typeof outgoingMessageState === 'undefined') {
-        // cannot find the outgoing message state because no L2ToL1Events were found for this tx-id
-        throw new Error('Claim withdrawal error: No withdrawal events found')
-      } else if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
-        // update the row with the correct status as well and hide the claim button
-        refreshWithdrawalTable()
-
-        // show an alert - withdrawal has already been claimed, please check your L1 balance
-        throw new Error(
-          'Claim withdrawal error: Withdrawal seems to have been claimed already, please check your L1 balance.'
-        )
-      } else if (outgoingMessageState === OutgoingMessageState.UNCONFIRMED) {
-        // Can't claim this withdrawal yet
-        throw new Error(
-          "Claim withdrawal error: Can't claim this withdrawal yet"
-        )
+  const claim = useCallback(
+    async (tx: MergedTransaction) => {
+      if (isClaiming) {
+        return
       }
 
-      // if no error found yet, then we can proceed with the withdrawal
-      if (tx.asset === 'eth') {
-        res = await arbTokenBridge.eth.triggerOutbox({
-          id: tx.uniqueId.toString(),
-          l1Signer
-        })
-      } else {
-        res = await arbTokenBridge.token.triggerOutbox({
-          id: tx.uniqueId.toString(),
-          l1Signer
-        })
+      if (tx.uniqueId === null) {
+        return alert("Can't find withdrawal")
       }
-    } catch (error: any) {
-      err = error
-      Sentry.captureException(error)
-    } finally {
-      setIsClaiming(false)
-    }
 
-    // Don't show any alert in case user denies the signature
-    if (isUserRejectedError(err)) {
-      return
-    }
+      let res, err
 
-    // if the error was found, then show it to the user
-    if (err) alert(err)
-  }
+      setIsClaiming(true)
+
+      try {
+        // check if the withdrawal is definitely ready to be claimed
+        const outgoingMessageState = await getOutgoingMessageStateFromTxHash({
+          txHash: tx.txId,
+          l2Provider,
+          l1Provider,
+          l2ChainID
+        })
+        if (typeof outgoingMessageState === 'undefined') {
+          // cannot find the outgoing message state because no L2ToL1Events were found for this tx-id
+          throw new Error('Claim withdrawal error: No withdrawal events found')
+        } else if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
+          // update the row with the correct status as well and hide the claim button
+          refreshWithdrawalTable()
+
+          // show an alert - withdrawal has already been claimed, please check your L1 balance
+          throw new Error(
+            'Claim withdrawal error: Withdrawal seems to have been claimed already, please check your L1 balance or Etherscan transactions'
+          )
+        } else if (outgoingMessageState === OutgoingMessageState.UNCONFIRMED) {
+          // Can't claim this withdrawal yet
+          throw new Error(
+            "Claim withdrawal error: Can't claim this withdrawal yet"
+          )
+        }
+
+        // if no error found yet, then we can proceed with the withdrawal
+        if (tx.asset === 'eth') {
+          res = await arbTokenBridge.eth.triggerOutbox({
+            id: tx.uniqueId.toString(),
+            l1Signer
+          })
+        } else {
+          res = await arbTokenBridge.token.triggerOutbox({
+            id: tx.uniqueId.toString(),
+            l1Signer
+          })
+        }
+      } catch (error: any) {
+        err = error
+        Sentry.captureException(error)
+      } finally {
+        setIsClaiming(false)
+      }
+
+      // if the error was found, then show it to the user
+      // don't show any alert in case user denies the signature
+      if (err && !isUserRejectedError(err)) alert(err)
+    },
+    [
+      l2Provider,
+      l1Provider,
+      l2ChainID,
+      arbTokenBridge,
+      isClaiming,
+      setIsClaiming
+    ]
+  )
 
   return { claim, isClaiming }
 }
