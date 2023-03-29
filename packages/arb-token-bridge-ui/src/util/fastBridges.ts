@@ -1,4 +1,11 @@
 import { ChainId } from './networks'
+import { ImageProps } from 'next/image'
+import Hop from '@/images/bridge/hop.png'
+import Celer from '@/images/bridge/celer.png'
+import Connext from '@/images/bridge/connext.png'
+import Across from '@/images/bridge/across.png'
+import Stargate from '@/images/bridge/stargate.png'
+import Synapse from '@/images/bridge/synapse.png'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -23,7 +30,7 @@ export type NonCanonicalTokenSupportedBridges<
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
-  imageSrc: string
+  imageSrc: ImageProps['src']
   href: string
 }
 
@@ -75,35 +82,32 @@ export function getFastBridges(
 
   const bridgeInfo: {
     [bridge in FastBridgeNames]: {
-      imageSrc: string
+      imageSrc: ImageProps['src']
       href: string
     }
   } = {
     [FastBridgeNames.Hop]: {
-      imageSrc:
-        'https://s3.us-west-1.amazonaws.com/assets.hop.exchange/images/hop_logo.png',
+      imageSrc: Hop,
       href: getBridgeDeepLink(FastBridgeNames.Hop)
     },
     [FastBridgeNames.Celer]: {
-      imageSrc:
-        'https://www.celer.network/static/Black-4d795924d523c9d8d45540e67370465a.png',
+      imageSrc: Celer,
       href: getBridgeDeepLink(FastBridgeNames.Celer)
     },
     [FastBridgeNames.Connext]: {
-      imageSrc: 'https://bridge.connext.network/logos/logo_white.png',
+      imageSrc: Connext,
       href: getBridgeDeepLink(FastBridgeNames.Connext)
     },
     [FastBridgeNames.Across]: {
-      imageSrc:
-        'https://2085701667-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2Fo33kX1T6RRp4inOcEH1d%2Fuploads%2FVqg353nqWxKYvWS16Amd%2FAcross-logo-greenbg.png?alt=media&token=23d5a067-d417-4b1c-930e-d40ad1d8d89a',
+      imageSrc: Across,
       href: getBridgeDeepLink(FastBridgeNames.Across)
     },
     [FastBridgeNames.Stargate]: {
-      imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/18934.png',
+      imageSrc: Stargate,
       href: getBridgeDeepLink(FastBridgeNames.Stargate)
     },
     [FastBridgeNames.Synapse]: {
-      imageSrc: 'https://s2.coinmarketcap.com/static/img/coins/64x64/12147.png',
+      imageSrc: Synapse,
       href: getBridgeDeepLink(FastBridgeNames.Synapse)
     }
   }
