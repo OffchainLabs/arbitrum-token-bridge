@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
-import { getNetworkLogo, getNetworkName } from '../../util/networks'
+import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChevronDownIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
 
 export function HeaderNetworkInformation() {
   const {
@@ -23,7 +24,14 @@ export function HeaderNetworkInformation() {
       className="flex w-max flex-row items-center justify-center space-x-3 rounded-full text-white lg:bg-dark lg:px-4 lg:py-2 "
       aria-label={`Selected Network : ${networkName}`}
     >
-      <div className="flex h-8 w-8 items-center justify-center">
+      <div
+        className={twMerge(
+          'flex h-10 w-10 items-center justify-center rounded-full',
+          isNetwork(network.chainID).isEthereum
+            ? 'bg-[rgba(162,170,240,0.5)]'
+            : ''
+        )}
+      >
         <img
           src={getNetworkLogo(network.chainID)}
           alt={`${networkName} logo`}
