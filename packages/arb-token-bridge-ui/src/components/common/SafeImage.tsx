@@ -33,5 +33,8 @@ export function SafeImage(props: SafeImageProps) {
     return fallback
   }
 
+  // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
+  // It would throw error if it's loaded from external domains
+  // eslint-disable-next-line @next/next/no-img-element
   return <img {...imgProps} src={validImageSrc} alt={props.alt || ''} />
 }

@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { getNetworkLogo, getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChevronDownIcon } from '@heroicons/react/outline'
+import Image from 'next/image'
 
 export function HeaderNetworkInformation() {
   const {
@@ -24,14 +25,14 @@ export function HeaderNetworkInformation() {
       aria-label={`Selected Network : ${networkName}`}
     >
       <div className="flex h-8 w-8 items-center justify-center">
-        <img
+        <Image
           src={getNetworkLogo(network.chainID)}
           alt={`${networkName} logo`}
-          className="max-h-8 max-w-8"
+          className="h-full w-auto"
         />
       </div>
 
-      <span className="text-2xl font-medium  lg:text-base lg:font-normal">
+      <span className="text-2xl font-medium lg:text-base lg:font-normal">
         {networkName}
       </span>
 

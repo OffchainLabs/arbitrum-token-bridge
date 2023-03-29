@@ -3,6 +3,12 @@ import { SWRResponse } from 'swr'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
+import { ImageProps } from 'next/image'
+import ArbitrumLogo from '@/images/lists/arbitrum.svg'
+import UniswapLogo from '@/images/lists/uniswap.png'
+import GeminiLogo from '@/images/lists/gemini.png'
+import CMCLogo from '@/images/lists/cmc.png'
+import ArbitrumFoundation from '@/images/lists/ArbitrumFoundation.png'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
 
@@ -12,8 +18,8 @@ export interface BridgeTokenList {
   url: string
   name: string
   isDefault: boolean
-  logoURI: string
   isArbitrumTokenTokenList?: boolean
+  logoURI: ImageProps['src']
 }
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
@@ -23,7 +29,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
     name: 'Arbitrum Token',
     isDefault: true,
-    logoURI: 'https://arbitrum.foundation/logo.png',
+    logoURI: ArbitrumFoundation,
     isArbitrumTokenTokenList: true
   },
   {
@@ -32,8 +38,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json',
     name: 'Arbitrum Whitelist Era',
     isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmTvWJ4kmzq9koK74WJQ594ov8Es1HHurHZmMmhU8VY68y'
+    logoURI: ArbitrumLogo
   },
   {
     id: 2,
@@ -41,8 +46,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
     isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmNa8mQkrNKp1WEEeGjFezDmDeodkWRevGFN8JCV7b4Xir'
+    logoURI: UniswapLogo
   },
   {
     id: 3,
@@ -50,7 +54,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
     isDefault: false,
-    logoURI: 'https://gemini.com/static/images/loader.png'
+    logoURI: GeminiLogo
   },
   {
     id: 5,
@@ -58,8 +62,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
     name: 'Arbed CMC List',
     isDefault: false,
-    logoURI:
-      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
+    logoURI: CMCLogo
   },
   {
     id: 6,
@@ -67,8 +70,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
     name: 'Arbed Uniswap List',
     isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmNa8mQkrNKp1WEEeGjFezDmDeodkWRevGFN8JCV7b4Xir'
+    logoURI: UniswapLogo
   },
   {
     id: 7,
@@ -76,7 +78,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
     isDefault: true,
-    logoURI: 'https://gemini.com/static/images/loader.png'
+    logoURI: GeminiLogo
   },
   {
     id: 8,
@@ -84,8 +86,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
     name: 'Arbed CMC List',
     isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
+    logoURI: CMCLogo
   },
   // Dummy data required, otherwise useArbTokenBridge will return undefined bridgeTokens
   // This will cause TokenImportDialog to hang and fail E2E
@@ -98,8 +99,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
     name: 'Arbed CMC List',
     isDefault: true,
-    logoURI:
-      'https://ipfs.io/ipfs/QmQAGtNJ2rSGpnP6dh6PPKNSmZL8RTZXmgFwgTdy5Nz5mx'
+    logoURI: CMCLogo
   }
 ]
 

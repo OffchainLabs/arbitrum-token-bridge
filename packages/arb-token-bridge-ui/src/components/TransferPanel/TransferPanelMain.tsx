@@ -41,6 +41,7 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
+import Image from 'next/image'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -147,10 +148,10 @@ function NetworkListbox({
                 disabled={option.disabled}
               >
                 <div className="flex h-8 w-8 items-center justify-center">
-                  <img
+                  <Image
                     src={getNetworkLogo(option.chainID)}
                     alt={`${getNetworkName(option.chainID)} logo`}
-                    className="max-h-9 max-w-8"
+                    className="max-h-9 w-auto"
                   />
                 </div>
                 <span>{getNetworkName(option.chainID)}</span>
@@ -188,20 +189,20 @@ function NetworkContainer({
 
     if (!isArbitrum) {
       return {
-        backgroundImage: `url('/TransparentEthereumLogo.webp')`,
+        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
         backgroundClassName: 'bg-purple-ethereum'
       }
     }
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/ArbitrumNovaLogo.svg')`,
+        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url('/ArbitrumOneLogo.svg')`,
+      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
       backgroundClassName: 'bg-blue-arb-one'
     }
   }, [network])
