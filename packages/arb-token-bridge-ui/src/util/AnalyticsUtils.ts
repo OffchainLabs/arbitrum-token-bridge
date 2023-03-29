@@ -140,7 +140,6 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'CEX Click: Bitget': 'P2RBDSLX',
   'CEX Click: Bybit': '4MCGRHS8',
   'CEX Click: Crypto.com': 'ZVK2C6WN',
-  'CEX Click: Huobi': 'TUBTYASY',
   'CEX Click: Kucoin': 'LKGN4G9R',
   'CEX Click: MEXC': 'NY3ECWCL',
   'CEX Click: OKX': '8UGCXUUS',

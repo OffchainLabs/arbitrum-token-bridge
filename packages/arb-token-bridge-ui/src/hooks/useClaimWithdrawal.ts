@@ -1,7 +1,8 @@
 import { useState } from 'react'
-
+import * as Sentry from '@sentry/react'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type UseClaimWithdrawalResult = {
@@ -45,13 +46,13 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       }
     } catch (error: any) {
       err = error
-      console.warn(err)
+      Sentry.captureException(err)
     } finally {
       setIsClaiming(false)
     }
 
     // Don't show any alert in case user denies the signature
-    if (err?.code === 4001) {
+    if (isUserRejectedError(err)) {
       return
     }
 

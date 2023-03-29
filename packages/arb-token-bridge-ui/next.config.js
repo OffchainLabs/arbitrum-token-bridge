@@ -8,7 +8,6 @@ module.exports = {
 
     return config
   },
-
   distDir: 'build',
   productionBrowserSourceMaps: true
 }

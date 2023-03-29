@@ -10,6 +10,7 @@ import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
 import { loadEnvironmentVariableWithFallback } from './index'
+import { isUserRejectedError } from './isUserRejectedError'
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -352,6 +353,11 @@ export async function switchChain({
 
     onSuccess?.()
   } catch (err: any) {
+    if (isUserRejectedError(err)) {
+      onError?.(err)
+      return
+    }
+
     if (err.code === 4902) {
       // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
       // This error code indicates that the chain has not been added to MetaMask.
@@ -372,6 +378,9 @@ export async function switchChain({
         ])
       } catch (err: any) {
         onError?.(err)
+        if (isUserRejectedError(err)) {
+          return
+        }
         Sentry.captureException(err)
       }
 

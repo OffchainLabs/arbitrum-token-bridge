@@ -11,7 +11,7 @@ import { DepositCardL1Failure } from './DepositCardL1Failure'
 import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/outline'
 
@@ -87,7 +87,7 @@ export function DepositCardContainer({
   tx,
   children
 }: DepositCardContainerProps) {
-  const dispatch = useAppContextDispatch()
+  const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
@@ -137,10 +137,7 @@ export function DepositCardContainer({
           className="arb-hover absolute bottom-4 right-4 text-blue-link underline"
           onClick={() => {
             trackEvent('Move More Funds Click')
-            dispatch({
-              type: 'layout.set_txhistory_panel_visible',
-              payload: false
-            })
+            closeTransactionHistoryPanel()
           }}
         >
           Move more funds

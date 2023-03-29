@@ -5,10 +5,11 @@
   "dependencies": {
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.8",
+    "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^1.0.3",
     "@rehooks/local-storage": "^2.4.4",
-    "@sentry/react": "^7.13.0",
-    "@sentry/tracing": "^7.13.0",
+    "@sentry/react": "^7.45.0",
+    "@sentry/tracing": "^7.45.0",
     "@tailwindcss/forms": "^0.3.3",
     "@tippyjs/react": "^4.2.6",
     "@unstoppabledomains/resolution": "^8.3.3",

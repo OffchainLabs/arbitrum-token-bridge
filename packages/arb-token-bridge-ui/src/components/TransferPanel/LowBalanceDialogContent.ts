@@ -3,97 +3,79 @@ export const LowBalanceDialogContent = {
     {
       href: 'https://www.binance.com',
       title: 'Binance',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2021/11/i0KjbCry_400x400.jpg'
+      imageSrc: '/images/projects/binance-logo.webp'
     },
     {
       href: 'https://www.bitget.com',
       title: 'Bitget',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/02/bitget.jpeg'
+      imageSrc: '/images/projects/bitget-logo.webp'
     },
     {
       href: 'https://www.bybit.com',
       title: 'Bybit',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/01/20220126-215931.png'
+      imageSrc: '/images/projects/bybit-logo.webp'
     },
     {
       href: 'https://crypto.com',
       title: 'Crypto.com',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2021/11/404-4048020_crypto-com-logo-svg-hd-png-download.png'
-    },
-    {
-      href: 'https://www.huobi.com',
-      title: 'Huobi',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2021/09/huobi.jpg'
+      imageSrc: '/images/projects/crypto-com-logo.webp'
     },
     {
       href: 'https://www.kucoin.com',
       title: 'Kucoin',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/04/q56IIHA_400x400.jpg'
+      imageSrc: '/images/projects/kucoin-logo.webp'
     },
     {
       href: 'https://www.mexc.com',
       title: 'MEXC',
-      imageSrc: 'https://www.mexc.com/sites/favicon.png'
+      imageSrc: '/images/projects/mexc-exchange-logo.webp'
     },
     {
       href: 'https://www.okx.com',
       title: 'OKX',
-      imageSrc: 'https://portal.arbitrum.one/wp-content/uploads/2021/08/okx.png'
+      imageSrc: '/images/projects/okex-logo.webp'
     }
   ],
   FiatOnRamps: [
     {
       href: 'https://arbitrum.banxa.com',
       title: 'Banxa',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2021/12/Banxa-Icon-RGB.png'
+      imageSrc: '/images/projects/banxa-logo.webp'
     },
     {
       href: 'https://www.cryptorefills.com',
       title: 'CryptoRefills',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/02/NpCfgNkI_400x400.jpg'
+      imageSrc: '/images/projects/cryptorefills-logo.webp'
     },
     {
       href: 'https://fluid.ch',
       title: 'FluidFi',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/05/aZUvXpeh_400x400.jpg'
+      imageSrc: '/images/projects/fluidfi-logo.webp'
     },
     {
       href: 'https://www.mtpelerin.com/on-off-ramp',
       title: 'Mt Pelerin',
-      imageSrc: 'https://portal.arbitrum.one/wp-content/uploads/2022/01/mt.png'
+      imageSrc: '/images/projects/mt-pelerin-logo.webp'
     },
     {
       href: 'https://ramp.network',
       title: 'Ramp',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/05/2iU0-aH9_400x400.png'
+      imageSrc: '/images/projects/ramp-network-logo.webp'
     },
     {
       href: 'https://www.simplex.com',
       title: 'Simplex',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/05/85g3O4A-_400x400.jpg'
+      imageSrc: '/images/projects/simplex-logo.webp'
     },
     {
       href: 'https://transak.com',
       title: 'Transak',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/02/photo_2022-01-29_08-32-43.jpg'
+      imageSrc: '/images/projects/transak-logo.webp'
     },
     {
       href: 'https://wirexapp.com',
       title: 'Wirex',
-      imageSrc:
-        'https://portal.arbitrum.one/wp-content/uploads/2022/05/Z0uAglMT_400x400.png'
+      imageSrc: '/images/projects/wirex-logo.webp'
     }
   ]
 } as const
