@@ -27,9 +27,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {
-    "cypress": "^12.6.0"
-  },
   "devDependencies": {
     "audit-ci": "^6.3.0"
   }
