@@ -26,7 +26,8 @@ describe('Transaction History', () => {
     cy.findByRole('tab', { name: 'show deposit transactions' })
       .should('be.visible')
       .click({ scrollBehavior: false })
-      .should('have.class', 'selected')
+      .should('have.attr', 'data-headlessui-state')
+      .and('equal', 'selected')
 
     cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).should('have.length.above', 0)
   })
@@ -90,7 +91,8 @@ describe('Transaction History', () => {
     cy.findByRole('tab', { name: 'show withdrawal transactions' })
       .should('be.visible')
       .click({ scrollBehavior: false })
-      .should('have.class', 'selected')
+      .should('have.attr', 'data-headlessui-state')
+      .and('equal', 'selected')
 
     cy.findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER).should('have.length.above', 0)
   })

@@ -32,7 +32,7 @@ import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, isFathomNetworkName } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
@@ -125,7 +125,9 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider },
     isSmartContractWallet
   } = networksAndSigners
-  const dispatch = useAppContextDispatch()
+
+  const { openTransactionHistoryPanel, setTransferring } =
+    useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.chainID)
   const { isArbitrumNova } = isNetwork(l2Network.chainID)
@@ -357,9 +359,6 @@ export function TransferPanel() {
         setShowSCWalletTooltip(true)
       }, 3000)
 
-    const setTransferring = (payload: boolean) =>
-      dispatch({ type: 'layout.set_is_transferring', payload })
-
     setTransferring(true)
 
     try {
@@ -486,10 +485,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -509,10 +505,7 @@ export function TransferPanel() {
             l1Signer: latestNetworksAndSigners.current.l1.signer,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -606,10 +599,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -629,10 +619,7 @@ export function TransferPanel() {
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
