@@ -42,9 +42,6 @@ describe('Login Account', () => {
     cy.findByText('Bridging summary will appear here.').should('be.visible')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
     cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
-  })
-
-  it('should show L1 and L2 chains correctly', () => {
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
   })

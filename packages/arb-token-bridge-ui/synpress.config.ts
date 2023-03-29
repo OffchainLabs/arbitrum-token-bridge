@@ -146,10 +146,9 @@ export default defineConfig({
       'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
-      'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}' // URL Query Param
-      // 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
+      'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
+      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
     ],
-    testIsolation: false,
     supportFile: 'tests/support/index.ts'
   }
 })
