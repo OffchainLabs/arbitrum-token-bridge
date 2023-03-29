@@ -89,7 +89,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           <SafeImage
             src={token?.logoURI}
             alt={`${token?.name} logo`}
-            className="h-8 w-8 flex-grow-0 rounded-full"
+            className="h-8 w-8 grow-0 rounded-full"
             fallback={
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
                 ?

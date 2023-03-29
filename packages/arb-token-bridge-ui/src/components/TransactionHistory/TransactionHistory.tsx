@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, Fragment, SetStateAction, useMemo } from 'react'
+import { Dispatch, SetStateAction, useMemo } from 'react'
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
@@ -13,6 +13,7 @@ import { PendingTransactions } from './PendingTransactions'
 import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
+import { TabButton } from '../common/Tab'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -51,6 +52,9 @@ export const TransactionHistory = ({
     return mergedTransactions?.filter(tx => isFailed(tx))
   }, [mergedTransactions])
 
+  const roundedTabClasses =
+    'roundedTab ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white'
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
@@ -67,46 +71,30 @@ export const TransactionHistory = ({
       <div>
         <Tab.Group>
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <button
-                  aria-label="show deposit transactions"
-                  className={`${
-                    !selected ? 'arb-hover text-white' : 'selected bg-white'
-                  } roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base`}
-                >
-                  {/* Deposits */}
-                  {selected && (
-                    <Image
-                      src={getNetworkLogo(l2.network.chainID)}
-                      className="h-6 w-auto"
-                      alt="Deposit"
-                    />
-                  )}
-                  {`To ${getNetworkName(l2.network.chainID)}`}
-                </button>
-              )}
-            </Tab>
-            <Tab as={Fragment}>
-              {({ selected }) => (
-                <button
-                  aria-label="show withdrawal transactions"
-                  className={`${
-                    !selected ? 'arb-hover text-white' : 'selected bg-white'
-                  } roundedTabRight roundedTabLeft relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base`}
-                >
-                  {/* Withdrawals */}
-                  {selected && (
-                    <Image
-                      src={getNetworkLogo(l1.network.chainID)}
-                      className="h-6 w-auto"
-                      alt="Withdraw"
-                    />
-                  )}
-                  {`To ${getNetworkName(l1.network.chainID)}`}
-                </button>
-              )}
-            </Tab>
+            <TabButton
+              aria-label="show deposit transactions"
+              className={`${roundedTabClasses}`}
+            >
+              {/* Deposits */}
+              <Image
+                src={getNetworkLogo(l2.network.chainID)}
+                className="h-6 w-auto"
+                alt="Deposit"
+              />
+              {`To ${getNetworkName(l2.network.chainID)}`}
+            </TabButton>
+            <TabButton
+              aria-label="show withdrawal transactions"
+              className={`${roundedTabClasses} roundedTabLeft`}
+            >
+              {/* Withdrawals */}
+              <Image
+                src={getNetworkLogo(l1.network.chainID)}
+                className="h-6 w-auto"
+                alt="Withdraw"
+              />
+              {`To ${getNetworkName(l1.network.chainID)}`}
+            </TabButton>
           </Tab.List>
           <Tab.Panel className="overflow-auto">
             <TransactionsTable

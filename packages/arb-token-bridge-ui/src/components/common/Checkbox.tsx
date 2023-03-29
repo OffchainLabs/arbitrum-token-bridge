@@ -12,7 +12,7 @@ export function Checkbox(props: CheckboxProps) {
     <Switch.Group as="div" className="flex flex-row items-center space-x-3">
       <Switch
         {...props}
-        className={`arb-hover h-4 w-4 transform rounded transition duration-200 ease-in-out ${
+        className={`arb-hover h-4 w-4 rounded transition duration-200 ease-in-out ${
           props.checked ? 'bg-dark' : 'border border-dark bg-white'
         }`}
       >

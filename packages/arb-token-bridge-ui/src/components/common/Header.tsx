@@ -307,7 +307,7 @@ const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
     <Image
       src={src}
       alt={alt}
-      className="max-w-8 mr-4 max-h-8"
+      className="mr-4 max-h-8 max-w-8"
       width={50}
       height={50}
     />

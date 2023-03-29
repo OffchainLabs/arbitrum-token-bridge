@@ -217,7 +217,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-8 w-8 flex-grow-0 rounded-full"
+          className="h-8 w-8 grow-0 rounded-full"
           fallback={<TokenLogoFallback />}
         />
 

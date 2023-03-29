@@ -127,219 +127,6 @@ input:checked + .slider:before {
 }
 
 /*
-  TODO:
-
-  Once we upgrade to Tailwind CSS v3, we can remove these.
-    - https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values
-*/
-
-/* bottom */
-.bottom-\[-10\%\] {
-  bottom: -10%;
-}
-
-/* left */
-.left-\[89px\] {
-  left: 89px;
-}
-
-/* max-w */
-.max-w-\[1440px\] {
-  max-width: 1440px;
-}
-
-.max-w-8 {
-  max-width: 2rem;
-}
-
-/* max-h */
-.max-h-8 {
-  max-height: 2rem;
-}
-
-/* h */
-.h-\[28px\] {
-  height: 28px;
-}
-
-.h-\[80px\] {
-  height: 80px;
-}
-
-.h-\[25vh\] {
-  height: 25vh;
-}
-
-/* min-h */
-.min-h-\[calc\(100vh\-80px\)\] {
-  min-height: calc(100vh - 80px);
-}
-
-/* bg */
-.bg-\[rgba\(0\,0\,0\,0\.29\)\] {
-  background: rgba(0, 0, 0, 0.29);
-}
-
-.bg-\[rgba\(101\,109\,123\,0\.8\)\] {
-  background: rgba(101, 109, 123, 0.8);
-}
-
-.bg-\[rgba\(118\,121\,145\,0\.8\)\] {
-  background: rgba(118, 121, 145, 0.8);
-}
-
-.bg-\[rgba\(255\,206\,162\,0\.8\)\] {
-  background: rgba(255, 206, 162, 0.8);
-}
-
-.bg-\[\#8a4100\] {
-  background: #8a4100;
-}
-
-/* text */
-.text-\[\#595959\] {
-  color: #595959;
-}
-
-/* border */
-.border-\[\#cd0000\] {
-  border-color: #cd0000;
-}
-
-/* shadow */
-.shadow-\[0px_4px_20px_rgba\(0\,0\,0\,0\.2\)\] {
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.shadow-\[0px_0px_4px_rgba\(0\,0\,0\,0\.25\)\] {
-  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
-}
-
-.shadow-\[0px_4px_12px_\#9e9e9e\] {
-  box-shadow: 0px 4px 12px #9e9e9e;
-}
-
-/* sm: */
-@media (min-width: 640px) {
-  /* sm:w */
-  .sm\:w-\[420px\] {
-    width: 420px;
-  }
-}
-
-/* md: */
-@media (min-width: 768px) {
-  /* md:min-w */
-  .md\:min-w-\[628px\] {
-    min-width: 628px;
-  }
-
-  .md\:min-w-\[692px\] {
-    min-width: 692px;
-  }
-
-  .md\:min-w-\[725px\] {
-    min-width: 725px;
-  }
-
-  /* md:max-w */
-  .md\:max-w-\[490px\] {
-    max-width: 490px;
-  }
-
-  .md\:max-w-\[628px\] {
-    max-width: 628px;
-  }
-
-  .md\:max-w-\[725px\] {
-    max-width: 725px;
-  }
-
-  /* md:h */
-  .md\:h-\[384px\] {
-    height: 384px;
-  }
-
-  /* md:min-h */
-  .md\:min-h-\[430px\] {
-    min-height: 430px;
-  }
-
-  /* md:max-h */
-  .md\:max-h-\[calc\(100vh-80px\)\] {
-    max-height: calc(100vh - 80px);
-  }
-
-  /* md:bg */
-  .md\:bg-\[rgba\(0\2c 0\2c 0\2c 0\.6\)\] {
-    background-color: rgba(0, 0, 0, 0.6);
-  }
-
-  /* md:shadow */
-  .md\:shadow-\[0px_4px_12px_\#acacac\] {
-    box-shadow: 0px 4px 12px #acacac;
-  }
-}
-
-/* lg: */
-@media (min-width: 1024px) {
-  /* lg:bottom */
-  .lg\:bottom-\[-45\%\] {
-    bottom: -45%;
-  }
-
-  /* lg:w */
-  .lg\:w-\[466px\] {
-    width: 466px;
-  }
-
-  /* lg:min-w */
-  .lg\:min-w-\[540px\] {
-    min-width: 540px;
-  }
-
-  .lg\:min-w-\[896px\] {
-    min-width: 896px;
-  }
-
-  /* lg:max-w */
-  .lg\:max-w-\[448px\] {
-    max-width: 448px;
-  }
-
-  .lg\:max-w-\[75vw\] {
-    max-width: 75vw;
-  }
-
-  /* lg:h */
-  .lg\:h-\[56px\] {
-    height: 56px;
-  }
-
-  /* lg:min-h */
-  .lg\:min-h-\[257px\] {
-    min-height: 257px;
-  }
-
-  .lg\:min-h-\[297px\] {
-    min-height: 297px;
-  }
-
-  /* lg:shadow */
-  .lg\:shadow-\[0px_4px_20px_rgba\(0\,0\,0\,0\.2\)\] {
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-  }
-
-  .lg\:shadow-\[0px_4px_12px_\#9e9e9e\] {
-    box-shadow: 0px 4px 12px #9e9e9e;
-  }
-
-  .lg\:shadow-\[0px_4px_10px_rgba\(120\,120\,120\,0\.25\)\] {
-    box-shadow: 0px 4px 10px rgba(120, 120, 120, 0.25);
-  }
-}
-
-/*
   Custom
 */
 .arb-hover {
@@ -426,7 +213,7 @@ input:checked + .slider:before {
   animation-name: flipInX;
 }
 
-.roundedTabRight.selected::after {
+.roundedTabRight[data-headlessui-state~='selected']::after {
   height: 15px;
   width: 15px;
   position: absolute;
@@ -439,7 +226,7 @@ input:checked + .slider:before {
   background-repeat: no-repeat;
 }
 
-.roundedTabLeft.selected::before {
+.roundedTabLeft[data-headlessui-state~='selected']::before {
   height: 15px;
   width: 15px;
   position: absolute;
@@ -451,4 +238,8 @@ input:checked + .slider:before {
   background-size: contain;
   background-repeat: no-repeat;
   transform: rotateY(180deg);
+}
+
+.roundedTab:not([data-headlessui-state~='selected']) > img {
+  display: none;
 }

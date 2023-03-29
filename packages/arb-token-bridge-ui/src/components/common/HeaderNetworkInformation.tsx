@@ -29,6 +29,7 @@ export function HeaderNetworkInformation() {
           src={getNetworkLogo(network.chainID)}
           alt={`${networkName} logo`}
           className="h-full w-auto"
+          // className="max-h-8 max-w-8"
         />
       </div>
 
