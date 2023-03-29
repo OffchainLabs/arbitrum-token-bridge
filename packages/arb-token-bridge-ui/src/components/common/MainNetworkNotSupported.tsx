@@ -31,7 +31,7 @@ export const MainNetworkNotSupported = ({
   const { provider } = useWallet()
 
   return (
-    <div className="flex max-w-lg flex-col items-center space-y-8 px-12 py-12 md:items-start md:pr-24 md:pl-0">
+    <div className="flex max-w-lg flex-col items-center space-y-8 px-12 py-12 md:items-start md:pl-0 md:pr-24">
       <div className="flex w-full justify-center">
         <span className="center py-4 text-3xl font-medium text-white">
           Oops! You’re connected to the wrong network

@@ -40,12 +40,12 @@ export const NetworkSelectionContainer = ({
       </Popover.Button>
 
       <Transition>
-        <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:mt-1 lg:ml-1 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+        <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) =>
             supportedNetworks?.map((chainId, i) => (
               <div // TODO: replace with button
                 key={chainId}
-                className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-[4rem] text-lg font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
+                className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-[4rem] text-lg font-light text-white hover:bg-[rgba(0,0,0,0.2)] hover:bg-blue-arbitrum lg:px-4 lg:text-base lg:font-normal lg:text-dark"
                 onClick={() => {
                   handleClick(chainId, close)
                 }}

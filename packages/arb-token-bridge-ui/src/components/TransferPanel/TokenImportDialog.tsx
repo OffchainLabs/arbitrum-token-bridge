@@ -322,7 +322,7 @@ export function TokenImportDialog({
         )}
 
         {status === ImportStatus.UNKNOWN && (
-          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
             <ExclamationCircleIcon
               style={{ color: '#CD0000' }}
               className="h-6 w-6"
