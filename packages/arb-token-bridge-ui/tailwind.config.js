@@ -9,6 +9,7 @@ module.exports = {
           'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)'
       },
       colors: {
+        error: '#CD0000',
         // Blue
         'blue-arbitrum': '#2D374B',
         'blue-link': '#1366C1',
