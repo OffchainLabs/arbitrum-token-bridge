@@ -243,3 +243,31 @@ export async function mapWithdrawalToL2ToL1EventResult(
     decimals: 18
   } as L2ToL1EventResultPlus
 }
+
+export async function getOutgoingMessageStateFromTxHash({
+  txHash,
+  l2Provider,
+  l1Provider,
+  l2ChainID
+}: {
+  txHash: string
+  l2Provider: Provider
+  l1Provider: Provider
+  l2ChainID: number
+}) {
+  const txReceipt = await l2Provider.getTransactionReceipt(txHash)
+  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+  const [event] = l2TxReceipt.getL2ToL1Events()
+  if (!event) {
+    return undefined
+  }
+
+  const outgoingMessageState = await getOutgoingMessageState(
+    event,
+    l1Provider,
+    l2Provider,
+    l2ChainID
+  )
+
+  return outgoingMessageState
+}

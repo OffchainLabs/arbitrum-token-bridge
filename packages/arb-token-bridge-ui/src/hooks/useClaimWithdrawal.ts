@@ -4,6 +4,10 @@ import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import {
+  getOutgoingMessageStateFromTxHash,
+  OutgoingMessageState
+} from 'token-bridge-sdk'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -14,8 +18,13 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const { l1 } = useNetworksAndSigners()
-  const { signer: l1Signer } = l1
+  const {
+    l1: { signer: l1Signer, provider: l1Provider },
+    l2: {
+      provider: l2Provider,
+      network: { chainID: l2ChainID }
+    }
+  } = useNetworksAndSigners()
 
   const [isClaiming, setIsClaiming] = useState(false)
 
@@ -33,6 +42,30 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     setIsClaiming(true)
 
     try {
+      // check if the withdrawal is definitely ready to be claimed
+      const outgoingMessageState = await getOutgoingMessageStateFromTxHash({
+        txHash: tx.txId,
+        l2Provider,
+        l1Provider,
+        l2ChainID
+      })
+      if (typeof outgoingMessageState === 'undefined') {
+        // cannot find the outgoing message state because no L2ToL1Events were found for this tx-id
+        throw new Error('Claim withdrawal error: No withdrawal events found')
+      } else if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
+        // update the row with the correct status as well and hide the claim button
+        // show an alert - withdrawal has already been claimed, please check your L1 balance
+        throw new Error(
+          'Claim withdrawal error: Withdrawal has already been claimed, please check your L1 balance'
+        )
+      } else if (outgoingMessageState === OutgoingMessageState.UNCONFIRMED) {
+        // Can't claim this withdrawal yet
+        throw new Error(
+          "Claim withdrawal error: Can't claim this withdrawal yet"
+        )
+      }
+
+      // if no error found yet, then we can proceed with the withdrawal
       if (tx.asset === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
@@ -46,7 +79,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       }
     } catch (error: any) {
       err = error
-      Sentry.captureException(err)
+      Sentry.captureException(error)
     } finally {
       setIsClaiming(false)
     }
@@ -56,9 +89,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       return
     }
 
-    if (!res) {
-      alert("Can't claim this withdrawal yet")
-    }
+    // if the error was found, then show it to the user
+    if (err) alert(err)
   }
 
   return { claim, isClaiming }

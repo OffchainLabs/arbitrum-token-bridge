@@ -67,3 +67,5 @@ export {
   tryFetchLatestSubgraphBlockNumber
 } from './util/subgraph'
 export { getL1ToL2MessageDataFromL1TxHash } from './util/deposits'
+
+export { getOutgoingMessageStateFromTxHash } from './util/withdrawals'
