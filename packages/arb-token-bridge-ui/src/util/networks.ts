@@ -9,9 +9,9 @@ import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
-import EthereumLogo from '../../public/EthereumLogo.webp'
-import ArbitrumOneLogo from '../../public/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '../../public/ArbitrumNovaLogo.svg'
+import EthereumLogo from '@/images/EthereumLogo.webp'
+import ArbitrumOneLogo from '@/images/ArbitrumOneLogo.svg'
+import ArbitrumNovaLogo from '@/images/ArbitrumNovaLogo.svg'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { isUserRejectedError } from './isUserRejectedError'

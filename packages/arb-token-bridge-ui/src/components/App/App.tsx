@@ -68,10 +68,10 @@ const AppContent = (): JSX.Element => {
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
 
     if (isGoerli) {
-      return { imageSrc: '/HeaderArbitrumLogoGoerli.webp', className }
+      return { imageSrc: 'images/HeaderArbitrumLogoGoerli.webp', className }
     }
 
-    return { imageSrc: '/HeaderArbitrumLogoMainnet.svg', className }
+    return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
   }, [l1.network])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {

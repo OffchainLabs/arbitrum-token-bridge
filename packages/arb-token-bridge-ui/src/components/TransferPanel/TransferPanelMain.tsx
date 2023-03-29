@@ -189,20 +189,20 @@ function NetworkContainer({
 
     if (!isArbitrum) {
       return {
-        backgroundImage: `url('/TransparentEthereumLogo.webp')`,
+        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
         backgroundClassName: 'bg-purple-ethereum'
       }
     }
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/ArbitrumNovaLogo.svg')`,
+        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
         backgroundClassName: 'bg-[#8a4100]'
       }
     }
 
     return {
-      backgroundImage: `url('/ArbitrumOneLogo.svg')`,
+      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
       backgroundClassName: 'bg-blue-arb-one'
     }
   }, [network])

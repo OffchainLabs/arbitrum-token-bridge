@@ -1,20 +1,21 @@
+import { Tab } from '@headlessui/react'
+import { ExternalLinkIcon } from '@heroicons/react/outline'
+import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
-import { ExternalLinkIcon } from '@heroicons/react/outline'
-import { Tab } from '@headlessui/react'
 
-import { Button } from '../common/Button'
-import { TabButton } from '../common/Tab'
-import { ExternalLink } from '../common/ExternalLink'
+import ArbitrumOneLogo from '@/images/ArbitrumOneLogo.svg'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import ArbitrumOneLogo from '../../../public/ArbitrumOneLogo.svg'
+import { Button } from '../common/Button'
+import { ExternalLink } from '../common/ExternalLink'
+import { TabButton } from '../common/Tab'
+
 import {
   ExploreArbitrumContent,
   ExploreArbitrumDeFiProjectName,
   ExploreArbitrumNFTProjectName
 } from './ExploreArbitrumContent'
-import Image from 'next/image'
 
 preloadImages([
   ...ExploreArbitrumContent.defi.map(p => p.imageSrc),

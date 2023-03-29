@@ -4,9 +4,9 @@ import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import Image, { ImageProps } from 'next/image'
 
-import HeaderLogoMainnetSVG from '../../../public/HeaderArbitrumLogoMainnet.svg'
-import Discord from '../../../public/icons/discord.webp'
-import Twitter from '../../../public/icons/twitter.webp'
+import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
+import Discord from '@/icons/discord.webp'
+import Twitter from '@/icons/twitter.webp'
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import {

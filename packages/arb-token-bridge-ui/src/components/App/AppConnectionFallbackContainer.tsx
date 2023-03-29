@@ -1,6 +1,6 @@
-import { ExternalLink } from '../common/ExternalLink'
 import Image, { ImageProps } from 'next/image'
 import ThreeArbinautsImg from '@/images/three-arbinauts.webp'
+import { ExternalLink } from '../common/ExternalLink'
 
 export function AppConnectionFallbackContainer({
   layout = 'col',

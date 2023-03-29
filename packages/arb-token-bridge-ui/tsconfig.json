@@ -13,7 +13,8 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/images/*": ["public/images/*"]
+      "@/images/*": ["public/images/*"],
+      "@/icons/*": ["public/icons/*"]
     }
   },
   "exclude": ["node_modules"]
