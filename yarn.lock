@@ -8518,6 +8518,13 @@ cypress-localstorage-commands@^2.2.1:
   resolved "https://registry.yarnpkg.com/cypress-localstorage-commands/-/cypress-localstorage-commands-2.2.1.tgz#9895d75a3e8059e78d61231c5794dc46e0fc5fdd"
   integrity sha512-m7IwoM+BMOJj7FzzN4It268c/i/Ur72CQX8JwLICkQ6ZgF1XNJOIKlQ7Rszg45ATLTjVTL1QElKCZECoU8cthQ==
 
+cypress-recurse@^1.27.0:
+  version "1.29.0"
+  resolved "https://registry.yarnpkg.com/cypress-recurse/-/cypress-recurse-1.29.0.tgz#81960c78682f13571bcc3f8d823e6db00a34aa7d"
+  integrity sha512-JP8yrrj/nKww653V8sDWxjRGPjow8mgH0P9SAY8Fain9LOxm9Ht2FvXbPWo/mbb58ezrEqyOcMdQgHXsdmG0Bg==
+  dependencies:
+    humanize-duration "^3.27.3"
+
 cypress-wait-until@^1.7.2:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/cypress-wait-until/-/cypress-wait-until-1.7.2.tgz#7f534dd5a11c89b65359e7a0210f20d3dfc22107"
@@ -12117,6 +12124,11 @@ human-signals@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
+
+humanize-duration@^3.27.3:
+  version "3.28.0"
+  resolved "https://registry.yarnpkg.com/humanize-duration/-/humanize-duration-3.28.0.tgz#f79770c0bec34d3bfd4899338cc40643bc04df72"
+  integrity sha512-jMAxraOOmHuPbffLVDKkEKi/NeG8dMqP8lGRd6Tbf7JgAeG33jjgPWDbXXU7ypCI0o+oNKJFgbSB9FKVdWNI2A==
 
 hyphenate-style-name@^1.0.2:
   version "1.0.4"
