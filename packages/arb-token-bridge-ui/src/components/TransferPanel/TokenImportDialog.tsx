@@ -1,23 +1,28 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useLatest } from 'react-use'
-import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
 import {
   ExclamationCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/outline'
 import Tippy from '@tippyjs/react'
-import { Loader } from '../common/atoms/Loader'
-import { useActions, useAppState } from '../../state'
-import {
-  useTokensFromLists,
-  useTokensFromUser,
-  toERC20BridgeToken
-} from './TokenSearchUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
+import Image from 'next/image'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLatest } from 'react-use'
+import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
+
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useActions, useAppState } from '../../state'
+import { getExplorerUrl } from '../../util/networks'
+import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
-import { getExplorerUrl } from '../../util/networks'
+import GrumpyCat from '@/images/grumpy-cat.webp'
+
+import {
+  toERC20BridgeToken,
+  useTokensFromLists,
+  useTokensFromUser
+} from './TokenSearchUtils'
 
 enum ImportStatus {
   LOADING,
@@ -290,7 +295,7 @@ export function TokenImportDialog({
               </span>
             </div>
             <div className="flex w-full justify-center py-4">
-              <img src="/images/grumpy-cat.webp" alt="Grumpy cat" />
+              <Image src={GrumpyCat} alt="Grumpy cat" />
             </div>
           </div>
         </div>

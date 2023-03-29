@@ -1,20 +1,19 @@
+import Image, { ImageProps } from 'next/image'
+import ThreeArbinautsImg from '@/images/three-arbinauts.webp'
 import { ExternalLink } from '../common/ExternalLink'
 
 export function AppConnectionFallbackContainer({
   layout = 'col',
   imgProps = {
     className: 'sm:w-[420px]',
-    src: '/images/three-arbinauts.webp',
-    alt: 'Three Arbinauts'
+    src: ThreeArbinautsImg,
+    alt: 'Three Arbinauts',
+    priority: true
   },
   children
 }: {
   layout?: 'row' | 'col'
-  imgProps?: {
-    className?: string
-    src?: string
-    alt?: string
-  }
+  imgProps?: ImageProps
   children: React.ReactNode
 }) {
   return (
@@ -26,11 +25,7 @@ export function AppConnectionFallbackContainer({
       >
         {children}
         <ExternalLink href="https://metamask.io/download">
-          <img
-            className={imgProps.className}
-            src={imgProps.src}
-            alt={imgProps.alt}
-          />
+          <Image {...imgProps} />
         </ExternalLink>
       </div>
     </div>

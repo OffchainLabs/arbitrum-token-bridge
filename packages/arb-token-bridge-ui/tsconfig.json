@@ -1,10 +1,21 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src", "additional.d.ts"],
+  "include": [
+    "src",
+    "additional.d.ts",
+    "next.config.js",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
   "compilerOptions": {
     "noEmit": true,
     "incremental": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/images/*": ["public/images/*"],
+      "@/icons/*": ["public/icons/*"]
+    }
   },
   "exclude": ["node_modules"]
 }

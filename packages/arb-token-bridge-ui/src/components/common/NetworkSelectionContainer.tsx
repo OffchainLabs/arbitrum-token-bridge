@@ -1,6 +1,7 @@
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
+import Image from 'next/image'
 import {
   ChainId,
   getNetworkLogo,
@@ -35,7 +36,7 @@ export const NetworkSelectionContainer = ({
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button className="arb-hover flex w-full justify-start rounded-full p-4 lg:w-max lg:p-0">
+      <Popover.Button className="arb-hover flex w-full justify-start rounded-full py-3 px-6 lg:w-max lg:p-0">
         {children}
       </Popover.Button>
 
@@ -45,7 +46,7 @@ export const NetworkSelectionContainer = ({
             supportedNetworks?.map((chainId, i) => (
               <div // TODO: replace with button
                 key={chainId}
-                className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-[4rem] text-lg font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
+                className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
                 onClick={() => {
                   handleClick(chainId, close)
                 }}
@@ -59,10 +60,10 @@ export const NetworkSelectionContainer = ({
                 aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
               >
                 <div className="flex h-6 w-6 items-center justify-center lg:h-8 lg:w-8">
-                  <img
+                  <Image
                     src={getNetworkLogo(Number(chainId))}
                     alt={`${getNetworkName(Number(chainId))} logo`}
-                    className="max-h-6 max-w-6 lg:max-h-8 lg:max-w-8"
+                    className="h-full w-auto"
                   />
                 </div>
                 <span className="whitespace-nowrap">
