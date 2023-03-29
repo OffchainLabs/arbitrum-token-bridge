@@ -1,9 +1,9 @@
 import React from 'react'
 import { Disclosure, Popover } from '@headlessui/react'
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline'
 
 export type HeaderMenuItem = {
   title: string
@@ -86,7 +86,7 @@ export function HeaderMenuMobile(
       {({ open }) => (
         <div className="w-full">
           <Disclosure.Button
-            className={`arb-hover flex w-full items-center justify-start p-4 ${
+            className={`arb-hover flex w-full items-center justify-start px-6 py-3 ${
               open && `bg-white`
             }`}
           >
@@ -117,7 +117,7 @@ export function HeaderMenuMobile(
               {props.items.map((item, index) => (
                 <li
                   key={index}
-                  className="px-[4rem] text-left text-lg font-light text-white"
+                  className="px-12 text-left text-lg font-light text-white"
                 >
                   <ExternalLink
                     href={item.anchorProps?.href}

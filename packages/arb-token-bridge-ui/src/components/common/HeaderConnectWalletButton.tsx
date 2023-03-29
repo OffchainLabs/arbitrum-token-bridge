@@ -18,9 +18,9 @@ export function HeaderConnectWalletButton() {
     <button
       onClick={showConnectionModal}
       type="button"
-      className="arb-hover flex w-full flex-row items-center rounded-full p-4 text-2xl font-medium text-white lg:bg-lime-dark lg:px-4 lg:py-2 lg:text-base lg:font-normal"
+      className="arb-hover flex w-full flex-row items-center bg-lime-dark px-6 py-3 text-2xl font-medium text-white lg:rounded-full lg:bg-lime-dark lg:px-4 lg:py-2 lg:text-base lg:font-normal"
     >
-      <PlusCircleIcon className="mr-3 h-8 w-8 rounded-full bg-white p-1 text-dark opacity-40" />
+      <PlusCircleIcon className="mr-3 h-10 w-10 rounded-full bg-white stroke-lime-dark p-1 opacity-40" />
       Connect Wallet
     </button>
   )
