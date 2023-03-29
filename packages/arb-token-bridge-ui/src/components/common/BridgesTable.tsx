@@ -13,6 +13,7 @@ import {
 } from '../../util/fastBridges'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { FathomEventNonCanonicalTokens } from '../../util/AnalyticsUtils'
+import Image from 'next/image'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
@@ -104,7 +105,7 @@ export function BridgesTable(props: {
                 onClick={() => onClick(bridge.name)}
               >
                 <div className="flex h-16 items-center space-x-4 px-6">
-                  <img
+                  <Image
                     src={bridge.imageSrc}
                     alt={bridge.name}
                     className="h-8 w-8 rounded-full object-contain"

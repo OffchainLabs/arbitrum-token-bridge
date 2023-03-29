@@ -1,13 +1,10 @@
-module.exports = {
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/i,
-      issuer: /\.[jt]sx?$/,
-      use: ['@svgr/webpack']
-    })
+// @ts-check type next.config.js
 
-    return config
-  },
+/**
+ * @type {import('next').NextConfig}
+ **/
+
+module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true
 }

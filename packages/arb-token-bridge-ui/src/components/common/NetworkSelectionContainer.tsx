@@ -1,6 +1,7 @@
 import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
+import Image from 'next/image'
 import {
   ChainId,
   getNetworkLogo,
@@ -59,10 +60,10 @@ export const NetworkSelectionContainer = ({
                 aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
               >
                 <div className="flex h-6 w-6 items-center justify-center lg:h-8 lg:w-8">
-                  <img
+                  <Image
                     src={getNetworkLogo(Number(chainId))}
                     alt={`${getNetworkName(Number(chainId))} logo`}
-                    className="max-h-6 max-w-6 lg:max-h-8 lg:max-w-8"
+                    className="h-full w-auto"
                   />
                 </div>
                 <span className="whitespace-nowrap">
