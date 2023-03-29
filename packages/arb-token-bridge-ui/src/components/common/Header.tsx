@@ -1,9 +1,12 @@
-import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
-import Image from 'next/image'
+import Image, { ImageProps } from 'next/image'
 
+import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
+import Discord from '@/icons/discord.webp'
+import Twitter from '@/icons/twitter.webp'
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import {
@@ -150,9 +153,9 @@ export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
   return null
 }
 
-function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+function HeaderImageElement({ ...props }: ImageProps) {
   return (
-    <img
+    <Image
       id="header-image"
       src={props.src}
       alt={props.alt || 'Arbitrum logo'}
@@ -208,7 +211,10 @@ export function Header() {
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <HeaderImageElement src="/HeaderArbitrumLogoMainnet.svg" />
+            <HeaderImageElement
+              src={HeaderLogoMainnetSVG}
+              alt="Arbitrum logo"
+            />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
@@ -267,13 +273,13 @@ export function Header() {
               href="https://discord.com/invite/ZpZuw7p"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/discord.webp" alt="Discord" />
+              <Image src={Discord} alt="Discord" />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/twitter.webp" alt="Twitter" />
+              <Image src={Twitter} alt="Twitter" />
             </ExternalLink>
           </div>
         </div>

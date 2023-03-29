@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
+import { ChevronDownIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
+import Image from 'next/image'
 
 import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ChevronDownIcon } from '@heroicons/react/outline'
-import { twMerge } from 'tailwind-merge'
-
 export function HeaderNetworkInformation() {
   const {
     l1: { network: l1Network },
@@ -32,14 +32,14 @@ export function HeaderNetworkInformation() {
             : ''
         )}
       >
-        <img
+        <Image
           src={getNetworkLogo(network.chainID)}
           alt={`${networkName} logo`}
-          className="max-h-8 max-w-8"
+          className="h-full w-auto"
         />
       </div>
 
-      <span className="text-2xl font-medium  lg:text-base lg:font-normal">
+      <span className="text-2xl font-medium lg:text-base lg:font-normal">
         {networkName}
       </span>
 
