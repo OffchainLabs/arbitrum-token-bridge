@@ -61,22 +61,14 @@ export const useDeposits = (depositPageParams: PageParams) => {
       depositPageParams.pageSize,
       depositPageParams.searchString
     ],
-    (
-      _,
-      _walletAddress,
-      _l1Provider,
-      _l2Provider,
-      _pageNumber,
-      _pageSize,
-      _searchString
-    ) =>
+    () =>
       fetchCompleteDepositData({
-        walletAddress: _walletAddress,
-        l1Provider: _l1Provider,
-        l2Provider: _l2Provider,
-        pageNumber: _pageNumber,
-        pageSize: _pageSize,
-        searchString: _searchString
+        walletAddress,
+        l1Provider,
+        l2Provider,
+        pageNumber: depositPageParams.pageNumber,
+        pageSize: depositPageParams.pageSize,
+        searchString: depositPageParams.searchString
       })
   )
 }

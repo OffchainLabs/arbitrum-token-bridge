@@ -8,6 +8,7 @@ import {
   getOutgoingMessageStateFromTxHash,
   OutgoingMessageState
 } from 'token-bridge-sdk'
+import { useSWRConfig } from 'swr'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -26,7 +27,40 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     }
   } = useNetworksAndSigners()
 
+  const { mutate } = useSWRConfig()
   const [isClaiming, setIsClaiming] = useState(false)
+
+  /*
+  // another approach but unable to access the swr cache for a specific row and mutate it
+
+  const updateRowState = ({
+    tx,
+    outgoingMessageState
+  }: {
+    tx: MergedTransaction
+    outgoingMessageState: OutgoingMessageState
+  }) => {
+    const pendingWithdrawalsMap = json(arbTokenBridge.pendingWithdrawalsMap)
+    const withdrawal = Object.values(pendingWithdrawalsMap).find(
+      l2ToL1Event => l2ToL1Event.l2TxHash === tx.txId
+    )
+    if (typeof withdrawal !== 'undefined') {
+      withdrawal['outgoingMessageState'] = outgoingMessageState
+      arbTokenBridge.setWithdrawalsInStore([
+        ...Object.values(arbTokenBridge.pendingWithdrawalsMap),
+        withdrawal // updated state of the current withdrawal
+      ])
+    }
+  }
+  */
+
+  const refreshWithdrawalTable = () => {
+    // clear the withdrawal cache
+    mutate((key: string) => {
+      console.log('trying to mutating', key)
+      return Array.isArray(key) && key[0] === 'withdrawals'
+    })
+  }
 
   async function claim(tx: MergedTransaction) {
     if (isClaiming) {
@@ -54,9 +88,11 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
         throw new Error('Claim withdrawal error: No withdrawal events found')
       } else if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
         // update the row with the correct status as well and hide the claim button
+        refreshWithdrawalTable()
+
         // show an alert - withdrawal has already been claimed, please check your L1 balance
         throw new Error(
-          'Claim withdrawal error: Withdrawal has already been claimed, please check your L1 balance'
+          'Claim withdrawal error: Withdrawal seems to have been claimed already, please check your L1 balance.'
         )
       } else if (outgoingMessageState === OutgoingMessageState.UNCONFIRMED) {
         // Can't claim this withdrawal yet
