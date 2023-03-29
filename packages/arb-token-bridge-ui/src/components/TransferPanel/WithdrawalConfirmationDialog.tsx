@@ -23,6 +23,8 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
+import Image from 'next/image'
+import GoogleCalendarSVG from '@/images/GoogleCalendar.svg'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -194,8 +196,8 @@ export function WithdrawalConfirmationDialog(
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum px-4 py-2 text-blue-arbitrum"
                     >
-                      <img
-                        src="/GoogleCalendar.svg"
+                      <Image
+                        src={GoogleCalendarSVG}
                         alt="Google Calendar Icon"
                       />
                       <span>Add to Google Calendar</span>

@@ -73,6 +73,9 @@ export function TokenButton(): JSX.Element {
         >
           <div className="flex items-center space-x-2">
             {tokenLogo && (
+              // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
+              // It would throw error if it's loaded from external domains
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tokenLogo}
                 alt="Token logo"
