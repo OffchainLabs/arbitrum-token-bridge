@@ -75,16 +75,14 @@ export function AppContextProvider({
   children: React.ReactNode
 }) {
   const [state, dispatch] = useReducer(reducer, initialState)
+  const { setCurrentL1BlockNumber } = useAppContextActions()
 
   const { l1 } = useNetworksAndSigners()
   const currentL1BlockNumber = useBlockNumber(l1.provider)
 
   useEffect(() => {
-    dispatch({
-      type: 'set_current_l1_block_number',
-      payload: currentL1BlockNumber
-    })
-  }, [currentL1BlockNumber])
+    setCurrentL1BlockNumber(currentL1BlockNumber)
+  }, [currentL1BlockNumber, setCurrentL1BlockNumber])
 
   return (
     <AppContext.Provider value={[state, dispatch]}>
@@ -98,7 +96,34 @@ export function useAppContextState(): AppContextState {
   return state
 }
 
-export function useAppContextDispatch(): Dispatch<Action> {
+// exports actions in a more readable and succinct format
+// deprecates the direct use of `dispatch` in code
+export const useAppContextActions = () => {
   const [, dispatch] = useContext(AppContext)
-  return dispatch
+
+  const setTransferring = (payload: boolean) => {
+    dispatch({ type: 'layout.set_is_transferring', payload })
+  }
+
+  const setCurrentL1BlockNumber = (currentL1BlockNumber: number) => {
+    dispatch({
+      type: 'set_current_l1_block_number',
+      payload: currentL1BlockNumber
+    })
+  }
+
+  const openTransactionHistoryPanel = () => {
+    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
+  }
+
+  const closeTransactionHistoryPanel = () => {
+    dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
+  }
+
+  return {
+    setTransferring,
+    setCurrentL1BlockNumber,
+    openTransactionHistoryPanel,
+    closeTransactionHistoryPanel
+  }
 }
