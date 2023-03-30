@@ -1,5 +1,6 @@
 import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
 import {
@@ -170,6 +171,7 @@ export interface ArbTokenBridgeEth {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
+    l1Provider: JsonRpcProvider
   }) => Promise<void | ContractReceipt>
 }
 
@@ -212,6 +214,7 @@ export interface ArbTokenBridgeToken {
   triggerOutbox: (params: {
     id: string
     l1Signer: Signer
+    l1Provider: JsonRpcProvider
   }) => Promise<void | ContractReceipt>
   getL2ERC20Address: (erc20L1Address: string) => Promise<string>
   getL2GatewayAddress: (erc20L1Address: string) => Promise<string>

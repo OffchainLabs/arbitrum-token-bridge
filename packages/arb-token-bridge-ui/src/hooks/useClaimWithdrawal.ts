@@ -14,8 +14,9 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const { l1 } = useNetworksAndSigners()
-  const { signer: l1Signer } = l1
+  const {
+    l1: { signer: l1Signer, provider: l1Provider }
+  } = useNetworksAndSigners()
 
   const [isClaiming, setIsClaiming] = useState(false)
 
@@ -36,28 +37,30 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (tx.asset === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer
+          l1Signer,
+          l1Provider
         })
       } else {
         res = await arbTokenBridge.token.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer
+          l1Signer,
+          l1Provider
         })
       }
     } catch (error: any) {
       err = error
-      Sentry.captureException(err)
     } finally {
       setIsClaiming(false)
     }
 
-    // Don't show any alert in case user denies the signature
+    // Don't show any alert / log any error in case user denies the signature
     if (isUserRejectedError(err)) {
       return
     }
 
+    Sentry.captureException(err)
     if (!res) {
-      alert("Can't claim this withdrawal yet")
+      alert(`Cannot claim withdrawal: ${err?.message ?? err}`)
     }
   }
 
