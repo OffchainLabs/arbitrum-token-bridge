@@ -18,7 +18,8 @@ import React, {
 } from 'react'
 import {
   JsonRpcProvider,
-  StaticJsonRpcProvider
+  StaticJsonRpcProvider,
+  Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { Signer } from 'ethers'
@@ -283,7 +284,7 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 3
-    getL1Network(provider)
+    getL1Network(provider as Web3Provider)
       .then(async l1Network => {
         // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
         const l2Provider = new StaticJsonRpcProvider(
@@ -325,7 +326,7 @@ export function NetworksAndSignersProvider(
           })
           return
         }
-        getL2Network(provider)
+        getL2Network(provider as Web3Provider)
           .then(async l2Network => {
             const l1NetworkChainId = l2Network.partnerChainID
             const l1Provider = new StaticJsonRpcProvider(
