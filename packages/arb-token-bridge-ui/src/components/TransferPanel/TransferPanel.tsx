@@ -499,6 +499,7 @@ export function TransferPanel() {
           await latestEth.current.deposit({
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 dispatch({
@@ -749,7 +750,10 @@ export function TransferPanel() {
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
       (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      (!isSmartContractWallet &&
+        destinationAddress &&
+        !utils.isAddress(destinationAddress))
     )
   }, [
     isTransferring,
@@ -760,7 +764,8 @@ export function TransferPanel() {
     isBridgingANewStandardToken,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    isDestinationAddressSmartContract,
+    destinationAddress
   ])
 
   // TODO: Refactor this and the property above
@@ -793,7 +798,10 @@ export function TransferPanel() {
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
       (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      (!isSmartContractWallet &&
+        destinationAddress &&
+        !utils.isAddress(destinationAddress))
     )
   }, [
     isTransferring,
@@ -802,7 +810,8 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    isDestinationAddressSmartContract,
+    destinationAddress
   ])
 
   // TODO: Refactor this and the property above
@@ -868,7 +877,7 @@ export function TransferPanel() {
 
       <LowBalanceDialog {...lowBalanceDialogProps} />
 
-      <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-y-0 lg:space-x-6 lg:rounded-xl">
+      <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-x-6 lg:space-y-0 lg:rounded-xl">
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
@@ -894,7 +903,7 @@ export function TransferPanel() {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
+          className="flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-br-xl lg:rounded-tr-xl lg:bg-white lg:px-0 lg:pr-6"
         >
           <div className="flex flex-col">
             <div className="hidden lg:block">

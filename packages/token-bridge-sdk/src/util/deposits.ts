@@ -280,7 +280,6 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
 }> => {
   // fetch L1 transaction receipt
   const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
-
   // TODO: Handle tx not found
   if (!depositTxReceipt) {
     return {}
@@ -301,9 +300,12 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     if (isEthDeposit) {
       // nitro eth deposit
       const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+      const [l1ToL2Message] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+
       return {
         isClassic: false,
-        l1ToL2Msg: ethDepositMessage
+        l1ToL2Msg: ethDepositMessage ?? l1ToL2Message,
+        isDepositTo: !ethDepositMessage && !!l1ToL2Message
       }
     }
 

@@ -13,7 +13,12 @@ import {
   L1ToL2MessageStatus,
   L2ToL1Message
 } from '@arbitrum/sdk'
-import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import {
+  L1EthDepositTransaction,
+  L1ContractCallTransaction,
+  L1ContractCallTransactionReceipt,
+  L1EthDepositTransactionReceipt
+} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
@@ -143,57 +148,94 @@ export const useArbTokenBridge = (
   const depositEth = async ({
     amount,
     l1Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    txLifecycle?:
+      | L1EthDepositTransactionLifecycle & L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
-    let tx: L1EthDepositTransaction
+    let tx: L1EthDepositTransaction | L1ContractCallTransaction
+    let receipt:
+      | L1EthDepositTransactionReceipt
+      | L1ContractCallTransactionReceipt
 
-    try {
-      tx = await ethBridger.deposit({
-        amount,
-        l1Signer
+    const _addTransaction = (txHash: string) =>
+      addTransaction({
+        type: 'deposit-l1',
+        status: 'pending',
+        value: utils.formatEther(amount),
+        txID: txHash,
+        assetName: 'ETH',
+        assetType: AssetType.ETH,
+        sender: walletAddress,
+        l1NetworkID,
+        l2NetworkID
       })
 
-      if (txLifecycle?.onTxSubmit) {
-        txLifecycle.onTxSubmit(tx)
+    try {
+      if (destinationAddress) {
+        // send ETH to a custom address
+        tx = await ethBridger.depositTo({
+          amount,
+          l1Signer,
+          l2Provider: l2.provider,
+          destinationAddress
+        })
+        if (txLifecycle?.onTxSubmit) {
+          txLifecycle.onTxSubmit(tx)
+        }
+        _addTransaction(tx.hash)
+        receipt = await tx.wait()
+        if (txLifecycle?.onTxConfirm) {
+          txLifecycle.onTxConfirm(receipt)
+        }
+      } else {
+        tx = await ethBridger.deposit({
+          amount,
+          l1Signer
+        })
+        if (txLifecycle?.onTxSubmit) {
+          txLifecycle.onTxSubmit(tx)
+        }
+        _addTransaction(tx.hash)
+        receipt = await tx.wait()
+        if (txLifecycle?.onTxConfirm) {
+          txLifecycle.onTxConfirm(receipt)
+        }
       }
     } catch (error: any) {
       return alert(error.message)
     }
 
-    addTransaction({
-      type: 'deposit-l1',
-      status: 'pending',
-      value: utils.formatEther(amount),
-      txID: tx.hash,
-      assetName: 'ETH',
-      assetType: AssetType.ETH,
-      sender: walletAddress,
-      l1NetworkID,
-      l2NetworkID
-    })
-
-    const receipt = await tx.wait()
-
-    if (txLifecycle?.onTxConfirm) {
-      txLifecycle.onTxConfirm(receipt)
+    let retryableCreationTxID = ''
+    if (destinationAddress) {
+      const [l1ToL2Message] = await receipt.getL1ToL2Messages(l2.provider)
+      if (l1ToL2Message) {
+        retryableCreationTxID = l1ToL2Message.retryableCreationId
+      } else {
+        return
+      }
     }
 
     const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
 
-    if (!ethDepositMessage) {
-      return
+    if (!destinationAddress) {
+      if (ethDepositMessage) {
+        retryableCreationTxID = ethDepositMessage?.l2DepositTxHash
+      } else {
+        return
+      }
     }
 
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
+      retryableCreationTxID,
       l2TxID: undefined
     }
 
