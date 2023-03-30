@@ -10,7 +10,7 @@
     border-radius: 0px !important;
 }
 
-.text-2xl, .text-xl, .text-5xl, th{
+.text-2xl, .text-5xl, th{
     font-family: 'Montserrat', sans-serif !important;
     font-weight: bolder !important;
 }
@@ -27,7 +27,7 @@
 }
 
 
-.hover\:bg-blue-arbitrum:hover, .even\:bg-white:nth-child(even){
+.hover\:bg-blue-arbitrum:hover, .even\:bg-white:nth-child(even),.bg-orange{
     background-color: white !important;
 }
 
@@ -66,4 +66,20 @@ a:hover, button:hover{
 th{
     color: black;
     border: 1px solid white;
+}
+.main-panel{
+    background-color: white !important;
+    padding: 2rem 4rem;
+}
+
+.main-panel .lg\:rounded-xl{
+    box-shadow: none !important;
+}
+
+.lg\:bottom-\[-45\%\], .h-\[25vh\]{
+    display: none;
+}
+
+.transfer-panel-stats{
+    background: none !important;
 }
