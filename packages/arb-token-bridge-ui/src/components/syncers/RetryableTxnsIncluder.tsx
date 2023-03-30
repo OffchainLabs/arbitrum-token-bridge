@@ -49,7 +49,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       }
 
       // Non-classic - Eth deposit
-      // depositTo create a retryable ticket and acts like a token
+      // depositTo creates a retryable ticket and acts like a token
       // when sending ETH to a different address
       if (isEthDeposit && !isRetryableTicket) {
         arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(

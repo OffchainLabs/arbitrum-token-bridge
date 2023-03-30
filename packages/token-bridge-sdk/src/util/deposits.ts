@@ -277,6 +277,7 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     | L1ToL2MessageReaderClassic
     | EthDepositMessage
     | L1ToL2MessageReader
+  isRetryableTicket?: boolean
 }> => {
   // fetch L1 transaction receipt
   const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
@@ -300,12 +301,13 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     if (isEthDeposit) {
       // nitro eth deposit
       const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+      // when depositing to a custom address
       const [l1ToL2Message] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
 
       return {
         isClassic: false,
         l1ToL2Msg: ethDepositMessage ?? l1ToL2Message,
-        isDepositTo: !ethDepositMessage && !!l1ToL2Message
+        isRetryableTicket: !ethDepositMessage && !!l1ToL2Message
       }
     }
 
