@@ -73,15 +73,24 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       withdrawalPageParams.pageSize,
       withdrawalPageParams.searchString
     ],
-    () =>
+    ([
+      _,
+      _walletAddress,
+      _l1Provider,
+      _l2Provider,
+      _gatewayAddresses,
+      _pageNumber,
+      _pageSize,
+      _searchString
+    ]) =>
       fetchCompleteWithdrawalData({
-        walletAddress,
-        l1Provider,
-        l2Provider,
-        gatewayAddresses: gatewaysToUse,
-        pageNumber: withdrawalPageParams.pageNumber,
-        pageSize: withdrawalPageParams.pageSize,
-        searchString: withdrawalPageParams.searchString
+        walletAddress: _walletAddress,
+        l1Provider: _l1Provider,
+        l2Provider: _l2Provider,
+        gatewayAddresses: _gatewayAddresses,
+        pageNumber: _pageNumber,
+        pageSize: _pageSize,
+        searchString: _searchString
       })
   )
 }
