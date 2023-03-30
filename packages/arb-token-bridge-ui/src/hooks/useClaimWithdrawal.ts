@@ -14,10 +14,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l1: { signer: l1Signer, provider: l1Provider }
-  } = useNetworksAndSigners()
-
+  const { l1 } = useNetworksAndSigners()
+  const { signer: l1Signer } = l1
   const [isClaiming, setIsClaiming] = useState(false)
 
   async function claim(tx: MergedTransaction) {
@@ -37,14 +35,12 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (tx.asset === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer,
-          l1Provider
+          l1Signer
         })
       } else {
         res = await arbTokenBridge.token.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer,
-          l1Provider
+          l1Signer
         })
       }
     } catch (error: any) {
