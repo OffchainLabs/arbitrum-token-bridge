@@ -214,7 +214,7 @@ export function HeaderAccountPopover() {
 
               {/* Actual image and account name */}
               <div className="relative z-10 flex flex-row items-center space-x-2">
-                <div className="box-content rounded-full border-[4px] border-dark">
+                <div className="avatar-container box-content rounded-full border-[4px] border-dark">
                   <SafeImage
                     src={ensInfo.avatar || undefined}
                     className="h-14 w-14 rounded-full"

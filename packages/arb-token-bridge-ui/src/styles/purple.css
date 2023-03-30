@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Ropa+Sans');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900');
+
+
+*{
+    font-family: 'Ropa Sans', 'Arial' !important;
+}
+
+.rounded-tr-lg, .rounded-full, .rounded-xl, .rounded-sm, .rounded-md, .rounded-lg, .lg\:rounded-tr-xl, .lg\:rounded-xl,.web3modal-modal-card, .rounded-lg, .md\:rounded-xl{
+    border-radius: 0px !important;
+}
+
+.text-2xl, .text-xl{
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: bolder !important;
+}
+
+.lg\:rounded-xl, .web3modal-modal-card, .md\:shadow-\[0px_4px_12px_\#acacac\],
+.lg\:shadow-\[0px_4px_20px_rgba\(0\2c 0\2c 0\2c 0\.2\)\], .side-panel,.bg-blue-arbitrum, .header-menu-panel{
+    box-shadow: 5px 0px 10px 2px rgba(80, 70, 173, 0.7),
+    -5px 0px 10px 2px rgba(80, 70, 173, 0.7)
+}
+
+#root, body, .bg-dark, .bg-black, .bg-purple-ethereum,.bg-blue-arbitrum, .background-image, .bg-gradient-overlay, .lg\:bg-blue-arbitrum, .lg\:bg-dark, .lg\:bg-black, .bg-blue-arb-one, .bg-\[\#8d8e8e\]{
+    background-color:  #8C89BC !important;
+    background-image: none !important;
+}
+
+
+.hover\:bg-blue-arbitrum:hover, .even\:bg-white:nth-child(even){
+    background-color: white !important;
+}
+
+.roundedTabRight::after, .roundedTabLeft::before{
+    display: none;
+}
+
+.bg-cyan, .bg-gray-3:not(.transfer-panel-stats), button:disabled{
+    background-color:  #8c89bc4f !important;
+}
+
+button.rounded-full{
+    border:2px solid white !important
+}
+
+.hover\:text-white:hover, .hover\:bg-blue-arbitrum:hover, .header-menu-panel{
+    color:#8C89BC !important;
+}
+
+a:hover, button:hover{
+    text-decoration: underline !important;
+}
+
+.avatar-container{
+    border-color: transparent !important;
+}
