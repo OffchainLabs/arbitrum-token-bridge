@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
-import { useWallet } from '@arbitrum/use-wallet'
 import { Popover } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -15,10 +14,6 @@ import BoringAvatar from 'boring-avatars'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus
-} from '../../hooks/useNetworksAndSigners'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
@@ -26,9 +21,14 @@ import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-
-type ENSInfo = { name: string | null; avatar: string | null }
-const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
+import {
+  useAccount,
+  useDisconnect,
+  useEnsAvatar,
+  useEnsName,
+  useNetwork,
+  useProvider
+} from 'wagmi'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -70,75 +70,55 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
   }
 }
 
-async function tryLookupENSName(
-  provider: JsonRpcProvider,
-  address: string
-): Promise<string | null> {
-  try {
-    return await provider.lookupAddress(address)
-  } catch (error) {
-    return null
-  }
-}
-
-async function tryLookupENSAvatar(
-  provider: JsonRpcProvider,
-  address: string
-): Promise<string | null> {
-  try {
-    return await provider.getAvatar(address)
-  } catch (error) {
-    return null
-  }
-}
-
 export function HeaderAccountPopover() {
-  const { disconnect, account, web3Modal } = useWallet()
-  const { status, l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const { provider: l1Provider } = l1
+  const l1Provider = useProvider({ chainId: 1 })
+  const {
+    address,
+    connector: activeConnector,
+    isConnecting,
+    isDisconnected,
+    isConnected
+  } = useAccount()
+  const { disconnect } = useDisconnect()
+  const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
 
   const { openTransactionHistoryPanel } = useAppContextActions()
 
   const [showCopied, setShowCopied] = useState(false)
-  const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
+  const { data: ensName } = useEnsName({
+    address
+  })
+
+  const { data: ensAvatar } = useEnsAvatar({
+    address
+  })
 
   // check local-storage for viewed flag
   const [txHistoryViewedOnce, setTxHistoryViewedOnce] =
     useNewFeatureIndicator('tx-history')
 
   useEffect(() => {
-    async function resolveNameServiceInfo() {
-      if (account) {
-        const [ensName, avatar, udName] = await Promise.all([
-          tryLookupENSName(l1Provider, account),
-          tryLookupENSAvatar(l1Provider, account),
-          tryLookupUDName(l1Provider, account)
-        ])
-        setENSInfo({ name: ensName, avatar })
-        setUDInfo({ name: udName })
-      }
+    if (!address) return
+    async function resolveUdName() {
+      const udName = await tryLookupUDName(
+        l1Provider as JsonRpcProvider,
+        address as string
+      )
+
+      setUDInfo({ name: udName })
     }
-
-    resolveNameServiceInfo()
-  }, [account, l1Provider])
-
-  const currentNetwork = useMemo(() => {
-    if (status !== UseNetworksAndSignersStatus.CONNECTED) {
-      return undefined
-    }
-
-    return isConnectedToArbitrum ? l2.network : l1.network
-  }, [status, l1, l2, isConnectedToArbitrum])
+    resolveUdName()
+  }, [address, l1Provider])
 
   const accountShort = useMemo(() => {
-    if (typeof account === 'undefined') {
+    if (typeof address === 'undefined') {
       return ''
     }
 
-    return shortenAddress(account)
-  }, [account])
+    return shortenAddress(address)
+  }, [address])
 
   function copy(value: string) {
     setShowCopied(true)
@@ -148,8 +128,6 @@ export function HeaderAccountPopover() {
 
   function disconnectWallet() {
     disconnect()
-    web3Modal?.clearCachedProvider()
-    window.location.reload()
   }
 
   function openTransactionHistory() {
@@ -175,12 +153,12 @@ export function HeaderAccountPopover() {
           <div>
             <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
               <SafeImage
-                src={ensInfo.avatar || undefined}
+                src={ensAvatar || undefined}
                 className="h-10 w-10 rounded-full"
-                fallback={<CustomBoringAvatar size={40} name={account} />}
+                fallback={<CustomBoringAvatar size={40} name={address} />}
               />
               <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-                {ensInfo.name ?? udInfo.name ?? accountShort}
+                {ensName ?? udInfo.name ?? accountShort}
               </span>
 
               <ChevronDownIcon className="h-4 w-4 text-white" />
@@ -199,15 +177,15 @@ export function HeaderAccountPopover() {
             </Transition>
             <button
               className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-7 hover:bg-blue-arbitrum hover:text-white lg:flex"
-              onClick={() => copy(ensInfo.name ?? udInfo.name ?? account ?? '')}
+              onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
             >
               {/* Blurred background */}
               <div className="absolute inset-0 flex h-[3rem] w-full flex-col items-center overflow-hidden bg-dark text-center">
                 <div className="scale-400 blur-2xl filter">
                   <SafeImage
                     className="h-100 w-100 rounded-full"
-                    src={ensInfo.avatar || undefined}
-                    fallback={<CustomBoringAvatar size={200} name={account} />}
+                    src={ensAvatar || undefined}
+                    fallback={<CustomBoringAvatar size={200} name={address} />}
                   />
                 </div>
               </div>
@@ -216,14 +194,14 @@ export function HeaderAccountPopover() {
               <div className="relative z-10 flex flex-row items-center space-x-2">
                 <div className="box-content rounded-full border-[4px] border-dark">
                   <SafeImage
-                    src={ensInfo.avatar || undefined}
+                    src={ensAvatar || undefined}
                     className="h-14 w-14 rounded-full"
-                    fallback={<CustomBoringAvatar size={56} name={account} />}
+                    fallback={<CustomBoringAvatar size={56} name={address} />}
                   />
                 </div>
                 <div className="flex translate-y-[15px] flex-row items-center space-x-3">
                   <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm font-normal">
-                    {ensInfo.name ?? udInfo.name ?? accountShort}
+                    {ensName ?? udInfo.name ?? accountShort}
                   </span>
                   <DocumentDuplicateIcon className="h-4 w-4" />
                 </div>
@@ -247,9 +225,7 @@ export function HeaderAccountPopover() {
 
             {/* Explorer button */}
             <ExternalLink
-              href={`${getExplorerUrl(
-                currentNetwork?.chainID ?? -1
-              )}/address/${account}`}
+              href={`${getExplorerUrl(chain?.id ?? -1)}/address/${address}`}
               className={headerItemsClassName}
             >
               <ExternalLinkIcon className="h-4 w-4 text-white" />

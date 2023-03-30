@@ -2,20 +2,24 @@ import { useWallet } from '@arbitrum/use-wallet'
 import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
 import Image from 'next/image'
+import { useNetwork } from 'wagmi'
 import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
+  isNetwork,
   switchChain
 } from '../../util/networks'
 
 export const NetworkSelectionContainer = ({
-  supportedNetworks,
   children
 }: {
-  supportedNetworks: ChainId[]
   children: React.ReactNode
 }) => {
+  const { chain } = useNetwork()
+  const supportedNetworks = isNetwork(chain?.id ?? 0).isTestnet
+    ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+    : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
   const { provider } = useWallet()
 
   const handleClick = (

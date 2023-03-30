@@ -32,6 +32,7 @@ import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
+import { useAccount, useConnect, useProvider } from 'wagmi'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -172,6 +173,21 @@ export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
   const { selectedL2ChainId } = props
+  const {
+    address,
+    connector: activeConnector,
+    isConnecting,
+    isDisconnected,
+    isConnected
+  } = useAccount()
+  const {
+    connect: wagmiConnect,
+    connectors,
+    error,
+    isLoading,
+    pendingConnector
+  } = useConnect()
+  const wagmiProvider = useProvider()
   const { provider, account, network, connect } = useWallet()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
@@ -181,12 +197,10 @@ export function NetworksAndSignersProvider(
 
   // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
-    const connected = result.status === UseNetworksAndSignersStatus.CONNECTED
-
-    if (connected && typeof account === 'undefined') {
+    if (isConnected && typeof account === 'undefined') {
       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
     }
-  }, [account, result])
+  }, [account, result, isConnected])
 
   // When user clicks on any of the wallets to connect at the start of the session
   useEffect(() => {
@@ -217,7 +231,7 @@ export function NetworksAndSignersProvider(
         return
       }
 
-      const providerChainId = (await web3Provider.getNetwork()).chainId
+      const providerChainId = (await wagmiProvider.getNetwork()).chainId
       const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
 
       if (chainNotSupported) {

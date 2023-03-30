@@ -1,46 +1,37 @@
-import { useMemo } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
+import { useNetwork } from 'wagmi'
 
-import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getNetworkLogo, isNetwork } from '../../util/networks'
+
 export function HeaderNetworkInformation() {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network },
-    isConnectedToArbitrum
-  } = useNetworksAndSigners()
+  const { chain } = useNetwork()
 
-  const network = useMemo(
-    () => (isConnectedToArbitrum ? l2Network : l1Network),
-    [l1Network, l2Network, isConnectedToArbitrum]
-  )
-
-  const networkName = getNetworkName(network.chainID)
+  if (!chain || chain.unsupported) {
+    return null
+  }
 
   return (
     <div
       className="flex w-max flex-row items-center justify-center space-x-3 rounded-full text-white lg:bg-dark lg:px-4 lg:py-2 "
-      aria-label={`Selected Network : ${networkName}`}
+      aria-label={`Selected Network : ${chain.name}`}
     >
       <div
         className={twMerge(
           'flex h-10 w-10 items-center justify-center rounded-full',
-          isNetwork(network.chainID).isEthereum
-            ? 'bg-[rgba(162,170,240,0.5)]'
-            : ''
+          isNetwork(chain.id).isEthereum ? 'bg-[rgba(162,170,240,0.5)]' : ''
         )}
       >
         <Image
-          src={getNetworkLogo(network.chainID)}
-          alt={`${networkName} logo`}
+          src={getNetworkLogo(chain.id)}
+          alt={`${chain.name} logo`}
           className="h-full w-auto"
         />
       </div>
 
       <span className="text-2xl font-medium lg:text-base lg:font-normal">
-        {networkName}
+        {chain.name}
       </span>
 
       <ChevronDownIcon className="h-4 w-4" />
