@@ -5,6 +5,7 @@ import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
+import * as Sentry from '@sentry/react'
 
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
@@ -31,7 +32,7 @@ import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import { useAppContextDispatch, useAppContextState } from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, isFathomNetworkName } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
@@ -40,6 +41,12 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+
+const onTxError = (error: any) => {
+  if (error.code !== 'ACTION_REJECTED') {
+    Sentry.captureException(error)
+  }
+}
 
 const isAllowedL2 = async (
   arbTokenBridge: ArbTokenBridge,
@@ -118,7 +125,9 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider },
     isSmartContractWallet
   } = networksAndSigners
-  const dispatch = useAppContextDispatch()
+
+  const { openTransactionHistoryPanel, setTransferring } =
+    useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.chainID)
   const { isArbitrumNova } = isNetwork(l2Network.chainID)
@@ -350,9 +359,6 @@ export function TransferPanel() {
         setShowSCWalletTooltip(true)
       }, 3000)
 
-    const setTransferring = (payload: boolean) =>
-      dispatch({ type: 'layout.set_is_transferring', payload })
-
     setTransferring(true)
 
     try {
@@ -479,10 +485,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -490,7 +493,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Deposit ERC-20 to ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         } else {
@@ -502,10 +506,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -513,7 +514,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Deposit ETH to ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         }
@@ -598,10 +600,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -609,7 +608,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Withdraw ERC-20 from ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         } else {
@@ -620,10 +620,7 @@ export function TransferPanel() {
             l2Signer: latestNetworksAndSigners.current.l2.signer,
             txLifecycle: {
               onTxSubmit: () => {
-                dispatch({
-                  type: 'layout.set_txhistory_panel_visible',
-                  payload: true
-                })
+                openTransactionHistoryPanel()
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
@@ -631,7 +628,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent(`Withdraw ETH from ${l2NetworkName} (EOA)`)
                 }
-              }
+              },
+              onTxError
             }
           })
         }
