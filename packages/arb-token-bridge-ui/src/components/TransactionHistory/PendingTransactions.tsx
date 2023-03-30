@@ -1,19 +1,14 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/outline'
+import { useSwitchNetwork } from 'wagmi'
+
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import {
-  ChainId,
-  getNetworkName,
-  isNetwork,
-  switchChain
-} from '../../util/networks'
-import { useWallet } from '@arbitrum/use-wallet'
-import { Web3Provider } from '@ethersproject/providers'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 
@@ -39,7 +34,7 @@ export const PendingTransactions = ({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { provider } = useWallet()
+  const { switchNetwork } = useSwitchNetwork()
 
   const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
     ? 'bg-gray-10'
@@ -64,10 +59,7 @@ export const PendingTransactions = ({
           <ExternalLink
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
-              switchChain({
-                chainId: getOtherL2NetworkChainId(l2Network.chainID),
-                provider: provider as Web3Provider
-              })
+              switchNetwork?.(getOtherL2NetworkChainId(l2Network.chainID))
             }}
           >{`See ${getNetworkName(
             getOtherL2NetworkChainId(l2Network.chainID)

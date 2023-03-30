@@ -10,5 +10,4 @@ runs:
         path: |
           ./packages/arb-token-bridge-ui/build
           ./packages/token-bridge-sdk/dist
-          ./packages/use-wallet/dist
         key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}

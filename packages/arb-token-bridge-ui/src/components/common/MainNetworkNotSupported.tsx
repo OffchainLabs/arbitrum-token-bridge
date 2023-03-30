@@ -1,12 +1,7 @@
-import { useWallet } from '@arbitrum/use-wallet'
-import { Web3Provider } from '@ethersproject/providers'
+import { useSwitchNetwork } from 'wagmi'
 import Image from 'next/image'
-import {
-  ChainId,
-  getNetworkLogo,
-  getNetworkName,
-  switchChain
-} from '../../util/networks'
+
+import { ChainId, getNetworkLogo, getNetworkName } from '../../util/networks'
 import { Button } from './Button'
 
 // info about the logo and the button class of network list
@@ -29,7 +24,7 @@ export const MainNetworkNotSupported = ({
 }: {
   supportedNetworks: ChainId[]
 }) => {
-  const { provider } = useWallet()
+  const { switchNetwork } = useSwitchNetwork()
 
   return (
     <div className="flex max-w-lg flex-col items-center space-y-8 px-12 py-12 md:items-start md:pr-24 md:pl-0">
@@ -42,12 +37,7 @@ export const MainNetworkNotSupported = ({
       {supportedNetworks?.map(chainId => (
         <Button
           variant="primary"
-          onClick={() => {
-            switchChain({
-              chainId: Number(chainId),
-              provider: provider as Web3Provider
-            })
-          }}
+          onClick={() => switchNetwork?.(Number(chainId))}
           key={chainId}
           textLeft
           className={`text-md ${

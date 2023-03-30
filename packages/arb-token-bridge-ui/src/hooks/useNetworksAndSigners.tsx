@@ -17,16 +17,15 @@ import React, {
   createContext
 } from 'react'
 import {
-  JsonRpcSigner,
   JsonRpcProvider,
   StaticJsonRpcProvider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
+import { Signer } from 'ethers'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
-import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
@@ -37,7 +36,6 @@ import {
   useProvider,
   useSigner
 } from 'wagmi'
-import { Signer } from 'ethers'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -58,7 +56,7 @@ export type UseNetworksAndSignersBlockedStatus =
   UseNetworksAndSignersStatus.BLOCKED
 
 const defaultStatus =
-  typeof window.web3 === 'undefined'
+  typeof window.ethereum === 'undefined'
     ? UseNetworksAndSignersStatus.NOT_CONNECTED
     : UseNetworksAndSignersStatus.LOADING
 
@@ -80,10 +78,12 @@ export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
   l1: {
     network: L1Network
+    signer: Signer
     provider: JsonRpcProvider
   }
   l2: {
     network: L2Network
+    signer: Signer
     provider: JsonRpcProvider
   }
   isConnectedToArbitrum: boolean
@@ -299,12 +299,12 @@ export function NetworksAndSignersProvider(
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
             network: l1Network,
-            // signer: signer,
+            signer: l1Provider.getSigner(address),
             provider: l1Provider
           },
           l2: {
             network: l2Network,
-            // signer: l2Provider.getSigner(address),
+            signer: l2Provider.getSigner(address),
             provider: l2Provider
           },
           isConnectedToArbitrum: false,
@@ -341,12 +341,12 @@ export function NetworksAndSignersProvider(
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
                 network: l1Network,
-                // signer: l1Provider.getSigner(address),
+                signer: l1Provider.getSigner(address),
                 provider: l1Provider
               },
               l2: {
                 network: l2Network,
-                // signer: signer,
+                signer: l2Provider.getSigner(address),
                 provider: l2Provider
               },
               isConnectedToArbitrum: true,
@@ -364,12 +364,12 @@ export function NetworksAndSignersProvider(
             })
           })
       })
-  }, [address, chain, provider, selectedL2ChainId, setQueryParams, signer])
+  }, [address, chain, provider, selectedL2ChainId, setQueryParams])
 
   useEffect(() => {
     update()
-    // The `network` object has to be in the list of dependencies for switching between L1-L2 pairs.
-  }, [])
+    // The `chain` object has to be in the list of dependencies for switching between L1-L2 pairs.
+  }, [chain, update])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
     if (result.status === UseNetworksAndSignersStatus.BLOCKED) {

@@ -12,7 +12,6 @@ import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
-import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
@@ -137,13 +136,7 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const {
-    address,
-    connector: activeConnector,
-    isConnecting,
-    isDisconnected,
-    isConnected
-  } = useAccount()
+  const { address, isConnected } = useAccount()
   const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
