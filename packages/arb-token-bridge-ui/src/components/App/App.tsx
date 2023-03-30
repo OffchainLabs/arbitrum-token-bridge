@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { WagmiConfig } from 'wagmi'
-import { useWallet } from '@arbitrum/use-wallet'
+import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
@@ -15,7 +14,6 @@ import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
-import { Button } from '../common/Button'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -72,13 +70,13 @@ const siteTheme = merge(darkTheme(), {
 } as Theme)
 
 const AppContent = (): JSX.Element => {
-  const { l1, chainId } = useNetworksAndSigners()
+  const { chain } = useNetwork()
   const {
     app: { connectionState }
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
+    const { isMainnet, isGoerli } = isNetwork(chain?.id ?? 0)
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
 
     if (isGoerli) {
@@ -86,7 +84,7 @@ const AppContent = (): JSX.Element => {
     }
 
     return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
-  }, [l1.network])
+  }, [chain])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
@@ -139,6 +137,14 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
+  const {
+    address,
+    connector: activeConnector,
+    isConnecting,
+    isDisconnected,
+    isConnected
+  } = useAccount()
+  const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
   const { currentL1BlockNumber } = useAppContextState()
@@ -149,12 +155,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
-      const { signer: l1Signer } = l1
 
-      const l1Address = await l1Signer.getAddress()
+      if (!address) {
+        return
+      }
 
       setTokenBridgeParams({
-        walletAddress: l1Address,
+        walletAddress: address,
         l1: {
           network: l1.network,
           provider: l1.provider
@@ -165,7 +172,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         }
       })
     },
-    []
+    [address]
   )
 
   useEffect(() => {
@@ -179,17 +186,16 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
-    if (networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED) {
+    if (!isConnected || !chain) {
       return
     }
 
     const { l1, l2, isConnectedToArbitrum } = networksAndSigners
-    const network = isConnectedToArbitrum ? l2.network : l1.network
 
     const l1NetworkChainId = l1.network.chainID
     const l2NetworkChainId = l2.network.chainID
 
-    actions.app.reset(network.chainID)
+    actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
     if (!isConnectedToArbitrum) {
@@ -203,7 +209,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     initBridge(networksAndSigners)
-  }, [networksAndSigners, initBridge])
+  }, [networksAndSigners, chain, isConnected, initBridge])
 
   useEffect(() => {
     axios

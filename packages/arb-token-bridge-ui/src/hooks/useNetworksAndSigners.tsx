@@ -19,11 +19,9 @@ import React, {
 import {
   JsonRpcSigner,
   JsonRpcProvider,
-  StaticJsonRpcProvider,
-  Web3Provider
+  StaticJsonRpcProvider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
-import { useWallet } from '@arbitrum/use-wallet'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
@@ -32,7 +30,14 @@ import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
-import { useAccount, useConnect, useProvider } from 'wagmi'
+import {
+  useAccount,
+  useConnect,
+  useNetwork,
+  useProvider,
+  useSigner
+} from 'wagmi'
+import { Signer } from 'ethers'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -76,12 +81,10 @@ export type UseNetworksAndSignersConnectedResult = {
   l1: {
     network: L1Network
     provider: JsonRpcProvider
-    signer: Omit<JsonRpcSigner, 'provider'>
   }
   l2: {
     network: L2Network
     provider: JsonRpcProvider
-    signer: Omit<JsonRpcSigner, 'provider'>
   }
   isConnectedToArbitrum: boolean
   chainId: number // the current chainId which is connected to UI
@@ -151,7 +154,7 @@ function getProviderName(provider: any): ProviderName | null {
   return null
 }
 
-async function isBlocked(address: string): Promise<boolean> {
+async function isBlocked(address: `0x${string}`): Promise<boolean> {
   if (process.env.NODE_ENV !== 'production') {
     return false
   }
@@ -184,11 +187,13 @@ export function NetworksAndSignersProvider(
     connect: wagmiConnect,
     connectors,
     error,
-    isLoading,
+    isLoading: isLoadingUseConnect,
     pendingConnector
   } = useConnect()
-  const wagmiProvider = useProvider()
-  const { provider, account, network, connect } = useWallet()
+  const { data: signer, isError, isLoading: isLoadingUseSigner } = useSigner()
+  const { chain } = useNetwork()
+  const provider = useProvider()
+  // const { provider, network, connect } = useWallet()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
@@ -197,175 +202,174 @@ export function NetworksAndSignersProvider(
 
   // Reset back to the not connected state in case the user manually disconnects through their wallet
   useEffect(() => {
-    if (isConnected && typeof account === 'undefined') {
+    if (isDisconnected || !isConnected) {
       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
     }
-  }, [account, result, isConnected])
+  }, [isDisconnected, isConnected])
 
   // When user clicks on any of the wallets to connect at the start of the session
-  useEffect(() => {
-    async function tryConnect() {
-      try {
-        const connection = await connect(modalProviderOpts)
-        const providerName = getProviderName(connection.provider.provider)
+  // useEffect(() => {
+  //   async function tryConnect() {
+  //     try {
+  //       const connection = await connect(modalProviderOpts)
+  //       const providerName = getProviderName(connection.provider.provider)
 
-        if (providerName) {
-          trackEvent(`Connect Wallet Click: ${providerName}`)
-        }
-      } catch (error) {
-        setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
-      }
-    }
+  //       if (providerName) {
+  //         trackEvent(`Connect Wallet Click: ${providerName}`)
+  //       }
+  //     } catch (error) {
+  //       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
+  //     }
+  //   }
 
-    tryConnect()
-  }, [connect])
+  //   // tryConnect()
+  // }, [connect])
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
-  const update = useCallback(
-    async (web3Provider: Web3Provider, address: string) => {
-      const blocked = await isBlocked(address)
+  const update = useCallback(async () => {
+    if (!address || !chain) {
+      return
+    }
+    const blocked = await isBlocked(address)
 
-      if (blocked) {
-        setResult({ status: UseNetworksAndSignersStatus.BLOCKED, address })
-        trackEvent('Address Block')
-        return
-      }
+    if (blocked) {
+      setResult({
+        status: UseNetworksAndSignersStatus.BLOCKED,
+        address: address as string
+      })
+      trackEvent('Address Block')
+      return
+    }
 
-      const providerChainId = (await wagmiProvider.getNetwork()).chainId
-      const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
+    const providerChainId = chain.id
+    const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
 
-      if (chainNotSupported) {
-        console.error(`Chain ${providerChainId} not supported`)
+    if (chainNotSupported) {
+      console.error(`Chain ${providerChainId} not supported`)
+      setResult({
+        status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+        chainId: providerChainId
+      })
+      return
+    }
+
+    /***
+     * Case 1: selectedChainId is undefined => set it to provider's default L2
+     * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
+     * Case 3: selectedChainId is defined and supported, continue
+     */
+    let _selectedL2ChainId = selectedL2ChainId
+    const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
+
+    // Case 1: use a default L2 based on the connected provider chainid
+    _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
+    if (typeof _selectedL2ChainId === 'undefined') {
+      console.error(`Unknown provider chainId: ${providerChainId}`)
+      setResult({
+        status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+        chainId: providerChainId
+      })
+      return
+    }
+
+    // Case 2: L2 is not supported by provider
+    if (!providerSupportedL2.includes(_selectedL2ChainId)) {
+      // remove the l2chainId, keeping the rest of the params intact
+      setQueryParams({
+        l2ChainId: undefined
+      })
+
+      return
+    }
+
+    // Case 3
+    getL1Network(provider)
+      .then(async l1Network => {
+        // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
+        const l2Provider = new StaticJsonRpcProvider(
+          rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
+        )
+        const l2Network = await getL2Network(l2Provider)
+
+        // from the L1 network, instantiate the provider for that too
+        // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
+        const l1Provider = new StaticJsonRpcProvider(rpcURLs[l1Network.chainID])
+
         setResult({
-          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-          chainId: providerChainId
-        })
-        return
-      }
-
-      /***
-       * Case 1: selectedChainId is undefined => set it to provider's default L2
-       * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
-       * Case 3: selectedChainId is defined and supported, continue
-       */
-      let _selectedL2ChainId = selectedL2ChainId
-      const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
-
-      // Case 1: use a default L2 based on the connected provider chainid
-      _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
-      if (typeof _selectedL2ChainId === 'undefined') {
-        console.error(`Unknown provider chainId: ${providerChainId}`)
-        setResult({
-          status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-          chainId: providerChainId
-        })
-        return
-      }
-
-      // Case 2: L2 is not supported by provider
-      if (!providerSupportedL2.includes(_selectedL2ChainId)) {
-        // remove the l2chainId, keeping the rest of the params intact
-        setQueryParams({
-          l2ChainId: undefined
-        })
-
-        return
-      }
-
-      // Case 3
-      getL1Network(web3Provider)
-        .then(async l1Network => {
-          // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-          const l2Provider = new StaticJsonRpcProvider(
-            rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
+          status: UseNetworksAndSignersStatus.CONNECTED,
+          l1: {
+            network: l1Network,
+            // signer: signer,
+            provider: l1Provider
+          },
+          l2: {
+            network: l2Network,
+            // signer: l2Provider.getSigner(address),
+            provider: l2Provider
+          },
+          isConnectedToArbitrum: false,
+          chainId: l1Network.chainID,
+          isSmartContractWallet: await addressIsSmartContract(
+            address as string,
+            l1Provider
           )
-          const l2Network = await getL2Network(l2Provider)
-
-          // from the L1 network, instantiate the provider for that too
-          // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-          const l1Provider = new StaticJsonRpcProvider(
-            rpcURLs[l1Network.chainID]
-          )
-
+        })
+      })
+      .catch(() => {
+        // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
+        if (providerChainId !== _selectedL2ChainId) {
+          // Make sure the L2 provider chainid match the selected chainid
           setResult({
-            status: UseNetworksAndSignersStatus.CONNECTED,
-            l1: {
-              network: l1Network,
-              signer: web3Provider.getSigner(0),
-              provider: l1Provider
-            },
-            l2: {
-              network: l2Network,
-              signer: l2Provider.getSigner(address!),
-              provider: l2Provider
-            },
-            isConnectedToArbitrum: false,
-            chainId: l1Network.chainID,
-            isSmartContractWallet: await addressIsSmartContract(
-              address!,
-              l1Provider
-            )
+            status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
+            chainId: providerChainId
           })
-        })
-        .catch(() => {
-          // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
-          if (providerChainId !== _selectedL2ChainId) {
-            // Make sure the L2 provider chainid match the selected chainid
+          return
+        }
+        getL2Network(provider)
+          .then(async l2Network => {
+            const l1NetworkChainId = l2Network.partnerChainID
+            const l1Provider = new StaticJsonRpcProvider(
+              rpcURLs[l1NetworkChainId]
+            )
+            const l1Network = await getL1Network(l1Provider)
+
+            const l2Provider = new StaticJsonRpcProvider(
+              rpcURLs[l2Network.chainID]
+            )
+
+            setResult({
+              status: UseNetworksAndSignersStatus.CONNECTED,
+              l1: {
+                network: l1Network,
+                // signer: l1Provider.getSigner(address),
+                provider: l1Provider
+              },
+              l2: {
+                network: l2Network,
+                // signer: signer,
+                provider: l2Provider
+              },
+              isConnectedToArbitrum: true,
+              chainId: l2Network.chainID,
+              isSmartContractWallet: await addressIsSmartContract(
+                address,
+                l2Provider
+              )
+            })
+          })
+          .catch(() => {
             setResult({
               status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
               chainId: providerChainId
             })
-            return
-          }
-          getL2Network(web3Provider)
-            .then(async l2Network => {
-              const l1NetworkChainId = l2Network.partnerChainID
-              const l1Provider = new StaticJsonRpcProvider(
-                rpcURLs[l1NetworkChainId]
-              )
-              const l1Network = await getL1Network(l1Provider)
-
-              const l2Provider = new StaticJsonRpcProvider(
-                rpcURLs[l2Network.chainID]
-              )
-
-              setResult({
-                status: UseNetworksAndSignersStatus.CONNECTED,
-                l1: {
-                  network: l1Network,
-                  signer: l1Provider.getSigner(address!),
-                  provider: l1Provider
-                },
-                l2: {
-                  network: l2Network,
-                  signer: web3Provider.getSigner(0),
-                  provider: l2Provider
-                },
-                isConnectedToArbitrum: true,
-                chainId: l2Network.chainID,
-                isSmartContractWallet: await addressIsSmartContract(
-                  address!,
-                  l2Provider
-                )
-              })
-            })
-            .catch(() => {
-              setResult({
-                status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
-                chainId: providerChainId
-              })
-            })
-        })
-    },
-    [selectedL2ChainId, setQueryParams]
-  )
+          })
+      })
+  }, [address, chain, provider, selectedL2ChainId, setQueryParams, signer])
 
   useEffect(() => {
-    if (provider && account && network) {
-      update(provider, account)
-    }
+    update()
     // The `network` object has to be in the list of dependencies for switching between L1-L2 pairs.
-  }, [provider, account, network, update])
+  }, [])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
     if (result.status === UseNetworksAndSignersStatus.BLOCKED) {
