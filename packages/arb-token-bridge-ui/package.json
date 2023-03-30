@@ -14,7 +14,6 @@
     "@tailwindcss/forms": "^0.3.3",
     "@tippyjs/react": "^4.2.6",
     "@unstoppabledomains/resolution": "^8.3.3",
-    "@walletconnect/web3-provider": "^1.6.5",
     "axios": "^0.21.4",
     "boring-avatars": "^1.7.0",
     "dayjs": "^1.10.6",
@@ -36,8 +35,7 @@
     "tailwind-merge": "^0.9.0",
     "token-bridge-sdk": "5.0.0",
     "use-query-params": "^2.1.1",
-    "wagmi": "^0.12.8",
-    "walletlink": "^2.4.4"
+    "wagmi": "^0.12.8"
   },
   "scripts": {
     "dev": "next dev",
@@ -45,8 +43,8 @@
     "start": "next start",
     "test": "jest --watch",
     "test:ci": "jest --ci",
-    "lint": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}'",
-    "lint:fix": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "tsc && eslint 'src/**/*.{js,ts,tsx}'",
+    "lint:fix": "tsc && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "getUnusedComponents": "ts-prune | grep ' default$'",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",

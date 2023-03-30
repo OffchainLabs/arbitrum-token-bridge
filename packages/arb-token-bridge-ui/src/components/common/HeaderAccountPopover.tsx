@@ -88,11 +88,13 @@ export function HeaderAccountPopover() {
   const [showCopied, setShowCopied] = useState(false)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
   const { data: ensName } = useEnsName({
-    address
+    address,
+    chainId: 1
   })
 
   const { data: ensAvatar } = useEnsAvatar({
-    address
+    address,
+    chainId: 1
   })
 
   // check local-storage for viewed flag

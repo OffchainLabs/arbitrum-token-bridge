@@ -16,7 +16,7 @@ import ArbitrumNovaLogo from '@/images/ArbitrumNovaLogo.svg'
 import { loadEnvironmentVariableWithFallback } from './index'
 import { isUserRejectedError } from './isUserRejectedError'
 
-const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
 if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')

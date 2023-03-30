@@ -22,7 +22,7 @@ import {
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
-import { Signer } from 'ethers'
+import { Signer } from '@ethersproject/abstract-signer'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
@@ -194,7 +194,6 @@ export function NetworksAndSignersProvider(
   const { data: signer, isError, isLoading: isLoadingUseSigner } = useSigner()
   const { chain } = useNetwork()
   const provider = useProvider()
-  // const { provider, network, connect } = useWallet()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })

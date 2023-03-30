@@ -5,7 +5,8 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-import { useAccount, useProvider, useSwitchNetwork } from 'wagmi'
+import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
+import { Signer } from '@ethersproject/abstract-signer'
 
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
@@ -115,13 +116,14 @@ export function TransferPanel() {
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
   const { switchNetwork } = useSwitchNetwork()
+  const { data: signer } = useSigner()
   const latestConnectedProvider = useLatest(provider)
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
-    l1: { network: l1Network, signer: l1Signer, provider: l1Provider },
-    l2: { network: l2Network, signer: l2Signer, provider: l2Provider },
+    l1: { network: l1Network, provider: l1Provider },
+    l2: { network: l2Network, provider: l2Provider },
     isSmartContractWallet
   } = networksAndSigners
 
@@ -336,7 +338,7 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
-    if (!isConnected || !l1Signer || !l2Signer) {
+    if (!isConnected || !signer) {
       return
     }
 
@@ -452,7 +454,7 @@ export function TransferPanel() {
 
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
-              l1Signer
+              l1Signer: signer as Signer
             })
           }
 
@@ -476,7 +478,7 @@ export function TransferPanel() {
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l1Signer,
+            l1Signer: signer as Signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -497,7 +499,7 @@ export function TransferPanel() {
 
           await latestEth.current.deposit({
             amount: amountRaw,
-            l1Signer,
+            l1Signer: signer as Signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
@@ -571,7 +573,7 @@ export function TransferPanel() {
               }
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
-                l2Signer
+                l2Signer: signer as Signer
               })
             }
           }
@@ -589,7 +591,7 @@ export function TransferPanel() {
           await latestToken.current.withdraw({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l2Signer,
+            l2Signer: signer as Signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -610,7 +612,7 @@ export function TransferPanel() {
 
           await latestEth.current.withdraw({
             amount: amountRaw,
-            l2Signer,
+            l2Signer: signer as Signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
