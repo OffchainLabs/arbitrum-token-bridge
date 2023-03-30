@@ -54,3 +54,7 @@ a:hover, button:hover{
 .avatar-container{
     border-color: transparent !important;
 }
+
+.explore-arbitrum-card{
+    display: none;
+}
