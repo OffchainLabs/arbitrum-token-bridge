@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { WagmiConfig } from 'wagmi'
 import { useWallet } from '@arbitrum/use-wallet'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -50,12 +51,25 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
+import { appInfo, chains, wagmiClient } from '../../setupWagmi'
+import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import merge from 'lodash-es/merge'
 
 declare global {
   interface Window {
     Cypress?: any
   }
 }
+
+const siteTheme = merge(darkTheme(), {
+  colors: {
+    accentColor: 'var(--blue)',
+    connectButtonBackground: 'var(--mid-grey-darker)'
+  },
+  fonts: {
+    body: "'Space Grotesk', sans-serif"
+  }
+} as Theme)
 
 const AppContent = (): JSX.Element => {
   const { l1, chainId } = useNetworksAndSigners()
@@ -104,17 +118,12 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer
-          supportedNetworks={
-            isNetwork(chainId).isTestnet
-              ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
-              : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
-          }
-        >
+        <NetworkSelectionContainer>
           <HeaderNetworkInformation />
         </NetworkSelectionContainer>
 
         <HeaderAccountPopover />
+        {/* TODO: when connected */}
       </HeaderContent>
 
       <PendingTransactionsUpdater />
@@ -233,15 +242,6 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
-  const { connect } = useWallet()
-  async function showConnectionModal() {
-    try {
-      await connect(modalProviderOpts)
-    } catch (error) {
-      // Dialog was closed by user
-    }
-  }
-
   switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
@@ -266,9 +266,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </HeaderContent>
 
           <AppConnectionFallbackContainer>
-            <Button variant="primary" onClick={showConnectionModal}>
-              Connect Wallet
-            </Button>
+            <HeaderConnectWalletButton />
           </AppConnectionFallbackContainer>
         </>
       )
@@ -296,7 +294,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
+            <NetworkSelectionContainer>
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
           </HeaderContent>
@@ -342,12 +340,20 @@ export default function App() {
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
-        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-        <NetworkReady>
-          <AppContextProvider>
-            <Injector>{isTosAccepted && <AppContent />}</Injector>
-          </AppContextProvider>
-        </NetworkReady>
+        <WagmiConfig client={wagmiClient}>
+          <RainbowKitProvider
+            chains={chains}
+            theme={siteTheme}
+            appInfo={appInfo}
+          >
+            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </AppContextProvider>
+            </NetworkReady>
+          </RainbowKitProvider>
+        </WagmiConfig>
       </ArbQueryParamProvider>
     </Provider>
   )
