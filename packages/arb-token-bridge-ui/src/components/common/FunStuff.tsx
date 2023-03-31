@@ -49,7 +49,7 @@ export function FunStuff() {
 
   const removeFunStuff = (index: number) => {
     const newFunStuff = [...funStuff]
-    const shouldAdd = Math.random() > 0.5
+    const shouldAdd = Math.random() > 0.4
     if (shouldAdd) {
       const posIndex = Math.floor(Math.random() * 4)
       newFunStuff.push(funStuffPosition(posIndex))
