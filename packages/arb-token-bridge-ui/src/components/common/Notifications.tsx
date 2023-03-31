@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
-import dayjs from 'dayjs'
 
 import { useTheme } from '../../hooks/useTheme'
 import { ExternalLink } from '../common/ExternalLink'
@@ -9,6 +7,11 @@ import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
 import { FunStuff } from './FunStuff'
+import {
+  classicThemeKey,
+  isAfterAprilFools,
+  isAprilFools
+} from '../syncers/ThemeIncluder'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -47,22 +50,9 @@ function Notification({
   )
 }
 
-const aprilFools = '2023-04-01'
-const isAprilFools = dayjs().isSame(aprilFools, 'day')
-const isAfterAprilFools = dayjs().isAfter(aprilFools, 'day')
-const classicThemeKey = 'arbitrum-classic-theme'
-
 function ToggleTheme() {
   const [theme, setTheme] = useTheme()
   const isClassicTheme = theme === classicThemeKey
-  const [didSetClassicThemeOnce, setDidSetClassicThemeOnce] = useState(false)
-
-  useEffect(() => {
-    if (isAprilFools && !didSetClassicThemeOnce) {
-      setTheme(classicThemeKey)
-      setDidSetClassicThemeOnce(true)
-    }
-  }, [didSetClassicThemeOnce, setTheme])
 
   const handleToggleTheme = () => {
     if (isClassicTheme) {
@@ -74,7 +64,7 @@ function ToggleTheme() {
 
   return (
     <>
-      {/* show rick-rolling only on april fools day and in fun-theme */}
+      {/* show rick-rolling only on april fools day and in classic-theme */}
       {isAprilFools && isClassicTheme && (
         <Notification>
           <a
@@ -88,7 +78,7 @@ function ToggleTheme() {
       )}
 
       {/* show toggle theme button on april fool and after that */}
-      {(isAprilFools || isAfterAprilFools) && (
+      {(isAprilFools || isAfterAprilFools || isClassicTheme) && (
         <Notification>
           <button onClick={handleToggleTheme} className="arb-hover text-left">
             {isClassicTheme
@@ -98,7 +88,7 @@ function ToggleTheme() {
         </Notification>
       )}
 
-      {/* show fun stuff only on april fools day in fun-theme */}
+      {/* show fun stuff only on april fools day in classic-theme */}
       {isAprilFools && isClassicTheme && <FunStuff />}
     </>
   )
