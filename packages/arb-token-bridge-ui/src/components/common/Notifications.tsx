@@ -58,7 +58,7 @@ function ToggleTheme() {
   const [didSetClassicThemeOnce, setDidSetClassicThemeOnce] = useState(false)
 
   useEffect(() => {
-    if (!didSetClassicThemeOnce) {
+    if (isAprilFools && !didSetClassicThemeOnce) {
       setTheme(classicThemeKey)
       setDidSetClassicThemeOnce(true)
     }
@@ -74,7 +74,8 @@ function ToggleTheme() {
 
   return (
     <>
-      {isAprilFools && (
+      {/* show rick-rolling only on april fools day and in fun-theme */}
+      {isAprilFools && isClassicTheme && (
         <Notification>
           <a
             href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
@@ -85,6 +86,8 @@ function ToggleTheme() {
           </a>
         </Notification>
       )}
+
+      {/* show toggle theme button on april fool and after that */}
       {(isAprilFools || isAfterAprilFools) && (
         <Notification>
           <button onClick={handleToggleTheme} className="arb-hover text-left">
@@ -94,7 +97,9 @@ function ToggleTheme() {
           </button>
         </Notification>
       )}
-      {isAprilFools && <FunStuff />}
+
+      {/* show fun stuff only on april fools day in fun-theme */}
+      {isAprilFools && isClassicTheme && <FunStuff />}
     </>
   )
 }
