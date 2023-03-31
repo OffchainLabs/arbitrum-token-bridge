@@ -81,6 +81,11 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Connect Wallet Click: MetaMask': 'VGEJWUHT',
   'Connect Wallet Click: Coinbase Wallet': 'CSNSGTI5',
   'Connect Wallet Click: WalletConnect': 'QPDOCSPL',
+  'Connect Wallet Click: Trust Wallet': '',
+  'Connect Wallet Click: Safe': '',
+  'Connect Wallet Click: Injected': '',
+  'Connect Wallet Click: Ledger': '',
+  'Connect Wallet Click: Other': '',
   //
   'Deposit ETH to Arbitrum One (EOA)': 'UL9WSZQO',
   'Deposit ETH to Arbitrum One (Smart Contract)': 'HMAEKCNM',

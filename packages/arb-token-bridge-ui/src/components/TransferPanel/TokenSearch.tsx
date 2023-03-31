@@ -9,6 +9,9 @@ import {
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
+import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
+import Image from 'next/image'
+
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
@@ -29,11 +32,9 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
-import Image from 'next/image'
 
 enum Panel {
   TOKENS,

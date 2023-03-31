@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { constants, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
+import { useBalance } from 'token-bridge-sdk'
+import Image from 'next/image'
 
 import { useAppState } from '../../state'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
@@ -17,8 +19,6 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
-import { useBalance } from 'token-bridge-sdk'
-import Image from 'next/image'
 
 type ExternalLinkCardDynamicProps =
   | {

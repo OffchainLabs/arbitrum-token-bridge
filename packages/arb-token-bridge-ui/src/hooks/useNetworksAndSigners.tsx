@@ -23,6 +23,7 @@ import {
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
+import { useAccount, useNetwork, useProvider } from 'wagmi'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
@@ -30,13 +31,6 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
-import {
-  useAccount,
-  useConnect,
-  useNetwork,
-  useProvider,
-  useSigner
-} from 'wagmi'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -137,22 +131,34 @@ export type NetworksAndSignersProviderProps = {
 }
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
-export type ProviderName = 'MetaMask' | 'Coinbase Wallet' | 'WalletConnect'
+export type ProviderName =
+  | 'MetaMask'
+  | 'Coinbase Wallet'
+  | 'Trust Wallet'
+  | 'WalletConnect'
+  | 'Safe' // not used yet
+  | 'Injected'
+  | 'Ledger'
+  | 'Other'
 
-function getProviderName(provider: any): ProviderName | null {
-  if (provider.isMetaMask) {
-    return 'MetaMask'
+// connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
+function getWalletName(connectorName: string): ProviderName {
+  switch (connectorName) {
+    case 'MetaMask':
+    case 'Coinbase Wallet':
+    case 'Trust Wallet':
+    case 'Safe':
+    case 'Injected':
+    case 'Ledger':
+      return connectorName
+
+    case 'WalletConnectLegacy':
+    case 'WalletConnect':
+      return 'WalletConnect'
+
+    default:
+      return 'Other'
   }
-
-  if (provider.isCoinbaseWallet) {
-    return 'Coinbase Wallet'
-  }
-
-  if (provider.isWalletConnect) {
-    return 'WalletConnect'
-  }
-
-  return null
 }
 
 async function isBlocked(address: `0x${string}`): Promise<boolean> {
@@ -177,21 +183,7 @@ export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
   const { selectedL2ChainId } = props
-  const {
-    address,
-    connector: activeConnector,
-    isConnecting,
-    isDisconnected,
-    isConnected
-  } = useAccount()
-  const {
-    connect: wagmiConnect,
-    connectors,
-    error,
-    isLoading: isLoadingUseConnect,
-    pendingConnector
-  } = useConnect()
-  const { data: signer, isError, isLoading: isLoadingUseSigner } = useSigner()
+  const { address, connector, isDisconnected, isConnected } = useAccount()
   const { chain } = useNetwork()
   const provider = useProvider()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
@@ -205,25 +197,11 @@ export function NetworksAndSignersProvider(
     if (isDisconnected || !isConnected) {
       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
     }
-  }, [isDisconnected, isConnected])
-
-  // When user clicks on any of the wallets to connect at the start of the session
-  // useEffect(() => {
-  //   async function tryConnect() {
-  //     try {
-  //       const connection = await connect(modalProviderOpts)
-  //       const providerName = getProviderName(connection.provider.provider)
-
-  //       if (providerName) {
-  //         trackEvent(`Connect Wallet Click: ${providerName}`)
-  //       }
-  //     } catch (error) {
-  //       setResult({ status: UseNetworksAndSignersStatus.NOT_CONNECTED })
-  //     }
-  //   }
-
-  //   // tryConnect()
-  // }, [connect])
+    if (isConnected && connector) {
+      const walletName = getWalletName(connector.name)
+      trackEvent(`Connect Wallet Click: ${walletName}`)
+    }
+  }, [isDisconnected, isConnected, connector])
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
