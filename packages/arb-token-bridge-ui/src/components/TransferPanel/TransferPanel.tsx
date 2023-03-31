@@ -747,8 +747,9 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
+      // If contract wallet, destination address must be contract too
       (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken) ||
+      // If EOA and destination address provided, it must be valid
       (!isSmartContractWallet &&
         destinationAddress &&
         !utils.isAddress(destinationAddress))
@@ -795,8 +796,9 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
+      // If contract wallet, destination address must be contract too
       (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken) ||
+      // If EOA and destination address provided, it must be valid
       (!isSmartContractWallet &&
         destinationAddress &&
         !utils.isAddress(destinationAddress))

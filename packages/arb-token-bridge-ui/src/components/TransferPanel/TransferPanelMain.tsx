@@ -141,7 +141,7 @@ function NetworkListbox({
               <Listbox.Option
                 value={option}
                 className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-[rgba(0,0,0,0.2)] hover:bg-blue-arbitrum',
                   getOptionClassName(index),
                   option.disabled ? 'pointer-events-none opacity-40' : ''
                 )}
@@ -464,8 +464,10 @@ export function TransferPanelMain({
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
-    () => setShowAdvancedSettings(isSmartContractWallet),
-    [isSmartContractWallet]
+    // or if destination address is provided
+    () =>
+      setShowAdvancedSettings(isSmartContractWallet || !!destinationAddress),
+    [isSmartContractWallet, destinationAddress]
   )
 
   useEffect(() => {
@@ -858,11 +860,17 @@ export function TransferPanelMain({
 
       <div className="mt-6">
         <button
-          onClick={() =>
-            // Keep visible for SC wallets since destination address is mandatory
-            !isSmartContractWallet &&
-            setShowAdvancedSettings(!showAdvancedSettings)
-          }
+          onClick={() => {
+            // keep visible if destination address provided to make clear where funds go to
+            if (destinationAddress) {
+              setShowAdvancedSettings(true)
+              return
+            }
+            // keep visible for SC wallets as destination address is mandatory
+            if (!isSmartContractWallet) {
+              setShowAdvancedSettings(!showAdvancedSettings)
+            }
+          }}
           className="flex flex-row items-center"
         >
           <span className=" text-lg">Advanced Settings</span>

@@ -266,11 +266,13 @@ export const useArbTokenBridge = (
   async function withdrawEth({
     amount,
     l2Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
@@ -278,7 +280,7 @@ export const useArbTokenBridge = (
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
-        destinationAddress: walletAddress,
+        destinationAddress: destinationAddress ?? walletAddress,
         from: walletAddress
       })
 
