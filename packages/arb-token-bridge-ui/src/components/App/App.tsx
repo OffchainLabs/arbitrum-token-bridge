@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
@@ -49,8 +51,6 @@ import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { appInfo, chains, wagmiClient } from '../../setupWagmi'
-import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
-import merge from 'lodash-es/merge'
 
 declare global {
   interface Window {
@@ -58,7 +58,7 @@ declare global {
   }
 }
 
-const siteTheme = merge(darkTheme(), {
+const rainbowkitTheme = merge(darkTheme(), {
   colors: {
     accentColor: 'var(--blue)',
     connectButtonBackground: 'var(--mid-grey-darker)'
@@ -342,7 +342,7 @@ export default function App() {
         <WagmiConfig client={wagmiClient}>
           <RainbowKitProvider
             chains={chains}
-            theme={siteTheme}
+            theme={rainbowkitTheme}
             appInfo={appInfo}
           >
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
