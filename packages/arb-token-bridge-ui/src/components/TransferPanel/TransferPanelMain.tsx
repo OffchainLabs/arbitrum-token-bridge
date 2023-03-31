@@ -22,8 +22,7 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  isNetwork,
-  switchChain
+  isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { ExternalLink } from '../common/ExternalLink'

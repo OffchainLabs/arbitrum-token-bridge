@@ -11,6 +11,14 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
+import {
+  useAccount,
+  useDisconnect,
+  useEnsAvatar,
+  useEnsName,
+  useNetwork,
+  useProvider
+} from 'wagmi'
 
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
@@ -21,14 +29,6 @@ import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import {
-  useAccount,
-  useDisconnect,
-  useEnsAvatar,
-  useEnsName,
-  useNetwork,
-  useProvider
-} from 'wagmi'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -72,13 +72,7 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
 
 export function HeaderAccountPopover() {
   const l1Provider = useProvider({ chainId: 1 })
-  const {
-    address,
-    connector: activeConnector,
-    isConnecting,
-    isDisconnected,
-    isConnected
-  } = useAccount()
+  const { address } = useAccount()
   const { disconnect } = useDisconnect()
   const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
