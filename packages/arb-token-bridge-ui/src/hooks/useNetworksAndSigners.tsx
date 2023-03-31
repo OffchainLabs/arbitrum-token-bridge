@@ -24,6 +24,7 @@ import {
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
 import { useAccount, useNetwork, useProvider } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { useArbQueryParams } from './useArbQueryParams'
@@ -186,6 +187,7 @@ export function NetworksAndSignersProvider(
   const { address, connector, isDisconnected, isConnected } = useAccount()
   const { chain } = useNetwork()
   const provider = useProvider()
+  const { openConnectModal } = useConnectModal()
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
@@ -202,6 +204,10 @@ export function NetworksAndSignersProvider(
       trackEvent(`Connect Wallet Click: ${walletName}`)
     }
   }, [isDisconnected, isConnected, connector])
+
+  useEffect(() => {
+    openConnectModal?.()
+  }, [openConnectModal])
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
