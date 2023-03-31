@@ -232,6 +232,86 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   )
 }
 
+function GenerateRickroll() {
+  const numberOfRickrolls = Math.ceil(Math.random() * 4) + 4
+
+  const rickrollLeft = () => {
+    return {
+      left: 0,
+      top: `${Math.floor(Math.random() * 90)}vh`,
+      transform: 'rotate(90deg)'
+    }
+  }
+
+  const rickrollRight = () => {
+    return {
+      right: 0,
+      top: `${Math.floor(Math.random() * 90)}vh`,
+      transform: 'rotate(-90deg)'
+    }
+  }
+
+  const rickrollTop = () => {
+    return {
+      left: `${Math.floor(Math.random() * 90)}vw`,
+      top: 0,
+      transform: 'rotate(-180deg)'
+    }
+  }
+
+  const rickrollBottom = () => {
+    return {
+      left: `${Math.floor(Math.random() * 90)}vw`,
+      bottom: 0
+    }
+  }
+
+  const rickrollPosition = (index: number) => {
+    switch (index) {
+      case 0:
+        return rickrollLeft()
+      case 1:
+        return rickrollRight()
+      case 2:
+        return rickrollTop()
+      default:
+        return rickrollBottom()
+    }
+  }
+
+  const removeRickroll = (index: number) => {
+    const newRickrolls = [...rickrolls]
+    const shouldAdd = Math.random() > 0.5
+    if (shouldAdd) {
+      const posIndex = Math.floor(Math.random() * 4)
+      newRickrolls.push(rickrollPosition(posIndex))
+    }
+    newRickrolls.splice(index, 1)
+    setRickrolls(newRickrolls)
+  }
+
+  const [rickrolls, setRickrolls] = React.useState(
+    [...new Array(numberOfRickrolls)].map(_ =>
+      rickrollPosition(Math.floor(Math.random() * 4))
+    )
+  )
+
+  return (
+    <div>
+      {rickrolls.map((pos, index) => {
+        return (
+          <button
+            key={index}
+            style={pos}
+            id="arbitrum-classic-rickroll"
+            onClick={() => removeRickroll(index)}
+          ></button>
+        )
+      })}
+    </div>
+  )
+}
+
 function ConnectionFallback(props: FallbackProps): JSX.Element {
   const { connect } = useWallet()
   async function showConnectionModal() {
@@ -346,6 +426,7 @@ export default function App() {
         <NetworkReady>
           <AppContextProvider>
             <Injector>{isTosAccepted && <AppContent />}</Injector>
+            {GenerateRickroll()}
           </AppContextProvider>
         </NetworkReady>
       </ArbQueryParamProvider>

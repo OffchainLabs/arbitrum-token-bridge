@@ -1,9 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Ropa+Sans');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900');
-
-
 #arbitrum-classic-theme{
-    font-family: 'Ropa Sans', 'Arial' !important;
+    font-family: 'Ropa Sans', sans-serif !important;
 }
 
 #arbitrum-classic-theme .rounded-tr-lg,
@@ -123,8 +119,13 @@
     background: none !important;
 }
 
-#arbitrum-classic-theme footer{
-    background-position: right;
+#arbitrum-classic-rickroll {
+    width: 150px;
+    height: 200px;
+    bottom: 0;
+    position: fixed;
+    cursor: pointer;
     background-repeat: no-repeat;
     background-image: url('https://media.tenor.com/nBt6RZkFJh8AAAAj/never-gonna.gif');
+    z-index: 99999999;
 }
