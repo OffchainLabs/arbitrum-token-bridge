@@ -1,9 +1,12 @@
-import React, { ImgHTMLAttributes, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
-import Image from 'next/image'
+import Image, { ImageProps } from 'next/image'
 
+import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
+import Discord from '@/icons/discord.webp'
+import Twitter from '@/icons/twitter.webp'
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import {
@@ -150,9 +153,9 @@ export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
   return null
 }
 
-function HeaderImageElement({ ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+function HeaderImageElement({ ...props }: ImageProps) {
   return (
-    <img
+    <Image
       id="header-image"
       src={props.src}
       alt={props.alt || 'Arbitrum logo'}
@@ -208,7 +211,10 @@ export function Header() {
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <a href="/" className="arb-hover flex flex-col items-center">
-            <HeaderImageElement src="/HeaderArbitrumLogoMainnet.svg" />
+            <HeaderImageElement
+              src={HeaderLogoMainnetSVG}
+              alt="Arbitrum logo"
+            />
           </a>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
@@ -267,13 +273,13 @@ export function Header() {
               href="https://discord.com/invite/ZpZuw7p"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/discord.webp" alt="Discord" />
+              <Image src={Discord} alt="Discord" />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
               className="arb-hover h-8 w-8"
             >
-              <img src="/icons/twitter.webp" alt="Twitter" />
+              <Image src={Twitter} alt="Twitter" />
             </ExternalLink>
           </div>
         </div>
@@ -288,7 +294,7 @@ function MobileExternalLink({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <ExternalLink
-      className="arb-hover flex w-full flex-row flex-nowrap items-center space-x-4 p-4 py-3 text-2xl font-medium text-white"
+      className="arb-hover flex w-full flex-row flex-nowrap items-center space-x-4 px-6 py-3 text-2xl font-medium text-white"
       {...props}
     >
       {children}
@@ -298,13 +304,9 @@ function MobileExternalLink({
 
 const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
   return (
-    <Image
-      src={src}
-      alt={alt}
-      className="mr-4 max-h-8 max-w-8"
-      width={50}
-      height={50}
-    />
+    <span className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#8d8e8e]">
+      <Image src={src} alt={alt} width={22} height={22} />
+    </span>
   )
 }
 
@@ -316,14 +318,14 @@ function HeaderMobile() {
           <MenuIcon.Close />
         </Disclosure.Button>
       </div>
-      <div className="flex min-h-screen flex-col items-center space-y-3 bg-dark">
+      <div className="flex min-h-screen flex-col items-center gap-1 bg-dark">
         <div
           id="header-content-root"
-          className="flex w-full flex-col-reverse items-center space-y-3"
+          className="flex w-full flex-col-reverse items-center pt-4"
         ></div>
         <HeaderMenuMobile {...learnMenuProps}>
           <HeaderItemLogo
-            src="/images/header/headerLogo_learn.webp"
+            src="/images/header/headerLogo_learn.svg"
             alt="Learn"
           />
           Learn
@@ -341,28 +343,28 @@ function HeaderMobile() {
           ]}
         >
           <HeaderItemLogo
-            src="/images/header/headerLogo_ecosystem.webp"
+            src="/images/header/headerLogo_ecosystem.svg"
             alt="Ecosystem"
           />
           Ecosystem
         </HeaderMenuMobile>
         <HeaderMenuMobile {...explorersMenuProps}>
           <HeaderItemLogo
-            src="/images/header/headerLogo_explorers.webp"
+            src="/images/header/headerLogo_explorers.svg"
             alt="Explorers"
           />
           Explorers
         </HeaderMenuMobile>
         <HeaderMenuMobile {...chartsStatsMenuProps}>
           <HeaderItemLogo
-            src="/images/header/headerLogo_chartsAndStats.webp"
+            src="/images/header/headerLogo_chartsAndStats.svg"
             alt="Charts and Stats"
           />
           Charts & Stats
         </HeaderMenuMobile>
         <MobileExternalLink href={GET_HELP_LINK}>
           <HeaderItemLogo
-            src="/images/header/headerLogo_help.webp"
+            src="/images/header/headerLogo_help.svg"
             alt="Get Help"
           />
           Get Help

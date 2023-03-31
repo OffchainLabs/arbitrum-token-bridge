@@ -33,6 +33,7 @@ import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
+import Image from 'next/image'
 
 enum Panel {
   TOKENS,
@@ -377,10 +378,12 @@ function TokenListsPanel() {
               <span className="slider round"></span>
             </div>
             <div className="flex items-center space-x-1">
-              <img
+              <Image
                 src={tokenList.logoURI}
                 alt={`${tokenList.name} Logo`}
                 className="h-6 w-6 rounded-full"
+                width="24"
+                height="24"
               />
               <span className="text-sm text-gray-900">{tokenList.name}</span>
             </div>

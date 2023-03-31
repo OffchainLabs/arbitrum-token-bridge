@@ -13,7 +13,7 @@ import {
 } from '../../state/app/utils'
 import { isFathomNetworkName, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
-import { useAppContextDispatch } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
 
 export const TransactionStatusInfo = ({
@@ -25,7 +25,7 @@ export const TransactionStatusInfo = ({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const l2NetworkName = getNetworkName(l2Network.chainID)
-  const dispatch = useAppContextDispatch()
+  const { openTransactionHistoryPanel } = useAppContextActions()
 
   // get the pending withdrawals to claim
   const {
@@ -76,10 +76,7 @@ export const TransactionStatusInfo = ({
       <ExternalLink
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
         onClick={() => {
-          dispatch({
-            type: 'layout.set_txhistory_panel_visible',
-            payload: true
-          })
+          openTransactionHistoryPanel()
           if (isFathomNetworkName(l2NetworkName)) {
             trackEvent(`Open Transaction History Click: Tx Info Banner`)
           }

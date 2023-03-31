@@ -12,6 +12,7 @@ import {
 import { PendingTransactions } from './PendingTransactions'
 import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
+import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 
 export const TransactionHistory = ({
@@ -75,9 +76,9 @@ export const TransactionHistory = ({
               className={`${roundedTabClasses}`}
             >
               {/* Deposits */}
-              <img
+              <Image
                 src={getNetworkLogo(l2.network.chainID)}
-                className="h-6 max-w-6"
+                className="h-6 w-auto"
                 alt="Deposit"
               />
               {`To ${getNetworkName(l2.network.chainID)}`}
@@ -87,9 +88,9 @@ export const TransactionHistory = ({
               className={`${roundedTabClasses} roundedTabLeft`}
             >
               {/* Withdrawals */}
-              <img
+              <Image
                 src={getNetworkLogo(l1.network.chainID)}
-                className="h-6 max-w-6"
+                className="h-6 w-auto"
                 alt="Withdraw"
               />
               {`To ${getNetworkName(l1.network.chainID)}`}
