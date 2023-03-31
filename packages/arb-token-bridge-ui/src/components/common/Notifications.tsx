@@ -70,7 +70,11 @@ function ToggleTheme() {
     <>
       {theme === classicThemeKey && (
         <Notification>
-          <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">
+          <a
+            href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            rel="noreferrer"
+            target="_blank"
+          >
             🔥 Announcing ARB Airdrop Round 2
           </a>
         </Notification>
