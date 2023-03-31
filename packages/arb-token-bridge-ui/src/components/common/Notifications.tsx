@@ -1,11 +1,13 @@
+import { InformationCircleIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
+import useLocalStorage from '@rehooks/local-storage'
+import { useEffect, useState } from 'react'
+
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
-import { InformationCircleIcon } from '@heroicons/react/outline'
-import { twMerge } from 'tailwind-merge'
-import useLocalStorage from '@rehooks/local-storage'
-import { useEffect } from 'react'
+import { FunStuff } from './FunStuff'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -47,10 +49,13 @@ function Notification({
 function ToggleTheme() {
   const [theme, setTheme] = useLocalStorage<string>('theme')
   const classicThemeKey = 'arbitrum-classic-theme'
+  const [themeInState, setThemeInState] = useState<string | null>(theme)
+  const isClassicTheme = themeInState === classicThemeKey
 
   useEffect(() => {
     setTheme(classicThemeKey)
-  }, [])
+    setThemeInState(classicThemeKey)
+  }, [setTheme])
 
   useEffect(() => {
     const elem = document.getElementById('body-theme')
@@ -59,23 +64,25 @@ function ToggleTheme() {
   }, [theme])
 
   const handleToggleTheme = () => {
-    if (theme == classicThemeKey) {
+    if (theme === classicThemeKey) {
       setTheme('')
+      setThemeInState('')
     } else {
       setTheme(classicThemeKey)
+      setThemeInState(classicThemeKey)
     }
   }
 
   return (
     <>
-      {theme === classicThemeKey && (
+      {isClassicTheme && (
         <Notification>
           <a
-            href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            href="https://www.youtube.com/watch?v=xvFZjo5PgG0"
             rel="noreferrer"
             target="_blank"
           >
-            🔥 Announcing ARB Airdrop Round 2
+            🔥 Sign up for Secret ALPHA
           </a>
         </Notification>
       )}
@@ -86,6 +93,8 @@ function ToggleTheme() {
             : '💙🧡 Arbitrum: before it was cool'}
         </button>
       </Notification>
+
+      {isClassicTheme && <FunStuff />}
     </>
   )
 }
