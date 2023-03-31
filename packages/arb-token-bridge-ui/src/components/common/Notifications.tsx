@@ -1,7 +1,7 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
 
-import { useTheme } from 'src/hooks/useTheme'
+import { useTheme, CLASSIC_THEME_KEY } from 'src/hooks/useTheme'
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -46,13 +46,13 @@ function Notification({
 }
 
 function ToggleTheme() {
-  const { setTheme, classicThemeKey, isClassicTheme } = useTheme()
+  const { setTheme, isClassicTheme, showToggleThemeButton } = useTheme()
 
   const handleToggleTheme = () => {
     if (isClassicTheme) {
       setTheme('')
     } else {
-      setTheme(classicThemeKey)
+      setTheme(CLASSIC_THEME_KEY)
     }
   }
 
@@ -69,14 +69,15 @@ function ToggleTheme() {
           </a>
         </Notification>
       )}
-      <Notification>
-        <button onClick={handleToggleTheme} className="arb-hover text-left">
-          {isClassicTheme
-            ? 'Back to normal'
-            : '💙🧡 Arbitrum: before it was cool'}
-        </button>
-      </Notification>
-
+      {showToggleThemeButton && (
+        <Notification>
+          <button onClick={handleToggleTheme} className="arb-hover text-left">
+            {isClassicTheme
+              ? 'Back to normal'
+              : '💙🧡 Arbitrum: before it was cool'}
+          </button>
+        </Notification>
+      )}
       {isClassicTheme && <FunStuff />}
     </>
   )

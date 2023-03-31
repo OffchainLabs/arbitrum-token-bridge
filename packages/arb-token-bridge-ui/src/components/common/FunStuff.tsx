@@ -1,7 +1,10 @@
+import dayjs from 'dayjs'
 import { useState } from 'react'
 
 export function FunStuff() {
   const numberOfFunStuff = Math.ceil(Math.random() * 4) + 4
+
+  const showFunStuff = dayjs().isBefore('2023-04-02')
 
   const funStuffLeft = () => {
     return {
@@ -66,16 +69,17 @@ export function FunStuff() {
 
   return (
     <>
-      {funStuff.map((pos, index) => {
-        return (
-          <button
-            key={index}
-            style={pos}
-            className="arbitrum-classic-funStuff"
-            onClick={() => removeFunStuff(index)}
-          ></button>
-        )
-      })}
+      {showFunStuff &&
+        funStuff.map((pos, index) => {
+          return (
+            <button
+              key={index}
+              style={pos}
+              className="arbitrum-classic-funStuff"
+              onClick={() => removeFunStuff(index)}
+            ></button>
+          )
+        })}
     </>
   )
 }
