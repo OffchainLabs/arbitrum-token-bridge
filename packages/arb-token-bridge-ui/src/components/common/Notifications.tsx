@@ -1,8 +1,7 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
-import useLocalStorage from '@rehooks/local-storage'
-import { useEffect, useState } from 'react'
 
+import { useTheme } from 'src/hooks/useTheme'
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -47,29 +46,13 @@ function Notification({
 }
 
 function ToggleTheme() {
-  const [theme, setTheme] = useLocalStorage<string>('theme')
-  const classicThemeKey = 'arbitrum-classic-theme'
-  const [themeInState, setThemeInState] = useState<string | null>(theme)
-  const isClassicTheme = themeInState === classicThemeKey
-
-  useEffect(() => {
-    setTheme(classicThemeKey)
-    setThemeInState(classicThemeKey)
-  }, [setTheme])
-
-  useEffect(() => {
-    const elem = document.getElementById('body-theme')
-    if (!elem) return
-    elem.className = theme ?? ''
-  }, [theme])
+  const { setTheme, classicThemeKey, isClassicTheme } = useTheme()
 
   const handleToggleTheme = () => {
-    if (theme === classicThemeKey) {
+    if (isClassicTheme) {
       setTheme('')
-      setThemeInState('')
     } else {
       setTheme(classicThemeKey)
-      setThemeInState(classicThemeKey)
     }
   }
 
@@ -88,7 +71,7 @@ function ToggleTheme() {
       )}
       <Notification>
         <button onClick={handleToggleTheme} className="arb-hover text-left">
-          {theme === classicThemeKey
+          {isClassicTheme
             ? 'Back to normal'
             : '💙🧡 Arbitrum: before it was cool'}
         </button>

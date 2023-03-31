@@ -1,6 +1,8 @@
 import { Html, Head, Main, NextScript } from 'next/document'
+import { useDefaultTheme } from 'src/hooks/useTheme'
 
 export default function Document() {
+  const defaultTheme = useDefaultTheme()
   return (
     <Html lang="en">
       <Head>
@@ -21,7 +23,7 @@ export default function Document() {
           defer
         />
       </Head>
-      <body id="body-theme" className="arbitrum-classic-theme">
+      <body id="body-theme" className={defaultTheme}>
         <Main />
         <NextScript />
       </body>
