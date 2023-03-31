@@ -1,8 +1,6 @@
 import { Html, Head, Main, NextScript } from 'next/document'
-import { useDefaultTheme } from 'src/hooks/useTheme'
 
 export default function Document() {
-  const defaultTheme = useDefaultTheme()
   return (
     <Html lang="en">
       <Head>
@@ -23,7 +21,7 @@ export default function Document() {
           defer
         />
       </Head>
-      <body className={defaultTheme}>
+      <body>
         <Main />
         <NextScript />
       </body>

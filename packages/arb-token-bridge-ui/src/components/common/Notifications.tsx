@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
+import dayjs from 'dayjs'
 
-import { useTheme, CLASSIC_THEME_KEY } from 'src/hooks/useTheme'
+import { useTheme } from '../../hooks/useTheme'
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -45,23 +47,37 @@ function Notification({
   )
 }
 
+const aprilFools = '2023-04-01'
+const isAprilFools = dayjs().isSame(aprilFools, 'day')
+const isAfterAprilFools = dayjs().isAfter(aprilFools, 'day')
+const classicThemeKey = 'arbitrum-classic-theme'
+
 function ToggleTheme() {
-  const { setTheme, isClassicTheme, showToggleThemeButton } = useTheme()
+  const [theme, setTheme] = useTheme()
+  const isClassicTheme = theme === classicThemeKey
+  const [didSetClassicThemeOnce, setDidSetClassicThemeOnce] = useState(false)
+
+  useEffect(() => {
+    if (!didSetClassicThemeOnce) {
+      setTheme(classicThemeKey)
+      setDidSetClassicThemeOnce(true)
+    }
+  }, [didSetClassicThemeOnce, setTheme])
 
   const handleToggleTheme = () => {
     if (isClassicTheme) {
       setTheme('')
     } else {
-      setTheme(CLASSIC_THEME_KEY)
+      setTheme(classicThemeKey)
     }
   }
 
   return (
     <>
-      {isClassicTheme && (
+      {isAprilFools && (
         <Notification>
           <a
-            href="https://youtu.be/uHgt8giw1LY"
+            href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
             rel="noreferrer"
             target="_blank"
           >
@@ -69,7 +85,7 @@ function ToggleTheme() {
           </a>
         </Notification>
       )}
-      {showToggleThemeButton && (
+      {(isAprilFools || isAfterAprilFools) && (
         <Notification>
           <button onClick={handleToggleTheme} className="arb-hover text-left">
             {isClassicTheme
@@ -78,7 +94,7 @@ function ToggleTheme() {
           </button>
         </Notification>
       )}
-      {isClassicTheme && <FunStuff />}
+      {isAprilFools && <FunStuff />}
     </>
   )
 }
