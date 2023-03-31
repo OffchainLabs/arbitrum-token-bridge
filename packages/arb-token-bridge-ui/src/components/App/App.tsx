@@ -232,7 +232,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   )
 }
 
-function GenerateRickroll() {
+function generateRickroll() {
   const numberOfRickrolls = Math.ceil(Math.random() * 4) + 4
 
   const rickrollLeft = () => {
@@ -401,6 +401,7 @@ export default function App() {
 
   const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
   const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [theme] = useLocalStorage<string>('theme')
   const [welcomeDialogProps, openWelcomeDialog] = useDialog()
 
   const isTosAccepted = tosAccepted !== undefined
@@ -426,7 +427,7 @@ export default function App() {
         <NetworkReady>
           <AppContextProvider>
             <Injector>{isTosAccepted && <AppContent />}</Injector>
-            {GenerateRickroll()}
+            {theme === 'arbitrum-classic-theme' && generateRickroll()}
           </AppContextProvider>
         </NetworkReady>
       </ArbQueryParamProvider>
