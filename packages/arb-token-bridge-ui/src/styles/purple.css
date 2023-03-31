@@ -1,0 +1,157 @@
+.arbitrum-classic-theme{
+    font-family: 'Ropa Sans', sans-serif !important;
+}
+
+.arbitrum-classic-theme .rounded-tr-lg,
+.arbitrum-classic-theme .rounded-full,
+.arbitrum-classic-theme .rounded-xl,
+.arbitrum-classic-theme .rounded-sm,
+.arbitrum-classic-theme .rounded-md,
+.arbitrum-classic-theme .rounded-lg,
+.arbitrum-classic-theme .lg\:rounded-tr-xl,
+.arbitrum-classic-theme .lg\:rounded-xl,
+.arbitrum-classic-theme .web3modal-modal-card,
+.arbitrum-classic-theme .rounded-lg,
+.arbitrum-classic-theme .md\:rounded-xl,
+.arbitrum-classic-theme .rounded-b-lg {
+	border-radius: 0px !important;
+}
+
+.arbitrum-classic-theme .text-2xl,
+.arbitrum-classic-theme .text-5xl,
+.arbitrum-classic-theme th {
+	font-family: 'Montserrat', sans-serif !important;
+	font-weight: bolder !important;
+}
+
+.arbitrum-classic-theme .lg\:rounded-xl,
+.arbitrum-classic-theme .web3modal-modal-card,
+.arbitrum-classic-theme .md\:shadow-\[0px_4px_12px_\#acacac\],
+.arbitrum-classic-theme .lg\:shadow-\[0px_4px_20px_rgba\(0\2c 0\2c 0\2c 0\.2\)\],
+.arbitrum-classic-theme .side-panel,
+.arbitrum-classic-theme .bg-blue-arbitrum,
+.arbitrum-classic-theme .header-menu-panel,
+.arbitrum-classic-theme .main-panel {
+	box-shadow: 5px 0px 10px 2px rgba(80, 70, 173, 0.7), -5px 0px 10px 2px rgba(80, 70, 173, 0.7)
+}
+
+.arbitrum-classic-theme,
+.arbitrum-classic-theme .bg-dark,
+.arbitrum-classic-theme .bg-black,
+.arbitrum-classic-theme .bg-purple-ethereum,
+.arbitrum-classic-theme .bg-blue-arbitrum,
+.arbitrum-classic-theme .background-image,
+.arbitrum-classic-theme .bg-gradient-overlay,
+.arbitrum-classic-theme .lg\:bg-blue-arbitrum,
+.arbitrum-classic-theme .lg\:bg-dark,
+.arbitrum-classic-theme .lg\:bg-black,
+.arbitrum-classic-theme .bg-blue-arb-one,
+.arbitrum-classic-theme .bg-\[\#8d8e8e\],
+.arbitrum-classic-theme th {
+	background-color: #8C89BC !important;
+	background-image: none !important;
+}
+
+
+.arbitrum-classic-theme .hover\:bg-blue-arbitrum:hover,
+.arbitrum-classic-theme .even\:bg-white:nth-child(even),
+.arbitrum-classic-theme .bg-orange,
+.arbitrum-classic-theme .side-panel-content {
+	background-color: white !important;
+}
+
+.arbitrum-classic-theme .roundedTabRight::after,
+.arbitrum-classic-theme .roundedTabLeft::before {
+	display: none;
+}
+
+.arbitrum-classic-theme .bg-cyan,
+.arbitrum-classic-theme .bg-gray-3:not(.transfer-panel-stats),
+.arbitrum-classic-theme button:disabled {
+	background-color: #8c89bc4f !important;
+}
+
+.arbitrum-classic-theme button.rounded-full {
+	border: 2px solid white !important
+}
+
+.arbitrum-classic-theme .hover\:text-white:hover,
+.arbitrum-classic-theme .hover\:bg-blue-arbitrum:hover,
+.arbitrum-classic-theme .header-menu-panel {
+	color: #8C89BC !important;
+}
+
+.arbitrum-classic-theme a,
+.arbitrum-classic-theme button,
+.arbitrum-classic-theme a:hover,
+.arbitrum-classic-theme button:hover,
+.arbitrum-classic-theme button span {
+	text-decoration: underline !important;
+}
+
+.arbitrum-classic-theme .avatar-container {
+	border-color: transparent !important;
+}
+
+.arbitrum-classic-theme .explore-arbitrum-card {
+	display: none;
+}
+
+.arbitrum-classic-theme .text-5xl {
+	display: block !important;
+}
+
+.arbitrum-classic-theme th {
+	color: black;
+	border: 1px solid white;
+}
+
+.arbitrum-classic-theme .main-panel {
+	background-color: white !important;
+	padding: 2rem 4rem;
+}
+
+@media screen and (max-width: 768px) {
+	.arbitrum-classic-theme .main-panel {
+		padding: 2rem 0;
+	}
+}
+
+.arbitrum-classic-theme .main-panel .lg\:rounded-xl {
+	box-shadow: none !important;
+}
+
+.arbitrum-classic-theme .lg\:bottom-\[-45\%\],
+.arbitrum-classic-theme .h-\[25vh\] {
+	display: none;
+}
+
+.arbitrum-classic-funStuff {
+    width: 150px;
+    height: 200px;
+    bottom: 0;
+    position: fixed;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-image: url('https://media.tenor.com/nBt6RZkFJh8AAAAj/never-gonna.gif');
+	background-size: cover;
+    z-index: 99999999;
+}
+.arbitrum-classic-theme .transfer-panel-stats {
+	background: none !important;
+}
+
+.arbitrum-classic-theme footer {
+	background-position: right;
+	background-repeat: no-repeat;
+	background-image: url('https://media.tenor.com/nBt6RZkFJh8AAAAj/never-gonna.gif');
+	z-index: 0 !important;
+}
+
+.arbitrum-classic-theme .side-panel .ui-not-selected\:text-white[data-headlessui-state]:not([data-headlessui-state~="selected"]) {
+	color: #8C89BC !important;
+}
+
+.arbitrum-classic-theme .side-panel .pending-transactions .heading {
+	color:black !important
+}
