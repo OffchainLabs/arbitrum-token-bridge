@@ -18,9 +18,9 @@ import { isUserRejectedError } from './isUserRejectedError'
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
-// if (typeof INFURA_KEY === 'undefined') {
-//   throw new Error('Infura API key not provided')
-// }
+if (typeof INFURA_KEY === 'undefined') {
+  throw new Error('Infura API key not provided')
+}
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
