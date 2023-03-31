@@ -4,6 +4,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
+import useLocalStorage from '@rehooks/local-storage'
+import { useEffect } from 'react'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -42,6 +44,48 @@ function Notification({
   )
 }
 
+function ToggleTheme() {
+  const [theme, setTheme] = useLocalStorage<string>('theme')
+  const classicThemeKey = 'arbitrum-classic-theme'
+
+  useEffect(() => {
+    setTheme(classicThemeKey)
+  }, [])
+
+  useEffect(() => {
+    const elem = document.getElementById('body-theme')
+    if (!elem) return
+    elem.className = theme ?? ''
+  }, [theme])
+
+  const handleToggleTheme = () => {
+    if (theme == classicThemeKey) {
+      setTheme('')
+    } else {
+      setTheme(classicThemeKey)
+    }
+  }
+
+  return (
+    <>
+      {theme === classicThemeKey && (
+        <Notification>
+          <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">
+            🔥 Announcing ARB Airdrop Round 2
+          </a>
+        </Notification>
+      )}
+      <Notification>
+        <button onClick={handleToggleTheme} className="arb-hover text-left">
+          {theme === classicThemeKey
+            ? 'Back to normal'
+            : '💙🧡 Arbitrum: before it was cool'}
+        </button>
+      </Notification>
+    </>
+  )
+}
+
 function NitroDevnetNotification() {
   const handleTwitterClick = useTwitter()
 
@@ -71,6 +115,7 @@ export function Notifications() {
   return (
     <NotificationContainer>
       {isGoerli && <NitroDevnetNotification />}
+      <ToggleTheme />
     </NotificationContainer>
   )
 }
