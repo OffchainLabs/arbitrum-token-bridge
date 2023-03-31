@@ -141,7 +141,10 @@
 	z-index: 0 !important;
 }
 
-.side-panel .heading,
-.side-panel .ui-not-selected\:text-white[data-headlessui-state]:not([data-headlessui-state~="selected"]) {
+.arbitrum-classic-theme .side-panel .ui-not-selected\:text-white[data-headlessui-state]:not([data-headlessui-state~="selected"]) {
 	color: #8C89BC !important;
+}
+
+.arbitrum-classic-theme .side-panel .pending-transactions .heading {
+	color:black !important
 }
