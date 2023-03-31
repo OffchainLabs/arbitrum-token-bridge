@@ -23,10 +23,7 @@ export const useTheme = () => {
       setQueryParams({ theme })
     }, 0)
 
-    // set the theme in body
-    const elem = document.getElementById('body-theme')
-    if (!elem) return
-    elem.className = theme
+    document.body.className = theme
   }
 
   const showToggleThemeButton = dayjs().isAfter(APRIL_1)

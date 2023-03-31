@@ -23,7 +23,7 @@ export default function Document() {
           defer
         />
       </Head>
-      <body id="body-theme" className={defaultTheme}>
+      <body className={defaultTheme}>
         <Main />
         <NextScript />
       </body>
