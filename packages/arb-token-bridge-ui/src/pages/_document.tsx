@@ -21,7 +21,7 @@ export default function Document() {
           defer
         />
       </Head>
-      <body>
+      <body id="arbitrum-classic-theme">
         <Main />
         <NextScript />
       </body>
