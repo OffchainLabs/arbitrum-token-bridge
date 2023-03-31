@@ -111,6 +111,12 @@
 	padding: 2rem 4rem;
 }
 
+@media screen and (max-width: 768px) {
+	.arbitrum-classic-theme .main-panel {
+		padding: 2rem 0;
+	}
+}
+
 .arbitrum-classic-theme .main-panel .lg\:rounded-xl {
 	box-shadow: none !important;
 }
