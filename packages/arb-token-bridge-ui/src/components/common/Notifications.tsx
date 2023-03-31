@@ -78,7 +78,7 @@ function ToggleTheme() {
       {isClassicTheme && (
         <Notification>
           <a
-            href="https://www.youtube.com/watch?v=xvFZjo5PgG0"
+            href="https://youtu.be/uHgt8giw1LY"
             rel="noreferrer"
             target="_blank"
           >
