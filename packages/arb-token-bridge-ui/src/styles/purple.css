@@ -141,13 +141,6 @@
 	background: none !important;
 }
 
-.arbitrum-classic-theme footer {
-	background-position: right;
-	background-repeat: no-repeat;
-	background-image: url('https://media.tenor.com/nBt6RZkFJh8AAAAj/never-gonna.gif');
-	z-index: 0 !important;
-}
-
 .arbitrum-classic-theme .side-panel .ui-not-selected\:text-white[data-headlessui-state]:not([data-headlessui-state~="selected"]) {
 	color: #8C89BC !important;
 }
