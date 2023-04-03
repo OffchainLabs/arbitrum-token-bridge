@@ -266,7 +266,9 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </HeaderContent>
 
           <AppConnectionFallbackContainer>
-            <HeaderConnectWalletButton />
+            <span className="text-white">
+              Please connect your wallet to use the bridge.
+            </span>
           </AppConnectionFallbackContainer>
         </>
       )
