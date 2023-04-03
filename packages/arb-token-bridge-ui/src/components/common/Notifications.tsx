@@ -1,13 +1,10 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { twMerge } from 'tailwind-merge'
 
-import { useTheme } from '../../hooks/useTheme'
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
-
-const classicThemeKey = 'arbitrum-classic-theme'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -46,29 +43,6 @@ function Notification({
   )
 }
 
-function ToggleTheme() {
-  const [theme, setTheme] = useTheme()
-  const isClassicTheme = theme === classicThemeKey
-
-  const handleToggleTheme = () => {
-    if (isClassicTheme) {
-      setTheme('')
-    } else {
-      setTheme(classicThemeKey)
-    }
-  }
-
-  return (
-    <Notification>
-      <button onClick={handleToggleTheme} className="arb-hover text-left">
-        {isClassicTheme
-          ? 'Back to normal'
-          : '💙🧡 Arbitrum: before it was cool'}
-      </button>
-    </Notification>
-  )
-}
-
 function NitroDevnetNotification() {
   const handleTwitterClick = useTwitter()
 
@@ -98,7 +72,6 @@ export function Notifications() {
   return (
     <NotificationContainer>
       {isGoerli && <NitroDevnetNotification />}
-      <ToggleTheme />
     </NotificationContainer>
   )
 }
