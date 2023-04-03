@@ -169,7 +169,7 @@ export function HeaderAccountPopover() {
         onClose={() => setTxHistoryViewedOnce(true)}
       >
         <Popover.Button
-          className="arb-hover flex w-full justify-start rounded-full py-3 px-6 lg:w-max lg:p-0"
+          className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
           onClick={() => setTxHistoryViewedOnce(true)}
           role="button"
           aria-label={`Account Header Button`}

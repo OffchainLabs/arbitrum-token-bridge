@@ -47,7 +47,6 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { ThemeIncluder } from '../syncers/ThemeIncluder'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
@@ -349,7 +348,6 @@ export default function App() {
             <Injector>{isTosAccepted && <AppContent />}</Injector>
           </AppContextProvider>
         </NetworkReady>
-        <ThemeIncluder />
       </ArbQueryParamProvider>
     </Provider>
   )
