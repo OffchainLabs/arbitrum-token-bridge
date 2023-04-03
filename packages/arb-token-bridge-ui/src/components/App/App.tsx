@@ -60,8 +60,7 @@ declare global {
 
 const rainbowkitTheme = merge(darkTheme(), {
   colors: {
-    accentColor: 'var(--blue)',
-    connectButtonBackground: 'var(--mid-grey-darker)'
+    accentColor: 'var(--blue-link)'
   },
   fonts: {
     body: "'Space Grotesk', sans-serif"
