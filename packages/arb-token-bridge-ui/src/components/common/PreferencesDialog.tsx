@@ -1,7 +1,6 @@
 import { XIcon } from '@heroicons/react/outline'
-import { THEME_CONFIG, useTheme } from 'src/hooks/useTheme'
+import { THEME_CONFIG, useTheme, classicThemeKey } from 'src/hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { classicThemeKey } from '../syncers/ThemeIncluder'
 import { Checkbox } from './Checkbox'
 import { Dialog } from './Dialog'
 

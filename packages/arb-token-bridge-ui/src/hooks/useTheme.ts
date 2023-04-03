@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { classicThemeKey } from 'src/components/syncers/ThemeIncluder'
-
 import { useArbQueryParams } from './useArbQueryParams'
+
+export const classicThemeKey = 'arbitrum-classic-theme'
 
 export const THEME_CONFIG = [
   {
