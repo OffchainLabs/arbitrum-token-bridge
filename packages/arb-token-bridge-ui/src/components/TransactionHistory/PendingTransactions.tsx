@@ -47,10 +47,10 @@ export const PendingTransactions = ({
 
   return (
     <div
-      className={`relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
+      className={`pending-transactions relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
     >
       {/* Heading */}
-      <div className="flex items-center justify-between text-base text-white lg:text-lg">
+      <div className="heading flex items-center justify-between text-base text-white lg:text-lg">
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}

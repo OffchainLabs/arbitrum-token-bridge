@@ -160,7 +160,7 @@ export function ExploreArbitrum() {
   const nftProj = ExploreArbitrumContent.nfts[nftProjectIndex]!
 
   return (
-    <div className="w-full bg-white lg:rounded-xl">
+    <div className="explore-arbitrum-card w-full bg-white lg:rounded-xl">
       <div className="bg-blue-arbitrum p-6 lg:rounded-tl-xl lg:rounded-tr-xl">
         <p className="text-2xl text-white">For your enjoyment</p>
       </div>
