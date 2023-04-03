@@ -3,13 +3,13 @@ import { useGasPrice } from 'token-bridge-sdk'
 import { useArbStats } from '../../hooks/useArbStats'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
   if (!gasPrice) gasPrice = 0
-  if (gasPrice < 15) return { activity: 'Low', className: 'text-[#008000]' }
-  if (gasPrice < 20)
+  if (gasPrice < 20) return { activity: 'Low', className: 'text-[#008000]' }
+  if (gasPrice < 40)
     return { activity: 'Average', className: 'text-orange-arbitrum-nova' }
   return { activity: 'High', className: 'text-[#ff0000]' }
 }
@@ -51,7 +51,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          Ethereum (L1)
+          {getNetworkName(l1.network.chainID)} (L1)
         </span>
         <span>
           &gt; Block :{' '}
@@ -88,9 +88,13 @@ export const ArbitrumStats = () => {
             {currentL2Activity.activity}
           </span>
         </span>
-        <span>
-          &gt; TPS : {arbStatsLoading ? 'Loading...' : arbStats?.tps || '-'}
-        </span>
+
+        {/* TPS info is not available for testnets */}
+        {!isNetwork(l2.network.chainID).isTestnet && (
+          <span>
+            &gt; TPS : {arbStatsLoading ? 'Loading...' : arbStats?.tps || '-'}
+          </span>
+        )}
       </div>
 
       <button
