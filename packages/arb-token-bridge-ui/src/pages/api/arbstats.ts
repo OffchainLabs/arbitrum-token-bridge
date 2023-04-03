@@ -1,7 +1,7 @@
 // Connects to arbiscan and scrapes some nice info which we can show on our UI as well
 
 import axios from 'axios'
-import cheerio from 'cheerio'
+import { load } from 'cheerio'
 
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -26,7 +26,7 @@ export default async function handler(
     // Get the HTML code of the webpage
     const html = response.data
 
-    const $ = cheerio.load(html)
+    const $ = load(html)
 
     const tpsElement = $(
       'span[title="Transactions per Second - Adjusted for Arbitrum Nitro system txs"]'
