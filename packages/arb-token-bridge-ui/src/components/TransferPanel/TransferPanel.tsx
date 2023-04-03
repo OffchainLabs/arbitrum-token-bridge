@@ -344,12 +344,6 @@ export function TransferPanel() {
       return
     }
 
-    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
-      console.error("ETH transfers aren't enabled for smart contract wallets.")
-      return
-    }
-
     const l2NetworkName = getNetworkName(l2Network.chainID)
 
     // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
@@ -500,6 +494,14 @@ export function TransferPanel() {
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
+          if (isSmartContractWallet) {
+            showDelayedSCTxRequest()
+            // we can't call this inside the withdraw method because tx is executed in an external app
+            if (isFathomNetworkName(l2NetworkName)) {
+              trackEvent(`Deposit ETH to ${l2NetworkName} (Smart Contract)`)
+            }
+          }
+
           await latestEth.current.deposit({
             amount: amountRaw,
             l1Signer: latestNetworksAndSigners.current.l1.signer,
@@ -615,9 +617,18 @@ export function TransferPanel() {
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
+          if (isSmartContractWallet) {
+            showDelayedSCTxRequest()
+            // we can't call this inside the withdraw method because tx is executed in an external app
+            if (isFathomNetworkName(l2NetworkName)) {
+              trackEvent(`Withdraw ETH from ${l2NetworkName} (Smart Contract)`)
+            }
+          }
+
           await latestEth.current.withdraw({
             amount: amountRaw,
             l2Signer: latestNetworksAndSigners.current.l2.signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()

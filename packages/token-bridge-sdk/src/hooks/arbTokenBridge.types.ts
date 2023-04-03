@@ -167,6 +167,7 @@ export interface ArbTokenBridgeEth {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   withdrawEstimateGas: (params: { amount: BigNumber }) => Promise<GasEstimates>
   triggerOutbox: (params: {

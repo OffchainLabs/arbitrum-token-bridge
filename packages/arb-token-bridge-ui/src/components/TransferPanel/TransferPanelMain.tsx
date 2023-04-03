@@ -303,8 +303,7 @@ function NetworkListboxPlusBalancesContainer({
 export enum TransferPanelMainErrorMessage {
   INSUFFICIENT_FUNDS,
   GAS_ESTIMATION_FAILURE,
-  WITHDRAW_ONLY,
-  SC_WALLET_ETH_NOT_SUPPORTED
+  WITHDRAW_ONLY
 }
 
 export function TransferPanelMain({
@@ -568,12 +567,6 @@ export function TransferPanelMain({
           </button>
         </>
       )
-    }
-
-    if (
-      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-    ) {
-      return "ETH transfers using smart contract wallets aren't supported yet."
     }
 
     return `Insufficient balance, please add more to ${
