@@ -7,7 +7,8 @@ import {
   ExternalLinkIcon,
   LogoutIcon,
   DocumentTextIcon,
-  DocumentDuplicateIcon
+  DocumentDuplicateIcon,
+  HeartIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -22,10 +23,13 @@ import {
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
+import { useTheme } from '../../hooks/useTheme'
 import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
+
+const classicThemeKey = 'arbitrum-classic-theme'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -108,6 +112,17 @@ export function HeaderAccountPopover() {
   const [txHistoryViewedOnce, setTxHistoryViewedOnce] =
     useNewFeatureIndicator('tx-history')
 
+  const [theme, setTheme] = useTheme()
+  const isClassicTheme = theme === classicThemeKey
+
+  const handleToggleTheme = () => {
+    if (isClassicTheme) {
+      setTheme('')
+    } else {
+      setTheme(classicThemeKey)
+    }
+  }
+
   useEffect(() => {
     async function resolveNameServiceInfo() {
       if (account) {
@@ -167,7 +182,7 @@ export function HeaderAccountPopover() {
         onClose={() => setTxHistoryViewedOnce(true)}
       >
         <Popover.Button
-          className="arb-hover flex w-full justify-start rounded-full py-3 px-6 lg:w-max lg:p-0"
+          className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
           onClick={() => setTxHistoryViewedOnce(true)}
           role="button"
           aria-label={`Account Header Button`}
@@ -255,6 +270,15 @@ export function HeaderAccountPopover() {
               <ExternalLinkIcon className="h-4 w-4 text-white" />
               <span>Explorer</span>
             </ExternalLink>
+
+            {/* Theme toggle */}
+            <button
+              className={headerItemsClassName}
+              onClick={handleToggleTheme}
+            >
+              <HeartIcon className="h-4 w-4 text-white" />
+              <span>{isClassicTheme ? 'Space theme' : 'Classic theme'}</span>
+            </button>
 
             {/* Disconnect button */}
             <button className={headerItemsClassName} onClick={disconnectWallet}>
