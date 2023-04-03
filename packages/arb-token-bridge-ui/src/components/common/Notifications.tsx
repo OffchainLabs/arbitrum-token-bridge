@@ -1,9 +1,13 @@
+import { InformationCircleIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
+
+import { useTheme } from '../../hooks/useTheme'
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
-import { InformationCircleIcon } from '@heroicons/react/outline'
-import { twMerge } from 'tailwind-merge'
+import { FunStuff } from './FunStuff'
+import { classicThemeKey, isAprilFools } from '../syncers/ThemeIncluder'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -42,6 +46,47 @@ function Notification({
   )
 }
 
+function ToggleTheme() {
+  const [theme, setTheme] = useTheme()
+  const isClassicTheme = theme === classicThemeKey
+
+  const handleToggleTheme = () => {
+    if (isClassicTheme) {
+      setTheme('')
+    } else {
+      setTheme(classicThemeKey)
+    }
+  }
+
+  return (
+    <>
+      {/* show rick-rolling only on april fools day and in classic-theme */}
+      {isAprilFools && isClassicTheme && (
+        <Notification>
+          <a
+            href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            rel="noreferrer"
+            target="_blank"
+          >
+            🔥 Sign up for Secret ALPHA
+          </a>
+        </Notification>
+      )}
+
+      <Notification>
+        <button onClick={handleToggleTheme} className="arb-hover text-left">
+          {isClassicTheme
+            ? 'Back to normal'
+            : '💙🧡 Arbitrum: before it was cool'}
+        </button>
+      </Notification>
+
+      {/* show fun stuff only on april fools day in classic-theme */}
+      {isAprilFools && isClassicTheme && <FunStuff />}
+    </>
+  )
+}
+
 function NitroDevnetNotification() {
   const handleTwitterClick = useTwitter()
 
@@ -71,6 +116,7 @@ export function Notifications() {
   return (
     <NotificationContainer>
       {isGoerli && <NitroDevnetNotification />}
+      <ToggleTheme />
     </NotificationContainer>
   )
 }
