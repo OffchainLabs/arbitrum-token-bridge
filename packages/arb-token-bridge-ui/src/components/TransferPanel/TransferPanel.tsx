@@ -11,7 +11,11 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getNetworkName,
+  handleSwitchNetworkError,
+  isNetwork
+} from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
@@ -115,7 +119,9 @@ export function TransferPanel() {
   const { isTransferring } = layout
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
-  const { switchNetwork } = useSwitchNetwork()
+  const { switchNetwork } = useSwitchNetwork({
+    onError: handleSwitchNetworkError
+  })
   const { data: signer } = useSigner()
   const latestConnectedProvider = useLatest(provider)
 

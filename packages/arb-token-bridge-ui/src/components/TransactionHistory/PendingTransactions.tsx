@@ -8,7 +8,12 @@ import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  ChainId,
+  getNetworkName,
+  handleSwitchNetworkError,
+  isNetwork
+} from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 
@@ -34,7 +39,9 @@ export const PendingTransactions = ({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { switchNetwork } = useSwitchNetwork()
+  const { switchNetwork } = useSwitchNetwork({
+    onError: handleSwitchNetworkError
+  })
 
   const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
     ? 'bg-gray-10'

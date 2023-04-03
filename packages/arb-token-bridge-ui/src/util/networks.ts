@@ -331,67 +331,9 @@ const onSwitchChainNotSupportedDefault = (attemptedChainId: number) => {
   )
 }
 
-export async function switchChain({
-  chainId,
-  provider,
-  onSuccess = noop,
-  onError = noop,
-  onSwitchChainNotSupported = onSwitchChainNotSupportedDefault
-}: SwitchChainProps) {
-  // do an early return if switching-chains is not supported by provider
-  if (!isSwitchChainSupported(provider)) {
-    onSwitchChainNotSupported?.(chainId)
+export function handleSwitchNetworkError(error: any) {
+  if (isUserRejectedError(error)) {
     return
   }
-
-  // if all the above conditions are satisfied go ahead and switch the network
-  const hexChainId = hexValue(BigNumber.from(chainId))
-  const networkName = getNetworkName(chainId)
-
-  try {
-    await provider.send('wallet_switchEthereumChain', [
-      {
-        chainId: hexChainId
-      }
-    ])
-
-    onSuccess?.()
-  } catch (err: any) {
-    if (isUserRejectedError(err)) {
-      onError?.(err)
-      return
-    }
-
-    if (err.code === 4902) {
-      // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
-      // This error code indicates that the chain has not been added to MetaMask.
-
-      try {
-        await provider.send('wallet_addEthereumChain', [
-          {
-            chainId: hexChainId,
-            chainName: networkName,
-            nativeCurrency: {
-              name: 'Ether',
-              symbol: 'ETH',
-              decimals: 18
-            },
-            rpcUrls: [rpcURLs[chainId]],
-            blockExplorerUrls: [getExplorerUrl(chainId)]
-          }
-        ])
-      } catch (err: any) {
-        onError?.(err)
-        if (isUserRejectedError(err)) {
-          return
-        }
-        Sentry.captureException(err)
-      }
-
-      onSuccess?.()
-    } else {
-      onError?.(err)
-      Sentry.captureException(err)
-    }
-  }
+  Sentry.captureException(error)
 }

@@ -22,6 +22,7 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
+  handleSwitchNetworkError,
   isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -326,7 +327,9 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { switchNetwork } = useSwitchNetwork()
+  const { switchNetwork } = useSwitchNetwork({
+    onError: handleSwitchNetworkError
+  })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })

@@ -7,6 +7,7 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
+  handleSwitchNetworkError,
   isNetwork
 } from '../../util/networks'
 
@@ -16,7 +17,9 @@ export const NetworkSelectionContainer = ({
   children: React.ReactNode
 }) => {
   const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetwork()
+  const { switchNetwork } = useSwitchNetwork({
+    onError: handleSwitchNetworkError
+  })
   const supportedNetworks = isNetwork(chain?.id ?? 0).isTestnet
     ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
