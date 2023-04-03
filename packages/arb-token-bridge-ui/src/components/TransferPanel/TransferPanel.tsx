@@ -686,11 +686,6 @@ export function TransferPanel() {
         return undefined
       }
 
-      // ETH transfers using SC wallets not enabled yet
-      if (isSmartContractWallet && !selectedToken) {
-        return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-      }
-
       if (
         isDepositMode &&
         selectedToken &&
