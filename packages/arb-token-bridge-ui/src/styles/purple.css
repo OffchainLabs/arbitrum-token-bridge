@@ -126,17 +126,6 @@
 	display: none;
 }
 
-.arbitrum-classic-funStuff {
-    width: 185px;
-    height: 200px;
-    bottom: 0;
-    position: fixed;
-    cursor: pointer;
-    background-repeat: no-repeat;
-    background-image: url('https://media.tenor.com/nBt6RZkFJh8AAAAj/never-gonna.gif');
-	background-size: cover;
-    z-index: 99999999;
-}
 .arbitrum-classic-theme .transfer-panel-stats {
 	background: none !important;
 }
