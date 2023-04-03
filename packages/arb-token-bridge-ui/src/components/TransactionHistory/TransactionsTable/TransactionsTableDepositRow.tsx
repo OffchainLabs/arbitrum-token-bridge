@@ -259,7 +259,7 @@ export function TransactionsTableDepositRow({
               </span>
             }
           >
-            <span className="text-md flex flex-nowrap items-center gap-1 font-normal uppercase text-brick-dark">
+            <span className="text-md flex flex-nowrap items-center gap-1 font-normal uppercase text-brick-dark mx-2">
               <InformationCircleIcon className="h-4 w-4" /> EXPIRED
             </span>
           </Tooltip>

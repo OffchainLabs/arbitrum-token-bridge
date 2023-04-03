@@ -394,7 +394,7 @@ export function TokenImportDialog({
             </div>
           )}
 
-          <div className="mt-6 flex w-full justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-dark">
+          <div className="mt-6 flex w-full justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-dark mx-2">
             <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-dark" />
             <p>
               The bridge does not support tokens with non-standard behaviour in
