@@ -909,7 +909,7 @@ export function TransferPanel() {
                   backgroundPosition: 'center'
                 }
           }
-          className="flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
+          className="transfer-panel-stats flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-tr-xl lg:rounded-br-xl lg:bg-white lg:px-0 lg:pr-6"
         >
           <div className="flex flex-col">
             <div className="hidden lg:block">

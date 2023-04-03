@@ -1,9 +1,10 @@
+import { InformationCircleIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
+
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import useTwitter from '../../hooks/useTwitter'
-import { InformationCircleIcon } from '@heroicons/react/outline'
-import { twMerge } from 'tailwind-merge'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
