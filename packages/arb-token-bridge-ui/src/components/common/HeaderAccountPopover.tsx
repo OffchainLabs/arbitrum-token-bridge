@@ -8,7 +8,7 @@ import {
   LogoutIcon,
   DocumentTextIcon,
   DocumentDuplicateIcon,
-  ChartBarIcon
+  CogIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -99,7 +99,7 @@ export function HeaderAccountPopover() {
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const { openTransactionHistoryPanel, openArbitrumStats } =
+  const { openTransactionHistoryPanel, openPreferences } =
     useAppContextActions()
 
   const [showCopied, setShowCopied] = useState(false)
@@ -241,10 +241,6 @@ export function HeaderAccountPopover() {
             >
               <DocumentTextIcon className="h-4 w-4 text-white" />
               <span>Transactions</span>
-
-              <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
-                NEW
-              </span>
             </button>
 
             {/* Explorer button */}
@@ -258,13 +254,14 @@ export function HeaderAccountPopover() {
               <span>Explorer</span>
             </ExternalLink>
 
-            {/* Arbitrum stats button */}
-            <button
-              className={headerItemsClassName}
-              onClick={openArbitrumStats}
-            >
-              <ChartBarIcon className="h-4 w-4 text-white" />
-              <span>Stats for nerds</span>
+            {/* Preferences */}
+            <button className={headerItemsClassName} onClick={openPreferences}>
+              <CogIcon className="h-4 w-4 text-white" />
+              <span>Preferences</span>
+
+              <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
+                NEW
+              </span>
             </button>
 
             {/* Disconnect button */}

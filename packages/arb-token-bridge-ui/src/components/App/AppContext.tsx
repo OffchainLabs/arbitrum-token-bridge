@@ -16,6 +16,7 @@ type AppContextState = {
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
     isArbitrumStatsVisible: boolean
+    isPreferencesPanelVisible: boolean
   }
 }
 
@@ -25,7 +26,8 @@ const initialState: AppContextState = {
     isTransferPanelVisible: true,
     isTransferring: false,
     isTransactionHistoryPanelVisible: false,
-    isArbitrumStatsVisible: false
+    isArbitrumStatsVisible: false,
+    isPreferencesPanelVisible: false
   }
 }
 
@@ -39,6 +41,7 @@ type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
+  | { type: 'layout.set_preferences_panel_visible'; payload: boolean }
   | { type: 'layout.set_arbitrumstats_panel_visible'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
@@ -58,6 +61,15 @@ function reducer(state: AppContextState, action: Action) {
         layout: {
           ...state.layout,
           isTransactionHistoryPanelVisible: action.payload
+        }
+      }
+
+    case 'layout.set_preferences_panel_visible':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          isPreferencesPanelVisible: action.payload
         }
       }
 
@@ -133,6 +145,14 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
 
+  const openPreferences = () => {
+    dispatch({ type: 'layout.set_preferences_panel_visible', payload: true })
+  }
+
+  const closePreferences = () => {
+    dispatch({ type: 'layout.set_preferences_panel_visible', payload: false })
+  }
+
   const openArbitrumStats = () => {
     dispatch({ type: 'layout.set_arbitrumstats_panel_visible', payload: true })
   }
@@ -146,6 +166,8 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     setCurrentL1BlockNumber,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
+    openPreferences,
+    closePreferences,
     openArbitrumStats,
     closeArbitrumStats
   }
