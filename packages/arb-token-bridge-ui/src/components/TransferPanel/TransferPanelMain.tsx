@@ -855,14 +855,12 @@ export function TransferPanelMain({
         <button
           onClick={() => {
             // keep visible if destination address provided to make clear where funds go to
-            if (destinationAddress) {
+            // or for SC wallets as destination address is mandatory
+            if (destinationAddress || isSmartContractWallet) {
               setShowAdvancedSettings(true)
               return
             }
-            // keep visible for SC wallets as destination address is mandatory
-            if (!isSmartContractWallet) {
-              setShowAdvancedSettings(!showAdvancedSettings)
-            }
+            setShowAdvancedSettings(!showAdvancedSettings)
           }}
           className="flex flex-row items-center"
         >
