@@ -119,7 +119,6 @@ const AppContent = (): JSX.Element => {
         </NetworkSelectionContainer>
 
         <HeaderAccountPopover />
-        {/* TODO: when connected */}
       </HeaderContent>
 
       <PendingTransactionsUpdater />

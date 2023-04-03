@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import * as Sentry from '@sentry/react'
+import { useSigner } from 'wagmi'
+import { Signer } from '@ethersproject/abstract-signer'
+
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -14,8 +16,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const { l1 } = useNetworksAndSigners()
-  const { signer: l1Signer } = l1
+  const { data: signer } = useSigner()
   const [isClaiming, setIsClaiming] = useState(false)
 
   async function claim(tx: MergedTransaction) {
@@ -35,12 +36,12 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (tx.asset === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer
+          l1Signer: signer as Signer
         })
       } else {
         res = await arbTokenBridge.token.triggerOutbox({
           id: tx.uniqueId.toString(),
-          l1Signer
+          l1Signer: signer as Signer
         })
       }
     } catch (error: any) {

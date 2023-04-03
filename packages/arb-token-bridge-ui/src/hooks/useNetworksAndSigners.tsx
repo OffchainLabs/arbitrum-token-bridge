@@ -22,7 +22,6 @@ import {
   Web3Provider
 } from '@ethersproject/providers'
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
-import { Signer } from '@ethersproject/abstract-signer'
 import { useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
@@ -74,12 +73,10 @@ export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
   l1: {
     network: L1Network
-    signer: Signer
     provider: JsonRpcProvider
   }
   l2: {
     network: L2Network
-    signer: Signer
     provider: JsonRpcProvider
   }
   isConnectedToArbitrum: boolean
@@ -283,12 +280,10 @@ export function NetworksAndSignersProvider(
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
             network: l1Network,
-            signer: l1Provider.getSigner(address),
             provider: l1Provider
           },
           l2: {
             network: l2Network,
-            signer: l2Provider.getSigner(address),
             provider: l2Provider
           },
           isConnectedToArbitrum: false,
@@ -325,12 +320,10 @@ export function NetworksAndSignersProvider(
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
                 network: l1Network,
-                signer: l1Provider.getSigner(address),
                 provider: l1Provider
               },
               l2: {
                 network: l2Network,
-                signer: l2Provider.getSigner(address),
                 provider: l2Provider
               },
               isConnectedToArbitrum: true,
