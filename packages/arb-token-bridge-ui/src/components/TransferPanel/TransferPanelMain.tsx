@@ -500,7 +500,6 @@ export function TransferPanelMain({
             return
           }
         }
-        console.log('error')
         setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
       } catch (err) {
         console.error(err)
