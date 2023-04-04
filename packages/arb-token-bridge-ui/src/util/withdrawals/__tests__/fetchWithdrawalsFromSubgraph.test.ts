@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 // Covers both ETH and Token withdrawals from subgraph
 import { fetchWithdrawalsFromSubgraph } from '../fetchWithdrawalsFromSubgraph'
 import {
