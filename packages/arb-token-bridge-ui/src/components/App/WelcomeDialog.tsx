@@ -17,7 +17,7 @@ export function WelcomeDialog(props: UseDialogProps) {
           Welcome
         </HeadlessUIDialog.Title>
 
-        <div className="flex flex-col items-center space-y-8 md:flex-row md:space-y-0 md:space-x-8">
+        <div className="flex flex-col items-center space-y-8 md:flex-row md:space-x-8 md:space-y-0">
           <div>
             <Image
               src={ArbinautFlying}
