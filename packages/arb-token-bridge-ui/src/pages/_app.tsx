@@ -15,6 +15,7 @@ import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
+import '../styles/purple.css'
 
 if (
   process.env.NODE_ENV !== 'production' ||

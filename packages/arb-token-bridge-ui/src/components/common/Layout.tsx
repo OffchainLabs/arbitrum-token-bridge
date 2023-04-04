@@ -51,7 +51,7 @@ export function Layout(props: LayoutProps) {
   return (
     <div
       style={{ backgroundImage: 'url(/images/space.webp)' }}
-      className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
+      className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <DAOBanner />
       <Header />
