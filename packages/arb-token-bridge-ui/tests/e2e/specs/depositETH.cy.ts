@@ -12,20 +12,15 @@ describe('Deposit ETH', () => {
 
   const ETHAmountToDeposit = 0.0001
 
-  before(() => {
+  beforeEach(() => {
     cy.login({ networkType: 'L1' })
   })
-  after(() => {
+  afterEach(() => {
     cy.logout()
   })
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
-    cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
-    cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
-  })
-
-  it('should show L1 and L2 chains correctly AGAIN', () => {
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
   })

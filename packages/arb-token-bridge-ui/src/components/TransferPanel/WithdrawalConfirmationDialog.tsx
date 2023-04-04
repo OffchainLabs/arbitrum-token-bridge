@@ -198,6 +198,8 @@ export function WithdrawalConfirmationDialog(
                       <Image
                         src="/images/GoogleCalendar.svg"
                         alt="Google Calendar Icon"
+                        width={24}
+                        height={24}
                       />
                       <span>Add to Google Calendar</span>
                     </ExternalLink>
