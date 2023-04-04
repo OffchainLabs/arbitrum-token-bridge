@@ -17,4 +17,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          headerPattern: '^(?:(?=.{1,72}$)(\w*)(?:\(([\w$.\-*/ ]*)\))?: (.*))$'
+          subjectPattern: ^.{0,72}$
