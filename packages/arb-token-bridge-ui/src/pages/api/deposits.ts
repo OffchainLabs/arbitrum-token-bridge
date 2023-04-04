@@ -1,7 +1,3 @@
-/**
- * @jest-environment node
- */
-
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'

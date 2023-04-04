@@ -1,7 +1,3 @@
-/**
- * @jest-environment node
- */
-
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchWithdrawalsFromSubgraphResult = {
