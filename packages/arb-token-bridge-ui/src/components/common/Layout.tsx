@@ -5,6 +5,9 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { ExternalLink } from './ExternalLink'
+// import { Toast } from './atoms/Toast'
+
+import 'react-toastify/dist/ReactToastify.css'
 
 function Moon() {
   const { width } = useWindowSize()
@@ -48,7 +51,7 @@ export function Layout(props: LayoutProps) {
   return (
     <div
       style={{ backgroundImage: 'url(/images/space.webp)' }}
-      className="relative flex min-h-screen flex-col overflow-hidden bg-repeat"
+      className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <DAOBanner />
       <Header />
@@ -56,6 +59,8 @@ export function Layout(props: LayoutProps) {
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>
       </div>
+
+      {/* <Toast /> */}
 
       <Footer />
 

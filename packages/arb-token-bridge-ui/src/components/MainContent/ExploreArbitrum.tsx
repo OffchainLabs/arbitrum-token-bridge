@@ -1,13 +1,15 @@
+import { Tab } from '@headlessui/react'
+import { ExternalLinkIcon } from '@heroicons/react/outline'
+import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
-import { ExternalLinkIcon } from '@heroicons/react/outline'
-import { Tab } from '@headlessui/react'
 
-import { Button } from '../common/Button'
-import { TabButton } from '../common/Tab'
-import { ExternalLink } from '../common/ExternalLink'
+import ArbitrumOneLogo from '@/images/ArbitrumOneLogo.svg'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { Button } from '../common/Button'
+import { ExternalLink } from '../common/ExternalLink'
+import { TabButton } from '../common/Tab'
 
 import {
   ExploreArbitrumContent,
@@ -90,10 +92,10 @@ function ProjectCard({
       </div>
       <div className="flex flex-row justify-between space-x-2 rounded-bl-xl rounded-br-xl bg-[rgba(0,0,0,0.29)] p-4 backdrop-blur-sm backdrop-filter">
         <p className="self-center font-light text-white">{description}</p>
-        <img
-          src="/ArbitrumOneLogo.svg"
+        <Image
+          src={ArbitrumOneLogo}
           alt="Arbitrum logo"
-          className="h-8 self-end"
+          className="w-8 self-end"
         />
       </div>
     </ExternalLink>
@@ -158,7 +160,7 @@ export function ExploreArbitrum() {
   const nftProj = ExploreArbitrumContent.nfts[nftProjectIndex]!
 
   return (
-    <div className="w-full bg-white lg:rounded-xl">
+    <div className="explore-arbitrum-card w-full bg-white lg:rounded-xl">
       <div className="bg-blue-arbitrum p-6 lg:rounded-tl-xl lg:rounded-tr-xl">
         <p className="text-2xl text-white">For your enjoyment</p>
       </div>
