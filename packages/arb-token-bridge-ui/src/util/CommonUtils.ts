@@ -16,7 +16,4 @@ export function shortenTxHash(txHash: string) {
   )}`
 }
 
-export const isLocalOrE2E =
-  process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_IS_E2E_TEST
-
 export const isTestingEnvironment = !!window.Cypress
