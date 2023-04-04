@@ -57,9 +57,6 @@ describe('Deposit ETH', () => {
           .contains(/(\d*)(\.\d+)*( ETH)/)
           .should('be.visible')
       })
-  })
-
-  it('should deposit successfully', () => {
     cy.findByRole('button', {
       name: 'Move funds to Arbitrum'
     }).click({ scrollBehavior: false })
@@ -70,20 +67,20 @@ describe('Deposit ETH', () => {
         })} to Arbitrum`
       ).should('be.visible')
     })
-
-    context("bridge amount is lower than user's L1 ETH balance value", () => {
-      // TODO => test for bridge amount higher than user's L1 ETH balance
-    })
-
-    // TODO
-    context('user has some ETH and is on L2', () => {})
-    // TODO
-    context('user has some ETH and is on wrong chain', () => {})
-    // TODO
-    context('user has 0 ETH and is on L1', () => {})
-    // TODO
-    context('user has 0 ETH and is on L2', () => {})
-    // TODO
-    context('user has 0 ETH and is on wrong chain', () => {})
   })
+
+  context("bridge amount is lower than user's L1 ETH balance value", () => {
+    // TODO => test for bridge amount higher than user's L1 ETH balance
+  })
+
+  // TODO
+  context('user has some ETH and is on L2', () => {})
+  // TODO
+  context('user has some ETH and is on wrong chain', () => {})
+  // TODO
+  context('user has 0 ETH and is on L1', () => {})
+  // TODO
+  context('user has 0 ETH and is on L2', () => {})
+  // TODO
+  context('user has 0 ETH and is on wrong chain', () => {})
 })
