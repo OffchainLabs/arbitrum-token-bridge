@@ -128,8 +128,7 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          restore-keys: ${{ runner.os }}-buildx-
 
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
@@ -178,14 +177,14 @@ jobs:
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
-        if: always()
+        if: failure() || success()
         with:
           name: e2e-artifacts-docker
           path: |
             docker/videos
             docker/videos-ci
             docker/screenshots
-        continue-on-error: true
+        continue-on-error: false
 
   clean-up:
     name: "Clean Up"

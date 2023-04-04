@@ -12,15 +12,13 @@ import 'tippy.js/themes/light.css'
 
 import Package from '../../package.json'
 import { registerLocalNetwork } from '../util/networks'
+import { isLocalOrE2E } from 'src/util/CommonUtils'
 import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
 
-if (
-  process.env.NODE_ENV !== 'production' ||
-  process.env.NEXT_PUBLIC_IS_E2E_TEST
-) {
+if (isLocalOrE2E) {
   registerLocalNetwork()
 }
 

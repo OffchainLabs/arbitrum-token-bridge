@@ -30,6 +30,7 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { modalProviderOpts } from '../util/modelProviderOpts'
 import { addressIsSmartContract } from '../util/AddressUtils'
+import { isLocalOrE2E } from 'src/util/CommonUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 
@@ -151,10 +152,7 @@ function getProviderName(provider: any): ProviderName | null {
 }
 
 async function isBlocked(address: string): Promise<boolean> {
-  if (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_IS_E2E_TEST
-  ) {
+  if (isLocalOrE2E) {
     return false
   }
 
