@@ -117,6 +117,9 @@ describe('Import token', () => {
           .should('be.visible')
           .type('UNI', { scrollBehavior: false })
 
+        // flaky test can load data too slowly here
+        cy.wait(5000)
+
         cy.get('[data-cy="tokenSearchList"]')
           .first()
           .within(() => {
