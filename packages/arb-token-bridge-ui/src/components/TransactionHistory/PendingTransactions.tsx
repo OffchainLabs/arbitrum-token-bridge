@@ -77,7 +77,7 @@ export const PendingTransactions = ({
 
       {/* Error loading transactions */}
       {error && (
-        <span className="flex gap-x-2 text-sm text-red-400 mx-2">
+        <span className="flex gap-x-2 text-sm text-red-400">
           <InformationCircleIcon className="h-5 w-5" aria-hidden="true" />
           Failed to load pending transactions, please try refreshing the page
         </span>
@@ -85,7 +85,7 @@ export const PendingTransactions = ({
 
       {/* No pending transactions */}
       {!error && !loading && !transactions.length && (
-        <span className="flex gap-x-2 text-sm text-white opacity-40 mx-2">
+        <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
       )}

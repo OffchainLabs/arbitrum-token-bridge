@@ -143,7 +143,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           )}
 
           <div
-            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2 mx-2 ${
+            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2 ${
               displayAllowanceWarning && 'mt-4'
             }`}
           >

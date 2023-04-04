@@ -36,7 +36,7 @@ export const FailedTransactionsWarning = ({
   if (numFailedTransactions < 3) return null
 
   return (
-    <div className="flex items-center gap-1 rounded-md bg-orange p-2 text-base text-dark lg:flex-nowrap mx-2">
+    <div className="flex items-center gap-1 rounded-md bg-orange p-2 text-base text-dark lg:flex-nowrap">
       <InformationCircleIcon className="h-4 w-4" />
       In the past {daysPassedSinceFailure}{' '}
       {daysPassedSinceFailure < 2 ? 'day' : 'days'} you had
