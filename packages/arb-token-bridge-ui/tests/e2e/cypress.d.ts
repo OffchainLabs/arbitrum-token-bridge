@@ -19,6 +19,7 @@ declare global {
        * @example cy.login()
        */
       connectToApp(): typeof connectToApp
+      // eslint-disable-next-line no-unused-vars
       login(options: {
         networkType: NetworkType
         networkName?: string

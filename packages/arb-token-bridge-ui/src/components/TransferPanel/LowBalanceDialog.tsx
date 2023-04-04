@@ -10,7 +10,6 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
-import Ethereum from '../../../public/icons/ethereum.webp'
 
 import {
   LowBalanceDialogContent,
@@ -110,7 +109,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="flex w-full flex-col items-center space-y-2">
           <div className="flex flex-row space-x-2">
             <Image
-              src={Ethereum}
+              src="/icons/ethereum.webp"
               alt="Ethereum"
               className="h-8 w-auto opacity-50"
             />

@@ -6,9 +6,9 @@ import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
-import { registerLocalNetwork } from './src/util/networks'
 
 import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
+import { registerLocalNetwork } from './src/util/networks'
 
 export default defineConfig({
   userAgent: 'synpress',
