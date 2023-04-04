@@ -117,15 +117,15 @@ describe('Import token', () => {
           .should('be.visible')
           .type('UNI', { scrollBehavior: false })
 
+        // flaky test can load data too slowly here
+        cy.wait(5000)
+
         cy.get('[data-cy="tokenSearchList"]')
           .first()
           .within(() => {
             // cy.get() will only search for elements within .tokenSearchList,
             // not within the entire document, fixing the multiple Uniswap text issue
-            cy.findByText('Uniswap').trigger('click', {
-              scrollBehavior: false,
-              force: true
-            })
+            cy.findByText('Uniswap').click({ scrollBehavior: false })
           })
 
         // UNI token should be selected now and popup should be closed after selection
