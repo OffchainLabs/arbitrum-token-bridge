@@ -125,7 +125,10 @@ describe('Import token', () => {
           .within(() => {
             // cy.get() will only search for elements within .tokenSearchList,
             // not within the entire document, fixing the multiple Uniswap text issue
-            cy.findByText('Uniswap').click({ scrollBehavior: false })
+            cy.findByText('Uniswap').click({
+              scrollBehavior: false,
+              force: true
+            })
           })
 
         // UNI token should be selected now and popup should be closed after selection
