@@ -17,9 +17,14 @@
 	border-radius: 0px !important;
 }
 
+.arbitrum-classic-theme .radio-switch .rounded-full,
+.arbitrum-classic-theme .toggle-switch .rounded-full,
+.arbitrum-classic-theme .bridge-logos.rounded-full{
+	border-radius: 30px !important;
+}
+
 .arbitrum-classic-theme .text-2xl,
 .arbitrum-classic-theme .text-5xl,
-.arbitrum-classic-theme th,
 .arbitrum-classic-theme .side-panel .heading,
 .arbitrum-classic-theme .toggle-switch .heading {
 	font-family: 'Montserrat', sans-serif !important;
@@ -31,7 +36,6 @@
 .arbitrum-classic-theme .md\:shadow-\[0px_4px_12px_\#acacac\],
 .arbitrum-classic-theme .lg\:shadow-\[0px_4px_20px_rgba\(0\2c 0\2c 0\2c 0\.2\)\],
 .arbitrum-classic-theme .side-panel,
-.arbitrum-classic-theme .bg-blue-arbitrum,
 .arbitrum-classic-theme .header-menu-panel,
 .arbitrum-classic-theme .main-panel {
 	box-shadow: 5px 0px 10px 2px rgba(80, 70, 173, 0.7), -5px 0px 10px 2px rgba(80, 70, 173, 0.7)
@@ -51,6 +55,7 @@
 .arbitrum-classic-theme .bg-\[\#8d8e8e\],
 .arbitrum-classic-theme th,
 .arbitrum-classic-theme .ui-checked\:bg-blue-link[data-headlessui-state~="checked"],
+.arbitrum-classic-theme .bg-\[rgba\(162\2c 170\2c 240\2c 0\.5\)\],
 .arbitrum-classic-theme .radio-selected {
 	background-color: #8C89BC !important;
 	background-image: none !important;
@@ -112,7 +117,7 @@
 
 .arbitrum-classic-theme .main-panel {
 	background-color: white !important;
-	padding: 2rem 4rem;
+	padding: 2rem;
 }
 
 @media screen and (max-width: 768px) {
@@ -121,7 +126,8 @@
 	}
 }
 
-.arbitrum-classic-theme .main-panel .lg\:rounded-xl {
+.arbitrum-classic-theme .main-panel .lg\:rounded-xl,
+.arbitrum-classic-theme .pending-transactions {
 	box-shadow: none !important;
 }
 
@@ -146,4 +152,22 @@
 
 .arbitrum-classic-theme .ui-checked\:bg-blue-link[data-headlessui-state~="checked"] {
 	border: 1px solid #8C89BC !important;
+}
+
+.arbitrum-classic-theme button{
+	white-space: nowrap;
+}
+
+
+.arbitrum-classic-theme .pending-transactions {
+	background: #d9d9d9 !important;
+}
+
+.arbitrum-classic-theme .pending-transactions span,
+.arbitrum-classic-theme .pending-transactions a{
+	color: black;
+}
+
+.arbitrum-classic-theme .status-badge{
+	border: 1px solid gray !important;
 }

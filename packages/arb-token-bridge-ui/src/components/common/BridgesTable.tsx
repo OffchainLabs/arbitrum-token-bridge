@@ -108,7 +108,7 @@ export function BridgesTable(props: {
                   <Image
                     src={bridge.imageSrc}
                     alt={bridge.name}
-                    className="h-8 w-8 rounded-full object-contain"
+                    className="bridge-logos h-8 w-8 rounded-full object-contain"
                     width={32}
                     height={32}
                   />

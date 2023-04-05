@@ -19,7 +19,7 @@ export function StatusBadge({
 }: StatusBadgeProps): JSX.Element {
   return (
     <div
-      className={`w-max rounded-full px-3 py-1 text-sm ${variants[variant]} flex flex-nowrap items-center gap-1`}
+      className={`status-badge w-max rounded-full px-3 py-1 text-sm ${variants[variant]} flex flex-nowrap items-center gap-1`}
       {...props}
     >
       {children}
