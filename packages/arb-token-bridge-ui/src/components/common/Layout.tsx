@@ -28,7 +28,7 @@ function Moon() {
 
 export const DAOBanner = () => {
   return (
-    <div className="bg-gradient py-4 px-4 text-center text-white">
+    <div className="bg-gradient px-4 py-4 text-center text-white">
       <span>
         Arbitrum One and Arbitrum Nova are now under decentralized governance.
         Learn more about Arbitrum DAO{' '}
