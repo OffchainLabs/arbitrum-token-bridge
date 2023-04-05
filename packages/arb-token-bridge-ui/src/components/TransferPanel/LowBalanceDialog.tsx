@@ -62,8 +62,8 @@ function ExternalLinkCard({
             src={imageSrc}
             alt={title}
             className="mt-2 h-10 w-10 rounded-full"
-            width="40"
-            height="40"
+            width={40}
+            height={40}
           />
           <ExternalLinkIcon className="h-4 w-4 text-gray-6" />
         </div>
@@ -112,8 +112,8 @@ export function LowBalanceDialog(props: UseDialogProps) {
               src="/icons/ethereum.webp"
               alt="Ethereum"
               className="h-8 w-auto opacity-50"
-              width="40"
-              height="40"
+              width={32}
+              height={32}
             />
             <span className="text-2xl text-purple-ethereum">
               {getNetworkName(l1.network.chainID)} Balance

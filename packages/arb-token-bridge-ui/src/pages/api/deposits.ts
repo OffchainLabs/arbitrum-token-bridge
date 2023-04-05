@@ -1,9 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
-import {
-  FetchDepositsFromSubgraphResult,
-  getL1SubgraphClient
-} from 'token-bridge-sdk'
+import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
+import { getL1SubgraphClient } from '../../util/SubgraphUtils'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {

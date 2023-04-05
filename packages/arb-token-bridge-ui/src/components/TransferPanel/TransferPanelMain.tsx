@@ -119,7 +119,6 @@ function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        disabled={disabled}
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
       >
         <span>
@@ -141,7 +140,7 @@ function NetworkListbox({
               <Listbox.Option
                 value={option}
                 className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-blue-arbitrum hover:bg-[rgba(0,0,0,0.2)]',
+                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-[rgba(0,0,0,0.2)] hover:bg-blue-arbitrum',
                   getOptionClassName(index),
                   option.disabled ? 'pointer-events-none opacity-40' : ''
                 )}

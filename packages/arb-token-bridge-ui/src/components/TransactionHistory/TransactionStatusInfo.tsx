@@ -45,7 +45,7 @@ export const TransactionStatusInfo = ({
     return null
 
   return (
-    <div className="flex items-center gap-1 rounded-md bg-orange p-2 text-base text-brick-dark lg:flex-nowrap">
+    <div className="mx-2 flex items-center gap-1 rounded-md bg-orange p-2 text-base text-brick-dark lg:mx-0 lg:flex-nowrap">
       <div className="flex flex-wrap items-center gap-1">
         <InformationCircleIcon className="h-4 w-4" />
         You have
