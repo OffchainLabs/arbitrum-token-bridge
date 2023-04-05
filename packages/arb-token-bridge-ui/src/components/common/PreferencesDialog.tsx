@@ -1,5 +1,6 @@
 import { THEME_CONFIG, useTheme, classicThemeKey } from 'src/hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
 
@@ -24,28 +25,28 @@ export const PreferencesDialog = () => {
       isOpen={isPreferencesPanelVisible}
       heading="Preferences"
       onClose={closePreferences}
-      overridePanelClasses="lg:!w-[600px] lg:!min-w-[100px]" // custom width
+      overridePanelClasses="lg:!w-[600px] !min-w-[350px]" // custom width
     >
-      <div className="flex w-full flex-col items-center gap-4 text-white">
-        {/* Theme selection */}
+      <div className="flex w-full flex-col items-center gap-8 text-white">
+        {/* Theme selection radio */}
         <div className="w-full">
           <SectionTitle>Theme</SectionTitle>
           <div className="flex w-full flex-col gap-2">
-            {THEME_CONFIG.map(theme => (
-              <Switch
-                key={theme.id}
-                label={theme.label}
-                description={theme.description}
-                checked={theme.queryParam === selectedTheme}
-                onChange={() => setTheme(theme.queryParam)}
-              />
-            ))}
+            <Radio
+              orientation="vertical"
+              value={selectedTheme}
+              onChange={setTheme}
+              options={THEME_CONFIG.map(theme => ({
+                label: theme.label,
+                description: theme.description,
+                value: theme.queryParam,
+                id: theme.id
+              }))}
+            />
           </div>
         </div>
 
-        <div className="h-4" />
-
-        {/* Arbitrum stats */}
+        {/* Arbitrum stats toggle */}
         <div className="w-full">
           <SectionTitle>Stats</SectionTitle>
 

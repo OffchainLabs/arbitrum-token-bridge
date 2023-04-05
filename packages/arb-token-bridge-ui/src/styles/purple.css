@@ -50,7 +50,8 @@
 .arbitrum-classic-theme .bg-blue-arb-one,
 .arbitrum-classic-theme .bg-\[\#8d8e8e\],
 .arbitrum-classic-theme th,
-.arbitrum-classic-theme .ui-checked\:bg-blue-link[data-headlessui-state~="checked"] {
+.arbitrum-classic-theme .ui-checked\:bg-blue-link[data-headlessui-state~="checked"],
+.arbitrum-classic-theme .radio-selected {
 	background-color: #8C89BC !important;
 	background-image: none !important;
 }
@@ -138,7 +139,8 @@
 }
 
 .arbitrum-classic-theme .side-panel .heading,
-.arbitrum-classic-theme .toggle-switch {
+.arbitrum-classic-theme .toggle-switch,
+.arbitrum-classic-theme .radio-switch {
 	color:black !important
 }
 
