@@ -5,7 +5,6 @@ import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import Image from 'next/image'
-import ArbinautFlying from '@/images/arbinaut-flying.webp'
 
 export function WelcomeDialog(props: UseDialogProps) {
   const confirmButtonRef = useRef(null)
@@ -20,9 +19,11 @@ export function WelcomeDialog(props: UseDialogProps) {
         <div className="flex flex-col items-center space-y-8 md:flex-row md:space-y-0 md:space-x-8">
           <div>
             <Image
-              src={ArbinautFlying}
+              src="/images/arbinaut-flying.webp"
               alt="An Astronaut in an Arbitrum space suit"
               className="w-64"
+              width={256}
+              height={383}
             />
           </div>
           <div className="flex flex-col justify-between md:h-[384px] md:w-64">
