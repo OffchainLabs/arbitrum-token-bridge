@@ -64,6 +64,8 @@ export const NetworkSelectionContainer = ({
                     src={getNetworkLogo(Number(chainId))}
                     alt={`${getNetworkName(Number(chainId))} logo`}
                     className="h-full w-auto"
+                    width={24}
+                    height={24}
                   />
                 </div>
                 <span className="whitespace-nowrap">

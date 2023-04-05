@@ -6,6 +6,7 @@ import {
 } from '@heroicons/react/outline'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import dayjs from 'dayjs'
+import Image from 'next/image'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -23,8 +24,6 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
-import Image from 'next/image'
-import GoogleCalendarSVG from '@/images/GoogleCalendar.svg'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -197,8 +196,10 @@ export function WithdrawalConfirmationDialog(
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum py-2 px-4 text-blue-arbitrum"
                     >
                       <Image
-                        src={GoogleCalendarSVG}
+                        src="/images/GoogleCalendar.svg"
                         alt="Google Calendar Icon"
+                        width={24}
+                        height={24}
                       />
                       <span>Add to Google Calendar</span>
                     </ExternalLink>
