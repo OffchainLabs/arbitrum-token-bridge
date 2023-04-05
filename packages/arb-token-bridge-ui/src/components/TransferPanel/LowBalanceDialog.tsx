@@ -112,6 +112,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
               src="/icons/ethereum.webp"
               alt="Ethereum"
               className="h-8 w-auto opacity-50"
+              width={32}
             />
             <span className="text-2xl text-purple-ethereum">
               {getNetworkName(l1.network.chainID)} Balance
