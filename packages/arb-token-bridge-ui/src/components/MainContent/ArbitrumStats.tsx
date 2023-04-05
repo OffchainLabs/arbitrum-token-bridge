@@ -45,7 +45,7 @@ export const ArbitrumStats = () => {
   )
 
   return (
-    <div className="fixed right-0 bottom-0 z-[100] m-4 flex flex-col gap-2 whitespace-nowrap rounded-md bg-[#000000d1] p-4 font-[monospace] text-xs text-gray-8">
+    <div className="fixed bottom-0 right-0 z-[100] m-4 flex flex-col gap-2 whitespace-nowrap rounded-md bg-[#000000d1] p-4 font-[monospace] text-xs text-gray-8">
       <div className="section flex flex-col">
         <span className="text-md text-white">
           <span className="mr-1 animate-pulse text-lg text-[#008000]">

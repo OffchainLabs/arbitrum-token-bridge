@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import { getAPIBaseUrl } from 'token-bridge-sdk/dist/util'
+import { getAPIBaseUrl } from '../util'
 import { ArbStats } from '../pages/api/arbstats'
 
 export const useArbStats = () => {
