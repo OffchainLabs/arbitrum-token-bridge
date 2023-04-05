@@ -30,7 +30,7 @@ type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
 
 const FathomNetworkNames = ['Arbitrum One', 'Arbitrum Nova'] as const
 type AllNetworkNames = ReturnType<typeof getNetworkName>
-type FathomNetworkName = (typeof FathomNetworkNames)[number]
+type FathomNetworkName = typeof FathomNetworkNames[number]
 export const isFathomNetworkName = (
   networkName: AllNetworkNames
 ): networkName is FathomNetworkName => {

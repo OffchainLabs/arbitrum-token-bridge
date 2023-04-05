@@ -26,7 +26,7 @@ export enum NonCanonicalTokenAddresses {
 
 export type NonCanonicalTokenSupportedBridges<
   T extends NonCanonicalTokenAddresses
-> = `${(typeof NonCanonicalTokensBridgeInfo)[T]['supportedBridges'][number]}`
+> = `${typeof NonCanonicalTokensBridgeInfo[T]['supportedBridges'][number]}`
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
