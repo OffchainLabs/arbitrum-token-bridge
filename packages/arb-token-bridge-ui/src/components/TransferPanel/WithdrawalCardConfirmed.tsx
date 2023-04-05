@@ -55,7 +55,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
             loading={isClaiming}
             disabled={isClaimButtonDisabled}
             onClick={() => claim(tx)}
-            className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
+            className="absolute right-0 bottom-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
           >
             <div className="flex flex-nowrap whitespace-pre">
               Claim{' '}

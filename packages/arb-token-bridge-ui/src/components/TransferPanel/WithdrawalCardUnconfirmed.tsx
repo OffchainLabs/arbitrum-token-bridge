@@ -43,7 +43,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
         <Tooltip content={<span>Funds aren&apos;t ready to claim yet</span>}>
           <Button
             variant="primary"
-            className="absolute bottom-0 right-0 text-sm lg:my-4 lg:text-lg"
+            className="absolute right-0 bottom-0 text-sm lg:my-4 lg:text-lg"
             disabled
           >
             <div className="flex flex-nowrap whitespace-pre">

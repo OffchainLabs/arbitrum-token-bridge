@@ -113,7 +113,7 @@ export function HeaderMenuMobile(
             )}
           </Disclosure.Button>
           <Disclosure.Panel>
-            <ul className="space-y-4 pb-4 pt-4">
+            <ul className="space-y-4 pt-4 pb-4">
               {props.items.map((item, index) => (
                 <li
                   key={index}
