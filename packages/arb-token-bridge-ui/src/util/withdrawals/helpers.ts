@@ -7,11 +7,12 @@ import {
   NodeBlockDeadlineStatus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
-  WithdrawalInitiated
-} from '../hooks/arbTokenBridge.types'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
+  WithdrawalInitiated,
+  getL1TokenData,
+  getExecutedMessagesCacheKey
+} from 'token-bridge-sdk'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
-import { FetchWithdrawalsFromSubgraphResult } from 'withdrawals/fetchWithdrawalsFromSubgraph'
+import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
@@ -79,18 +80,6 @@ export async function getOutgoingMessageState(
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
   }
-}
-
-export function getExecutedMessagesCacheKey({
-  event,
-  l2ChainId
-}: {
-  event: L2ToL1EventResult
-  l2ChainId: number
-}) {
-  return isClassicL2ToL1TransactionEvent(event)
-    ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
-    : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
 export async function attachNodeBlockDeadlineToEvent(

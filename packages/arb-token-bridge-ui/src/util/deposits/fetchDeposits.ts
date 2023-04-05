@@ -1,13 +1,12 @@
 import { Provider } from '@ethersproject/providers'
-import { AssetType } from '../hooks/arbTokenBridge.types'
-import { Transaction } from '../hooks/useTransactions'
+import { AssetType, Transaction } from 'token-bridge-sdk'
 import { utils } from 'ethers'
-import { updateAdditionalDepositData } from '../util/deposits'
+import { updateAdditionalDepositData } from './helpers'
 import {
   fetchDepositsFromSubgraph,
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from '../util/subgraph'
+import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 
 export type FetchDepositParams = {
   walletAddress: string
