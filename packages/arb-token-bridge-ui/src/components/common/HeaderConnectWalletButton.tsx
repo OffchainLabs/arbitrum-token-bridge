@@ -20,7 +20,7 @@ function NetworkButtonAndConnectButton({
       <button
         onClick={openConnectModal}
         type="button"
-        className="arb-hover flex w-full flex-row items-center bg-lime-dark py-3 px-6 text-2xl font-medium text-white lg:rounded-full lg:bg-lime-dark lg:py-2 lg:px-4 lg:text-base lg:font-normal"
+        className="arb-hover flex w-full flex-row items-center bg-lime-dark px-6 py-3 text-2xl font-medium text-white lg:rounded-full lg:bg-lime-dark lg:px-4 lg:py-2 lg:text-base lg:font-normal"
       >
         <PlusCircleIcon className="mr-3 h-10 w-10 rounded-full bg-white stroke-lime-dark p-1 opacity-40" />
         Connect Wallet
@@ -33,7 +33,7 @@ function NetworkButtonAndConnectButton({
       <button
         onClick={openChainModal}
         type="button"
-        className="arb-hover flex w-full flex-row items-center bg-lime-dark bg-[#FF494A] py-3 px-6 text-2xl font-medium text-white lg:rounded-full lg:py-2 lg:px-4 lg:text-base lg:font-normal"
+        className="arb-hover flex w-full flex-row items-center bg-[#FF494A] bg-lime-dark px-6 py-3 text-2xl font-medium text-white lg:rounded-full lg:px-4 lg:py-2 lg:text-base lg:font-normal"
       >
         Wrong network
       </button>
