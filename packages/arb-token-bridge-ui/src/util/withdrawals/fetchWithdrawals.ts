@@ -1,16 +1,17 @@
 import { Provider } from '@ethersproject/providers'
-import { L2ToL1EventResultPlus } from '../hooks/arbTokenBridge.types'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
-import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
+
 import {
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
   mapWithdrawalToL2ToL1EventResult,
   updateAdditionalWithdrawalData
-} from '../util/withdrawals'
+} from './helpers'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from './../util/subgraph'
+import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
+import { L2ToL1EventResultPlus } from 'token-bridge-sdk'
+import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 
 export type FetchWithdrawalsParams = {
   walletAddress: string

@@ -85,11 +85,11 @@ const CEXNames = LowBalanceDialogContent.CentralizedExchanges.map(
   cex => cex.title
 )
 
-export type CEXName = typeof CEXNames[number]
+export type CEXName = (typeof CEXNames)[number]
 
 // Fiat On-ramp
 const FiatOnRampNames = LowBalanceDialogContent.FiatOnRamps.map(
   fiat => fiat.title
 )
 
-export type FiatOnRampName = typeof FiatOnRampNames[number]
+export type FiatOnRampName = (typeof FiatOnRampNames)[number]

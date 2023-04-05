@@ -128,6 +128,8 @@ export function DepositCardContainer({
           src={getNetworkLogo(l2Network.chainID)}
           className="absolute left-0 top-[1px] z-10 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:opacity-[60%]"
           alt="Deposit"
+          height={90}
+          width={90}
         />
         {/* Actual content */}
         <div className="z-20 w-full">{children}</div>

@@ -1,4 +1,4 @@
-import { getAPIBaseUrl, sanitizeQueryParams } from './../util'
+import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
