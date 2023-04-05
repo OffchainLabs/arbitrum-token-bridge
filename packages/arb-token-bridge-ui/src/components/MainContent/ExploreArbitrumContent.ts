@@ -231,7 +231,7 @@ export const ExploreArbitrumContent = {
 } as const
 
 export type ExploreArbitrumDeFiProjectName =
-  (typeof ExploreArbitrumContent.defi)[number]['name']
+  typeof ExploreArbitrumContent.defi[number]['name']
 
 export type ExploreArbitrumNFTProjectName =
-  (typeof ExploreArbitrumContent.nfts)[number]['name']
+  typeof ExploreArbitrumContent.nfts[number]['name']
