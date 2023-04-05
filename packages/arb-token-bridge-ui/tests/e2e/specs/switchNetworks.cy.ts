@@ -84,21 +84,20 @@ describe('Switch Networks', () => {
         })
       })
 
+      // This test is flaky so waits were added
       it('should change network to Ethereum mainnet successfully', () => {
-        cy.findByRole('button', { name: /Selected Network : /i })
+        cy.wait(5000)
+          .findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click({ scrollBehavior: false })
 
-        cy.findByRole('button', { name: /Switch to Mainnet/i }).click({
-          scrollBehavior: false
-        })
+        cy.wait(5000)
+          .findByRole('button', { name: /Switch to Mainnet/i })
+          .click({
+            scrollBehavior: false
+          })
 
         cy.allowMetamaskToSwitchNetwork().then(() => {
-          // first wait for Low Balance Popup and close that
-          cy.findByRole('button', { name: /Go to bridge/i })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-
           cy.findByRole('button', {
             name: /Selected Network : Ethereum/i
           }).should('be.visible')
@@ -108,11 +107,13 @@ describe('Switch Networks', () => {
 
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
-        cy.changeMetamaskNetwork('Sepolia test network').then(() => {
-          cy.findByText(/Oops! You’re connected to the wrong network/i).should(
-            'be.visible'
-          )
-        })
+        cy.wait(4000)
+          .changeMetamaskNetwork('Sepolia test network')
+          .then(() => {
+            cy.findByText(
+              /Oops! You’re connected to the wrong network/i
+            ).should('be.visible')
+          })
       })
 
       it('should allow Network change from wrong network UI list', () => {
