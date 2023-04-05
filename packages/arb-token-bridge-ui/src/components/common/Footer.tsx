@@ -1,7 +1,5 @@
 import Image from 'next/image'
 import { ExternalLink } from './ExternalLink'
-import Twitter from '../../../public/icons/twitter.webp'
-import Discord from '../../../public/icons/discord.webp'
 
 type FooterLink = {
   title: string
@@ -66,13 +64,23 @@ export function Footer() {
               href="https://discord.com/invite/ZpZuw7p"
               className="arb-hover h-8 w-8"
             >
-              <Image src={Discord} alt="Discord" />
+              <Image
+                src="/icons/twitter.webp"
+                alt="Discord"
+                width={32}
+                height={32}
+              />
             </ExternalLink>
             <ExternalLink
               href="https://twitter.com/OffchainLabs"
               className="arb-hover h-8 w-8"
             >
-              <Image src={Twitter} alt="Twitter" />
+              <Image
+                src="/icons/discord.webp"
+                alt="Twitter"
+                width={32}
+                height={32}
+              />
             </ExternalLink>
           </div>
         </div>
