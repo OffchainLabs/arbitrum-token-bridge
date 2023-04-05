@@ -35,7 +35,7 @@ export const EmptyTableRow = ({ children }: { children: React.ReactNode }) => {
       </tr>
       <tr>
         <td colSpan={5}>
-          <div className="flex h-16 items-center px-6 py-3">{children}</div>
+          <div className="flex h-16 items-center py-3 px-6">{children}</div>
         </td>
       </tr>
     </>

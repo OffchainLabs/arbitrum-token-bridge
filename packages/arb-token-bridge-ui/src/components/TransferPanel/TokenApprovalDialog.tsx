@@ -130,7 +130,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
         <div className="flex flex-col md:max-w-[490px]">
           {displayAllowanceWarning && (
-            <div className="flex flex-row items-center space-x-2 rounded-lg bg-yellow-50 px-2 py-3">
+            <div className="flex flex-row items-center space-x-2 rounded-lg bg-yellow-50 py-3 px-2">
               <ExclamationIcon className="h-8 w-8 text-yellow-400" />
               <span className="text-sm font-light">
                 You are seeing this dialog because the current allowance you
@@ -143,7 +143,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           )}
 
           <div
-            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan px-2 py-3 ${
+            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan py-3 px-2 ${
               displayAllowanceWarning && 'mt-4'
             }`}
           >

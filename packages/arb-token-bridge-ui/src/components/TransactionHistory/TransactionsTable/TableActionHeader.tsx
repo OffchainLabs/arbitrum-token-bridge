@@ -73,7 +73,7 @@ export const TableActionHeader = ({
 
   return (
     <div
-      className={`sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm ${
+      className={`sticky top-0 left-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm ${
         type !== 'deposits' && 'rounded-tl-lg'
       }`}
     >
