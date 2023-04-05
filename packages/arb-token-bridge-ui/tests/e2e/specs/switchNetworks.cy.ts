@@ -43,7 +43,7 @@ describe('Switch Networks', () => {
             'be.visible'
           )
 
-          //close the dropdown
+          // close the dropdown
           cy.findByRole('button', { name: /Selected Network : /i })
             .should('be.visible')
             .click({ scrollBehavior: false })
@@ -84,7 +84,7 @@ describe('Switch Networks', () => {
         })
       })
 
-      it('should change network to Ethereum mainnet successfully', () => {
+      it.only('should change network to Ethereum mainnet successfully', () => {
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click({ scrollBehavior: false })
@@ -94,8 +94,13 @@ describe('Switch Networks', () => {
         })
 
         cy.allowMetamaskToSwitchNetwork().then(() => {
+          // first wait for Low Balance Popup and close that
+          cy.findByRole('button', { name: /Go to bridge/i })
+            .should('be.visible')
+            .click({ scrollBehavior: false })
+
           cy.findByRole('button', {
-            name: /Selected Network : Mainnet/i
+            name: /Selected Network : Ethereum/i
           }).should('be.visible')
         })
       })

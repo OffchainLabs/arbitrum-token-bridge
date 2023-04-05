@@ -14,7 +14,17 @@ import { rpcURLs } from './util/networks'
 import { isTestingEnvironment } from './util/CommonUtils'
 
 const chainList = isTestingEnvironment
-  ? [local, arbitrumLocal, goerli]
+  ? [
+      local,
+      arbitrumLocal,
+      // mainnet, arb1, & arb nova are for network switch tests
+      mainnet,
+      arbitrum,
+      arbitrumNova,
+      // goerli & arb goerli are for tx history panel tests
+      goerli,
+      arbitrumGoerli
+    ]
   : [mainnet, arbitrum, arbitrumNova, goerli, arbitrumGoerli]
 
 const { chains, provider } = configureChains(chainList, [
