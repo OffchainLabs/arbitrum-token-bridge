@@ -84,7 +84,7 @@ describe('Switch Networks', () => {
         })
       })
 
-      it.only('should change network to Ethereum mainnet successfully', () => {
+      it('should change network to Ethereum mainnet successfully', () => {
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click({ scrollBehavior: false })
