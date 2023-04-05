@@ -80,6 +80,8 @@ export const TransactionHistory = ({
                 src={getNetworkLogo(l2.network.chainID)}
                 className="h-6 w-auto"
                 alt="Deposit"
+                height={24}
+                width={24}
               />
               {`To ${getNetworkName(l2.network.chainID)}`}
             </TabButton>
@@ -92,6 +94,8 @@ export const TransactionHistory = ({
                 src={getNetworkLogo(l1.network.chainID)}
                 className="h-6 w-auto"
                 alt="Withdraw"
+                width={24}
+                height={24}
               />
               {`To ${getNetworkName(l1.network.chainID)}`}
             </TabButton>
