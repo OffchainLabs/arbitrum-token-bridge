@@ -6,25 +6,31 @@ import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import { arbitrumNova } from './util/arbitrumNova'
+import {
+  localL1Network as local,
+  localL2Network as arbitrumLocal
+} from './util/localNetworksForTests'
 import { rpcURLs } from './util/networks'
+import { isTestingEnvironment } from './util/CommonUtils'
 
-const { chains, provider } = configureChains(
-  [mainnet, arbitrum, arbitrumNova, goerli, arbitrumGoerli],
-  [
-    publicProvider(),
-    jsonRpcProvider({
-      rpc: chain => {
-        if (!chain) {
-          return { http: '' }
-        }
-        return {
-          http: rpcURLs[chain.id]!
-        }
-      },
-      priority: 1
-    })
-  ]
-)
+const chainList = isTestingEnvironment
+  ? [local, arbitrumLocal, goerli]
+  : [mainnet, arbitrum, arbitrumNova, goerli, arbitrumGoerli]
+
+const { chains, provider } = configureChains(chainList, [
+  publicProvider(),
+  jsonRpcProvider({
+    rpc: chain => {
+      if (!chain) {
+        return { http: '' }
+      }
+      return {
+        http: rpcURLs[chain.id]!
+      }
+    },
+    priority: 1
+  })
+])
 
 const appInfo = {
   appName: 'Bridge to Arbitrum'

@@ -5,8 +5,6 @@ import {
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
-import { hexValue } from 'ethers/lib/utils'
-import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -186,19 +184,22 @@ const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
   l2Network: defaultL2Network
 }
 
+export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+  fallback: 'http://localhost:8545'
+})
+export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+  fallback: 'http://localhost:8547'
+})
+
 export function registerLocalNetwork(
   params: RegisterLocalNetworkParams = registerLocalNetworkDefaultParams
 ) {
   const { l1Network, l2Network } = params
 
-  const l1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
-    fallback: 'http://localhost:8545'
-  })
-  const l2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
-    fallback: 'http://localhost:8547'
-  })
+  const l1NetworkRpcUrl = localL1NetworkRpcUrl
+  const l2NetworkRpcUrl = localL2NetworkRpcUrl
 
   try {
     rpcURLs[l1Network.chainID] = l1NetworkRpcUrl
