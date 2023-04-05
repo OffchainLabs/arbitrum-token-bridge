@@ -1843,7 +1843,7 @@
     penpal "3.0.7"
     pocket-js-core "0.0.3"
 
-"@rainbow-me/rainbowkit@^0.12.5":
+"@rainbow-me/rainbowkit@^0.12.7":
   version "0.12.7"
   resolved "https://registry.yarnpkg.com/@rainbow-me/rainbowkit/-/rainbowkit-0.12.7.tgz#b1b0cc647119acc96caa68cdc705dfa5ea3bd6dc"
   integrity sha512-TQGcClMC2reO2uOkIM6MrsQjKQ2gSM3Wo9g3WeSD8OtOfMbrngq3GQpKpHoQqBmvJIysMSnYUu0r9HZELhbKJA==
@@ -17376,7 +17376,7 @@ w3c-xmlserializer@^4.0.0:
   dependencies:
     xml-name-validator "^4.0.0"
 
-wagmi@^0.12.8:
+wagmi@^0.12.9:
   version "0.12.9"
   resolved "https://registry.yarnpkg.com/wagmi/-/wagmi-0.12.9.tgz#ca91ab44287a19b257d83f4c3d806e3d37d48b27"
   integrity sha512-grEXM33sUeGSjWSVZGq/8+FCWUOUYrAdAxOqT3OB1C3JrfI7jBXFKQih8KGLrwC8tB4CwZWBYHMlEnZ4vOPu4w==
