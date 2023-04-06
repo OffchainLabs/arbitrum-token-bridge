@@ -109,10 +109,7 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = (
-  url: string = '/',
-  qs: { [s: string]: string } = {}
-) => {
+export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   cy.visit(url, {
     qs

@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
 
-import ArbitrumOneLogo from '@/images/ArbitrumOneLogo.svg'
 import { preloadImages } from '../../util'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { Button } from '../common/Button'
@@ -93,9 +92,11 @@ function ProjectCard({
       <div className="flex flex-row justify-between space-x-2 rounded-bl-xl rounded-br-xl bg-[rgba(0,0,0,0.29)] p-4 backdrop-blur-sm backdrop-filter">
         <p className="self-center font-light text-white">{description}</p>
         <Image
-          src={ArbitrumOneLogo}
+          src="/images/ArbitrumOneLogo.svg"
           alt="Arbitrum logo"
           className="w-8 self-end"
+          width={32}
+          height={32}
         />
       </div>
     </ExternalLink>

@@ -14,7 +14,6 @@ import {
   setupMetamaskNetwork,
   startWebApp
 } from './common'
-import { shortenAddress } from '../../src/util/CommonUtils'
 
 export function login({
   networkType,
