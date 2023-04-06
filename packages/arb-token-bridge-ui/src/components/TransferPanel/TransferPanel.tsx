@@ -30,7 +30,6 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
-import { LowBalanceDialog } from './LowBalanceDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, isFathomNetworkName } from '../../util/AnalyticsUtils'
@@ -148,11 +147,6 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
-  const [
-    lowBalanceDialogProps,
-    openLowBalanceDialog,
-    { didOpen: didOpenLowBalanceDialog }
-  ] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
@@ -213,11 +207,6 @@ export function TransferPanel() {
       return
     }
 
-    // This effect runs every time the balance updates, but we want to show the dialog only once
-    if (didOpenLowBalanceDialog) {
-      return
-    }
-
     // Don't open when the token import dialog should open
     if (typeof tokenFromSearchParams !== 'undefined') {
       return
@@ -226,21 +215,13 @@ export function TransferPanel() {
     if (!ethL1Balance) {
       return
     }
-
-    const isLowBalance = ethL1Balance.lte(utils.parseEther('0.005'))
-
-    if (isMainnet && isDepositMode && isLowBalance) {
-      openLowBalanceDialog()
-    }
   }, [
     ethL1Balance,
     account,
     isMainnet,
     isDepositMode,
     arbTokenBridge,
-    tokenFromSearchParams,
-    didOpenLowBalanceDialog,
-    openLowBalanceDialog
+    tokenFromSearchParams
   ])
 
   const l1Balance = useMemo(() => {
@@ -863,8 +844,6 @@ export function TransferPanel() {
         {...depositConfirmationDialogProps}
         amount={amount}
       />
-
-      <LowBalanceDialog {...lowBalanceDialogProps} />
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-x-6 lg:space-y-0 lg:rounded-xl">
         <TransferPanelMain
