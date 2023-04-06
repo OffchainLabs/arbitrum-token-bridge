@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { useLatest } from 'react-use'
-import { useGasPrice } from 'token-bridge-sdk'
+import { useGasPrice } from '../../token-bridge-sdk'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'

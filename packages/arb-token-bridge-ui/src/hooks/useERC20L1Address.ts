@@ -1,6 +1,6 @@
 import { Provider } from '@ethersproject/providers'
 import useSWRImmutable from 'swr/immutable'
-import { getL1ERC20Address } from 'token-bridge-sdk'
+import { getL1ERC20Address } from '../token-bridge-sdk'
 
 /**
  * Returns L1 address

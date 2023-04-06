@@ -1,5 +1,5 @@
 import useSWRImmutable from 'swr/immutable'
-import { Transaction } from 'token-bridge-sdk'
+import { Transaction } from '../token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -61,7 +61,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       depositPageParams.pageSize,
       depositPageParams.searchString
     ],
-    (
+    ([
       _,
       _walletAddress,
       _l1Provider,
@@ -69,7 +69,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _pageNumber,
       _pageSize,
       _searchString
-    ) =>
+    ]) =>
       fetchCompleteDepositData({
         walletAddress: _walletAddress,
         l1Provider: _l1Provider,

@@ -10,7 +10,7 @@ import {
 import { formatAmount } from '../../util/NumberUtils'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance } from '../../token-bridge-sdk'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {

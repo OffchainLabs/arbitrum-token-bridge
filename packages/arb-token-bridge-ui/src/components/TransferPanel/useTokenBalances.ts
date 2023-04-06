@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { BigNumber, constants } from 'ethers'
 
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance } from '../../token-bridge-sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 

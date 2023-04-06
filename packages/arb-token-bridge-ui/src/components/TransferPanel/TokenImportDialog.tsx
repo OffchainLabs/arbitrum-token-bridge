@@ -7,7 +7,7 @@ import Tippy from '@tippyjs/react'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
+import { ERC20BridgeToken, getL1TokenData } from '../../token-bridge-sdk'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'

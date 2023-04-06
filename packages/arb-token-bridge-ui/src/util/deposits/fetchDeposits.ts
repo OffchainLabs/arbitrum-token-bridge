@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers'
-import { AssetType, Transaction } from 'token-bridge-sdk'
+import { AssetType, Transaction } from '../../token-bridge-sdk'
 import { utils } from 'ethers'
 import { updateAdditionalDepositData } from './helpers'
 import {

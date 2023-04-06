@@ -10,7 +10,11 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
+import {
+  ERC20BridgeToken,
+  useBalance,
+  useGasPrice
+} from '../../token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 import { useWallet } from '@arbitrum/use-wallet'
 

@@ -7,7 +7,11 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 
-import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
+import {
+  ArbTokenBridge,
+  useBalance,
+  getL1TokenData
+} from '../../token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'

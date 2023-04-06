@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
+import { ERC20BridgeToken, useGasPrice } from '../../token-bridge-sdk'
 import { ExclamationIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'

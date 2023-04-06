@@ -1,7 +1,7 @@
 import {
   NodeBlockDeadlineStatus,
   NodeBlockDeadlineStatusTypes
-} from 'token-bridge-sdk'
+} from './../../token-bridge-sdk'
 
 import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'

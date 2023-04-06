@@ -13,7 +13,7 @@ import {
   NodeBlockDeadlineStatus,
   Transaction,
   TxnType
-} from 'token-bridge-sdk'
+} from '../../token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState } from '../../util'

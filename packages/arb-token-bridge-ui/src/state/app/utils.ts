@@ -7,7 +7,7 @@ import {
   OutgoingMessageState,
   getUniqueIdOrHashFromEvent,
   NodeBlockDeadlineStatusTypes
-} from 'token-bridge-sdk'
+} from '../../token-bridge-sdk'
 import { DepositStatus, MergedTransaction } from './state'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'

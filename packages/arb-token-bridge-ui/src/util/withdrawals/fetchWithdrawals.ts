@@ -10,7 +10,7 @@ import {
 } from './helpers'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
-import { L2ToL1EventResultPlus } from 'token-bridge-sdk'
+import { L2ToL1EventResultPlus } from '../../token-bridge-sdk'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 
 export type FetchWithdrawalsParams = {

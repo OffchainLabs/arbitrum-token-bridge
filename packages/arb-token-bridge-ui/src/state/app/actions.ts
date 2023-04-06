@@ -1,4 +1,4 @@
-import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
+import { ArbTokenBridge, ERC20BridgeToken } from '../../token-bridge-sdk'
 
 import { Context } from '..'
 import { ConnectionState } from '../../util'

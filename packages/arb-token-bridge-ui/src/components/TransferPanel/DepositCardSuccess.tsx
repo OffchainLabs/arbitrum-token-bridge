@@ -11,7 +11,7 @@ import {
 import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance } from '../../token-bridge-sdk'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {

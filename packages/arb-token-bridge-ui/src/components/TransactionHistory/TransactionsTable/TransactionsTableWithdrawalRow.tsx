@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { NodeBlockDeadlineStatusTypes } from 'token-bridge-sdk'
+import { NodeBlockDeadlineStatusTypes } from '../../../token-bridge-sdk'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'

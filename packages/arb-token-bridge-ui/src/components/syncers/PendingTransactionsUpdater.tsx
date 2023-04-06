@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { TransactionReceipt } from '@ethersproject/providers'
-import { Transaction, txnTypeToLayer } from 'token-bridge-sdk'
+import { Transaction, txnTypeToLayer } from '../../token-bridge-sdk'
 
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'

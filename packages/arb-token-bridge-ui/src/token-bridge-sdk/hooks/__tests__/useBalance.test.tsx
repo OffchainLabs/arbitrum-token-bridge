@@ -11,7 +11,7 @@ import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
 
 // Create a new cache for every test
-const Container = ({ children }: PropsWithChildren<{}>) => (
+const Container = ({ children }: PropsWithChildren<unknown>) => (
   <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>
 )
 
@@ -71,7 +71,7 @@ describe('useBalance', () => {
       process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL
     )
 
-    // @ts-ignore
+    // @ts-ignore : mock implementation of getNetwork
     jest.spyOn(provider, 'getNetwork').mockImplementation(() => ({
       chainId: undefined
     }))

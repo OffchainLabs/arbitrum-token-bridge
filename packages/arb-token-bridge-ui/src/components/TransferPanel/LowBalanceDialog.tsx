@@ -16,7 +16,7 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
-import { useBalance } from 'token-bridge-sdk'
+import { useBalance } from '../../token-bridge-sdk'
 import Image from 'next/image'
 
 type ExternalLinkCardDynamicProps =

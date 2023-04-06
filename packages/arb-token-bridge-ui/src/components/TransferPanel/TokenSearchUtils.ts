@@ -4,7 +4,7 @@ import {
   ERC20BridgeToken,
   L1TokenData,
   TokenType
-} from 'token-bridge-sdk'
+} from '../../token-bridge-sdk'
 
 import { useAppState } from '../../state'
 import { TokenListWithId, useTokenLists } from '../../tokenLists'

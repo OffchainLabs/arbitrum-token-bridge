@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ArbTokenBridge } from 'token-bridge-sdk'
+import { ArbTokenBridge } from '../token-bridge-sdk'
 
 const useTokenDecimals = (
   bridgeTokens: ArbTokenBridge['bridgeTokens'],

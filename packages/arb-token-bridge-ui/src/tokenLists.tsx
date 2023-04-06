@@ -2,7 +2,7 @@ import useSWRImmutable from 'swr/immutable'
 import { SWRResponse } from 'swr'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
-import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
+import { ArbTokenBridge, validateTokenList } from './token-bridge-sdk'
 import { ImageProps } from 'next/image'
 import ArbitrumLogo from '@/images/lists/arbitrum.svg'
 import UniswapLogo from '@/images/lists/uniswap.png'
@@ -194,7 +194,7 @@ export function useTokenLists(
 ): SWRResponse<TokenListWithId[]> {
   return useSWRImmutable(
     ['useTokenLists', forL2ChainId],
-    (_, _forL2ChainId) => fetchTokenLists(_forL2ChainId),
+    ([_, _forL2ChainId]) => fetchTokenLists(_forL2ChainId),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,

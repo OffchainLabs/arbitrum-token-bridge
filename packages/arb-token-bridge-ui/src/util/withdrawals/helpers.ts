@@ -10,7 +10,7 @@ import {
   WithdrawalInitiated,
   getL1TokenData,
   getExecutedMessagesCacheKey
-} from 'token-bridge-sdk'
+} from '../../token-bridge-sdk'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 
