@@ -41,11 +41,15 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     try {
       setIsRedeeming(true)
 
+      if (!signer) {
+        throw 'Signer is undefined'
+      }
+
       retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
         l1Provider,
-        l2Signer: signer as Signer
+        l2Signer: signer
       })
     } catch (error: any) {
       setIsRedeeming(false)

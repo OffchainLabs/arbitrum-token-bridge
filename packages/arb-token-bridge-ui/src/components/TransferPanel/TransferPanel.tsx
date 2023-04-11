@@ -344,8 +344,12 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
-    if (!isConnected || !signer) {
+    if (!isConnected) {
       return
+    }
+
+    if (!signer) {
+      throw 'Signer is undefined'
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -460,7 +464,7 @@ export function TransferPanel() {
 
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
-              l1Signer: signer as Signer
+              l1Signer: signer
             })
           }
 
@@ -484,7 +488,7 @@ export function TransferPanel() {
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l1Signer: signer as Signer,
+            l1Signer: signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -505,7 +509,7 @@ export function TransferPanel() {
 
           await latestEth.current.deposit({
             amount: amountRaw,
-            l1Signer: signer as Signer,
+            l1Signer: signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
@@ -577,9 +581,10 @@ export function TransferPanel() {
               if (isSmartContractWallet) {
                 showDelayedSCTxRequest()
               }
+
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
-                l2Signer: signer as Signer
+                l2Signer: signer
               })
             }
           }
@@ -597,7 +602,7 @@ export function TransferPanel() {
           await latestToken.current.withdraw({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l2Signer: signer as Signer,
+            l2Signer: signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -618,7 +623,7 @@ export function TransferPanel() {
 
           await latestEth.current.withdraw({
             amount: amountRaw,
-            l2Signer: signer as Signer,
+            l2Signer: signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
