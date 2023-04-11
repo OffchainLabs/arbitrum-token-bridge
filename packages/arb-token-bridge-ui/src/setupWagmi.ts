@@ -47,7 +47,7 @@ const appInfo = {
 }
 
 const { wallets } = getDefaultWallets({
-  appName: 'Bridge to Arbitrum',
+...appInfo,
   chains
 })
 
