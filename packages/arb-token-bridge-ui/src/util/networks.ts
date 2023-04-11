@@ -198,12 +198,9 @@ export function registerLocalNetwork(
 ) {
   const { l1Network, l2Network } = params
 
-  const l1NetworkRpcUrl = localL1NetworkRpcUrl
-  const l2NetworkRpcUrl = localL2NetworkRpcUrl
-
   try {
-    rpcURLs[l1Network.chainID] = l1NetworkRpcUrl
-    rpcURLs[l2Network.chainID] = l2NetworkRpcUrl
+    rpcURLs[l1Network.chainID] = localL1NetworkRpcUrl
+    rpcURLs[l2Network.chainID] = localL2NetworkRpcUrl
 
     chainIdToDefaultL2ChainId[l1Network.chainID] = [l2Network.chainID]
     chainIdToDefaultL2ChainId[l2Network.chainID] = [l2Network.chainID]

@@ -1,7 +1,7 @@
 import { Chain } from 'wagmi'
 import { ChainId, rpcURLs } from './networks'
 
-export const localL1Network = {
+export const localL1Network: Chain = {
   id: ChainId.Local,
   name: 'EthLocal',
   network: 'local',
@@ -35,4 +35,4 @@ export const localL2Network = {
   blockExplorers: {
     default: { name: 'Blockscout', url: '' }
   }
-} as Chain
+}
