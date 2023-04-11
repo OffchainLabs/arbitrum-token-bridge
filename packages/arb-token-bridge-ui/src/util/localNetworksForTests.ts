@@ -8,10 +8,10 @@ export const localL1Network: Chain = {
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
     default: {
-      http: [rpcURLs[ChainId.Local]]
+      http: [rpcURLs[ChainId.Local]!]
     },
     public: {
-      http: [rpcURLs[ChainId.Local]]
+      http: [rpcURLs[ChainId.Local]!]
     }
   },
   blockExplorers: {
@@ -26,10 +26,10 @@ export const localL2Network = {
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
     default: {
-      http: [rpcURLs[ChainId.ArbitrumLocal]]
+      http: [rpcURLs[ChainId.ArbitrumLocal]!]
     },
     public: {
-      http: [rpcURLs[ChainId.ArbitrumLocal]]
+      http: [rpcURLs[ChainId.ArbitrumLocal]!]
     }
   },
   blockExplorers: {

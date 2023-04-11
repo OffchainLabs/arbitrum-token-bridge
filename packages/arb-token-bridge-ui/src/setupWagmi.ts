@@ -47,7 +47,7 @@ const appInfo = {
 }
 
 const { wallets } = getDefaultWallets({
-...appInfo,
+  ...appInfo,
   chains
 })
 
