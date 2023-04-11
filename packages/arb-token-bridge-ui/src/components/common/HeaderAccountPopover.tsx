@@ -235,13 +235,15 @@ export function HeaderAccountPopover() {
             </button>
 
             {/* Explorer button */}
-            <ExternalLink
-              href={`${getExplorerUrl(chain?.id ?? -1)}/address/${address}`}
-              className={headerItemsClassName}
-            >
-              <ExternalLinkIcon className="h-4 w-4 text-white" />
-              <span>Explorer</span>
-            </ExternalLink>
+            {chain && (
+              <ExternalLink
+                href={`${getExplorerUrl(chain.id ?? -1)}/address/${address}`}
+                className={headerItemsClassName}
+              >
+                <ExternalLinkIcon className="h-4 w-4 text-white" />
+                <span>Explorer</span>
+              </ExternalLink>
+            )}
 
             {/* Theme toggle */}
             <button
