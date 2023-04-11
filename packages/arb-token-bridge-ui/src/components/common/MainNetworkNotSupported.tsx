@@ -5,7 +5,8 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  handleSwitchNetworkError
+  handleSwitchNetworkError,
+  handleSwitchNetworkOnMutate
 } from '../../util/networks'
 import { Button } from './Button'
 
@@ -30,6 +31,8 @@ export const MainNetworkNotSupported = ({
   supportedNetworks: ChainId[]
 }) => {
   const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
+    onMutate: () => handleSwitchNetworkOnMutate({ isTx: false }),
     onError: handleSwitchNetworkError
   })
 

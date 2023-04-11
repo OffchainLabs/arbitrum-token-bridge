@@ -6,6 +6,7 @@ import {
 import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 import * as Sentry from '@sentry/react'
+import { SwitchNetworkArgs } from '@wagmi/core'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { isUserRejectedError } from './isUserRejectedError'
@@ -305,29 +306,41 @@ export type SwitchChainProps = {
   onSwitchChainNotSupported?: (attemptedChainId: number) => void
 }
 
-const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
-  const { provider: innerProvider } = provider
-  return innerProvider.isMetaMask || innerProvider.isImToken
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {}
-
-const onSwitchChainNotSupportedDefault = (attemptedChainId: number) => {
+const onSwitchChainNotSupported = (attemptedChainId: number, isTx: boolean) => {
   const isDeposit = isNetwork(attemptedChainId).isEthereum
   const targetTxName = isDeposit ? 'deposit' : 'withdraw'
   const networkName = getNetworkName(attemptedChainId)
 
+  const message = isTx
+    ? `Please connect to ${networkName} on your wallet before signing your ${targetTxName} transaction.`
+    : `Please connect to ${networkName} on your wallet.`
+
   // TODO: show user a nice dialogue box instead of
   // eslint-disable-next-line no-alert
-  alert(
-    `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
-  )
+  alert(message)
 }
 
-export function handleSwitchNetworkError(error: any) {
+export function handleSwitchNetworkError(
+  error: any,
+  { chainId }: SwitchNetworkArgs,
+  context: unknown
+) {
+  const { isTx } = context as { isTx: boolean }
   if (isUserRejectedError(error)) {
     return
   }
+  if (error.name === 'SwitchChainNotSupportedError') {
+    onSwitchChainNotSupported(chainId, isTx)
+  }
   Sentry.captureException(error)
+}
+
+export function handleSwitchNetworkOnMutate({
+  isTx = false
+}: {
+  isTx: boolean
+}) {
+  return {
+    isTx
+  }
 }
