@@ -1,9 +1,17 @@
-// Connects to arbiscan and scrapes some nice info which we can show on our UI as well
+// Connects to Arbiscan and scrapes some nice info (currently only TPS) which we can show on our UI as well
 
 import axios from 'axios'
 import { load } from 'cheerio'
 
 import { NextApiRequest, NextApiResponse } from 'next'
+import { getExplorerUrl, isNetwork } from 'src/util/networks'
+
+// Extending the standard NextJs request with Deposit-params
+type NextApiRequestWithArbStatsParams = NextApiRequest & {
+  query: {
+    l2ChainId: string
+  }
+}
 
 export type ArbStats = {
   tps: string
@@ -17,11 +25,41 @@ type StatsResponse = {
 const emptyStats: ArbStats = { tps: '' }
 
 export default async function handler(
-  req: NextApiRequest,
+  req: NextApiRequestWithArbStatsParams,
   res: NextApiResponse<StatsResponse>
 ) {
   try {
-    const response = await axios.get('https://arbiscan.io')
+    // validate method
+    if (req.method !== 'GET') {
+      res
+        .status(400)
+        .send({ message: `invalid_method: ${req.method}`, data: emptyStats })
+      return
+    }
+
+    const { l2ChainId } = req.query
+
+    // validate the request parameters
+    const errorMessage = []
+    if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
+
+    if (errorMessage.length) {
+      res.status(400).json({
+        message: `incomplete request: ${errorMessage.join(', ')}`,
+        data: emptyStats
+      })
+    }
+
+    // if the network is not ArbOne or Nova, then we don't have the required stats on the explorer
+    // don't unnecessarily call fetch function. return empty stats.
+    if (isNetwork(Number(l2ChainId)).isTestnet) {
+      res.status(200).json({
+        data: emptyStats
+      })
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const response = await axios.get(getExplorerUrl(Number(l2ChainId))!)
 
     // Get the HTML code of the webpage
     const html = response.data
