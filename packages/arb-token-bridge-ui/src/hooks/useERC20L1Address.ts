@@ -6,7 +6,7 @@ import { getL1ERC20Address } from 'token-bridge-sdk'
  * Returns L1 address
  *
  * @param eitherL1OrL2Address string Token address (on L1 or L2)
- * @param provider Provider
+ * @param l2Provider L2 Provider
  * @returns
  */
 const useERC20L1Address = ({
