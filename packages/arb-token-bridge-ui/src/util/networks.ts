@@ -9,10 +9,6 @@ import { hexValue } from 'ethers/lib/utils'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
-import EthereumLogo from '@/images/EthereumLogo.webp'
-import ArbitrumOneLogo from '@/images/ArbitrumOneLogo.svg'
-import ArbitrumNovaLogo from '@/images/ArbitrumNovaLogo.svg'
-
 import { loadEnvironmentVariableWithFallback } from './index'
 import { isUserRejectedError } from './isUserRejectedError'
 
@@ -288,18 +284,18 @@ export function getNetworkLogo(chainId: number) {
     // L1 networks
     case ChainId.Mainnet:
     case ChainId.Goerli:
-      return EthereumLogo
+      return '/images/EthereumLogo.webp'
 
     // L2 networks
     case ChainId.ArbitrumOne:
     case ChainId.ArbitrumGoerli:
-      return ArbitrumOneLogo
+      return '/images/ArbitrumOneLogo.svg'
 
     case ChainId.ArbitrumNova:
-      return ArbitrumNovaLogo
+      return '/images/ArbitrumNovaLogo.svg'
 
     default:
-      return EthereumLogo
+      return '/images/EthereumLogo.webp'
   }
 }
 

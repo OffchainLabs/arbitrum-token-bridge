@@ -5,10 +5,11 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
-import { AssetType, getL1ToL2MessageDataFromL1TxHash } from 'token-bridge-sdk'
+import { AssetType } from 'token-bridge-sdk'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()

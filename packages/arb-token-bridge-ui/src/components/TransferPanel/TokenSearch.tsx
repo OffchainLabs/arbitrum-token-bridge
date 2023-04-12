@@ -382,8 +382,8 @@ function TokenListsPanel() {
                 src={tokenList.logoURI}
                 alt={`${tokenList.name} Logo`}
                 className="h-6 w-6 rounded-full"
-                width="24"
-                height="24"
+                width={24}
+                height={24}
               />
               <span className="text-sm text-gray-900">{tokenList.name}</span>
             </div>

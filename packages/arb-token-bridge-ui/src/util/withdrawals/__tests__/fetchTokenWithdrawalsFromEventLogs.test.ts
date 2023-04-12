@@ -1,9 +1,9 @@
+import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawalsFromEventLogs'
 import {
   getQueryCoveringClassicOnlyWithoutResults,
   getQueryCoveringClassicOnlyWithResults,
   getQueryCoveringClassicAndNitroWithResults
 } from './fetchWithdrawalsTestHelpers'
-import { fetchTokenWithdrawalsFromEventLogs } from '../fetchTokenWithdrawalsFromEventLogs'
 
 describe('fetchTokenWithdrawalsFromEventLogs', () => {
   it('fetches no token withdrawals from event logs pre-nitro', async () => {
