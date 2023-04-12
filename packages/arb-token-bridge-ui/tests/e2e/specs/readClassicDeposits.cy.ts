@@ -70,7 +70,6 @@ describe('Read classic deposit messages', () => {
       )
 
       cy.changeMetamaskNetwork('mainnet').then(() => {
-        cy.closeLowBalanceDialog()
         cy.openTransactionsPanel()
 
         const l1TxHash =
@@ -125,7 +124,6 @@ describe('Read classic deposit messages', () => {
       )
 
       cy.changeMetamaskNetwork('mainnet').then(() => {
-        cy.closeLowBalanceDialog()
         cy.openTransactionsPanel()
 
         const l1TxHash =

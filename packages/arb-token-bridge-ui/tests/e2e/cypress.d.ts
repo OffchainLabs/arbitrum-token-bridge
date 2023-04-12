@@ -5,8 +5,7 @@ import {
   logout,
   openTransactionsPanel,
   restoreAppState,
-  saveAppState,
-  closeLowBalanceDialog
+  saveAppState
 } from '../support/commands'
 import { NetworkType } from '../support/common'
 
@@ -29,7 +28,6 @@ declare global {
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
       openTransactionsPanel(): typeof openTransactionsPanel
-      closeLowBalanceDialog(): typeof closeLowBalanceDialog
     }
   }
 }
