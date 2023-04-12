@@ -48,13 +48,9 @@ Cypress.Commands.add(
     recurse(
       // the commands to repeat, and they yield the input element
       () =>
-        cy
-          .wrap(subject)
-          .clear({ scrollBehavior: false })
-          .type(text, {
-            scrollBehavior: false,
-            delay: Cypress.env('IS_CI') ? 300 : 100
-          }),
+        cy.wrap(subject).clear({ scrollBehavior: false }).type(text, {
+          scrollBehavior: false
+        }),
       // the predicate takes the output of the above commands
       // and returns a boolean. If it returns true, the recursion stops
       $input => $input.val() === text,
