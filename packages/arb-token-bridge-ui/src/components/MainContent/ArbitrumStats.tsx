@@ -7,17 +7,15 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
-  if (gasPrice < 20) return { activity: 'Low', className: 'text-[#008000]' }
-  if (gasPrice < 40)
-    return { activity: 'Average', className: 'text-orange-arbitrum-nova' }
-  return { activity: 'High', className: 'text-[#ff0000]' }
+  if (gasPrice < 20) return { className: 'text-[#008000]' }
+  if (gasPrice < 40) return { className: 'text-orange-arbitrum-nova' }
+  return { className: 'text-[#ff0000]' }
 }
 
 const getActivityThresholdL2 = (gasPrice: number) => {
-  if (gasPrice < 0.5) return { activity: 'Low', className: 'text-[#008000]' }
-  if (gasPrice < 2)
-    return { activity: 'Average', className: 'text-orange-arbitrum-nova' }
-  return { activity: 'High', className: 'text-[#ff0000]' }
+  if (gasPrice < 0.5) return { className: 'text-[#008000]' }
+  if (gasPrice < 2) return { className: 'text-orange-arbitrum-nova' }
+  return { className: 'text-[#ff0000]' }
 }
 
 export const ArbitrumStats = () => {
@@ -77,9 +75,9 @@ export const ArbitrumStats = () => {
         </span>
         <span>
           &gt; Gas price :{' '}
-          <span className={`${currentL1Activity.className}`}>
+          <span className={`${currentL2Activity.className}`}>
             {' '}
-            {Number(currentL1GasPriceGwei).toFixed(2)} Gwei{' '}
+            {Number(currentL2GasPriceGwei).toFixed(2)}
           </span>
         </span>
 
