@@ -4,15 +4,12 @@ const WITHDRAWAL_ROW_IDENTIFIER = /withdrawal-row-*/i
 const WITHDRAWAL_SEARCH_IDENTIFIER = /Search for a full or partial L2 tx ID/i
 
 describe('Transaction History', () => {
-  beforeEach(() => {
-    cy.login({ networkType: 'L1', networkName: 'goerli' })
-  })
-
-  afterEach(() => {
-    cy.logout()
-  })
-
   it('should successfuly open and use deposit history panel', () => {
+    cy.login({
+      networkType: 'L1',
+      networkName: 'goerli',
+      shouldChangeNetwork: true
+    })
     // Open tx history panel
     context('open transactions history panel', () => {
       cy.openTransactionsPanel()
@@ -86,6 +83,7 @@ describe('Transaction History', () => {
   })
 
   it('should successfuly open and use withdrawal history panel', () => {
+    cy.login({ networkType: 'L1', networkName: 'goerli' })
     // Open tx history panel
     context('open transactions history panel', () => {
       cy.openTransactionsPanel()

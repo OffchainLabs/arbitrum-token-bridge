@@ -10,16 +10,10 @@ const ERC20Amount = '0.000000000001'
 
 describe('Approve token', () => {
   // log in to metamask
-  beforeEach(() => {
-    cy.login({ networkType: 'L1' })
-  })
-  afterEach(() => {
-    // after each assertions is executed, logout and reset the account
-    cy.logout()
-  })
 
   context('Approve token', () => {
     it('should approve and deposit ERC-20 token', () => {
+      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
       importTokenThroughUI(ERC20TokenAddressL1)
 
       // Select the ERC-20 token

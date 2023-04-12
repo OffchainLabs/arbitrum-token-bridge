@@ -12,21 +12,11 @@ describe('Withdraw ERC20 Token', () => {
 
   const ERC20ToWithdraw = 0.0001
 
-  beforeEach(() => {
-    cy.login({ networkType: 'L2' })
-  })
-  afterEach(() => {
-    cy.logout()
-  })
-
   // Happy Path
   context('User is on L2 and imports ERC-20', () => {
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
-    })
 
     it('should show form fields correctly', () => {
+      cy.login({ networkType: 'L2', shouldChangeNetwork: true })
       cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 
@@ -42,6 +32,7 @@ describe('Withdraw ERC20 Token', () => {
     })
 
     it('should withdraw ERC-20 successfully', () => {
+      cy.login({ networkType: 'L2' })
       context('should add ERC-20 correctly', () => {
         // Click on the ETH dropdown (Select token button)
         cy.findByRole('button', { name: 'Select Token' })

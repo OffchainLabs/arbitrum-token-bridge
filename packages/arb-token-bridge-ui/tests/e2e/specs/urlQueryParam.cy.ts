@@ -17,9 +17,6 @@ describe('User enters site with query params on URL', () => {
     ).then(val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 }))))
     cy.login({ networkType: 'L1' })
   })
-  afterEach(() => {
-    cy.logout()
-  })
 
   it('should correctly populate amount input from query param', () => {
     // only ETH is supported for now so by default the following tests are assumed to be ETH

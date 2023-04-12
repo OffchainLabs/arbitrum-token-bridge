@@ -43,19 +43,14 @@ describe('Read classic deposit messages', () => {
     cy.restoreAppState()
   })
 
-  afterEach(() => {
-    cy.saveAppState()
-  })
-
   context('User has classic ETH deposit transaction', () => {
     // log in to metamask
     before(() => {
-      cy.login({ networkType: 'L1', networkName: 'mainnet' })
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
+      cy.login({
+        networkType: 'L1',
+        networkName: 'mainnet',
+        shouldChangeNetwork: true
+      })
     })
 
     it('can read successful ETH deposit', () => {
@@ -95,12 +90,10 @@ describe('Read classic deposit messages', () => {
   context('User has classic ERC-20 deposit transaction', () => {
     // log in to metamask
     before(() => {
-      cy.login({ networkType: 'L1', networkName: 'mainnet' })
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
+      cy.login({
+        networkType: 'L1',
+        networkName: 'mainnet'
+      })
     })
 
     it('can read successful ERC-20 deposit', () => {

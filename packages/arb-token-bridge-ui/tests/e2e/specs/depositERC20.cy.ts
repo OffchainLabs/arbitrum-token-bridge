@@ -16,13 +16,6 @@ describe('Deposit ERC20 Token', () => {
   // because it is cleared between each `it` cypress test
   const ERC20AmountToSend = 0.0001
 
-  beforeEach(() => {
-    cy.login({ networkType: 'L1' })
-  })
-  afterEach(() => {
-    cy.logout()
-  })
-
   // Happy Path
   context('User has some ERC20 and is on L1', () => {
     let l1ERC20bal: string
@@ -42,6 +35,7 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
+      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: 'Select Token' })
@@ -50,6 +44,7 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should bridge ERC-20 successfully', () => {
+      cy.login({ networkType: 'L1' })
       context('should add a new token', () => {
         // Click on the ETH dropdown (Select token button)
         cy.findByRole('button', { name: 'Select Token' })

@@ -56,7 +56,7 @@ export const importTokenThroughUI = (address: string) => {
   return cy
     .findByPlaceholderText(/Search by token name/i)
     .should('be.visible')
-    .type(address, { scrollBehavior: false })
+    .typeRecursively(address)
     .then(() => {
       // Click on the Add new token button
       cy.findByRole('button', { name: 'Add New Token' })
@@ -113,7 +113,11 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
+export const startWebApp = (
+  url = '/',
+  qs: { [s: string]: string } = {},
+  isWalletConnected: boolean
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
   cy.clearLocalStorage('arbitrum:bridge:tos-v1')
@@ -121,5 +125,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
     qs
   })
   cy.connectToApp()
-  acceptMetamaskAccess()
+  if (!isWalletConnected) {
+    acceptMetamaskAccess()
+  }
 }

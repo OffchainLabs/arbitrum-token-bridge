@@ -15,11 +15,6 @@ describe('Import token', () => {
   // need low balance check to bypass a mainnet popup
   let isLowBalanceMainnet: boolean
 
-  afterEach(() => {
-    // after all assertions are executed, logout and reset the account
-    cy.logout()
-  })
-
   context('User import token through UI', () => {
     before(() => {
       getInitialETHBalance(
@@ -80,7 +75,11 @@ describe('Import token', () => {
     context('User uses token symbol', () => {
       it('should import token', () => {
         // we don't have the token list locally so we test on mainnet
-        cy.login({ networkType: 'L1', networkName: 'mainnet' })
+        cy.login({
+          networkType: 'L1',
+          networkName: 'mainnet',
+          shouldChangeNetwork: true
+        })
 
         // click low balance pop up if shown
         if (isLowBalanceMainnet) {
@@ -115,7 +114,7 @@ describe('Import token', () => {
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .type('UNI', { scrollBehavior: false })
+          .typeRecursively('UNI')
 
         // flaky test can load data too slowly here
         cy.wait(5000)
@@ -145,7 +144,7 @@ describe('Import token', () => {
           ERC20TokenAddressL1.length - 1
         )
 
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'L1', shouldChangeNetwork: true })
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')

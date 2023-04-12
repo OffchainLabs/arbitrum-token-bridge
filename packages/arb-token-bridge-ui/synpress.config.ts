@@ -133,6 +133,7 @@ export default defineConfig({
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+      config.env.IS_CI = process.env.NEXT_PUBLIC_IS_E2E_TEST
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1Erc20Token.address
       config.env.ERC20_TOKEN_ADDRESS_L2 = await erc20Bridger.getL2ERC20Address(
         l1Erc20Token.address,

@@ -3,41 +3,38 @@
  */
 
 describe('Switch Networks', () => {
-  beforeEach(() => {
-    cy.login({ networkType: 'L1' })
-  })
-  afterEach(() => {
-    cy.logout()
-  })
-
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
+      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
     })
 
     context('Test Networks dropdown in Nav bar', () => {
       it('should show and open the networks dropdown', () => {
-        // to view the correct list of networks (and not testnets), first navigate to mainnet
-        cy.changeMetamaskNetwork('mainnet').then(() => {
-          // first wait for Low Balance Popup and close that
-          cy.findByRole('button', { name: /Go to bridge/i })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-
-          cy.findByRole('button', { name: /Selected Network : /i })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-
-          cy.findByRole('button', { name: /Switch to Arbitrum One/i }).should(
-            'be.visible'
-          )
-
-          //close the dropdown
-          cy.findByRole('button', { name: /Selected Network : /i })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
+        cy.login({
+          networkType: 'L1',
+          networkName: 'mainnet',
+          shouldChangeNetwork: true
         })
+        // to view the correct list of networks (and not testnets), first navigate to mainnet
+        // first wait for Low Balance Popup and close that
+        cy.findByRole('button', { name: /Go to bridge/i })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+
+        cy.findByRole('button', { name: /Selected Network : /i })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+
+        cy.findByRole('button', { name: /Switch to Arbitrum One/i }).should(
+          'be.visible'
+        )
+
+        //close the dropdown
+        cy.findByRole('button', { name: /Selected Network : /i })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
       })
 
       // TODO: fix Arb1 network switch:
@@ -59,6 +56,7 @@ describe('Switch Networks', () => {
       // })
 
       it('should change network to Arbitrum Nova successfully', () => {
+        cy.login({ networkType: 'L1', shouldChangeNetwork: true })
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click({ scrollBehavior: false })
@@ -75,6 +73,7 @@ describe('Switch Networks', () => {
       })
 
       it('should change network to Ethereum mainnet successfully', () => {
+        cy.login({ networkType: 'L1' })
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click({ scrollBehavior: false })
@@ -93,7 +92,11 @@ describe('Switch Networks', () => {
 
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
-        cy.changeMetamaskNetwork('Sepolia test network')
+        cy.login({
+          networkType: 'L1',
+          networkName: 'Sepolia test network',
+          shouldChangeNetwork: true
+        })
         cy.findByText(/Oops! You’re connected to the wrong network/i).should(
           'be.visible'
         )

@@ -20,13 +20,11 @@ describe('Withdraw ETH', () => {
 
   // Happy Path
   context('user has some ETH and is on L2', () => {
-    afterEach(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
-    })
-
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2', addNewNetwork: true })
+      cy.login({
+        networkType: 'L2',
+        addNewNetwork: true
+      })
       cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 

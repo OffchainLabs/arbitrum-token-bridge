@@ -15,9 +15,6 @@ describe('Deposit ETH', () => {
   beforeEach(() => {
     cy.login({ networkType: 'L1' })
   })
-  afterEach(() => {
-    cy.logout()
-  })
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {

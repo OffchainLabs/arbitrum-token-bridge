@@ -15,18 +15,30 @@ export function login({
   networkType,
   networkName,
   addNewNetwork = false,
+  shouldChangeNetwork = false,
+  isWalletConnected = true,
   url,
   query
 }: {
   networkType: NetworkType
   networkName?: string
   addNewNetwork?: boolean
+  // re shouldChangeNetwork: synpress fails if we are trying to change to network we are already connected to
+  // TODO: this should be set up by checking cy.getNetwork() but it throws error inside the synpress library
+  // 3.5 might be fixing it, if not raise an issue
+  shouldChangeNetwork?: boolean
+  // to confirm metamask popup during the initial login
+  isWalletConnected?: boolean
   url?: string
   query?: { [s: string]: string }
 }) {
-  setupMetamaskNetwork(networkType, networkName, addNewNetwork).then(() => {
-    startWebApp(url, query)
-  })
+  if (shouldChangeNetwork || addNewNetwork) {
+    setupMetamaskNetwork(networkType, networkName, addNewNetwork).then(() => {
+      startWebApp(url, query, isWalletConnected)
+    })
+  } else {
+    startWebApp(url, query, isWalletConnected)
+  }
 }
 
 Cypress.Commands.add(
@@ -39,7 +51,10 @@ Cypress.Commands.add(
         cy
           .wrap(subject)
           .clear({ scrollBehavior: false })
-          .type(text, { scrollBehavior: false }),
+          .type(text, {
+            scrollBehavior: false,
+            delay: Cypress.env('IS_CI') ? 300 : 100
+          }),
       // the predicate takes the output of the above commands
       // and returns a boolean. If it returns true, the recursion stops
       $input => $input.val() === text,

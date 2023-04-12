@@ -21,10 +21,6 @@ describe('Login Account', () => {
     )
   })
 
-  after(() => {
-    cy.logout()
-  })
-
   it('should show connect wallet if not logged in', () => {
     cy.visit('/')
     cy.findByText('Agree to terms').should('be.visible').click()
@@ -37,7 +33,10 @@ describe('Login Account', () => {
       networkType: 'L1',
       // we add a new network if RPC is different to already set up MetaMask local network
       // this is the case for CI where we use a different RPC url
-      addNewNetwork: Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl
+      addNewNetwork: Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl,
+      shouldChangeNetwork: true,
+      // first connection, need to confirm metamask popup
+      isWalletConnected: false
     })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
     cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')

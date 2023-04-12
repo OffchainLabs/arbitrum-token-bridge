@@ -24,6 +24,8 @@ declare global {
         networkType: NetworkType
         networkName?: string
         addNewNetwork?: boolean
+        shouldChangeNetwork?: boolean
+        isWalletConnected?: boolean
         url?: string
         query?: { [s: string]: string }
       }): typeof login
