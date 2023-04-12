@@ -99,7 +99,7 @@ describe('Switch Networks', () => {
 
         cy.allowMetamaskToSwitchNetwork().then(() => {
           cy.findByRole('button', {
-            name: /Selected Network : Ethereum/i
+            name: /Selected Network : Mainnet/i
           }).should('be.visible')
         })
       })
