@@ -30,11 +30,6 @@ describe('Switch Networks', () => {
       it('should show and open the networks dropdown', () => {
         // to view the correct list of networks (and not testnets), first navigate to mainnet
         cy.changeMetamaskNetwork('mainnet').then(() => {
-          // first wait for Low Balance Popup and close that
-          cy.findByRole('button', { name: /Go to bridge/i })
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-
           cy.findByRole('button', { name: /Selected Network : /i })
             .should('be.visible')
             .click({ scrollBehavior: false })

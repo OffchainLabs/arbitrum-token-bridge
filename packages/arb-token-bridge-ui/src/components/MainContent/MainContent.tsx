@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { ExploreArbitrum } from './ExploreArbitrum'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
@@ -100,16 +99,6 @@ export function MainContent() {
           >
             <TransferPanel />
           </motion.div>
-        </AnimatePresence>
-
-        <AnimatePresence>
-          <>
-            <motion.div key="explore-arbitrum" {...motionDivProps}>
-              <ExploreArbitrum />
-            </motion.div>
-
-            <div className="h-[25vh]" />
-          </>
         </AnimatePresence>
       </div>
       <SidePanel
