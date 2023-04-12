@@ -323,7 +323,7 @@ const onSwitchChainNotSupported = (attemptedChainId: number, isTx: boolean) => {
 export function handleSwitchNetworkError(
   error: any,
   { chainId }: SwitchNetworkArgs,
-  context: unknown
+  context: unknown = { isTx: false }
 ) {
   const { isTx } = context as { isTx: boolean }
   if (isUserRejectedError(error)) {

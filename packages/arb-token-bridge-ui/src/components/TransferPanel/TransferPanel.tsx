@@ -6,14 +6,16 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
-import { Signer } from '@ethersproject/abstract-signer'
-
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { JsonRpcProvider } from '@ethersproject/providers'
+
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import {
   getNetworkName,
   handleSwitchNetworkError,
+  handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -26,8 +28,6 @@ import { TokenImportDialog } from './TokenImportDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
@@ -120,6 +120,7 @@ export function TransferPanel() {
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
   const { switchNetwork } = useSwitchNetwork({
+    onMutate: () => handleSwitchNetworkOnMutate({ isTx: true }),
     onError: handleSwitchNetworkError
   })
   const { data: signer } = useSigner()

@@ -23,6 +23,7 @@ import {
   getNetworkLogo,
   getNetworkName,
   handleSwitchNetworkError,
+  handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -329,6 +330,7 @@ export function TransferPanelMain({
     useNetworksAndSigners()
 
   const { switchNetwork } = useSwitchNetwork({
+    onMutate: () => handleSwitchNetworkOnMutate({ isTx: true }),
     onError: handleSwitchNetworkError
   })
 
