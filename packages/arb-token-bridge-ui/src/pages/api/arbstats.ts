@@ -50,16 +50,19 @@ export default async function handler(
       })
     }
 
-    // if the network is not ArbOne or Nova, then we don't have the required stats on the explorer
+    // url from where we'll fetch stats
+    const explorerUrl = getExplorerUrl(Number(l2ChainId))
+
+    // if the network is not ArbOne or Nova, or no explorer URL then we don't have the required stats on the explorer
     // don't unnecessarily call fetch function. return empty stats.
-    if (isNetwork(Number(l2ChainId)).isTestnet) {
+    if (isNetwork(Number(l2ChainId)).isTestnet || !explorerUrl) {
       res.status(200).json({
         data: emptyStats
       })
+      return
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const response = await axios.get(getExplorerUrl(Number(l2ChainId))!)
+    const response = await axios.get(explorerUrl)
 
     // Get the HTML code of the webpage
     const html = response.data

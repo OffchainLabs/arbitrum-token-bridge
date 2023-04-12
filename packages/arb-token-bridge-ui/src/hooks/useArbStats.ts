@@ -11,7 +11,7 @@ export const useArbStats = () => {
   } = useNetworksAndSigners()
 
   return useSWR(
-    'arbstats',
+    ['arbstats', l2ChainId],
     async () => {
       const response = await fetch(
         `${getAPIBaseUrl()}/api/arbstats?l2ChainId=${l2ChainId}`,

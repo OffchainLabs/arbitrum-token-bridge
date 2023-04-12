@@ -7,7 +7,6 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
-  if (!gasPrice) gasPrice = 0
   if (gasPrice < 20) return { activity: 'Low', className: 'text-[#008000]' }
   if (gasPrice < 40)
     return { activity: 'Average', className: 'text-orange-arbitrum-nova' }
@@ -15,7 +14,6 @@ const getActivityThresholdL1 = (gasPrice: number) => {
 }
 
 const getActivityThresholdL2 = (gasPrice: number) => {
-  if (!gasPrice) gasPrice = 0
   if (gasPrice < 0.5) return { activity: 'Low', className: 'text-[#008000]' }
   if (gasPrice < 2)
     return { activity: 'Average', className: 'text-orange-arbitrum-nova' }
