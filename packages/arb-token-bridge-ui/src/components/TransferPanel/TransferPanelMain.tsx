@@ -872,27 +872,25 @@ export function TransferPanelMain({
           )}
         </button>
         {showAdvancedSettings && (
-          <>
-            <div className="mt-2">
-              <span className="text-md text-gray-10">
-                Destination Address
-                {!isSmartContractWallet ? ' (optional)' : ''}
-              </span>
-              <input
-                className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
-                placeholder="Enter destination address"
-                defaultValue={destinationAddress}
-                spellCheck={false}
-                onChange={e => {
-                  if (!e.target.value) {
-                    setDestinationAddress(undefined)
-                  } else {
-                    setDestinationAddress(e.target.value.toLowerCase())
-                  }
-                }}
-              />
-            </div>
-          </>
+          <div className="mt-2">
+            <span className="text-md text-gray-10">
+              Destination Address
+              {!isSmartContractWallet ? ' (optional)' : ''}
+            </span>
+            <input
+              className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+              placeholder="Enter destination address"
+              defaultValue={destinationAddress}
+              spellCheck={false}
+              onChange={e => {
+                if (!e.target.value) {
+                  setDestinationAddress(undefined)
+                } else {
+                  setDestinationAddress(e.target.value.toLowerCase())
+                }
+              }}
+            />
+          </div>
         )}
         {advancedSettingsError && (
           <span className="text-xs text-red-400">{advancedSettingsError}</span>
