@@ -51,9 +51,9 @@ export const PreferencesDialog = () => {
           <SectionTitle>Stats</SectionTitle>
 
           <Switch
-            label="Show Arbitrum Stats"
+            label="Show Network Stats"
             description="Show live, nerdy stats about Ethereum and Arbitrum chains, like
-        block number, current gas price, and network activity."
+        block number and current gas price."
             checked={isArbitrumStatsVisible}
             onChange={
               isArbitrumStatsVisible ? closeArbitrumStats : openArbitrumStats

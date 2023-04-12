@@ -56,12 +56,10 @@ export const ArbitrumStats = () => {
           {currentL1BlockNumber ? currentL1BlockNumber : 'Loading...'}
         </span>
         <span>
-          &gt; Gas price : {Number(currentL1GasPriceGwei).toFixed(2)} Gwei
-        </span>
-        <span>
-          &gt; Gas cost :{' '}
+          &gt; Gas price :{' '}
           <span className={`${currentL1Activity.className}`}>
-            {currentL1Activity.activity}
+            {' '}
+            {Number(currentL1GasPriceGwei).toFixed(2)} Gwei{' '}
           </span>
         </span>
       </div>
@@ -78,12 +76,10 @@ export const ArbitrumStats = () => {
           {currentL2BlockNumber ? currentL2BlockNumber : 'Loading...'}
         </span>
         <span>
-          &gt; Gas price : {Number(currentL2GasPriceGwei).toFixed(2)} Gwei
-        </span>
-        <span>
-          &gt; Gas cost :{' '}
-          <span className={`${currentL2Activity.className}`}>
-            {currentL2Activity.activity}
+          &gt; Gas price :{' '}
+          <span className={`${currentL1Activity.className}`}>
+            {' '}
+            {Number(currentL1GasPriceGwei).toFixed(2)} Gwei{' '}
           </span>
         </span>
 
