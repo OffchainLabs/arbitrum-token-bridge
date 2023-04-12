@@ -64,7 +64,6 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.closeLowBalanceDialog()
       cy.openTransactionsPanel()
 
       const l1TxHash =
@@ -109,7 +108,6 @@ describe('Read classic deposit messages', () => {
         ])
       )
 
-      cy.closeLowBalanceDialog()
       cy.openTransactionsPanel()
 
       const l1TxHash =

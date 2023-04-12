@@ -102,12 +102,6 @@ export const connectToApp = () => {
   cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click()
 }
 
-export const closeLowBalanceDialog = () => {
-  cy.findByRole('button', { name: /go to bridge/i })
-    .should('be.visible')
-    .click()
-}
-
 export const openTransactionsPanel = () => {
   cy.findByRole('button', { name: /account header button/i })
     .should('be.visible')
@@ -124,6 +118,5 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  openTransactionsPanel,
-  closeLowBalanceDialog
+  openTransactionsPanel
 })

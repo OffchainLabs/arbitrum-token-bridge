@@ -12,17 +12,12 @@ describe('Switch Networks', () => {
 
     context('Test Networks dropdown in Nav bar', () => {
       it('should show and open the networks dropdown', () => {
+        // to view the correct list of networks (and not testnets), first navigate to mainnet
         cy.login({
           networkType: 'L1',
           networkName: 'mainnet',
           shouldChangeNetwork: true
         })
-        // to view the correct list of networks (and not testnets), first navigate to mainnet
-        // first wait for Low Balance Popup and close that
-        cy.findByRole('button', { name: /Go to bridge/i })
-          .should('be.visible')
-          .click({ scrollBehavior: false })
-
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click({ scrollBehavior: false })

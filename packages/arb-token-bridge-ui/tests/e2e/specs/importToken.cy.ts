@@ -1,4 +1,3 @@
-import { utils } from 'ethers'
 import {
   getInitialETHBalance,
   invalidTokenAddress,
@@ -12,15 +11,13 @@ const ERC20TokenAddressL2: string = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
 
 describe('Import token', () => {
   // we use mainnet to test token lists
-  // need low balance check to bypass a mainnet popup
-  let isLowBalanceMainnet: boolean
 
   context('User import token through UI', () => {
     before(() => {
       getInitialETHBalance(
         `https://mainnet.infura.io/v3/${Cypress.env('INFURA_KEY')}`,
         Cypress.env('ADDRESS')
-      ).then(val => (isLowBalanceMainnet = val.lte(utils.parseEther('0.005'))))
+      )
     })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
@@ -80,13 +77,6 @@ describe('Import token', () => {
           networkName: 'mainnet',
           shouldChangeNetwork: true
         })
-
-        // click low balance pop up if shown
-        if (isLowBalanceMainnet) {
-          cy.findByText('Go to bridge')
-            .should('be.visible')
-            .click({ scrollBehavior: false })
-        }
 
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
