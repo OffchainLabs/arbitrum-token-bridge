@@ -314,7 +314,7 @@ export function TransferPanelSummary({
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light text-[#595959]">L1 gas</span>
-            <Tooltip content="L1 fees go to Ethereum Validators.">
+            <Tooltip content="L1 fees go to Ethereum miners.">
               <InformationCircleIcon className="h-4 w-4 text-[#595959]" />
             </Tooltip>
           </div>
