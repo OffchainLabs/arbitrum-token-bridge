@@ -6,8 +6,8 @@ import {
   importTokenThroughUI
 } from '../../support/common'
 
-const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-const ERC20TokenAddressL2 = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
+const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
+const ERC20TokenAddressL2: string = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
 
 describe('Import token', () => {
   // we use mainnet to test token lists
@@ -20,22 +20,19 @@ describe('Import token', () => {
       )
     })
     context('User uses L1 address', () => {
-      // log in to metamask
-      before(() => {
-        cy.login({ networkType: 'L1' })
-      })
-
-      after(() => {
-        // after all assertions are executed, logout and reset the account
-        cy.logout()
-      })
-
       it('should import token through its L1 address', () => {
+        cy.login({ networkType: 'L1' })
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
         cy.findByText('Added by User').should('exist')
-        cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+        // trigger instead of click due to an unclear issue in CI
+        // however most likely due to a slow container and the metamask window overlapping the button
+        // same on all the other cases
+        cy.findByText(ERC20TokenName).trigger('click', {
+          scrollBehavior: false,
+          force: true
+        })
 
         // ERC-20 token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })
@@ -45,21 +42,15 @@ describe('Import token', () => {
     })
 
     context('User uses L2 address', () => {
-      // log in to metamask
-      before(() => {
-        cy.login({ networkType: 'L1' })
-      })
-
-      after(() => {
-        // after all assertions are executed, logout and reset the account
-        cy.logout()
-      })
-
       it('should import token through its L2 address', () => {
+        cy.login({ networkType: 'L1' })
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
-        cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+        cy.findByText(ERC20TokenName).trigger('click', {
+          scrollBehavior: false,
+          force: true
+        })
 
         // ERC-20 token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })
@@ -69,17 +60,8 @@ describe('Import token', () => {
     })
 
     context('User uses invalid address', () => {
-      // log in to metamask
-      before(() => {
-        cy.login({ networkType: 'L1' })
-      })
-
-      after(() => {
-        // after all assertions are executed, logout and reset the account
-        cy.logout()
-      })
-
       it('should display an error message after invalid input', () => {
+        cy.login({ networkType: 'L1' })
         importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
@@ -88,19 +70,14 @@ describe('Import token', () => {
     })
 
     context('User uses token symbol', () => {
-      // log in to metamask
-      before(() => {
-        cy.login({ networkType: 'L1' })
-        // we don't have the token list locally so we test on mainnet
-        cy.changeMetamaskNetwork('mainnet')
-      })
-
-      after(() => {
-        // after all assertions are executed, logout and reset the account
-        cy.logout()
-      })
-
       it('should import token', () => {
+        // we don't have the token list locally so we test on mainnet
+        cy.login({
+          networkType: 'L1',
+          networkName: 'mainnet',
+          shouldChangeNetwork: true
+        })
+
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
@@ -127,14 +104,20 @@ describe('Import token', () => {
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
           .should('be.visible')
-          .type('UNI', { scrollBehavior: false })
+          .typeRecursively('UNI')
+
+        // flaky test can load data too slowly here
+        cy.wait(5000)
 
         cy.get('[data-cy="tokenSearchList"]')
           .first()
           .within(() => {
             // cy.get() will only search for elements within .tokenSearchList,
             // not within the entire document, fixing the multiple Uniswap text issue
-            cy.findByText('Uniswap').click({ scrollBehavior: false })
+            cy.findByText('Uniswap').click({
+              scrollBehavior: false,
+              force: true
+            })
           })
 
         // UNI token should be selected now and popup should be closed after selection
@@ -145,17 +128,13 @@ describe('Import token', () => {
     })
 
     context('Add button is grayed', () => {
-      // log in to metamask
-      before(() => {
-        cy.login({ networkType: 'L1' })
-      })
-
-      after(() => {
-        // after all assertions are executed, logout and reset the account
-        cy.logout()
-      })
-
       it('should disable Add button if address is too long/short', () => {
+        const moveToEnd = ERC20TokenAddressL1.substring(
+          0,
+          ERC20TokenAddressL1.length - 1
+        )
+
+        cy.login({ networkType: 'L1', shouldChangeNetwork: true })
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
@@ -165,7 +144,7 @@ describe('Import token', () => {
         cy.findByPlaceholderText(/Search by token name/i)
           .as('searchInput')
           .should('be.visible')
-          .type(ERC20TokenAddressL1.slice(0, -1), { scrollBehavior: false })
+          .typeRecursively(ERC20TokenAddressL1.slice(0, -1))
 
         // Add button should be disabled
         cy.findByRole('button', { name: 'Add New Token' })
@@ -174,19 +153,14 @@ describe('Import token', () => {
           .as('addButton')
 
         // Add last character
-        cy.get('@searchInput').type(
-          `{moveToEnd}${ERC20TokenAddressL1.slice(-1)}`,
-          {
-            scrollBehavior: false
-          }
+        cy.get('@searchInput').typeRecursively(
+          `${moveToEnd}${ERC20TokenAddressL1.slice(-1)}`
         )
         // Add button should be enabled
         cy.get('@addButton').should('be.enabled')
 
         // Add one more character
-        cy.get('@searchInput').type(`{moveToEnd}a`, {
-          scrollBehavior: false
-        })
+        cy.get('@searchInput').typeRecursively(`${moveToEnd}a`)
         // Add button should be disabled
         cy.get('@addButton').should('be.disabled')
       })
@@ -194,11 +168,6 @@ describe('Import token', () => {
   })
 
   context('User import token through URL', () => {
-    afterEach(() => {
-      // after all assertions are executed, logout the account
-      cy.logout()
-    })
-
     context('User uses L1 address', () => {
       it('should import token through URL using its L1 address', () => {
         cy.login({
@@ -223,7 +192,10 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .trigger('click', {
+            scrollBehavior: false,
+            force: true
+          })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
@@ -262,7 +234,10 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .trigger('click', {
+            scrollBehavior: false,
+            force: true
+          })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
@@ -292,7 +267,10 @@ describe('Import token', () => {
         // Close modal
         cy.findByRole('button', { name: 'Dialog Cancel' })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .trigger('click', {
+            scrollBehavior: false,
+            force: true
+          })
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')

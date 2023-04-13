@@ -7,25 +7,17 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 
+import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
 import { registerLocalNetwork } from './src/util/networks'
-import {
-  ethRpcUrl,
-  arbRpcUrl,
-  wethTokenAddressL1,
-  wethTokenAddressL2
-} from './tests/support/common'
 
 export default defineConfig({
   userAgent: 'synpress',
-  retries: {
-    // Configure retry attempts for `cypress run`
-    // Default is 0
-    runMode: 0,
-    openMode: 0
-  },
+  // in CI synpress might sometimes need to try multiple times, fixes flakiness.
+  retries: 4,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: false,
+  screenshotOnRunFailure: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
   viewportWidth: 1366,
@@ -40,6 +32,16 @@ export default defineConfig({
     // @ts-ignore
     async setupNodeEvents(on, config) {
       registerLocalNetwork()
+
+      const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+      const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+
+      if (!ethRpcUrl) {
+        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+      }
+      if (!arbRpcUrl) {
+        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+      }
 
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
@@ -126,6 +128,8 @@ export default defineConfig({
         )
         await tx.wait()
       })
+      config.env.ETH_RPC_URL = ethRpcUrl
+      config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
