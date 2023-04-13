@@ -101,11 +101,11 @@ export const connectToApp = () => {
 export const openTransactionsPanel = () => {
   cy.findByRole('button', { name: /account header button/i })
     .should('be.visible')
-    .click()
+    .click({ scrollBehavior: false })
 
   cy.findByRole('button', { name: /transactions/i })
     .should('be.visible')
-    .click()
+    .click({ scrollBehavior: false })
 }
 
 Cypress.Commands.addAll({
