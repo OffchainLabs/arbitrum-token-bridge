@@ -17,6 +17,7 @@ import React from 'react'
 import { NextAdapter } from 'next-query-params'
 import { parse, stringify } from 'query-string'
 import {
+  BooleanParam,
   NumberParam,
   QueryParamProvider,
   StringParam,
@@ -40,7 +41,8 @@ export const useArbQueryParams = () => {
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
     // todo: use custom union type param for theme for better types
-    theme: withDefault(StringParam, '') // for switching to 'arbitrum-classic-theme'
+    theme: withDefault(StringParam, ''), // for switching to 'arbitrum-classic-theme'
+    stats: withDefault(BooleanParam, false) // for switching on 'arbitrum-stats'
   })
 }
 

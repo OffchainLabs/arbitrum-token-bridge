@@ -1,3 +1,4 @@
+import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
 import { THEME_CONFIG, useTheme, classicThemeKey } from 'src/hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { Radio } from './atoms/Radio'
@@ -10,15 +11,25 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 
 export const PreferencesDialog = () => {
   const {
-    layout: { isPreferencesPanelVisible, isArbitrumStatsVisible }
+    layout: { isPreferencesPanelVisible }
   } = useAppContextState()
 
-  const { closePreferences, openArbitrumStats, closeArbitrumStats } =
-    useAppContextActions()
+  const { closePreferences } = useAppContextActions()
+
+  const [{ stats: isArbitrumStatsVisible }, setQueryParams] =
+    useArbQueryParams()
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =
     _selectedTheme === classicThemeKey ? classicThemeKey : ''
+
+  const openArbitrumStats = () => {
+    setQueryParams({ stats: true })
+  }
+
+  const closeArbitrumStats = () => {
+    setQueryParams({ stats: false })
+  }
 
   return (
     <SidePanel

@@ -11,6 +11,7 @@ import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
+import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
 
 export const motionDivProps = {
   layout: true,
@@ -31,8 +32,10 @@ export const motionDivProps = {
 export function MainContent() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
-    layout: { isTransactionHistoryPanelVisible, isArbitrumStatsVisible }
+    layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
+
+  const [{ stats: isArbitrumStatsVisible }] = useArbQueryParams()
 
   const {
     app: { arbTokenBridge }
