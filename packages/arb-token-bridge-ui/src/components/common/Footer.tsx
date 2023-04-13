@@ -40,7 +40,7 @@ export function Footer() {
     <footer className="z-[1] flex justify-center">
       <div className="flex w-full max-w-[1440px] flex-col space-y-8 py-20 text-white lg:px-8 lg:py-8">
         <div className="flex flex-col items-center space-y-2 px-8 text-center lg:items-start lg:px-0">
-          <span className="text-4xl">The most decentralized L2.</span>
+          <span className="text-4xl">The most decentralized L2</span>
           <ExternalLink
             href="https://developer.arbitrum.io"
             className="text-2xl underline"
