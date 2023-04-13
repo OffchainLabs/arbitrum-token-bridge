@@ -50,6 +50,7 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
+import { DisconnectWallet } from '../common/DisconnectWallet'
 
 declare global {
   interface Window {
@@ -296,9 +297,11 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
+            <DisconnectWallet/>
             <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
+            
           </HeaderContent>
 
           <AppConnectionFallbackContainer
