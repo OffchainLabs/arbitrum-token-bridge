@@ -15,7 +15,6 @@ type AppContextState = {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
-
     isPreferencesPanelVisible: boolean
   }
 }
@@ -26,7 +25,6 @@ const initialState: AppContextState = {
     isTransferPanelVisible: true,
     isTransferring: false,
     isTransactionHistoryPanelVisible: false,
-
     isPreferencesPanelVisible: false
   }
 }
