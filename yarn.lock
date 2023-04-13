@@ -8946,6 +8946,11 @@ fetch-retry@^5.0.3:
   resolved "https://registry.yarnpkg.com/fetch-retry/-/fetch-retry-5.0.4.tgz#06e8e4533030bf6faa00ffbb9450cb9264c23c12"
   integrity sha512-LXcdgpdcVedccGg0AZqg+S8lX/FCdwXD92WNZ5k5qsb0irRhSFsBOpcJt7oevyqT2/C2nEE0zSFNdBEpj3YOSw==
 
+fflate@^0.4.1:
+  version "0.4.8"
+  resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.4.8.tgz#f90b82aefbd8ac174213abb338bd7ef848f0f5ae"
+  integrity sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==
+
 figures@^1.0.1:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/figures/-/figures-1.7.0.tgz#cbe1e3affcf1cd44b80cadfed28dc793a9701d2e"
@@ -14229,6 +14234,14 @@ postcss@^8.0.9, postcss@^8.2.1, postcss@^8.4.21:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
+posthog-js@^1.53.1:
+  version "1.53.1"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.53.1.tgz#7c14aacaed70b4e302257d8534373f832a28f7dd"
+  integrity sha512-sqCIYkq7qR74NhrmW0n7Fe1c90peNz8v6CReIXJ02XlesN8O4Is04DcnReQxcnbKy6hFGkgV6Zn6RPD/Tl+JSg==
+  dependencies:
+    fflate "^0.4.1"
+    rrweb-snapshot "^1.1.14"
+
 preact@10.4.1:
   version "10.4.1"
   resolved "https://registry.yarnpkg.com/preact/-/preact-10.4.1.tgz#9b3ba020547673a231c6cf16f0fbaef0e8863431"
@@ -15437,6 +15450,11 @@ rollup@^2.35.1:
   integrity sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==
   optionalDependencies:
     fsevents "~2.3.2"
+
+rrweb-snapshot@^1.1.14:
+  version "1.1.14"
+  resolved "https://registry.yarnpkg.com/rrweb-snapshot/-/rrweb-snapshot-1.1.14.tgz#9d4d9be54a28a893373428ee4393ec7e5bd83fcc"
+  integrity sha512-eP5pirNjP5+GewQfcOQY4uBiDnpqxNRc65yKPW0eSoU1XamDfc4M8oqpXGMyUyvLyxFDB0q0+DChuxxiU2FXBQ==
 
 rtl-css-js@^1.14.0:
   version "1.16.1"
