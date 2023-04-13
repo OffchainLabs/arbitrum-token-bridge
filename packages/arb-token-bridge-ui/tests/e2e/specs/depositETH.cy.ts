@@ -66,10 +66,6 @@ describe('Deposit ETH', () => {
     })
   })
 
-  context("bridge amount is lower than user's L1 ETH balance value", () => {
-    // TODO => test for bridge amount higher than user's L1 ETH balance
-  })
-
   // TODO
   context('user has some ETH and is on L2', () => {})
   // TODO
