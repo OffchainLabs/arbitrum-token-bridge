@@ -8,25 +8,33 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 
-export const ethRpcUrl = 'http://localhost:8545'
-export const arbRpcUrl = 'http://localhost:8547'
+export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
 
-export const l1NetworkConfig = {
-  networkName: 'localhost',
-  rpcUrl: ethRpcUrl,
-  chainId: '1337',
-  symbol: 'ETH',
-  isTestnet: true,
-  l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+export const getL1NetworkConfig = () => {
+  return {
+    // reuse built-in Metamask network if possible
+    // we add a new network in CI because of a different rpc url
+    networkName:
+      Cypress.env('ETH_RPC_URL') === metamaskLocalL1RpcUrl
+        ? 'localhost'
+        : 'custom-localhost',
+    rpcUrl: Cypress.env('ETH_RPC_URL'),
+    chainId: '1337',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+  }
 }
 
-export const l2NetworkConfig = {
-  networkName: 'arbitrum-localhost',
-  rpcUrl: arbRpcUrl,
-  chainId: '412346',
-  symbol: 'ETH',
-  isTestnet: true,
-  l2MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+export const getL2NetworkConfig = () => {
+  return {
+    networkName: 'arbitrum-localhost',
+    rpcUrl: Cypress.env('ARB_RPC_URL'),
+    chainId: '412346',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+  }
 }
 
 export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
@@ -48,7 +56,7 @@ export const importTokenThroughUI = (address: string) => {
   return cy
     .findByPlaceholderText(/Search by token name/i)
     .should('be.visible')
-    .type(address, { scrollBehavior: false })
+    .typeRecursively(address)
     .then(() => {
       // Click on the Add new token button
       cy.findByRole('button', { name: 'Add New Token' })
@@ -80,22 +88,18 @@ export async function getInitialERC20Balance(
 
 export const setupMetamaskNetwork = (
   networkType: NetworkType,
+  networkName?: string,
   addNewNetwork?: boolean
 ) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
-  if (networkType === 'L2') {
-    if (addNewNetwork) {
-      // add and switch to Arbitrum goerli network
-      return cy.addMetamaskNetwork(l2NetworkConfig)
-    } else {
-      // L2 network already added
-      // switch to Arbitrum goerli network
-      return cy.changeMetamaskNetwork(l2NetworkConfig.networkName)
-    }
+  const networkConfig =
+    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
+
+  if (addNewNetwork) {
+    return cy.addMetamaskNetwork(networkConfig)
   } else {
-    //else, stick to the original l1 network
-    return cy.changeMetamaskNetwork(l1NetworkConfig.networkName)
+    return cy.changeMetamaskNetwork(networkName ?? networkConfig.networkName)
   }
 }
 
@@ -109,11 +113,19 @@ export const acceptMetamaskAccess = () => {
   })
 }
 
-export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
+export const startWebApp = (
+  url = '/',
+  qs: { [s: string]: string } = {},
+  isWalletConnected: boolean
+) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
+  // clear local storage for terms to always have it pop up
+  cy.clearLocalStorage('arbitrum:bridge:tos-v1')
   cy.visit(url, {
     qs
   })
   cy.connectToApp()
-  acceptMetamaskAccess()
+  if (!isWalletConnected) {
+    acceptMetamaskAccess()
+  }
 }

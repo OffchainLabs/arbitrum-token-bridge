@@ -10,27 +10,21 @@ describe('Withdraw ETH', () => {
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
 
-  beforeEach(() => {
-    cy.restoreAppState()
-  })
-  afterEach(() => {
-    cy.saveAppState()
-  })
+  const ETHToWithdraw = 0.0001
+
+  const typeAmountIntoInput = () => {
+    return cy
+      .findByPlaceholderText('Enter amount')
+      .typeRecursively(String(ETHToWithdraw))
+  }
 
   // Happy Path
   context('user has some ETH and is on L2', () => {
-    // log in to metamask before withdrawal
-    before(() => {
-      // login to L2 chain for Arb Goerli network
-      cy.login({ networkType: 'L2', addNewNetwork: true }) // add new L2 network
-    })
-
-    after(() => {
-      // after all assertions are executed, logout and reset the account
-      cy.logout()
-    })
-
     it('should show form fields correctly', () => {
+      cy.login({
+        networkType: 'L2',
+        addNewNetwork: true
+      })
       cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 
@@ -43,8 +37,9 @@ describe('Withdraw ETH', () => {
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
       it('should show summary', () => {
-        cy.findByPlaceholderText('Enter amount')
-          .type('0.0001', { scrollBehavior: false })
+        cy.login({ networkType: 'L2' })
+        typeAmountIntoInput()
+          .should('have.value', String(ETHToWithdraw))
           .then(() => {
             cy.findByText('You’re moving')
               .siblings()
@@ -76,50 +71,53 @@ describe('Withdraw ETH', () => {
           })
       })
 
-      it('should show a clickable withdraw button', () => {
-        cy.findByRole('button', {
-          name: /Move funds to Ethereum/i
-        })
-          .should('be.visible')
-          .should('be.enabled')
-          .click({ scrollBehavior: false })
-      })
-
-      it('should show withdrawal confirmation', () => {
-        cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
-
-        // the Continue withdrawal button should be disabled at first
-        cy.findByRole('button', {
-          name: /Continue/i
-        }).should('be.disabled')
-
-        cy.findByRole('switch', {
-          name: /before I can claim my funds/i
-        })
-          .should('be.visible')
-          .click({ scrollBehavior: false })
-
-        cy.findByRole('switch', {
-          name: /after claiming my funds/i
-        })
-          .should('be.visible')
-          .click({ scrollBehavior: false })
+      it('should show withdrawal confirmation and withdraw', () => {
+        cy.login({ networkType: 'L2' })
+        typeAmountIntoInput()
+          .should('have.value', String(ETHToWithdraw))
           .then(() => {
-            // the Continue withdrawal button should not be disabled now
             cy.findByRole('button', {
-              name: /Continue/i
+              name: /Move funds to Ethereum/i
             })
+              .should('be.visible')
               .should('be.enabled')
               .click({ scrollBehavior: false })
-          })
-      })
+            cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
 
-      it('should withdraw successfully', () => {
-        cy.confirmMetamaskTransaction().then(() => {
-          cy.findAllByText(
-            `Moving ${formatAmount(0.0001, { symbol: 'ETH' })} to Ethereum`
-          ).should('be.visible')
-        })
+            // the Continue withdrawal button should be disabled at first
+            cy.findByRole('button', {
+              name: /Continue/i
+            }).should('be.disabled')
+
+            cy.findByRole('switch', {
+              name: /before I can claim my funds/i
+            })
+              .should('be.visible')
+              .click({ scrollBehavior: false })
+
+            cy.findByRole('switch', {
+              name: /after claiming my funds/i
+            })
+              .should('be.visible')
+              .click({ scrollBehavior: false })
+              .then(() => {
+                // the Continue withdrawal button should not be disabled now
+                cy.findByRole('button', {
+                  name: /Continue/i
+                })
+                  .should('be.enabled')
+                  .click({ scrollBehavior: false })
+                  .then(() => {
+                    cy.confirmMetamaskTransaction().then(() => {
+                      cy.findAllByText(
+                        `Moving ${formatAmount(0.0001, {
+                          symbol: 'ETH'
+                        })} to Ethereum`
+                      ).should('be.visible')
+                    })
+                  })
+              })
+          })
       })
     })
 
