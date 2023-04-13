@@ -99,13 +99,23 @@ export const connectToApp = () => {
 }
 
 export const openTransactionsPanel = () => {
-  cy.findByRole('button', { name: /account header button/i })
-    .should('be.visible')
-    .click({ scrollBehavior: false })
+  cy.waitUntil(
+    () =>
+      cy.findByText(/Bridging summary will appear here/i).then(() => {
+        // Open tx history panel
+        cy.findByRole('button', { name: /account header button/i })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
 
-  cy.findByRole('button', { name: /transactions/i })
-    .should('be.visible')
-    .click({ scrollBehavior: false })
+        cy.findByRole('button', { name: /transactions/i })
+          .should('be.visible')
+          .click({ scrollBehavior: false })
+      }),
+    {
+      timeout: 10000,
+      interval: 500
+    }
+  )
 }
 
 Cypress.Commands.addAll({
