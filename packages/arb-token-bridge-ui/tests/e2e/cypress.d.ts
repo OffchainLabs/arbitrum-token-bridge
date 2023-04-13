@@ -1,3 +1,4 @@
+/* global JQuery */
 import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
@@ -20,7 +21,10 @@ declare global {
       // eslint-disable-next-line no-unused-vars
       login(options: {
         networkType: NetworkType
+        networkName?: string
         addNewNetwork?: boolean
+        shouldChangeNetwork?: boolean
+        isWalletConnected?: boolean
         url?: string
         query?: { [s: string]: string }
       }): typeof login
@@ -28,6 +32,7 @@ declare global {
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
       openTransactionsPanel(): typeof openTransactionsPanel
+      typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
     }
   }
 }

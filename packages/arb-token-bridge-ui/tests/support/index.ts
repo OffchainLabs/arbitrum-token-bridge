@@ -3,9 +3,11 @@ import '@synthetixio/synpress/support'
 import 'cypress-localstorage-commands'
 
 Cypress.Keyboard.defaults({
-  keystrokeDelay: 50
+  // tests are flaky in CI with low keystroke delay
+  keystrokeDelay: 150
 })
 
 before(() => {
-  cy.setupMetamask(Cypress.env('PRIVATE_KEY'))
+  // connect to goerli to avoid connecting to localhost twice and failing
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
 })
