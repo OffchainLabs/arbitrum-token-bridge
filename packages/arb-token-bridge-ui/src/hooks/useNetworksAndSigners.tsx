@@ -160,7 +160,10 @@ function getWalletName(connectorName: string): ProviderName {
 }
 
 async function isBlocked(address: `0x${string}`): Promise<boolean> {
-  if (process.env.NODE_ENV !== 'production') {
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_IS_E2E_TEST
+  ) {
     return false
   }
 

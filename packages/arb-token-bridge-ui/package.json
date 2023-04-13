@@ -50,7 +50,8 @@
     "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "getUnusedComponents": "ts-prune | grep ' default$'",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts"
+    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
+    "e2e:install": "cypress install"
   },
   "browserslist": {
     "production": [
@@ -68,7 +69,8 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
-    "@synthetixio/synpress": "3.0.5",
+    "@svgr/webpack": "^7.0.0",
+    "@synthetixio/synpress": "^3.1.0",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",
     "@types/react": "^17.0.18",
@@ -78,6 +80,7 @@
     "@typescript-eslint/parser": "^5.44.0",
     "autoprefixer": "^10.4.13",
     "cypress-localstorage-commands": "^2.2.1",
+    "cypress-recurse": "^1.27.0",
     "cypress-wait-until": "^1.7.2",
     "env-cmd": "^10.1.0",
     "eslint": "^7.32.0",
