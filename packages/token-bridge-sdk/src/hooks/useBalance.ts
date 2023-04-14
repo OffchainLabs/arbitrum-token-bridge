@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { BigNumber, providers } from 'ethers'
-import useSWR, { useSWRConfig, unstable_serialize, Middleware } from 'swr'
+import useSWR, {
+  useSWRConfig,
+  unstable_serialize,
+  Middleware,
+  SWRHook,
+  BareFetcher
+} from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
@@ -9,11 +15,16 @@ type Erc20Balances = {
   [address: string]: BigNumber | undefined
 }
 
-const merge: Middleware = useSWRNext => {
+const merge: Middleware = (useSWRNext: SWRHook) => {
   return (key, fetcher, config) => {
     const { cache } = useSWRConfig()
 
-    const extendedFetcher = async () => {
+    /* 
+      extendedFetcher needs to be the same type as `fetcher` (generic), which cannot be customized..
+      ..but we are having our balance business logic in extendedFetcher, so can't be generic, hence using <any>
+    */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const extendedFetcher: BareFetcher<any> = async () => {
       if (!fetcher) {
         return
       }
