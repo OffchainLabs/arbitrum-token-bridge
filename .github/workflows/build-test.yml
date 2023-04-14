@@ -101,10 +101,95 @@ jobs:
       - name: Check formatting with Prettier
         run: yarn prettier:check
 
+
+  test-e2e:
+    name: "Test E2E"
+    runs-on: ubuntu-latest
+    needs: install
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Chown workspace
+        run: chown -R $(whoami) .
+
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # pin@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@6998d139ddd3e68c71e9e398d8e40b71a2f39812 # pin@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-
+
+      - name: Make .e2e.env
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+          envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          envkey_SKIP_METAMASK_SETUP: true
+          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
+          directory: ./packages/arb-token-bridge-ui/
+          file_name: .e2e.env
+
+      - name: Make .env
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
+          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          directory: ./packages/arb-token-bridge-ui/
+          file_name: .env
+
+      - name: Make synpress .env
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_CYPRESS_GROUP: medium-resolution
+          envkey_DISPLAY_HEIGHT: 768
+          envkey_DISPLAY_WIDTH: 1366
+          envkey_SE_SCREEN_HEIGHT: 768
+          envkey_SE_SCREEN_WIDTH: 1366
+          file_name: medium-res.env
+
+      - name: Set up the local node
+        uses: OffchainLabs/actions/run-nitro-test-node@main
+
+      - name: Restore node_modules
+        uses: OffchainLabs/actions/node-modules/restore@main
+
+      - name: Run e2e tests
+        run: |
+          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
+
+      - name: Archive e2e artifacts
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
+        if: failure() || success()
+        with:
+          name: e2e-artifacts-docker
+          path: |
+            docker/videos
+            docker/videos-ci
+            docker/screenshots
+        continue-on-error: false
+
   clean-up:
     name: "Clean Up"
     runs-on: ubuntu-latest
-    needs: [test-sdk, test-ui]
+    needs: [test-sdk, test-ui, test-e2e]
     if: always()
     steps:
       - name: Checkout

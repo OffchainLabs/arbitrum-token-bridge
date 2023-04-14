@@ -6,25 +6,14 @@ import {
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
+const ERC20Amount = '0.000000000001'
 
-describe('Approve token', () => {
+describe('Approve token and deposit afterwards', () => {
   // log in to metamask
-  before(() => {
-    cy.login({ networkType: 'L1' })
-  })
-  after(() => {
-    // after all assertions are executed, logout and reset the account
-    cy.logout()
-  })
-  beforeEach(() => {
-    cy.restoreAppState()
-  })
-  afterEach(() => {
-    cy.saveAppState()
-  })
 
-  context('User approves and deposits ERC-20 token', () => {
-    it('should import token through UI', () => {
+  it('should approve and deposit ERC-20 token', () => {
+    context('Approve token', () => {
+      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
       importTokenThroughUI(ERC20TokenAddressL1)
 
       // Select the ERC-20 token
@@ -35,11 +24,9 @@ describe('Approve token', () => {
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
         .should('have.text', ERC20TokenSymbol)
-    })
 
-    it('should approve successfully', () => {
       cy.findByPlaceholderText('Enter amount')
-        .type('0.000000000001', { scrollBehavior: false })
+        .typeRecursively(ERC20Amount)
         .then(() => {
           cy.findByText('You’ll pay in gas fees')
             .siblings()
@@ -61,22 +48,17 @@ describe('Approve token', () => {
         })
       cy.findByRole('button', {
         name: 'Move funds to Arbitrum'
+      }).click({ scrollBehavior: false })
+      cy.findByText(/I understand that I have to pay a one-time/).click({
+        scrollBehavior: false
       })
-        .as('transferButton')
-        .click({ scrollBehavior: false })
-        .then(() => {
-          cy.findByText(/I understand that I have to pay a one-time/).click({
-            scrollBehavior: false
-          })
-          cy.findByRole('button', {
-            name: /Pay approval fee of/
-          }).click({ scrollBehavior: false })
-          cy.confirmMetamaskPermissionToSpend()
-        })
-      cy.get('@transferButton').should('be.disabled')
+      cy.findByRole('button', {
+        name: /Pay approval fee of/
+      }).click({ scrollBehavior: false })
+      cy.confirmMetamaskPermissionToSpend('1')
     })
 
-    it('should deposit successfully', () => {
+    context('Deposit token', () => {
       // TODO: we don't have any indication in the UI that we are approving a token.
       // We don't have a way to capture the finished approval state.
       // Need better UX.
