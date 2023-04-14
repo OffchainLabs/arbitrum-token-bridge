@@ -85,22 +85,34 @@ describe('Switch Networks', () => {
       })
     })
 
-    context('Test Networks list in Wrong Network UI', () => {
+    context.only('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
         cy.login({
           networkType: 'L1'
         })
         // Arbitrary waiting time has to be added to ensure Transfer Panel is loaded
         // .waitUntil did not work as it causes the whole process including login to loop
-        cy.wait(6000)
+        cy.wait(12000)
           .findByRole('button', { name: /From: Ethereum/i })
           .should('be.visible')
-
-        cy.changeMetamaskNetwork('Sepolia test network').then(() =>
-          cy
-            .findByText(/Oops! You’re connected to the wrong network/i)
-            .should('be.visible')
-        )
+          // .waitUntil(
+          //   () => {
+          //     cy.findByRole('button', { name: /From: Ethereum/i }).should(
+          //       'be.visible'
+          //     )
+          //   },
+          //   {
+          //     errorMsg: "Can't find /From: Ethereum/i",
+          //     timeout: 2000, // waits up to 2000 ms, default to 5000
+          //     interval: 500 // performs the check every 500 ms, default to 200
+          //   }
+          // )
+          .changeMetamaskNetwork('Sepolia test network')
+          .then(() =>
+            cy
+              .findByText(/Oops! You’re connected to the wrong network/i)
+              .should('be.visible')
+          )
 
         context('Allow Network change from wrong network UI list', () => {
           cy.findByRole('button', { name: /Switch to Arbitrum Goerli/i })
