@@ -31,7 +31,7 @@ function shouldChangeNetwork({
         const provider = new StaticJsonRpcProvider(Cypress.env('ETH_RPC_URL'))
         const currentNetworkName = (await provider.getNetwork()).name
         // change network if different network name or type
-        return currentNetworkName !== networkName || networkType === 'L2'
+        return currentNetworkName !== (networkName || 'unknown') || networkType === 'L2'
       } else if (currentNetworkType === 'L2') {
         // change network if different network type
         // name is irrelevant because there is only one local L2
