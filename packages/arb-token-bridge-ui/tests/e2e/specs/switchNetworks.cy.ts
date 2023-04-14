@@ -92,7 +92,7 @@ describe('Switch Networks', () => {
         })
         // Arbitrary waiting time has to be added to ensure Transfer Panel is loaded
         // .waitUntil did not work as it causes the whole process including login to loop
-        cy.wait(3000)
+        cy.wait(6000)
           .findByRole('button', { name: /From: Ethereum/i })
           .should('be.visible')
 
