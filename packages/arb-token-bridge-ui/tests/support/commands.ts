@@ -34,7 +34,10 @@ function shouldChangeNetwork({
         // unknown is returned for local networks
         // if it doesn't match it means it changed because there's only one L1 and one L2 local network
         // it works for other networks because networkName is provided for them
-        return currentNetworkName !== (networkName || 'unknown') || networkType === 'L2'
+        return (
+          currentNetworkName !== (networkName || 'unknown') ||
+          networkType === 'L2'
+        )
       } else if (currentNetworkType === 'L2') {
         // change network if different network type
         // name is irrelevant because there is only one local L2
