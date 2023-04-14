@@ -85,7 +85,7 @@ describe('Switch Networks', () => {
       })
     })
 
-    context.only('Test Networks list in Wrong Network UI', () => {
+    context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
         cy.login({
           networkType: 'L1'
