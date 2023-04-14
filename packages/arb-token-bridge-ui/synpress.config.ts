@@ -7,7 +7,11 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 
-import { NetworkType, wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
+import {
+  NetworkType,
+  wethTokenAddressL1,
+  wethTokenAddressL2
+} from './tests/support/common'
 import { registerLocalNetwork } from './src/util/networks'
 
 export default defineConfig({

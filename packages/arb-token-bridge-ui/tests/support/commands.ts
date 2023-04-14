@@ -24,8 +24,9 @@ function shouldChangeNetwork({
   // TODO: remove this whenever fixed
 
   // currentNetworkType is stored after each network switch and used in the next login
-  return cy.task('getCurrentNetworkType').then(
-    async (currentNetworkType: NetworkType | null) => {
+  return cy
+    .task('getCurrentNetworkType')
+    .then(async (currentNetworkType: NetworkType | null) => {
       if (currentNetworkType === 'L1') {
         const provider = new StaticJsonRpcProvider(Cypress.env('ETH_RPC_URL'))
         const currentNetworkName = (await provider.getNetwork()).name
@@ -39,8 +40,7 @@ function shouldChangeNetwork({
         // change network if network type hasn't been set yet
         return true
       }
-    }
-  )
+    })
 }
 
 export function login({

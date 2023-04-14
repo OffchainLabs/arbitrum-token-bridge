@@ -25,10 +25,10 @@ before(() => {
       if (Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl) {
         cy.addMetamaskNetwork(getL1NetworkConfig())
       }
-    
+
       // L2
       cy.addMetamaskNetwork(getL2NetworkConfig())
-    
+
       // to void the double connection issue
       cy.changeMetamaskNetwork('goerli')
 
