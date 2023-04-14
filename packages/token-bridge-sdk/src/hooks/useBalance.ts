@@ -4,8 +4,7 @@ import useSWR, {
   useSWRConfig,
   unstable_serialize,
   Middleware,
-  SWRHook,
-  BareFetcher
+  SWRHook
 } from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
 
@@ -19,19 +18,14 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
   return (key, fetcher, config) => {
     const { cache } = useSWRConfig()
 
-    /* 
-      extendedFetcher needs to be the same type as `fetcher` (generic), which cannot be customized..
-      ..but we are having our balance business logic in extendedFetcher, so can't be generic, hence using <any>
-    */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const extendedFetcher: BareFetcher<any> = async () => {
+    const extendedFetcher = async () => {
       if (!fetcher) {
         return
       }
       const newBalances = await fetcher(key)
-      const oldData = cache.get(unstable_serialize(key))
+      const oldData = cache.get(unstable_serialize(key))?.data
       return {
-        ...oldData,
+        ...(oldData || {}),
         ...newBalances
       }
     }
