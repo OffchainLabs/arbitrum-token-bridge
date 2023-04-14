@@ -17,7 +17,7 @@ function shouldChangeNetwork({
   networkName
 }: {
   networkType: NetworkType
-  networkName: string
+  networkName?: string
 }) {
   // synpress throws if trying to connect to a network we are already connected to
   // issue has been raised with synpress and this is just a workaround
@@ -31,6 +31,9 @@ function shouldChangeNetwork({
         const provider = new StaticJsonRpcProvider(Cypress.env('ETH_RPC_URL'))
         const currentNetworkName = (await provider.getNetwork()).name
         // change network if different network name or type
+        // unknown is returned for local networks
+        // if it doesn't match it means it changed because there's only one L1 and one L2 local network
+        // it works for other networks because networkName is provided for them
         return currentNetworkName !== (networkName || 'unknown') || networkType === 'L2'
       } else if (currentNetworkType === 'L2') {
         // change network if different network type
