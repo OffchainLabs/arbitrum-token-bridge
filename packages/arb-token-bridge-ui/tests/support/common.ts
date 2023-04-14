@@ -88,19 +88,14 @@ export async function getInitialERC20Balance(
 
 export const setupMetamaskNetwork = (
   networkType: NetworkType,
-  networkName?: string,
-  addNewNetwork?: boolean
+  networkName?: string
 ) => {
   // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
   // hence this additional network switch-check before actually starting the app
   const networkConfig =
     networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
 
-  if (addNewNetwork) {
-    return cy.addMetamaskNetwork(networkConfig)
-  } else {
-    return cy.changeMetamaskNetwork(networkName ?? networkConfig.networkName)
-  }
+  return cy.changeMetamaskNetwork(networkName ?? networkConfig.networkName)
 }
 
 export const acceptMetamaskAccess = () => {
@@ -115,8 +110,7 @@ export const acceptMetamaskAccess = () => {
 
 export const startWebApp = (
   url = '/',
-  qs: { [s: string]: string } = {},
-  isWalletConnected: boolean
+  qs: { [s: string]: string } = {}
 ) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
@@ -125,7 +119,10 @@ export const startWebApp = (
     qs
   })
   cy.connectToApp()
-  if (!isWalletConnected) {
-    acceptMetamaskAccess()
-  }
+  cy.task('getWalletConnectedToDapp').then(connected => {
+    if (!connected) {
+      acceptMetamaskAccess()
+      cy.task('setWalletConnectedToDapp')
+    }
+  })
 }

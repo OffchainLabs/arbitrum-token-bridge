@@ -8,37 +8,68 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { recurse } from 'cypress-recurse'
 import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
+
+function shouldChangeNetwork({
+  networkType,
+  networkName
+}: {
+  networkType: NetworkType
+  networkName: string
+}) {
+  // synpress throws if trying to connect to a network we are already connected to
+  // issue has been raised with synpress and this is just a workaround
+  // TODO: remove this whenever fixed
+
+  // currentNetworkType is stored after each network switch and used in the next login
+  return cy.task('getCurrentNetworkType').then(
+    async (currentNetworkType: NetworkType | null) => {
+      if (currentNetworkType === 'L1') {
+        const provider = new StaticJsonRpcProvider(Cypress.env('ETH_RPC_URL'))
+        const currentNetworkName = (await provider.getNetwork()).name
+        // change network if different network name or type
+        return currentNetworkName !== networkName || networkType === 'L2'
+      } else if (currentNetworkType === 'L2') {
+        // change network if different network type
+        // name is irrelevant because there is only one local L2
+        return networkType === 'L1'
+      } else {
+        // change network if network type hasn't been set yet
+        return true
+      }
+    }
+  )
+}
 
 export function login({
   networkType,
   networkName,
-  addNewNetwork = false,
-  shouldChangeNetwork = false,
-  isWalletConnected = true,
   url,
   query
 }: {
   networkType: NetworkType
   networkName?: string
-  addNewNetwork?: boolean
-  // re shouldChangeNetwork: synpress fails if we are trying to change to network we are already connected to
-  // TODO: this should be set up by checking cy.getNetwork() but it throws error inside the synpress library
-  // 3.5 might be fixing it, if not raise an issue
-  shouldChangeNetwork?: boolean
-  // to confirm metamask popup during the initial login
-  isWalletConnected?: boolean
   url?: string
   query?: { [s: string]: string }
 }) {
-  if (shouldChangeNetwork || addNewNetwork) {
-    setupMetamaskNetwork(networkType, networkName, addNewNetwork).then(() => {
-      startWebApp(url, query, isWalletConnected)
-    })
-  } else {
-    startWebApp(url, query, isWalletConnected)
+  function _startWebApp() {
+    startWebApp(url, query)
   }
+
+  shouldChangeNetwork({ networkType, networkName }).then(changeNetwork => {
+    if (changeNetwork) {
+      setupMetamaskNetwork(networkType, networkName).then(() => {
+        _startWebApp()
+      })
+    } else {
+      _startWebApp()
+    }
+
+    // set current network type
+    cy.task('setCurrentNetworkType', networkType)
+  })
 }
 
 Cypress.Commands.add(
