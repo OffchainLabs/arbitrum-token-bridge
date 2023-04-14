@@ -88,12 +88,18 @@ describe('Switch Networks', () => {
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
         cy.login({
-          networkType: 'L1',
-          networkName: 'Sepolia test network',
-          shouldChangeNetwork: true
+          networkType: 'L1'
         })
-        cy.findByText(/Oops! You’re connected to the wrong network/i).should(
-          'be.visible'
+        // Arbitrary waiting time has to be added to ensure Transfer Panel is loaded
+        // .waitUntil did not work as it causes the whole process including login to loop
+        cy.wait(3000)
+          .findByRole('button', { name: /From: Ethereum/i })
+          .should('be.visible')
+
+        cy.changeMetamaskNetwork('Sepolia test network').then(() =>
+          cy
+            .findByText(/Oops! You’re connected to the wrong network/i)
+            .should('be.visible')
         )
 
         context('Allow Network change from wrong network UI list', () => {
