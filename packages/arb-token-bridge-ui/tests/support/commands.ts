@@ -8,44 +8,23 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { recurse } from 'cypress-recurse'
-import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
+import {
+  NetworkType,
+  NetworkName,
+  startWebApp,
+  getL1NetworkConfig,
+  getL2NetworkConfig
+} from './common'
 
-function shouldChangeNetwork({
-  networkType,
-  networkName
-}: {
-  networkType: NetworkType
-  networkName?: string
-}) {
+function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
   // issue has been raised with synpress and this is just a workaround
   // TODO: remove this whenever fixed
-
-  // currentNetworkType is stored after each network switch and used in the next login
   return cy
-    .task('getCurrentNetworkType')
-    .then(async (currentNetworkType: NetworkType | null) => {
-      if (currentNetworkType === 'L1') {
-        const provider = new StaticJsonRpcProvider(Cypress.env('ETH_RPC_URL'))
-        const currentNetworkName = (await provider.getNetwork()).name
-        // change network if different network name or type
-        // unknown is returned for local networks
-        // if it doesn't match it means it changed because there's only one L1 and one L2 local network
-        // it works for other networks because networkName is provided for them
-        return (
-          currentNetworkName !== (networkName || 'unknown') ||
-          networkType === 'L2'
-        )
-      } else if (currentNetworkType === 'L2') {
-        // change network if different network type
-        // name is irrelevant because there is only one local L2
-        return networkType === 'L1'
-      } else {
-        // change network if network type hasn't been set yet
-        return true
-      }
+    .task('getCurrentNetworkName')
+    .then((currentNetworkName: NetworkName) => {
+      return currentNetworkName !== networkName
     })
 }
 
@@ -56,7 +35,7 @@ export function login({
   query
 }: {
   networkType: NetworkType
-  networkName?: string
+  networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
 }) {
@@ -64,17 +43,22 @@ export function login({
     startWebApp(url, query)
   }
 
-  shouldChangeNetwork({ networkType, networkName }).then(changeNetwork => {
+  // if networkName is not specified we connect to default network from config
+  networkName =
+    networkName ||
+    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
+      .networkName
+
+  shouldChangeNetwork(networkName).then(changeNetwork => {
     if (changeNetwork) {
-      setupMetamaskNetwork(networkType, networkName).then(() => {
+      cy.changeMetamaskNetwork(networkName).then(() => {
         _startWebApp()
       })
     } else {
       _startWebApp()
     }
 
-    // set current network type
-    cy.task('setCurrentNetworkType', networkType)
+    cy.task('setCurrentNetworkName', networkName)
   })
 }
 

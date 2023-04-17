@@ -8,7 +8,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 
 import {
-  NetworkType,
+  NetworkName,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
@@ -35,17 +35,17 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
-      let currentNetworkType: NetworkType | null = null
+      let currentNetworkName: NetworkName | null = null
       let networkSetupComplete = false
       let walletConnectedToDapp = false
 
       on('task', {
-        setCurrentNetworkType: (networkType: NetworkType) => {
-          currentNetworkType = networkType
+        setCurrentNetworkName: (networkName: NetworkName) => {
+          currentNetworkName = networkName
           return null
         },
-        getCurrentNetworkType: () => {
-          return currentNetworkType
+        getCurrentNetworkName: () => {
+          return currentNetworkName
         },
         setNetworkSetupComplete: () => {
           networkSetupComplete = true

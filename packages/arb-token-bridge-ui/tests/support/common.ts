@@ -7,10 +7,26 @@ import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
+export type NetworkName =
+  | 'localhost'
+  | 'custom-localhost'
+  | 'arbitrum-localhost'
+  | 'mainnet'
+  | 'goerli'
+  | 'Sepolia test network'
 
 export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
 
-export const getL1NetworkConfig = () => {
+type NetworkConfig = {
+  networkName: NetworkName
+  rpcUrl: string
+  chainId: string
+  symbol: string
+  isTestnet: boolean
+  multiCall: string
+}
+
+export const getL1NetworkConfig = (): NetworkConfig => {
   return {
     // reuse built-in Metamask network if possible
     // we add a new network in CI because of a different rpc url
@@ -26,7 +42,7 @@ export const getL1NetworkConfig = () => {
   }
 }
 
-export const getL2NetworkConfig = () => {
+export const getL2NetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
@@ -84,18 +100,6 @@ export async function getInitialERC20Balance(
     balanceOf: { account: Cypress.env('ADDRESS') }
   })
   return tokenData.balance
-}
-
-export const setupMetamaskNetwork = (
-  networkType: NetworkType,
-  networkName?: string
-) => {
-  // we want control over the metamask flow before our web app starts (because we might want to start from an L2 network)
-  // hence this additional network switch-check before actually starting the app
-  const networkConfig =
-    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
-
-  return cy.changeMetamaskNetwork(networkName ?? networkConfig.networkName)
 }
 
 export const acceptMetamaskAccess = () => {

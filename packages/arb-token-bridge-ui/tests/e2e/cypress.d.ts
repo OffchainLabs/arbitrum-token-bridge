@@ -8,7 +8,7 @@ import {
   restoreAppState,
   saveAppState
 } from '../support/commands'
-import { NetworkType } from '../support/common'
+import { NetworkType, NetworkName } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -21,7 +21,7 @@ declare global {
       // eslint-disable-next-line no-unused-vars
       login(options: {
         networkType: NetworkType
-        networkName?: string
+        networkName?: NetworkName
         url?: string
         query?: { [s: string]: string }
       }): typeof login
