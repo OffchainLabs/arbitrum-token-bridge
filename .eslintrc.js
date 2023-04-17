@@ -21,7 +21,7 @@ module.exports = {
     },
   },
   rules: {
-    "react/jsx-uses-react": "off", // we're using React 17+ so it's irrelevant TEST
+    "react/jsx-uses-react": "off", // we're using React 17+ so it's irrelevant
     "react/react-in-jsx-scope": "off", // we're using React 17+ so it's irrelevant
     "@typescript-eslint/explicit-module-boundary-types": "off", // allow type inference for function return type
     "@typescript-eslint/ban-ts-comment": [
