@@ -6,6 +6,17 @@ Are you a developer looking to explore the Arbitrum token bridge and its underly
 
 <br />
 
+<div style="padding:15px;border-radius:5px;background-color:rgba(125, 125, 125, 0.2);">
+
+### Arbitrum ❤️ Open-source
+
+Interested in contributing to this repo? We welcome your contribution.
+[Check out the contribution guidelines and instructions here](CONTRIBUTING.md).
+
+</div>
+
+<br />
+
 ---
 
 <br />
