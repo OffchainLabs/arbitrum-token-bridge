@@ -28,13 +28,7 @@ jobs:
         id: check-files
         run: |
           echo "=============== list modified files ==============="
-          git diff --name-only 
-      
-          echo "========== check paths of modified files =========="
-          git diff --name-only HEAD^ HEAD &gt; files.txt
-
-          while IFS= read -r file
-          do
+          git diff --name-only | while read -r file; do
             echo "$file"
             if [[ $file != packages/** ]]; then
             echo "::set-output name=run_e2e::false"
