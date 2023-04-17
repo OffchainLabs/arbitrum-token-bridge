@@ -26,7 +26,7 @@ Please avoid:
 
 ## Instructions to set up the code
 
-Please check our [README section](/readme.md) to find detailed instructions about the code setup, as well as running and testing the code locally.
+Please check our [README section](/README.md) to find detailed instructions about the code setup, as well as running and testing the code locally.
 
 <br />
 
@@ -36,7 +36,7 @@ Please check our [README section](/readme.md) to find detailed instructions abou
 
 ## Submitting a pull request
 
-1. Make the changes in your code locally. [Check setup instructions here](/readme.md).
+1. Make the changes in your code locally. [Check setup instructions here](/README.md).
 1. Create a new branch: `git checkout -b my-branch-name`
 1. Make your change, add tests, and make sure the tests and local builds still pass
 1. Push to your fork and [submit a pull request](https://github.com/OffchainLabs/arbitrum-token-bridge/pulls).
