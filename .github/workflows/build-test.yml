@@ -33,9 +33,9 @@ jobs:
           for file in $files; do
             echo "$file"
             if [[ $file != packages/* ]]; then
-            echo "{run_e2e}={false}" >> $GITHUB_OUTPUT
+            echo "run_e2e=false" >> $GITHUB_OUTPUT
           else
-            echo "{run_e2e}={true}" >> $GITHUB_OUTPUT
+            echo "run_e2e=true" >> $GITHUB_OUTPUT
             break
           fi
           done
