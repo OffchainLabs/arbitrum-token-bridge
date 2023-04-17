@@ -15,17 +15,15 @@ describe('Switch Networks', () => {
         // to view the correct list of networks (and not testnets), first navigate to mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'mainnet',
-          shouldChangeNetwork: true
+          networkName: 'mainnet'
         })
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Mainnet/i })
-              .should('be.visible')
+              .findByRole('button', { name: /From: Ethereum/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Mainnet/i",
+            errorMsg: "Can't find /From: Ethereum/i",
             timeout: 10000,
             interval: 500
           }
@@ -70,11 +68,10 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Mainnet/i })
-              .should('be.visible')
+              .findByRole('button', { name: /From: Ethereum/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Mainnet/i",
+            errorMsg: "Can't find /From: Ethereum/i",
             timeout: 10000,
             interval: 500
           }
