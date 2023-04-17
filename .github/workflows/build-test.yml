@@ -33,11 +33,9 @@ jobs:
           for file in $files; do
             echo "$file"
             if [[ $file != packages/* ]]; then
-            echo "matching"
-            echo "::set-output name=run_e2e::false"
+            echo "{run_e2e}={false}" >> $GITHUB_OUTPUT
           else
-            echo "not matching"
-            echo "::set-output name=run_e2e::true"
+            echo "{run_e2e}={true}" >> $GITHUB_OUTPUT
             break
           fi
           done
