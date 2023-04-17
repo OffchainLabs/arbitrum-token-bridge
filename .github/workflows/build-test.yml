@@ -20,13 +20,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       
       # run e2e only if /packages is changed
       - name: Check modified files
         id: check-files
         run: |
           echo "=============== list modified files ==============="
-          git diff --name-only HEAD^ HEAD
+          git diff --name-only 
       
           echo "========== check paths of modified files =========="
           git diff --name-only HEAD^ HEAD &gt; files.txt
