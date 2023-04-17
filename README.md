@@ -52,13 +52,7 @@ Interested in contributing to this repo? We welcome your contribution.
    $ yarn
    ```
 
-3. Build the project and internal packages
-
-   ```bash
-   $ yarn build
-   ```
-
-4. Set env vars:
+3. Set env vars:
 
    1. ```bash
       $ touch ./packages/arb-token-bridge-ui/.env`
@@ -72,6 +66,12 @@ Interested in contributing to this repo? We welcome your contribution.
    - `NEXT_PUBLIC_GOERLI_RPC_URL=my-goerli-node`
      (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
      If no custom URL is provided, Infura will be used by default.
+
+4. Build the project and internal packages
+
+   ```bash
+   $ yarn build
+   ```
 
 5. Finally, running the project
 
@@ -95,7 +95,7 @@ Interested in contributing to this repo? We welcome your contribution.
 
 ## Testing changes
 
-It is important for any code change to pass both unit and end-to-end tests. This is generally done before raising the PR to ensure it doesn't break anything existing.
+It is important for any code change to pass both unit and end-to-end tests. This is generally done before raising the PR to ensure it doesn't break any existing feature.
 
 <br />
 
@@ -117,7 +117,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 1. Run the token bridge UI locally on `http://localhost:3000/`
 
-2. Set env vars:
+2. Set env vars (one time):
 
    1. At this repository's root,
 
