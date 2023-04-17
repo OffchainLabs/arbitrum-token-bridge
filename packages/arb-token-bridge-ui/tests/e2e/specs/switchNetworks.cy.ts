@@ -5,7 +5,7 @@
 describe('Switch Networks', () => {
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
-      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
+      cy.login({ networkType: 'L1'})
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
     })
@@ -15,15 +15,16 @@ describe('Switch Networks', () => {
         // to view the correct list of networks (and not testnets), first navigate to mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'mainnet'
+          networkName: 'mainnet',
+          shouldChangeNetwork: true
         })
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Ethereum/i })
+              .findByRole('button', { name: /From: Mainnet/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Ethereum/i",
+            errorMsg: "Can't find /From: Mainnet/i",
             timeout: 10000,
             interval: 500
           }
@@ -68,10 +69,10 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Ethereum/i })
+              .findByRole('button', { name: /From: Mainnet/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Ethereum/i",
+            errorMsg: "Can't find /From: Mainnet/i",
             timeout: 10000,
             interval: 500
           }
