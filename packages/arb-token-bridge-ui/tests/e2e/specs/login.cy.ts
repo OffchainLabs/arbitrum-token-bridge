@@ -28,7 +28,7 @@ describe('Login Account', () => {
     cy.findByText('Connect to your MetaMask Wallet').should('be.visible')
   })
 
-  it('should connect wallet using MetaMask and display L1 and L2 balances!!!!', () => {
+  it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({
       networkType: 'L1',
       // we add a new network if RPC is different to already set up MetaMask local network
