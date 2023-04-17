@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 2
       
-      # run e2e only if /packages is changed
+      # run tests only if specific files are changed
       - name: Check modified files
         id: check-files
         run: |
