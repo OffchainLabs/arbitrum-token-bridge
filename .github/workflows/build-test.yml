@@ -12,6 +12,34 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  check-files:
+    name: Check files
+    outputs:
+      run_tests: ${{ steps.check-files.outputs.run_tests }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      
+      # run tests only if specific files are changed
+      - name: Check modified files
+        id: check-files
+        run: |
+          echo "=============== list modified files ==============="
+          files=`git diff --name-only HEAD^ HEAD`
+          echo "$files"
+          for file in $files; do
+            if [[ $file != packages/* ]] && [[ $file != yarn.lock ]]; then
+            echo "run_tests=false" >> $GITHUB_OUTPUT
+          else
+            echo "run_tests=true" >> $GITHUB_OUTPUT
+            break
+          fi
+          done
+        shell: bash
+
   install:
     name: "Install"
     runs-on: ubuntu-latest
@@ -42,7 +70,8 @@ jobs:
   test-sdk:
     name: "Test SDK"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, check-files]
+    if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -59,7 +88,8 @@ jobs:
   test-ui:
     name: "Test UI"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, check-files]
+    if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -105,7 +135,8 @@ jobs:
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
-    needs: install
+    needs: [install, check-files]
+    if: needs.check-files.outputs.run_tests == 'true'
 
     steps:
       - name: Checkout
