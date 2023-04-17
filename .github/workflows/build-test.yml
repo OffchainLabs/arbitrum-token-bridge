@@ -35,6 +35,7 @@ jobs:
             echo "::set-output name=run_e2e::true"
           fi
           done
+        shell: bash
 
   install:
     name: "Install"
