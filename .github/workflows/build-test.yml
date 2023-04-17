@@ -28,7 +28,7 @@ jobs:
         id: check-files
         run: |
           echo "=============== list modified files ==============="
-          files=`git diff --name-only`
+          files=`git diff --name-only HEAD^ HEAD`
           echo "$files"
           for file in $files; do
             echo "$file"
