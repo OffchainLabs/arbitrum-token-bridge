@@ -28,7 +28,9 @@ jobs:
         id: check-files
         run: |
           echo "=============== list modified files ==============="
-          git diff --name-only --porcelain | while read -r file; do
+          files=`git diff --name-only`
+          echo "$files"
+          for file in $files; do
             echo "$file"
             if [[ $file != packages/** ]]; then
             echo "::set-output name=run_e2e::false"
