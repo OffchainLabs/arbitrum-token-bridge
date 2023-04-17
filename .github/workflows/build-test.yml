@@ -32,7 +32,7 @@ jobs:
           echo "$files"
           for file in $files; do
             echo "$file"
-            if [[ $file != packages/** ]]; then
+            if [[ $file != packages/* ]]; then
             echo "::set-output name=run_e2e::false"
             break
           else
