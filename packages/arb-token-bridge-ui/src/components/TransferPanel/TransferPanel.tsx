@@ -119,6 +119,7 @@ export function TransferPanel() {
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
   const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
     onMutate: () => handleSwitchNetworkOnMutate({ isTx: true }),
     onError: handleSwitchNetworkError
   })

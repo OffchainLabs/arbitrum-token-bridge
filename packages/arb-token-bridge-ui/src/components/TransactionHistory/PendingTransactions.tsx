@@ -40,6 +40,7 @@ export const PendingTransactions = ({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
     onError: handleSwitchNetworkError
   })
 

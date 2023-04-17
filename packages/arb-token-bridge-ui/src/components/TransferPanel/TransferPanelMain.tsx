@@ -330,6 +330,7 @@ export function TransferPanelMain({
     useNetworksAndSigners()
 
   const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
     onMutate: () => handleSwitchNetworkOnMutate({ isTx: true }),
     onError: handleSwitchNetworkError
   })

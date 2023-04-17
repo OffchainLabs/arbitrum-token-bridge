@@ -18,6 +18,7 @@ export const NetworkSelectionContainer = ({
 }) => {
   const { chain } = useNetwork()
   const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
     onError: handleSwitchNetworkError
   })
   const supportedNetworks = isNetwork(chain?.id ?? 0).isTestnet
