@@ -15,5 +15,4 @@
 - [ ] ensure the unit tests pass with `yarn test`
   Tip: `yarn test --watch TestName` is helpful in development.
   Finally, if you haven't already, complete the CLA.
-TEST TEST TEST
 -->
