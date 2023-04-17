@@ -29,9 +29,6 @@ before(() => {
       // L2
       cy.addMetamaskNetwork(getL2NetworkConfig())
 
-      // to void the double connection issue
-      cy.changeMetamaskNetwork('goerli')
-
       cy.task('setNetworkSetupComplete')
     }
   })
