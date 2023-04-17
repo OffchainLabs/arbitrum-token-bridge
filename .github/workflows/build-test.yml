@@ -27,12 +27,12 @@ jobs:
         run: |
           while IFS= read -r file
           do
-            echo $file
+            echo "$file"
             if [[ $file != packages/** ]]; then
-            ::set-output name=run_e2e::false
+            echo "::set-output name=run_e2e::false"
             break
           else
-            ::set-output name=run_e2e::true
+            echo "::set-output name=run_e2e::true"
           fi
           done
 
