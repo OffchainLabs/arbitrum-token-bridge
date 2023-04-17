@@ -15,7 +15,7 @@ jobs:
   check-files:
     name: Check files
     outputs:
-      run_e2e: ${{ steps.check-files.outputs.run_e2e }}
+      run_tests: ${{ steps.check-files.outputs.run_tests }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,10 +32,10 @@ jobs:
           echo "$files"
           for file in $files; do
             echo "$file"
-            if [[ $file != packages/* ]]; then
-            echo "run_e2e=false" >> $GITHUB_OUTPUT
+            if [[ $file != packages/* ] | [ $file != yarn.lock ]]; then
+            echo "run_tests=false" >> $GITHUB_OUTPUT
           else
-            echo "run_e2e=true" >> $GITHUB_OUTPUT
+            echo "run_tests=true" >> $GITHUB_OUTPUT
             break
           fi
           done
@@ -71,7 +71,8 @@ jobs:
   test-sdk:
     name: "Test SDK"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, check-files]
+    if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -88,7 +89,8 @@ jobs:
   test-ui:
     name: "Test UI"
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, check-files]
+    if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -135,7 +137,7 @@ jobs:
     name: "Test E2E"
     runs-on: ubuntu-latest
     needs: [install, check-files]
-    if: needs.check-files.outputs.run_e2e == 'true'
+    if: needs.check-files.outputs.run_tests == 'true'
 
     steps:
       - name: Checkout
