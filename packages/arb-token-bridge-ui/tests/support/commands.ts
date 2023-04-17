@@ -8,6 +8,7 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import 'cypress-wait-until'
 import { recurse } from 'cypress-recurse'
 import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
 
