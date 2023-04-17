@@ -28,7 +28,7 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [[ $file != packages/* ]]; then
+            if [[ $file != packages/** ]]; then
             ::set-output name=run_e2e::false
             break
           else
