@@ -32,7 +32,7 @@ jobs:
           echo "$files"
           for file in $files; do
             echo "$file"
-            if [[ $file != packages/* ] | [ $file != yarn.lock ]]; then
+            if [[ $file != packages/* ] && [ $file != yarn.lock ]]; then
             echo "run_tests=false" >> $GITHUB_OUTPUT
           else
             echo "run_tests=true" >> $GITHUB_OUTPUT
