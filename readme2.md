@@ -4,21 +4,32 @@
 
 Are you a developer looking to explore the Arbitrum token bridge and its underlying technology? Then you've come to the right place! We'll walk you through the steps to run the Arbitrum token bridge website locally on your machine.
 
+<br />
+
+---
+
+<br />
+
 ## Prerequisites for running the code
 
 - Install [Node.js](https://nodejs.org/en/download/) for your platform
 - Install [VS Code](https://code.visualstudio.com/download) for your platform
 - Install [Yarn](https://classic.yarnpkg.com) - Package manager
-  - Find Yarn install guide for your system [here](https://classic.yarnpkg.com/en/docs/install)
 
-Within VS Code, we use a couple of tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
+- Within VS Code, we use a some tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
 
-- [Prettier](https://prettier.io) - Automatic code formatting
-  - Find Prettier integration for your code editor [here](https://prettier.io/docs/en/editors.html)
-- [EditorConfig](https://editorconfig.org) - Automatic file formatting
-  - Find EditorConfig integration for your code editor [here](https://editorconfig.org/#download)
-- [ESLint](https://eslint.org) - Static analysis for JavaScript
-  - Find ESLint integration for your code editor [here](https://eslint.org/docs/latest/user-guide/integrations#editors)
+  - [Prettier](https://prettier.io) - Automatic code formatting
+    - Find Prettier integration for your code editor [here](https://prettier.io/docs/en/editors.html)
+  - [EditorConfig](https://editorconfig.org) - Automatic file formatting
+    - Find EditorConfig integration for your code editor [here](https://editorconfig.org/#download)
+  - [ESLint](https://eslint.org) - Static analysis for JavaScript
+    - Find ESLint integration for your code editor [here](https://eslint.org/docs/latest/user-guide/integrations#editors)
+
+<br />
+
+---
+
+<br />
 
 ## Steps to run the code locally
 
@@ -69,9 +80,17 @@ Within VS Code, we use a couple of tools to automate things (e.g. code formattin
       ```
    3. Visit `http://localhost:3000/`
 
+<br />
+
+---
+
+<br />
+
 ## Testing changes
 
 It is important for any code change to pass both unit and end-to-end tests. This is generally done before raising the PR to ensure it doesn't break anything existing.
+
+<br />
 
 ### Run unit Tests
 
@@ -84,6 +103,8 @@ It is important for any code change to pass both unit and end-to-end tests. This
    ```bash
    $ yarn test:ci:ui
    ```
+
+<br />
 
 ### Run end to end (E2E) Tests
 
@@ -104,4 +125,10 @@ It is important for any code change to pass both unit and end-to-end tests. This
    $ yarn test:e2e
    ```
 
-Read more about the setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
+Read more about the test setup [here](/packages/arb-token-bridge-ui/tests/e2e/readme.md).
+
+<br />
+
+---
+
+<br />
