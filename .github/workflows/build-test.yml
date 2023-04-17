@@ -33,8 +33,10 @@ jobs:
           for file in $files; do
             echo "$file"
             if [[ $file != packages/* ]]; then
+            echo "matching"
             echo "::set-output name=run_e2e::false"
           else
+            echo "not matching"
             echo "::set-output name=run_e2e::true"
             break
           fi
