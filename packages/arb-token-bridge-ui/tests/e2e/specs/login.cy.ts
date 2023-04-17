@@ -35,7 +35,7 @@ describe('Login Account', () => {
       // this is the case for CI where we use a different RPC url
       addNewNetwork: Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl,
       shouldChangeNetwork: true,
-      // first connection, need to confirm metamask popup !!!
+      // first connection, need to confirm metamask popup
       isWalletConnected: false
     })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
