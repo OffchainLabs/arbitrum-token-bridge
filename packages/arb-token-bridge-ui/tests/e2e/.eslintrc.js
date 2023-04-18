@@ -20,6 +20,7 @@ module.exports = {
       }
     ],
     // Cypress awaiting by default
-    'testing-library/await-async-query': 'off'
+    'testing-library/await-async-query': 'off',
+    '@typescript-eslint/no-empty-function': 'off'
   }
 }

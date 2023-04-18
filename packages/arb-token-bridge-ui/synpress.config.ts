@@ -7,25 +7,21 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 
-import { registerLocalNetwork } from './src/util/networks'
 import {
-  ethRpcUrl,
-  arbRpcUrl,
+  NetworkName,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
+import { registerLocalNetwork } from './src/util/networks'
 
 export default defineConfig({
   userAgent: 'synpress',
-  retries: {
-    // Configure retry attempts for `cypress run`
-    // Default is 0
-    runMode: 0,
-    openMode: 0
-  },
+  // in CI synpress might sometimes need to try multiple times, fixes flakiness.
+  retries: 4,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: false,
+  screenshotOnRunFailure: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
   viewportWidth: 1366,
@@ -39,7 +35,45 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      let currentNetworkName: NetworkName | null = null
+      let networkSetupComplete = false
+      let walletConnectedToDapp = false
+
+      on('task', {
+        setCurrentNetworkName: (networkName: NetworkName) => {
+          currentNetworkName = networkName
+          return null
+        },
+        getCurrentNetworkName: () => {
+          return currentNetworkName
+        },
+        setNetworkSetupComplete: () => {
+          networkSetupComplete = true
+          return null
+        },
+        getNetworkSetupComplete: () => {
+          return networkSetupComplete
+        },
+        setWalletConnectedToDapp: () => {
+          walletConnectedToDapp = true
+          return null
+        },
+        getWalletConnectedToDapp: () => {
+          return walletConnectedToDapp
+        }
+      })
+
       registerLocalNetwork()
+
+      const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+      const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+
+      if (!ethRpcUrl) {
+        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+      }
+      if (!arbRpcUrl) {
+        throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+      }
 
       const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
       const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
@@ -126,6 +160,8 @@ export default defineConfig({
         )
         await tx.wait()
       })
+      config.env.ETH_RPC_URL = ethRpcUrl
+      config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -145,7 +181,7 @@ export default defineConfig({
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
-      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20
       'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20

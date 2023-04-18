@@ -1,3 +1,4 @@
+/* global JQuery */
 import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
@@ -5,10 +6,9 @@ import {
   logout,
   openTransactionsPanel,
   restoreAppState,
-  saveAppState,
-  closeLowBalanceDialog
+  saveAppState
 } from '../support/commands'
-import { NetworkType } from '../support/common'
+import { NetworkType, NetworkName } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -21,7 +21,7 @@ declare global {
       // eslint-disable-next-line no-unused-vars
       login(options: {
         networkType: NetworkType
-        addNewNetwork?: boolean
+        networkName?: NetworkName
         url?: string
         query?: { [s: string]: string }
       }): typeof login
@@ -29,7 +29,7 @@ declare global {
       restoreAppState(): typeof restoreAppState
       saveAppState(): typeof saveAppState
       openTransactionsPanel(): typeof openTransactionsPanel
-      closeLowBalanceDialog(): typeof closeLowBalanceDialog
+      typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
     }
   }
 }

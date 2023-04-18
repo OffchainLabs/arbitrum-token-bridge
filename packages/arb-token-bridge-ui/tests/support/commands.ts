@@ -8,40 +8,92 @@
 // ***********************************************
 
 import '@testing-library/cypress/add-commands'
+import { recurse } from 'cypress-recurse'
 import {
-  l1NetworkConfig,
   NetworkType,
-  setupMetamaskNetwork,
-  startWebApp
+  NetworkName,
+  startWebApp,
+  getL1NetworkConfig,
+  getL2NetworkConfig
 } from './common'
+
+function shouldChangeNetwork(networkName: NetworkName) {
+  // synpress throws if trying to connect to a network we are already connected to
+  // issue has been raised with synpress and this is just a workaround
+  // TODO: remove this whenever fixed
+  return cy
+    .task('getCurrentNetworkName')
+    .then((currentNetworkName: NetworkName) => {
+      return currentNetworkName !== networkName
+    })
+}
 
 export function login({
   networkType,
-  addNewNetwork = false,
+  networkName,
   url,
   query
 }: {
   networkType: NetworkType
-  addNewNetwork?: boolean
+  networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
 }) {
-  setupMetamaskNetwork(networkType, addNewNetwork).then(() => {
+  function _startWebApp() {
     startWebApp(url, query)
+  }
+
+  // if networkName is not specified we connect to default network from config
+  networkName =
+    networkName ||
+    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
+      .networkName
+
+  shouldChangeNetwork(networkName).then(changeNetwork => {
+    if (changeNetwork) {
+      cy.changeMetamaskNetwork(networkName).then(() => {
+        _startWebApp()
+      })
+    } else {
+      _startWebApp()
+    }
+
+    cy.task('setCurrentNetworkName', networkName)
   })
 }
 
+Cypress.Commands.add(
+  'typeRecursively',
+  { prevSubject: true },
+  (subject, text: string) => {
+    recurse(
+      // the commands to repeat, and they yield the input element
+      () =>
+        cy.wrap(subject).clear({ scrollBehavior: false }).type(text, {
+          scrollBehavior: false
+        }),
+      // the predicate takes the output of the above commands
+      // and returns a boolean. If it returns true, the recursion stops
+      $input => $input.val() === text,
+      {
+        log: false,
+        timeout: 180_000
+      }
+    )
+      // the recursion yields whatever the command function yields
+      // and we can confirm that the text was entered correctly
+      .should('have.value', text)
+  }
+)
+
 // once all assertions are run, before test exit, make sure web-app is reset to original
 export const logout = () => {
-  cy.switchToCypressWindow().then(() => {
-    cy.changeMetamaskNetwork(l1NetworkConfig.networkName).then(() => {
-      // disconnect-metamask-wallet hangs if already not connected to metamask,
-      // so we do it while logout instead of before login.
-      cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-        cy.switchToCypressWindow().then(() => {
-          cy.resetMetamaskAccount()
-        })
-      })
+  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
+    cy.resetMetamaskAccount().then(() => {
+      // resetMetamaskAccount doesn't seem to remove the connected network in CI
+      // changeMetamaskNetwork fails if already connected to the desired network
+      // as a workaround we switch to another network after all the tests
+      cy.changeMetamaskNetwork('goerli')
     })
   })
 }
@@ -67,12 +119,6 @@ export const connectToApp = () => {
   cy.findByText('Connect to your MetaMask Wallet').should('be.visible').click()
 }
 
-export const closeLowBalanceDialog = () => {
-  cy.findByRole('button', { name: /go to bridge/i })
-    .should('be.visible')
-    .click()
-}
-
 export const openTransactionsPanel = () => {
   cy.findByRole('button', { name: /account header button/i })
     .should('be.visible')
@@ -89,6 +135,5 @@ Cypress.Commands.addAll({
   logout,
   restoreAppState,
   saveAppState,
-  openTransactionsPanel,
-  closeLowBalanceDialog
+  openTransactionsPanel
 })
