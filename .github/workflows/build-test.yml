@@ -135,7 +135,7 @@ jobs:
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
-    needs: [install, check-files]
+    needs: [build, check-files]
     if: needs.check-files.outputs.run_tests == 'true'
 
     steps:
@@ -176,7 +176,6 @@ jobs:
       - name: Make .env
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
           envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env
@@ -196,6 +195,9 @@ jobs:
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
+
+      - name: Restore build artifacts
+        uses: ./.github/actions/build-artifacts/restore
 
       - name: Run e2e tests
         run: |

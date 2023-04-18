@@ -17,10 +17,7 @@ import { Layout } from '../components/common/Layout'
 import '../styles/tailwind.css'
 import '../styles/purple.css'
 
-if (
-  process.env.NODE_ENV !== 'production' ||
-  process.env.NEXT_PUBLIC_IS_E2E_TEST
-) {
+if (process.env.NODE_ENV !== 'production' || window.Cypress) {
   registerLocalNetwork()
 }
 
