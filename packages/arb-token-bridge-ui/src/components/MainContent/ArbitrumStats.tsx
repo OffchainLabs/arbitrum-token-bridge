@@ -1,7 +1,7 @@
 import { utils } from 'ethers'
 import { useGasPrice } from 'token-bridge-sdk'
-import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
 
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useArbStats } from '../../hooks/useArbStats'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'

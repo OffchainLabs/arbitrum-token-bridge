@@ -1,5 +1,5 @@
-import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
-import { THEME_CONFIG, useTheme, classicThemeKey } from 'src/hooks/useTheme'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
