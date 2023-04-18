@@ -5,13 +5,13 @@ import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 
-import { arbitrumNova } from './util/arbitrumNova'
 import {
+  arbitrumNova,
   localL1Network as local,
   localL2Network as arbitrumLocal
-} from './util/localNetworksForTests'
-import { rpcURLs } from './util/networks'
-import { isTestingEnvironment } from './util/CommonUtils'
+} from './wagmiAdditionalNetworks'
+import { rpcURLs } from '../networks'
+import { isTestingEnvironment } from '../CommonUtils'
 
 const chainList = isTestingEnvironment
   ? [

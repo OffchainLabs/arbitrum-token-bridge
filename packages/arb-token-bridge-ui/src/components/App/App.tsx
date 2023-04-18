@@ -50,7 +50,7 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
-import { appInfo, chains, wagmiClient } from '../../setupWagmi'
+import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
 
 declare global {
   interface Window {
