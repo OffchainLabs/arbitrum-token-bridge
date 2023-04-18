@@ -43,13 +43,6 @@ export enum ChainId {
   ArbitrumLocal = 412346
 }
 
-type ExtendedWeb3Provider = Web3Provider & {
-  provider: ExternalProvider & {
-    isMetaMask?: boolean
-    isImToken?: boolean
-  }
-}
-
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Mainnet]: loadEnvironmentVariableWithFallback({
@@ -296,6 +289,12 @@ export function getNetworkLogo(chainId: number) {
     default:
       return '/images/EthereumLogo.webp'
   }
+}
+
+export function getSupportedNetworks(chainId = 0) {
+  return isNetwork(chainId).isTestnet
+    ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+    : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 }
 
 const onSwitchChainNotSupported = (

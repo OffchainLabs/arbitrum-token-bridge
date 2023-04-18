@@ -39,7 +39,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, ChainId } from '../../util/networks'
+import { isNetwork, getSupportedNetworks } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -286,9 +286,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = isNetwork(props.chainId).isTestnet
-        ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
-        : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+      const supportedNetworks = getSupportedNetworks(props.chainId)
 
       return (
         <>

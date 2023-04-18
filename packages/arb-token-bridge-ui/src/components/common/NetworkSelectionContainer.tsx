@@ -7,8 +7,8 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  handleSwitchNetworkError,
-  isNetwork
+  getSupportedNetworks,
+  handleSwitchNetworkError
 } from '../../util/networks'
 
 export const NetworkSelectionContainer = ({
@@ -21,9 +21,7 @@ export const NetworkSelectionContainer = ({
     throwForSwitchChainNotSupported: true,
     onError: handleSwitchNetworkError
   })
-  const supportedNetworks = isNetwork(chain?.id ?? 0).isTestnet
-    ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
-    : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+  const supportedNetworks = getSupportedNetworks(chain?.id)
 
   const handleClick = useCallback(
     (
