@@ -3,7 +3,6 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 import * as Sentry from '@sentry/react'
 import { SwitchNetworkArgs } from '@wagmi/core'
