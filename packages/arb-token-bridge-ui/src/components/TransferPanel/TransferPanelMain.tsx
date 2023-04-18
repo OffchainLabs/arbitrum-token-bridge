@@ -331,7 +331,8 @@ export function TransferPanelMain({
 
   const { switchNetwork } = useSwitchNetwork({
     throwForSwitchChainNotSupported: true,
-    onMutate: () => handleSwitchNetworkOnMutate({ isTx: true }),
+    onMutate: () =>
+      handleSwitchNetworkOnMutate({ isAttemptingToPerformTx: true }),
     onError: handleSwitchNetworkError
   })
 

@@ -298,20 +298,15 @@ export function getNetworkLogo(chainId: number) {
   }
 }
 
-export type SwitchChainProps = {
-  chainId: number
-  provider: ExtendedWeb3Provider
-  onSuccess?: () => void
-  onError?: (err?: Error) => void
-  onSwitchChainNotSupported?: (attemptedChainId: number) => void
-}
-
-const onSwitchChainNotSupported = (attemptedChainId: number, isTx: boolean) => {
+const onSwitchChainNotSupported = (
+  attemptedChainId: number,
+  isAttemptingToPerformTx: boolean
+) => {
   const isDeposit = isNetwork(attemptedChainId).isEthereum
   const targetTxName = isDeposit ? 'deposit' : 'withdraw'
   const networkName = getNetworkName(attemptedChainId)
 
-  const message = isTx
+  const message = isAttemptingToPerformTx
     ? `Please connect to ${networkName} on your wallet before signing your ${targetTxName} transaction.`
     : `Please connect to ${networkName} on your wallet.`
 
@@ -320,27 +315,48 @@ const onSwitchChainNotSupported = (attemptedChainId: number, isTx: boolean) => {
   alert(message)
 }
 
+/**
+ * Function to invoke when an error is thrown while attempting to switch network.
+ * https://wagmi.sh/react/hooks/useSwitchNetwork#onerror-optional
+ * @param error
+ * @param param1 - `{ chainId: number }`
+ * @param context - default value `{ isAttemptingToPerformTx: false }`
+ */
 export function handleSwitchNetworkError(
   error: any,
   { chainId }: SwitchNetworkArgs,
-  context: unknown = { isTx: false }
+  context: unknown = { isAttemptingToPerformTx: false }
 ) {
-  const { isTx } = context as { isTx: boolean }
+  const { isAttemptingToPerformTx } = context as {
+    isAttemptingToPerformTx: boolean
+  }
   if (isUserRejectedError(error)) {
     return
   }
   if (error.name === 'SwitchChainNotSupportedError') {
-    onSwitchChainNotSupported(chainId, isTx)
+    onSwitchChainNotSupported(chainId, isAttemptingToPerformTx)
   }
   Sentry.captureException(error)
 }
 
+/**
+ * The return value will be the `context` param received by the error
+ * handler of `switchNetwork`.
+ *
+ * Function fires before switch network function and is passed same
+ * variables switch network function would receive.
+ * Value returned from this function will be passed to both `onError` and
+ * `onSettled` functions in event of a switch network failure.
+ * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
+ *
+ * @returns `{ isAttemptingtoPerformTx: boolean }`
+ */
 export function handleSwitchNetworkOnMutate({
-  isTx = false
+  isAttemptingToPerformTx = false
 }: {
-  isTx: boolean
+  isAttemptingToPerformTx: boolean
 }) {
   return {
-    isTx
+    isAttemptingToPerformTx
   }
 }
