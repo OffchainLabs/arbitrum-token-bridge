@@ -128,7 +128,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 2. Set env vars (one time):
 
-   1. At this repository's root,
+   1. At this folder's root,
 
       ```bash
       $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
