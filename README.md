@@ -20,6 +20,7 @@ Interested in contributing to this repo? We welcome your contribution.
 ## Prerequisites for running the code
 
 - Install [Node.js](https://nodejs.org/en/download/) for your platform
+- Install [Node Version Manager (nvm)](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/) to setup the correct Node version for the project.
 - Install [VS Code](https://code.visualstudio.com/download) for your platform
 - Install [Yarn](https://classic.yarnpkg.com) - Package manager
 
@@ -46,16 +47,24 @@ Interested in contributing to this repo? We welcome your contribution.
    $ git clone https://github.com/OffchainLabs/arb-token-bridge
    ```
 
-2. Install dependencies in all packages using yarn
+1. Use the Node version as per project settings to avoid any errors before project installation.
+
+   ```bash
+   $ nvm use
+   ```
+
+1. Install dependencies in all packages using yarn.
 
    ```bash
    $ yarn
    ```
 
-3. Set env vars:
+1. Set env vars:
 
-   1. ```bash
-      $ touch ./packages/arb-token-bridge-ui/.env`
+   1. Copy the existing env.sample file present.
+
+      ```bash
+      $ cp ./packages/arb-token-bridge-ui/.env.local.sample  ./packages/arb-token-bridge-ui/.env
       ```
 
    2. In `.env` created, add `NEXT_PUBLIC_INFURA_KEY=my-infura-key`
@@ -67,13 +76,13 @@ Interested in contributing to this repo? We welcome your contribution.
      (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
      If no custom URL is provided, Infura will be used by default.
 
-4. Build the project and internal packages
+1. Build the project and internal packages
 
    ```bash
    $ yarn build
    ```
 
-5. Finally, running the project
+1. Finally, running the project
 
    1. (back in root dir:)
 
