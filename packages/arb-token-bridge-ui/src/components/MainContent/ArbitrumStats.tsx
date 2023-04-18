@@ -1,10 +1,12 @@
 import { utils } from 'ethers'
-import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
 import { useGasPrice } from 'token-bridge-sdk'
+import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
+
 import { useArbStats } from '../../hooks/useArbStats'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
+import { useAppContextState } from '../App/AppContext'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
   if (gasPrice < 20) return { className: 'text-[#008000]' }
@@ -20,6 +22,9 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 
 export const ArbitrumStats = () => {
   const [, setQueryParams] = useArbQueryParams()
+  const {
+    layout: { isPreferencesPanelVisible }
+  } = useAppContextState()
 
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -93,12 +98,15 @@ export const ArbitrumStats = () => {
         )}
       </div>
 
-      <button
-        className="absolute right-4 top-4 cursor-pointer"
-        onClick={closeArbitrumStats}
-      >
-        [x]
-      </button>
+      {/* Don't show the close button if the preferences panel is visible */}
+      {!isPreferencesPanelVisible && (
+        <button
+          className="absolute right-4 top-4 cursor-pointer"
+          onClick={closeArbitrumStats}
+        >
+          [x]
+        </button>
+      )}
     </div>
   )
 }

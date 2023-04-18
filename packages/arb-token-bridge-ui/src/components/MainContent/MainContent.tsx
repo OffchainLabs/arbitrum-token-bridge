@@ -1,17 +1,17 @@
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
-import { useEffect, useState } from 'react'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
-import { useArbQueryParams } from 'src/hooks/useArbQueryParams'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export const motionDivProps = {
   layout: true,

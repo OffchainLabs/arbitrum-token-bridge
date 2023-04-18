@@ -2,8 +2,8 @@
 
 import axios from 'axios'
 import { load } from 'cheerio'
-
 import { NextApiRequest, NextApiResponse } from 'next'
+
 import { getExplorerUrl, isNetwork } from 'src/util/networks'
 
 // Extending the standard NextJs request with Deposit-params
