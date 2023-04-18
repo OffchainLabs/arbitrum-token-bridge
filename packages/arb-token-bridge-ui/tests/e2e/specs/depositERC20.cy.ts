@@ -35,7 +35,7 @@ describe('Deposit ERC20 Token', () => {
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
-      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
+      cy.login({ networkType: 'L1' })
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: 'Select Token' })
