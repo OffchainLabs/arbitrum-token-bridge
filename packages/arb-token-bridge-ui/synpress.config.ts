@@ -168,11 +168,12 @@ function getWethContract(
 
 async function wrapEth(networkType: 'L1' | 'L2') {
   console.log(`Wrapping ETH: ${networkType}...`)
+  const amount = networkType === 'L1' ? '0.2' : '0.1'
   const tx = await getWethContract(
     networkType === 'L1' ? ethProvider : arbProvider,
     wethTokenAddressL1
   ).deposit({
-    value: utils.parseEther('0.2')
+    value: utils.parseEther(amount)
   })
   await tx.wait()
 }
