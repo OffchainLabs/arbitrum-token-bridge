@@ -24,6 +24,7 @@ export default defineConfig({
   screenshotOnRunFailure: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
+  scrollBehavior: false,
   viewportWidth: 1366,
   viewportHeight: 850,
   env: {
@@ -32,7 +33,6 @@ export default defineConfig({
   defaultCommandTimeout: 30000,
   pageLoadTimeout: 30000,
   requestTimeout: 30000,
-  scrollBehavior: false,
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
@@ -69,6 +69,7 @@ export default defineConfig({
       await fundUserWallet('L1')
       // L2
       await fundUserWallet('L2')
+
       // Wrap ETH to test ERC-20 transactions
       // L1
       await wrapEth('L1')
@@ -125,7 +126,6 @@ async function deployERC20ToL1() {
   const contract = new TestERC20__factory().connect(
     localWallet.connect(ethProvider)
   )
-  // Deploy ERC-20 token to L1
   const token = await contract.deploy()
   await token.deployed()
 
@@ -169,10 +169,9 @@ function getWethContract(
 async function wrapEth(networkType: 'L1' | 'L2') {
   console.log(`Wrapping ETH: ${networkType}...`)
   const amount = networkType === 'L1' ? '0.2' : '0.1'
-  const tx = await getWethContract(
-    networkType === 'L1' ? ethProvider : arbProvider,
-    wethTokenAddressL1
-  ).deposit({
+  const address = networkType === 'L1' ? wethTokenAddressL1 : wethTokenAddressL2
+  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const tx = await getWethContract(provider, address).deposit({
     value: utils.parseEther(amount)
   })
   await tx.wait()
