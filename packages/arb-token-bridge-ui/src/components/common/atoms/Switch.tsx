@@ -1,7 +1,3 @@
-/*
-  Standardized Toggle-switch 
-*/
-
 import { Switch as HeadlessSwitch } from '@headlessui/react'
 
 export type SwitchProps = {

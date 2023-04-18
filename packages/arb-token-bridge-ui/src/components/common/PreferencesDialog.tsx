@@ -1,4 +1,4 @@
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import useLocalStorage from '@rehooks/local-storage'
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { Radio } from './atoms/Radio'
@@ -16,19 +16,19 @@ export const PreferencesDialog = () => {
 
   const { closePreferences } = useAppContextActions()
 
-  const [{ stats: isArbitrumStatsVisible }, setQueryParams] =
-    useArbQueryParams()
+  const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
+    useLocalStorage<boolean>('isArbitrumStatsVisible')
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =
     _selectedTheme === classicThemeKey ? classicThemeKey : ''
 
   const openArbitrumStats = () => {
-    setQueryParams({ stats: true })
+    setIsArbitrumStatsVisible(true)
   }
 
   const closeArbitrumStats = () => {
-    setQueryParams({ stats: false })
+    setIsArbitrumStatsVisible(false)
   }
 
   return (
@@ -36,7 +36,7 @@ export const PreferencesDialog = () => {
       isOpen={isPreferencesPanelVisible}
       heading="Preferences"
       onClose={closePreferences}
-      overridePanelClasses="lg:!w-[600px] !min-w-[350px]" // custom width
+      panelClassNameOverrides="lg:!w-[600px] !min-w-[350px]" // custom width
     >
       <div className="flex w-full flex-col items-center gap-8 text-white">
         {/* Theme selection radio */}
@@ -65,7 +65,7 @@ export const PreferencesDialog = () => {
             label="Show Network Stats"
             description="Show live, nerdy stats about Ethereum and Arbitrum chains, like
         block number and current gas price."
-            checked={isArbitrumStatsVisible}
+            checked={!!isArbitrumStatsVisible}
             onChange={
               isArbitrumStatsVisible ? closeArbitrumStats : openArbitrumStats
             }

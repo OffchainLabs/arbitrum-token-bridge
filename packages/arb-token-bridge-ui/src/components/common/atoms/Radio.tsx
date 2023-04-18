@@ -1,7 +1,3 @@
-/*
-  Standardized Radio input
-*/
-
 import { RadioGroup } from '@headlessui/react'
 
 export type RadioType<T> = {

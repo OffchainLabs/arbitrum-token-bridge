@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import useLocalStorage from '@rehooks/local-storage'
+
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
@@ -11,7 +13,6 @@ import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export const motionDivProps = {
   layout: true,
@@ -35,7 +36,9 @@ export function MainContent() {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
 
-  const [{ stats: isArbitrumStatsVisible }] = useArbQueryParams()
+  const [isArbitrumStatsVisible] = useLocalStorage<boolean>(
+    'isArbitrumStatsVisible'
+  )
 
   const {
     app: { arbTokenBridge }

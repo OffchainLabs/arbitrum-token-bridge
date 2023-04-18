@@ -1,7 +1,7 @@
 import { utils } from 'ethers'
 import { useGasPrice } from 'token-bridge-sdk'
 
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import useLocalStorage from '@rehooks/local-storage'
 import { useArbStats } from '../../hooks/useArbStats'
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -21,7 +21,9 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 }
 
 export const ArbitrumStats = () => {
-  const [, setQueryParams] = useArbQueryParams()
+  const [, setIsArbitrumStatsVisible] = useLocalStorage<boolean>(
+    'isArbitrumStatsVisible'
+  )
   const {
     layout: { isPreferencesPanelVisible }
   } = useAppContextState()
@@ -46,7 +48,7 @@ export const ArbitrumStats = () => {
   )
 
   const closeArbitrumStats = () => {
-    setQueryParams({ stats: false })
+    setIsArbitrumStatsVisible(false)
   }
 
   return (
@@ -86,14 +88,15 @@ export const ArbitrumStats = () => {
           &gt; Gas price:{' '}
           <span className={`${currentL2Activity.className}`}>
             {' '}
-            {Number(currentL2GasPriceGwei).toFixed(2)}
+            {Number(currentL2GasPriceGwei).toFixed(2)} Gwei{' '}
           </span>
         </span>
 
         {/* TPS info is not available for testnets */}
         {!isNetwork(l2.network.chainID).isTestnet && (
           <span>
-            &gt; TPS: {arbStatsLoading ? 'Loading...' : arbStats?.tps || '-'}
+            &gt; TPS:{' '}
+            {arbStatsLoading ? 'Loading...' : `${arbStats?.tps} TPS` ?? '-'}
           </span>
         )}
       </div>

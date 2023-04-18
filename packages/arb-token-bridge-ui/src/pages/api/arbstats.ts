@@ -14,7 +14,7 @@ type NextApiRequestWithArbStatsParams = NextApiRequest & {
 }
 
 export type ArbStats = {
-  tps: string
+  tps: number | null
 }
 
 type StatsResponse = {
@@ -22,7 +22,7 @@ type StatsResponse = {
   message?: string // in case of any error
 }
 
-const emptyStats: ArbStats = { tps: '' }
+const emptyStats: ArbStats = { tps: null }
 
 export default async function handler(
   req: NextApiRequestWithArbStatsParams,
@@ -55,8 +55,13 @@ export default async function handler(
 
     // if the network is not ArbOne or Nova, or no explorer URL then we don't have the required stats on the explorer
     // don't unnecessarily call fetch function. return empty stats.
-    if (isNetwork(Number(l2ChainId)).isTestnet || !explorerUrl) {
-      res.status(200).json({
+    if (
+      isNetwork(Number(l2ChainId)).isTestnet ||
+      !isNetwork(Number(l2ChainId)).isSupported ||
+      !explorerUrl
+    ) {
+      res.status(400).json({
+        message: `unsupported network type: ${l2ChainId}`,
         data: emptyStats
       })
       return
@@ -72,11 +77,14 @@ export default async function handler(
     const tpsElement = $(
       'span[title="Transactions per Second - Adjusted for Arbitrum Nitro system txs"]'
     )
-    const tps = (tpsElement?.text() || '').trim().replace(/[()]/g, '')
+    const tps = (tpsElement?.text() || '')
+      .trim()
+      .replace(/[()]/g, '')
+      .split(' ')[0]
 
     if (tps) res.setHeader('Cache-Control', 'max-age=60, public')
     res.status(200).json({
-      data: { tps }
+      data: { tps: isNaN(Number(tps)) ? null : Number(tps) }
     })
   } catch (error: any) {
     res.status(500).json({

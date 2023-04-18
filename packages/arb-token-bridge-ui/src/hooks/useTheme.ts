@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useArbQueryParams } from './useArbQueryParams'
+import useLocalStorage from '@rehooks/local-storage'
 
 export const classicThemeKey = 'arbitrum-classic-theme'
 
@@ -21,14 +21,10 @@ export const THEME_CONFIG = [
 ]
 
 export const useTheme = () => {
-  const [{ theme }, setQueryParams] = useArbQueryParams()
-
-  const setTheme = (_theme: string) => {
-    setQueryParams({ theme: _theme })
-  }
+  const [theme, setTheme] = useLocalStorage<string>('theme')
 
   useEffect(() => {
-    document.body.className = theme
+    document.body.className = theme || ''
   }, [theme])
 
   return [theme, setTheme] as const
