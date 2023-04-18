@@ -191,8 +191,8 @@ export const useArbTokenBridge = (
     try {
       tx = (
         destinationAddress
-          // send ETH to a custom address
-          ? await ethBridger.depositTo({
+          ? // send ETH to a custom address
+            await ethBridger.depositTo({
               amount,
               l1Signer,
               l2Provider: l2.provider,
