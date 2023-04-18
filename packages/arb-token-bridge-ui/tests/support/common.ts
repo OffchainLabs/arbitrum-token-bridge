@@ -66,7 +66,7 @@ export const importTokenThroughUI = (address: string) => {
   cy.findByRole('button', { name: 'Select Token' })
     .should('be.visible')
     .should('have.text', 'ETH')
-    .click({ scrollBehavior: false })
+    .click()
 
   // open the Select Token popup
   return cy
@@ -77,7 +77,7 @@ export const importTokenThroughUI = (address: string) => {
       // Click on the Add new token button
       cy.findByRole('button', { name: 'Add New Token' })
         .should('be.visible')
-        .click({ scrollBehavior: false })
+        .click()
     })
 }
 

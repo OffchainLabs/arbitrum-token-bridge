@@ -74,7 +74,7 @@ describe('Withdraw ETH', () => {
             })
               .should('be.visible')
               .should('be.enabled')
-              .click({ scrollBehavior: false })
+              .click()
             cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
 
             // the Continue withdrawal button should be disabled at first
@@ -86,20 +86,20 @@ describe('Withdraw ETH', () => {
               name: /before I can claim my funds/i
             })
               .should('be.visible')
-              .click({ scrollBehavior: false })
+              .click()
 
             cy.findByRole('switch', {
               name: /after claiming my funds/i
             })
               .should('be.visible')
-              .click({ scrollBehavior: false })
+              .click()
               .then(() => {
                 // the Continue withdrawal button should not be disabled now
                 cy.findByRole('button', {
                   name: /Continue/i
                 })
                   .should('be.enabled')
-                  .click({ scrollBehavior: false })
+                  .click()
                   .then(() => {
                     cy.confirmMetamaskTransaction().then(() => {
                       cy.findAllByText(

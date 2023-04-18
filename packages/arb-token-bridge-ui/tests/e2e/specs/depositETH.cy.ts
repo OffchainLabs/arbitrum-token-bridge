@@ -56,7 +56,7 @@ describe('Deposit ETH', () => {
       })
     cy.findByRole('button', {
       name: 'Move funds to Arbitrum'
-    }).click({ scrollBehavior: false })
+    }).click()
     cy.confirmMetamaskTransaction().then(() => {
       cy.findByText(
         `Moving ${formatAmount(0.0001, {

@@ -4,9 +4,7 @@ import {
   connectToApp,
   login,
   logout,
-  openTransactionsPanel,
-  restoreAppState,
-  saveAppState
+  openTransactionsPanel
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -26,8 +24,6 @@ declare global {
         query?: { [s: string]: string }
       }): typeof login
       logout(): typeof logout
-      restoreAppState(): typeof restoreAppState
-      saveAppState(): typeof saveAppState
       openTransactionsPanel(): typeof openTransactionsPanel
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
     }

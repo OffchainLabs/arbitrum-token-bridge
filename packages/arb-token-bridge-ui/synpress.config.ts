@@ -32,41 +32,11 @@ export default defineConfig({
   defaultCommandTimeout: 30000,
   pageLoadTimeout: 30000,
   requestTimeout: 30000,
+  scrollBehavior: false,
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
-      let currentNetworkName: NetworkName | null = null
-      let networkSetupComplete = false
-      let walletConnectedToDapp = false
-
-      on('task', {
-        setCurrentNetworkName: (networkName: NetworkName) => {
-          currentNetworkName = networkName
-          return null
-        },
-        getCurrentNetworkName: () => {
-          return currentNetworkName
-        },
-        setNetworkSetupComplete: () => {
-          networkSetupComplete = true
-          return null
-        },
-        getNetworkSetupComplete: () => {
-          return networkSetupComplete
-        },
-        setWalletConnectedToDapp: () => {
-          walletConnectedToDapp = true
-          return null
-        },
-        getWalletConnectedToDapp: () => {
-          return walletConnectedToDapp
-        }
-      })
-
       registerLocalNetwork()
-
-      const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
-      const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 
       if (!ethRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
@@ -75,103 +45,52 @@ export default defineConfig({
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
 
-      const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
-      const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
-
-      const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
-      const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
       const userWalletAddress = await userWallet.getAddress()
 
-      const erc20Bridger = await Erc20Bridger.fromProvider(arbProvider)
-      const erc20Contract = new TestERC20__factory().connect(
-        localWallet.connect(ethProvider)
-      )
-
-      const getWethContract = (
-        provider: StaticJsonRpcProvider,
-        tokenAddress: string
-      ) =>
-        TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
-
       // Deploy ERC-20 token to L1
-      const l1Erc20Token = await erc20Contract.deploy()
-      await l1Erc20Token.deployed()
+      const l1ERC20Token = await deployERC20ToL1()
 
       // Deploy ERC-20 token to L2
-      const l2Deploy = await erc20Bridger.deposit({
-        amount: BigNumber.from(0),
-        erc20L1Address: l1Erc20Token.address,
-        l1Signer: localWallet.connect(ethProvider),
-        l2Provider: arbProvider
-      })
-      await l2Deploy.wait()
+      await deployERC20ToL2(l1ERC20Token.address)
 
       // Mint ERC-20 token
       // We need this to test token approval
       // WETH is pre-approved so we need a new token
-      const mintedL1Erc20Token = await l1Erc20Token.mint()
+      const mintedL1Erc20Token = await l1ERC20Token.mint()
       await mintedL1Erc20Token.wait()
 
       // Send minted ERC-20 to the test userWallet
-      await l1Erc20Token
+      await l1ERC20Token
         .connect(localWallet.connect(ethProvider))
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
-      on('before:run', async () => {
-        let tx
-        // Fund the userWallet. We do this to run tests on a small amount of ETH.
+      // Fund the userWallet. We do this to run tests on a small amount of ETH.
+      // L1
+      await fundUserWallet('L1')
+      // L2
+      await fundUserWallet('L2')
+      // Wrap ETH to test ERC-20 transactions
+      // L1
+      await wrapEth('L1')
+      // L2
+      await wrapEth('L2')
+      // Approve WETH
+      await approveWeth()
 
-        // Fund L1 (only if the balance is less than 1 eth)
-        const l1Balance = await ethProvider.getBalance(userWalletAddress)
-        if (l1Balance.lt(utils.parseEther('1'))) {
-          tx = await localWallet.connect(ethProvider).sendTransaction({
-            to: userWalletAddress,
-            value: utils.parseEther('1')
-          })
-          await tx.wait()
-        }
-
-        // Fund L2 (only if the balance is less than 0.5 eth)
-        const l2Balance = await arbProvider.getBalance(userWalletAddress)
-        if (l2Balance.lt(utils.parseEther('0.5'))) {
-          tx = await localWallet.connect(arbProvider).sendTransaction({
-            to: userWalletAddress,
-            value: utils.parseEther('0.5')
-          })
-          await tx.wait()
-        }
-
-        // Wrap ETH to test ERC-20 transactions
-        // L1
-        tx = await getWethContract(ethProvider, wethTokenAddressL1).deposit({
-          value: utils.parseEther('0.2')
-        })
-        await tx.wait()
-        // L2
-        tx = await getWethContract(arbProvider, wethTokenAddressL2).deposit({
-          value: utils.parseEther('0.1')
-        })
-
-        // Approve WETH
-        tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
-          // L1 WETH gateway
-          '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
-          constants.MaxInt256
-        )
-        await tx.wait()
-      })
+      // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.ERC20_TOKEN_ADDRESS_L1 = l1Erc20Token.address
-      config.env.ERC20_TOKEN_ADDRESS_L2 = await erc20Bridger.getL2ERC20Address(
-        l1Erc20Token.address,
-        ethProvider
-      )
+      config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+      config.env.ERC20_TOKEN_ADDRESS_L2 = await (
+        await Erc20Bridger.fromProvider(arbProvider)
+      ).getL2ERC20Address(l1ERC20Token.address, ethProvider)
+
       cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
+      setupCypressTasks(on)
       return config
     },
     baseUrl: 'http://localhost:3000',
@@ -191,3 +110,109 @@ export default defineConfig({
     supportFile: 'tests/support/index.ts'
   }
 })
+
+const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+
+const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
+const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
+
+const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
+const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
+
+async function deployERC20ToL1() {
+  console.log('Deploying ERC20 to L1...')
+  const contract = new TestERC20__factory().connect(
+    localWallet.connect(ethProvider)
+  )
+  // Deploy ERC-20 token to L1
+  const token = await contract.deploy()
+  await token.deployed()
+
+  return token
+}
+
+async function deployERC20ToL2(erc20L1Address: string) {
+  console.log('Deploying ERC20 to L2...')
+  const bridger = await Erc20Bridger.fromProvider(arbProvider)
+  const deploy = await bridger.deposit({
+    amount: BigNumber.from(0),
+    erc20L1Address,
+    l1Signer: localWallet.connect(ethProvider),
+    l2Provider: arbProvider
+  })
+  await deploy.wait()
+}
+
+async function fundUserWallet(networkType: 'L1' | 'L2') {
+  console.log(`Funding user wallet: ${networkType}...`)
+  const address = await userWallet.getAddress()
+  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const balance = await provider.getBalance(address)
+  // Fund only if the balance is less than 2 eth
+  if (balance.lt(utils.parseEther('2'))) {
+    const tx = await localWallet.connect(provider).sendTransaction({
+      to: address,
+      value: utils.parseEther('2')
+    })
+    await tx.wait()
+  }
+}
+
+function getWethContract(
+  provider: StaticJsonRpcProvider,
+  tokenAddress: string
+) {
+  return TestWETH9__factory.connect(tokenAddress, userWallet.connect(provider))
+}
+
+async function wrapEth(networkType: 'L1' | 'L2') {
+  console.log(`Wrapping ETH: ${networkType}...`)
+  const tx = await getWethContract(
+    networkType === 'L1' ? ethProvider : arbProvider,
+    wethTokenAddressL1
+  ).deposit({
+    value: utils.parseEther('0.2')
+  })
+  await tx.wait()
+}
+
+async function approveWeth() {
+  console.log('Approving WETH...')
+  const tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
+    // L1 WETH gateway
+    '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+    constants.MaxInt256
+  )
+  await tx.wait()
+}
+
+function setupCypressTasks(on: Cypress.PluginEvents) {
+  let currentNetworkName: NetworkName | null = null
+  let networkSetupComplete = false
+  let walletConnectedToDapp = false
+
+  on('task', {
+    setCurrentNetworkName: (networkName: NetworkName) => {
+      currentNetworkName = networkName
+      return null
+    },
+    getCurrentNetworkName: () => {
+      return currentNetworkName
+    },
+    setNetworkSetupComplete: () => {
+      networkSetupComplete = true
+      return null
+    },
+    getNetworkSetupComplete: () => {
+      return networkSetupComplete
+    },
+    setWalletConnectedToDapp: () => {
+      walletConnectedToDapp = true
+      return null
+    },
+    getWalletConnectedToDapp: () => {
+      return walletConnectedToDapp
+    }
+  })
+}
