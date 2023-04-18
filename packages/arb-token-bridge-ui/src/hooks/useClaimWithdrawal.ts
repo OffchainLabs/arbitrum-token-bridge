@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import * as Sentry from '@sentry/react'
 import { useSigner } from 'wagmi'
-import { Signer } from '@ethersproject/abstract-signer'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'

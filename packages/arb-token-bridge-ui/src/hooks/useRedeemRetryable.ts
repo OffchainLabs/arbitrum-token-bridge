@@ -3,7 +3,6 @@ import {
   L1ToL2MessageWriter as IL1ToL2MessageWriter,
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
-import { Signer } from '@ethersproject/abstract-signer'
 import { useSigner } from 'wagmi'
 
 import { useAppState } from '../state'
