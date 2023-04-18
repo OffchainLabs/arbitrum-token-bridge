@@ -576,7 +576,7 @@ export function TransferPanelMain({
     }.`
   }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
 
-  const switchNetworks = useCallback(() => {
+  const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
     const newTo = from
 
@@ -647,7 +647,7 @@ export function TransferPanelMain({
               updatePreferredL2Chain(network.chainID)
 
               // If L2 selected, change to withdraw mode and set new selections
-              switchNetworks()
+              switchNetworksOnTransferPanel()
               setFrom(network)
               setTo(l1.network)
             } catch (error: any) {
@@ -671,7 +671,7 @@ export function TransferPanelMain({
 
             // Switch networks if selecting L1 network
             if (isEthereum) {
-              return switchNetworks()
+              return switchNetworksOnTransferPanel()
             }
 
             if (isConnectedToArbitrum) {
@@ -711,7 +711,7 @@ export function TransferPanelMain({
 
           // Switch networks if selecting L1 network
           if (isEthereum) {
-            return switchNetworks()
+            return switchNetworksOnTransferPanel()
           }
 
           // In withdraw mode we always switch to the L2 network
@@ -743,7 +743,7 @@ export function TransferPanelMain({
             updatePreferredL2Chain(network.chainID)
 
             // Change to withdraw mode and set new selections
-            switchNetworks()
+            switchNetworksOnTransferPanel()
             setFrom(l1.network)
             setTo(network)
           } catch (error: any) {
@@ -761,7 +761,7 @@ export function TransferPanelMain({
     isDepositMode,
     setQueryParams,
     switchNetwork,
-    switchNetworks,
+    switchNetworksOnTransferPanel,
     isConnectedToArbitrum
   ])
 
@@ -822,7 +822,7 @@ export function TransferPanelMain({
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
         <SwitchNetworksButton
-          onClick={switchNetworks}
+          onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
         />
       </div>
