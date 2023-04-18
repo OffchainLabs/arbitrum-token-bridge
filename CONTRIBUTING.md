@@ -38,11 +38,11 @@ Please check our [README section](/README.md) to find detailed instructions abou
 ## Submitting a pull request
 
 1. Make the changes in your code locally. [Check setup instructions here](/README.md).
-1. Create a new branch: `git checkout -b your-branch-name`
-1. Make your code changes, add tests (if required), and make sure the existing tests and builds still pass locally.
-1. Push to your fork and [submit a pull request](https://github.com/OffchainLabs/arbitrum-token-bridge/pulls).
+2. Create a new branch: `git checkout -b your-branch-name`
+3. Make your code changes, add tests (if required), and make sure the existing tests and builds still pass locally.
+4. Push to your fork and [submit a pull request](https://github.com/OffchainLabs/arbitrum-token-bridge/pulls).
    - Please ensure your PR title matches the [Conventional Commits spec](https://www.conventionalcommits.org/).
-1. One you submit a pull request, you will receive an automated reply from the [CLA bot](https://github.com/apps/cla-bot) asking you to sign a Contributor License Agreement.
+5. One you submit a pull request, you will receive an automated reply from the [CLA bot](https://github.com/apps/cla-bot) asking you to sign a Contributor License Agreement.
    - Once signed, please wait for sometime (~1 day) for the team to authorize your CLA check.
    - Read more about a CLA Agreement [here](https://en.wikipedia.org/wiki/Contributor_License_Agreement).
 
@@ -51,7 +51,7 @@ Please check our [README section](/README.md) to find detailed instructions abou
 Here are a few things you can do that will increase the likelihood of your pull request being accepted:
 
 - Format your code with [prettier](https://prettier.io/).
-- Write tests.
+- Write tests when needed.
 - Keep your change as focused as possible. If there are multiple changes you would like to make that are not dependent upon each other, consider submitting them as separate pull requests.
 - Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 
