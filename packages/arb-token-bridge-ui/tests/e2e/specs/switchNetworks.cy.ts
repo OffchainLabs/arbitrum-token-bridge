@@ -67,10 +67,10 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Mainnet/i })
+              .findByRole('button', { name: /From: Ethereum/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Mainnet/i",
+            errorMsg: "Can't find /From: Ethereum/i",
             timeout: 10000,
             interval: 500
           }
