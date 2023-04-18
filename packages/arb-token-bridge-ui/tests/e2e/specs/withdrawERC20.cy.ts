@@ -15,7 +15,7 @@ describe('Withdraw ERC20 Token', () => {
   // Happy Path
   context('User is on L2 and imports ERC-20', () => {
     it('should show form fields correctly', () => {
-      cy.login({ networkType: 'L2', shouldChangeNetwork: true })
+      cy.login({ networkType: 'L2' })
       cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 

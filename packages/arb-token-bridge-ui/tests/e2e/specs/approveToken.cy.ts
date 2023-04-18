@@ -13,7 +13,7 @@ describe('Approve token and deposit afterwards', () => {
 
   it('should approve and deposit ERC-20 token', () => {
     context('Approve token', () => {
-      cy.login({ networkType: 'L1', shouldChangeNetwork: true })
+      cy.login({ networkType: 'L1' })
       importTokenThroughUI(ERC20TokenAddressL1)
 
       // Select the ERC-20 token

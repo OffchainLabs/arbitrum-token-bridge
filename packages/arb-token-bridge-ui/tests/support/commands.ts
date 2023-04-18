@@ -9,36 +9,57 @@
 
 import '@testing-library/cypress/add-commands'
 import { recurse } from 'cypress-recurse'
-import { NetworkType, setupMetamaskNetwork, startWebApp } from './common'
+import {
+  NetworkType,
+  NetworkName,
+  startWebApp,
+  getL1NetworkConfig,
+  getL2NetworkConfig
+} from './common'
+
+function shouldChangeNetwork(networkName: NetworkName) {
+  // synpress throws if trying to connect to a network we are already connected to
+  // issue has been raised with synpress and this is just a workaround
+  // TODO: remove this whenever fixed
+  return cy
+    .task('getCurrentNetworkName')
+    .then((currentNetworkName: NetworkName) => {
+      return currentNetworkName !== networkName
+    })
+}
 
 export function login({
   networkType,
   networkName,
-  addNewNetwork = false,
-  shouldChangeNetwork = false,
-  isWalletConnected = true,
   url,
   query
 }: {
   networkType: NetworkType
-  networkName?: string
-  addNewNetwork?: boolean
-  // re shouldChangeNetwork: synpress fails if we are trying to change to network we are already connected to
-  // TODO: this should be set up by checking cy.getNetwork() but it throws error inside the synpress library
-  // 3.5 might be fixing it, if not raise an issue
-  shouldChangeNetwork?: boolean
-  // to confirm metamask popup during the initial login
-  isWalletConnected?: boolean
+  networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
 }) {
-  if (shouldChangeNetwork || addNewNetwork) {
-    setupMetamaskNetwork(networkType, networkName, addNewNetwork).then(() => {
-      startWebApp(url, query, isWalletConnected)
-    })
-  } else {
-    startWebApp(url, query, isWalletConnected)
+  function _startWebApp() {
+    startWebApp(url, query)
   }
+
+  // if networkName is not specified we connect to default network from config
+  networkName =
+    networkName ||
+    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
+      .networkName
+
+  shouldChangeNetwork(networkName).then(changeNetwork => {
+    if (changeNetwork) {
+      cy.changeMetamaskNetwork(networkName).then(() => {
+        _startWebApp()
+      })
+    } else {
+      _startWebApp()
+    }
+
+    cy.task('setCurrentNetworkName', networkName)
+  })
 }
 
 Cypress.Commands.add(
