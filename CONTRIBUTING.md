@@ -17,6 +17,7 @@ Please do:
 Please avoid:
 
 - Opening pull requests for issues marked `Status: Design Needed`, `Status: To Be Discussed`, or `Status: Need Exploration`.
+- Keeping issues assigned to yourself for long: If you've been assigned an issue, please be mindful that if there's no PR/activity in a week's time, you'll be unassigned.
 
 <br />
 
