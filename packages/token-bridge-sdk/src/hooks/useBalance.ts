@@ -1,7 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { BigNumber } from 'ethers'
 import { Provider } from '@ethersproject/abstract-provider'
-import useSWR, { useSWRConfig, unstable_serialize, Middleware } from 'swr'
+import useSWR, {
+  useSWRConfig,
+  unstable_serialize,
+  Middleware,
+  SWRHook
+} from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
@@ -10,7 +15,7 @@ type Erc20Balances = {
   [address: string]: BigNumber | undefined
 }
 
-const merge: Middleware = useSWRNext => {
+const merge: Middleware = (useSWRNext: SWRHook) => {
   return (key, fetcher, config) => {
     const { cache } = useSWRConfig()
 
@@ -19,9 +24,9 @@ const merge: Middleware = useSWRNext => {
         return
       }
       const newBalances = await fetcher(key)
-      const oldData = cache.get(unstable_serialize(key))
+      const oldData = cache.get(unstable_serialize(key))?.data
       return {
-        ...oldData,
+        ...(oldData || {}),
         ...newBalances
       }
     }
@@ -85,7 +90,7 @@ const useBalance = ({
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
-    _walletAddress => provider.getBalance(_walletAddress),
+    ([_walletAddress]) => provider.getBalance(_walletAddress),
     {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
