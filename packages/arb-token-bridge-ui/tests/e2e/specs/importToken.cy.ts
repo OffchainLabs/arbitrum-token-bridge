@@ -74,8 +74,7 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'mainnet',
-          shouldChangeNetwork: true
+          networkName: 'mainnet'
         })
 
         cy.findByRole('button', { name: 'Select Token' })
@@ -134,7 +133,7 @@ describe('Import token', () => {
           ERC20TokenAddressL1.length - 1
         )
 
-        cy.login({ networkType: 'L1', shouldChangeNetwork: true })
+        cy.login({ networkType: 'L1' })
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')

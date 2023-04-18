@@ -48,8 +48,7 @@ describe('Read classic deposit messages', () => {
     before(() => {
       cy.login({
         networkType: 'L1',
-        networkName: 'mainnet',
-        shouldChangeNetwork: true
+        networkName: 'mainnet'
       })
     })
 

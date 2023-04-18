@@ -6,10 +6,6 @@ import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
-  // when all of our tests need to run in a logged-in state
-  // we have to make sure we preserve a healthy LocalStorage state
-  // because it is cleared between each `it` cypress test
-
   const ETHToWithdraw = 0.0001
 
   const typeAmountIntoInput = () => {
@@ -21,10 +17,7 @@ describe('Withdraw ETH', () => {
   // Happy Path
   context('user has some ETH and is on L2', () => {
     it('should show form fields correctly', () => {
-      cy.login({
-        networkType: 'L2',
-        addNewNetwork: true
-      })
+      cy.login({ networkType: 'L2' })
       cy.findByRole('button', { name: /From: Arbitrum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Ethereum/i }).should('be.visible')
 
