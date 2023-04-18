@@ -108,7 +108,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 <br />
 
-### Run unit Tests
+### Run Unit Tests
 
 1. Run the token bridge UI locally on `http://localhost:3000/`
 2. Run the Token-bridge-sdk tests
