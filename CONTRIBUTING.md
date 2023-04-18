@@ -43,7 +43,7 @@ Please check our [README section](/README.md) to find detailed instructions abou
 1. Push to your fork and [submit a pull request](https://github.com/OffchainLabs/arbitrum-token-bridge/pulls).
    - Please ensure your PR title matches the [Conventional Commits spec](https://www.conventionalcommits.org/).
 1. One you submit a pull request, you will receive an automated reply from the [CLA bot](https://github.com/apps/cla-bot) asking you to sign a Contributor License Agreement.
-   - Once signed, please wait for sometime (~1 day) for the team to authorize your CLA check.
+   - Once signed, please allow some time (~1 day) for the team to authorize your CLA check.
    - Read more about a CLA Agreement [here](https://en.wikipedia.org/wiki/Contributor_License_Agreement).
 
 <br />
