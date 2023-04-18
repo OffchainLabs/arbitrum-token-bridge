@@ -1,5 +1,5 @@
 /**
- * Test case suite for Login and balance check flow TEST_TO_TRIGGER_E2E
+ * Test case suite for Login and balance check flow
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
