@@ -7,7 +7,11 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 
-import { wethTokenAddressL1, wethTokenAddressL2 } from './tests/support/common'
+import {
+  NetworkName,
+  wethTokenAddressL1,
+  wethTokenAddressL2
+} from './tests/support/common'
 import { registerLocalNetwork } from './src/util/networks'
 
 export default defineConfig({
@@ -31,6 +35,34 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      let currentNetworkName: NetworkName | null = null
+      let networkSetupComplete = false
+      let walletConnectedToDapp = false
+
+      on('task', {
+        setCurrentNetworkName: (networkName: NetworkName) => {
+          currentNetworkName = networkName
+          return null
+        },
+        getCurrentNetworkName: () => {
+          return currentNetworkName
+        },
+        setNetworkSetupComplete: () => {
+          networkSetupComplete = true
+          return null
+        },
+        getNetworkSetupComplete: () => {
+          return networkSetupComplete
+        },
+        setWalletConnectedToDapp: () => {
+          walletConnectedToDapp = true
+          return null
+        },
+        getWalletConnectedToDapp: () => {
+          return walletConnectedToDapp
+        }
+      })
+
       registerLocalNetwork()
 
       const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
@@ -149,7 +181,7 @@ export default defineConfig({
       'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
       'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
       'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
-      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20 (assumes L2 network is already added in a prev test)
+      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20
       'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
       'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
       'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
