@@ -22,7 +22,7 @@ Interested in contributing to this repo? We welcome your contribution.
 - Install [Node.js](https://nodejs.org/en/download/) for your platform
 - Install [Node Version Manager (nvm)](https://www.freecodecamp.org/news/node-version-manager-nvm-install-guide/) to setup the correct Node version for the project.
 - Install [VS Code](https://code.visualstudio.com/download) for your platform
-- Install [Yarn](https://classic.yarnpkg.com) - Package manager
+- Install [Yarn (version 1)](https://classic.yarnpkg.com) - Package manager
 
 - Within VS Code, we use a some tools to automate things (e.g. code formatting), maintain consistency and reduce noise for code reviews. For the optimal development experience, install the following tools:
 
