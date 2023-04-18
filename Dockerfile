@@ -10,4 +10,5 @@ COPY yarn.lock ./
 FROM base as test
 RUN npm install
 RUN npm install cypress@^12.9.0
+RUN yarn cypress install
 COPY . .
