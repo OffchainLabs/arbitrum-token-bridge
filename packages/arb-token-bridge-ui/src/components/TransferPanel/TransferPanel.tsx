@@ -346,7 +346,7 @@ export function TransferPanel() {
 
     const l2NetworkName = getNetworkName(l2Network.chainID)
 
-    // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
+    // SC wallet transfer requests are sent immediately, delay it to give the user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
       setTimeout(() => {
         setTransferring(false)

@@ -275,7 +275,7 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     | L1ToL2MessageReaderClassic
     | EthDepositMessage
     | L1ToL2MessageReader
-  isRetryableTicket?: boolean
+  isCustomAddressDeposit?: boolean
 }> => {
   // fetch L1 transaction receipt
   const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
@@ -305,7 +305,7 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
       return {
         isClassic: false,
         l1ToL2Msg: ethDepositMessage ?? l1ToL2Message,
-        isRetryableTicket: !ethDepositMessage && !!l1ToL2Message
+        isCustomAddressDeposit: !ethDepositMessage && !!l1ToL2Message
       }
     }
 

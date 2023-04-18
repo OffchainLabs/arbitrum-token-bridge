@@ -170,7 +170,7 @@ export const useArbTokenBridge = (
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
-    let tx: L1EthDepositTransaction | L1ContractCallTransaction
+    let tx: L1EthDepositTransaction & L1ContractCallTransaction
     let receipt:
       | L1EthDepositTransactionReceipt
       | L1ContractCallTransactionReceipt
@@ -189,35 +189,28 @@ export const useArbTokenBridge = (
       })
 
     try {
-      if (destinationAddress) {
-        // send ETH to a custom address
-        tx = await ethBridger.depositTo({
-          amount,
-          l1Signer,
-          l2Provider: l2.provider,
-          destinationAddress
-        })
-        if (txLifecycle?.onTxSubmit) {
-          txLifecycle.onTxSubmit(tx)
-        }
-        _addTransaction(tx.hash)
-        receipt = await tx.wait()
-        if (txLifecycle?.onTxConfirm) {
-          txLifecycle.onTxConfirm(receipt)
-        }
-      } else {
-        tx = await ethBridger.deposit({
-          amount,
-          l1Signer
-        })
-        if (txLifecycle?.onTxSubmit) {
-          txLifecycle.onTxSubmit(tx)
-        }
-        _addTransaction(tx.hash)
-        receipt = await tx.wait()
-        if (txLifecycle?.onTxConfirm) {
-          txLifecycle.onTxConfirm(receipt)
-        }
+      tx = (
+        destinationAddress
+          // send ETH to a custom address
+          ? await ethBridger.depositTo({
+              amount,
+              l1Signer,
+              l2Provider: l2.provider,
+              destinationAddress
+            })
+          : await ethBridger.deposit({
+              amount,
+              l1Signer
+            })
+      ) as typeof tx
+
+      if (txLifecycle?.onTxSubmit) {
+        txLifecycle.onTxSubmit(tx)
+      }
+      _addTransaction(tx.hash)
+      receipt = await tx.wait()
+      if (txLifecycle?.onTxConfirm) {
+        txLifecycle.onTxConfirm(receipt)
       }
     } catch (error: any) {
       if (txLifecycle?.onTxError) {

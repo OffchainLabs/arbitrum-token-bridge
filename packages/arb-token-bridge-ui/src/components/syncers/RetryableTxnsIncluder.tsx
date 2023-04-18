@@ -26,7 +26,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
     async (depositTxId, depositAssetType) => {
       const isEthDeposit = depositAssetType === AssetType.ETH
 
-      const { l1ToL2Msg, isClassic, isRetryableTicket } =
+      const { l1ToL2Msg, isClassic, isCustomAddressDeposit } =
         await getL1ToL2MessageDataFromL1TxHash({
           depositTxId,
           isEthDeposit,
@@ -52,7 +52,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
       // Non-classic - Eth deposit
       // depositTo creates a retryable ticket and acts like a token
       // when sending ETH to a different address
-      if (isEthDeposit && !isRetryableTicket) {
+      if (isEthDeposit && !isCustomAddressDeposit) {
         arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
           depositTxId,
           l1ToL2Msg as EthDepositMessage
