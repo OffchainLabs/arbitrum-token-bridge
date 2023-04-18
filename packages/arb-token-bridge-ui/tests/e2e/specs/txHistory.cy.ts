@@ -7,8 +7,7 @@ describe('Transaction History', () => {
   it('should successfuly open and use deposit history panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli',
-      shouldChangeNetwork: true
+      networkName: 'goerli'
     })
     // Open tx history panel
     context('open transactions history panel', () => {
