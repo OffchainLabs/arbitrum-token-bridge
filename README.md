@@ -134,7 +134,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
       $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
       ```
 
-   2. In the newly created file, `.e2e-env`, update your `SECRET_WORDS, ADDRESS, etc` in the format mentioned in the file.
+   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file.
 
 3. Run e2e tests
    ```bash
