@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import * as Sentry from '@sentry/react'
@@ -16,10 +17,6 @@ import { Layout } from '../components/common/Layout'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
-
-if (process.env.NODE_ENV !== 'production' || window.Cypress) {
-  registerLocalNetwork()
-}
 
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
@@ -47,6 +44,12 @@ Sentry.init({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' || window.Cypress) {
+      registerLocalNetwork()
+    }
+  }, [])
+
   return (
     <>
       <Head>
