@@ -71,11 +71,10 @@ export function HeaderConnectWalletButton() {
   return (
     <ConnectButton.Custom>
       {({ account, chain, openChainModal, openConnectModal, mounted }) => {
-        const ready = mounted
-        const connected = !!(ready && account && chain)
+        const connected = !!(mounted && account && chain)
 
         return (
-          <HeaderConnectWalletButtonWrapper ready={ready}>
+          <HeaderConnectWalletButtonWrapper ready={mounted}>
             <NetworkButtonAndConnectButton
               connected={connected}
               chainUnsupported={chain?.unsupported}
