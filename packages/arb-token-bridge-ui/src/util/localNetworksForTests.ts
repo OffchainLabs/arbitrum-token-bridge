@@ -17,9 +17,9 @@ export const localL1Network: Chain = {
   blockExplorers: {
     default: { name: 'Blockscout', url: '' }
   }
-} as Chain
+}
 
-export const localL2Network = {
+export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
   name: 'ArbLocal',
   network: 'arbitrum-local',
