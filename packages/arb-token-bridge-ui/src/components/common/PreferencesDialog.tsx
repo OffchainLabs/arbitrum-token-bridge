@@ -21,7 +21,7 @@ export const PreferencesDialog = () => {
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =
-    _selectedTheme === classicThemeKey ? classicThemeKey : ''
+    _selectedTheme === classicThemeKey ? classicThemeKey : 'space'
 
   const openArbitrumStats = () => {
     setIsArbitrumStatsVisible(true)
@@ -50,7 +50,7 @@ export const PreferencesDialog = () => {
               options={THEME_CONFIG.map(theme => ({
                 label: theme.label,
                 description: theme.description,
-                value: theme.queryParam,
+                value: theme.id,
                 id: theme.id
               }))}
             />

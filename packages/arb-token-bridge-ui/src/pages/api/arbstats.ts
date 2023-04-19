@@ -48,20 +48,29 @@ export default async function handler(
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: emptyStats
       })
+      return
     }
 
     // url from where we'll fetch stats
     const explorerUrl = getExplorerUrl(Number(l2ChainId))
 
-    // if the network is not ArbOne or Nova, or no explorer URL then we don't have the required stats on the explorer
-    // don't unnecessarily call fetch function. return empty stats.
-    if (
-      isNetwork(Number(l2ChainId)).isTestnet ||
-      !isNetwork(Number(l2ChainId)).isSupported ||
-      !explorerUrl
-    ) {
+    // if the network is not supported by the bridge UI, then return 400
+    if (!isNetwork(Number(l2ChainId)).isSupported || !explorerUrl) {
       res.status(400).json({
         message: `unsupported network type: ${l2ChainId}`,
+        data: emptyStats
+      })
+      return
+    }
+
+    // if network is supported by bridge, but our TPS call doesn't support it, don't fetch it, 200 OK but return null data
+    if (
+      !(
+        isNetwork(Number(l2ChainId)).isArbitrumNova ||
+        isNetwork(Number(l2ChainId)).isArbitrumOne
+      )
+    ) {
+      res.status(200).json({
         data: emptyStats
       })
       return

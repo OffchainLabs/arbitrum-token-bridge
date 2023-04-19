@@ -55,7 +55,7 @@ export const Radio = ({
                         as="span"
                         className="text-sm opacity-40"
                       >
-                        <span>{option.description}</span>{' '}
+                        <span>{option.description}</span>
                       </RadioGroup.Description>
                     )}
                   </div>
