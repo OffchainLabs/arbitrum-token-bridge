@@ -553,13 +553,6 @@ export function TransferPanelMain({
   )
 
   useEffect(() => {
-    // Different destination address only allowed for tokens
-    if (!selectedToken) {
-      setDestinationAddress(undefined)
-    }
-  }, [selectedToken])
-
-  useEffect(() => {
     // used to unsubscribe
     let isLatest = true
     const verifyAddress = async () => {
@@ -957,7 +950,12 @@ export function TransferPanelMain({
           onClick={() => {
             // keep visible if destination address provided to make clear where funds go to
             // or for SC wallets as destination address is mandatory
-            if (destinationAddress || isSmartContractWallet) {
+            // allow to close if EOA and destination address === wallet address
+            if (
+              (destinationAddress &&
+                destinationAddress !== walletAddress.toLowerCase()) ||
+              isSmartContractWallet
+            ) {
               setShowAdvancedSettings(true)
               return
             }
