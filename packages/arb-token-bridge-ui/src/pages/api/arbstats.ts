@@ -77,8 +77,9 @@ export default async function handler(
     // for 403 or CORS blocked errors while scraping external endpoints, we use cors-proxy
     const finalUrl = `https://corsproxy.io/?${encodeURIComponent(explorerUrl!)}`
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const response = await axios.get(finalUrl)
+    const response = await axios.get(finalUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    })
 
     // Get the HTML code of the webpage
     const html = response.data
