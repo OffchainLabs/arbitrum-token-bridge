@@ -1,7 +1,6 @@
 import { createClient, configureChains, goerli } from 'wagmi'
 import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 
@@ -10,7 +9,6 @@ import {
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from './wagmiAdditionalNetworks'
-import { rpcURLs } from '../networks'
 import { isTestingEnvironment } from '../CommonUtils'
 
 const chainList = isTestingEnvironment
