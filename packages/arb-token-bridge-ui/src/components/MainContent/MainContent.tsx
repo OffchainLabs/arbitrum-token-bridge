@@ -1,14 +1,18 @@
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import useLocalStorage from '@rehooks/local-storage'
+
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
-import { useEffect, useState } from 'react'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
+import { PreferencesDialog } from '../common/PreferencesDialog'
 
 export const motionDivProps = {
   layout: true,
@@ -31,6 +35,9 @@ export function MainContent() {
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
+
+  const [isArbitrumStatsVisible] =
+    useLocalStorage<boolean>(statsLocalStorageKey)
 
   const {
     app: { arbTokenBridge }
@@ -99,7 +106,6 @@ export function MainContent() {
           </motion.div>
         </AnimatePresence>
       </div>
-
       <SidePanel
         isOpen={isTransactionHistoryPanelVisible}
         heading="Transaction History"
@@ -121,6 +127,12 @@ export function MainContent() {
           }}
         />
       </SidePanel>
+
+      {/* Preferences panel */}
+      <PreferencesDialog />
+
+      {/* Toggle-able Stats for nerds */}
+      {isArbitrumStatsVisible && <ArbitrumStats />}
     </div>
   )
 }
