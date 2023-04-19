@@ -72,7 +72,10 @@ jobs:
       - name: Increment build count
         run: |
           echo "display jobs count"
-          echo "jobs.build.outputs.run_count"
+          echo jobs.build.outputs.run_count
+          echo "run_count=1" >> $GITHUB_OUTPUT
+          echo "display count again"
+          echo jobs.build.outputs.run_count
         shell: bash
 
   test-sdk:
