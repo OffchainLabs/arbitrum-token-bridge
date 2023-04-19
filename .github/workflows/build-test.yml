@@ -71,12 +71,7 @@ jobs:
 
       - name: Increment build count
         run: |
-          if [[ "jobs.build.outputs.run_count" ]]; then
-          echo "run_count=jobs.build.outputs.run_count + 1" >> $GITHUB_OUTPUT
-          else
-          echo "run_count=1" >> $GITHUB_OUTPUT
-          fi
-          echo "Run count:"
+          echo "display jobs count"
           echo "jobs.build.outputs.run_count"
         shell: bash
 
@@ -243,4 +238,4 @@ jobs:
         run: gh extension install actions/gh-actions-cache
 
       - name: Delete build artifacts
-        run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ jobs.build.outputs.run_count }} --confirm
+        run: gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }} --confirm
