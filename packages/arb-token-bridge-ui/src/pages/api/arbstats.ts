@@ -90,7 +90,11 @@ export default async function handler(
       .replace(/[()]/g, '')
       .split(' ')[0]
 
-    if (tps) res.setHeader('Cache-Control', 'max-age=60, public')
+    if (tps) {
+      // https://vercel.com/docs/concepts/functions/serverless-functions/edge-caching#cache-control
+      // https://vercel.com/docs/concepts/functions/serverless-functions/edge-caching#recommended-cache-control
+      res.setHeader('Cache-Control', 'max-age=0, s-maxage=60')
+    }
     res.status(200).json({
       data: { tps: isNaN(Number(tps)) ? null : Number(tps) }
     })
