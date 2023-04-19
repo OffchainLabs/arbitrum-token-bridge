@@ -72,9 +72,9 @@ jobs:
       - name: Increment build count
         run: |
           if [[ ${{ jobs.build.outputs.run_count }} ]]; then
-            echo "run_count=jobs.build.outputs.run_count + 1" >> $GITHUB_OUTPUT
+          echo "run_count=jobs.build.outputs.run_count + 1" >> $GITHUB_OUTPUT
           else
-            echo "run_count=1" >> $GITHUB_OUTPUT
+          echo "run_count=1" >> $GITHUB_OUTPUT
           fi
           echo "Run count:"
           echo ${{ jobs.build.outputs.run_count }}
