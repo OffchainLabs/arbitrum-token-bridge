@@ -237,7 +237,7 @@ export function HeaderAccountPopover() {
             {/* Explorer button */}
             {chain && (
               <ExternalLink
-                href={`${getExplorerUrl(chain.id ?? -1)}/address/${address}`}
+                href={`${getExplorerUrl(chain.id)}/address/${address}`}
                 className={headerItemsClassName}
               >
                 <ExternalLinkIcon className="h-4 w-4 text-white" />
