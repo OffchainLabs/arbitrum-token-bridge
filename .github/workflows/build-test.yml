@@ -78,6 +78,7 @@ jobs:
           echo "count=1" >> $GITHUB_OUTPUT
           else
           echo "count=${{ steps.build_count.outputs.count }} + 1" >> $GITHUB_OUTPUT
+          fi
           echo "display count again"
           echo "${{ steps.build_count.outputs.count }}"
         shell: bash
