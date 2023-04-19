@@ -27,20 +27,7 @@ const chainList = isTestingEnvironment
     ]
   : [mainnet, arbitrum, arbitrumNova, goerli, arbitrumGoerli]
 
-const { chains, provider } = configureChains(chainList, [
-  publicProvider(),
-  jsonRpcProvider({
-    rpc: chain => {
-      if (!chain) {
-        return { http: '' }
-      }
-      return {
-        http: rpcURLs[chain.id]!
-      }
-    },
-    priority: 1
-  })
-])
+const { chains, provider } = configureChains(chainList, [publicProvider()])
 
 const appInfo = {
   appName: 'Bridge to Arbitrum'
