@@ -54,7 +54,7 @@ jobs:
     name: "Build"
     runs-on: ubuntu-latest
     outputs:
-      run_count: ${{ steps.build.outputs.run_count }}
+      build_count: ${{ steps.build_count.outputs.count }}
     needs: install
     steps:
       - name: Checkout
@@ -70,12 +70,16 @@ jobs:
         uses: ./.github/actions/build-artifacts/cache
 
       - name: Increment build count
+        id: build_count
         run: |
           echo "display jobs count"
-          echo ${{ jobs.build.outputs.run_count }}
-          echo "run_count=1" >> $GITHUB_OUTPUT
+          echo ${{ steps.build_count.outputs.count }}
+          if [[ ${{ github.run_attempt }} == 1 ]]; then
+          echo "count=1" >> $GITHUB_OUTPUT
+          else
+          echo "count=${{ steps.build_count.outputs.count }} + 1" >> $GITHUB_OUTPUT
           echo "display count again"
-          echo ${{ jobs.build.outputs.run_count }}
+          echo ${{ steps.build_count.outputs.count }}
         shell: bash
 
   test-sdk:
