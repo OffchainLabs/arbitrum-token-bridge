@@ -333,8 +333,9 @@ export function handleSwitchNetworkError(
   }
   if (error.name === 'SwitchChainNotSupportedError') {
     isSwitchingNetworkBeforeTx(chainId, isAttemptingToPerformTx)
+  } else {
+    Sentry.captureException(error)
   }
-  Sentry.captureException(error)
 }
 
 /**
