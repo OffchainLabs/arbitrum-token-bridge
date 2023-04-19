@@ -3,7 +3,9 @@ import { Listbox } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  SwitchVerticalIcon
+  ExternalLinkIcon,
+  SwitchVerticalIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
@@ -58,7 +60,8 @@ export function SwitchNetworksButton(
 }
 
 enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
+  INVALID_ADDRESS = 'The destination address is not valid.',
+  EMPTY_ADDRESS = 'The destination address is required for contract wallet transfers.'
 }
 
 type OptionsExtraProps = {
@@ -357,6 +360,8 @@ export function TransferPanelMain({
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
+  const [verifyingDestinationAddress, setVerifyingDestinationAddress] =
+    useState(false)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -453,6 +458,43 @@ export function TransferPanelMain({
     tokenBalances.l2
   ])
 
+  const DestinationAddressExplorer = useCallback(() => {
+    const { explorerUrl } = (isDepositMode ? l2 : l1).network
+    const destAddressRequiredAndProvided =
+      isSmartContractWallet && destinationAddress
+
+    if (
+      !explorerUrl ||
+      verifyingDestinationAddress ||
+      advancedSettingsError ||
+      destAddressRequiredAndProvided
+    ) {
+      return null
+    }
+    return (
+      <a
+        href={`${(isDepositMode ? l2 : l1).network.explorerUrl}/address/${
+          destinationAddress ?? walletAddress
+        }`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2 flex w-fit text-xs text-slate-500"
+      >
+        <ExternalLinkIcon className="mr-1 h-4 w-4" />
+        View account in explorer
+      </a>
+    )
+  }, [
+    isSmartContractWallet,
+    destinationAddress,
+    advancedSettingsError,
+    verifyingDestinationAddress,
+    isDepositMode,
+    walletAddress,
+    l1,
+    l2
+  ])
+
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
@@ -466,7 +508,9 @@ export function TransferPanelMain({
     // Show on page load if SC wallet since destination address mandatory
     // or if destination address is provided
     () =>
-      setShowAdvancedSettings(isSmartContractWallet || !!destinationAddress),
+      setShowAdvancedSettings(
+        isSmartContractWallet || !!destinationAddress || showAdvancedSettings
+      ),
     [isSmartContractWallet, destinationAddress]
   )
 
@@ -478,13 +522,24 @@ export function TransferPanelMain({
   }, [selectedToken])
 
   useEffect(() => {
-    const getErrors = async () => {
+    // used to unsubscribe
+    let isLatest = true
+    const verifyAddress = async () => {
+      setVerifyingDestinationAddress(true)
       try {
         const isDestinationAddressSmartContract = await addressIsSmartContract(
           String(destinationAddress),
           isDepositMode ? l2.provider : l1.provider
         )
+        if (!isLatest) {
+          return
+        }
         if (isSmartContractWallet) {
+          // Destination address is required for contract wallets
+          if (!destinationAddress) {
+            setAdvancedSettingsError(AdvancedSettingsErrors.EMPTY_ADDRESS)
+            return
+          }
           // Make sure address type matches the connected wallet type
           if (isDestinationAddressSmartContract) {
             setAdvancedSettingsError(null)
@@ -495,7 +550,9 @@ export function TransferPanelMain({
             // Destination address is not required for EOA wallets
             !destinationAddress ||
             // However if provided it needs to be valid
-            utils.isAddress(String(destinationAddress))
+            utils.isAddress(String(destinationAddress)) ||
+            // Can't be contract address
+            !isDestinationAddressSmartContract
           ) {
             setAdvancedSettingsError(null)
             return
@@ -505,9 +562,15 @@ export function TransferPanelMain({
       } catch (err) {
         console.error(err)
         setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
+      } finally {
+        setVerifyingDestinationAddress(false)
       }
     }
-    getErrors()
+    verifyAddress()
+    return () => {
+      isLatest = false
+      setVerifyingDestinationAddress(false)
+    }
   }, [
     l1.provider,
     l2.provider,
@@ -873,9 +936,23 @@ export function TransferPanelMain({
         </button>
         {showAdvancedSettings && (
           <div className="mt-2">
-            <span className="text-md text-gray-10">
+            <span className="text-md flex items-center text-gray-10">
               Destination Address
               {!isSmartContractWallet ? ' (optional)' : ''}
+              <Tooltip
+                wrapperClassName="ml-1"
+                theme="dark"
+                content={
+                  <span>
+                    This is where your funds will end up at.{' '}
+                    {isSmartContractWallet
+                      ? ''
+                      : 'Defaults to your wallet address.'}
+                  </span>
+                }
+              >
+                <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
+              </Tooltip>
             </span>
             <input
               className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
@@ -883,6 +960,8 @@ export function TransferPanelMain({
               defaultValue={destinationAddress}
               spellCheck={false}
               onChange={e => {
+                // prevents verification from flashing
+                setVerifyingDestinationAddress(true)
                 if (!e.target.value) {
                   setDestinationAddress(undefined)
                 } else {
@@ -890,9 +969,18 @@ export function TransferPanelMain({
                 }
               }}
             />
+            <DestinationAddressExplorer />
+            {verifyingDestinationAddress && (
+              <div className="mt-2 flex">
+                <Loader size="small" color="#94A2B8" />
+                <span className="ml-2 text-xs text-slate-500">
+                  Verifying address
+                </span>
+              </div>
+            )}
           </div>
         )}
-        {advancedSettingsError && (
+        {!verifyingDestinationAddress && advancedSettingsError && (
           <span className="text-xs text-red-400">{advancedSettingsError}</span>
         )}
       </div>

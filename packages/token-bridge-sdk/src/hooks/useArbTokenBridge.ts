@@ -1,6 +1,7 @@
 import { useCallback, useState, useMemo } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
+import { Provider } from '@ethersproject/abstract-provider'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
@@ -170,6 +171,13 @@ export const useArbTokenBridge = (
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
+    confirmDestinationAddressOrThrow({
+      provider: l1Signer.provider,
+      originAddress: walletAddress,
+      destinationAddress,
+      isDeposit: true
+    })
+
     let tx: L1EthDepositTransaction & L1ContractCallTransaction
     let receipt:
       | L1EthDepositTransactionReceipt
@@ -280,6 +288,13 @@ export const useArbTokenBridge = (
   }) {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
+
+      confirmDestinationAddressOrThrow({
+        provider: l2Signer.provider,
+        originAddress: walletAddress,
+        destinationAddress,
+        isDeposit: false
+      })
 
       const tx = await ethBridger.withdraw({
         amount,
@@ -486,6 +501,13 @@ export const useArbTokenBridge = (
   }) {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
+    confirmDestinationAddressOrThrow({
+      provider: l1Signer.provider,
+      originAddress: erc20L1Address,
+      destinationAddress,
+      isDeposit: true
+    })
+
     try {
       const { symbol, decimals } = await getL1TokenData({
         account: walletAddress,
@@ -614,12 +636,12 @@ export const useArbTokenBridge = (
     try {
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
-      const provider = l2Signer.provider
-      const isSmartContractAddress =
-        provider && (await provider.getCode(String(erc20L1Address))).length < 2
-      if (isSmartContractAddress && !destinationAddress) {
-        throw new Error(`Missing destination address`)
-      }
+      confirmDestinationAddressOrThrow({
+        provider: l2Signer.provider,
+        originAddress: erc20L1Address,
+        destinationAddress,
+        isDeposit: false
+      })
 
       if (typeof bridgeTokens === 'undefined') {
         return
@@ -709,6 +731,39 @@ export const useArbTokenBridge = (
         txLifecycle.onTxError(error)
       }
       console.warn('withdraw token err', error)
+    }
+  }
+
+  async function confirmDestinationAddressOrThrow({
+    provider,
+    originAddress,
+    destinationAddress,
+    isDeposit
+  }: {
+    provider?: Provider
+    originAddress: string
+    destinationAddress?: string
+    isDeposit: boolean
+  }) {
+    const originAddressIsContract =
+      provider && (await provider.getCode(originAddress)).length > 2
+    const destinationAddressIsContract =
+      (
+        await (isDeposit ? l2.provider : l1.provider).getCode(
+          String(destinationAddress)
+        )
+      ).length > 2
+    if (originAddressIsContract) {
+      if (!destinationAddress) {
+        throw new Error('Missing destination address')
+      }
+      if (!destinationAddressIsContract) {
+        throw new Error(
+          `Invalid destination address. Expected a contract address on network: '${
+            (isDeposit ? l2.network : l1.network).name
+          }'`
+        )
+      }
     }
   }
 
