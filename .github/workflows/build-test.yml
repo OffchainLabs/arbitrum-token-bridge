@@ -73,13 +73,13 @@ jobs:
         id: build_count
         run: |
           echo "display jobs count"
-          echo ${{ steps.build_count.outputs.count }}
+          echo "${{ steps.build_count.outputs.count }}"
           if [[ ${{ github.run_attempt }} == 1 ]]; then
           echo "count=1" >> $GITHUB_OUTPUT
           else
           echo "count=${{ steps.build_count.outputs.count }} + 1" >> $GITHUB_OUTPUT
           echo "display count again"
-          echo ${{ steps.build_count.outputs.count }}
+          echo "${{ steps.build_count.outputs.count }}"
         shell: bash
 
   test-sdk:
