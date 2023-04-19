@@ -231,6 +231,9 @@ export function isNetwork(chainId: ChainId) {
   const isTestnet =
     isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
 
+  const isSupported =
+    isArbitrumOne || isArbitrumNova || isMainnet || isGoerli || isArbitrumGoerli // is network supported on bridge
+
   return {
     // L1
     isMainnet,
@@ -247,7 +250,9 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumRinkeby,
     isArbitrumGoerli,
     // Testnet
-    isTestnet
+    isTestnet,
+    // General
+    isSupported
   }
 }
 
