@@ -103,6 +103,7 @@ export default async function handler(
       data: { tps: isNaN(Number(tps)) ? null : Number(tps) }
     })
   } catch (error: any) {
+    console.log('Error found -', error)
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',
       data: emptyStats
