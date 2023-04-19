@@ -1,6 +1,7 @@
 import useLocalStorage from '@rehooks/local-storage'
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
@@ -17,7 +18,7 @@ export const PreferencesDialog = () => {
   const { closePreferences } = useAppContextActions()
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
-    useLocalStorage<boolean>('isArbitrumStatsVisible')
+    useLocalStorage<boolean>(statsLocalStorageKey)
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =

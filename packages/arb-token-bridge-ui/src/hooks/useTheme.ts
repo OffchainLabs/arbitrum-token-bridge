@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import useLocalStorage from '@rehooks/local-storage'
 
+export const themeLocalStorageKey = 'arbitrum:bridge:preferences:theme'
+
 export const classicThemeKey = 'arbitrum-classic-theme'
 
 export const THEME_CONFIG = [
@@ -19,7 +21,7 @@ export const THEME_CONFIG = [
 ]
 
 export const useTheme = () => {
-  const [theme, setTheme] = useLocalStorage<string>('theme')
+  const [theme, setTheme] = useLocalStorage<string>(themeLocalStorageKey)
 
   useEffect(() => {
     document.body.className = theme || ''

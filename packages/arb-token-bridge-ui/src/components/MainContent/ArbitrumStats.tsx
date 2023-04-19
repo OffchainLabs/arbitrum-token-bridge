@@ -8,6 +8,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextState } from '../App/AppContext'
 
+export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
+
 const getActivityThresholdL1 = (gasPrice: number) => {
   if (gasPrice < 20) return { className: 'text-[#008000]' }
   if (gasPrice < 40) return { className: 'text-orange-arbitrum-nova' }
@@ -21,9 +23,8 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 }
 
 export const ArbitrumStats = () => {
-  const [, setIsArbitrumStatsVisible] = useLocalStorage<boolean>(
-    'isArbitrumStatsVisible'
-  )
+  const [, setIsArbitrumStatsVisible] =
+    useLocalStorage<boolean>(statsLocalStorageKey)
   const {
     layout: { isPreferencesPanelVisible }
   } = useAppContextState()
@@ -95,8 +96,11 @@ export const ArbitrumStats = () => {
         {/* TPS info is not available for testnets */}
         {!isNetwork(l2.network.chainID).isTestnet && (
           <span>
-            &gt; TPS:{' '}
-            {arbStatsLoading ? 'Loading...' : `${arbStats?.tps} TPS` ?? '-'}
+            &gt; TPS:
+            {arbStatsLoading && <span>Loading...</span>}
+            {!arbStatsLoading && (
+              <span>{arbStats?.tps ? `${arbStats?.tps} TPS` : '-'}</span>
+            )}
           </span>
         )}
       </div>

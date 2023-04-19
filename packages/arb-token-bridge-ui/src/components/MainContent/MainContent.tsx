@@ -11,7 +11,7 @@ import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
-import { ArbitrumStats } from './ArbitrumStats'
+import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
 
 export const motionDivProps = {
@@ -36,9 +36,8 @@ export function MainContent() {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
 
-  const [isArbitrumStatsVisible] = useLocalStorage<boolean>(
-    'isArbitrumStatsVisible'
-  )
+  const [isArbitrumStatsVisible] =
+    useLocalStorage<boolean>(statsLocalStorageKey)
 
   const {
     app: { arbTokenBridge }
