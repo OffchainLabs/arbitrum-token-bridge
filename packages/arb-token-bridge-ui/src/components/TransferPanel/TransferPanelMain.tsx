@@ -7,6 +7,7 @@ import {
   SwitchVerticalIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/react/outline'
+import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/solid'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
@@ -362,10 +363,18 @@ export function TransferPanelMain({
     useState<AdvancedSettingsErrors | null>(null)
   const [verifyingDestinationAddress, setVerifyingDestinationAddress] =
     useState(false)
+  const [destinationAddressInputDisabled, setDestinationAddressInputDisabled] =
+    useState(!isSmartContractWallet)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
+
+  const destAddressInputClassName =
+    (advancedSettingsError
+      ? 'border border-[#cd0000]'
+      : 'border border-gray-9') +
+    ` ${destinationAddressInputDisabled ? 'bg-slate-200' : 'bg-white'}`
 
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum
@@ -495,6 +504,35 @@ export function TransferPanelMain({
     l2
   ])
 
+  const DestinationAddressLabel = useCallback(() => {
+    if (
+      verifyingDestinationAddress ||
+      advancedSettingsError ||
+      isSmartContractWallet ||
+      !walletAddress
+    ) {
+      return null
+    }
+
+    // destination address defaults to wallet address
+    return !destinationAddress ||
+      walletAddress.toLowerCase() === destinationAddress?.toLowerCase() ? (
+      <div className="mr-2 mt-2 w-fit rounded bg-[#e6ffe6] p-1 text-[#006600]">
+        Sending to your address
+      </div>
+    ) : (
+      <div className="mr-2 mt-2 w-fit rounded bg-[#ffeed3] p-1 text-[#60461f]">
+        Sending to a different address
+      </div>
+    )
+  }, [
+    destinationAddress,
+    isSmartContractWallet,
+    walletAddress,
+    verifyingDestinationAddress,
+    advancedSettingsError
+  ])
+
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
@@ -550,9 +588,9 @@ export function TransferPanelMain({
             // Destination address is not required for EOA wallets
             !destinationAddress ||
             // However if provided it needs to be valid
-            utils.isAddress(String(destinationAddress)) ||
-            // Can't be contract address
-            !isDestinationAddressSmartContract
+            (utils.isAddress(String(destinationAddress)) &&
+              // Can't be contract address
+              !isDestinationAddressSmartContract)
           ) {
             setAdvancedSettingsError(null)
             return
@@ -954,22 +992,45 @@ export function TransferPanelMain({
                 <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
               </Tooltip>
             </span>
-            <input
-              className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
-              placeholder="Enter destination address"
-              defaultValue={destinationAddress}
-              spellCheck={false}
-              onChange={e => {
-                // prevents verification from flashing
-                setVerifyingDestinationAddress(true)
-                if (!e.target.value) {
-                  setDestinationAddress(undefined)
-                } else {
-                  setDestinationAddress(e.target.value.toLowerCase())
+            <div
+              className={`mt-1 flex h-full flex-row items-center rounded ${destAddressInputClassName}`}
+            >
+              <input
+                className="w-full rounded px-2 py-1"
+                placeholder="Enter destination address"
+                defaultValue={destinationAddress}
+                spellCheck={false}
+                disabled={destinationAddressInputDisabled}
+                onChange={e => {
+                  // prevents verification from flashing
+                  setVerifyingDestinationAddress(true)
+                  if (!e.target.value) {
+                    setDestinationAddress(undefined)
+                  } else {
+                    setDestinationAddress(e.target.value.toLowerCase())
+                  }
+                }}
+                // disables 1password on the field
+                data-1p-ignore
+              />
+              <button
+                onClick={() =>
+                  setDestinationAddressInputDisabled(
+                    !destinationAddressInputDisabled
+                  )
                 }
-              }}
-            />
-            <DestinationAddressExplorer />
+              >
+                {destinationAddressInputDisabled ? (
+                  <LockClosedIcon className="mr-2 h-5 w-5 text-slate-600" />
+                ) : (
+                  <LockOpenIcon className="mr-2 h-5 w-5 text-slate-600" />
+                )}
+              </button>
+            </div>
+            <div className="flex items-center">
+              <DestinationAddressLabel />
+              <DestinationAddressExplorer />
+            </div>
             {verifyingDestinationAddress && (
               <div className="mt-2 flex">
                 <Loader size="small" color="#94A2B8" />
