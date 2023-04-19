@@ -78,6 +78,7 @@ jobs:
           fi
           echo "Run count:"
           echo jobs.build.outputs.run_count
+        shell: bash
 
   test-sdk:
     name: "Test SDK"
