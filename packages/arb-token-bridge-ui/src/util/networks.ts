@@ -301,7 +301,7 @@ export function getSupportedNetworks(chainId = 0) {
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 }
 
-const onSwitchChainNotSupported = (
+const handleSwitchNetworkNotSupported = (
   attemptedChainId: number,
   isSwitchingNetworkBeforeTx: boolean
 ) => {
@@ -337,7 +337,7 @@ export function handleSwitchNetworkError(
     return
   }
   if (error.name === 'SwitchChainNotSupportedError') {
-    onSwitchChainNotSupported(chainId, isSwitchingNetworkBeforeTx)
+    handleSwitchNetworkNotSupported(chainId, isSwitchingNetworkBeforeTx)
   } else {
     Sentry.captureException(error)
   }
