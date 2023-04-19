@@ -96,8 +96,7 @@ export const ArbitrumStats = () => {
         {/* TPS info is not available for testnets */}
         {!isNetwork(l2.network.chainID).isTestnet && (
           <span>
-            &gt; TPS:
-            {arbStatsLoading && <span>Loading...</span>}
+            &gt; TPS: {arbStatsLoading && <span>Loading...</span>}
             {!arbStatsLoading && (
               <span>{arbStats?.tps ? `${arbStats?.tps} TPS` : '-'}</span>
             )}

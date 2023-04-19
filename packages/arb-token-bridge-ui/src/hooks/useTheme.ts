@@ -24,7 +24,8 @@ export const useTheme = () => {
   const [theme, setTheme] = useLocalStorage<string>(themeLocalStorageKey)
 
   useEffect(() => {
-    document.body.className = theme || ''
+    if (!theme) return
+    document.body.className = theme
   }, [theme])
 
   return [theme, setTheme] as const
