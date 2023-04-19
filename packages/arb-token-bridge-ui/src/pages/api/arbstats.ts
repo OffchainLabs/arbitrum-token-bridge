@@ -42,7 +42,6 @@ export default async function handler(
     // validate the request parameters
     const errorMessage = []
     if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
-
     if (errorMessage.length) {
       res.status(400).json({
         message: `incomplete request: ${errorMessage.join(', ')}`,
@@ -51,11 +50,8 @@ export default async function handler(
       return
     }
 
-    // url from where we'll fetch stats
-    const explorerUrl = getExplorerUrl(Number(l2ChainId))
-
     // if the network is not supported by the bridge UI, then return 400
-    if (!isNetwork(Number(l2ChainId)).isSupported || !explorerUrl) {
+    if (!isNetwork(Number(l2ChainId)).isSupported) {
       res.status(400).json({
         message: `unsupported network type: ${l2ChainId}`,
         data: emptyStats
@@ -64,19 +60,22 @@ export default async function handler(
     }
 
     // if network is supported by bridge, but our TPS call doesn't support it, don't fetch it, 200 OK but return null data
-    if (
-      !(
-        isNetwork(Number(l2ChainId)).isArbitrumNova ||
-        isNetwork(Number(l2ChainId)).isArbitrumOne
-      )
-    ) {
+    const canFetchTPS =
+      isNetwork(Number(l2ChainId)).isArbitrumNova ||
+      isNetwork(Number(l2ChainId)).isArbitrumOne
+
+    if (!canFetchTPS) {
       res.status(200).json({
         data: emptyStats
       })
       return
     }
 
-    const response = await axios.get(explorerUrl)
+    // url from where we'll fetch stats
+    const explorerUrl = getExplorerUrl(Number(l2ChainId))
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const response = await axios.get(explorerUrl!) // we cannot get non-null `explorerUrl` from `getExplorerUrl`
 
     // Get the HTML code of the webpage
     const html = response.data
