@@ -121,7 +121,7 @@ export function TransferPanel() {
   const { switchNetwork } = useSwitchNetwork({
     throwForSwitchChainNotSupported: true,
     onMutate: () =>
-      handleSwitchNetworkOnMutate({ isAttemptingToPerformTx: true }),
+      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
     onError: handleSwitchNetworkError
   })
   const { data: signer } = useSigner()
