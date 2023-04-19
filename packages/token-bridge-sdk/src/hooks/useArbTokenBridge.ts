@@ -171,7 +171,7 @@ export const useArbTokenBridge = (
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
-    confirmDestinationAddressOrThrow({
+    verifyDestinationAddressOrThrow({
       provider: l1Signer.provider,
       originAddress: walletAddress,
       destinationAddress,
@@ -289,7 +289,7 @@ export const useArbTokenBridge = (
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
 
-      confirmDestinationAddressOrThrow({
+      verifyDestinationAddressOrThrow({
         provider: l2Signer.provider,
         originAddress: walletAddress,
         destinationAddress,
@@ -501,7 +501,7 @@ export const useArbTokenBridge = (
   }) {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
-    confirmDestinationAddressOrThrow({
+    verifyDestinationAddressOrThrow({
       provider: l1Signer.provider,
       originAddress: erc20L1Address,
       destinationAddress,
@@ -636,7 +636,7 @@ export const useArbTokenBridge = (
     try {
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
-      confirmDestinationAddressOrThrow({
+      verifyDestinationAddressOrThrow({
         provider: l2Signer.provider,
         originAddress: erc20L1Address,
         destinationAddress,
@@ -734,7 +734,7 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function confirmDestinationAddressOrThrow({
+  async function verifyDestinationAddressOrThrow({
     provider,
     originAddress,
     destinationAddress,
@@ -760,7 +760,7 @@ export const useArbTokenBridge = (
       if (!destinationAddressIsContract) {
         throw new Error(
           `Invalid destination address. Expected a contract address on network: '${
-            (isDeposit ? l2.network : l1.network).name
+            (isDeposit ? l2 : l1).network.name
           }'`
         )
       }

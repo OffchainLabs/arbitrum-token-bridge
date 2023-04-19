@@ -299,14 +299,24 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     if (isEthDeposit) {
       // nitro eth deposit
       const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+      if (ethDepositMessage) {
+        return {
+          isClassic: false,
+          l1ToL2Msg: ethDepositMessage,
+          isCustomAddressDeposit: false
+        }
+      }
       // when depositing to a custom address
       const [l1ToL2Message] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
-
-      return {
-        isClassic: false,
-        l1ToL2Msg: ethDepositMessage ?? l1ToL2Message,
-        isCustomAddressDeposit: !ethDepositMessage && !!l1ToL2Message
+      if (l1ToL2Message) {
+        return {
+          isClassic: false,
+          l1ToL2Msg: l1ToL2Message,
+          isCustomAddressDeposit: true
+        }
       }
+
+      return {}
     }
 
     // Else, nitro token deposit
