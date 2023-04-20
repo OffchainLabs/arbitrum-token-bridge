@@ -739,7 +739,7 @@ export const useArbTokenBridge = (
     destinationAddress?: string
     isDeposit: boolean
   }) {
-    const originAddressIsContract =
+    const fromAddressIsContract =
       provider && (await provider.getCode(walletAddress)).length > 2
     const destinationAddressIsContract =
       destinationAddress &&
@@ -748,7 +748,7 @@ export const useArbTokenBridge = (
           String(destinationAddress)
         )
       ).length > 2
-    if (originAddressIsContract) {
+    if (fromAddressIsContract) {
       if (!destinationAddress) {
         throw new Error('Missing destination address')
       }

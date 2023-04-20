@@ -474,17 +474,15 @@ export function TransferPanelMain({
       return null
     }
     return (
-      <a
+      <ExternalLink
+        className="mt-2 flex w-fit text-xs text-slate-500"
         href={`${(isDepositMode ? l2 : l1).network.explorerUrl}/address/${
           destinationAddress ?? walletAddress
         }`}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-2 flex w-fit text-xs text-slate-500"
       >
         <ExternalLinkIcon className="mr-1 h-4 w-4" />
         View account in explorer
-      </a>
+      </ExternalLink>
     )
   }, [
     destinationAddress,
@@ -525,6 +523,112 @@ export function TransferPanelMain({
     advancedSettingsError
   ])
 
+  const AdvancedSettings = () => (
+    <div className="mt-6">
+      <button
+        onClick={() => {
+          // keep visible if destination address provided to make clear where funds go to
+          // or for SC wallets as destination address is mandatory
+          // allow to close if EOA and destination address === wallet address
+          if (
+            (destinationAddress &&
+              destinationAddress !== walletAddress.toLowerCase()) ||
+            isSmartContractWallet
+          ) {
+            setShowAdvancedSettings(true)
+            return
+          }
+          setShowAdvancedSettings(!showAdvancedSettings)
+        }}
+        className="flex flex-row items-center"
+      >
+        <span className=" text-lg">Advanced Settings</span>
+        {showAdvancedSettings ? (
+          <ChevronUpIcon className="ml-1 h-4 w-4" />
+        ) : (
+          <ChevronDownIcon className="ml-1 h-4 w-4" />
+        )}
+      </button>
+      {showAdvancedSettings && (
+        <div className="mt-2">
+          <div className="flex flex-wrap items-center justify-between">
+            <span className="text-md flex items-center text-gray-10">
+              Destination Address
+              <Tooltip
+                wrapperClassName="ml-1"
+                theme="dark"
+                content={
+                  <span>
+                    This is where your funds will end up at.{' '}
+                    {isSmartContractWallet
+                      ? ''
+                      : 'Defaults to your wallet address.'}
+                  </span>
+                }
+              >
+                <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
+              </Tooltip>
+            </span>
+            <DestinationAddressLabel />
+          </div>
+          <div
+            className={`mt-1 flex h-full flex-row items-center rounded ${destAddressInputClassName}`}
+          >
+            <input
+              className="w-full rounded px-2 py-1"
+              // we want to keep the input empty for the same wallet address
+              // placeholder only displays it to the user for assurance
+              placeholder={!isSmartContractWallet ? walletAddress : undefined}
+              defaultValue={destinationAddress}
+              spellCheck={false}
+              disabled={
+                destinationAddressInputDisabled && !isSmartContractWallet
+              }
+              onChange={e => {
+                // prevents verification from flashing
+                setVerifyingDestinationAddress(true)
+                if (!e.target.value) {
+                  setDestinationAddress(undefined)
+                } else {
+                  setDestinationAddress(e.target.value.toLowerCase())
+                }
+              }}
+              // disables 1password on the field
+              data-1p-ignore
+            />
+            {!isSmartContractWallet && (
+              <button
+                onClick={() =>
+                  setDestinationAddressInputDisabled(
+                    !destinationAddressInputDisabled
+                  )
+                }
+              >
+                {destinationAddressInputDisabled ? (
+                  <LockClosedIcon className="mr-2 h-5 w-5 text-slate-600" />
+                ) : (
+                  <LockOpenIcon className="mr-2 h-5 w-5 text-slate-600" />
+                )}
+              </button>
+            )}
+          </div>
+          <DestinationAddressExplorer />
+          {verifyingDestinationAddress && (
+            <div className="mt-2 flex">
+              <Loader size="small" color="#94A2B8" />
+              <span className="ml-2 text-xs text-slate-500">
+                Verifying address
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      {!verifyingDestinationAddress && advancedSettingsError && (
+        <span className="text-xs text-red-400">{advancedSettingsError}</span>
+      )}
+    </div>
+  )
+
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
@@ -541,12 +645,12 @@ export function TransferPanelMain({
       setShowAdvancedSettings(
         isSmartContractWallet || !!destinationAddress || showAdvancedSettings
       ),
-    [isSmartContractWallet, destinationAddress]
+    [isSmartContractWallet, destinationAddress, showAdvancedSettings]
   )
 
   useEffect(() => {
     // used to unsubscribe
-    let isLatest = true
+    let isCurrent = true
     const verifyAddress = async () => {
       setVerifyingDestinationAddress(true)
       try {
@@ -554,7 +658,7 @@ export function TransferPanelMain({
           String(destinationAddress),
           isDepositMode ? l2.provider : l1.provider
         )
-        if (!isLatest) {
+        if (!isCurrent) {
           return
         }
         if (isSmartContractWallet) {
@@ -591,7 +695,7 @@ export function TransferPanelMain({
     }
     verifyAddress()
     return () => {
-      isLatest = false
+      isCurrent = false
       setVerifyingDestinationAddress(false)
     }
   }, [
@@ -937,109 +1041,7 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      <div className="mt-6">
-        <button
-          onClick={() => {
-            // keep visible if destination address provided to make clear where funds go to
-            // or for SC wallets as destination address is mandatory
-            // allow to close if EOA and destination address === wallet address
-            if (
-              (destinationAddress &&
-                destinationAddress !== walletAddress.toLowerCase()) ||
-              isSmartContractWallet
-            ) {
-              setShowAdvancedSettings(true)
-              return
-            }
-            setShowAdvancedSettings(!showAdvancedSettings)
-          }}
-          className="flex flex-row items-center"
-        >
-          <span className=" text-lg">Advanced Settings</span>
-          {showAdvancedSettings ? (
-            <ChevronUpIcon className="ml-1 h-4 w-4" />
-          ) : (
-            <ChevronDownIcon className="ml-1 h-4 w-4" />
-          )}
-        </button>
-        {showAdvancedSettings && (
-          <div className="mt-2">
-            <div className="flex flex-wrap items-center justify-between">
-              <span className="text-md flex items-center text-gray-10">
-                Destination Address
-                <Tooltip
-                  wrapperClassName="ml-1"
-                  theme="dark"
-                  content={
-                    <span>
-                      This is where your funds will end up at.{' '}
-                      {isSmartContractWallet
-                        ? ''
-                        : 'Defaults to your wallet address.'}
-                    </span>
-                  }
-                >
-                  <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
-                </Tooltip>
-              </span>
-              <DestinationAddressLabel />
-            </div>
-            <div
-              className={`mt-1 flex h-full flex-row items-center rounded ${destAddressInputClassName}`}
-            >
-              <input
-                className="w-full rounded px-2 py-1"
-                // we want to keep the input empty for the same wallet address
-                // placeholder only displays it to the user for assurance
-                placeholder={!isSmartContractWallet ? walletAddress : undefined}
-                defaultValue={destinationAddress}
-                spellCheck={false}
-                disabled={
-                  destinationAddressInputDisabled && !isSmartContractWallet
-                }
-                onChange={e => {
-                  // prevents verification from flashing
-                  setVerifyingDestinationAddress(true)
-                  if (!e.target.value) {
-                    setDestinationAddress(undefined)
-                  } else {
-                    setDestinationAddress(e.target.value.toLowerCase())
-                  }
-                }}
-                // disables 1password on the field
-                data-1p-ignore
-              />
-              {!isSmartContractWallet && (
-                <button
-                  onClick={() =>
-                    setDestinationAddressInputDisabled(
-                      !destinationAddressInputDisabled
-                    )
-                  }
-                >
-                  {destinationAddressInputDisabled ? (
-                    <LockClosedIcon className="mr-2 h-5 w-5 text-slate-600" />
-                  ) : (
-                    <LockOpenIcon className="mr-2 h-5 w-5 text-slate-600" />
-                  )}
-                </button>
-              )}
-            </div>
-            <DestinationAddressExplorer />
-            {verifyingDestinationAddress && (
-              <div className="mt-2 flex">
-                <Loader size="small" color="#94A2B8" />
-                <span className="ml-2 text-xs text-slate-500">
-                  Verifying address
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-        {!verifyingDestinationAddress && advancedSettingsError && (
-          <span className="text-xs text-red-400">{advancedSettingsError}</span>
-        )}
-      </div>
+      <AdvancedSettings />
 
       <Dialog
         closeable
