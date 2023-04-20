@@ -517,11 +517,11 @@ export function TransferPanelMain({
     // destination address defaults to wallet address
     return !destinationAddress ||
       walletAddress.toLowerCase() === destinationAddress?.toLowerCase() ? (
-      <div className="w-fit rounded bg-[#e6ffe6] px-2 py-1 text-[#006600]">
+      <div className="w-fit rounded bg-[#e6ffe6] px-2 py-1 text-sm text-[#006600]">
         Sending to your address
       </div>
     ) : (
-      <div className="w-fit rounded bg-[#ffeed3] px-2 py-1 text-[#60461f]">
+      <div className="w-fit rounded bg-[#ffeed3] px-2 py-1 text-sm text-[#60461f]">
         Sending to a different address
       </div>
     )
@@ -972,7 +972,7 @@ export function TransferPanelMain({
         </button>
         {showAdvancedSettings && (
           <div className="mt-2">
-            <div className="flex items-baseline justify-between">
+            <div className="flex flex-wrap items-center justify-between">
               <span className="text-md flex items-center text-gray-10">
                 Destination Address
                 <Tooltip
