@@ -85,6 +85,10 @@ export default async function handler(
       }
     })
 
+    if (!response.ok) {
+      throw response
+    }
+
     // Get the HTML code of the webpage
     const html = await response.text()
 
