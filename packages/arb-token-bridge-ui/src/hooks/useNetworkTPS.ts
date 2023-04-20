@@ -1,10 +1,12 @@
+// Used to fetch the TPS (Transactions per Second) information for a network
+
 import axios from 'axios'
 import { load } from 'cheerio'
 import { getExplorerUrl, isNetwork } from 'src/util/networks'
 import useSWR from 'swr'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
-const emptyStats = { tps: null }
+const emptyData = { tps: null }
 
 const fetchNetworkTPS = async (l2ChainId: number) => {
   // currently we only support TPS information for Arb-one and nova
@@ -12,7 +14,7 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
   const canFetchTPS =
     isNetwork(Number(l2ChainId)).isArbitrumNova ||
     isNetwork(Number(l2ChainId)).isArbitrumOne
-  if (!canFetchTPS) return emptyStats
+  if (!canFetchTPS) return emptyData
 
   // url from where we'll fetch stats
   const explorerUrl = getExplorerUrl(Number(l2ChainId))
