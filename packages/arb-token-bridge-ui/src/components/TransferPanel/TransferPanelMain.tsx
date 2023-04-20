@@ -487,7 +487,6 @@ export function TransferPanelMain({
       </a>
     )
   }, [
-    isSmartContractWallet,
     destinationAddress,
     advancedSettingsError,
     verifyingDestinationAddress,
