@@ -15,6 +15,7 @@ type AppContextState = {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
+    isPreferencesPanelVisible: boolean
   }
 }
 
@@ -23,7 +24,8 @@ const initialState: AppContextState = {
   layout: {
     isTransferPanelVisible: true,
     isTransferring: false,
-    isTransactionHistoryPanelVisible: false
+    isTransactionHistoryPanelVisible: false,
+    isPreferencesPanelVisible: false
   }
 }
 
@@ -37,6 +39,7 @@ type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
+  | { type: 'layout.set_preferences_panel_visible'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
@@ -55,6 +58,15 @@ function reducer(state: AppContextState, action: Action) {
         layout: {
           ...state.layout,
           isTransactionHistoryPanelVisible: action.payload
+        }
+      }
+
+    case 'layout.set_preferences_panel_visible':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          isPreferencesPanelVisible: action.payload
         }
       }
 
@@ -121,10 +133,20 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
 
+  const openPreferences = () => {
+    dispatch({ type: 'layout.set_preferences_panel_visible', payload: true })
+  }
+
+  const closePreferences = () => {
+    dispatch({ type: 'layout.set_preferences_panel_visible', payload: false })
+  }
+
   return {
     setTransferring,
     setCurrentL1BlockNumber,
     openTransactionHistoryPanel,
-    closeTransactionHistoryPanel
+    closeTransactionHistoryPanel,
+    openPreferences,
+    closePreferences
   }
 }

@@ -8,7 +8,7 @@ import {
   LogoutIcon,
   DocumentTextIcon,
   DocumentDuplicateIcon,
-  HeartIcon
+  CogIcon
 } from '@heroicons/react/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -23,13 +23,10 @@ import {
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
-import { useTheme } from '../../hooks/useTheme'
 import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
 import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-
-const classicThemeKey = 'arbitrum-classic-theme'
 
 type ENSInfo = { name: string | null; avatar: string | null }
 const ensInfoDefaults: ENSInfo = { name: null, avatar: null }
@@ -102,7 +99,8 @@ export function HeaderAccountPopover() {
   const { provider: l1Provider } = l1
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const { openTransactionHistoryPanel } = useAppContextActions()
+  const { openTransactionHistoryPanel, openPreferences } =
+    useAppContextActions()
 
   const [showCopied, setShowCopied] = useState(false)
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
@@ -111,17 +109,6 @@ export function HeaderAccountPopover() {
   // check local-storage for viewed flag
   const [txHistoryViewedOnce, setTxHistoryViewedOnce] =
     useNewFeatureIndicator('tx-history')
-
-  const [theme, setTheme] = useTheme()
-  const isClassicTheme = theme === classicThemeKey
-
-  const handleToggleTheme = () => {
-    if (isClassicTheme) {
-      setTheme('')
-    } else {
-      setTheme(classicThemeKey)
-    }
-  }
 
   useEffect(() => {
     async function resolveNameServiceInfo() {
@@ -254,10 +241,6 @@ export function HeaderAccountPopover() {
             >
               <DocumentTextIcon className="h-4 w-4 text-white" />
               <span>Transactions</span>
-
-              <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
-                NEW
-              </span>
             </button>
 
             {/* Explorer button */}
@@ -271,13 +254,14 @@ export function HeaderAccountPopover() {
               <span>Explorer</span>
             </ExternalLink>
 
-            {/* Theme toggle */}
-            <button
-              className={headerItemsClassName}
-              onClick={handleToggleTheme}
-            >
-              <HeartIcon className="h-4 w-4 text-white" />
-              <span>{isClassicTheme ? 'Space theme' : 'Classic theme'}</span>
+            {/* Preferences */}
+            <button className={headerItemsClassName} onClick={openPreferences}>
+              <CogIcon className="h-4 w-4 text-white" />
+              <span>Preferences</span>
+
+              <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
+                NEW
+              </span>
             </button>
 
             {/* Disconnect button */}

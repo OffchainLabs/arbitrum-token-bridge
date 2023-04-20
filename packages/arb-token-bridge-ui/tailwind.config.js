@@ -48,7 +48,7 @@ module.exports = {
         'orange-dark': '#60461F',
 
         // Purple
-        'purple-ethereum': '#454A75',
+        'purple-ethereum': '#1A1C33',
 
         // Chain specific themes
         'orange-arbitrum-nova': '#EF8220',
