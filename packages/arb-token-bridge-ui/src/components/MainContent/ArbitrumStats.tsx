@@ -2,11 +2,12 @@ import { utils } from 'ethers'
 import { useGasPrice } from 'token-bridge-sdk'
 
 import useLocalStorage from '@rehooks/local-storage'
-import { useArbStats } from '../../hooks/useArbStats'
+
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextState } from '../App/AppContext'
+import { useNetworkTPS } from 'src/hooks/useNetworkTPS'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
@@ -34,7 +35,7 @@ export const ArbitrumStats = () => {
   const currentL1BlockNumber = useBlockNumber(l1.provider)
   const currentL2BlockNumber = useBlockNumber(l2.provider)
 
-  const { data: arbStats, isValidating: arbStatsLoading } = useArbStats()
+  const { data: tpsData, isValidating: tpsLoading } = useNetworkTPS()
 
   const currentL1GasPrice = useGasPrice({ provider: l1.provider })
   const currentL1GasPriceGwei = utils.formatUnits(currentL1GasPrice, 'gwei')
@@ -96,9 +97,9 @@ export const ArbitrumStats = () => {
         {/* TPS info is not available for testnets */}
         {!isNetwork(l2.network.chainID).isTestnet && (
           <span>
-            &gt; TPS: {arbStatsLoading && <span>Loading...</span>}
-            {!arbStatsLoading && (
-              <span>{arbStats?.tps ? `${arbStats?.tps} TPS` : '-'}</span>
+            &gt; TPS: {tpsLoading && <span>Loading...</span>}
+            {!tpsLoading && (
+              <span>{tpsData?.tps ? `${tpsData?.tps} TPS` : '-'}</span>
             )}
           </span>
         )}
