@@ -78,7 +78,11 @@ export default async function handler(
     const finalUrl = `https://corsproxy.io/?${encodeURIComponent(explorerUrl!)}`
 
     const response = await axios.get(finalUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0', Origin: explorerUrl }
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        Origin: explorerUrl,
+        'Access-Control-Allow-Origin': '*'
+      }
     })
 
     // Get the HTML code of the webpage
