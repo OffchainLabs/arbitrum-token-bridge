@@ -469,15 +469,8 @@ export function TransferPanelMain({
 
   const DestinationAddressExplorer = useCallback(() => {
     const { explorerUrl } = (isDepositMode ? l2 : l1).network
-    const destAddressRequiredAndProvided =
-      isSmartContractWallet && destinationAddress
 
-    if (
-      !explorerUrl ||
-      verifyingDestinationAddress ||
-      advancedSettingsError ||
-      destAddressRequiredAndProvided
-    ) {
+    if (!explorerUrl || verifyingDestinationAddress || advancedSettingsError) {
       return null
     }
     return (
