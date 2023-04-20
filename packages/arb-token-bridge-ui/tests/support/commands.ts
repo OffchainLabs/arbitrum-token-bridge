@@ -109,11 +109,11 @@ export const openTransactionsPanel = () => {
         // Open tx history panel
         cy.findByRole('button', { name: /account header button/i })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
         cy.findByRole('button', { name: /transactions/i })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
       }),
     {
       timeout: 10000,
