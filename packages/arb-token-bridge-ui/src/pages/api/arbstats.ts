@@ -110,7 +110,7 @@ export default async function handler(
     console.log('Error found -', error)
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',
-      data: emptyStats
+      data: error
     })
   }
 }
