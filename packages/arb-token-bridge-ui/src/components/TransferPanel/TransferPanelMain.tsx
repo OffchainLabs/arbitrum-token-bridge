@@ -994,7 +994,9 @@ export function TransferPanelMain({
                 placeholder={!isSmartContractWallet ? walletAddress : undefined}
                 defaultValue={destinationAddress}
                 spellCheck={false}
-                disabled={destinationAddressInputDisabled}
+                disabled={
+                  destinationAddressInputDisabled && !isSmartContractWallet
+                }
                 onChange={e => {
                   // prevents verification from flashing
                   setVerifyingDestinationAddress(true)
@@ -1007,19 +1009,21 @@ export function TransferPanelMain({
                 // disables 1password on the field
                 data-1p-ignore
               />
-              <button
-                onClick={() =>
-                  setDestinationAddressInputDisabled(
-                    !destinationAddressInputDisabled
-                  )
-                }
-              >
-                {destinationAddressInputDisabled ? (
-                  <LockClosedIcon className="mr-2 h-5 w-5 text-slate-600" />
-                ) : (
-                  <LockOpenIcon className="mr-2 h-5 w-5 text-slate-600" />
-                )}
-              </button>
+              {!isSmartContractWallet && (
+                <button
+                  onClick={() =>
+                    setDestinationAddressInputDisabled(
+                      !destinationAddressInputDisabled
+                    )
+                  }
+                >
+                  {destinationAddressInputDisabled ? (
+                    <LockClosedIcon className="mr-2 h-5 w-5 text-slate-600" />
+                  ) : (
+                    <LockOpenIcon className="mr-2 h-5 w-5 text-slate-600" />
+                  )}
+                </button>
+              )}
             </div>
             <DestinationAddressExplorer />
             {verifyingDestinationAddress && (

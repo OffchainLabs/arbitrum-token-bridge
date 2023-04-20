@@ -137,7 +137,9 @@ export function TransactionsTable({
     })
 
     // if newer txns found, append it to the existing subgraph transactions
-    return [...newerTransactions.reverse(), ...subgraphTransactions]
+    return [...newerTransactions.reverse(), ...subgraphTransactions].sort(
+      (a, b) => (dayjs(a.createdAt).isAfter(dayjs(b.createdAt)) ? -1 : 1)
+    )
   }, [transactions, localTransactionsKey])
 
   const pendingTransactionsMap = useMemo(() => {

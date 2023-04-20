@@ -748,6 +748,7 @@ export const useArbTokenBridge = (
     const originAddressIsContract =
       provider && (await provider.getCode(originAddress)).length > 2
     const destinationAddressIsContract =
+      destinationAddress &&
       (
         await (isDeposit ? l2.provider : l1.provider).getCode(
           String(destinationAddress)
