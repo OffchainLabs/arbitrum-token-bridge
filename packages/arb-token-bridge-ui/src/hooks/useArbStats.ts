@@ -24,9 +24,7 @@ export const useArbStats = () => {
     },
     {
       refreshInterval: 30_000,
-      shouldRetryOnError: true,
-      errorRetryCount: 2,
-      errorRetryInterval: 3_000
+      shouldRetryOnError: false
     }
   )
 }
