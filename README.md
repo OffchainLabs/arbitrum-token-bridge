@@ -141,7 +141,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
    $ yarn test:e2e
    ```
 
-Read more about the test setup [here](/packages/arb-token-bridge-ui/tests/e2e/readme.md).
+Read more about the test setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
 
 <br />
 
