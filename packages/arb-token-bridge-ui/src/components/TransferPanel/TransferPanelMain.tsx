@@ -517,11 +517,11 @@ export function TransferPanelMain({
     // destination address defaults to wallet address
     return !destinationAddress ||
       walletAddress.toLowerCase() === destinationAddress?.toLowerCase() ? (
-      <div className="mr-2 mt-2 w-fit rounded bg-[#e6ffe6] px-2 py-1 text-[#006600]">
+      <div className="w-fit rounded bg-[#e6ffe6] px-2 py-1 text-[#006600]">
         Sending to your address
       </div>
     ) : (
-      <div className="mr-2 mt-2 w-fit rounded bg-[#ffeed3] px-2 py-1 text-[#60461f]">
+      <div className="w-fit rounded bg-[#ffeed3] px-2 py-1 text-[#60461f]">
         Sending to a different address
       </div>
     )
@@ -972,30 +972,34 @@ export function TransferPanelMain({
         </button>
         {showAdvancedSettings && (
           <div className="mt-2">
-            <span className="text-md flex items-center text-gray-10">
-              Destination Address
-              {!isSmartContractWallet ? ' (optional)' : ''}
-              <Tooltip
-                wrapperClassName="ml-1"
-                theme="dark"
-                content={
-                  <span>
-                    This is where your funds will end up at.{' '}
-                    {isSmartContractWallet
-                      ? ''
-                      : 'Defaults to your wallet address.'}
-                  </span>
-                }
-              >
-                <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
-              </Tooltip>
-            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-md flex items-center text-gray-10">
+                Destination Address
+                <Tooltip
+                  wrapperClassName="ml-1"
+                  theme="dark"
+                  content={
+                    <span>
+                      This is where your funds will end up at.{' '}
+                      {isSmartContractWallet
+                        ? ''
+                        : 'Defaults to your wallet address.'}
+                    </span>
+                  }
+                >
+                  <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
+                </Tooltip>
+              </span>
+              <DestinationAddressLabel />
+            </div>
             <div
               className={`mt-1 flex h-full flex-row items-center rounded ${destAddressInputClassName}`}
             >
               <input
                 className="w-full rounded px-2 py-1"
-                placeholder="Enter destination address"
+                // we want to keep the input empty for the same wallet address
+                // placeholder only displays it to the user for assurance
+                placeholder={walletAddress}
                 defaultValue={destinationAddress}
                 spellCheck={false}
                 disabled={destinationAddressInputDisabled}
@@ -1025,10 +1029,7 @@ export function TransferPanelMain({
                 )}
               </button>
             </div>
-            <div className="flex items-start justify-between">
-              <DestinationAddressLabel />
-              <DestinationAddressExplorer />
-            </div>
+            <DestinationAddressExplorer />
             {verifyingDestinationAddress && (
               <div className="mt-2 flex">
                 <Loader size="small" color="#94A2B8" />
