@@ -30,7 +30,6 @@ describe('Import token', () => {
         // however most likely due to a slow container and the metamask window overlapping the button
         // same on all the other cases
         cy.findByText(ERC20TokenName).trigger('click', {
-          scrollBehavior: false,
           force: true
         })
 
@@ -48,7 +47,6 @@ describe('Import token', () => {
 
         // Select the ERC-20 token
         cy.findByText(ERC20TokenName).trigger('click', {
-          scrollBehavior: false,
           force: true
         })
 
@@ -80,25 +78,25 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
-          .click({ scrollBehavior: false })
+          .click()
 
         // Check that token list is imported
         cy.findByRole('button', { name: 'Manage token lists' })
           .scrollIntoView()
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
         cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
         cy.findByLabelText('Arbed CMC List')
           .as('tokenListToggle')
           .parent()
-          .click({ scrollBehavior: false })
+          .click()
         cy.get('@tokenListToggle').should('be.checked')
 
         cy.findByRole('button', { name: 'Back to Select Token' })
           .scrollIntoView()
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
         // Select the UNI token
         cy.findByPlaceholderText(/Search by token name/i)
@@ -113,10 +111,7 @@ describe('Import token', () => {
           .within(() => {
             // cy.get() will only search for elements within .tokenSearchList,
             // not within the entire document, fixing the multiple Uniswap text issue
-            cy.findByText('Uniswap').click({
-              scrollBehavior: false,
-              force: true
-            })
+            cy.findByText('Uniswap').click({ force: true })
           })
 
         // UNI token should be selected now and popup should be closed after selection
@@ -137,7 +132,7 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
-          .click({ scrollBehavior: false })
+          .click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -192,7 +187,6 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
           .trigger('click', {
-            scrollBehavior: false,
             force: true
           })
           .then(() => {
@@ -234,7 +228,6 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
           .trigger('click', {
-            scrollBehavior: false,
             force: true
           })
           .then(() => {
@@ -267,7 +260,6 @@ describe('Import token', () => {
         cy.findByRole('button', { name: 'Dialog Cancel' })
           .should('be.visible')
           .trigger('click', {
-            scrollBehavior: false,
             force: true
           })
           .then(() => {

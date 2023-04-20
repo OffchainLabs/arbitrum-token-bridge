@@ -18,7 +18,7 @@ describe('Approve token and deposit afterwards', () => {
 
       // Select the ERC-20 token
       cy.findByText('Added by User').should('exist')
-      cy.findByText(ERC20TokenName).click({ scrollBehavior: false })
+      cy.findByText(ERC20TokenName).click()
 
       // ERC-20 token should be selected now and popup should be closed after selection
       cy.findByRole('button', { name: 'Select Token' })
@@ -48,13 +48,11 @@ describe('Approve token and deposit afterwards', () => {
         })
       cy.findByRole('button', {
         name: 'Move funds to Arbitrum'
-      }).click({ scrollBehavior: false })
-      cy.findByText(/I understand that I have to pay a one-time/).click({
-        scrollBehavior: false
-      })
+      }).click()
+      cy.findByText(/I understand that I have to pay a one-time/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
-      }).click({ scrollBehavior: false })
+      }).click()
       cy.confirmMetamaskPermissionToSpend('1')
     })
 

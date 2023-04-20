@@ -68,10 +68,7 @@ Cypress.Commands.add(
   (subject, text: string) => {
     recurse(
       // the commands to repeat, and they yield the input element
-      () =>
-        cy.wrap(subject).clear({ scrollBehavior: false }).type(text, {
-          scrollBehavior: false
-        }),
+      () => cy.wrap(subject).clear().type(text),
       // the predicate takes the output of the above commands
       // and returns a boolean. If it returns true, the recursion stops
       $input => $input.val() === text,
@@ -98,20 +95,6 @@ export const logout = () => {
   })
 }
 
-export const restoreAppState = () => {
-  // restore local storage from previous test
-  cy.restoreLocalStorage()
-}
-
-export const saveAppState = () => {
-  // cypress clears local storage between tests
-  // so in order to preserve local storage on the page between tests
-  // we need to use the cypress-localstorage-commands plugin
-  // or else we have to visit the page every test which will be much slower
-  // https://docs.cypress.io/api/commands/clearlocalstorage
-  cy.saveLocalStorage()
-}
-
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()
@@ -133,7 +116,5 @@ Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
-  restoreAppState,
-  saveAppState,
   openTransactionsPanel
 })
