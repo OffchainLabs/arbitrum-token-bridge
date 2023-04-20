@@ -173,7 +173,6 @@ export const useArbTokenBridge = (
 
     verifyDestinationAddressOrThrow({
       provider: l1Signer.provider,
-      originAddress: walletAddress,
       destinationAddress,
       isDeposit: true
     })
@@ -291,7 +290,6 @@ export const useArbTokenBridge = (
 
       verifyDestinationAddressOrThrow({
         provider: l2Signer.provider,
-        originAddress: walletAddress,
         destinationAddress,
         isDeposit: false
       })
@@ -503,7 +501,6 @@ export const useArbTokenBridge = (
 
     verifyDestinationAddressOrThrow({
       provider: l1Signer.provider,
-      originAddress: erc20L1Address,
       destinationAddress,
       isDeposit: true
     })
@@ -638,7 +635,6 @@ export const useArbTokenBridge = (
 
       verifyDestinationAddressOrThrow({
         provider: l2Signer.provider,
-        originAddress: erc20L1Address,
         destinationAddress,
         isDeposit: false
       })
@@ -736,17 +732,15 @@ export const useArbTokenBridge = (
 
   async function verifyDestinationAddressOrThrow({
     provider,
-    originAddress,
     destinationAddress,
     isDeposit
   }: {
     provider?: Provider
-    originAddress: string
     destinationAddress?: string
     isDeposit: boolean
   }) {
     const originAddressIsContract =
-      provider && (await provider.getCode(originAddress)).length > 2
+      provider && (await provider.getCode(walletAddress)).length > 2
     const destinationAddressIsContract =
       destinationAddress &&
       (
