@@ -1,6 +1,5 @@
 // Connects to Arbiscan and scrapes some nice info (currently only TPS) which we can show on our UI as well
 
-import axios from 'axios'
 import { load } from 'cheerio'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -77,16 +76,17 @@ export default async function handler(
     // for 403 or CORS blocked errors while scraping external endpoints, we use cors-proxy
     const finalUrl = `https://corsproxy.io/?${encodeURIComponent(explorerUrl!)}`
 
-    const response = await axios.get(finalUrl, {
+    const response = await fetch(finalUrl, {
+      method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0',
-        Origin: explorerUrl,
+        Origin: explorerUrl!,
         'Access-Control-Allow-Origin': '*'
       }
     })
 
     // Get the HTML code of the webpage
-    const html = response.data
+    const html = await response.text()
 
     const $ = load(html)
 
