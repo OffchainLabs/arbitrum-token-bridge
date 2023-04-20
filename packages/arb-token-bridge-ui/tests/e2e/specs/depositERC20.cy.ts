@@ -50,7 +50,7 @@ describe('Deposit ERC20 Token', () => {
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
-          .click({ scrollBehavior: false })
+          .click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -61,10 +61,10 @@ describe('Deposit ERC20 Token', () => {
 
             cy.findByRole('button', { name: 'Add New Token' })
               .should('be.visible')
-              .click({ scrollBehavior: false })
+              .click()
 
             // Select the WETH token
-            cy.findAllByText('WETH').first().click({ scrollBehavior: false })
+            cy.findAllByText('WETH').first().click()
 
             // WETH token should be selected now and popup should be closed after selection
             cy.findByRole('button', { name: 'Select Token' })
@@ -110,7 +110,7 @@ describe('Deposit ERC20 Token', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })
-          .click({ scrollBehavior: false })
+          .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
