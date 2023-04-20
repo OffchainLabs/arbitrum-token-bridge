@@ -2,7 +2,6 @@ import { utils } from 'ethers'
 import { useGasPrice } from 'token-bridge-sdk'
 
 import useLocalStorage from '@rehooks/local-storage'
-
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
