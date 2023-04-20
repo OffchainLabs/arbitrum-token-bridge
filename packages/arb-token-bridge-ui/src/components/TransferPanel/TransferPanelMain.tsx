@@ -991,7 +991,7 @@ export function TransferPanelMain({
                 className="w-full rounded px-2 py-1"
                 // we want to keep the input empty for the same wallet address
                 // placeholder only displays it to the user for assurance
-                placeholder={walletAddress}
+                placeholder={!isSmartContractWallet ? walletAddress : undefined}
                 defaultValue={destinationAddress}
                 spellCheck={false}
                 disabled={destinationAddressInputDisabled}
