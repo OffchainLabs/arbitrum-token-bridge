@@ -52,25 +52,29 @@ export async function getL1TokenData({
   erc20L1Address,
   l1Provider,
   l2Provider,
-  throwOnInvalidERC20 = true
+  throwOnInvalidERC20 = true,
+  skipCache
 }: {
   account: string
   erc20L1Address: string
   l1Provider: Provider
   l2Provider: Provider
   throwOnInvalidERC20?: boolean
+  skipCache?: boolean
 }): Promise<L1TokenData> {
   // caching for tokens results
   const l1TokenDataCache = JSON.parse(
     sessionStorage.getItem('l1TokenDataCache') || '{}'
   )
-  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
-  if (cachedTokenData)
-    // successfully found the cache for the required token
-    return {
-      ...cachedTokenData,
-      allowance: BigNumber.from(cachedTokenData.allowance || 0) // return allowance in a bignumber format, which would've been flattened by sessionStorage
-    }
+  if (!skipCache) {
+    const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
+    if (cachedTokenData)
+      // successfully found the cache for the required token
+      return {
+        ...cachedTokenData,
+        allowance: BigNumber.from(cachedTokenData.allowance || 0) // return allowance in a bignumber format, which would've been flattened by sessionStorage
+      }
+  }
 
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 

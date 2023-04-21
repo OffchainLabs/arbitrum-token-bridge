@@ -1,13 +1,13 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useWallet } from '@arbitrum/use-wallet'
+import { useAllowance, useBalance } from 'token-bridge-sdk'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 
-import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
@@ -24,8 +24,6 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
@@ -45,23 +43,6 @@ const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
     Sentry.captureException(error)
   }
-}
-
-const isAllowedL2 = async (
-  arbTokenBridge: ArbTokenBridge,
-  l1TokenAddress: string,
-  l2TokenAddress: string,
-  walletAddress: string,
-  amountNeeded: BigNumber,
-  l2Provider: JsonRpcProvider
-) => {
-  const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
-  const gatewayAddress = await arbTokenBridge.token.getL2GatewayAddress(
-    l1TokenAddress
-  )
-  return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    amountNeeded
-  )
 }
 
 function useTokenFromSearchParams(): string | undefined {
@@ -100,6 +81,7 @@ export function TransferPanel() {
     isDestinationAddressSmartContract,
     setIsDestinationAddressSmartContract
   ] = useState(false)
+  const [approving, setApproving] = useState(false)
 
   const {
     app: {
@@ -166,7 +148,38 @@ export function TransferPanel() {
     return isDepositMode ? ethL1Balance : ethL2Balance
   }, [ethL1Balance, ethL2Balance, isDepositMode])
 
-  const [allowance, setAllowance] = useState<BigNumber | null>(null)
+  const allowance = useAllowance({
+    arbTokenBridge,
+    l1Provider,
+    l2Provider,
+    erc20L1Address: selectedToken?.address,
+    erc20L2Address: selectedToken?.l2Address,
+    walletAddress
+  })
+
+  const needsApprovalL1 = useMemo(() => {
+    if (selectedToken && amount && !isNaN(Number(amount))) {
+      const amountRaw = utils.parseUnits(amount, selectedToken.decimals)
+      return allowance.l1 && amountRaw.gte(allowance.l1)
+    }
+    return false
+  }, [amount, selectedToken, allowance])
+
+  const needsApprovalL2 = useMemo(() => {
+    if (
+      selectedToken &&
+      amount &&
+      tokenRequiresApprovalOnL2(
+        selectedToken.address,
+        latestNetworksAndSigners.current.l2.network.chainID
+      ) &&
+      !isNaN(Number(amount))
+    ) {
+      const amountRaw = utils.parseUnits(amount, selectedToken.decimals)
+      return allowance.l2 && amountRaw.gte(allowance.l2)
+    }
+    return false
+  }, [amount, selectedToken, allowance, latestNetworksAndSigners])
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -420,15 +433,12 @@ export function TransferPanel() {
             return
           }
 
-          const { allowance } = await getL1TokenData({
-            account: walletAddress,
-            erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
-          })
 
-          if (!allowance.gte(amountRaw)) {
-            setAllowance(allowance)
+          if (!allowance) {
+            return
+          }
+
+          if (needsApprovalL1) {
             const waitForInput = openTokenApprovalDialog()
             const confirmed = await waitForInput()
 
@@ -436,10 +446,15 @@ export function TransferPanel() {
               return
             }
 
+            setApproving(true)
+
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
               l1Signer: latestNetworksAndSigners.current.l1.signer
             })
+
+            allowance.updateL1()
+            setApproving(false)
           }
 
           if (isNonCanonicalToken) {
@@ -540,27 +555,17 @@ export function TransferPanel() {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          if (
-            tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
-            selectedToken.l2Address
-          ) {
-            const allowed = await isAllowedL2(
-              arbTokenBridge,
-              selectedToken.address,
-              selectedToken.l2Address,
-              walletAddress,
-              amountRaw,
-              latestNetworksAndSigners.current.l2.provider
-            )
-            if (!allowed) {
-              if (isSmartContractWallet) {
-                showDelayedSCTxRequest()
-              }
-              await latestToken.current.approveL2({
-                erc20L1Address: selectedToken.address,
-                l2Signer: latestNetworksAndSigners.current.l2.signer
-              })
+          if (needsApprovalL2) {
+            if (isSmartContractWallet) {
+              showDelayedSCTxRequest()
             }
+            setApproving(true)
+            await latestToken.current.approveL2({
+              erc20L1Address: selectedToken.address,
+              l2Signer: latestNetworksAndSigners.current.l2.signer
+            })
+            allowance.updateL2()
+            setApproving(false)
           }
 
           if (isSmartContractWallet) {
@@ -618,6 +623,7 @@ export function TransferPanel() {
       console.log(ex)
     } finally {
       setTransferring(false)
+      setApproving(false)
     }
   }
 
@@ -705,7 +711,14 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
+    [
+      gasSummary,
+      ethBalance,
+      selectedToken,
+      isDepositMode,
+      l2Network,
+      isSmartContractWallet
+    ]
   )
 
   const disableDeposit = useMemo(() => {
@@ -728,7 +741,8 @@ export function TransferPanel() {
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
       (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      (selectedToken && !allowance.l2)
     )
   }, [
     isTransferring,
@@ -739,7 +753,8 @@ export function TransferPanel() {
     isBridgingANewStandardToken,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    isDestinationAddressSmartContract,
+    allowance.l2
   ])
 
   // TODO: Refactor this and the property above
@@ -772,7 +787,8 @@ export function TransferPanel() {
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
       (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      (selectedToken && !allowance.l1)
     )
   }, [
     isTransferring,
@@ -781,7 +797,8 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    isDestinationAddressSmartContract,
+    allowance.l1
   ])
 
   // TODO: Refactor this and the property above
@@ -826,12 +843,44 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
+  const transferButtonText = useMemo(() => {
+    // keep smart contract on top to take precedence
+    if (isSmartContractWallet) {
+      if (isTransferring) {
+        return 'Sending request...'
+      }
+    } else {
+      if (approving) {
+        return `Approving ${selectedToken?.symbol}...`
+      }
+    }
+    if (isDepositMode && needsApprovalL1) {
+      return 'Approve & Deposit'
+    }
+    if (!isDepositMode && needsApprovalL2) {
+      return 'Approve & Withdraw'
+    }
+    return `Move funds to ${getNetworkName(
+      (isDepositMode ? l2Network : l1Network).chainID
+    )}`
+  }, [
+    isDepositMode,
+    l1Network,
+    l2Network,
+    isSmartContractWallet,
+    isTransferring,
+    approving,
+    needsApprovalL1,
+    needsApprovalL2,
+    selectedToken
+  ])
+
   return (
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
         amount={amount}
-        allowance={allowance}
+        allowance={allowance.l1}
         token={selectedToken}
       />
 
@@ -911,9 +960,7 @@ export function TransferPanel() {
                 isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.chainID)}`}
+              {transferButtonText}
             </Button>
           ) : (
             <Button
@@ -923,9 +970,7 @@ export function TransferPanel() {
               onClick={transfer}
               className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.chainID)}`}
+              {transferButtonText}
             </Button>
           )}
         </div>

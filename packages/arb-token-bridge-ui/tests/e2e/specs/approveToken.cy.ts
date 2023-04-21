@@ -46,28 +46,42 @@ describe('Approve token and deposit afterwards', () => {
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
         })
-      cy.findByRole('button', {
-        name: 'Move funds to Arbitrum'
-      }).click()
+      // first we approve the token
+      cy.findByRole('button', { name: 'Approve & Deposit' }).click()
+      // approval checkbox
       cy.findByText(/I understand that I have to pay a one-time/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
       }).click()
-      cy.confirmMetamaskPermissionToSpend('1')
+      // metamask approval popup
+      cy.confirmMetamaskPermissionToSpend('1').then(() => {
+        // make sure it starts to approve
+        cy.waitUntil(() => cy.findByRole('button', { name: /Approving/i }))
+      })
     })
 
     context('Deposit token', () => {
-      // TODO: we don't have any indication in the UI that we are approving a token.
-      // We don't have a way to capture the finished approval state.
-      // Need better UX.
-      cy.log('Approving ERC-20...')
-      // eslint-disable-next-line
-      cy.wait(15000)
-      cy.confirmMetamaskTransaction().then(() => {
-        cy.findByText(
-          // PATCH : Find a proper fix later : `0.000000000001` will be rounded to 0 by our formatAmount function in tx cards
-          `Moving 0 ${ERC20TokenSymbol} to Arbitrum`
-        ).should('be.visible')
+      cy.waitUntil(
+        () =>
+          // this shows when approval has finished
+          cy
+            .findByRole('button', { name: /Move funds to Arbitrum/i })
+            .should('be.visible'),
+        {
+          errorMsg: 'Approval took too long or failed.',
+          // approval can take up to 15 seconds locally, in CI we allow a bit longer
+          timeout: 60000,
+          interval: 1000
+        }
+      ).then(() => {
+        // now deposit metamask popup will show
+        cy.confirmMetamaskTransaction().then(() => {
+          // confirm it did deposit
+          cy.findByText(
+            // PATCH : Find a proper fix later : `0.000000000001` will be rounded to 0 by our formatAmount function in tx cards
+            `Moving 0 ${ERC20TokenSymbol} to Arbitrum`
+          ).should('be.visible')
+        })
       })
     })
   })

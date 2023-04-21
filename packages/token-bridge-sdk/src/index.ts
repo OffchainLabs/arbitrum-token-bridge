@@ -1,8 +1,6 @@
 export * from './hooks/useArbTokenBridge'
 export * from './hooks/arbTokenBridge.types'
 
-export { useBalance } from './hooks/useBalance'
-
 export type {
   Transaction,
   TxnStatus,
@@ -28,4 +26,6 @@ export {
 export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'
 
+export { useBalance } from './hooks/useBalance'
 export { useGasPrice } from './hooks/useGasPrice'
+export { useAllowance } from './hooks/useAllowance'
