@@ -212,7 +212,7 @@ export function WithdrawalConfirmationDialog(
             </div>
 
             <div className="mt-2 flex flex-row justify-end space-x-2">
-              <Button variant="secondary" onClick={() => props.onClose(false)}>
+              <Button variant="secondary" onClick={() => closeWithReset(false)}>
                 Cancel
               </Button>
               <Button
