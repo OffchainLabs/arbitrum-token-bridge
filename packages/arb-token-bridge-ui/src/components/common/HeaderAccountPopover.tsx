@@ -118,10 +118,6 @@ export function HeaderAccountPopover() {
     setTimeout(() => setShowCopied(false), 1000)
   }
 
-  function disconnectWallet() {
-    disconnect()
-  }
-
   function openTransactionHistory() {
     openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click')
@@ -228,7 +224,10 @@ export function HeaderAccountPopover() {
             </button>
 
             {/* Disconnect button */}
-            <button className={headerItemsClassName} onClick={disconnectWallet}>
+            <button
+              className={headerItemsClassName}
+              onClick={() => disconnect()}
+            >
               <LogoutIcon className="h-4 w-4 text-white" />
               <span>Disconnect</span>
             </button>
