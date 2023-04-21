@@ -158,16 +158,27 @@ export function TransferPanel() {
   })
 
   const needsApprovalL1 = useMemo(() => {
-    if (selectedToken && amount && !isNaN(Number(amount))) {
+    if (!selectedToken) {
+      return false
+    }
+    if (allowance.l1?.eq(constants.Zero)) {
+      return true
+    }
+    if (amount && !isNaN(Number(amount))) {
       const amountRaw = utils.parseUnits(amount, selectedToken.decimals)
-      return allowance.l1 && amountRaw.gte(allowance.l1)
+      return allowance.l1 && amountRaw.gt(allowance.l1)
     }
     return false
   }, [amount, selectedToken, allowance])
 
   const needsApprovalL2 = useMemo(() => {
+    if (!selectedToken) {
+      return false
+    }
+    if (allowance.l2?.eq(constants.Zero)) {
+      return true
+    }
     if (
-      selectedToken &&
       amount &&
       tokenRequiresApprovalOnL2(
         selectedToken.address,
@@ -176,7 +187,7 @@ export function TransferPanel() {
       !isNaN(Number(amount))
     ) {
       const amountRaw = utils.parseUnits(amount, selectedToken.decimals)
-      return allowance.l2 && amountRaw.gte(allowance.l2)
+      return allowance.l2 && amountRaw.gt(allowance.l2)
     }
     return false
   }, [amount, selectedToken, allowance, latestNetworksAndSigners])

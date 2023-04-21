@@ -49,7 +49,7 @@ const useAllowance = ({
     queryKeyL1,
     fetchL1Data,
     {
-      refreshInterval: 30_000,
+      refreshInterval: 5_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 5_000
@@ -110,7 +110,7 @@ const useAllowance = ({
     queryKeyL2,
     fetchL2Data,
     {
-      refreshInterval: 30_000,
+      refreshInterval: 5_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 5_000
