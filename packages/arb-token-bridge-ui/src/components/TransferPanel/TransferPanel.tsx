@@ -433,7 +433,6 @@ export function TransferPanel() {
             return
           }
 
-
           if (!allowance) {
             return
           }
