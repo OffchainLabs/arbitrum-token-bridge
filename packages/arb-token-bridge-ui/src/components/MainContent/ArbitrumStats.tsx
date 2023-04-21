@@ -1,12 +1,12 @@
 import { utils } from 'ethers'
 import { useGasPrice } from 'token-bridge-sdk'
-
 import useLocalStorage from '@rehooks/local-storage'
+
 import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextState } from '../App/AppContext'
-import { useNetworkTPS } from 'src/hooks/useNetworkTPS'
+import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
@@ -98,7 +98,7 @@ export const ArbitrumStats = () => {
           <span>
             &gt; TPS: {tpsLoading && <span>Loading...</span>}
             {!tpsLoading && (
-              <span>{tpsData?.tps ? `${tpsData?.tps} TPS` : '-'}</span>
+              <span>{tpsData?.tps ? `${tpsData.tps} TPS` : '-'}</span>
             )}
           </span>
         )}

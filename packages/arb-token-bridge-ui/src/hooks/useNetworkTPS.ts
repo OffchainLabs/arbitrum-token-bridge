@@ -2,8 +2,9 @@
 
 import axios from 'axios'
 import { load } from 'cheerio'
-import { getExplorerUrl, isNetwork } from 'src/util/networks'
 import useSWR from 'swr'
+
+import { getExplorerUrl, isNetwork } from 'src/util/networks'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 const emptyData = { tps: null }
