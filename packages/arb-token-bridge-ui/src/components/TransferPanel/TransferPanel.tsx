@@ -172,20 +172,19 @@ export function TransferPanel() {
   }, [amount, selectedToken, allowance])
 
   const needsApprovalL2 = useMemo(() => {
-    if (!selectedToken) {
+    if (
+      !selectedToken ||
+      !tokenRequiresApprovalOnL2(
+        selectedToken.address,
+        latestNetworksAndSigners.current.l2.network.chainID
+      )
+    ) {
       return false
     }
     if (allowance.l2?.eq(constants.Zero)) {
       return true
     }
-    if (
-      amount &&
-      tokenRequiresApprovalOnL2(
-        selectedToken.address,
-        latestNetworksAndSigners.current.l2.network.chainID
-      ) &&
-      !isNaN(Number(amount))
-    ) {
+    if (amount && !isNaN(Number(amount))) {
       const amountRaw = utils.parseUnits(amount, selectedToken.decimals)
       return allowance.l2 && amountRaw.gt(allowance.l2)
     }
