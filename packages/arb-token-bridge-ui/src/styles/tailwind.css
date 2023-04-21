@@ -155,10 +155,6 @@ input:checked + .slider:before {
   transform: rotate(180deg);
 }
 
-.hover\:bg-\[rgba\(0\,0\,0\,0\.2\)\]:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
 .focus-visible\:animate-rotate-180:focus-visible {
   transform: rotate(180deg);
 }
