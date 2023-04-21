@@ -23,8 +23,6 @@ import {
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
-import { useNewFeatureIndicator } from '../../hooks/useNewFeatureIndicator'
-import { TransactionHistoryTooltip } from '../TransactionHistory/TransactionHistoryTooltip'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 
@@ -106,10 +104,6 @@ export function HeaderAccountPopover() {
   const [ensInfo, setENSInfo] = useState<ENSInfo>(ensInfoDefaults)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
 
-  // check local-storage for viewed flag
-  const [txHistoryViewedOnce, setTxHistoryViewedOnce] =
-    useNewFeatureIndicator('tx-history')
-
   useEffect(() => {
     async function resolveNameServiceInfo() {
       if (account) {
@@ -164,32 +158,27 @@ export function HeaderAccountPopover() {
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <TransactionHistoryTooltip
-        isVisible={!txHistoryViewedOnce}
-        onClose={() => setTxHistoryViewedOnce(true)}
+      <Popover.Button
+        className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
+        role="button"
+        aria-label={`Account Header Button`}
       >
-        <Popover.Button
-          className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
-          onClick={() => setTxHistoryViewedOnce(true)}
-          role="button"
-          aria-label={`Account Header Button`}
-        >
-          <div>
-            <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
-              <SafeImage
-                src={ensInfo.avatar || undefined}
-                className="h-10 w-10 rounded-full"
-                fallback={<CustomBoringAvatar size={40} name={account} />}
-              />
-              <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-                {ensInfo.name ?? udInfo.name ?? accountShort}
-              </span>
+        <div>
+          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
+            <SafeImage
+              src={ensInfo.avatar || undefined}
+              className="h-10 w-10 rounded-full"
+              fallback={<CustomBoringAvatar size={40} name={account} />}
+            />
+            <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
+              {ensInfo.name ?? udInfo.name ?? accountShort}
+            </span>
 
-              <ChevronDownIcon className="h-4 w-4 text-white" />
-            </div>
+            <ChevronDownIcon className="h-4 w-4 text-white" />
           </div>
-        </Popover.Button>
-      </TransactionHistoryTooltip>
+        </div>
+      </Popover.Button>
+
       <Transition>
         <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
