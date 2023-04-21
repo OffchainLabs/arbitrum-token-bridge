@@ -219,7 +219,7 @@ export function WithdrawalConfirmationDialog(
                 variant="primary"
                 disabled={!bothCheckboxesChecked}
                 onClick={() => {
-                  props.onClose(true)
+                  closeWithReset(true)
                   trackEvent('Slow Bridge Click')
                 }}
               >
