@@ -4,7 +4,6 @@ import { twMerge } from 'tailwind-merge'
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import useTwitter from '../../hooks/useTwitter'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -44,24 +43,15 @@ function Notification({
 }
 
 function NitroDevnetNotification() {
-  const handleTwitterClick = useTwitter()
-
   return (
-    <>
-      <Notification infoIcon>
-        <ExternalLink
-          href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
-          className="arb-hover"
-        >
-          What is Nitro Testnet?
-        </ExternalLink>
-      </Notification>
-      <Notification>
-        <button onClick={handleTwitterClick} className="arb-hover text-left">
-          Request ETH from the Nitro Testnet Twitter faucet!
-        </button>
-      </Notification>
-    </>
+    <Notification infoIcon>
+      <ExternalLink
+        href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
+        className="arb-hover"
+      >
+        What is Nitro Testnet?
+      </ExternalLink>
+    </Notification>
   )
 }
 
