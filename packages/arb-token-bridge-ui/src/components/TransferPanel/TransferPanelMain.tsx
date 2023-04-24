@@ -12,7 +12,8 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
-import { useWallet } from '@arbitrum/use-wallet'
+import Image from 'next/image'
+import { useSwitchNetwork } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -21,8 +22,9 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  isNetwork,
-  switchChain
+  handleSwitchNetworkError,
+  handleSwitchNetworkOnMutate,
+  isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { ExternalLink } from '../common/ExternalLink'
@@ -41,7 +43,6 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
-import Image from 'next/image'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -328,7 +329,12 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { provider } = useWallet()
+  const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
+    onMutate: () =>
+      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
+    onError: handleSwitchNetworkError
+  })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -571,7 +577,7 @@ export function TransferPanelMain({
     }.`
   }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
 
-  function switchNetworks() {
+  const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
     const newTo = from
 
@@ -579,7 +585,7 @@ export function TransferPanelMain({
     setTo(newTo)
 
     actions.app.setIsDepositMode(!app.isDepositMode)
-  }
+  }, [actions.app, app.isDepositMode, from, to])
 
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>
@@ -638,14 +644,11 @@ export function TransferPanelMain({
             }
 
             try {
-              await switchChain({
-                chainId: network.chainID,
-                provider: provider!
-              })
+              await switchNetwork?.(network.chainID)
               updatePreferredL2Chain(network.chainID)
 
               // If L2 selected, change to withdraw mode and set new selections
-              switchNetworks()
+              switchNetworksOnTransferPanel()
               setFrom(network)
               setTo(l1.network)
             } catch (error: any) {
@@ -669,7 +672,7 @@ export function TransferPanelMain({
 
             // Switch networks if selecting L1 network
             if (isEthereum) {
-              return switchNetworks()
+              return switchNetworksOnTransferPanel()
             }
 
             if (isConnectedToArbitrum) {
@@ -678,10 +681,7 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await switchChain({
-                  chainId: l1.network.chainID,
-                  provider: provider!
-                })
+                await switchNetwork?.(l1.network.chainID)
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -712,15 +712,12 @@ export function TransferPanelMain({
 
           // Switch networks if selecting L1 network
           if (isEthereum) {
-            return switchNetworks()
+            return switchNetworksOnTransferPanel()
           }
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await switchChain({
-              chainId: network.chainID,
-              provider: provider!
-            })
+            await switchNetwork?.(network.chainID)
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -743,14 +740,11 @@ export function TransferPanelMain({
 
           // Destination network is L2, connect to L1
           try {
-            await switchChain({
-              chainId: l1.network.chainID,
-              provider: provider!
-            })
+            await switchNetwork?.(l1.network.chainID)
             updatePreferredL2Chain(network.chainID)
 
             // Change to withdraw mode and set new selections
-            switchNetworks()
+            switchNetworksOnTransferPanel()
             setFrom(l1.network)
             setTo(network)
           } catch (error: any) {
@@ -761,7 +755,16 @@ export function TransferPanelMain({
         }
       }
     }
-  }, [isDepositMode, isConnectedToArbitrum, l1.network, from, to])
+  }, [
+    l1.network,
+    from,
+    to,
+    isDepositMode,
+    setQueryParams,
+    switchNetwork,
+    switchNetworksOnTransferPanel,
+    isConnectedToArbitrum
+  ])
 
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
@@ -820,7 +823,7 @@ export function TransferPanelMain({
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
         <SwitchNetworksButton
-          onClick={switchNetworks}
+          onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
         />
       </div>

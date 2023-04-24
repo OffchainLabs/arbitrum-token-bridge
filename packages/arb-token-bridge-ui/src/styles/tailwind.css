@@ -13,6 +13,7 @@
   --toastify-text-color-error: #1a1c1d;
   --toastify-font-family: 'Space Grotesk', sans-serif;
   --toastify-toast-min-height: 44px;
+  --blue-link: #1366C1;
 }
 
 * {

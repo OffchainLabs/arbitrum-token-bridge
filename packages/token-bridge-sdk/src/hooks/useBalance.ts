@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { BigNumber, providers } from 'ethers'
+import { BigNumber } from 'ethers'
+import { Provider } from '@ethersproject/abstract-provider'
 import useSWR, {
   useSWRConfig,
   unstable_serialize,
@@ -38,7 +39,7 @@ const useBalance = ({
   provider,
   walletAddress
 }: {
-  provider: providers.Provider
+  provider: Provider
   walletAddress: string | undefined
 }) => {
   const chainId = useChainId({ provider })

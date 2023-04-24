@@ -17,6 +17,17 @@ describe('Switch Networks', () => {
           networkType: 'L1',
           networkName: 'mainnet'
         })
+        cy.waitUntil(
+          () =>
+            cy
+              .findByRole('button', { name: /From: Mainnet/i })
+              .should('be.visible'),
+          {
+            errorMsg: "Can't find /From: Mainnet/i",
+            timeout: 10000,
+            interval: 500
+          }
+        )
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click()
@@ -50,7 +61,20 @@ describe('Switch Networks', () => {
       // })
 
       it('should change network to Arbitrum Nova successfully', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({
+          networkType: 'L1'
+        })
+        cy.waitUntil(
+          () =>
+            cy
+              .findByRole('button', { name: /From: Ethereum/i })
+              .should('be.visible'),
+          {
+            errorMsg: "Can't find /From: Ethereum/i",
+            timeout: 10000,
+            interval: 500
+          }
+        )
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
           .click()
@@ -66,39 +90,61 @@ describe('Switch Networks', () => {
 
       it('should change network to Ethereum mainnet successfully', () => {
         cy.login({ networkType: 'L1' })
-        cy.findByRole('button', { name: /Selected Network : /i })
-          .should('be.visible')
-          .click()
+        cy.waitUntil(
+          () =>
+            cy
+              .findByRole('button', { name: /From: Arbitrum Nova/i })
+              .should('be.visible'),
+          {
+            errorMsg: "Can't find /From: Arbitrum Nova/i",
+            timeout: 10000,
+            interval: 500
+          }
+        ).then(() => {
+          cy.findByRole('button', { name: /Selected Network : /i })
+            .should('be.visible')
+            .click()
 
-        cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
+          cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
 
-        cy.allowMetamaskToSwitchNetwork().then(() => {
-          cy.findByRole('button', {
-            name: /Selected Network : Mainnet/i
-          }).should('be.visible')
+          cy.allowMetamaskToSwitchNetwork().then(() => {
+            cy.findByRole('button', {
+              name: /Selected Network : Mainnet/i
+            }).should('be.visible')
+          })
         })
       })
     })
 
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
-        cy.login({
-          networkType: 'L1',
-          networkName: 'Sepolia test network'
-        })
-        cy.findByText(/Oops! You’re connected to the wrong network/i).should(
-          'be.visible'
-        )
+        cy.login({ networkType: 'L1' })
+        cy.changeMetamaskNetwork('Sepolia test network').then(() => {
+          cy.waitUntil(
+            () =>
+              cy
+                .findByText(/Oops! You’re connected to the wrong network/i)
+                .should('be.visible'),
+            {
+              errorMsg:
+                "Can't find /Oops! You’re connected to the wrong network/i",
+              timeout: 10000,
+              interval: 500
+            }
+          ).then(() => {
+            context('Allow Network change from wrong network UI list', () => {
+              cy.findByRole('button', {
+                name: /Switch to Arbitrum Goerli/i
+              })
+                .should('be.visible')
+                .click()
 
-        context('Allow Network change from wrong network UI list', () => {
-          cy.findByRole('button', { name: /Switch to Arbitrum Goerli/i })
-            .should('be.visible')
-            .click()
-
-          cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
-            cy.findByRole('button', {
-              name: /Selected Network : Arbitrum Goerli/i
-            }).should('be.visible')
+              cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
+                cy.findByRole('button', {
+                  name: /Selected Network : Arbitrum Goerli/i
+                }).should('be.visible')
+              })
+            })
           })
         })
       })

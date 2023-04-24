@@ -3,6 +3,7 @@ import {
   L1ToL2MessageWriter as IL1ToL2MessageWriter,
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
+import { useSigner } from 'wagmi'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -22,9 +23,9 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     app: { arbTokenBridge }
   } = useAppState()
   const {
-    l1: { provider: l1Provider, network: l1Network },
-    l2: { signer: l2Signer }
+    l1: { provider: l1Provider, network: l1Network }
   } = useNetworksAndSigners()
+  const { data: signer } = useSigner()
   const l1NetworkName = getNetworkName(l1Network.chainID)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
@@ -39,11 +40,15 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     try {
       setIsRedeeming(true)
 
+      if (!signer) {
+        throw 'Signer is undefined'
+      }
+
       retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
         l1Provider,
-        l2Signer
+        l2Signer: signer
       })
     } catch (error: any) {
       setIsRedeeming(false)

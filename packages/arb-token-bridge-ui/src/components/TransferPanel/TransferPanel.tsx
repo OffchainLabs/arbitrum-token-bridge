@@ -1,16 +1,23 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
-import { useWallet } from '@arbitrum/use-wallet'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-
+import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
 import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { JsonRpcProvider } from '@ethersproject/providers'
+
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { switchChain, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getNetworkName,
+  handleSwitchNetworkError,
+  handleSwitchNetworkOnMutate,
+  isNetwork
+} from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
@@ -19,13 +26,8 @@ import {
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus
-} from '../../hooks/useNetworksAndSigners'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
@@ -114,7 +116,14 @@ export function TransferPanel() {
   } = useAppState()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const { provider, account } = useWallet()
+  const { address: account, isConnected } = useAccount()
+  const provider = useProvider()
+  const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
+    onMutate: () =>
+      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
+    onError: handleSwitchNetworkError
+  })
   const latestConnectedProvider = useLatest(provider)
 
   const networksAndSigners = useNetworksAndSigners()
@@ -124,6 +133,13 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider },
     isSmartContractWallet
   } = networksAndSigners
+
+  const { data: l1Signer } = useSigner({
+    chainId: l1Network.chainID
+  })
+  const { data: l2Signer } = useSigner({
+    chainId: l2Network.chainID
+  })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -318,11 +334,12 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
-    if (
-      latestNetworksAndSigners.current.status !==
-      UseNetworksAndSignersStatus.CONNECTED
-    ) {
+    if (!isConnected) {
       return
+    }
+
+    if (!l1Signer || !l2Signer) {
+      throw 'Signer is undefined'
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -376,10 +393,9 @@ export function TransferPanel() {
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await switchChain({
-            chainId: latestNetworksAndSigners.current.l1.network.chainID,
-            provider: latestConnectedProvider.current!
-          })
+          await switchNetwork?.(
+            latestNetworksAndSigners.current.l1.network.chainID
+          )
 
           while (
             latestNetworksAndSigners.current.isConnectedToArbitrum ||
@@ -438,7 +454,7 @@ export function TransferPanel() {
 
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
-              l1Signer: latestNetworksAndSigners.current.l1.signer
+              l1Signer
             })
           }
 
@@ -462,7 +478,7 @@ export function TransferPanel() {
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            l1Signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -483,7 +499,7 @@ export function TransferPanel() {
 
           await latestEth.current.deposit({
             amount: amountRaw,
-            l1Signer: latestNetworksAndSigners.current.l1.signer,
+            l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
@@ -502,10 +518,9 @@ export function TransferPanel() {
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           trackEvent('Switch Network and Transfer')
-          await switchChain({
-            chainId: latestNetworksAndSigners.current.l2.network.chainID,
-            provider: latestConnectedProvider.current!
-          })
+          await switchNetwork?.(
+            latestNetworksAndSigners.current.l2.network.chainID
+          )
 
           while (
             !latestNetworksAndSigners.current.isConnectedToArbitrum ||
@@ -556,9 +571,10 @@ export function TransferPanel() {
               if (isSmartContractWallet) {
                 showDelayedSCTxRequest()
               }
+
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
-                l2Signer: latestNetworksAndSigners.current.l2.signer
+                l2Signer
               })
             }
           }
@@ -576,7 +592,7 @@ export function TransferPanel() {
           await latestToken.current.withdraw({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            l2Signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -597,7 +613,7 @@ export function TransferPanel() {
 
           await latestEth.current.withdraw({
             amount: amountRaw,
-            l2Signer: latestNetworksAndSigners.current.l2.signer,
+            l2Signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()

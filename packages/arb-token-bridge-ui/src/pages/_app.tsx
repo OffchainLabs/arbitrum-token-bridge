@@ -10,6 +10,8 @@ import timeZone from 'dayjs/plugin/timezone'
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
 
+import '@rainbow-me/rainbowkit/styles.css'
+
 import Package from '../../package.json'
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
