@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import * as Sentry from '@sentry/react'
@@ -67,16 +66,12 @@ if (
     persistence: 'memory',
     // by default posthog autocaptures (sends) events such as onClick, etc
     // we set up our own events instead
-    autocapture: false
+    autocapture: false,
+    disable_session_recording: true
   })
 }
 
 export default function App({ Component, pageProps }: AppProps) {
-  // because autocapture is disabled, we need to send pageview manually
-  useEffect(() => {
-    posthog.capture('$pageview')
-  }, [])
-
   return (
     <>
       <Head>
