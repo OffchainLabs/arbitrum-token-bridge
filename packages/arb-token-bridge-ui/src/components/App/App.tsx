@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useWallet } from '@arbitrum/use-wallet'
+import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
@@ -12,9 +14,7 @@ import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider, useAppContextState } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
-import { modalProviderOpts } from '../../util/modelProviderOpts'
 import { Alert } from '../common/Alert'
-import { Button } from '../common/Button'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -39,7 +39,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, ChainId } from '../../util/networks'
+import { isNetwork, getSupportedNetworks } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -50,6 +50,7 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TOS_VERSION } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
+import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
 
 declare global {
   interface Window {
@@ -57,14 +58,23 @@ declare global {
   }
 }
 
+const rainbowkitTheme = merge(darkTheme(), {
+  colors: {
+    accentColor: 'var(--blue-link)'
+  },
+  fonts: {
+    body: "'Space Grotesk', sans-serif"
+  }
+} as Theme)
+
 const AppContent = (): JSX.Element => {
-  const { l1, chainId } = useNetworksAndSigners()
+  const { chain } = useNetwork()
   const {
     app: { connectionState }
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isMainnet, isGoerli } = isNetwork(l1.network.chainID)
+    const { isMainnet, isGoerli } = isNetwork(chain?.id ?? 0)
     const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
 
     if (isGoerli) {
@@ -72,7 +82,7 @@ const AppContent = (): JSX.Element => {
     }
 
     return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
-  }, [l1.network])
+  }, [chain])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
@@ -104,13 +114,7 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer
-          supportedNetworks={
-            isNetwork(chainId).isTestnet
-              ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
-              : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
-          }
-        >
+        <NetworkSelectionContainer>
           <HeaderNetworkInformation />
         </NetworkSelectionContainer>
 
@@ -130,6 +134,8 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
+  const { address, isConnected } = useAccount()
+  const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
   const { currentL1BlockNumber } = useAppContextState()
@@ -140,12 +146,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
-      const { signer: l1Signer } = l1
 
-      const l1Address = await l1Signer.getAddress()
+      if (!address) {
+        return
+      }
 
       setTokenBridgeParams({
-        walletAddress: l1Address,
+        walletAddress: address,
         l1: {
           network: l1.network,
           provider: l1.provider
@@ -156,7 +163,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         }
       })
     },
-    []
+    [address]
   )
 
   useEffect(() => {
@@ -170,17 +177,16 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
-    if (networksAndSigners.status !== UseNetworksAndSignersStatus.CONNECTED) {
+    if (!isConnected || !chain) {
       return
     }
 
     const { l1, l2, isConnectedToArbitrum } = networksAndSigners
-    const network = isConnectedToArbitrum ? l2.network : l1.network
 
     const l1NetworkChainId = l1.network.chainID
     const l2NetworkChainId = l2.network.chainID
 
-    actions.app.reset(network.chainID)
+    actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
     if (!isConnectedToArbitrum) {
@@ -194,7 +200,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     initBridge(networksAndSigners)
-  }, [networksAndSigners, initBridge])
+  }, [networksAndSigners, chain, isConnected, initBridge])
 
   useEffect(() => {
     axios
@@ -233,15 +239,6 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
-  const { connect } = useWallet()
-  async function showConnectionModal() {
-    try {
-      await connect(modalProviderOpts)
-    } catch (error) {
-      // Dialog was closed by user
-    }
-  }
-
   switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
@@ -266,9 +263,9 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
           </HeaderContent>
 
           <AppConnectionFallbackContainer>
-            <Button variant="primary" onClick={showConnectionModal}>
-              Connect Wallet
-            </Button>
+            <span className="text-white">
+              Please connect your wallet to use the bridge.
+            </span>
           </AppConnectionFallbackContainer>
         </>
       )
@@ -289,14 +286,12 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = isNetwork(props.chainId).isTestnet
-        ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
-        : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+      const supportedNetworks = getSupportedNetworks(props.chainId)
 
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer supportedNetworks={supportedNetworks}>
+            <NetworkSelectionContainer>
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
           </HeaderContent>
@@ -342,12 +337,20 @@ export default function App() {
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
-        <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-        <NetworkReady>
-          <AppContextProvider>
-            <Injector>{isTosAccepted && <AppContent />}</Injector>
-          </AppContextProvider>
-        </NetworkReady>
+        <WagmiConfig client={wagmiClient}>
+          <RainbowKitProvider
+            chains={chains}
+            theme={rainbowkitTheme}
+            appInfo={appInfo}
+          >
+            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </AppContextProvider>
+            </NetworkReady>
+          </RainbowKitProvider>
+        </WagmiConfig>
       </ArbQueryParamProvider>
     </Provider>
   )
