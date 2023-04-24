@@ -177,7 +177,7 @@ export function TransferPanel() {
     if (!selectedToken) {
       return false
     }
-    if (allowance.l1?.eq(constants.Zero)) {
+    if (allowance.l1 && constants.Zero.eq(allowance.l1)) {
       return true
     }
     if (amount && !isNaN(Number(amount))) {
@@ -197,7 +197,7 @@ export function TransferPanel() {
     ) {
       return false
     }
-    if (allowance.l2?.eq(constants.Zero)) {
+    if (allowance.l2 && constants.Zero.eq(allowance.l2)) {
       return true
     }
     if (amount && !isNaN(Number(amount))) {
@@ -462,7 +462,6 @@ export function TransferPanel() {
           if (!allowance) {
             return
           }
-
           if (needsApprovalL1) {
             const waitForInput = openTokenApprovalDialog()
             const confirmed = await waitForInput()
