@@ -11,6 +11,13 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { AssetType, getL1TokenData, Transaction } from 'token-bridge-sdk'
 
+type L1ToL2MsgData = {
+  status: L1ToL2MessageStatus
+  l2TxID: undefined | string
+  fetchingUpdate: boolean
+  retryableCreationTxID: string
+}
+
 export const updateAdditionalDepositData = async (
   depositTx: Transaction,
   l1Provider: Provider,
@@ -44,7 +51,7 @@ export const updateAdditionalDepositData = async (
   })
 
   if (isClassic) {
-    return updateAdditionalDepositDataClassic({
+    return updateStatusDataClassic({
       depositTx,
       l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
       isEthDeposit,
@@ -55,7 +62,7 @@ export const updateAdditionalDepositData = async (
 
   // Check if deposit is ETH
   if (isEthDeposit) {
-    return updateAdditionalDepositDataETH({
+    return updateStatusDataETH({
       depositTx,
       ethDepositMessage: l1ToL2Msg as EthDepositMessage,
       l2Provider,
@@ -64,7 +71,7 @@ export const updateAdditionalDepositData = async (
   }
 
   // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-  return updateAdditionalDepositDataToken({
+  return updateStatusDataToken({
     depositTx,
     l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
     timestampCreated,
@@ -73,7 +80,7 @@ export const updateAdditionalDepositData = async (
   })
 }
 
-const updateAdditionalDepositDataETH = async ({
+const updateStatusDataETH = async ({
   depositTx,
   ethDepositMessage,
   l2Provider,
@@ -123,7 +130,7 @@ const updateAdditionalDepositDataETH = async ({
   return updatedDepositTx
 }
 
-const updateAdditionalDepositDataToken = async ({
+const updateStatusDataToken = async ({
   depositTx,
   l1ToL2Msg,
   timestampCreated,
@@ -156,21 +163,31 @@ const updateAdditionalDepositDataToken = async ({
 
   if (!l1ToL2Msg) return updatedDepositTx
 
-  const res = await l1ToL2Msg.waitForStatus()
+  let isDeposited = false // initially assume status as pending
 
-  const l2TxID =
-    res.status === L1ToL2MessageStatus.REDEEMED
-      ? res.l2TxReceipt.transactionHash
-      : undefined
-
-  const l1ToL2MsgData = {
-    status: res.status,
-    l2TxID,
+  // fetch basic status of token deposit
+  const status = await l1ToL2Msg.status()
+  const l1ToL2MsgData: L1ToL2MsgData = {
+    status: status,
+    l2TxID: undefined,
     fetchingUpdate: false,
     retryableCreationTxID: l1ToL2Msg.retryableCreationId
   }
 
-  const isDeposited = l1ToL2MsgData.status === L1ToL2MessageStatus.REDEEMED
+  // if status is REDEEMED, only then fetch the L2TxId (`waitForStatus` waits for tx information until redeemed)
+  // if this REDEEMED check isn't here, the `await` will not get resolved for a long time!
+  if (status === L1ToL2MessageStatus.REDEEMED) {
+    isDeposited = true // deposit completed
+
+    // if `waitForStatus` is called on unredeemed tx, it waits for it to get redeemed first (~15mins)
+    const res = await l1ToL2Msg.waitForStatus()
+    const l2TxID =
+      res.status === L1ToL2MessageStatus.REDEEMED
+        ? res.l2TxReceipt.transactionHash
+        : undefined
+
+    l1ToL2MsgData['l2TxID'] = l2TxID
+  }
 
   const l2BlockNum = isDeposited
     ? (await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId))
@@ -194,7 +211,7 @@ const updateAdditionalDepositDataToken = async ({
   return completeDepositTx
 }
 
-const updateAdditionalDepositDataClassic = async ({
+const updateStatusDataClassic = async ({
   depositTx,
   l1ToL2Msg,
   isEthDeposit,
