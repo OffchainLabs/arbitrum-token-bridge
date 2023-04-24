@@ -482,7 +482,7 @@ export function TransferPanelMain({
     return (
       <ExternalLink
         className="mt-2 flex w-fit text-xs text-slate-500"
-        href={`${explorerUrl}/address/${destinationAddress ?? walletAddress}`}
+        href={`${explorerUrl}/address/${destinationAddress || walletAddress}`}
       >
         <ExternalLinkIcon className="mr-1 h-4 w-4" />
         View account in explorer
