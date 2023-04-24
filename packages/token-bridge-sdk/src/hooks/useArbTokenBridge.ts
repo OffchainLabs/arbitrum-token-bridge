@@ -182,19 +182,6 @@ export const useArbTokenBridge = (
       | L1EthDepositTransactionReceipt
       | L1ContractCallTransactionReceipt
 
-    const _addTransaction = (txHash: string) =>
-      addTransaction({
-        type: 'deposit-l1',
-        status: 'pending',
-        value: utils.formatEther(amount),
-        txID: txHash,
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: walletAddress,
-        l1NetworkID,
-        l2NetworkID
-      })
-
     try {
       tx = (
         destinationAddress
@@ -214,7 +201,17 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
-      _addTransaction(tx.hash)
+      addTransaction({
+        type: 'deposit-l1',
+        status: 'pending',
+        value: utils.formatEther(amount),
+        txID: tx.hash,
+        assetName: 'ETH',
+        assetType: AssetType.ETH,
+        sender: walletAddress,
+        l1NetworkID,
+        l2NetworkID
+      })
       receipt = await tx.wait()
       if (txLifecycle?.onTxConfirm) {
         txLifecycle.onTxConfirm(receipt)
@@ -297,7 +294,7 @@ export const useArbTokenBridge = (
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
-        destinationAddress: destinationAddress ?? walletAddress,
+        destinationAddress: destinationAddress || walletAddress,
         from: walletAddress
       })
 
@@ -662,7 +659,7 @@ export const useArbTokenBridge = (
       const tx = await erc20Bridger.withdraw({
         l2Signer,
         erc20l1Address: erc20L1Address,
-        destinationAddress: destinationAddress ?? walletAddress,
+        destinationAddress: destinationAddress || walletAddress,
         amount
       })
 
