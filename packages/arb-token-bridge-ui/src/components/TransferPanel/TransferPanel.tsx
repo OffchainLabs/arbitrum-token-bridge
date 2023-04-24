@@ -124,7 +124,6 @@ export function TransferPanel() {
       handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
     onError: handleSwitchNetworkError
   })
-  const { data: signer } = useSigner()
   const latestConnectedProvider = useLatest(provider)
 
   const networksAndSigners = useNetworksAndSigners()
@@ -134,6 +133,13 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider },
     isSmartContractWallet
   } = networksAndSigners
+
+  const { data: l1Signer } = useSigner({
+    chainId: l1Network.chainID
+  })
+  const { data: l2Signer } = useSigner({
+    chainId: l2Network.chainID
+  })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -332,7 +338,7 @@ export function TransferPanel() {
       return
     }
 
-    if (!signer) {
+    if (!l1Signer || !l2Signer) {
       throw 'Signer is undefined'
     }
 
@@ -448,7 +454,7 @@ export function TransferPanel() {
 
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
-              l1Signer: signer
+              l1Signer
             })
           }
 
@@ -472,7 +478,7 @@ export function TransferPanel() {
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l1Signer: signer,
+            l1Signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -493,7 +499,7 @@ export function TransferPanel() {
 
           await latestEth.current.deposit({
             amount: amountRaw,
-            l1Signer: signer,
+            l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
@@ -568,7 +574,7 @@ export function TransferPanel() {
 
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
-                l2Signer: signer
+                l2Signer
               })
             }
           }
@@ -586,7 +592,7 @@ export function TransferPanel() {
           await latestToken.current.withdraw({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
-            l2Signer: signer,
+            l2Signer,
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
@@ -607,7 +613,7 @@ export function TransferPanel() {
 
           await latestEth.current.withdraw({
             amount: amountRaw,
-            l2Signer: signer,
+            l2Signer,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
