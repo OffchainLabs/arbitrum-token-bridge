@@ -26,11 +26,22 @@ export function BridgesTable(props: {
 
   function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedNonCanonicalToken) {
-      trackEvent(
-        `${props.selectedNonCanonicalToken}: Fast Bridge Click: ${bridgeName}` as FathomEventNonCanonicalTokens
-      )
+      trackEvent({
+        fathom:
+          `${props.selectedNonCanonicalToken}: Fast Bridge Click: ${bridgeName}` as FathomEventNonCanonicalTokens,
+        posthog: {
+          name: 'Fast Bridge Click',
+          properties: { bridge: bridgeName }
+        }
+      })
     } else {
-      trackEvent(`Fast Bridge Click: ${bridgeName}`)
+      trackEvent({
+        fathom: `Fast Bridge Click: ${bridgeName}`,
+        posthog: {
+          name: 'Fast Bridge Click ',
+          properties: { bridge: bridgeName }
+        }
+      })
     }
   }
 

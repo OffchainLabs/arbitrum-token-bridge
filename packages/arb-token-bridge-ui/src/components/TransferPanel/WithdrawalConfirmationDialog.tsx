@@ -192,7 +192,12 @@ export function WithdrawalConfirmationDialog(
                         selectedToken?.symbol || 'ETH',
                         getNetworkName(l2.network.chainID)
                       )}
-                      onClick={() => trackEvent('Add to Google Calendar Click')}
+                      onClick={() =>
+                        trackEvent({
+                          fathom: 'Add to Google Calendar Click',
+                          posthog: { name: 'Add to Google Calendar Click' }
+                        })
+                      }
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum px-4 py-2 text-blue-arbitrum"
                     >
                       <Image
@@ -220,7 +225,10 @@ export function WithdrawalConfirmationDialog(
                 disabled={!bothCheckboxesChecked}
                 onClick={() => {
                   props.onClose(true)
-                  trackEvent('Slow Bridge Click')
+                  trackEvent({
+                    fathom: 'Slow Bridge Click',
+                    posthog: { name: 'Slow Bridge Click' }
+                  })
                 }}
               >
                 Continue

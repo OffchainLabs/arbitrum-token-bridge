@@ -49,9 +49,18 @@ function ExternalLinkCard({
       className="arb-hover"
       onClick={() => {
         if (type === 'cex') {
-          trackEvent(`CEX Click: ${title}`)
+          trackEvent({
+            fathom: `CEX Click: ${title}`,
+            posthog: { name: 'CEX Click', properties: { exchange: title } }
+          })
         } else {
-          trackEvent(`Fiat On-Ramp Click: ${title}`)
+          trackEvent({
+            fathom: `Fiat On-Ramp Click: ${title}`,
+            posthog: {
+              name: 'Fiat On-Ramp Click',
+              properties: { exchange: title }
+            }
+          })
         }
       }}
     >

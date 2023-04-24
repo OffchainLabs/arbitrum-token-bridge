@@ -78,7 +78,13 @@ export const TransactionStatusInfo = ({
         onClick={() => {
           openTransactionHistoryPanel()
           if (isFathomNetworkName(l2NetworkName)) {
-            trackEvent(`Open Transaction History Click: Tx Info Banner`)
+            trackEvent({
+              fathom: `Open Transaction History Click: Tx Info Banner`,
+              posthog: {
+                name: 'Open Transaction History Click',
+                properties: { pageElement: 'Tx Info Banner' }
+              }
+            })
           }
         }}
       >

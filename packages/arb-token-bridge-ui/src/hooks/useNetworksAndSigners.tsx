@@ -201,7 +201,10 @@ export function NetworksAndSignersProvider(
     }
     if (isConnected && connector) {
       const walletName = getWalletName(connector.name)
-      trackEvent(`Connect Wallet Click: ${walletName}`)
+      trackEvent({
+        fathom: `Connect Wallet Click: ${walletName}`,
+        posthog: { name: 'Connect Wallet Click', properties: { walletName } }
+      })
     }
   }, [isDisconnected, isConnected, connector])
 
@@ -221,7 +224,13 @@ export function NetworksAndSignersProvider(
         status: UseNetworksAndSignersStatus.BLOCKED,
         address: address as string
       })
-      trackEvent('Address Block')
+      trackEvent({
+        fathom: 'Address Block',
+        posthog: {
+          name: 'Address Block',
+          properties: { address }
+        }
+      })
       return
     }
 

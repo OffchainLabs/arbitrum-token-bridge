@@ -1,3 +1,5 @@
+import { posthog as posthogClient, CaptureOptions } from 'posthog-js'
+
 import {
   ExploreArbitrumDeFiProjectName,
   ExploreArbitrumNFTProjectName
@@ -187,14 +189,42 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
 }
 
-export function trackEvent(event: FathomEvent | FathomEventNonCanonicalTokens) {
-  if (typeof window.fathom === 'undefined') {
-    return
+type PosthogProperties = {
+  ['bridge']: FastBridgeNames
+  ['pageElement']: 'Header' | 'Tx Info Banner'
+  ['project']: ExploreArbitrumDeFiProjectName | ExploreArbitrumNFTProjectName
+  ['network']: AllNetworkNames
+  ['token']: string
+  ['exchange']: CEXName | FiatOnRampName
+  ['txType']: 'Deposit' | 'Withdrawal'
+  ['tokenType']: 'ETH' | 'ERC-20'
+  ['walletType']: 'EOA' | 'Smart Contract'
+  ['walletName']: ProviderName
+  ['address']: string
+  ['amount']: number
+}
+
+export function trackEvent({
+  fathom,
+  posthog
+}: {
+  fathom: FathomEvent | FathomEventNonCanonicalTokens
+  posthog: {
+    name: string
+    properties?: Partial<PosthogProperties>
+    options?: CaptureOptions
+  }
+}) {
+  // Fathom
+  if (
+    typeof window.fathom !== 'undefined' &&
+    typeof eventToEventId[fathom] !== 'undefined'
+  ) {
+    window.fathom.trackGoal(eventToEventId[fathom])
   }
 
-  if (typeof eventToEventId[event] === 'undefined') {
-    return
+  // Posthog
+  if (posthog) {
+    posthogClient.capture(posthog.name, posthog.properties, posthog.options)
   }
-
-  window.fathom.trackGoal(eventToEventId[event])
 }

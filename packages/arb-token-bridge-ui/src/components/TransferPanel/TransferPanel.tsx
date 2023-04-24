@@ -392,7 +392,20 @@ export function TransferPanel() {
           )
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
-          trackEvent('Switch Network and Transfer')
+          trackEvent({
+            fathom: 'Switch Network and Transfer',
+            posthog: {
+              name: 'Switch Network and Transfer',
+              properties: {
+                txType: 'Deposit',
+                token: selectedToken?.symbol || undefined,
+                tokenType: selectedToken ? 'ERC-20' : 'ETH',
+                walletType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+                network: l2NetworkName,
+                amount: Number(amount)
+              }
+            }
+          })
           await switchNetwork?.(
             latestNetworksAndSigners.current.l1.network.chainID
           )
@@ -471,7 +484,19 @@ export function TransferPanel() {
             showDelayedSCTxRequest()
             // we can't call this inside the deposit method because tx is executed in an external app
             if (isFathomNetworkName(l2NetworkName)) {
-              trackEvent(`Deposit ERC-20 to ${l2NetworkName} (Smart Contract)`)
+              trackEvent({
+                fathom: `Deposit ERC-20 to ${l2NetworkName} (Smart Contract)`,
+                posthog: {
+                  name: 'Deposit',
+                  properties: {
+                    token: selectedToken.symbol,
+                    tokenType: 'ERC-20',
+                    walletType: 'Smart Contract',
+                    network: l2NetworkName,
+                    amount: Number(amount)
+                  }
+                }
+              })
             }
           }
 
@@ -488,7 +513,19 @@ export function TransferPanel() {
                   !isSmartContractWallet &&
                   isFathomNetworkName(l2NetworkName)
                 ) {
-                  trackEvent(`Deposit ERC-20 to ${l2NetworkName} (EOA)`)
+                  trackEvent({
+                    fathom: `Deposit ERC-20 to ${l2NetworkName} (EOA)`,
+                    posthog: {
+                      name: 'Deposit',
+                      properties: {
+                        token: selectedToken.symbol,
+                        tokenType: 'ERC-20',
+                        walletType: 'EOA',
+                        network: l2NetworkName,
+                        amount: Number(amount)
+                      }
+                    }
+                  })
                 }
               },
               onTxError
@@ -508,7 +545,18 @@ export function TransferPanel() {
                   !isSmartContractWallet &&
                   isFathomNetworkName(l2NetworkName)
                 ) {
-                  trackEvent(`Deposit ETH to ${l2NetworkName} (EOA)`)
+                  trackEvent({
+                    fathom: `Deposit ETH to ${l2NetworkName} (EOA)`,
+                    posthog: {
+                      name: 'Deposit',
+                      properties: {
+                        tokenType: 'ETH',
+                        walletType: 'EOA',
+                        network: l2NetworkName,
+                        amount: Number(amount)
+                      }
+                    }
+                  })
                 }
               },
               onTxError
@@ -517,7 +565,19 @@ export function TransferPanel() {
         }
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
-          trackEvent('Switch Network and Transfer')
+          trackEvent({
+            fathom: 'Switch Network and Transfer',
+            posthog: {
+              name: 'Switch Network and Transfer',
+              properties: {
+                token: selectedToken?.symbol || undefined,
+                tokenType: selectedToken ? 'ERC-20' : 'ETH',
+                walletType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+                network: l2NetworkName,
+                amount: Number(amount)
+              }
+            }
+          })
           await switchNetwork?.(
             latestNetworksAndSigners.current.l2.network.chainID
           )
@@ -583,9 +643,19 @@ export function TransferPanel() {
             showDelayedSCTxRequest()
             // we can't call this inside the withdraw method because tx is executed in an external app
             if (isFathomNetworkName(l2NetworkName)) {
-              trackEvent(
-                `Withdraw ERC-20 from ${l2NetworkName} (Smart Contract)`
-              )
+              trackEvent({
+                fathom: `Withdraw ERC-20 from ${l2NetworkName} (Smart Contract)`,
+                posthog: {
+                  name: 'Withdraw',
+                  properties: {
+                    token: selectedToken.symbol,
+                    tokenType: 'ERC-20',
+                    walletType: 'Smart Contract',
+                    network: l2NetworkName,
+                    amount: Number(amount)
+                  }
+                }
+              })
             }
           }
 
@@ -602,7 +672,19 @@ export function TransferPanel() {
                   !isSmartContractWallet &&
                   isFathomNetworkName(l2NetworkName)
                 ) {
-                  trackEvent(`Withdraw ERC-20 from ${l2NetworkName} (EOA)`)
+                  trackEvent({
+                    fathom: `Withdraw ERC-20 from ${l2NetworkName} (EOA)`,
+                    posthog: {
+                      name: 'Withdraw',
+                      properties: {
+                        token: selectedToken.symbol,
+                        tokenType: 'ERC-20',
+                        walletType: 'EOA',
+                        network: l2NetworkName,
+                        amount: Number(amount)
+                      }
+                    }
+                  })
                 }
               },
               onTxError
@@ -622,7 +704,18 @@ export function TransferPanel() {
                   !isSmartContractWallet &&
                   isFathomNetworkName(l2NetworkName)
                 ) {
-                  trackEvent(`Withdraw ETH from ${l2NetworkName} (EOA)`)
+                  trackEvent({
+                    fathom: `Withdraw ETH from ${l2NetworkName} (EOA)`,
+                    posthog: {
+                      name: 'Withdraw',
+                      properties: {
+                        tokenType: 'ETH',
+                        walletType: 'EOA',
+                        network: l2NetworkName,
+                        amount: Number(amount)
+                      }
+                    }
+                  })
                 }
               },
               onTxError

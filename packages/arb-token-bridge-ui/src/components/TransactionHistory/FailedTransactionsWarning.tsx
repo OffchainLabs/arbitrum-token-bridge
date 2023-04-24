@@ -48,7 +48,13 @@ export const FailedTransactionsWarning = ({
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
         onClick={() => {
           if (isFathomNetworkName(l2NetworkName)) {
-            trackEvent(`Multiple Tx Error: Get Help Click on ${l2NetworkName}`)
+            trackEvent({
+              fathom: `Multiple Tx Error: Get Help Click on ${l2NetworkName}`,
+              posthog: {
+                name: 'Multiple Tx Error: Get Help Click',
+                properties: { network: l2NetworkName }
+              }
+            })
           }
         }}
       >

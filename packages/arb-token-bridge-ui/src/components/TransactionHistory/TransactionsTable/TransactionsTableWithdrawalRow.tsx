@@ -264,7 +264,13 @@ function WithdrawalRowAction({
 
     // track the button click
     if (isFathomNetworkName(l2NetworkName)) {
-      trackEvent(`Tx Error: Get Help Click on ${l2NetworkName}`)
+      trackEvent({
+        fathom: `Tx Error: Get Help Click on ${l2NetworkName}`,
+        posthog: {
+          name: 'Tx Error: Get Help Click',
+          properties: { network: l2NetworkName }
+        }
+      })
     }
   }
 
