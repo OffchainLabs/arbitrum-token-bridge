@@ -19,7 +19,7 @@ describe('Switch Networks', () => {
         })
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
         cy.findByRole('button', { name: /Switch to Arbitrum One/i }).should(
           'be.visible'
@@ -28,7 +28,7 @@ describe('Switch Networks', () => {
         //close the dropdown
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
       })
 
       // TODO: fix Arb1 network switch:
@@ -36,11 +36,11 @@ describe('Switch Networks', () => {
       // it('should change network to Arbitrum One successfully', () => {
       //   cy.findByRole('button', { name: /Selected Network : /i })
       //     .should('be.visible')
-      //     .click({ scrollBehavior: false })
+      //     .click()
 
       //   cy.findByRole('button', { name: /Switch to Arbitrum One/i })
       //     .should('be.visible')
-      //     .click({ scrollBehavior: false })
+      //     .click()
 
       //   cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
       //     cy.findByRole('button', {
@@ -53,11 +53,9 @@ describe('Switch Networks', () => {
         cy.login({ networkType: 'L1' })
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
-        cy.findByRole('button', { name: /Switch to Arbitrum Nova/i }).click({
-          scrollBehavior: false
-        })
+        cy.findByRole('button', { name: /Switch to Arbitrum Nova/i }).click()
 
         cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
           cy.findByRole('button', {
@@ -70,11 +68,9 @@ describe('Switch Networks', () => {
         cy.login({ networkType: 'L1' })
         cy.findByRole('button', { name: /Selected Network : /i })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
-        cy.findByRole('button', { name: /Switch to Mainnet/i }).click({
-          scrollBehavior: false
-        })
+        cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
 
         cy.allowMetamaskToSwitchNetwork().then(() => {
           cy.findByRole('button', {
@@ -97,9 +93,7 @@ describe('Switch Networks', () => {
         context('Allow Network change from wrong network UI list', () => {
           cy.findByRole('button', { name: /Switch to Arbitrum Goerli/i })
             .should('be.visible')
-            .click({
-              scrollBehavior: false
-            })
+            .click()
 
           cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
             cy.findByRole('button', {

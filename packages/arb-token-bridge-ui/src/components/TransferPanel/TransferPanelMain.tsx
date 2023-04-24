@@ -127,7 +127,7 @@ function NetworkListbox({
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
 
-      <Listbox.Options className="absolute z-20 mt-2 rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+      <Listbox.Options className="absolute z-20 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
         {options.map((option, index) => {
           return (
             <Tooltip
@@ -140,7 +140,7 @@ function NetworkListbox({
               <Listbox.Option
                 value={option}
                 className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-[rgba(0,0,0,0.2)] hover:bg-blue-arbitrum',
+                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-[rgba(0,0,0,0.2)]',
                   getOptionClassName(index),
                   option.disabled ? 'pointer-events-none opacity-40' : ''
                 )}

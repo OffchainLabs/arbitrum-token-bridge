@@ -19,7 +19,7 @@ describe('Transaction History', () => {
     context('load deposits', () => {
       cy.findByRole('tab', { name: 'show deposit transactions' })
         .should('be.visible')
-        .click({ scrollBehavior: false })
+        .click()
         .should('have.attr', 'data-headlessui-state')
         .and('equal', 'selected')
 
@@ -37,7 +37,7 @@ describe('Transaction History', () => {
       cy.findByRole('button', { name: /load next deposits/i })
         .should('be.visible')
         .should('not.be.disabled')
-        .click({ scrollBehavior: false })
+        .click()
       cy.findByText(/page 2/i).should('be.visible')
       cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).should('have.length.above', 0)
 
@@ -45,7 +45,7 @@ describe('Transaction History', () => {
       cy.findByRole('button', { name: /load previous deposits/i })
         .should('be.visible')
         .should('not.be.disabled')
-        .click({ scrollBehavior: false })
+        .click()
       cy.findByText(/page 1/i).should('be.visible')
       cy.findAllByTestId(DEPOSIT_ROW_IDENTIFIER).should('have.length.above', 0)
     })
@@ -68,15 +68,12 @@ describe('Transaction History', () => {
 
       // search for invalid address substring
       cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER)
-        .clear({ scrollBehavior: false })
         .typeRecursively('invalidTransactionHash')
         .then(() => {
           cy.findByText(
             /Oops! Looks like nothing matched your search query/i
           ).should('be.visible')
-          cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER).clear({
-            scrollBehavior: false
-          })
+          cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER).clear()
         })
     })
   })
@@ -93,7 +90,7 @@ describe('Transaction History', () => {
     context('load withdrawals', () => {
       cy.findByRole('tab', { name: 'show withdrawal transactions' })
         .should('be.visible')
-        .click({ scrollBehavior: false })
+        .click()
         .should('have.attr', 'data-headlessui-state')
         .and('equal', 'selected')
 
@@ -114,7 +111,7 @@ describe('Transaction History', () => {
       cy.findByRole('button', { name: /load next withdrawals/i })
         .should('be.visible')
         .should('not.be.disabled')
-        .click({ scrollBehavior: false })
+        .click()
       cy.findByText(/page 2/i).should('be.visible')
       cy.findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER).should(
         'have.length.above',
@@ -125,7 +122,7 @@ describe('Transaction History', () => {
       cy.findByRole('button', { name: /load previous withdrawals/i })
         .should('be.visible')
         .should('not.be.disabled')
-        .click({ scrollBehavior: false })
+        .click()
       cy.findByText(/page 1/i).should('be.visible')
       cy.findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER).should(
         'have.length.above',
@@ -156,9 +153,7 @@ describe('Transaction History', () => {
           cy.findByText(
             /Oops! Looks like nothing matched your search query/i
           ).should('be.visible')
-          cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER).clear({
-            scrollBehavior: false
-          })
+          cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER).clear()
         })
     })
   })
