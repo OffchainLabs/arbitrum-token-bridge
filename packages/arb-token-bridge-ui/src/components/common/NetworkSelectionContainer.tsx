@@ -1,38 +1,43 @@
-import { useWallet } from '@arbitrum/use-wallet'
-import { Web3Provider } from '@ethersproject/providers'
 import { Popover, Transition } from '@headlessui/react'
 import Image from 'next/image'
+import { useCallback } from 'react'
+import { useNetwork, useSwitchNetwork } from 'wagmi'
+
 import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  switchChain
+  getSupportedNetworks,
+  handleSwitchNetworkError
 } from '../../util/networks'
 
 export const NetworkSelectionContainer = ({
-  supportedNetworks,
   children
 }: {
-  supportedNetworks: ChainId[]
   children: React.ReactNode
 }) => {
-  const { provider } = useWallet()
+  const { chain } = useNetwork()
+  const { switchNetwork } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
+    onError: handleSwitchNetworkError
+  })
+  const supportedNetworks = getSupportedNetworks(chain?.id)
 
-  const handleClick = (
-    chainId: ChainId,
-    close: (
-      focusableElement?:
-        | HTMLElement
-        | React.MutableRefObject<HTMLElement | null>
-        | undefined
-    ) => void
-  ) => {
-    switchChain({
-      chainId: Number(chainId),
-      provider: provider as Web3Provider
-    })
-    close?.() //close the popover after option-click
-  }
+  const handleClick = useCallback(
+    (
+      chainId: ChainId,
+      close: (
+        focusableElement?:
+          | HTMLElement
+          | React.MutableRefObject<HTMLElement | null>
+          | undefined
+      ) => void
+    ) => {
+      switchNetwork?.(Number(chainId))
+      close?.() //close the popover after option-click
+    },
+    [switchNetwork]
+  )
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
