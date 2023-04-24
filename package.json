@@ -1,16 +1,16 @@
 {
   "name": "arb-token-bridge-ui-mono",
   "private": true,
+  "license": "Apache-2.0",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev:sdk": "yarn workspace token-bridge-sdk watch",
     "dev:ui": "yarn workspace arb-token-bridge-ui dev",
-    "build:wallet": "yarn workspace @arbitrum/use-wallet build",
     "build:sdk": "yarn workspace token-bridge-sdk build",
     "build:ui": "yarn workspace arb-token-bridge-ui build",
-    "build": "yarn build:wallet && yarn build:sdk && yarn build:ui",
+    "build": "yarn build:sdk && yarn build:ui",
     "start": "yarn build && yarn workspace arb-token-bridge-ui start",
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "test:ci:sdk": "yarn workspace token-bridge-sdk test:ci",
@@ -23,7 +23,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "workspaces": [
     "packages/*"
   ],

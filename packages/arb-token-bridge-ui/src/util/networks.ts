@@ -3,16 +3,14 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
-import { hexValue } from 'ethers/lib/utils'
-import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
+import { SwitchNetworkArgs } from '@wagmi/core'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { isUserRejectedError } from './isUserRejectedError'
 
-const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
 if (typeof INFURA_KEY === 'undefined') {
   throw new Error('Infura API key not provided')
@@ -42,13 +40,6 @@ export enum ChainId {
   ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613,
   ArbitrumLocal = 412346
-}
-
-type ExtendedWeb3Provider = Web3Provider & {
-  provider: ExternalProvider & {
-    isMetaMask?: boolean
-    isImToken?: boolean
-  }
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -186,23 +177,23 @@ const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
   l2Network: defaultL2Network
 }
 
+export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
+  fallback: 'http://localhost:8545'
+})
+export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
+  fallback: 'http://localhost:8547'
+})
+
 export function registerLocalNetwork(
   params: RegisterLocalNetworkParams = registerLocalNetworkDefaultParams
 ) {
   const { l1Network, l2Network } = params
 
-  const l1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
-    fallback: 'http://localhost:8545'
-  })
-  const l2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
-    fallback: 'http://localhost:8547'
-  })
-
   try {
-    rpcURLs[l1Network.chainID] = l1NetworkRpcUrl
-    rpcURLs[l2Network.chainID] = l2NetworkRpcUrl
+    rpcURLs[l1Network.chainID] = localL1NetworkRpcUrl
+    rpcURLs[l2Network.chainID] = localL2NetworkRpcUrl
 
     chainIdToDefaultL2ChainId[l1Network.chainID] = [l2Network.chainID]
     chainIdToDefaultL2ChainId[l2Network.chainID] = [l2Network.chainID]
@@ -231,6 +222,9 @@ export function isNetwork(chainId: ChainId) {
   const isTestnet =
     isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
 
+  const isSupported =
+    isArbitrumOne || isArbitrumNova || isMainnet || isGoerli || isArbitrumGoerli // is network supported on bridge
+
   return {
     // L1
     isMainnet,
@@ -247,7 +241,9 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumRinkeby,
     isArbitrumGoerli,
     // Testnet
-    isTestnet
+    isTestnet,
+    // General
+    isSupported
   }
 }
 
@@ -299,95 +295,72 @@ export function getNetworkLogo(chainId: number) {
   }
 }
 
-export type SwitchChainProps = {
-  chainId: number
-  provider: ExtendedWeb3Provider
-  onSuccess?: () => void
-  onError?: (err?: Error) => void
-  onSwitchChainNotSupported?: (attemptedChainId: number) => void
+export function getSupportedNetworks(chainId = 0) {
+  return isNetwork(chainId).isTestnet
+    ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+    : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 }
 
-const isSwitchChainSupported = (provider: ExtendedWeb3Provider) => {
-  const { provider: innerProvider } = provider
-  return innerProvider.isMetaMask || innerProvider.isImToken
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {}
-
-const onSwitchChainNotSupportedDefault = (attemptedChainId: number) => {
+const handleSwitchNetworkNotSupported = (
+  attemptedChainId: number,
+  isSwitchingNetworkBeforeTx: boolean
+) => {
   const isDeposit = isNetwork(attemptedChainId).isEthereum
   const targetTxName = isDeposit ? 'deposit' : 'withdraw'
   const networkName = getNetworkName(attemptedChainId)
 
+  const message = isSwitchingNetworkBeforeTx
+    ? `Please connect to ${networkName} on your wallet before signing your ${targetTxName} transaction.`
+    : `Please connect to ${networkName} on your wallet.`
+
   // TODO: show user a nice dialogue box instead of
   // eslint-disable-next-line no-alert
-  alert(
-    `Please connect to ${networkName} to ${targetTxName}; make sure your wallet is connected to ${networkName} when you are signing your ${targetTxName} transaction.`
-  )
+  alert(message)
 }
 
-export async function switchChain({
-  chainId,
-  provider,
-  onSuccess = noop,
-  onError = noop,
-  onSwitchChainNotSupported = onSwitchChainNotSupportedDefault
-}: SwitchChainProps) {
-  // do an early return if switching-chains is not supported by provider
-  if (!isSwitchChainSupported(provider)) {
-    onSwitchChainNotSupported?.(chainId)
+/**
+ * Function to invoke when an error is thrown while attempting to switch network.
+ * https://wagmi.sh/react/hooks/useSwitchNetwork#onerror-optional
+ * @param error
+ * @param param1 - `{ chainId: number }`
+ * @param context - default value `{ isSwitchingNetworkBeforeTx: false }`
+ */
+export function handleSwitchNetworkError(
+  error: any,
+  { chainId }: SwitchNetworkArgs,
+  context: unknown = { isSwitchingNetworkBeforeTx: false }
+) {
+  const { isSwitchingNetworkBeforeTx } = context as {
+    isSwitchingNetworkBeforeTx: boolean
+  }
+  if (isUserRejectedError(error)) {
     return
   }
+  if (error.name === 'SwitchChainNotSupportedError') {
+    handleSwitchNetworkNotSupported(chainId, isSwitchingNetworkBeforeTx)
+  } else {
+    Sentry.captureException(error)
+  }
+}
 
-  // if all the above conditions are satisfied go ahead and switch the network
-  const hexChainId = hexValue(BigNumber.from(chainId))
-  const networkName = getNetworkName(chainId)
-
-  try {
-    await provider.send('wallet_switchEthereumChain', [
-      {
-        chainId: hexChainId
-      }
-    ])
-
-    onSuccess?.()
-  } catch (err: any) {
-    if (isUserRejectedError(err)) {
-      onError?.(err)
-      return
-    }
-
-    if (err.code === 4902) {
-      // https://docs.metamask.io/guide/rpc-api.html#usage-with-wallet-switchethereumchain
-      // This error code indicates that the chain has not been added to MetaMask.
-
-      try {
-        await provider.send('wallet_addEthereumChain', [
-          {
-            chainId: hexChainId,
-            chainName: networkName,
-            nativeCurrency: {
-              name: 'Ether',
-              symbol: 'ETH',
-              decimals: 18
-            },
-            rpcUrls: [rpcURLs[chainId]],
-            blockExplorerUrls: [getExplorerUrl(chainId)]
-          }
-        ])
-      } catch (err: any) {
-        onError?.(err)
-        if (isUserRejectedError(err)) {
-          return
-        }
-        Sentry.captureException(err)
-      }
-
-      onSuccess?.()
-    } else {
-      onError?.(err)
-      Sentry.captureException(err)
-    }
+/**
+ * The return value will be the `context` param received by the error
+ * handler of `switchNetwork`.
+ *
+ * Function fires before switch network function and is passed same
+ * variables switch network function would receive.
+ * Value returned from this function will be passed to both `onError` and
+ * `onSettled` functions in event of a switch network failure.
+ * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
+ *
+ * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
+ */
+export function handleSwitchNetworkOnMutate({
+  isSwitchingNetworkBeforeTx = false
+}: {
+  isSwitchingNetworkBeforeTx: boolean
+}) {
+  return {
+    isSwitchingNetworkBeforeTx
   }
 }

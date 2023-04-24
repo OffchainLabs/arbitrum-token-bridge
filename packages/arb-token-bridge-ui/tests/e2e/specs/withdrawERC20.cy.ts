@@ -37,7 +37,7 @@ describe('Withdraw ERC20 Token', () => {
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
-          .click({ scrollBehavior: false })
+          .click()
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
@@ -47,10 +47,10 @@ describe('Withdraw ERC20 Token', () => {
             // Click on the Add new token button
             cy.findByRole('button', { name: 'Add New Token' })
               .should('be.visible')
-              .click({ scrollBehavior: false })
+              .click()
 
             // Select the WETH token
-            cy.findAllByText('WETH').first().click({ scrollBehavior: false })
+            cy.findAllByText('WETH').first().click()
 
             // WETH token should be selected now and popup should be closed after selection
             cy.findByRole('button', { name: 'Select Token' })
@@ -94,7 +94,7 @@ describe('Withdraw ERC20 Token', () => {
         })
           .should('be.visible')
           .should('be.enabled')
-          .click({ scrollBehavior: false })
+          .click()
       })
 
       context('should withdraw successfully', () => {
@@ -109,20 +109,20 @@ describe('Withdraw ERC20 Token', () => {
           name: /before I can claim my funds/i
         })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
 
         cy.findByRole('switch', {
           name: /after claiming my funds/i
         })
           .should('be.visible')
-          .click({ scrollBehavior: false })
+          .click()
           .then(() => {
             // the Continue withdrawal button should not be disabled now
             cy.findByRole('button', {
               name: /Continue/i
             })
               .should('be.enabled')
-              .click({ scrollBehavior: false })
+              .click()
 
             cy.confirmMetamaskTransaction().then(() => {
               cy.findAllByText(
