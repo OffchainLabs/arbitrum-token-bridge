@@ -85,14 +85,14 @@ function NetworkListbox({
     const { isArbitrum, isArbitrumNova } = isNetwork(value.chainID)
 
     if (!isArbitrum) {
-      return 'bg-[rgba(118,121,145,0.8)]'
+      return 'bg-[#454A75]'
     }
 
     if (isArbitrumNova) {
-      return 'bg-[rgba(255,206,162,0.8)]'
+      return 'bg-[#E57310]'
     }
 
-    return 'bg-[rgba(101,109,123,0.8)]'
+    return 'bg-[#1B4ADD]'
   }, [value])
 
   const getOptionClassName = useCallback(
@@ -197,21 +197,21 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-[#8a4100]'
+        backgroundImage: `url('/images/TransparentNovaLogo.webp')`,
+        backgroundClassName: 'bg-orange-dark-nova'
       }
     }
 
     return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
+      backgroundImage: `url('/images/TransparentArbitrumOneLogo.webp')`,
       backgroundClassName: 'bg-blue-arb-one'
     }
   }, [network])
 
   return (
-    <div className={`rounded-xl p-2 transition-colors ${backgroundClassName}`}>
+    <div className={`rounded-xl p-1 transition-colors ${backgroundClassName}`}>
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat p-1.5 sm:flex-row"
+        className="space-y-3.5 bg-contain bg-no-repeat p-2 sm:flex-row"
         style={{ backgroundImage }}
       >
         {children}
@@ -246,7 +246,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   }
 
   return (
-    <span className="break-all text-xl font-light text-white">
+    <span className="break-all text-lg font-medium uppercase text-white">
       {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>

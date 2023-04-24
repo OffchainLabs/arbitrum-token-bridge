@@ -13,7 +13,7 @@ module.exports = {
         // Blue
         'blue-arbitrum': '#2D374B',
         'blue-link': '#1366C1',
-        'blue-arb-one': '#002086',
+        'blue-arb-one': '#001556',
 
         // Brick
         brick: '#FFDDD6',
@@ -46,6 +46,7 @@ module.exports = {
         // Orange
         orange: '#FFEED3',
         'orange-dark': '#60461F',
+        'orange-dark-nova': '#743600',
 
         // Purple
         'purple-ethereum': '#1A1C33',
