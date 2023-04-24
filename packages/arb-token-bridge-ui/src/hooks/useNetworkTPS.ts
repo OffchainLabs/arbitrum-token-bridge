@@ -21,7 +21,7 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
   const explorerUrl = getExplorerUrl(Number(l2ChainId))
 
   // for 403 or CORS blocked errors while scraping external endpoints, we use cors-proxy
-  const finalUrl = `https://corsproxy.io/?${encodeURIComponent(explorerUrl!)}`
+  const finalUrl = `https://corsproxy.io/?${encodeURIComponent(explorerUrl)}`
   const response = await axios.get(finalUrl)
 
   // Get the HTML code of the webpage

@@ -82,7 +82,8 @@ export const explorerUrls: { [chainId: number]: string } = {
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
-  return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet] //defaults to etherscan
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet]! //defaults to etherscan, can never be null
 }
 
 export const getBlockTime = (chainId: ChainId) => {
