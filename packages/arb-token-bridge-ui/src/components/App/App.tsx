@@ -134,8 +134,7 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { address, isConnected } = useAccount()
-  const { chain } = useNetwork()
+  const { address } = useAccount()
 
   const networksAndSigners = useNetworksAndSigners()
   const { currentL1BlockNumber } = useAppContextState()
@@ -177,16 +176,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
-    if (!isConnected || !chain) {
-      return
-    }
 
-    const { l1, l2, isConnectedToArbitrum } = networksAndSigners
+    const { l1, l2, chainId, isConnectedToArbitrum } = networksAndSigners
 
     const l1NetworkChainId = l1.network.chainID
     const l2NetworkChainId = l2.network.chainID
 
-    actions.app.reset(chain.id)
+    actions.app.reset(chainId)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
     if (!isConnectedToArbitrum) {
@@ -200,7 +196,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     initBridge(networksAndSigners)
-  }, [networksAndSigners, chain, isConnected, initBridge])
+  }, [networksAndSigners, initBridge])
 
   useEffect(() => {
     axios
