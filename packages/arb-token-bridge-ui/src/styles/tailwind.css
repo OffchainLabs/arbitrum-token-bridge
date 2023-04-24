@@ -13,6 +13,7 @@
   --toastify-text-color-error: #1a1c1d;
   --toastify-font-family: 'Space Grotesk', sans-serif;
   --toastify-toast-min-height: 44px;
+  --blue-link: #1366C1;
 }
 
 * {
@@ -152,10 +153,6 @@ input:checked + .slider:before {
 
 .hover\:animate-rotate-180:hover {
   transform: rotate(180deg);
-}
-
-.hover\:bg-\[rgba\(0\,0\,0\,0\.2\)\]:hover {
-  background: rgba(0, 0, 0, 0.2);
 }
 
 .focus-visible\:animate-rotate-180:focus-visible {
