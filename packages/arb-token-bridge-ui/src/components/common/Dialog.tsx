@@ -107,7 +107,8 @@ export function Dialog(props: DialogProps) {
         open={props.isOpen}
         initialFocus={props.initialFocus || cancelButtonRef}
         onClose={() => props.onClose(false)}
-        className="fixed inset-0 z-50 flex md:items-center md:justify-center md:bg-[rgba(0,0,0,0.6)]"
+        // z-index is set to 2147483647 because rainbowkit's modal is 2147483646
+        className="fixed inset-0 z-[2147483647] flex md:items-center md:justify-center md:bg-[rgba(0,0,0,0.6)]"
       >
         <div
           className={twMerge(

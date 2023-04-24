@@ -1,13 +1,10 @@
 module.exports = {
-  plugins: ["@typescript-eslint", "react", "jsx-a11y", "jest"],
+  plugins: ["@typescript-eslint", "jest"],
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:jsx-a11y/recommended",
     "plugin:jest/recommended",
-    "plugin:@next/next/recommended",
+    "next",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -18,6 +15,9 @@ module.exports = {
   settings: {
     react: {
       version: "detect",
+    },
+    next: {
+      rootDir: "packages/arb-token-bridge-ui/",
     },
   },
   rules: {
