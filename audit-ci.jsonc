@@ -1,24 +1,5 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": [
-    // https://github.com/advisories/GHSA-7gc6-qh9x-w6h8
-    // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
-    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>cross-fetch
-    "GHSA-7gc6-qh9x-w6h8",
-    // https://github.com/advisories/GHSA-r683-j2x4-v87g
-    // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
-    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>cross-fetch>node-fetch
-    "GHSA-r683-j2x4-v87g",
-    // https://github.com/advisories/GHSA-fwr7-v2mv-hh25
-    // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
-    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>async
-    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-block>async
-    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>ethereumjs-vm>async-eventemitter>async
-    "GHSA-fwr7-v2mv-hh25",
-    // https://github.com/advisories/GHSA-p8p7-x288-28g6
-    // Metamask isn't supporting web3-provider-engine anymore. Waiting for web3-provider patch to remove this dependency.
-    // arb-token-bridge-ui>@walletconnect/web3-provider>web3-provider-engine>request
-    "GHSA-p8p7-x288-28g6"
-  ]
+  "allowlist": []
 }
