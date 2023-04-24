@@ -51,7 +51,7 @@ export const updateAdditionalDepositData = async (
   })
 
   if (isClassic) {
-    return updateStatusDataClassic({
+    return updateClassicStatusData({
       depositTx,
       l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
       isEthDeposit,
@@ -62,7 +62,7 @@ export const updateAdditionalDepositData = async (
 
   // Check if deposit is ETH
   if (isEthDeposit) {
-    return updateStatusDataETH({
+    return updateETHStatusData({
       depositTx,
       ethDepositMessage: l1ToL2Msg as EthDepositMessage,
       l2Provider,
@@ -71,7 +71,7 @@ export const updateAdditionalDepositData = async (
   }
 
   // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-  return updateStatusDataToken({
+  return updateTokenStatusData({
     depositTx,
     l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
     timestampCreated,
@@ -80,7 +80,7 @@ export const updateAdditionalDepositData = async (
   })
 }
 
-const updateStatusDataETH = async ({
+const updateETHStatusData = async ({
   depositTx,
   ethDepositMessage,
   l2Provider,
@@ -130,7 +130,7 @@ const updateStatusDataETH = async ({
   return updatedDepositTx
 }
 
-const updateStatusDataToken = async ({
+const updateTokenStatusData = async ({
   depositTx,
   l1ToL2Msg,
   timestampCreated,
@@ -211,7 +211,7 @@ const updateStatusDataToken = async ({
   return completeDepositTx
 }
 
-const updateStatusDataClassic = async ({
+const updateClassicStatusData = async ({
   depositTx,
   l1ToL2Msg,
   isEthDeposit,
