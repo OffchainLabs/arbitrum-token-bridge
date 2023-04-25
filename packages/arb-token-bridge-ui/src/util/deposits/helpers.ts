@@ -51,7 +51,7 @@ export const updateAdditionalDepositData = async (
   })
 
   if (isClassic) {
-    return updateClassicStatusData({
+    return updateClassicDepositStatusData({
       depositTx,
       l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
       isEthDeposit,
@@ -62,7 +62,7 @@ export const updateAdditionalDepositData = async (
 
   // Check if deposit is ETH
   if (isEthDeposit) {
-    return updateETHStatusData({
+    return updateETHDepositStatusData({
       depositTx,
       ethDepositMessage: l1ToL2Msg as EthDepositMessage,
       l2Provider,
@@ -71,7 +71,7 @@ export const updateAdditionalDepositData = async (
   }
 
   // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-  return updateTokenStatusData({
+  return updateTokenDepositStatusData({
     depositTx,
     l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
     timestampCreated,
@@ -80,7 +80,7 @@ export const updateAdditionalDepositData = async (
   })
 }
 
-const updateETHStatusData = async ({
+const updateETHDepositStatusData = async ({
   depositTx,
   ethDepositMessage,
   l2Provider,
@@ -130,7 +130,37 @@ const updateETHStatusData = async ({
   return updatedDepositTx
 }
 
-const updateTokenStatusData = async ({
+const getTokenDepositStatusData = async ({
+  l1ToL2Msg
+}: {
+  l1ToL2Msg: L1ToL2MessageReader
+}): Promise<L1ToL2MsgData> => {
+  // fetch basic status of token deposit
+  const status = await l1ToL2Msg.status()
+  const l1ToL2MsgData: L1ToL2MsgData = {
+    status: status,
+    l2TxID: undefined,
+    fetchingUpdate: false,
+    retryableCreationTxID: l1ToL2Msg.retryableCreationId
+  }
+
+  // if status is REDEEMED, only then fetch the L2TxId (`waitForStatus` waits for tx information until redeemed)
+  // if this REDEEMED check isn't here, the `await` will not get resolved for a long time!
+  if (status === L1ToL2MessageStatus.REDEEMED) {
+    // if `waitForStatus` is called on unredeemed tx, it waits for it to get redeemed first (~15mins)
+    const res = await l1ToL2Msg.waitForStatus()
+    const l2TxID =
+      res.status === L1ToL2MessageStatus.REDEEMED
+        ? res.l2TxReceipt.transactionHash
+        : undefined
+
+    l1ToL2MsgData['l2TxID'] = l2TxID
+  }
+
+  return l1ToL2MsgData
+}
+
+const updateTokenDepositStatusData = async ({
   depositTx,
   l1ToL2Msg,
   timestampCreated,
@@ -163,31 +193,9 @@ const updateTokenStatusData = async ({
 
   if (!l1ToL2Msg) return updatedDepositTx
 
-  let isDeposited = false // initially assume status as pending
+  const l1ToL2MsgData = await getTokenDepositStatusData({ l1ToL2Msg })
 
-  // fetch basic status of token deposit
-  const status = await l1ToL2Msg.status()
-  const l1ToL2MsgData: L1ToL2MsgData = {
-    status: status,
-    l2TxID: undefined,
-    fetchingUpdate: false,
-    retryableCreationTxID: l1ToL2Msg.retryableCreationId
-  }
-
-  // if status is REDEEMED, only then fetch the L2TxId (`waitForStatus` waits for tx information until redeemed)
-  // if this REDEEMED check isn't here, the `await` will not get resolved for a long time!
-  if (status === L1ToL2MessageStatus.REDEEMED) {
-    isDeposited = true // deposit completed
-
-    // if `waitForStatus` is called on unredeemed tx, it waits for it to get redeemed first (~15mins)
-    const res = await l1ToL2Msg.waitForStatus()
-    const l2TxID =
-      res.status === L1ToL2MessageStatus.REDEEMED
-        ? res.l2TxReceipt.transactionHash
-        : undefined
-
-    l1ToL2MsgData['l2TxID'] = l2TxID
-  }
+  const isDeposited = l1ToL2MsgData.status === L1ToL2MessageStatus.REDEEMED
 
   const l2BlockNum = isDeposited
     ? (await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId))
@@ -211,7 +219,7 @@ const updateTokenStatusData = async ({
   return completeDepositTx
 }
 
-const updateClassicStatusData = async ({
+const updateClassicDepositStatusData = async ({
   depositTx,
   l1ToL2Msg,
   isEthDeposit,
