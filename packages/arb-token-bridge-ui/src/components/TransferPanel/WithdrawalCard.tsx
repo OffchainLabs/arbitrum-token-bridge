@@ -121,10 +121,7 @@ export function WithdrawalCardContainer({
         <button
           className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
           onClick={() => {
-            trackEvent({
-              fathom: 'Move More Funds Click',
-              posthog: { name: 'Move More Funds Click' }
-            })
+            trackEvent('Move More Funds Click')
             closeTransactionHistoryPanel()
           }}
         >

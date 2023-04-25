@@ -9,7 +9,7 @@ import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { isFathomNetworkName, trackEvent } from '../util/AnalyticsUtils'
+import { isAnalyticsNetworkName, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 
@@ -72,14 +72,8 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       setIsRedeeming(false)
 
       // track in analytics
-      if (isFathomNetworkName(l1NetworkName)) {
-        trackEvent({
-          fathom: `Redeem Retryable on ${l1NetworkName}`,
-          posthog: {
-            name: 'Redeem Retryable',
-            properties: { network: l1NetworkName }
-          }
-        })
+      if (isAnalyticsNetworkName(l1NetworkName)) {
+        trackEvent('Redeem Retryable', { network: l1NetworkName })
       }
     }
 

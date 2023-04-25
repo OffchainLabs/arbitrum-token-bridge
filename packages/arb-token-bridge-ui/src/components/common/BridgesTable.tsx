@@ -12,7 +12,6 @@ import {
   FastBridgeNames
 } from '../../util/fastBridges'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { FathomEventNonCanonicalTokens } from '../../util/AnalyticsUtils'
 import Image from 'next/image'
 
 export function BridgesTable(props: {
@@ -26,22 +25,12 @@ export function BridgesTable(props: {
 
   function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedNonCanonicalToken) {
-      trackEvent({
-        fathom:
-          `${props.selectedNonCanonicalToken}: Fast Bridge Click: ${bridgeName}` as FathomEventNonCanonicalTokens,
-        posthog: {
-          name: 'Fast Bridge Click',
-          properties: { bridge: bridgeName }
-        }
+      trackEvent('Fast Bridge Click', {
+        bridge: bridgeName,
+        nonCanonicalTokenSymbol: props.selectedNonCanonicalToken
       })
     } else {
-      trackEvent({
-        fathom: `Fast Bridge Click: ${bridgeName}`,
-        posthog: {
-          name: 'Fast Bridge Click ',
-          properties: { bridge: bridgeName }
-        }
-      })
+      trackEvent('Fast Bridge Click', { bridge: bridgeName })
     }
   }
 

@@ -14,7 +14,10 @@ import {
   DotsVerticalIcon,
   InformationCircleIcon
 } from '@heroicons/react/outline'
-import { isFathomNetworkName, trackEvent } from '../../../util/AnalyticsUtils'
+import {
+  isAnalyticsNetworkName,
+  trackEvent
+} from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
@@ -263,14 +266,8 @@ function WithdrawalRowAction({
     window.open(GET_HELP_LINK, '_blank')
 
     // track the button click
-    if (isFathomNetworkName(l2NetworkName)) {
-      trackEvent({
-        fathom: `Tx Error: Get Help Click on ${l2NetworkName}`,
-        posthog: {
-          name: 'Tx Error: Get Help Click',
-          properties: { network: l2NetworkName }
-        }
-      })
+    if (isAnalyticsNetworkName(l2NetworkName)) {
+      trackEvent('Tx Error: Get Help Click', { network: l2NetworkName })
     }
   }
 

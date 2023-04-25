@@ -140,12 +140,8 @@ export function DepositConfirmationDialog(
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
                       copy(bridgeInfo.bridgeUrl)
-                      trackEvent({
-                        fathom: `${tokenSymbol}: Copy Bridge Link Click`,
-                        posthog: {
-                          name: 'Copy Bridge Link Click',
-                          properties: { tokenSymbol }
-                        }
+                      trackEvent('Copy Bridge Link Click', {
+                        nonCanonicalTokenSymbol: tokenSymbol
                       })
                     }}
                   >
@@ -174,12 +170,8 @@ export function DepositConfirmationDialog(
                   variant="primary"
                   onClick={() => {
                     props.onClose(true)
-                    trackEvent({
-                      fathom: `${tokenSymbol}: Use Arbitrum Bridge Click`,
-                      posthog: {
-                        name: 'Use Arbitrum Bridge Click',
-                        properties: { tokenSymbol }
-                      }
+                    trackEvent('Use Arbitrum Bridge Click', {
+                      nonCanonicalTokenSymbol: tokenSymbol
                     })
                   }}
                 >

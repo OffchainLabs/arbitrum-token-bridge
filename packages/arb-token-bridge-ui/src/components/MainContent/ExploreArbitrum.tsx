@@ -74,21 +74,9 @@ function ProjectCard({
       style={{ backgroundImage: `url(${imageSrc}` }}
       onClick={() => {
         if (type === 'defi') {
-          trackEvent({
-            fathom: `Explore: DeFi Project Click: ${name}`,
-            posthog: {
-              name: 'Explore: DeFi Project Click',
-              properties: { project: name }
-            }
-          })
+          trackEvent('Explore: DeFi Project Click', { defiProject: name })
         } else {
-          trackEvent({
-            fathom: `Explore: NFT Project Click: ${name}`,
-            posthog: {
-              name: 'Explore: NFT Project Click',
-              properties: { project: name }
-            }
-          })
+          trackEvent('Explore: NFT Project Click', { nftProject: name })
         }
       }}
     >
@@ -159,10 +147,7 @@ export function ExploreArbitrum() {
   }, [width, playImageNumber])
 
   function randomize() {
-    trackEvent({
-      fathom: 'Explore: Randomize Click',
-      posthog: { name: 'Explore: Randomize Click' }
-    })
+    trackEvent('Explore: Randomize Click')
 
     setDefiProjectIndex(
       getRandomInt({ from: 0, to: defiMaxIndex, except: defiProjectIndex })
