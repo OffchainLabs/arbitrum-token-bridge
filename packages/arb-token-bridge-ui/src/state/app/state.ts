@@ -131,11 +131,18 @@ export const defaultState: AppState = {
     )
   }),
   withdrawalsTransformed: derived((s: AppState) => {
-    return transformWithdrawals(
-      Object.values(
-        s.arbTokenBridge?.pendingWithdrawalsMap || []
-      ) as L2ToL1EventResultPlus[]
+    const withdrawals = Object.values(
+      s.arbTokenBridge?.pendingWithdrawalsMap || []
+    ) as L2ToL1EventResultPlus[]
+
+    // make sure the withdrawals are filtered only for the current account
+    // prevents stale withdrawals from previous accounts to show up in tx-history
+    const filteredWithdrawals = withdrawals.filter(
+      tx =>
+        tx.caller.toLowerCase() === s.arbTokenBridge.walletAddress.toLowerCase()
     )
+
+    return transformWithdrawals(filteredWithdrawals)
   }),
   mergedTransactions: derived((s: AppState) => {
     return _reverse(
