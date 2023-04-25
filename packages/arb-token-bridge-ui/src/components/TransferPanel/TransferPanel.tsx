@@ -398,7 +398,7 @@ export function TransferPanel() {
               name: 'Switch Network and Transfer',
               properties: {
                 txType: 'Deposit',
-                token: selectedToken?.symbol || undefined,
+                tokenSymbol: selectedToken?.symbol || undefined,
                 tokenType: selectedToken ? 'ERC-20' : 'ETH',
                 walletType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
                 network: l2NetworkName,
@@ -489,7 +489,7 @@ export function TransferPanel() {
                 posthog: {
                   name: 'Deposit',
                   properties: {
-                    token: selectedToken.symbol,
+                    tokenSymbol: selectedToken.symbol,
                     tokenType: 'ERC-20',
                     walletType: 'Smart Contract',
                     network: l2NetworkName,
@@ -518,7 +518,7 @@ export function TransferPanel() {
                     posthog: {
                       name: 'Deposit',
                       properties: {
-                        token: selectedToken.symbol,
+                        tokenSymbol: selectedToken.symbol,
                         tokenType: 'ERC-20',
                         walletType: 'EOA',
                         network: l2NetworkName,
@@ -570,7 +570,7 @@ export function TransferPanel() {
             posthog: {
               name: 'Switch Network and Transfer',
               properties: {
-                token: selectedToken?.symbol || undefined,
+                tokenSymbol: selectedToken?.symbol || undefined,
                 tokenType: selectedToken ? 'ERC-20' : 'ETH',
                 walletType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
                 network: l2NetworkName,
@@ -648,7 +648,7 @@ export function TransferPanel() {
                 posthog: {
                   name: 'Withdraw',
                   properties: {
-                    token: selectedToken.symbol,
+                    tokenSymbol: selectedToken.symbol,
                     tokenType: 'ERC-20',
                     walletType: 'Smart Contract',
                     network: l2NetworkName,
@@ -677,7 +677,7 @@ export function TransferPanel() {
                     posthog: {
                       name: 'Withdraw',
                       properties: {
-                        token: selectedToken.symbol,
+                        tokenSymbol: selectedToken.symbol,
                         tokenType: 'ERC-20',
                         walletType: 'EOA',
                         network: l2NetworkName,

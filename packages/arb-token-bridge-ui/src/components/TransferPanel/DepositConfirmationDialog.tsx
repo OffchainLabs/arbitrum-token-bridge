@@ -144,7 +144,7 @@ export function DepositConfirmationDialog(
                         fathom: `${tokenSymbol}: Copy Bridge Link Click`,
                         posthog: {
                           name: 'Copy Bridge Link Click',
-                          properties: { token: tokenSymbol }
+                          properties: { tokenSymbol }
                         }
                       })
                     }}
@@ -178,7 +178,7 @@ export function DepositConfirmationDialog(
                       fathom: `${tokenSymbol}: Use Arbitrum Bridge Click`,
                       posthog: {
                         name: 'Use Arbitrum Bridge Click',
-                        properties: { token: tokenSymbol }
+                        properties: { tokenSymbol }
                       }
                     })
                   }}

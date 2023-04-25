@@ -189,20 +189,24 @@ const eventToEventId: { [key in FathomEvent]: string } & {
   'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
 }
 
-type PosthogProperties = {
-  ['bridge']: FastBridgeNames
-  ['pageElement']: 'Header' | 'Tx Info Banner'
-  ['project']: ExploreArbitrumDeFiProjectName | ExploreArbitrumNFTProjectName
-  ['network']: AllNetworkNames
-  ['token']: string
-  ['exchange']: CEXName | FiatOnRampName
-  ['txType']: 'Deposit' | 'Withdrawal'
-  ['tokenType']: 'ETH' | 'ERC-20'
-  ['walletType']: 'EOA' | 'Smart Contract'
-  ['walletName']: ProviderName
-  ['address']: string
-  ['amount']: number
-}
+type PosthogProperties = Omit<
+  {
+    ['bridge']: FastBridgeNames
+    ['pageElement']: 'Header' | 'Tx Info Banner'
+    ['project']: ExploreArbitrumDeFiProjectName | ExploreArbitrumNFTProjectName
+    ['network']: AllNetworkNames
+    ['tokenSymbol']: string
+    ['exchange']: CEXName | FiatOnRampName
+    ['txType']: 'Deposit' | 'Withdrawal'
+    ['tokenType']: 'ETH' | 'ERC-20'
+    ['walletType']: 'EOA' | 'Smart Contract'
+    ['walletName']: ProviderName
+    ['address']: string
+    ['amount']: number
+  },
+  // Makes sure we don't use token property, it's reserved by posthog
+  'token'
+>
 
 export function trackEvent({
   fathom,
