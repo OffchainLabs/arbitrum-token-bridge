@@ -926,7 +926,7 @@ export function TransferPanel() {
                 'w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl',
                 isArbitrumNova
                   ? 'bg-orange-arbitrum-nova-dark'
-                  : 'bg-blue-arbitrum'
+                  : 'bg-blue-arb-one'
               )}
             >
               {isSmartContractWallet && isTransferring

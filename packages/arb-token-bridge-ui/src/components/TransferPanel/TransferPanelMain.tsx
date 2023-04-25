@@ -50,10 +50,10 @@ export function SwitchNetworksButton(
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16"
+      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-4 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16"
       {...props}
     >
-      <SwitchVerticalIcon className="text-gray-9" />
+      <SwitchVerticalIcon className="text-dark" />
     </button>
   )
 }
@@ -120,7 +120,7 @@ function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
+        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-base text-white md:text-2xl ${buttonClassName}`}
       >
         <span>
           {label} {getNetworkName(value.chainID)}
@@ -247,7 +247,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   }
 
   return (
-    <span className="break-all text-lg font-medium uppercase tracking-[.25px] text-white">
+    <span>
       {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
@@ -274,7 +274,7 @@ function TokenBalance({
   }
 
   return (
-    <span className="text-xl font-light text-white">
+    <span>
       {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
@@ -286,7 +286,9 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center sm:items-end">{children}</div>
+    <div className="flex flex-col flex-nowrap items-start break-all text-base font-medium uppercase tracking-[.25px] text-white md:items-end md:text-lg">
+      {children}
+    </div>
   )
 }
 
@@ -296,7 +298,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center space-y-3.5 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+    <div className="flex flex-row flex-wrap items-center justify-between gap-4 sm:gap-2">
       {children}
     </div>
   )
