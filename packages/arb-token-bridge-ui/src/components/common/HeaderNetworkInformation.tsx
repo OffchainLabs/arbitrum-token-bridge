@@ -1,8 +1,9 @@
 import { ChevronDownIcon } from '@heroicons/react/outline'
+import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import { useNetwork } from 'wagmi'
 
-import { getNetworkLogo, getNetworkName } from '../../util/networks'
+import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
 
 export function HeaderNetworkInformation() {
   const { chain } = useNetwork()
@@ -18,7 +19,12 @@ export function HeaderNetworkInformation() {
       className="flex w-max flex-row items-center justify-center space-x-3 rounded-full text-white lg:bg-dark lg:px-4 lg:py-2 "
       aria-label={`Selected Network : ${networkName}`}
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full">
+      <div
+        className={twMerge(
+          'flex h-10 w-10 items-center justify-center rounded-full lg:bg-transparent lg:p-0',
+          isNetwork(chain.id).isEthereum ? 'bg-[rgba(162,170,240,0.5)] p-1' : ''
+        )}
+      >
         <Image
           src={getNetworkLogo(chain.id)}
           alt={`${networkName} logo`}

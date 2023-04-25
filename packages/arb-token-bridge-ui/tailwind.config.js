@@ -46,13 +46,13 @@ module.exports = {
         // Orange
         orange: '#FFEED3',
         'orange-dark': '#60461F',
-        'orange-dark-nova': '#743600',
 
         // Purple
         'purple-ethereum': '#1A1C33',
 
         // Chain specific themes
         'orange-arbitrum-nova': '#EF8220',
+        'orange-arbitrum-nova-dark': '#743600',
         'blue-arbitrum-one': '#7EC6F6'
       },
       fontFamily: {

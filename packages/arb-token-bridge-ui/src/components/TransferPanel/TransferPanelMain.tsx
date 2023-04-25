@@ -198,13 +198,13 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/images/TransparentNovaLogo.webp')`,
-        backgroundClassName: 'bg-orange-dark-nova'
+        backgroundImage: `url('/images/TransparentNovaLogo.svg')`,
+        backgroundClassName: 'bg-orange-arbitrum-nova-dark'
       }
     }
 
     return {
-      backgroundImage: `url('/images/TransparentArbitrumOneLogo.webp')`,
+      backgroundImage: `url('/images/TransparentArbitrumOneLogo.svg')`,
       backgroundClassName: 'bg-blue-arb-one'
     }
   }, [network])
@@ -247,7 +247,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   }
 
   return (
-    <span className="break-all text-lg font-medium uppercase text-white">
+    <span className="break-all text-lg font-medium uppercase tracking-[.25px] text-white">
       {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
