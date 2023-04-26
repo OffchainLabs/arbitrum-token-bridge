@@ -1,4 +1,4 @@
-import { posthog as posthogClient } from 'posthog-js'
+import posthog from 'posthog-js'
 
 import {
   ExploreArbitrumDeFiProjectName,
@@ -400,7 +400,7 @@ export function trackEvent(
   properties?: Partial<EventProperties>
 ): void {
   // Posthog
-  posthogClient.capture(event, properties)
+  posthog.capture(event, properties)
   // Fathom
   if (typeof window.fathom !== 'undefined' && typeof event !== 'undefined') {
     const fathomEvent = payloadToFathomEvent(event, properties)
