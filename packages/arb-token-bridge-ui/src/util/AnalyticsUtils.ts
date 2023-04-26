@@ -36,6 +36,10 @@ type AnalyticsNetworkName = (typeof AnalyticsNetworkNames)[number]
 export const isAnalyticsNetworkName = (
   networkName: AllNetworkNames
 ): networkName is AnalyticsNetworkName => {
+  if (process.env.NODE_ENV === 'development') {
+    // sends events for any network when in dev
+    return true
+  }
   return AnalyticsNetworkNames.includes(networkName as AnalyticsNetworkName)
 }
 
