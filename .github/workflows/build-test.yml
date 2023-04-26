@@ -83,7 +83,7 @@ jobs:
         uses: ./.github/actions/build-artifacts/restore
 
       - name: Start UI and Test
-        run: yarn start-server-and-test 'dev:ui' http://localhost:3000 'yarn test:ci:sdk'
+        run: yarn start-server-and-test 'dev' http://localhost:3000 'yarn test:ci'
 
   test-ui:
     name: "Test UI"
@@ -101,7 +101,7 @@ jobs:
         uses: ./.github/actions/build-artifacts/restore
 
       - name: Start UI and Test
-        run: yarn start-server-and-test 'dev:ui' http://localhost:3000 'yarn test:ci:ui'
+        run: yarn start-server-and-test 'dev' http://localhost:3000 'yarn test:ci'
 
   audit:
     name: "Audit"
