@@ -387,7 +387,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       retryableCreationTxID: l1ToL2Msg.retryableCreationId
     })
 
-    const res = await l1ToL2Msg.waitForStatus()
+    const res = await l1ToL2Msg.getSuccessfulRedeem()
 
     const l2TxID = (() => {
       if (res.status === L1ToL2MessageStatus.REDEEMED) {
@@ -530,7 +530,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     // appends the state with a new set of transactions
     // useful when you want to display some transactions fetched from subgraph without worrying about existing state
 
-    let transactionsMap: { [id: string]: Transaction } = {}
+    const transactionsMap: { [id: string]: Transaction } = {}
 
     ;[...transactions, ...newTransactions].forEach(tx => {
       transactionsMap[tx.txID] = tx
