@@ -41,8 +41,8 @@ export const isAnalyticsNetworkName = (
 
 type EventName =
   | 'Deposit'
-  | 'Connect Wallet Click'
   | 'Withdraw'
+  | 'Connect Wallet Click'
   | 'Address Block'
   | 'Explore: DeFi Project Click'
   | 'Explore: NFT Project Click'
