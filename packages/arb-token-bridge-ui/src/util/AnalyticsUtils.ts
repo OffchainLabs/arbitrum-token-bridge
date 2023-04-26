@@ -62,28 +62,22 @@ type EventName =
   | 'Explore: Randomize Click'
 
 type EventProperties = {
-  ['bridge']: FastBridgeNames
-  ['fastBridge']: NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
-  ['pageElement']: 'Header' | 'Tx Info Banner'
-  ['defiProject']: ExploreArbitrumDeFiProjectName
-  ['nftProject']: ExploreArbitrumNFTProjectName
-  ['network']: 'Arbitrum One' | 'Arbitrum Nova'
-  ['tokenSymbol']: string
-  ['cexExchange']: CEXName
-  ['fiatExchange']: FiatOnRampName
-  ['txType']: 'Deposit' | 'Withdrawal'
-  ['tokenType']: 'ETH' | 'ERC-20'
-  ['walletType']: 'EOA' | 'Smart Contract'
-  ['walletName']: ProviderName
-  ['address']: string
-  ['amount']: number
-  ['nonCanonicalTokenSymbol']: NonCanonicalTokenName
+  bridge: FastBridgeName
+  fastBridge: NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
+  pageElement: 'Header' | 'Tx Info Banner'
+  defiProject: ExploreArbitrumDeFiProjectName
+  nftProject: ExploreArbitrumNFTProjectName
+  network: 'Arbitrum One' | 'Arbitrum Nova'
+  tokenSymbol: string
+  cexExchange: CEXName
+  fiatExchange: FiatOnRampName
+  txType: 'Deposit' | 'Withdrawal'
+  tokenType: 'ETH' | 'ERC-20'
+  walletType: AccountType
+  walletName: ProviderName
+  amount: number
+  nonCanonicalTokenSymbol: NonCanonicalTokenName
 }
-
-type PickEventProperties<EventName extends keyof EventProperties> = Pick<
-  EventProperties,
-  EventName
->
 
 export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
@@ -315,73 +309,107 @@ function sendEventToAll({
 // events overload
 export function trackEvent(
   event: 'Deposit',
-  properties: PickEventProperties<
-    'tokenType' | 'walletType' | 'network' | 'amount'
-  > &
-    Partial<PickEventProperties<'tokenSymbol'>>
+  properties: {
+    tokenType: EventProperties['tokenType']
+    walletType: EventProperties['walletType']
+    network: EventProperties['network']
+    amount: EventProperties['amount']
+    tokenSymbol?: EventProperties['tokenSymbol']
+  }
 ): void
 export function trackEvent(
   event: 'Withdraw',
-  properties: PickEventProperties<
-    'tokenType' | 'walletType' | 'network' | 'amount'
-  > &
-    Partial<PickEventProperties<'tokenSymbol'>>
+  properties: {
+    tokenType: EventProperties['tokenType']
+    walletType: EventProperties['walletType']
+    network: EventProperties['network']
+    amount: EventProperties['amount']
+    tokenSymbol?: EventProperties['tokenSymbol']
+  }
 ): void
 export function trackEvent(
   event: 'Connect Wallet Click',
-  properties: PickEventProperties<'walletName'>
+  properties: {
+    walletName: EventProperties['walletName']
+  }
 ): void
 export function trackEvent(
   event: 'Explore: DeFi Project Click',
-  properties: PickEventProperties<'defiProject'>
+  properties: {
+    defiProject: EventProperties['defiProject']
+  }
 ): void
 export function trackEvent(
   event: 'Explore: NFT Project Click',
-  properties: PickEventProperties<'nftProject'>
+  properties: {
+    nftProject: EventProperties['nftProject']
+  }
 ): void
 export function trackEvent(
   event: 'CEX Click',
-  properties: PickEventProperties<'cexExchange'>
+  properties: {
+    cexExchange: EventProperties['cexExchange']
+  }
 ): void
 export function trackEvent(
   event: 'Fiat On-Ramp Click',
-  properties: PickEventProperties<'fiatExchange'>
+  properties: {
+    fiatExchange: EventProperties['fiatExchange']
+  }
 ): void
 export function trackEvent(
   event: 'Fast Bridge Click',
-  properties: PickEventProperties<'bridge'> &
-    Partial<PickEventProperties<'nonCanonicalTokenSymbol'>>
+  properties: {
+    bridge: EventProperties['bridge']
+    nonCanonicalTokenSymbol?: EventProperties['nonCanonicalTokenSymbol']
+  }
 ): void
 export function trackEvent(
   event: 'Redeem Retryable',
-  properties: PickEventProperties<'network'>
+  properties: {
+    network: EventProperties['network']
+  }
 ): void
 export function trackEvent(
   event: 'Multiple Tx Error: Get Help Click',
-  properties: PickEventProperties<'network'>
+  properties: {
+    network: EventProperties['network']
+  }
 ): void
 export function trackEvent(
   event: 'Use Arbitrum Bridge Click',
-  properties: PickEventProperties<'nonCanonicalTokenSymbol'>
+  properties: {
+    nonCanonicalTokenSymbol: EventProperties['nonCanonicalTokenSymbol']
+  }
 ): void
 export function trackEvent(
   event: 'Copy Bridge Link Click',
-  properties: PickEventProperties<'nonCanonicalTokenSymbol'>
+  properties: {
+    nonCanonicalTokenSymbol: EventProperties['nonCanonicalTokenSymbol']
+  }
 ): void
 export function trackEvent(
   event: 'Tx Error: Get Help Click',
-  properties: PickEventProperties<'network'>
+  properties: {
+    network: EventProperties['network']
+  }
 ): void
 export function trackEvent(
   event: 'Open Transaction History Click',
-  properties: PickEventProperties<'pageElement'>
+  properties: {
+    pageElement: EventProperties['pageElement']
+  }
 ): void
 export function trackEvent(
   event: 'Switch Network and Transfer',
-  properties: PickEventProperties<
-    'tokenType' | 'walletType' | 'network' | 'amount'
-  > &
-    Partial<PickEventProperties<'tokenSymbol' | 'txType'>>
+  properties: {
+    tokenType: EventProperties['tokenType']
+    walletType: EventProperties['walletType']
+    network: EventProperties['network']
+    amount: EventProperties['amount']
+    tokenSymbol?: EventProperties['tokenSymbol']
+    txType?: EventProperties['txType']
+  }
 ): void
 export function trackEvent(event: 'Slow Bridge Click'): void
 export function trackEvent(event: 'Move More Funds Click'): void
