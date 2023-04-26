@@ -159,12 +159,14 @@ const updateTokenDepositStatusData = async ({
   // get the status data of `l1ToL2Msg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
   const res = await l1ToL2Msg.getSuccessfulRedeem()
 
+  const l2TxID =
+    res.status === L1ToL2MessageStatus.REDEEMED
+      ? res.l2TxReceipt.transactionHash
+      : undefined
+
   const l1ToL2MsgData = {
     status: res.status,
-    l2TxID:
-      res.status === L1ToL2MessageStatus.REDEEMED
-        ? res.l2TxReceipt.transactionHash
-        : undefined,
+    l2TxID,
     fetchingUpdate: false,
     retryableCreationTxID: l1ToL2Msg.retryableCreationId
   }
