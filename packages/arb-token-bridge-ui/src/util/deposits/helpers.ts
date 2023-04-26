@@ -11,13 +11,6 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { AssetType, getL1TokenData, Transaction } from 'token-bridge-sdk'
 
-type L1ToL2MsgData = {
-  status: L1ToL2MessageStatus
-  l2TxID: undefined | string
-  fetchingUpdate: boolean
-  retryableCreationTxID: string
-}
-
 export const updateAdditionalDepositData = async (
   depositTx: Transaction,
   l1Provider: Provider,
@@ -166,7 +159,7 @@ const updateTokenDepositStatusData = async ({
   // get the status data of `l1ToL2Msg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
   const res = await l1ToL2Msg.getSuccessfulRedeem()
 
-  const l1ToL2MsgData: L1ToL2MsgData = {
+  const l1ToL2MsgData = {
     status: res.status,
     l2TxID:
       res.status === L1ToL2MessageStatus.REDEEMED
