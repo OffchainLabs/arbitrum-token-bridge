@@ -130,36 +130,6 @@ const updateETHDepositStatusData = async ({
   return updatedDepositTx
 }
 
-const getTokenDepositStatusData = async ({
-  l1ToL2Msg
-}: {
-  l1ToL2Msg: L1ToL2MessageReader
-}): Promise<L1ToL2MsgData> => {
-  // fetch basic status of token deposit
-  const status = await l1ToL2Msg.status()
-  const l1ToL2MsgData: L1ToL2MsgData = {
-    status: status,
-    l2TxID: undefined,
-    fetchingUpdate: false,
-    retryableCreationTxID: l1ToL2Msg.retryableCreationId
-  }
-
-  // if status is REDEEMED, only then fetch the L2TxId (`waitForStatus` waits for tx information until redeemed)
-  // if this REDEEMED check isn't here, the `await` will not get resolved for a long time!
-  if (status === L1ToL2MessageStatus.REDEEMED) {
-    // if `waitForStatus` is called on unredeemed tx, it waits for it to get redeemed first (~15mins)
-    const res = await l1ToL2Msg.waitForStatus()
-    const l2TxID =
-      res.status === L1ToL2MessageStatus.REDEEMED
-        ? res.l2TxReceipt.transactionHash
-        : undefined
-
-    l1ToL2MsgData['l2TxID'] = l2TxID
-  }
-
-  return l1ToL2MsgData
-}
-
 const updateTokenDepositStatusData = async ({
   depositTx,
   l1ToL2Msg,
@@ -193,7 +163,18 @@ const updateTokenDepositStatusData = async ({
 
   if (!l1ToL2Msg) return updatedDepositTx
 
-  const l1ToL2MsgData = await getTokenDepositStatusData({ l1ToL2Msg })
+  // get the status data of `l1ToL2Msg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
+  const res = await l1ToL2Msg.getSuccessfulRedeem()
+
+  const l1ToL2MsgData: L1ToL2MsgData = {
+    status: res.status,
+    l2TxID:
+      res.status === L1ToL2MessageStatus.REDEEMED
+        ? res.l2TxReceipt.transactionHash
+        : undefined,
+    fetchingUpdate: false,
+    retryableCreationTxID: l1ToL2Msg.retryableCreationId
+  }
 
   const isDeposited = l1ToL2MsgData.status === L1ToL2MessageStatus.REDEEMED
 
