@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState, useMemo, useEffect } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
@@ -112,6 +112,14 @@ export const useArbTokenBridge = (
 
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
+
+  // once the l1/l2/account changes, we need to revalidate the withdrawal list in the store
+  // this prevents previous account/chains' transactions to show up in the current account
+  // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
+  useEffect(() => {
+    setPendingWithdrawalMap({})
+  }, [l1.provider, l2.provider, walletAddress])
+
   const [
     transactions,
     {

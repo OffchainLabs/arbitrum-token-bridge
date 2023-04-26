@@ -131,11 +131,11 @@ export const defaultState: AppState = {
     )
   }),
   withdrawalsTransformed: derived((s: AppState) => {
-    return transformWithdrawals(
-      Object.values(
-        s.arbTokenBridge?.pendingWithdrawalsMap || []
-      ) as L2ToL1EventResultPlus[]
-    )
+    const withdrawals = Object.values(
+      s.arbTokenBridge?.pendingWithdrawalsMap || []
+    ) as L2ToL1EventResultPlus[]
+
+    return transformWithdrawals(withdrawals)
   }),
   mergedTransactions: derived((s: AppState) => {
     return _reverse(
