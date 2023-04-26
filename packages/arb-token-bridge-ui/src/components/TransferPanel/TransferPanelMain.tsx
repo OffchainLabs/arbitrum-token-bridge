@@ -992,9 +992,13 @@ export function TransferPanelMain({
               <DestinationAddressLabel />
             </div>
             <div
-              className={`mt-1 flex h-full flex-row items-center rounded ${destAddressInputClassName}`}
+              className={twMerge(
+                'mt-1 flex h-full flex-row items-center rounded',
+                destAddressInputClassName
+              )}
             >
               <input
+                type="string"
                 className="w-full rounded px-2 py-1"
                 // we want to keep the input empty for the same wallet address
                 // placeholder only displays it to the user for assurance
