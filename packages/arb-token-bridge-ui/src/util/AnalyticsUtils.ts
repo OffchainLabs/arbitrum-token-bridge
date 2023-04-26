@@ -283,29 +283,6 @@ const payloadToFathomEvent = (
   }
 }
 
-function sendEventToAll({
-  event,
-  properties,
-  fathomEvent
-}: {
-  event: EventName
-  properties?: Partial<EventProperties>
-  fathomEvent: FathomEvent | FathomEventNonCanonicalTokens
-}) {
-  // Posthog
-  posthogClient.capture(event, properties)
-  // Fathom
-  if (typeof window.fathom !== 'undefined' && typeof event !== 'undefined') {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Fathom Event:', fathomEvent)
-      // only send in prod
-      return
-    }
-    window.fathom.trackGoal(fathomEventToEventId[fathomEvent])
-  }
-  return
-}
-
 // events overload
 export function trackEvent(
   event: 'Deposit',
@@ -422,6 +399,17 @@ export function trackEvent(
   event: EventName,
   properties?: Partial<EventProperties>
 ): void {
-  const fathomEvent = payloadToFathomEvent(event, properties)
-  sendEventToAll({ event, properties, fathomEvent })
+  // Posthog
+  posthogClient.capture(event, properties)
+  // Fathom
+  if (typeof window.fathom !== 'undefined' && typeof event !== 'undefined') {
+    const fathomEvent = payloadToFathomEvent(event, properties)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Fathom Event:', fathomEvent)
+      // only send in prod
+      return
+    }
+    window.fathom.trackGoal(fathomEventToEventId[fathomEvent])
+  }
+  return
 }
