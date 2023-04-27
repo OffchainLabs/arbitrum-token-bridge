@@ -42,11 +42,10 @@ const AdvancedSettings = ({
     ` ${disabled ? 'bg-slate-200' : 'bg-white'}`
 
   const toAddressEqualsSenderEOA = useMemo(() => {
-    return (
-      !isSmartContractWallet &&
-      destinationAddress &&
-      destinationAddress.toLowerCase() === walletAddress.toLowerCase()
-    )
+    if (isSmartContractWallet) return false
+    // defaults to wallet address
+    if (!destinationAddress) return true
+    return destinationAddress.toLowerCase() === walletAddress.toLowerCase()
   }, [destinationAddress, isSmartContractWallet, walletAddress])
 
   const DestinationAddressLabel = useCallback(() => {
