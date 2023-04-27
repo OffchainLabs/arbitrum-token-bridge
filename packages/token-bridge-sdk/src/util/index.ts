@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { BigNumber, constants } from 'ethers'
+import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -44,8 +44,11 @@ export function getDefaultTokenSymbol(address: string) {
 
 /**
  * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
- * @param erc20L1Address
- * @returns
+ * @param account,
+ * @param erc20L1Address,
+ * @param l1Provider,
+ * @param l2Provider,
+ * @param throwOnInvalidERC20
  */
 export async function getL1TokenData({
   account,
@@ -60,18 +63,6 @@ export async function getL1TokenData({
   l2Provider: Provider
   throwOnInvalidERC20?: boolean
 }): Promise<L1TokenData> {
-  // caching for tokens results
-  const l1TokenDataCache = JSON.parse(
-    sessionStorage.getItem('l1TokenDataCache') || '{}'
-  )
-  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
-  if (cachedTokenData)
-    // successfully found the cache for the required token
-    return {
-      ...cachedTokenData,
-      allowance: BigNumber.from(cachedTokenData.allowance || 0) // return allowance in a bignumber format, which would've been flattened by sessionStorage
-    }
-
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
   const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
@@ -121,6 +112,11 @@ export async function getL1TokenData({
 
   // store the newly fetched final-token-data in cache
   try {
+    // caching for tokens results
+    const l1TokenDataCache = JSON.parse(
+      sessionStorage.getItem('l1TokenDataCache') || '{}'
+    )
+
     l1TokenDataCache[erc20L1Address] = finalTokenData
 
     // only cache the token data if there were no errors in fetching it
@@ -135,6 +131,45 @@ export async function getL1TokenData({
   }
 
   return finalTokenData
+}
+
+/**
+ * Retrieves cached data about an ERC-20 token using its L1 address.
+ * @param account,
+ * @param erc20L1Address,
+ * @param l1Provider,
+ * @param l2Provider,
+ * @param throwOnInvalidERC20
+ */
+export async function getStaticL1TokenData({
+  account,
+  erc20L1Address,
+  l1Provider,
+  l2Provider,
+  throwOnInvalidERC20 = true
+}: {
+  account: string
+  erc20L1Address: string
+  l1Provider: Provider
+  l2Provider: Provider
+  throwOnInvalidERC20?: boolean
+}): Promise<L1TokenData> {
+  // caching for tokens results
+  const l1TokenDataCache = JSON.parse(
+    sessionStorage.getItem('l1TokenDataCache') || '{}'
+  )
+  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
+  // successfully found the cache for the required token
+  if (cachedTokenData) return cachedTokenData
+
+  // else fetch and return the live token data (it will cache it as well)
+  return getL1TokenData({
+    account,
+    erc20L1Address,
+    l1Provider,
+    l2Provider,
+    throwOnInvalidERC20
+  })
 }
 
 /**

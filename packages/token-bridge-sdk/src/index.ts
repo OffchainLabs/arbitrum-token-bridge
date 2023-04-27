@@ -22,6 +22,7 @@ export {
   getDefaultTokenName,
   getDefaultTokenSymbol,
   getL1TokenData,
+  getStaticL1TokenData,
   getL2TokenData,
   validateTokenList
 } from './util/index'

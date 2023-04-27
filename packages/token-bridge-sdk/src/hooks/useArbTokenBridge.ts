@@ -36,7 +36,7 @@ import {
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
+import { getStaticL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -357,7 +357,7 @@ export const useArbTokenBridge = (
       l1Signer
     })
 
-    const tokenData = await getL1TokenData({
+    const tokenData = await getStaticL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
@@ -417,7 +417,7 @@ export const useArbTokenBridge = (
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const tokenData = await getL1TokenData({
+    const tokenData = await getStaticL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
@@ -458,7 +458,7 @@ export const useArbTokenBridge = (
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
     try {
-      const { symbol, decimals } = await getL1TokenData({
+      const { symbol, decimals } = await getStaticL1TokenData({
         account: walletAddress,
         erc20L1Address,
         l1Provider: l1.provider,
@@ -602,7 +602,7 @@ export const useArbTokenBridge = (
           const { symbol, decimals } = bridgeToken
           return { symbol, decimals }
         }
-        const { symbol, decimals } = await getL1TokenData({
+        const { symbol, decimals } = await getStaticL1TokenData({
           account: walletAddress,
           erc20L1Address,
           l1Provider: l1.provider,
@@ -873,7 +873,7 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const { name, symbol, decimals } = await getL1TokenData({
+    const { name, symbol, decimals } = await getStaticL1TokenData({
       account: walletAddress,
       erc20L1Address: l1Address,
       l1Provider: l1.provider,
@@ -955,7 +955,7 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
-    const { symbol, decimals } = await getL1TokenData({
+    const { symbol, decimals } = await getStaticL1TokenData({
       account: walletAddress,
       erc20L1Address: tokenAddress as string,
       l1Provider: l1.provider,
