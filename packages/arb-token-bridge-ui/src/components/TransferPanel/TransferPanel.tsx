@@ -200,30 +200,31 @@ export function TransferPanel() {
   }, [connectionState, importTokenModalStatus])
 
   useEffect(() => {
+    let isLatestUpdate = true
     const validateTransfer = async () => {
-      if (isSmartContractWallet) {
-        setTransferValidationError(
-          await getSmartContractTransferError({
+      const error = await (isSmartContractWallet
+        ? getSmartContractTransferError({
             from: walletAddress,
             to: String(destinationAddress),
             l1Provider,
             l2Provider,
             isDeposit: isDepositMode
           })
-        )
-      } else {
-        setTransferValidationError(
-          await getEOATransferError({
+        : getEOATransferError({
             from: walletAddress,
             to: destinationAddress || walletAddress,
             l1Provider,
             l2Provider,
             isDeposit: isDepositMode
-          })
-        )
+          }))
+      if (isLatestUpdate) {
+        setTransferValidationError(error)
       }
     }
     validateTransfer()
+    return () => {
+      isLatestUpdate = false
+    }
   }, [
     destinationAddress,
     isDepositMode,

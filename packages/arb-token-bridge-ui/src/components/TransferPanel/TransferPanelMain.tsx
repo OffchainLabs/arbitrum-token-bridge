@@ -1,13 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Listbox } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ExternalLinkIcon,
-  SwitchVerticalIcon,
-  QuestionMarkCircleIcon
-} from '@heroicons/react/outline'
-import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/solid'
+import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
@@ -38,6 +31,7 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 
+import { AdvancedSettings } from './AdvancedSettings'
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
@@ -59,11 +53,6 @@ export function SwitchNetworksButton(
       <SwitchVerticalIcon className="text-gray-9" />
     </button>
   )
-}
-
-enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.',
-  EMPTY_ADDRESS = 'The destination address is required for contract wallet transfers.'
 }
 
 type OptionsExtraProps = {
@@ -367,22 +356,10 @@ export function TransferPanelMain({
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
-  const [advancedSettingsError, setAdvancedSettingsError] =
-    useState<AdvancedSettingsErrors | null>(null)
-  const [verifyingDestinationAddress, setVerifyingDestinationAddress] =
-    useState(false)
-  const [destinationAddressInputDisabled, setDestinationAddressInputDisabled] =
-    useState(!isSmartContractWallet)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
-
-  const destAddressInputClassName =
-    (advancedSettingsError
-      ? 'border border-[#cd0000]'
-      : 'border border-gray-9') +
-    ` ${destinationAddressInputDisabled ? 'bg-slate-200' : 'bg-white'}`
 
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum
@@ -473,60 +450,6 @@ export function TransferPanelMain({
     setAmount,
     tokenBalances.l1,
     tokenBalances.l2
-  ])
-
-  const DestinationAddressExplorer = useCallback(() => {
-    const { explorerUrl } = (isDepositMode ? l2 : l1).network
-
-    if (!explorerUrl || verifyingDestinationAddress || advancedSettingsError) {
-      return null
-    }
-    return (
-      <ExternalLink
-        className="mt-2 flex w-fit text-xs text-slate-500"
-        href={`${explorerUrl}/address/${destinationAddress || walletAddress}`}
-      >
-        <ExternalLinkIcon className="mr-1 h-4 w-4" />
-        View account in explorer
-      </ExternalLink>
-    )
-  }, [
-    destinationAddress,
-    advancedSettingsError,
-    verifyingDestinationAddress,
-    isDepositMode,
-    walletAddress,
-    l1,
-    l2
-  ])
-
-  const DestinationAddressLabel = useCallback(() => {
-    if (
-      verifyingDestinationAddress ||
-      advancedSettingsError ||
-      isSmartContractWallet ||
-      !walletAddress
-    ) {
-      return null
-    }
-
-    // destination address defaults to wallet address
-    return !destinationAddress ||
-      walletAddress.toLowerCase() === destinationAddress?.toLowerCase() ? (
-      <div className="w-fit rounded bg-lime px-2 py-1 text-sm text-lime-dark">
-        Sending to your address
-      </div>
-    ) : (
-      <div className="w-fit rounded bg-orange px-2 py-1 text-sm text-orange-dark">
-        Sending to a different address
-      </div>
-    )
-  }, [
-    destinationAddress,
-    isSmartContractWallet,
-    walletAddress,
-    verifyingDestinationAddress,
-    advancedSettingsError
   ])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
@@ -795,27 +718,6 @@ export function TransferPanelMain({
     isConnectedToArbitrum
   ])
 
-  const handleAdvancedSettingsToggle = useCallback(() => {
-    // keep visible if destination address provided to make clear where funds go to
-    // or for SC wallets as destination address is mandatory
-    // allow to close if EOA and destination address === wallet address
-    if (
-      (destinationAddress &&
-        destinationAddress !== walletAddress.toLowerCase()) ||
-      isSmartContractWallet
-    ) {
-      setShowAdvancedSettings(true)
-      return
-    }
-    setShowAdvancedSettings(!showAdvancedSettings)
-  }, [
-    showAdvancedSettings,
-    destinationAddress,
-    setShowAdvancedSettings,
-    walletAddress,
-    isSmartContractWallet
-  ])
-
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
@@ -901,103 +803,11 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      <div className="mt-6">
-        {/* advanced settings */}
-        <button
-          onClick={handleAdvancedSettingsToggle}
-          className="flex flex-row items-center"
-        >
-          <span className=" text-lg">Advanced Settings</span>
-          {showAdvancedSettings ? (
-            <ChevronUpIcon className="ml-1 h-4 w-4" />
-          ) : (
-            <ChevronDownIcon className="ml-1 h-4 w-4" />
-          )}
-        </button>
-        {showAdvancedSettings && (
-          <div className="mt-2">
-            <div className="flex flex-wrap items-center justify-between">
-              <span className="text-md flex items-center text-gray-10">
-                Destination Address
-                <Tooltip
-                  wrapperClassName="ml-1"
-                  theme="dark"
-                  content={
-                    <span>
-                      This is where your funds will end up at.{' '}
-                      {isSmartContractWallet
-                        ? ''
-                        : 'Defaults to your wallet address.'}
-                    </span>
-                  }
-                >
-                  <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
-                </Tooltip>
-              </span>
-              <DestinationAddressLabel />
-            </div>
-            <div
-              className={twMerge(
-                'mt-1 flex h-full flex-row items-center rounded',
-                destAddressInputClassName
-              )}
-            >
-              <input
-                type="string"
-                className="w-full rounded px-2 py-1"
-                // we want to keep the input empty for the same wallet address
-                // placeholder only displays it to the user for assurance
-                placeholder={!isSmartContractWallet ? walletAddress : undefined}
-                defaultValue={destinationAddress}
-                spellCheck={false}
-                disabled={
-                  destinationAddressInputDisabled && !isSmartContractWallet
-                }
-                onChange={e => {
-                  // prevents verification from flashing
-                  // setVerifyingDestinationAddress(true)
-                  if (!e.target.value) {
-                    setDestinationAddress(undefined)
-                  } else {
-                    setDestinationAddress(e.target.value.toLowerCase())
-                  }
-                }}
-                // disables 1password on the field
-                data-1p-ignore
-              />
-              {!isSmartContractWallet && (
-                <button
-                  onClick={() =>
-                    setDestinationAddressInputDisabled(
-                      !destinationAddressInputDisabled
-                    )
-                  }
-                >
-                  {destinationAddressInputDisabled ? (
-                    <LockClosedIcon className="mr-2 h-5 w-5 text-slate-600" />
-                  ) : (
-                    <LockOpenIcon className="mr-2 h-5 w-5 text-slate-600" />
-                  )}
-                </button>
-              )}
-            </div>
-            <DestinationAddressExplorer />
-            {verifyingDestinationAddress && (
-              <div className="mt-2 flex">
-                <Loader size="small" color="#94A2B8" />
-                <span className="ml-2 text-xs text-slate-500">
-                  Verifying address
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-        {!verifyingDestinationAddress && transferValidationError && (
-          <span className="text-xs text-red-400">
-            {transferValidationError}
-          </span>
-        )}
-      </div>
+      <AdvancedSettings
+        destinationAddress={destinationAddress || ''}
+        onChange={value => setDestinationAddress(value || undefined)}
+        error={transferValidationError}
+      />
 
       <Dialog
         closeable
