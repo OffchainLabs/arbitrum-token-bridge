@@ -21,6 +21,7 @@ import { useSwitchNetwork } from 'wagmi'
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
+import { TransferValidationErrors } from '../../util/AddressUtils'
 import {
   ChainId,
   getNetworkLogo,
@@ -29,7 +30,6 @@ import {
   handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -317,7 +317,8 @@ export function TransferPanelMain({
   setAmount,
   errorMessage,
   destinationAddress,
-  setDestinationAddress
+  setDestinationAddress,
+  transferValidationError
 }: {
   amount: string
   setAmount: (value: string) => void
@@ -326,6 +327,7 @@ export function TransferPanelMain({
   setDestinationAddress: React.Dispatch<
     React.SetStateAction<string | undefined>
   >
+  transferValidationError: TransferValidationErrors | null
 }) {
   const actions = useActions()
 
@@ -545,71 +547,6 @@ export function TransferPanelMain({
       ),
     [isSmartContractWallet, destinationAddress, showAdvancedSettings]
   )
-
-  useEffect(() => {
-    // used to unsubscribe
-    let isCurrent = true
-    const verifyAddress = async () => {
-      // preliminary checks before we run async methods
-      if (isSmartContractWallet) {
-        // Destination address is required for contract wallets
-        if (!destinationAddress) {
-          setAdvancedSettingsError(AdvancedSettingsErrors.EMPTY_ADDRESS)
-          return
-        }
-      } else {
-        // Destination address is not required for EOA wallets
-        if (!destinationAddress) {
-          setAdvancedSettingsError(null)
-          return
-        }
-      }
-      setVerifyingDestinationAddress(true)
-      try {
-        const isDestinationAddressSmartContract = await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2.provider : l1.provider
-        )
-        if (!isCurrent) {
-          return
-        }
-        if (isSmartContractWallet) {
-          // Make sure address type matches the connected wallet type
-          if (isDestinationAddressSmartContract) {
-            setAdvancedSettingsError(null)
-            return
-          }
-        } else {
-          if (
-            // However if provided it needs to be valid
-            utils.isAddress(String(destinationAddress)) &&
-            // Can't be contract address
-            !isDestinationAddressSmartContract
-          ) {
-            setAdvancedSettingsError(null)
-            return
-          }
-        }
-        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-      } catch (err) {
-        console.error(err)
-        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-      } finally {
-        setVerifyingDestinationAddress(false)
-      }
-    }
-    verifyAddress()
-    return () => {
-      isCurrent = false
-      setVerifyingDestinationAddress(false)
-    }
-  }, [
-    l1.provider,
-    l2.provider,
-    isDepositMode,
-    isSmartContractWallet,
-    destinationAddress
-  ])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -858,6 +795,27 @@ export function TransferPanelMain({
     isConnectedToArbitrum
   ])
 
+  const handleAdvancedSettingsToggle = useCallback(() => {
+    // keep visible if destination address provided to make clear where funds go to
+    // or for SC wallets as destination address is mandatory
+    // allow to close if EOA and destination address === wallet address
+    if (
+      (destinationAddress &&
+        destinationAddress !== walletAddress.toLowerCase()) ||
+      isSmartContractWallet
+    ) {
+      setShowAdvancedSettings(true)
+      return
+    }
+    setShowAdvancedSettings(!showAdvancedSettings)
+  }, [
+    showAdvancedSettings,
+    destinationAddress,
+    setShowAdvancedSettings,
+    walletAddress,
+    isSmartContractWallet
+  ])
+
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
@@ -946,20 +904,7 @@ export function TransferPanelMain({
       <div className="mt-6">
         {/* advanced settings */}
         <button
-          onClick={() => {
-            // keep visible if destination address provided to make clear where funds go to
-            // or for SC wallets as destination address is mandatory
-            // allow to close if EOA and destination address === wallet address
-            if (
-              (destinationAddress &&
-                destinationAddress !== walletAddress.toLowerCase()) ||
-              isSmartContractWallet
-            ) {
-              setShowAdvancedSettings(true)
-              return
-            }
-            setShowAdvancedSettings(!showAdvancedSettings)
-          }}
+          onClick={handleAdvancedSettingsToggle}
           className="flex flex-row items-center"
         >
           <span className=" text-lg">Advanced Settings</span>
@@ -1047,8 +992,10 @@ export function TransferPanelMain({
             )}
           </div>
         )}
-        {!verifyingDestinationAddress && advancedSettingsError && (
-          <span className="text-xs text-red-400">{advancedSettingsError}</span>
+        {!verifyingDestinationAddress && transferValidationError && (
+          <span className="text-xs text-red-400">
+            {transferValidationError}
+          </span>
         )}
       </div>
 

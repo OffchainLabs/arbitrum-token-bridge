@@ -1,7 +1,6 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
-import { Provider } from '@ethersproject/abstract-provider'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
@@ -179,12 +178,6 @@ export const useArbTokenBridge = (
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
-    verifyDestinationAddressOrThrow({
-      provider: l1Signer.provider,
-      destinationAddress,
-      isDeposit: true
-    })
-
     let tx: L1EthDepositTransaction & L1ContractCallTransaction
     let receipt:
       | L1EthDepositTransactionReceipt
@@ -294,12 +287,6 @@ export const useArbTokenBridge = (
   }) {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-
-      verifyDestinationAddressOrThrow({
-        provider: l2Signer.provider,
-        destinationAddress,
-        isDeposit: false
-      })
 
       const tx = await ethBridger.withdraw({
         amount,
@@ -506,12 +493,6 @@ export const useArbTokenBridge = (
   }) {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
-    verifyDestinationAddressOrThrow({
-      provider: l1Signer.provider,
-      destinationAddress,
-      isDeposit: true
-    })
-
     try {
       const { symbol, decimals } = await getL1TokenData({
         account: walletAddress,
@@ -640,12 +621,6 @@ export const useArbTokenBridge = (
     try {
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
-      verifyDestinationAddressOrThrow({
-        provider: l2Signer.provider,
-        destinationAddress,
-        isDeposit: false
-      })
-
       if (typeof bridgeTokens === 'undefined') {
         return
       }
@@ -734,38 +709,6 @@ export const useArbTokenBridge = (
         txLifecycle.onTxError(error)
       }
       console.warn('withdraw token err', error)
-    }
-  }
-
-  async function verifyDestinationAddressOrThrow({
-    provider,
-    destinationAddress,
-    isDeposit
-  }: {
-    provider?: Provider
-    destinationAddress?: string
-    isDeposit: boolean
-  }) {
-    const fromAddressIsContract =
-      provider && (await provider.getCode(walletAddress)).length > 2
-    const destinationAddressIsContract =
-      destinationAddress &&
-      (
-        await (isDeposit ? l2.provider : l1.provider).getCode(
-          String(destinationAddress)
-        )
-      ).length > 2
-    if (fromAddressIsContract) {
-      if (!destinationAddress) {
-        throw new Error('Missing destination address')
-      }
-      if (!destinationAddressIsContract) {
-        throw new Error(
-          `Invalid destination address. Expected a contract address on network: '${
-            (isDeposit ? l2 : l1).network.name
-          }'`
-        )
-      }
     }
   }
 

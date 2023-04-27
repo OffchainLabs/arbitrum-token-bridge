@@ -26,9 +26,9 @@ import { useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { addressIsSmartContract } from '../util/AddressUtils'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
-import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 

@@ -13,12 +13,16 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import {
+  getEOATransferError,
+  getSmartContractTransferError,
+  TransferValidationErrors
+} from '../../util/AddressUtils'
+import {
   getNetworkName,
   handleSwitchNetworkError,
   handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -98,10 +102,8 @@ export function TransferPanel() {
   const [destinationAddress, setDestinationAddress] = useState<
     string | undefined
   >(undefined)
-  const [
-    isDestinationAddressSmartContract,
-    setIsDestinationAddressSmartContract
-  ] = useState(false)
+  const [transferValidationError, setTransferValidationError] =
+    useState<TransferValidationErrors | null>(null)
 
   const {
     app: {
@@ -198,16 +200,38 @@ export function TransferPanel() {
   }, [connectionState, importTokenModalStatus])
 
   useEffect(() => {
-    const getDestinationAddressType = async () => {
-      setIsDestinationAddressSmartContract(
-        await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2Provider : l1Provider
+    const validateTransfer = async () => {
+      if (isSmartContractWallet) {
+        setTransferValidationError(
+          await getSmartContractTransferError({
+            from: walletAddress,
+            to: String(destinationAddress),
+            l1Provider,
+            l2Provider,
+            isDeposit: isDepositMode
+          })
         )
-      )
+      } else {
+        setTransferValidationError(
+          await getEOATransferError({
+            from: walletAddress,
+            to: destinationAddress || walletAddress,
+            l1Provider,
+            l2Provider,
+            isDeposit: isDepositMode
+          })
+        )
+      }
     }
-    getDestinationAddressType()
-  }, [destinationAddress, isDepositMode, l1Provider, l2Provider])
+    validateTransfer()
+  }, [
+    destinationAddress,
+    isDepositMode,
+    l1Provider,
+    l2Provider,
+    walletAddress,
+    isSmartContractWallet
+  ])
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -333,6 +357,15 @@ export function TransferPanel() {
     }
   }
 
+  async function verifyTransferOrThrow(
+    verifyFunc: Promise<TransferValidationErrors | null>
+  ): Promise<void> {
+    const error = await verifyFunc
+    if (error) {
+      throw new Error(error)
+    }
+  }
+
   const transfer = async () => {
     if (!isConnected) {
       return
@@ -360,19 +393,6 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if (destinationAddress) {
-        if (
-          // Invalid address
-          !isAddress(destinationAddress) ||
-          // Destination address not matching the connected wallet type
-          (isSmartContractWallet && !isDestinationAddressSmartContract)
-        ) {
-          throw new Error(
-            `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
-          )
-        }
-      }
-
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -416,6 +436,25 @@ export function TransferPanel() {
         ) {
           return alert('Network connection issue; contact support')
         }
+
+        await verifyTransferOrThrow(
+          isSmartContractWallet
+            ? getSmartContractTransferError({
+                from: walletAddress,
+                to: String(destinationAddress),
+                l1Provider,
+                l2Provider,
+                isDeposit: true
+              })
+            : getEOATransferError({
+                from: walletAddress,
+                to: destinationAddress || walletAddress,
+                l1Provider,
+                l2Provider,
+                isDeposit: true
+              })
+        )
+
         if (selectedToken) {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
@@ -541,6 +580,24 @@ export function TransferPanel() {
 
           await new Promise(r => setTimeout(r, 3000))
         }
+
+        await verifyTransferOrThrow(
+          isSmartContractWallet
+            ? getSmartContractTransferError({
+                from: walletAddress,
+                to: String(destinationAddress),
+                l1Provider,
+                l2Provider,
+                isDeposit: false
+              })
+            : getEOATransferError({
+                from: walletAddress,
+                to: destinationAddress || walletAddress,
+                l1Provider,
+                l2Provider,
+                isDeposit: false
+              })
+        )
 
         if (!isSmartContractWallet) {
           const waitForInput = openWithdrawalConfirmationDialog()
@@ -756,12 +813,7 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      // If contract wallet, destination address must be contract too
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      // If EOA and destination address provided, it must be valid
-      (!isSmartContractWallet &&
-        destinationAddress &&
-        !utils.isAddress(destinationAddress))
+      !!transferValidationError
     )
   }, [
     isTransferring,
@@ -771,9 +823,7 @@ export function TransferPanel() {
     l1Balance,
     isBridgingANewStandardToken,
     selectedToken,
-    isSmartContractWallet,
-    isDestinationAddressSmartContract,
-    destinationAddress
+    transferValidationError
   ])
 
   // TODO: Refactor this and the property above
@@ -805,12 +855,7 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      // If contract wallet, destination address must be contract too
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      // If EOA and destination address provided, it must be valid
-      (!isSmartContractWallet &&
-        destinationAddress &&
-        !utils.isAddress(destinationAddress))
+      !!transferValidationError
     )
   }, [
     isTransferring,
@@ -818,9 +863,7 @@ export function TransferPanel() {
     amountNum,
     l2Balance,
     selectedToken,
-    isSmartContractWallet,
-    isDestinationAddressSmartContract,
-    destinationAddress
+    transferValidationError
   ])
 
   // TODO: Refactor this and the property above
@@ -895,6 +938,7 @@ export function TransferPanel() {
           }
           destinationAddress={destinationAddress}
           setDestinationAddress={setDestinationAddress}
+          transferValidationError={transferValidationError}
         />
 
         <div className="border-r border-gray-3" />
