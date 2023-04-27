@@ -5,7 +5,7 @@ import { motion, useViewportScroll, useTransform } from 'framer-motion'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { ExternalLink } from './ExternalLink'
-// import { Toast } from './atoms/Toast'
+import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -60,7 +60,7 @@ export function Layout(props: LayoutProps) {
         <main>{props.children}</main>
       </div>
 
-      {/* <Toast /> */}
+      <Toast />
 
       <Footer />
 
