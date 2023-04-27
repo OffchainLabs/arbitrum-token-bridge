@@ -41,11 +41,11 @@ const AdvancedSettings = ({
     (error ? 'border border-[#cd0000]' : 'border border-gray-9') +
     ` ${disabled ? 'bg-slate-200' : 'bg-white'}`
 
-  const notSenderAddressEOA = useMemo(() => {
+  const toAddressEqualsSenderEOA = useMemo(() => {
     return (
       !isSmartContractWallet &&
       destinationAddress &&
-      destinationAddress.toLowerCase() !== walletAddress.toLowerCase()
+      destinationAddress.toLowerCase() === walletAddress.toLowerCase()
     )
   }, [destinationAddress, isSmartContractWallet, walletAddress])
 
@@ -54,8 +54,7 @@ const AdvancedSettings = ({
       return null
     }
 
-    // destination address defaults to wallet address
-    return notSenderAddressEOA ? (
+    return toAddressEqualsSenderEOA ? (
       <div className="w-fit rounded bg-lime px-2 py-1 text-sm text-lime-dark">
         Sending to your address
       </div>
@@ -64,7 +63,7 @@ const AdvancedSettings = ({
         Sending to a different address
       </div>
     )
-  }, [error, isSmartContractWallet, walletAddress, notSenderAddressEOA])
+  }, [error, isSmartContractWallet, walletAddress, toAddressEqualsSenderEOA])
 
   const DestinationAddressExplorer = useCallback(() => {
     const { explorerUrl } = (isDepositMode ? l2 : l1).network
@@ -87,12 +86,12 @@ const AdvancedSettings = ({
     // keep visible if destination address provided to make clear where funds go
     // or for SC wallets as destination address is mandatory
     // allow to close if destination address is sender address
-    if (notSenderAddressEOA || isSmartContractWallet) {
+    if (!toAddressEqualsSenderEOA || isSmartContractWallet) {
       setCollapsed(false)
       return
     }
     setCollapsed(!collapsed)
-  }, [collapsed, setCollapsed, notSenderAddressEOA, isSmartContractWallet])
+  }, [collapsed, setCollapsed, toAddressEqualsSenderEOA, isSmartContractWallet])
 
   return (
     <div className="mt-6">
