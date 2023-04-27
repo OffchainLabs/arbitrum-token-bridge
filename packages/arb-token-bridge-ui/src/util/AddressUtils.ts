@@ -27,14 +27,14 @@ export const getSmartContractTransferError = async ({
   isDeposit
 }: {
   from: string
-  to: string
+  to?: string
   l1Provider: Provider
   l2Provider: Provider
   isDeposit: boolean
 }): Promise<TransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
   const providerTo = isDeposit ? l2Provider : l1Provider
-  if (!isAddress(to)) {
+  if (!isAddress(String(to))) {
     return TransferValidationErrors.SC_MISSING_ADDRESS
   }
   if (!isAddress(from)) {
@@ -43,7 +43,7 @@ export const getSmartContractTransferError = async ({
   if (!(await addressIsSmartContract(from, providerFrom))) {
     return TransferValidationErrors.GENERIC_ERROR
   }
-  if (!(await addressIsSmartContract(to, providerTo))) {
+  if (!(await addressIsSmartContract(String(to), providerTo))) {
     return TransferValidationErrors.SC_INVALID_ADDRESS
   }
   return null
@@ -57,13 +57,14 @@ export const getEOATransferError = async ({
   isDeposit
 }: {
   from: string
-  to: string
+  to?: string
   l1Provider: Provider
   l2Provider: Provider
   isDeposit: boolean
 }): Promise<TransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
   if (to && !isAddress(to)) {
+    console.log({ to })
     return TransferValidationErrors.EOA_INVALID_ADDRESS
   }
   if (!isAddress(from)) {

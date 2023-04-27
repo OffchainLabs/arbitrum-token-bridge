@@ -163,9 +163,9 @@ const AdvancedSettings = ({
             )}
           </div>
           <DestinationAddressExplorer />
+          {error && <span className="text-xs text-red-400">{error}</span>}
         </div>
       )}
-      {error && <span className="text-xs text-red-400">{error}</span>}
     </div>
   )
 }

@@ -204,7 +204,7 @@ export function TransferPanel() {
     const validateTransfer = async () => {
       const funcProps = {
         from: walletAddress,
-        to: String(destinationAddress),
+        to: destinationAddress,
         l1Provider,
         l2Provider,
         isDeposit: isDepositMode
@@ -390,7 +390,7 @@ export function TransferPanel() {
 
     const verifyFuncProps = {
       from: walletAddress,
-      to: String(destinationAddress),
+      to: destinationAddress,
       l1Provider,
       l2Provider
     }
