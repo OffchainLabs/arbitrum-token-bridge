@@ -8,8 +8,8 @@ import {
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated,
-  getExecutedMessagesCacheKey,
-  getStaticL1TokenData
+  getStaticL1TokenData,
+  getExecutedMessagesCacheKey
 } from 'token-bridge-sdk'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
