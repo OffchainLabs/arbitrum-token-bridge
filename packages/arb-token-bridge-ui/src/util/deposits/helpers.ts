@@ -9,7 +9,7 @@ import {
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Provider } from '@ethersproject/providers'
-import { AssetType, getL1TokenData, Transaction } from 'token-bridge-sdk'
+import { AssetType, getCachedL1TokenData, Transaction } from 'token-bridge-sdk'
 
 export const updateAdditionalDepositData = async (
   depositTx: Transaction,
@@ -144,7 +144,7 @@ const updateTokenDepositStatusData = async ({
   // fallback to on-chain token information if subgraph doesn't have it
   const { sender, tokenAddress, assetName } = updatedDepositTx
   if (!assetName && tokenAddress) {
-    const { symbol } = await getL1TokenData({
+    const { symbol } = await getCachedL1TokenData({
       account: sender,
       erc20L1Address: tokenAddress,
       l1Provider,

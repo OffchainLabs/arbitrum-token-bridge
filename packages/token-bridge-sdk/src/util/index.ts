@@ -8,7 +8,6 @@ import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
-
 import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
 
 export function assertNever(x: never, message = 'Unexpected object'): never {
@@ -39,6 +38,38 @@ export function getDefaultTokenSymbol(address: string) {
     lowercased.substring(0, 5) +
     '...' +
     lowercased.substring(lowercased.length - 3)
+  )
+}
+
+type StaticTokenData = Pick<L1TokenData, 'name' | 'symbol' | 'decimals'>
+
+type TokenDataCache = {
+  [account: string]: { [erc20L1Address: string]: StaticTokenData }
+}
+
+// Get the token data cache for any account
+const getTokenDataCache = (account: string) => {
+  const cache: TokenDataCache = JSON.parse(
+    sessionStorage.getItem('l1TokenDataCache') || '{}'
+  )
+  return cache[account] || {}
+}
+
+// Set the token data cache for current account
+const setTokenDataCache = (
+  account: string,
+  erc20L1Address: string,
+  tokenData: StaticTokenData
+) => {
+  const cache: TokenDataCache = JSON.parse(
+    sessionStorage.getItem('l1TokenDataCache') || '{}'
+  )
+  const l1TokenDataCache = getTokenDataCache(account)
+  l1TokenDataCache[erc20L1Address] = tokenData
+
+  sessionStorage.setItem(
+    'l1TokenDataCache',
+    JSON.stringify({ ...cache, [account]: l1TokenDataCache })
   )
 }
 
@@ -112,19 +143,13 @@ export async function getL1TokenData({
 
   // store the newly fetched final-token-data in cache
   try {
-    // caching for tokens results
-    const l1TokenDataCache = JSON.parse(
-      sessionStorage.getItem('l1TokenDataCache') || '{}'
-    )
-
-    l1TokenDataCache[erc20L1Address] = finalTokenData
-
     // only cache the token data if there were no errors in fetching it
     if (shouldCache) {
-      sessionStorage.setItem(
-        'l1TokenDataCache',
-        JSON.stringify(l1TokenDataCache)
-      )
+      setTokenDataCache(account, erc20L1Address, {
+        name: finalTokenData.name,
+        symbol: finalTokenData.symbol,
+        decimals: finalTokenData.decimals
+      })
     }
   } catch (e) {
     console.warn(e)
@@ -141,7 +166,7 @@ export async function getL1TokenData({
  * @param l2Provider,
  * @param throwOnInvalidERC20
  */
-export async function getStaticL1TokenData({
+export async function getCachedL1TokenData({
   account,
   erc20L1Address,
   l1Provider,
@@ -153,23 +178,23 @@ export async function getStaticL1TokenData({
   l1Provider: Provider
   l2Provider: Provider
   throwOnInvalidERC20?: boolean
-}): Promise<L1TokenData> {
+}): Promise<StaticTokenData> {
   // caching for tokens results
-  const l1TokenDataCache = JSON.parse(
-    sessionStorage.getItem('l1TokenDataCache') || '{}'
-  )
+  const l1TokenDataCache = getTokenDataCache(account)
   const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
   // successfully found the cache for the required token
   if (cachedTokenData) return cachedTokenData
 
   // else fetch and return the live token data (it will cache it as well)
-  return getL1TokenData({
+  const { name, symbol, decimals } = await getL1TokenData({
     account,
     erc20L1Address,
     l1Provider,
     l2Provider,
     throwOnInvalidERC20
   })
+
+  return { name, symbol, decimals }
 }
 
 /**
