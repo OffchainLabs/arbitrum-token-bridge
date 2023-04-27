@@ -190,9 +190,11 @@ export const useArbTokenBridge = (
       | L1EthDepositTransactionReceipt
       | L1ContractCallTransactionReceipt
 
+    const senderAddress = await l1Signer.getAddress()
+
     try {
       tx = (
-        destinationAddress
+        destinationAddress && destinationAddress !== senderAddress
           ? // send ETH to a custom address
             await ethBridger.depositTo({
               amount,
