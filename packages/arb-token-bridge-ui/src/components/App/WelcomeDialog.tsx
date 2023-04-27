@@ -1,13 +1,25 @@
 import { useRef } from 'react'
 import { Dialog as HeadlessUIDialog } from '@headlessui/react'
+import Image from 'next/image'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import Image from 'next/image'
 
 export function WelcomeDialog(props: UseDialogProps) {
   const confirmButtonRef = useRef(null)
+  const { openConnectModal } = useConnectModal()
+
+  const closeHandler = () => {
+    props.onClose(true)
+
+    try {
+      openConnectModal?.()
+    } catch (error) {
+      throw "RainbowKit's openConnectModal function is undefined"
+    }
+  }
 
   return (
     <Dialog {...props} initialFocus={confirmButtonRef} isCustom>
@@ -55,7 +67,7 @@ export function WelcomeDialog(props: UseDialogProps) {
                 ref={confirmButtonRef}
                 variant="primary"
                 className="w-full"
-                onClick={() => props.onClose(true)}
+                onClick={closeHandler}
               >
                 Agree to terms
               </Button>
