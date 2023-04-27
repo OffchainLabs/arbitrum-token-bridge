@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import {
   ChevronUpIcon,
@@ -41,14 +41,21 @@ const AdvancedSettings = ({
     (error ? 'border border-[#cd0000]' : 'border border-gray-9') +
     ` ${disabled ? 'bg-slate-200' : 'bg-white'}`
 
+  const notSenderAddressEOA = useMemo(() => {
+    return (
+      !isSmartContractWallet &&
+      destinationAddress &&
+      destinationAddress.toLowerCase() !== walletAddress.toLowerCase()
+    )
+  }, [destinationAddress, isSmartContractWallet, walletAddress])
+
   const DestinationAddressLabel = useCallback(() => {
     if (error || isSmartContractWallet || !walletAddress) {
       return null
     }
 
     // destination address defaults to wallet address
-    return !destinationAddress ||
-      walletAddress.toLowerCase() === destinationAddress?.toLowerCase() ? (
+    return notSenderAddressEOA ? (
       <div className="w-fit rounded bg-lime px-2 py-1 text-sm text-lime-dark">
         Sending to your address
       </div>
@@ -57,7 +64,7 @@ const AdvancedSettings = ({
         Sending to a different address
       </div>
     )
-  }, [destinationAddress, isSmartContractWallet, walletAddress, error])
+  }, [error, isSmartContractWallet, walletAddress, notSenderAddressEOA])
 
   const DestinationAddressExplorer = useCallback(() => {
     const { explorerUrl } = (isDepositMode ? l2 : l1).network
@@ -77,11 +84,6 @@ const AdvancedSettings = ({
   }, [l1, l2, isDepositMode, walletAddress, error, destinationAddress])
 
   const handleAdvancedSettingsToggle = useCallback(() => {
-    const notSenderAddressEOA =
-      !isSmartContractWallet &&
-      destinationAddress &&
-      destinationAddress.toLowerCase() !== walletAddress.toLowerCase()
-
     // keep visible if destination address provided to make clear where funds go
     // or for SC wallets as destination address is mandatory
     // allow to close if destination address is sender address
@@ -90,13 +92,7 @@ const AdvancedSettings = ({
       return
     }
     setCollapsed(!collapsed)
-  }, [
-    collapsed,
-    destinationAddress,
-    setCollapsed,
-    walletAddress,
-    isSmartContractWallet
-  ])
+  }, [collapsed, setCollapsed, notSenderAddressEOA, isSmartContractWallet])
 
   return (
     <div className="mt-6">
