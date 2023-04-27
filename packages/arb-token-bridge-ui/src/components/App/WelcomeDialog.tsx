@@ -1,13 +1,28 @@
 import { useRef } from 'react'
 import { Dialog as HeadlessUIDialog } from '@headlessui/react'
+import Image from 'next/image'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import * as Sentry from '@sentry/react'
 
 import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import Image from 'next/image'
+import { errorToast } from '../common/atoms/Toast'
 
 export function WelcomeDialog(props: UseDialogProps) {
   const confirmButtonRef = useRef(null)
+  const { openConnectModal } = useConnectModal()
+
+  const closeHandler = () => {
+    props.onClose(true)
+
+    try {
+      openConnectModal?.()
+    } catch (error) {
+      errorToast('Failed to open up RainbowKit Connect Modal')
+      Sentry.captureException(error)
+    }
+  }
 
   return (
     <Dialog {...props} initialFocus={confirmButtonRef} isCustom>
@@ -55,7 +70,7 @@ export function WelcomeDialog(props: UseDialogProps) {
                 ref={confirmButtonRef}
                 variant="primary"
                 className="w-full"
-                onClick={() => props.onClose(true)}
+                onClick={closeHandler}
               >
                 Agree to terms
               </Button>
