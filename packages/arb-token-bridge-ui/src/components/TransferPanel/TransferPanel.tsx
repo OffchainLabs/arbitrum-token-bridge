@@ -202,21 +202,16 @@ export function TransferPanel() {
   useEffect(() => {
     let isLatestUpdate = true
     const validateTransfer = async () => {
+      const funcProps = {
+        from: walletAddress,
+        to: String(destinationAddress),
+        l1Provider,
+        l2Provider,
+        isDeposit: isDepositMode
+      }
       const error = await (isSmartContractWallet
-        ? getSmartContractTransferError({
-            from: walletAddress,
-            to: String(destinationAddress),
-            l1Provider,
-            l2Provider,
-            isDeposit: isDepositMode
-          })
-        : getEOATransferError({
-            from: walletAddress,
-            to: destinationAddress || walletAddress,
-            l1Provider,
-            l2Provider,
-            isDeposit: isDepositMode
-          }))
+        ? getSmartContractTransferError(funcProps)
+        : getEOATransferError(funcProps))
       if (isLatestUpdate) {
         setTransferValidationError(error)
       }
@@ -393,6 +388,13 @@ export function TransferPanel() {
 
     setTransferring(true)
 
+    const verifyFuncProps = {
+      from: walletAddress,
+      to: String(destinationAddress),
+      l1Provider,
+      l2Provider
+    }
+
     try {
       if (isDepositMode) {
         const warningToken =
@@ -441,17 +443,11 @@ export function TransferPanel() {
         await verifyTransferOrThrow(
           isSmartContractWallet
             ? getSmartContractTransferError({
-                from: walletAddress,
-                to: String(destinationAddress),
-                l1Provider,
-                l2Provider,
+                ...verifyFuncProps,
                 isDeposit: true
               })
             : getEOATransferError({
-                from: walletAddress,
-                to: destinationAddress || walletAddress,
-                l1Provider,
-                l2Provider,
+                ...verifyFuncProps,
                 isDeposit: true
               })
         )
@@ -585,17 +581,11 @@ export function TransferPanel() {
         await verifyTransferOrThrow(
           isSmartContractWallet
             ? getSmartContractTransferError({
-                from: walletAddress,
-                to: String(destinationAddress),
-                l1Provider,
-                l2Provider,
+                ...verifyFuncProps,
                 isDeposit: false
               })
             : getEOATransferError({
-                from: walletAddress,
-                to: destinationAddress || walletAddress,
-                l1Provider,
-                l2Provider,
+                ...verifyFuncProps,
                 isDeposit: false
               })
         )

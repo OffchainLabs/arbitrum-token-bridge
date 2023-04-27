@@ -143,8 +143,6 @@ const AdvancedSettings = ({
               spellCheck={false}
               disabled={disabled && !isSmartContractWallet}
               onChange={e => {
-                // prevents verification from flashing
-                // setVerifyingDestinationAddress(true)
                 if (!e.target.value) {
                   onChange(undefined)
                 } else {
