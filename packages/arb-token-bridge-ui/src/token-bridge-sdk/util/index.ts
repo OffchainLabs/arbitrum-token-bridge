@@ -90,7 +90,11 @@ export async function getL1TokenData({
     symbol: true
   })
 
+  let shouldCache = true
+
   if (tokenData && typeof tokenData.balance === 'undefined') {
+    shouldCache = false
+
     if (throwOnInvalidERC20)
       throw new Error(
         `getL1TokenData: No balance method available for ${erc20L1Address}`
@@ -98,6 +102,8 @@ export async function getL1TokenData({
   }
 
   if (tokenData && typeof tokenData.allowance === 'undefined') {
+    shouldCache = false
+
     if (throwOnInvalidERC20)
       throw new Error(
         `getL1TokenData: No allowance method available for ${erc20L1Address}`
@@ -116,7 +122,14 @@ export async function getL1TokenData({
   // store the newly fetched final-token-data in cache
   try {
     l1TokenDataCache[erc20L1Address] = finalTokenData
-    sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+
+    // only cache the token data if there were no errors in fetching it
+    if (shouldCache) {
+      sessionStorage.setItem(
+        'l1TokenDataCache',
+        JSON.stringify(l1TokenDataCache)
+      )
+    }
   } catch (e) {
     console.warn(e)
   }

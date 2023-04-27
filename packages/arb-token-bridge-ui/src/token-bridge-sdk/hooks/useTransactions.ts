@@ -387,7 +387,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       retryableCreationTxID: l1ToL2Msg.retryableCreationId
     })
 
-    const res = await l1ToL2Msg.waitForStatus()
+    const res = await l1ToL2Msg.getSuccessfulRedeem()
 
     const l2TxID = (() => {
       if (res.status === L1ToL2MessageStatus.REDEEMED) {
