@@ -43,34 +43,25 @@ export function getDefaultTokenSymbol(address: string) {
 
 type StaticTokenData = Pick<L1TokenData, 'name' | 'symbol' | 'decimals'>
 
-type TokenDataCache = {
-  [account: string]: { [erc20L1Address: string]: StaticTokenData }
-}
+type TokenDataCache = { [erc20L1Address: string]: StaticTokenData }
 
-// Get the token data cache for any account
-const getTokenDataCache = (account: string) => {
+// Get the token data cache (only name, symbol, decimals keys stored)
+const getTokenDataCache = () => {
   const cache: TokenDataCache = JSON.parse(
     sessionStorage.getItem('l1TokenDataCache') || '{}'
   )
-  return cache[account] || {}
+  return cache
 }
 
-// Set the token data cache for current account
+// Set the token data cache (only name, symbol, decimals)
 const setTokenDataCache = (
-  account: string,
   erc20L1Address: string,
   tokenData: StaticTokenData
 ) => {
-  const cache: TokenDataCache = JSON.parse(
-    sessionStorage.getItem('l1TokenDataCache') || '{}'
-  )
-  const l1TokenDataCache = getTokenDataCache(account)
+  const l1TokenDataCache = getTokenDataCache()
   l1TokenDataCache[erc20L1Address] = tokenData
 
-  sessionStorage.setItem(
-    'l1TokenDataCache',
-    JSON.stringify({ ...cache, [account]: l1TokenDataCache })
-  )
+  sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
 }
 
 /**
@@ -145,7 +136,7 @@ export async function getL1TokenData({
   try {
     // only cache the token data if there were no errors in fetching it
     if (shouldCache) {
-      setTokenDataCache(account, erc20L1Address, {
+      setTokenDataCache(erc20L1Address, {
         name: finalTokenData.name,
         symbol: finalTokenData.symbol,
         decimals: finalTokenData.decimals
@@ -180,7 +171,7 @@ export async function getCachedL1TokenData({
   throwOnInvalidERC20?: boolean
 }): Promise<StaticTokenData> {
   // caching for tokens results
-  const l1TokenDataCache = getTokenDataCache(account)
+  const l1TokenDataCache = getTokenDataCache()
   const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
   // successfully found the cache for the required token
   if (cachedTokenData) return cachedTokenData
