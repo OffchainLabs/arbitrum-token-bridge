@@ -44,7 +44,7 @@ export const updateAdditionalDepositData = async (
   })
 
   if (isClassic) {
-    return updateAdditionalDepositDataClassic({
+    return updateClassicDepositStatusData({
       depositTx,
       l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
       isEthDeposit,
@@ -55,7 +55,7 @@ export const updateAdditionalDepositData = async (
 
   // Check if deposit is ETH
   if (isEthDeposit) {
-    return updateAdditionalDepositDataETH({
+    return updateETHDepositStatusData({
       depositTx,
       ethDepositMessage: l1ToL2Msg as EthDepositMessage,
       l2Provider,
@@ -64,7 +64,7 @@ export const updateAdditionalDepositData = async (
   }
 
   // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
-  return updateAdditionalDepositDataToken({
+  return updateTokenDepositStatusData({
     depositTx,
     l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
     timestampCreated,
@@ -73,7 +73,7 @@ export const updateAdditionalDepositData = async (
   })
 }
 
-const updateAdditionalDepositDataETH = async ({
+const updateETHDepositStatusData = async ({
   depositTx,
   ethDepositMessage,
   l2Provider,
@@ -123,7 +123,7 @@ const updateAdditionalDepositDataETH = async ({
   return updatedDepositTx
 }
 
-const updateAdditionalDepositDataToken = async ({
+const updateTokenDepositStatusData = async ({
   depositTx,
   l1ToL2Msg,
   timestampCreated,
@@ -156,7 +156,8 @@ const updateAdditionalDepositDataToken = async ({
 
   if (!l1ToL2Msg) return updatedDepositTx
 
-  const res = await l1ToL2Msg.waitForStatus()
+  // get the status data of `l1ToL2Msg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
+  const res = await l1ToL2Msg.getSuccessfulRedeem()
 
   const l2TxID =
     res.status === L1ToL2MessageStatus.REDEEMED
@@ -194,7 +195,7 @@ const updateAdditionalDepositDataToken = async ({
   return completeDepositTx
 }
 
-const updateAdditionalDepositDataClassic = async ({
+const updateClassicDepositStatusData = async ({
   depositTx,
   l1ToL2Msg,
   isEthDeposit,
