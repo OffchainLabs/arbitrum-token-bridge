@@ -395,7 +395,7 @@ export function TransferPanel() {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
-              tokenSymbol: selectedToken?.symbol || undefined,
+              tokenSymbol: selectedToken?.symbol,
               assetType: selectedToken ? 'ERC-20' : 'ETH',
               accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
               network: l2NetworkName,
@@ -546,7 +546,7 @@ export function TransferPanel() {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
-              tokenSymbol: selectedToken?.symbol || undefined,
+              tokenSymbol: selectedToken?.symbol,
               assetType: selectedToken ? 'ERC-20' : 'ETH',
               accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
               network: l2NetworkName,
