@@ -317,6 +317,7 @@ function payloadToFathomEvent<T extends AnalyticsEvent>(
         return event
       }
     default:
+      // events w/o properties in fathom
       return event
   }
 }
