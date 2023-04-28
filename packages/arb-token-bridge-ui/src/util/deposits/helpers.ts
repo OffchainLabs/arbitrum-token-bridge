@@ -148,7 +148,8 @@ const updateTokenDepositStatusData = async ({
       account: sender,
       erc20L1Address: tokenAddress,
       l1Provider,
-      l2Provider
+      l2Provider,
+      throwOnInvalidERC20: false
     })
     updatedDepositTx.assetName = symbol
   }
