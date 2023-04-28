@@ -120,7 +120,7 @@ export function HeaderAccountPopover() {
 
   function openTransactionHistory() {
     openTransactionHistoryPanel()
-    trackEvent('Open Transaction History Click')
+    trackEvent('Open Transaction History Click', { pageElement: 'Header' })
   }
 
   const headerItemsClassName =
