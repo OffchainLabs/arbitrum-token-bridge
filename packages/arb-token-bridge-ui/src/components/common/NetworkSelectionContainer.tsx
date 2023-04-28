@@ -21,7 +21,7 @@ export const NetworkSelectionContainer = ({
     throwForSwitchChainNotSupported: true,
     onError: handleSwitchNetworkError
   })
-  const supportedNetworks = getSupportedNetworks(chain?.id)?.filter(
+  const supportedNetworks = getSupportedNetworks(chain?.id).filter(
     chainId => chainId !== chain?.id
   )
 
