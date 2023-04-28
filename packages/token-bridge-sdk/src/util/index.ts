@@ -111,7 +111,7 @@ export async function getL1TokenData({
  * @param l1Provider,
  * @param l2Provider,
  */
-export async function getTokenAllowance({
+export async function getL1TokenAllowance({
   account,
   erc20L1Address,
   l1Provider,
