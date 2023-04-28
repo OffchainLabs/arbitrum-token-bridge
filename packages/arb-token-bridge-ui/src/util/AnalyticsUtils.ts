@@ -26,7 +26,7 @@ declare global {
 }
 
 type AccountType = 'EOA' | 'Smart Contract'
-type TokenType = 'ETH' | 'ERC-20'
+type AssetType = 'ETH' | 'ERC-20'
 type FastBridgeName = `${FastBridgeNames}`
 type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
 
@@ -51,8 +51,8 @@ export type FathomEventMap =
   //
   | `Connect Wallet Click: ${ProviderName}`
   //
-  | `Deposit ${TokenType} to ${AnalyticsNetworkName} (${AccountType})`
-  | `Withdraw ${TokenType} from ${AnalyticsNetworkName} (${AccountType})`
+  | `Deposit ${AssetType} to ${AnalyticsNetworkName} (${AccountType})`
+  | `Withdraw ${AssetType} from ${AnalyticsNetworkName} (${AccountType})`
   //
   | `Explore: DeFi Project Click: ${ExploreArbitrumDeFiProjectName}`
   | `Explore: NFT Project Click: ${ExploreArbitrumNFTProjectName}`
@@ -196,14 +196,14 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
 type AnalyticsEventMap = {
   Deposit: {
     tokenSymbol?: string
-    assetType: 'ETH' | 'ERC-20'
+    assetType: AssetType
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
   }
   Withdraw: {
     tokenSymbol?: string
-    assetType: 'ETH' | 'ERC-20'
+    assetType: AssetType
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
@@ -224,7 +224,7 @@ type AnalyticsEventMap = {
   'Switch Network and Transfer': {
     type: 'Deposit' | 'Withdrawal'
     tokenSymbol?: string
-    assetType: 'ETH' | 'ERC-20'
+    assetType: AssetType
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
