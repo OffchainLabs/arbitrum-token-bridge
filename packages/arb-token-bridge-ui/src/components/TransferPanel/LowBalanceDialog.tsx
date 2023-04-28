@@ -49,9 +49,9 @@ function ExternalLinkCard({
       className="arb-hover"
       onClick={() => {
         if (type === 'cex') {
-          trackEvent(`CEX Click: ${title}`)
+          trackEvent('CEX Click', { project: title })
         } else {
-          trackEvent(`Fiat On-Ramp Click: ${title}`)
+          trackEvent('Fiat On-Ramp Click', { project: title })
         }
       }}
     >
