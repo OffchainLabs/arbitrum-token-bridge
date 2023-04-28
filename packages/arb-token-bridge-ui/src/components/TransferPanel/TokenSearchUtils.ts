@@ -146,7 +146,7 @@ export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
     name: data.name,
     type: TokenType.ERC20,
     symbol: data.symbol,
-    address: data.contract.address,
+    address: data.address,
     decimals: data.decimals,
     listIds: new Set()
   }

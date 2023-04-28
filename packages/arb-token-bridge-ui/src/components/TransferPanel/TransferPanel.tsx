@@ -6,7 +6,11 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
-import { ArbTokenBridge, useBalance, getL1TokenData } from 'token-bridge-sdk'
+import {
+  ArbTokenBridge,
+  useBalance,
+  getL1TokenAllowance
+} from 'token-bridge-sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -445,7 +449,7 @@ export function TransferPanel() {
             return
           }
 
-          const { allowance } = await getL1TokenData({
+          const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
             l1Provider: l1Provider,
