@@ -8,7 +8,7 @@ import {
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated,
-  getCachedL1TokenData,
+  getL1TokenData,
   getExecutedMessagesCacheKey
 } from 'token-bridge-sdk'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
@@ -138,7 +138,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   l2ChainID: number,
   walletAddress: string
 ): Promise<L2ToL1EventResultPlus | undefined> {
-  const { symbol, decimals } = await getCachedL1TokenData({
+  const { symbol, decimals } = await getL1TokenData({
     account: walletAddress,
     erc20L1Address: result.l1Token,
     l1Provider,
@@ -203,7 +203,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
 
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
     // Token withdrawal
-    const { symbol, decimals } = await getCachedL1TokenData({
+    const { symbol, decimals } = await getL1TokenData({
       account: withdrawal.sender,
       erc20L1Address: withdrawal.l1Token.id,
       l1Provider,

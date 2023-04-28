@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { schema, TokenList } from '@uniswap/token-lists'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
@@ -41,7 +41,10 @@ export function getDefaultTokenSymbol(address: string) {
   )
 }
 
-type StaticTokenData = Pick<L1TokenData, 'name' | 'symbol' | 'decimals'>
+export type StaticTokenData = Pick<
+  L1TokenData,
+  'name' | 'symbol' | 'decimals' | 'contract'
+>
 
 type TokenDataCache = { [erc20L1Address: string]: StaticTokenData }
 
@@ -65,83 +68,45 @@ const setTokenDataCache = (
 }
 
 /**
- * Retrieves data about an ERC-20 token using its L1 address. Throws if fails to retrieve balance or allowance.
- * @param account,
+ * Retrieves static data (name, decimals, symbol, contract) about an ERC-20 token using its L1 address
  * @param erc20L1Address,
- * @param l1Provider,
- * @param l2Provider,
- * @param throwOnInvalidERC20
+ * @param l1Provider
  */
 export async function getL1TokenData({
-  account,
   erc20L1Address,
-  l1Provider,
-  l2Provider,
-  throwOnInvalidERC20 = true
+  l1Provider
 }: {
   account: string
   erc20L1Address: string
   l1Provider: Provider
   l2Provider: Provider
   throwOnInvalidERC20?: boolean
-}): Promise<L1TokenData> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-    erc20L1Address,
-    l1Provider
-  )
-
+}): Promise<StaticTokenData> {
+  // checking the cache for tokens results
+  // if successfully found in the cache, return the token data
+  const l1TokenDataCache = getTokenDataCache()
+  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
+  if (cachedTokenData) return cachedTokenData
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
 
+  // else, call on-chain method to retrieve token data
   const multiCaller = await MultiCaller.fromProvider(l1Provider)
   const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
-    balanceOf: { account },
-    allowance: { owner: account, spender: l1GatewayAddress },
     decimals: true,
     name: true,
     symbol: true
   })
 
-  let shouldCache = true
-
-  if (tokenData && typeof tokenData.balance === 'undefined') {
-    shouldCache = false
-
-    if (throwOnInvalidERC20)
-      throw new Error(
-        `getL1TokenData: No balance method available for ${erc20L1Address}`
-      )
-  }
-
-  if (tokenData && typeof tokenData.allowance === 'undefined') {
-    shouldCache = false
-
-    if (throwOnInvalidERC20)
-      throw new Error(
-        `getL1TokenData: No allowance method available for ${erc20L1Address}`
-      )
-  }
-
   const finalTokenData = {
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
-    balance: tokenData?.balance ?? constants.Zero,
-    allowance: tokenData?.allowance ?? constants.Zero,
     decimals: tokenData?.decimals ?? 0,
     contract
   }
 
   // store the newly fetched final-token-data in cache
   try {
-    // only cache the token data if there were no errors in fetching it
-    if (shouldCache) {
-      setTokenDataCache(erc20L1Address, {
-        name: finalTokenData.name,
-        symbol: finalTokenData.symbol,
-        decimals: finalTokenData.decimals
-      })
-    }
+    setTokenDataCache(erc20L1Address, finalTokenData)
   } catch (e) {
     console.warn(e)
   }
@@ -150,42 +115,35 @@ export async function getL1TokenData({
 }
 
 /**
- * Retrieves cached data about an ERC-20 token using its L1 address.
+ * Retrieves token allowance of an ERC-20 token using its L1 address.
  * @param account,
  * @param erc20L1Address,
  * @param l1Provider,
  * @param l2Provider,
- * @param throwOnInvalidERC20
  */
-export async function getCachedL1TokenData({
+export async function getTokenAllowance({
   account,
   erc20L1Address,
   l1Provider,
-  l2Provider,
-  throwOnInvalidERC20 = true
+  l2Provider
 }: {
   account: string
   erc20L1Address: string
   l1Provider: Provider
   l2Provider: Provider
-  throwOnInvalidERC20?: boolean
-}): Promise<StaticTokenData> {
-  // caching for tokens results
-  const l1TokenDataCache = getTokenDataCache()
-  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
-  // successfully found the cache for the required token
-  if (cachedTokenData) return cachedTokenData
+}): Promise<BigNumber> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
-  // else fetch and return the live token data (it will cache it as well)
-  const { name, symbol, decimals } = await getL1TokenData({
-    account,
+  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
     erc20L1Address,
-    l1Provider,
-    l2Provider,
-    throwOnInvalidERC20
+    l1Provider
+  )
+  const multiCaller = await MultiCaller.fromProvider(l1Provider)
+  const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
+    allowance: { owner: account, spender: l1GatewayAddress }
   })
 
-  return { name, symbol, decimals }
+  return tokenData?.allowance ?? constants.Zero
 }
 
 /**

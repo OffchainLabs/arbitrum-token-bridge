@@ -22,9 +22,10 @@ export {
   getDefaultTokenName,
   getDefaultTokenSymbol,
   getL1TokenData,
-  getCachedL1TokenData,
+  getTokenAllowance,
   getL2TokenData,
-  validateTokenList
+  validateTokenList,
+  type StaticTokenData
 } from './util/index'
 export { getL1ERC20Address } from './util/getL1ERC20Address'
 export { getUniqueIdOrHashFromEvent } from './util/migration'

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import {
   ContractStorage,
   ERC20BridgeToken,
-  L1TokenData,
+  StaticTokenData,
   TokenType
 } from 'token-bridge-sdk'
 
@@ -141,7 +141,7 @@ function tokenListsToSearchableTokenStorage(
   )
 }
 
-export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
+export function toERC20BridgeToken(data: StaticTokenData): ERC20BridgeToken {
   return {
     name: data.name,
     type: TokenType.ERC20,
