@@ -8,6 +8,7 @@ import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+
 import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
 
 export function assertNever(x: never, message = 'Unexpected object'): never {
