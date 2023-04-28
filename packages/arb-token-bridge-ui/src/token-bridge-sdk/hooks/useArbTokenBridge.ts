@@ -357,7 +357,7 @@ export const useArbTokenBridge = (
       l1Signer
     })
 
-    const tokenData = await getL1TokenData({
+    const { symbol } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
@@ -369,7 +369,7 @@ export const useArbTokenBridge = (
       status: 'pending',
       value: null,
       txID: tx.hash,
-      assetName: tokenData.symbol,
+      assetName: symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
       l1NetworkID
@@ -417,7 +417,7 @@ export const useArbTokenBridge = (
     const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const tokenData = await getL1TokenData({
+    const { symbol } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
       l1Provider: l1.provider,
@@ -429,7 +429,7 @@ export const useArbTokenBridge = (
       status: 'pending',
       value: null,
       txID: tx.hash,
-      assetName: tokenData.symbol,
+      assetName: symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
       blockNumber: tx.blockNumber,
@@ -608,6 +608,7 @@ export const useArbTokenBridge = (
           l1Provider: l1.provider,
           l2Provider: l2.provider
         })
+
         addToken(erc20L1Address)
         return { symbol, decimals }
       })()
@@ -873,6 +874,7 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+
     const { name, symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address: l1Address,
