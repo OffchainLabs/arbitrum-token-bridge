@@ -83,9 +83,9 @@ export async function getL1TokenData({
   const l1TokenDataCache = getTokenDataCache()
   const cachedTokenData = l1TokenDataCache[erc20L1Address]
   if (cachedTokenData) return cachedTokenData
-  const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
 
   // else, call on-chain method to retrieve token data
+  const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
     erc20L1Address,
