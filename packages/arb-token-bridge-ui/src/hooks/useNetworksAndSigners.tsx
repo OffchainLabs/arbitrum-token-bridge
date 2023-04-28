@@ -206,7 +206,7 @@ export function NetworksAndSignersProvider(
     }
     if (isConnected && connector) {
       const walletName = getWalletName(connector.name)
-      trackEvent(`Connect Wallet Click: ${walletName}`)
+      trackEvent('Connect Wallet Click', { walletName })
     }
   }, [isDisconnected, isConnected, connector])
 
