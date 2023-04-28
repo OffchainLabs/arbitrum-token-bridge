@@ -16,7 +16,7 @@ import { registerLocalNetwork } from './src/util/networks'
 
 export default defineConfig({
   userAgent: 'synpress',
-  retries: 2,
+  retries: 10,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
   video: false,

@@ -9,8 +9,7 @@ import {
 } from './common'
 
 Cypress.Keyboard.defaults({
-  // tests are flaky in CI with low keystroke delay
-  keystrokeDelay: 150
+  keystrokeDelay: 10
 })
 
 before(() => {

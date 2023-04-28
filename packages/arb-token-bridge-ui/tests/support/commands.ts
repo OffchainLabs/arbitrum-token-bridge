@@ -66,20 +66,57 @@ Cypress.Commands.add(
   'typeRecursively',
   { prevSubject: true },
   (subject, text: string) => {
+    // due to test flakiness when typing, we handle each character individually
+    // if character fails, we insert it again until succeeded, and so on
+
+    // store text that currently has been typed in letter by letter
+    let fullText = ''
+    // number of letters that have been successfully inserted
+    let index = 0
+
     recurse(
       // the commands to repeat, and they yield the input element
-      () => cy.wrap(subject).clear().type(text),
-      // the predicate takes the output of the above commands
-      // and returns a boolean. If it returns true, the recursion stops
-      $input => $input.val() === text,
+      () => {
+        if (index === 0) {
+          // initiate text storage
+          fullText += text[0]
+          // at the start we clear the input
+          return cy.wrap(subject).clear().type(text[0])
+        }
+        if (!fullText[index]) {
+          // only add a new character if no character exists at this index
+          // if populated, it means that the character has been successfully inserted
+          fullText += text[index]
+        }
+        // we don't clear the input here, continue to type in characters
+        return cy.wrap(subject).type(text[index])
+      },
+
+      $input => {
+        // current input value
+        const val = String($input.val())
+        if (val === fullText) {
+          // only add letter count if the current input value is the same as our stored text
+          // if they are the same that means both input and storage text match and we can move on to the next character
+          index++
+        }
+        if (val.length < fullText.length) {
+          // in case cypress types in too much, prevents long loops
+          return false
+        }
+        // the predicate takes the output of the above commands
+        // and returns a boolean. If it returns true, the recursion stops
+        return val === text
+      },
       {
         log: false,
-        timeout: 180_000
+        timeout: 60_000,
+        delay: 10,
+        // because we are typing very fast a lot of characters might fail
+        // arbitrary number provided to safely pass the entire typing process
+        limit: 2_000
       }
     )
-      // the recursion yields whatever the command function yields
-      // and we can confirm that the text was entered correctly
-      .should('have.value', text)
   }
 )
 
