@@ -11,7 +11,7 @@ import {
   isDepositReadyToRedeem,
   isWithdrawalReadyToClaim
 } from '../../state/app/utils'
-import { isFathomNetworkName, trackEvent } from '../../util/AnalyticsUtils'
+import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
@@ -77,8 +77,10 @@ export const TransactionStatusInfo = ({
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
         onClick={() => {
           openTransactionHistoryPanel()
-          if (isFathomNetworkName(l2NetworkName)) {
-            trackEvent(`Open Transaction History Click: Tx Info Banner`)
+          if (shouldTrackAnalytics(l2NetworkName)) {
+            trackEvent('Open Transaction History Click', {
+              pageElement: 'Tx Info Banner'
+            })
           }
         }}
       >

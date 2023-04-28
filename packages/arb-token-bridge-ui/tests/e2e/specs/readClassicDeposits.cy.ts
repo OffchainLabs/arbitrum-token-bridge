@@ -1,4 +1,4 @@
-import { Transaction, AssetType } from 'token-bridge-sdk'
+import { Transaction, AssetType } from '../../../src/token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { shortenTxHash } from '../../../src/util/CommonUtils'
