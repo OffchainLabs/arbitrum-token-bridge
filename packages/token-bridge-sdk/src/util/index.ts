@@ -75,7 +75,7 @@ export async function getL1TokenData({
   // checking the cache for tokens results
   // if successfully found in the cache, return the token data
   const l1TokenDataCache = getTokenDataCache()
-  const cachedTokenData = l1TokenDataCache?.[erc20L1Address]
+  const cachedTokenData = l1TokenDataCache[erc20L1Address]
   if (cachedTokenData) return cachedTokenData
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
 
