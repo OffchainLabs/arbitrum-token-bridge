@@ -11,7 +11,7 @@ import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
 
 // Create a new cache for every test
-const Container = ({ children }: PropsWithChildren<any>) => (
+const Container = ({ children }: PropsWithChildren<unknown>) => (
   <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>
 )
 
