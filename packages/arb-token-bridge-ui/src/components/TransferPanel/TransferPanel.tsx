@@ -34,7 +34,7 @@ import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { trackEvent, isAnalyticsNetworkName } from '../../util/AnalyticsUtils'
+import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
   TransferPanelMainErrorMessage
@@ -392,7 +392,7 @@ export function TransferPanel() {
           )
         }
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
-          if (isAnalyticsNetworkName(l2NetworkName)) {
+          if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
               tokenSymbol: selectedToken?.symbol || undefined,
@@ -479,7 +479,7 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the deposit method because tx is executed in an external app
-            if (isAnalyticsNetworkName(l2NetworkName)) {
+            if (shouldTrackAnalytics(l2NetworkName)) {
               trackEvent('Deposit', {
                 tokenSymbol: selectedToken.symbol,
                 assetType: 'ERC-20',
@@ -501,7 +501,7 @@ export function TransferPanel() {
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
-                  isAnalyticsNetworkName(l2NetworkName)
+                  shouldTrackAnalytics(l2NetworkName)
                 ) {
                   trackEvent('Deposit', {
                     tokenSymbol: selectedToken.symbol,
@@ -527,7 +527,7 @@ export function TransferPanel() {
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
-                  isAnalyticsNetworkName(l2NetworkName)
+                  shouldTrackAnalytics(l2NetworkName)
                 ) {
                   trackEvent('Deposit', {
                     assetType: 'ETH',
@@ -543,7 +543,7 @@ export function TransferPanel() {
         }
       } else {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
-          if (isAnalyticsNetworkName(l2NetworkName)) {
+          if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
               tokenSymbol: selectedToken?.symbol || undefined,
@@ -617,7 +617,7 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the withdraw method because tx is executed in an external app
-            if (isAnalyticsNetworkName(l2NetworkName)) {
+            if (shouldTrackAnalytics(l2NetworkName)) {
               trackEvent('Withdraw', {
                 tokenSymbol: selectedToken.symbol,
                 assetType: 'ERC-20',
@@ -639,7 +639,7 @@ export function TransferPanel() {
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
-                  isAnalyticsNetworkName(l2NetworkName)
+                  shouldTrackAnalytics(l2NetworkName)
                 ) {
                   trackEvent('Withdraw', {
                     tokenSymbol: selectedToken.symbol,
@@ -665,7 +665,7 @@ export function TransferPanel() {
                 setTransferring(false)
                 if (
                   !isSmartContractWallet &&
-                  isAnalyticsNetworkName(l2NetworkName)
+                  shouldTrackAnalytics(l2NetworkName)
                 ) {
                   trackEvent('Withdraw', {
                     assetType: 'ETH',

@@ -9,7 +9,7 @@ import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { isAnalyticsNetworkName, trackEvent } from '../util/AnalyticsUtils'
+import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 
@@ -73,7 +73,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       setIsRedeeming(false)
 
       // track in analytics
-      if (isAnalyticsNetworkName(l2NetworkName)) {
+      if (shouldTrackAnalytics(l2NetworkName)) {
         trackEvent('Redeem Retryable', { network: l2NetworkName })
       }
     }

@@ -11,7 +11,7 @@ import {
   isDepositReadyToRedeem,
   isWithdrawalReadyToClaim
 } from '../../state/app/utils'
-import { isAnalyticsNetworkName, trackEvent } from '../../util/AnalyticsUtils'
+import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
@@ -77,7 +77,7 @@ export const TransactionStatusInfo = ({
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
         onClick={() => {
           openTransactionHistoryPanel()
-          if (isAnalyticsNetworkName(l2NetworkName)) {
+          if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Open Transaction History Click', {
               pageElement: 'Tx Info Banner'
             })

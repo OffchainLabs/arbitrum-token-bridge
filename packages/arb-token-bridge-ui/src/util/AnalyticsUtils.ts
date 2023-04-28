@@ -33,7 +33,7 @@ type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
 const AnalyticsNetworkNames = ['Arbitrum One', 'Arbitrum Nova'] as const
 type AllNetworkNames = ReturnType<typeof getNetworkName>
 type AnalyticsNetworkName = (typeof AnalyticsNetworkNames)[number]
-export const isAnalyticsNetworkName = (
+export const shouldTrackAnalytics = (
   networkName: AllNetworkNames
 ): networkName is AnalyticsNetworkName => {
   if (process.env.NODE_ENV === 'development') {
