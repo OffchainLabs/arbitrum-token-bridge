@@ -16,7 +16,6 @@ import { registerLocalNetwork } from './src/util/networks'
 
 export default defineConfig({
   userAgent: 'synpress',
-  // in CI synpress might sometimes need to try multiple times, fixes flakiness.
   retries: 2,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
