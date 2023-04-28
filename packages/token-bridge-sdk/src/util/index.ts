@@ -42,12 +42,7 @@ export function getDefaultTokenSymbol(address: string) {
   )
 }
 
-export type StaticTokenData = Pick<
-  L1TokenData,
-  'name' | 'symbol' | 'decimals' | 'contract'
->
-
-type TokenDataCache = { [erc20L1Address: string]: StaticTokenData }
+type TokenDataCache = { [erc20L1Address: string]: L1TokenData }
 
 // Get the token data cache (only name, symbol, decimals keys stored)
 const getTokenDataCache = () => {
@@ -58,10 +53,7 @@ const getTokenDataCache = () => {
 }
 
 // Set the token data cache (only name, symbol, decimals)
-const setTokenDataCache = (
-  erc20L1Address: string,
-  tokenData: StaticTokenData
-) => {
+const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
   const l1TokenDataCache = getTokenDataCache()
   l1TokenDataCache[erc20L1Address] = tokenData
 
@@ -69,7 +61,7 @@ const setTokenDataCache = (
 }
 
 /**
- * Retrieves static data (name, decimals, symbol, contract) about an ERC-20 token using its L1 address
+ * Retrieves static data (name, decimals, symbol, address) about an ERC-20 token using its L1 address
  * @param erc20L1Address,
  * @param l1Provider
  */
@@ -79,7 +71,7 @@ export async function getL1TokenData({
 }: {
   erc20L1Address: string
   l1Provider: Provider
-}): Promise<StaticTokenData> {
+}): Promise<L1TokenData> {
   // checking the cache for tokens results
   // if successfully found in the cache, return the token data
   const l1TokenDataCache = getTokenDataCache()
@@ -99,7 +91,7 @@ export async function getL1TokenData({
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
     decimals: tokenData?.decimals ?? 0,
-    contract
+    address: contract.address
   }
 
   // store the newly fetched final-token-data in cache
