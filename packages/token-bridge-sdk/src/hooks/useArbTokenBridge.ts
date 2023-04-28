@@ -358,10 +358,8 @@ export const useArbTokenBridge = (
     })
 
     const { symbol } = await getL1TokenData({
-      account: walletAddress,
       erc20L1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      l1Provider: l1.provider
     })
 
     addTransaction({
@@ -418,10 +416,8 @@ export const useArbTokenBridge = (
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const { symbol } = await getL1TokenData({
-      account: walletAddress,
       erc20L1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      l1Provider: l1.provider
     })
 
     addTransaction({
@@ -459,10 +455,8 @@ export const useArbTokenBridge = (
 
     try {
       const { symbol, decimals } = await getL1TokenData({
-        account: walletAddress,
         erc20L1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+        l1Provider: l1.provider
       })
 
       const depositRequest = await erc20Bridger.getDepositRequest({
@@ -603,10 +597,8 @@ export const useArbTokenBridge = (
           return { symbol, decimals }
         }
         const { symbol, decimals } = await getL1TokenData({
-          account: walletAddress,
           erc20L1Address,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+          l1Provider: l1.provider
         })
         addToken(erc20L1Address)
         return { symbol, decimals }
@@ -874,10 +866,8 @@ export const useArbTokenBridge = (
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
     const { name, symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
       erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      l1Provider: l1.provider
     })
 
     const isDisabled = await l1TokenIsDisabled(l1Address)
@@ -956,10 +946,8 @@ export const useArbTokenBridge = (
     const res = await messageWriter.execute(l2.provider)
 
     const { symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
       erc20L1Address: tokenAddress as string,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      l1Provider: l1.provider
     })
 
     addTransaction({

@@ -685,10 +685,8 @@ export function TokenSearch({
       }
 
       const data = await getL1TokenData({
-        account: walletAddress,
         erc20L1Address: _token.address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+        l1Provider: l1.provider
       })
 
       if (data) {

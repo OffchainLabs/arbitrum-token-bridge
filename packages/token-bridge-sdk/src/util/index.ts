@@ -77,11 +77,8 @@ export async function getL1TokenData({
   erc20L1Address,
   l1Provider
 }: {
-  account: string
   erc20L1Address: string
   l1Provider: Provider
-  l2Provider: Provider
-  throwOnInvalidERC20?: boolean
 }): Promise<StaticTokenData> {
   // checking the cache for tokens results
   // if successfully found in the cache, return the token data
