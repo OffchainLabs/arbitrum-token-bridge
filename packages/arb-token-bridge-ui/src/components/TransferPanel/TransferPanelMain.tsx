@@ -120,7 +120,7 @@ function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-base text-white md:text-2xl ${buttonClassName}`}
+        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
       >
         <span>
           {label} {getNetworkName(value.chainID)}
@@ -212,7 +212,7 @@ function NetworkContainer({
   return (
     <div className={`rounded-xl p-1 transition-colors ${backgroundClassName}`}>
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat p-2 sm:flex-row"
+        className="space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2"
         style={{ backgroundImage }}
       >
         {children}
@@ -248,7 +248,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 
   return (
     <span>
-      {prefix}
+      <span className="hidden md:inline-block">{prefix}</span>
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
   )
@@ -275,7 +275,7 @@ function TokenBalance({
 
   return (
     <span>
-      {prefix}
+      <span className="hidden md:inline-block">{prefix}</span>
       {formatAmount(balance, {
         decimals: forToken.decimals,
         symbol: forToken.symbol
@@ -286,7 +286,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-base font-medium uppercase tracking-[.25px] text-white md:items-end md:text-lg">
+    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium lg:uppercase">
       {children}
     </div>
   )
@@ -298,7 +298,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col flex-wrap justify-between gap-4 sm:gap-2 md:flex-row md:items-center">
+    <div className="flex flex-row flex-nowrap items-center justify-between gap-1 whitespace-nowrap">
       {children}
     </div>
   )
