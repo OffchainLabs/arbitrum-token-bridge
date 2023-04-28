@@ -66,11 +66,17 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
  * @param l1Provider
  */
 export async function getL1TokenData({
+  account,
   erc20L1Address,
-  l1Provider
+  l1Provider,
+  l2Provider,
+  throwOnInvalidERC20 = true
 }: {
+  account: string
   erc20L1Address: string
   l1Provider: Provider
+  l2Provider: Provider
+  throwOnInvalidERC20?: boolean
 }): Promise<L1TokenData> {
   // checking the cache for tokens results
   // if successfully found in the cache, return the token data
@@ -80,12 +86,25 @@ export async function getL1TokenData({
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
 
   // else, call on-chain method to retrieve token data
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+    erc20L1Address,
+    l1Provider
+  )
   const multiCaller = await MultiCaller.fromProvider(l1Provider)
   const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
     decimals: true,
     name: true,
-    symbol: true
+    symbol: true,
+    allowance: { owner: account, spender: l1GatewayAddress } // getting allowance will help us know if it's a valid ERC20 token
   })
+
+  if (tokenData && typeof tokenData.allowance === 'undefined') {
+    if (throwOnInvalidERC20)
+      throw new Error(
+        `getL1TokenData: No allowance method available for ${erc20L1Address}`
+      )
+  }
 
   const finalTokenData = {
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),

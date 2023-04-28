@@ -109,7 +109,8 @@ export const fetchWithdrawals = async ({
           withdrawal,
           l1Provider,
           l2Provider,
-          l2ChainID
+          l2ChainID,
+          walletAddress
         )
       )
     ])

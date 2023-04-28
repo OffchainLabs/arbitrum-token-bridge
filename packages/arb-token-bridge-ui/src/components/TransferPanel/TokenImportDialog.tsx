@@ -98,10 +98,12 @@ export function TokenImportDialog({
     }
 
     return getL1TokenData({
+      account: walletAddress,
       erc20L1Address: l1Address,
-      l1Provider: l1.provider
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
     })
-  }, [l1, l1Address])
+  }, [l1, l2, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {

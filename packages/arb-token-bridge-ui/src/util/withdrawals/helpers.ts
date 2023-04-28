@@ -135,11 +135,14 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   result: WithdrawalInitiated,
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainID: number
+  l2ChainID: number,
+  walletAddress: string
 ): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
+    account: walletAddress,
     erc20L1Address: result.l1Token,
-    l1Provider
+    l1Provider,
+    l2Provider
   })
 
   const txReceipt = await l2Provider.getTransactionReceipt(result.txHash)
@@ -201,8 +204,10 @@ export async function mapWithdrawalToL2ToL1EventResult(
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
     // Token withdrawal
     const { symbol, decimals } = await getL1TokenData({
+      account: withdrawal.sender,
       erc20L1Address: withdrawal.l1Token.id,
-      l1Provider
+      l1Provider,
+      l2Provider
     })
     return {
       ...event,
