@@ -27,7 +27,7 @@ export function BridgesTable(props: {
     if (props.selectedNonCanonicalToken) {
       trackEvent('Fast Bridge Click', {
         bridge: bridgeName,
-        nonCanonicalTokenSymbol: props.selectedNonCanonicalToken
+        tokenSymbol: props.selectedNonCanonicalToken
       })
     } else {
       trackEvent('Fast Bridge Click', { bridge: bridgeName })

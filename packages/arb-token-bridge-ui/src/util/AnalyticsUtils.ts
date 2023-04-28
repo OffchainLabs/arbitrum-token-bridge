@@ -43,50 +43,10 @@ export const isAnalyticsNetworkName = (
   return AnalyticsNetworkNames.includes(networkName as AnalyticsNetworkName)
 }
 
-type EventName =
-  | 'Deposit'
-  | 'Withdraw'
-  | 'Connect Wallet Click'
-  | 'Address Block'
-  | 'Explore: DeFi Project Click'
-  | 'Explore: NFT Project Click'
-  | 'CEX Click'
-  | 'Fiat On-Ramp Click'
-  | 'Fast Bridge Click'
-  | 'Use Arbitrum Bridge Click'
-  | 'Copy Bridge Link Click'
-  | 'Slow Bridge Click'
-  | 'Move More Funds Click'
-  | 'Add to Google Calendar Click'
-  | 'Switch Network and Transfer'
-  | 'Redeem Retryable'
-  | 'Open Transaction History Click'
-  | 'Tx Error: Get Help Click'
-  | 'Multiple Tx Error: Get Help Click'
-  | 'Explore: Randomize Click'
-
-type EventProperties = {
-  bridge: FastBridgeName
-  fastBridge: NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
-  pageElement: 'Header' | 'Tx Info Banner'
-  defiProject: ExploreArbitrumDeFiProjectName
-  nftProject: ExploreArbitrumNFTProjectName
-  network: 'Arbitrum One' | 'Arbitrum Nova'
-  tokenSymbol: string
-  cexExchange: CEXName
-  fiatExchange: FiatOnRampName
-  txType: 'Deposit' | 'Withdrawal'
-  tokenType: 'ETH' | 'ERC-20'
-  walletType: AccountType
-  walletName: ProviderName
-  amount: number
-  nonCanonicalTokenSymbol: NonCanonicalTokenName
-}
-
 export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
-export type FathomEvent =
+export type FathomEventMap =
   | 'Address Block'
   //
   | `Connect Wallet Click: ${ProviderName}`
@@ -119,7 +79,7 @@ export type FathomEvent =
   | `Tx Error: Get Help Click on ${AnalyticsNetworkName}`
   | `Multiple Tx Error: Get Help Click on ${AnalyticsNetworkName}`
 
-const fathomEventToEventId: { [key in FathomEvent]: string } & {
+const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   [key in FathomEventNonCanonicalTokens]: string
 } = {
   'Address Block': 'KG4YHGXC',
@@ -233,187 +193,148 @@ const fathomEventToEventId: { [key in FathomEvent]: string } & {
   'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
 }
 
-const payloadToFathomEvent = (
-  event: EventName,
-  properties?: Partial<EventProperties>
-): FathomEvent | FathomEventNonCanonicalTokens => {
-  const props = properties as EventProperties
+type AnalyticsEventMap = {
+  Deposit: {
+    tokenSymbol?: string
+    assetType: 'ETH' | 'ERC-20'
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+  }
+  Withdraw: {
+    tokenSymbol?: string
+    assetType: 'ETH' | 'ERC-20'
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+  }
+  'Connect Wallet Click': { walletName: ProviderName }
+  'Explore: DeFi Project Click': { project: ExploreArbitrumDeFiProjectName }
+  'Explore: NFT Project Click': { project: ExploreArbitrumNFTProjectName }
+  'CEX Click': { project: CEXName }
+  'Fiat On-Ramp Click': { project: FiatOnRampName }
+  'Fast Bridge Click': {
+    bridge:
+      | FastBridgeName
+      | NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
+    tokenSymbol?: NonCanonicalTokenName
+  }
+  'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName }
+  'Copy Bridge Link Click': { tokenSymbol: NonCanonicalTokenName }
+  'Switch Network and Transfer': {
+    type: 'Deposit' | 'Withdrawal'
+    tokenSymbol?: string
+    assetType: 'ETH' | 'ERC-20'
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+  }
+  'Redeem Retryable': { network: AnalyticsNetworkName }
+  'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
+  'Tx Error: Get Help Click': { network: AnalyticsNetworkName }
+  'Multiple Tx Error: Get Help Click': { network: AnalyticsNetworkName }
+  'Address Block': undefined
+  'Slow Bridge Click': undefined
+  'Move More Funds Click': undefined
+  'Explore: Randomize Click': undefined
+  'Add to Google Calendar Click': undefined
+}
 
+type AnalyticsEvent = keyof AnalyticsEventMap
+
+function payloadToFathomEvent<T extends AnalyticsEvent>(
+  event: T,
+  properties?: AnalyticsEventMap[T]
+): FathomEventMap | FathomEventNonCanonicalTokens {
   switch (event) {
-    case 'Connect Wallet Click':
-      return `${event}: ${props.walletName}`
     case 'Deposit':
-      return `${event} ${props.tokenType} to ${props.network} (${props.walletType})`
-
+      const depositProps = properties as AnalyticsEventMap['Deposit']
+      return `Deposit ${depositProps.assetType} to ${depositProps.network} (${depositProps.accountType})`
     case 'Withdraw':
-      return `${event} ${props.tokenType} from ${props.network} (${props.walletType})`
-
+      const withdrawProps = properties as AnalyticsEventMap['Withdraw']
+      return `Withdraw ${withdrawProps.assetType} from ${withdrawProps.network} (${withdrawProps.accountType})`
+    case 'Connect Wallet Click':
+      return `Connect Wallet Click: ${
+        (properties as AnalyticsEventMap['Connect Wallet Click']).walletName
+      }`
     case 'Explore: DeFi Project Click':
-      return `${event}: ${props.defiProject}`
+      return `Explore: DeFi Project Click: ${
+        (properties as AnalyticsEventMap['Explore: DeFi Project Click']).project
+      }`
     case 'Explore: NFT Project Click':
-      return `${event}: ${props.nftProject}`
+      return `Explore: NFT Project Click: ${
+        (properties as AnalyticsEventMap['Explore: NFT Project Click']).project
+      }`
     case 'CEX Click':
-      return `${event}: ${props.cexExchange}`
+      return `CEX Click: ${
+        (properties as AnalyticsEventMap['CEX Click']).project
+      }`
     case 'Fiat On-Ramp Click':
-      return `${event}: ${props.fiatExchange}`
+      return `Fiat On-Ramp Click: ${
+        (properties as AnalyticsEventMap['Fiat On-Ramp Click']).project
+      }`
     case 'Fast Bridge Click':
-      if (props.nonCanonicalTokenSymbol) {
+      const fastBridgeProps =
+        properties as AnalyticsEventMap['Fast Bridge Click']
+      if (fastBridgeProps.tokenSymbol) {
         // FRAX: Fast Bridge Click: Celer
-        return `${props.nonCanonicalTokenSymbol}: ${event}: ${props.fastBridge}`
+        return `${fastBridgeProps.tokenSymbol}: Fast Bridge Click: ${
+          fastBridgeProps.bridge as NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
+        }`
       } else {
-        return `${event}: ${props.bridge}`
+        return `Fast Bridge Click: ${fastBridgeProps.bridge}`
       }
     case 'Redeem Retryable':
-      return `${event} on ${props.network}`
+      return `Redeem Retryable on ${
+        (properties as AnalyticsEventMap['Redeem Retryable']).network
+      }`
     case 'Multiple Tx Error: Get Help Click':
-      return `${event} on ${props.network}`
+      return `Multiple Tx Error: Get Help Click on ${
+        (properties as AnalyticsEventMap['Multiple Tx Error: Get Help Click'])
+          .network
+      }`
     case 'Tx Error: Get Help Click':
-      return `${event} on ${props.network}`
+      return `Tx Error: Get Help Click on ${
+        (properties as AnalyticsEventMap['Tx Error: Get Help Click']).network
+      }`
     case 'Use Arbitrum Bridge Click':
-      return `${props.nonCanonicalTokenSymbol}: ${event}`
+      return `${
+        (properties as AnalyticsEventMap['Use Arbitrum Bridge Click'])
+          .tokenSymbol
+      }: Use Arbitrum Bridge Click`
     case 'Copy Bridge Link Click':
-      return `${props.nonCanonicalTokenSymbol}: ${event}`
+      return `${
+        (properties as AnalyticsEventMap['Copy Bridge Link Click']).tokenSymbol
+      }: Copy Bridge Link Click`
     case 'Open Transaction History Click':
-      if (props.pageElement === 'Tx Info Banner') {
+      const txHistoryProps =
+        properties as AnalyticsEventMap['Open Transaction History Click']
+      if (txHistoryProps.pageElement === 'Tx Info Banner') {
         // tx history from the banner
-        return `${event}: Tx Info Banner`
+        return `Open Transaction History Click: Tx Info Banner`
       } else {
         // tx history from the header
         return event
       }
     default:
-      // events w/o props in fathom
       return event
   }
 }
 
-// events overload
 export function trackEvent(
-  event: 'Deposit',
-  properties: {
-    tokenType: EventProperties['tokenType']
-    walletType: EventProperties['walletType']
-    network: EventProperties['network']
-    amount: EventProperties['amount']
-    tokenSymbol?: EventProperties['tokenSymbol']
-  }
-): void
-export function trackEvent(
-  event: 'Withdraw',
-  properties: {
-    tokenType: EventProperties['tokenType']
-    walletType: EventProperties['walletType']
-    network: EventProperties['network']
-    amount: EventProperties['amount']
-    tokenSymbol?: EventProperties['tokenSymbol']
-  }
-): void
-export function trackEvent(
-  event: 'Connect Wallet Click',
-  properties: {
-    walletName: EventProperties['walletName']
-  }
-): void
-export function trackEvent(
-  event: 'Explore: DeFi Project Click',
-  properties: {
-    defiProject: EventProperties['defiProject']
-  }
-): void
-export function trackEvent(
-  event: 'Explore: NFT Project Click',
-  properties: {
-    nftProject: EventProperties['nftProject']
-  }
-): void
-export function trackEvent(
-  event: 'CEX Click',
-  properties: {
-    cexExchange: EventProperties['cexExchange']
-  }
-): void
-export function trackEvent(
-  event: 'Fiat On-Ramp Click',
-  properties: {
-    fiatExchange: EventProperties['fiatExchange']
-  }
-): void
-export function trackEvent(
-  event: 'Fast Bridge Click',
-  properties: {
-    bridge: EventProperties['bridge']
-    nonCanonicalTokenSymbol?: EventProperties['nonCanonicalTokenSymbol']
-  }
-): void
-export function trackEvent(
-  event: 'Redeem Retryable',
-  properties: {
-    network: EventProperties['network']
-  }
-): void
-export function trackEvent(
-  event: 'Multiple Tx Error: Get Help Click',
-  properties: {
-    network: EventProperties['network']
-  }
-): void
-export function trackEvent(
-  event: 'Use Arbitrum Bridge Click',
-  properties: {
-    nonCanonicalTokenSymbol: EventProperties['nonCanonicalTokenSymbol']
-  }
-): void
-export function trackEvent(
-  event: 'Copy Bridge Link Click',
-  properties: {
-    nonCanonicalTokenSymbol: EventProperties['nonCanonicalTokenSymbol']
-  }
-): void
-export function trackEvent(
-  event: 'Tx Error: Get Help Click',
-  properties: {
-    network: EventProperties['network']
-  }
-): void
-export function trackEvent(
-  event: 'Open Transaction History Click',
-  properties: {
-    pageElement: EventProperties['pageElement']
-  }
-): void
-export function trackEvent(
-  event: 'Switch Network and Transfer',
-  properties: {
-    tokenType: EventProperties['tokenType']
-    walletType: EventProperties['walletType']
-    network: EventProperties['network']
-    amount: EventProperties['amount']
-    tokenSymbol?: EventProperties['tokenSymbol']
-    txType?: EventProperties['txType']
-  }
-): void
-export function trackEvent(event: 'Slow Bridge Click'): void
-export function trackEvent(event: 'Move More Funds Click'): void
-export function trackEvent(event: 'Add to Google Calendar Click'): void
-export function trackEvent(event: 'Explore: Randomize Click'): void
-export function trackEvent(event: 'Address Block'): void
-
-// event tracking method
-export function trackEvent(
-  event: EventName,
-  properties?: Partial<EventProperties>
+  event: AnalyticsEvent,
+  properties?: AnalyticsEventMap[AnalyticsEvent]
 ): void {
+  if (process.env.NODE_ENV !== 'production') {
+    return
+  }
+
   // Posthog
   posthog.capture(event, properties)
+
   // Fathom
-  if (typeof window.fathom !== 'undefined' && typeof event !== 'undefined') {
+  if (typeof window.fathom !== 'undefined') {
     const fathomEvent = payloadToFathomEvent(event, properties)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Fathom Event:', fathomEvent)
-      // only send in prod
-      return
-    }
     window.fathom.trackGoal(fathomEventToEventId[fathomEvent])
   }
-  return
 }

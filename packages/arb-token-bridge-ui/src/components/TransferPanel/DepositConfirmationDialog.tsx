@@ -140,9 +140,7 @@ export function DepositConfirmationDialog(
                     className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
                     onClick={() => {
                       copy(bridgeInfo.bridgeUrl)
-                      trackEvent('Copy Bridge Link Click', {
-                        nonCanonicalTokenSymbol: tokenSymbol
-                      })
+                      trackEvent('Copy Bridge Link Click', { tokenSymbol })
                     }}
                   >
                     <div className="flex flex-row items-center space-x-3">
@@ -170,9 +168,7 @@ export function DepositConfirmationDialog(
                   variant="primary"
                   onClick={() => {
                     props.onClose(true)
-                    trackEvent('Use Arbitrum Bridge Click', {
-                      nonCanonicalTokenSymbol: tokenSymbol
-                    })
+                    trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
                   }}
                 >
                   I want to do two swaps

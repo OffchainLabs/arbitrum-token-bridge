@@ -394,10 +394,10 @@ export function TransferPanel() {
         if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
           if (isAnalyticsNetworkName(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
-              txType: 'Deposit',
+              type: 'Deposit',
               tokenSymbol: selectedToken?.symbol || undefined,
-              tokenType: selectedToken ? 'ERC-20' : 'ETH',
-              walletType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+              assetType: selectedToken ? 'ERC-20' : 'ETH',
+              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
               network: l2NetworkName,
               amount: Number(amount)
             })
@@ -482,8 +482,8 @@ export function TransferPanel() {
             if (isAnalyticsNetworkName(l2NetworkName)) {
               trackEvent('Deposit', {
                 tokenSymbol: selectedToken.symbol,
-                tokenType: 'ERC-20',
-                walletType: 'Smart Contract',
+                assetType: 'ERC-20',
+                accountType: 'Smart Contract',
                 network: l2NetworkName,
                 amount: Number(amount)
               })
@@ -505,8 +505,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent('Deposit', {
                     tokenSymbol: selectedToken.symbol,
-                    tokenType: 'ERC-20',
-                    walletType: 'EOA',
+                    assetType: 'ERC-20',
+                    accountType: 'EOA',
                     network: l2NetworkName,
                     amount: Number(amount)
                   })
@@ -530,8 +530,8 @@ export function TransferPanel() {
                   isAnalyticsNetworkName(l2NetworkName)
                 ) {
                   trackEvent('Deposit', {
-                    tokenType: 'ETH',
-                    walletType: 'EOA',
+                    assetType: 'ETH',
+                    accountType: 'EOA',
                     network: l2NetworkName,
                     amount: Number(amount)
                   })
@@ -545,9 +545,10 @@ export function TransferPanel() {
         if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
           if (isAnalyticsNetworkName(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
+              type: 'Withdrawal',
               tokenSymbol: selectedToken?.symbol || undefined,
-              tokenType: selectedToken ? 'ERC-20' : 'ETH',
-              walletType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+              assetType: selectedToken ? 'ERC-20' : 'ETH',
+              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
               network: l2NetworkName,
               amount: Number(amount)
             })
@@ -619,8 +620,8 @@ export function TransferPanel() {
             if (isAnalyticsNetworkName(l2NetworkName)) {
               trackEvent('Withdraw', {
                 tokenSymbol: selectedToken.symbol,
-                tokenType: 'ERC-20',
-                walletType: 'Smart Contract',
+                assetType: 'ERC-20',
+                accountType: 'Smart Contract',
                 network: l2NetworkName,
                 amount: Number(amount)
               })
@@ -642,8 +643,8 @@ export function TransferPanel() {
                 ) {
                   trackEvent('Withdraw', {
                     tokenSymbol: selectedToken.symbol,
-                    tokenType: 'ERC-20',
-                    walletType: 'EOA',
+                    assetType: 'ERC-20',
+                    accountType: 'EOA',
                     network: l2NetworkName,
                     amount: Number(amount)
                   })
@@ -667,8 +668,8 @@ export function TransferPanel() {
                   isAnalyticsNetworkName(l2NetworkName)
                 ) {
                   trackEvent('Withdraw', {
-                    tokenType: 'ETH',
-                    walletType: 'EOA',
+                    assetType: 'ETH',
+                    accountType: 'EOA',
                     network: l2NetworkName,
                     amount: Number(amount)
                   })
