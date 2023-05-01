@@ -11,15 +11,15 @@ import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
 const getActivityThresholdL1 = (gasPrice: number) => {
-  if (gasPrice < 20) return { className: 'text-[#008000]' }
-  if (gasPrice < 40) return { className: 'text-orange-arbitrum-nova' }
-  return { className: 'text-[#ff0000]' }
+  if (gasPrice < 20) return { className: 'text-lime-dark' }
+  if (gasPrice < 40) return { className: 'text-arb-nova-primary' }
+  return { className: 'text-error' }
 }
 
 const getActivityThresholdL2 = (gasPrice: number) => {
-  if (gasPrice < 0.5) return { className: 'text-[#008000]' }
-  if (gasPrice < 2) return { className: 'text-orange-arbitrum-nova' }
-  return { className: 'text-[#ff0000]' }
+  if (gasPrice < 0.5) return { className: 'text-lime-dark' }
+  if (gasPrice < 2) return { className: 'text-arb-nova-primary' }
+  return { className: 'text-error' }
 }
 
 export const ArbitrumStats = () => {
@@ -56,7 +56,7 @@ export const ArbitrumStats = () => {
     <div className="fixed bottom-0 right-0 z-[100] m-4 flex flex-col gap-2 whitespace-nowrap rounded-md bg-[#000000d1] p-4 font-[monospace] text-xs text-gray-8">
       <div className="section flex flex-col">
         <span className="text-md text-white">
-          <span className="mr-1 animate-pulse text-lg text-[#008000]">
+          <span className="mr-1 animate-pulse text-lg text-lime-dark">
             &bull;
           </span>{' '}
           {getNetworkName(l1.network.chainID)} (L1)
@@ -76,7 +76,7 @@ export const ArbitrumStats = () => {
 
       <div className="section flex flex-col">
         <span className="text-md text-white">
-          <span className="mr-1 animate-pulse text-lg text-[#008000]">
+          <span className="mr-1 animate-pulse text-lg text-lime-dark">
             &bull;
           </span>{' '}
           {getNetworkName(l2.network.chainID)} (L2)

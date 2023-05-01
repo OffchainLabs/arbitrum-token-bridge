@@ -192,14 +192,14 @@ function NetworkContainer({
     if (!isArbitrum) {
       return {
         backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-purple-ethereum'
+        backgroundClassName: 'bg-eth-dark'
       }
     }
 
     if (isArbitrumNova) {
       return {
         backgroundImage: `url('/images/TransparentNovaLogo.svg')`,
-        backgroundClassName: 'bg-orange-arbitrum-nova-dark'
+        backgroundClassName: 'bg-arb-nova-dark'
       }
     }
 

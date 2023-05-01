@@ -246,9 +246,7 @@ export function TransferPanelSummary({
   const { isMainnet } = isNetwork(l1.network.chainID)
 
   if (status === 'loading') {
-    const bgClassName = app.isDepositMode
-      ? 'bg-blue-arbitrum'
-      : 'bg-purple-ethereum'
+    const bgClassName = app.isDepositMode ? 'bg-blue-arbitrum' : 'bg-eth-dark'
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
