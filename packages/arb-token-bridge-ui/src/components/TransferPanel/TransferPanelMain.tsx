@@ -248,7 +248,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 
   return (
     <span>
-      <span className="mr-1 hidden md:inline-block">{prefix}</span>
+      {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
   )
@@ -275,7 +275,7 @@ function TokenBalance({
 
   return (
     <span>
-      <span className="mr-1 hidden md:inline-block">{prefix}</span>
+      {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
         symbol: forToken.symbol
