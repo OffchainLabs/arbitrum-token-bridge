@@ -205,7 +205,7 @@ function NetworkContainer({
 
     return {
       backgroundImage: `url('/images/TransparentArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-blue-arb-one'
+      backgroundClassName: 'bg-arb-one-dark'
     }
   }, [network])
 
