@@ -21,7 +21,9 @@ export const NetworkSelectionContainer = ({
     throwForSwitchChainNotSupported: true,
     onError: handleSwitchNetworkError
   })
-  const supportedNetworks = getSupportedNetworks(chain?.id)
+  const supportedNetworks = getSupportedNetworks(chain?.id).filter(
+    chainId => chainId !== chain?.id
+  )
 
   const handleClick = useCallback(
     (
