@@ -86,14 +86,14 @@ function NetworkListbox({
     const { isArbitrum, isArbitrumNova } = isNetwork(value.chainID)
 
     if (!isArbitrum) {
-      return 'bg-[#454A75]'
+      return 'bg-eth-primary'
     }
 
     if (isArbitrumNova) {
-      return 'bg-[#E57310]'
+      return 'bg-arb-nova-primary'
     }
 
-    return 'bg-[#1B4ADD]'
+    return 'bg-arb-one-primary'
   }, [value])
 
   const getOptionClassName = useCallback(

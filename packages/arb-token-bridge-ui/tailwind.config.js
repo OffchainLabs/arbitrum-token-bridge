@@ -53,7 +53,15 @@ module.exports = {
         // Chain specific themes
         'orange-arbitrum-nova': '#EF8220',
         'orange-arbitrum-nova-dark': '#743600',
-        'blue-arbitrum-one': '#7EC6F6'
+        'blue-arbitrum-one': '#7EC6F6',
+
+        // new set of colors
+        'arb-one-primary': '#1B4ADD',
+        'arb-one-dark': '#001A6B',
+        'arb-nova-primary': '#E57310',
+        'arb-nova-dark': '#743600',
+        'eth-primary': '#454A75',
+        'eth-dark': '#1A1C33'
       },
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"
