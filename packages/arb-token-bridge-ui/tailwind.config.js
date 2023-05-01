@@ -48,7 +48,7 @@ module.exports = {
         'eth-dark': '#1A1C33',
 
         // legacy
-        'blue-arbitrum': '#2D374B' // looks more like `eth-primary`
+        'blue-arbitrum': '#2D374B' // looks more like `eth-primary` but looks weird if we replace it
       },
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"
