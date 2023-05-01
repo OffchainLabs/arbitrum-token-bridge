@@ -977,10 +977,8 @@ export function TransferPanel() {
                 }
               }}
               className={twMerge(
-                'w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl',
-                isArbitrumNova
-                  ? 'bg-orange-arbitrum-nova-dark'
-                  : 'bg-blue-arb-one'
+                'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
+                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark'
               )}
             >
               {isSmartContractWallet && isTransferring
@@ -993,7 +991,7 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={isSwitchingL2Chain || disableWithdrawalV2}
               onClick={transfer}
-              className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
+              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
