@@ -70,9 +70,9 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
 }
 
 export function HeaderAccountPopover({
-  isConnected = true
+  isCorrectNetworkConnected = true
 }: {
-  isConnected?: boolean // is the app connected to a correct network? if no, then show limited options in the menu
+  isCorrectNetworkConnected?: boolean // is the app connected to a correct network? if no, then show limited options in the menu
 }) {
   const l1Provider = useProvider({ chainId: 1 })
   const { address } = useAccount()
@@ -198,7 +198,7 @@ export function HeaderAccountPopover({
 
           <div className="flex w-full flex-col justify-between lg:flex-col lg:items-end lg:px-0">
             {/* Transactions button */}
-            {isConnected && (
+            {isCorrectNetworkConnected && (
               <button
                 className={headerItemsClassName}
                 onClick={openTransactionHistory}
@@ -209,7 +209,7 @@ export function HeaderAccountPopover({
             )}
 
             {/* Explorer button */}
-            {isConnected && chain && (
+            {isCorrectNetworkConnected && chain && (
               <ExternalLink
                 href={`${getExplorerUrl(chain.id)}/address/${address}`}
                 className={headerItemsClassName}
@@ -220,7 +220,7 @@ export function HeaderAccountPopover({
             )}
 
             {/* Preferences */}
-            {isConnected && (
+            {isCorrectNetworkConnected && (
               <button
                 className={headerItemsClassName}
                 onClick={openPreferences}

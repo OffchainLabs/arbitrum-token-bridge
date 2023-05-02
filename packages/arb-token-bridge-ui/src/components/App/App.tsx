@@ -295,7 +295,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
 
-            <HeaderAccountPopover isConnected={false} />
+            <HeaderAccountPopover isCorrectNetworkConnected={false} />
           </HeaderContent>
 
           <AppConnectionFallbackContainer
