@@ -121,7 +121,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   })
   if (Cypress.currentRetry > 0) {
     // ensures we don't test with the same state that could have caused the test to fail
-    cy.reload()
+    cy.reload(true)
   }
   cy.connectToApp()
   cy.task('getWalletConnectedToDapp').then(connected => {
