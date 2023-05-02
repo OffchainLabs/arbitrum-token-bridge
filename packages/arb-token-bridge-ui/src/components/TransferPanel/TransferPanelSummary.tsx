@@ -211,7 +211,7 @@ function TransferPanelSummaryContainer({
   return (
     <>
       <div className="block lg:hidden">
-        <span className="text-xl text-gray-9 lg:text-2xl">Summary</span>
+        <span className="text-xl text-gray-10 lg:text-2xl">Summary</span>
         <div className="h-4" />
       </div>
 
@@ -353,7 +353,7 @@ export function TransferPanelSummary({
         <>
           <div>
             <div className="h-2" />
-            <div className="border-b border-gray-3" />
+            <div className="border-b border-gray-10" />
             <div className="h-2" />
           </div>
           <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
