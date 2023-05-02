@@ -13,9 +13,11 @@ import { isTestingEnvironment } from '../CommonUtils'
 
 const chainList = isTestingEnvironment
   ? [
+      // mainnet, arb1, & arb nova are for network switch tests
       mainnet,
       arbitrum,
       arbitrumNova,
+      // goerli & arb goerli are for tx history panel tests
       goerli,
       arbitrumGoerli,
       // add local environments during testing
