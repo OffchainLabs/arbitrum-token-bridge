@@ -1,7 +1,7 @@
 import {
   ChevronDownIcon,
   ExclamationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 export function HeaderNetworkNotSupported() {
   return (

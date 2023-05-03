@@ -3,10 +3,10 @@ import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
 import {
   CheckCircleIcon,
-  XIcon,
-  ArrowSmLeftIcon,
+  XMarkIcon,
+  ArrowSmallLeftIcon,
   ExclamationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
@@ -713,7 +713,7 @@ export function TokenSearch({
         <div className="flex flex-row items-center justify-between pb-4">
           <span className="text-xl font-medium">Select Token</span>
           <button className="arb-hover" onClick={close}>
-            <XIcon className="h-6 w-6 text-gray-7" />
+            <XMarkIcon className="h-6 w-6 text-gray-7" />
           </button>
         </div>
         <TokensPanel onTokenSelected={selectToken} />
@@ -741,7 +741,7 @@ export function TokenSearch({
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">Token Lists</span>
         <button className="arb-hover" onClick={close}>
-          <XIcon className="h-6 w-6 text-gray-7" />
+          <XMarkIcon className="h-6 w-6 text-gray-7" />
         </button>
       </div>
       <div className="flex justify-start pb-6">
@@ -749,7 +749,7 @@ export function TokenSearch({
           className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
           onClick={() => setCurrentPanel(Panel.TOKENS)}
         >
-          <ArrowSmLeftIcon className="h-6 w-6" />
+          <ArrowSmallLeftIcon className="h-6 w-6" />
           <span>Back to Select Token</span>
         </button>
       </div>

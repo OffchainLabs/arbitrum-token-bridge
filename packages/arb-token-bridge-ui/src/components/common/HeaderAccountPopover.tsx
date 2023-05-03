@@ -3,12 +3,12 @@ import { useCopyToClipboard } from 'react-use'
 import { Popover } from '@headlessui/react'
 import {
   ChevronDownIcon,
-  ExternalLinkIcon,
-  LogoutIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowLeftOnRectangleIcon,
   DocumentTextIcon,
   DocumentDuplicateIcon,
   CogIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
@@ -208,7 +208,7 @@ export function HeaderAccountPopover() {
                 href={`${getExplorerUrl(chain.id)}/address/${address}`}
                 className={headerItemsClassName}
               >
-                <ExternalLinkIcon className="h-4 w-4 text-white" />
+                <ArrowTopRightOnSquareIcon className="h-4 w-4 text-white" />
                 <span>Explorer</span>
               </ExternalLink>
             )}
@@ -228,7 +228,7 @@ export function HeaderAccountPopover() {
               className={headerItemsClassName}
               onClick={() => disconnect()}
             >
-              <LogoutIcon className="h-4 w-4 text-white" />
+              <ArrowLeftOnRectangleIcon className="h-4 w-4 text-white" />
               <span>Disconnect</span>
             </button>
           </div>

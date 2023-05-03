@@ -13,7 +13,7 @@ import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { DepositCardSuccess } from './DepositCardSuccess'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
-import { CheckCircleIcon } from '@heroicons/react/outline'
+import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 
 export function DepositL1TxStatus({
