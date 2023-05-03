@@ -6,8 +6,8 @@ import {
 export function HeaderNetworkNotSupported() {
   return (
     <div className="flex flex-col">
-      <div className="flex flex-row items-center justify-start space-x-3 rounded-full py-3 text-white lg:justify-center lg:bg-brick-dark lg:px-4">
-        <ExclamationCircleIcon className="h-8 w-8 text-brick lg:text-white" />
+      <div className="flex flex-row items-center justify-start space-x-2 rounded-full py-4 text-white lg:justify-center lg:bg-brick-dark lg:px-4">
+        <ExclamationCircleIcon className="h-6 w-6  text-brick lg:text-white" />
         <span className="text-2xl text-brick lg:text-base">Wrong network</span>
         <ChevronDownIcon className="h-4 w-4" />
       </div>
