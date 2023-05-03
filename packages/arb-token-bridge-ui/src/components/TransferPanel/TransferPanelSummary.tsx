@@ -278,7 +278,7 @@ export function TransferPanelSummary({
       <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
         <span className="w-2/5 font-light">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
-          <span className="">
+          <span>
             {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
           </span>
           {/* Only show USD price for ETH */}
@@ -293,7 +293,7 @@ export function TransferPanelSummary({
       <div className="flex flex-row items-center justify-between text-sm text-gray-10 lg:text-base">
         <span className="w-2/5 font-light">You’ll pay in gas fees</span>
         <div className="flex w-3/5 justify-between">
-          <span className="">
+          <span>
             {formatAmount(estimatedTotalGasFees, {
               symbol: 'ETH'
             })}
@@ -359,7 +359,7 @@ export function TransferPanelSummary({
           <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
             <span className="w-2/5 font-light text-gray-9">Total amount</span>
             <div className="flex w-3/5 flex-row justify-between">
-              <span className="">
+              <span>
                 {formatAmount(amount + estimatedTotalGasFees, {
                   symbol: 'ETH'
                 })}
