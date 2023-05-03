@@ -69,7 +69,11 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
   }
 }
 
-export function HeaderAccountPopover() {
+export function HeaderAccountPopover({
+  isCorrectNetworkConnected = true
+}: {
+  isCorrectNetworkConnected?: boolean // is the app connected to a correct network? if no, then show limited options in the menu
+}) {
   const l1Provider = useProvider({ chainId: 1 })
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
@@ -120,7 +124,7 @@ export function HeaderAccountPopover() {
 
   function openTransactionHistory() {
     openTransactionHistoryPanel()
-    trackEvent('Open Transaction History Click')
+    trackEvent('Open Transaction History Click', { pageElement: 'Header' })
   }
 
   const headerItemsClassName =
@@ -194,16 +198,18 @@ export function HeaderAccountPopover() {
 
           <div className="flex w-full flex-col justify-between lg:flex-col lg:items-end lg:px-0">
             {/* Transactions button */}
-            <button
-              className={headerItemsClassName}
-              onClick={openTransactionHistory}
-            >
-              <DocumentTextIcon className="h-4 w-4 text-white" />
-              <span>Transactions</span>
-            </button>
+            {isCorrectNetworkConnected && (
+              <button
+                className={headerItemsClassName}
+                onClick={openTransactionHistory}
+              >
+                <DocumentTextIcon className="h-4 w-4 text-white" />
+                <span>Transactions</span>
+              </button>
+            )}
 
             {/* Explorer button */}
-            {chain && (
+            {isCorrectNetworkConnected && chain && (
               <ExternalLink
                 href={`${getExplorerUrl(chain.id)}/address/${address}`}
                 className={headerItemsClassName}
@@ -214,14 +220,19 @@ export function HeaderAccountPopover() {
             )}
 
             {/* Preferences */}
-            <button className={headerItemsClassName} onClick={openPreferences}>
-              <CogIcon className="h-4 w-4 text-white" />
-              <span>Preferences</span>
+            {isCorrectNetworkConnected && (
+              <button
+                className={headerItemsClassName}
+                onClick={openPreferences}
+              >
+                <CogIcon className="h-4 w-4 text-white" />
+                <span>Preferences</span>
 
-              <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
-                NEW
-              </span>
-            </button>
+                <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
+                  NEW
+                </span>
+              </button>
+            )}
 
             {/* Disconnect button */}
             <button

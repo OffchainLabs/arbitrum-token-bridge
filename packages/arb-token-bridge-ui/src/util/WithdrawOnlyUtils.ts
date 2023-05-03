@@ -114,12 +114,6 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   ],
   [ChainId.ArbitrumNova]: [
     {
-      symbol: 'USDT',
-      l2CustomAddr: '0xeD9d63a96c27f87B07115b56b2e3572827f21646',
-      l1Address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-      l2Address: '0x52484E1ab2e2B22420a25c20FA49E173a26202Cd'
-    },
-    {
       symbol: 'MAGIC',
       l2CustomAddr: '',
       l1Address: '0xB0c7a3Ba49C7a6EaBa6cD4a96C55a1391070Ac9A',
