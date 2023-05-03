@@ -198,23 +198,26 @@ function NetworkContainer({
 
     if (isArbitrumNova) {
       return {
-        backgroundImage: `url('/images/TransparentNovaLogo.svg')`,
+        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
         backgroundClassName: 'bg-arb-nova-dark'
       }
     }
 
     return {
-      backgroundImage: `url('/images/TransparentArbitrumOneLogo.svg')`,
+      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
       backgroundClassName: 'bg-arb-one-dark'
     }
   }, [network])
 
   return (
-    <div className={`rounded-xl p-1 transition-colors ${backgroundClassName}`}>
+    <div
+      className={`relative rounded-xl p-1 transition-colors ${backgroundClassName}`}
+    >
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2"
+        className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
         style={{ backgroundImage }}
-      >
+      ></div>
+      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
         {children}
       </div>
     </div>
