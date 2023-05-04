@@ -217,9 +217,9 @@ export function TransactionsTable({
                 // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
                 // this will make sure the row updates with any updates in the local app state
                 // else show static subgraph table data
-                const locallyStoredTransactions =
+                const locallyStoredTransaction =
                   locallyStoredTransactionsMap.get(tx.txId)
-                const finalTx = locallyStoredTransactions ?? tx
+                const finalTx = locallyStoredTransaction ?? tx
 
                 if (isDeposit(finalTx)) {
                   return (
