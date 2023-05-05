@@ -115,8 +115,8 @@ export function DepositCardContainer({
 
   const borderColor =
     l2Network?.chainID === ChainId.ArbitrumNova
-      ? 'border-orange-arbitrum-nova'
-      : 'border-blue-arbitrum-one'
+      ? 'border-arb-nova-primary'
+      : 'border-arb-one-primary'
 
   return (
     <div
