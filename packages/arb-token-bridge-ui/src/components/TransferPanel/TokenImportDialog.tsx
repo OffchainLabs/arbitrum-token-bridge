@@ -13,11 +13,11 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
+import { getL1TokenData } from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import { getL1TokenData } from '../../util/TokenUtils'
 import {
   toERC20BridgeToken,
   useTokensFromLists,
