@@ -74,9 +74,9 @@ function ProjectCard({
       style={{ backgroundImage: `url(${imageSrc}` }}
       onClick={() => {
         if (type === 'defi') {
-          trackEvent(`Explore: DeFi Project Click: ${name}`)
+          trackEvent('Explore: DeFi Project Click', { project: name })
         } else {
-          trackEvent(`Explore: NFT Project Click: ${name}`)
+          trackEvent('Explore: NFT Project Click', { project: name })
         }
       }}
     >

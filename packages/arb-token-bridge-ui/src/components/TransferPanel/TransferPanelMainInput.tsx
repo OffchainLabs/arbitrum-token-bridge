@@ -47,7 +47,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   return (
     <>
       <div
-        className={`flex h-16 flex-row items-center rounded-lg bg-white ${borderClassName}`}
+        className={`flex h-12 flex-row items-center rounded-lg bg-white lg:h-16 ${borderClassName}`}
       >
         <TokenButton />
         <div className="h-full border-r border-gray-4" />
