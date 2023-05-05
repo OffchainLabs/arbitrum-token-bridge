@@ -47,7 +47,7 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { TOS_VERSION } from '../../constants'
+import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
@@ -74,8 +74,8 @@ const AppContent = (): JSX.Element => {
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isMainnet, isGoerli } = isNetwork(chain?.id ?? 0)
-    const className = isMainnet ? 'lg:bg-black' : 'lg:bg-blue-arbitrum'
+    const { isTestnet, isGoerli } = isNetwork(chain?.id ?? 0)
+    const className = isTestnet ? 'lg:bg-blue-arbitrum' : 'lg:bg-black'
 
     if (isGoerli) {
       return { imageSrc: 'images/HeaderArbitrumLogoGoerli.webp', className }
@@ -294,6 +294,8 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             <NetworkSelectionContainer>
               <HeaderNetworkNotSupported />
             </NetworkSelectionContainer>
+
+            <HeaderAccountPopover isCorrectNetworkConnected={false} />
           </HeaderContent>
 
           <AppConnectionFallbackContainer
@@ -314,8 +316,8 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
-  const key = 'arbitrum:bridge:tos-v' + TOS_VERSION
-  const [tosAccepted, setTosAccepted] = useLocalStorage<string>(key)
+  const [tosAccepted, setTosAccepted] =
+    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
   const [welcomeDialogProps, openWelcomeDialog] = useDialog()
 
   const isTosAccepted = tosAccepted !== undefined

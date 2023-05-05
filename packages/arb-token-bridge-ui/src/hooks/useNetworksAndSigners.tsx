@@ -24,6 +24,7 @@ import {
 import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
 import { useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useLocalStorage } from 'react-use'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { addressIsSmartContract } from '../util/AddressUtils'
@@ -31,6 +32,7 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
+import { TOS_LOCALSTORAGE_KEY } from 'src/constants'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -191,6 +193,9 @@ export function NetworksAndSignersProvider(
   const [result, setResult] = useState<UseNetworksAndSignersResult>({
     status: defaultStatus
   })
+  const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+
+  const isTosAccepted = tosAccepted !== undefined
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -201,13 +206,15 @@ export function NetworksAndSignersProvider(
     }
     if (isConnected && connector) {
       const walletName = getWalletName(connector.name)
-      trackEvent(`Connect Wallet Click: ${walletName}`)
+      trackEvent('Connect Wallet Click', { walletName })
     }
   }, [isDisconnected, isConnected, connector])
 
   useEffect(() => {
-    openConnectModal?.()
-  }, [openConnectModal])
+    if (isTosAccepted) {
+      openConnectModal?.()
+    }
+  }, [isTosAccepted, openConnectModal])
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {

@@ -47,10 +47,10 @@ export function SwitchNetworksButton(
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16"
+      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
-      <SwitchVerticalIcon className="text-gray-9" />
+      <SwitchVerticalIcon className="text-dark" />
     </button>
   )
 }
@@ -79,14 +79,14 @@ function NetworkListbox({
     const { isArbitrum, isArbitrumNova } = isNetwork(value.chainID)
 
     if (!isArbitrum) {
-      return 'bg-[rgba(118,121,145,0.8)]'
+      return 'bg-eth-primary'
     }
 
     if (isArbitrumNova) {
-      return 'bg-[rgba(255,206,162,0.8)]'
+      return 'bg-arb-nova-primary'
     }
 
-    return 'bg-[rgba(101,109,123,0.8)]'
+    return 'bg-arb-one-primary'
   }, [value])
 
   const getOptionClassName = useCallback(
@@ -113,7 +113,7 @@ function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-4 py-3 text-2xl text-white ${buttonClassName}`}
+        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
       >
         <span>
           {label} {getNetworkName(value.chainID)}
@@ -121,7 +121,7 @@ function NetworkListbox({
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
 
-      <Listbox.Options className="absolute z-20 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+      <Listbox.Options className="absolute z-20 ml-2 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
         {options.map((option, index) => {
           return (
             <Tooltip
@@ -134,7 +134,7 @@ function NetworkListbox({
               <Listbox.Option
                 value={option}
                 className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 hover:bg-[rgba(0,0,0,0.2)]',
+                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)]',
                   getOptionClassName(index),
                   option.disabled ? 'pointer-events-none opacity-40' : ''
                 )}
@@ -144,7 +144,7 @@ function NetworkListbox({
                   <Image
                     src={getNetworkLogo(option.chainID)}
                     alt={`${getNetworkName(option.chainID)} logo`}
-                    className="max-h-9 w-auto"
+                    className="max-h-7 w-auto"
                     width={36}
                     height={36}
                   />
@@ -185,29 +185,32 @@ function NetworkContainer({
     if (!isArbitrum) {
       return {
         backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-purple-ethereum'
+        backgroundClassName: 'bg-eth-dark'
       }
     }
 
     if (isArbitrumNova) {
       return {
         backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-[#8a4100]'
+        backgroundClassName: 'bg-arb-nova-dark'
       }
     }
 
     return {
       backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-blue-arb-one'
+      backgroundClassName: 'bg-arb-one-dark'
     }
   }, [network])
 
   return (
-    <div className={`rounded-xl p-2 transition-colors ${backgroundClassName}`}>
+    <div
+      className={`relative rounded-xl p-1 transition-colors ${backgroundClassName}`}
+    >
       <div
-        className="space-y-3.5 bg-contain bg-no-repeat p-1.5 sm:flex-row"
+        className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
         style={{ backgroundImage }}
-      >
+      ></div>
+      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
         {children}
       </div>
     </div>
@@ -240,7 +243,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   }
 
   return (
-    <span className="break-all text-xl font-light text-white">
+    <span>
       {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
@@ -267,7 +270,7 @@ function TokenBalance({
   }
 
   return (
-    <span className="text-xl font-light text-white">
+    <span>
       {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
@@ -279,7 +282,9 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center sm:items-end">{children}</div>
+    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium lg:uppercase">
+      {children}
+    </div>
   )
 }
 
@@ -289,7 +294,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center space-y-3.5 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+    <div className="flex flex-row flex-nowrap items-center justify-between gap-1 whitespace-nowrap">
       {children}
     </div>
   )

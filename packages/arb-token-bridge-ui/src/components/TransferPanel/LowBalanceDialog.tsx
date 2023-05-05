@@ -49,9 +49,9 @@ function ExternalLinkCard({
       className="arb-hover"
       onClick={() => {
         if (type === 'cex') {
-          trackEvent(`CEX Click: ${title}`)
+          trackEvent('CEX Click', { project: title })
         } else {
-          trackEvent(`Fiat On-Ramp Click: ${title}`)
+          trackEvent('Fiat On-Ramp Click', { project: title })
         }
       }}
     >
@@ -115,11 +115,11 @@ export function LowBalanceDialog(props: UseDialogProps) {
               width={32}
               height={32}
             />
-            <span className="text-2xl text-purple-ethereum">
+            <span className="text-2xl text-eth-dark">
               {getNetworkName(l1.network.chainID)} Balance
             </span>
           </div>
-          <span className="text-center text-3xl font-light text-purple-ethereum">
+          <span className="text-center text-3xl font-light text-eth-dark">
             {formatAmount(balanceNumber, { symbol: 'ETH' })}{' '}
             {isMainnet && (
               <span className="font-medium">

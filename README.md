@@ -87,14 +87,10 @@ Interested in contributing to this repo? We welcome your contribution.
    1. (back in root dir:)
 
       ```bash
-      $ yarn dev:sdk
+      $ yarn dev
       ```
 
-   2. Open new terminal tab
-      ```bash
-      $ yarn dev:ui
-      ```
-   3. Visit `http://localhost:3000/`
+   2. Visit `http://localhost:3000/`
 
 <br />
 
@@ -111,13 +107,9 @@ It is important for any code change to pass both unit and end-to-end tests. This
 ### Run Unit Tests
 
 1. Run the token bridge UI locally on `http://localhost:3000/`
-2. Run the token-bridge-sdk tests
+2. Run the tests
    ```bash
-   $ yarn test:ci:sdk
-   ```
-3. Run the UI tests
-   ```bash
-   $ yarn test:ci:ui
+   $ yarn test:ci
    ```
 
 <br />
