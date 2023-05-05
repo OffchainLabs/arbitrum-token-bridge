@@ -37,8 +37,8 @@ import {
   NodeBlockDeadlineStatusTypes
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { getL1TokenData } from '../../util/TokenUtils'
-import { getL1ERC20Address } from '../../hooks/useERC20L1Address'
+import { getL1TokenData } from '../util/TokenUtils'
+import { getL1ERC20Address } from '../hooks/useERC20L1Address'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
