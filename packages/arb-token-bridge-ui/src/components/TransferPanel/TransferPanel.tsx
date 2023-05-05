@@ -941,11 +941,11 @@ export function TransferPanel() {
                   backgroundPosition: 'center'
                 }
           }
-          className="transfer-panel-stats flex w-full flex-col justify-between bg-gray-3 px-6 py-6 lg:rounded-br-xl lg:rounded-tr-xl lg:bg-white lg:px-0 lg:pr-6"
+          className="transfer-panel-stats flex w-full flex-col justify-between bg-gray-2 px-6 py-6 lg:rounded-br-xl lg:rounded-tr-xl lg:bg-white lg:px-0 lg:pr-6"
         >
           <div className="flex flex-col">
             <div className="hidden lg:block">
-              <span className="text-2xl">Summary</span>
+              <span className="text-2xl text-gray-10">Summary</span>
               <div className="h-4" />
             </div>
 
@@ -977,8 +977,8 @@ export function TransferPanel() {
                 }
               }}
               className={twMerge(
-                'w-full bg-blue-arbitrum py-4 text-lg lg:text-2xl',
-                isArbitrumNova ? 'bg-[#8a4100]' : 'bg-blue-arbitrum'
+                'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
+                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark'
               )}
             >
               {isSmartContractWallet && isTransferring
@@ -991,7 +991,7 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={isSwitchingL2Chain || disableWithdrawalV2}
               onClick={transfer}
-              className="w-full bg-purple-ethereum py-4 text-lg lg:text-2xl"
+              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
