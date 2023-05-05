@@ -115,11 +115,11 @@ export function LowBalanceDialog(props: UseDialogProps) {
               width={32}
               height={32}
             />
-            <span className="text-2xl text-purple-ethereum">
+            <span className="text-2xl text-eth-dark">
               {getNetworkName(l1.network.chainID)} Balance
             </span>
           </div>
-          <span className="text-center text-3xl font-light text-purple-ethereum">
+          <span className="text-center text-3xl font-light text-eth-dark">
             {formatAmount(balanceNumber, { symbol: 'ETH' })}{' '}
             {isMainnet && (
               <span className="font-medium">
