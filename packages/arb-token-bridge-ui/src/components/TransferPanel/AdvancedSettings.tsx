@@ -48,7 +48,7 @@ const AdvancedSettings = ({
     return destinationAddress.toLowerCase() === walletAddress.toLowerCase()
   }, [destinationAddress, isSmartContractWallet, walletAddress])
 
-  const DestinationAddressLabel = useCallback(() => {
+  const DestinationAddressLabel = useMemo(() => {
     if (error || isSmartContractWallet || !walletAddress) {
       return null
     }
@@ -64,7 +64,7 @@ const AdvancedSettings = ({
     )
   }, [error, isSmartContractWallet, walletAddress, toAddressEqualsSenderEOA])
 
-  const DestinationAddressExplorer = useCallback(() => {
+  const DestinationAddressExplorer = useMemo(() => {
     const { explorerUrl } = (isDepositMode ? l2 : l1).network
 
     if (!explorerUrl || error) {
@@ -125,7 +125,7 @@ const AdvancedSettings = ({
                 <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
               </Tooltip>
             </span>
-            <DestinationAddressLabel />
+            {DestinationAddressLabel}
           </div>
           <div
             className={twMerge(
@@ -162,7 +162,7 @@ const AdvancedSettings = ({
               </button>
             )}
           </div>
-          <DestinationAddressExplorer />
+          {DestinationAddressExplorer}
           {error && <span className="text-xs text-red-400">{error}</span>}
         </div>
       )}

@@ -561,8 +561,13 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the withdraw method because tx is executed in an external app
-            if (isFathomNetworkName(l2NetworkName)) {
-              trackEvent(`Deposit ETH to ${l2NetworkName} (Smart Contract)`)
+            if (shouldTrackAnalytics(l2NetworkName)) {
+              trackEvent('Deposit', {
+                assetType: 'ETH',
+                accountType: 'Smart Contract',
+                network: l2NetworkName,
+                amount: Number(amount)
+              })
             }
           }
 
@@ -720,8 +725,13 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the withdraw method because tx is executed in an external app
-            if (isFathomNetworkName(l2NetworkName)) {
-              trackEvent(`Withdraw ETH from ${l2NetworkName} (Smart Contract)`)
+            if (shouldTrackAnalytics(l2NetworkName)) {
+              trackEvent('Withdraw', {
+                assetType: 'ETH',
+                accountType: 'Smart Contract',
+                network: l2NetworkName,
+                amount: Number(amount)
+              })
             }
           }
 
