@@ -65,15 +65,12 @@ export function getExecutedMessagesCacheKey({
 export function getUniqueIdOrHashFromEvent(
   event: L2ToL1EventResult
 ): BigNumber {
-  const anyEvent = event as any
-
   // Nitro
-  if (anyEvent.hash) {
-    return anyEvent.hash as BigNumber
+  if ('hash' in event) {
+    return event.hash
   }
-
   // Classic
-  return anyEvent.uniqueId as BigNumber
+  return event.uniqueId
 }
 
 class TokenDisabledError extends Error {
