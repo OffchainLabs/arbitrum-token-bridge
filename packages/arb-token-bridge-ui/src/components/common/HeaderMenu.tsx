@@ -91,8 +91,8 @@ export function HeaderMenuMobile(
             }`}
           >
             <span
-              className={`flex flex-row flex-nowrap items-center space-x-4 text-2xl font-medium text-white ${
-                open && `text-blue-arbitrum`
+              className={`flex flex-row flex-nowrap items-center space-x-4 text-2xl font-medium ${
+                open ? `text-blue-arbitrum` : `text-white`
               }`}
             >
               {props.children}
