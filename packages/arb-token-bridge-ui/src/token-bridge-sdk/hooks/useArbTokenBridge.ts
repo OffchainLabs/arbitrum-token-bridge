@@ -17,7 +17,7 @@ import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transa
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
-import { getL1ERC20Address } from '../util/getL1ERC20Address'
+import { getL1ERC20Address, isValidERC20Token } from '../util/getL1ERC20Address'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   ArbTokenBridge,
@@ -856,6 +856,7 @@ export const useArbTokenBridge = (
   async function addToken(erc20L1orL2Address: string) {
     let l1Address: string
     let l2Address: string | undefined
+    let isConflictingTokenAddress = false
 
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
     const maybeL1Address = await getL1ERC20Address({
@@ -888,6 +889,13 @@ export const useArbTokenBridge = (
       throw new TokenDisabledError('Token currently disabled')
     }
 
+    // does the same address belong to another token on another chain?
+    // if token was l2, search the address on l1, and vice-versa
+    isConflictingTokenAddress = await isValidERC20Token({
+      erc20L1orL2Address: lowercasedErc20L1orL2Address,
+      provider: maybeL1Address ? l1.provider : l2.provider
+    })
+
     const l1AddressLowerCased = l1Address.toLowerCase()
     bridgeTokensToAdd[l1AddressLowerCased] = {
       name,
@@ -896,7 +904,8 @@ export const useArbTokenBridge = (
       address: l1AddressLowerCased,
       l2Address: l2Address?.toLowerCase(),
       decimals,
-      listIds: new Set()
+      listIds: new Set(),
+      isConflictingTokenAddress
     }
 
     setBridgeTokens(oldBridgeTokens => {

@@ -110,6 +110,7 @@ export interface BridgeToken {
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
   decimals: number
+  isConflictingTokenAddress?: boolean // does the same l1 address belong to another token on L2 chain?
 }
 
 export interface L1TokenData {

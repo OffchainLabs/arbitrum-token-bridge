@@ -5,7 +5,8 @@ import {
   CheckCircleIcon,
   XIcon,
   ArrowSmLeftIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  ExclamationIcon
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
@@ -246,6 +247,17 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 </div>
               </Tooltip>
             )}
+
+            {token?.isConflictingTokenAddress && (
+              <Tooltip
+                content={`Another token with the same address was identified, but it was not bridged to Arbitrum through our standard gateway. Only this token (${token.symbol}) is valid for bridging here.`}
+              >
+                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
+                  <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
+                  <span className="text-xs text-gray-10">Careful</span>
+                </div>
+              </Tooltip>
+            )}
           </div>
           {token && (
             <div className="flex flex-col items-start space-y-1">
@@ -285,7 +297,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                   )}
                 </>
               )}
-              <span className="text-xs font-normal text-gray-500">
+              <span className="flex gap-1 text-xs font-normal text-gray-500">
                 {tokenListInfo}
               </span>
             </div>
