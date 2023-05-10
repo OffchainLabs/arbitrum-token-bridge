@@ -108,7 +108,6 @@ export const TransactionHistory = ({
               transactions={depositsData.transformedDeposits}
               loading={depositsLoading}
               error={depositsError}
-              pendingTransactions={pendingTransactions}
             />
           </Tab.Panel>
           <Tab.Panel className="overflow-auto">
@@ -119,7 +118,6 @@ export const TransactionHistory = ({
               transactions={withdrawalsData.transformedWithdrawals}
               loading={withdrawalsLoading}
               error={withdrawalsError}
-              pendingTransactions={pendingTransactions}
             />
           </Tab.Panel>
         </Tab.Group>
