@@ -16,7 +16,7 @@ export default function Document() {
 
         {/* Fathom Analytics */}
         <script
-          src="https://imaginative-hearty.arbitrum.io/script.js"
+          src="https://cdn.usefathom.com/script.js"
           data-site="SKOIAJUL"
           defer
         />
