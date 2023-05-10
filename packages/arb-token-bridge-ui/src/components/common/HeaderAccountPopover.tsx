@@ -7,7 +7,7 @@ import {
   ArrowLeftOnRectangleIcon,
   DocumentTextIcon,
   DocumentDuplicateIcon,
-  CogIcon
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
@@ -225,7 +225,7 @@ export function HeaderAccountPopover({
                 className={headerItemsClassName}
                 onClick={openPreferences}
               >
-                <CogIcon className="h-4 w-4 text-white" />
+                <Cog6ToothIcon className="h-4 w-4 text-white" />
                 <span>Preferences</span>
 
                 <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
