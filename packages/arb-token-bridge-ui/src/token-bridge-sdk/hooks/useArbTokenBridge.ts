@@ -18,7 +18,10 @@ import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__fact
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
-import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+import {
+  L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent,
+  L2ToL1TxEvent as NitroL2ToL1TransactionEvent
+} from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -37,8 +40,7 @@ import {
   NodeBlockDeadlineStatusTypes
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { getL1TokenData } from '../../util/TokenUtils'
-import { getL1ERC20Address } from '../../hooks/useERC20L1Address'
+import { getL1TokenData, getL1ERC20Address } from '../../util/TokenUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -47,7 +49,10 @@ export const wait = (ms = 0) => {
 function isClassicL2ToL1TransactionEvent(
   event: L2ToL1TransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
-  return typeof (event as any).batchNumber !== 'undefined'
+  return (
+    typeof (event as EventArgs<ClassicL2ToL1TransactionEvent>).batchNumber !==
+    'undefined'
+  )
 }
 
 export function getExecutedMessagesCacheKey({
@@ -65,12 +70,15 @@ export function getExecutedMessagesCacheKey({
 export function getUniqueIdOrHashFromEvent(
   event: L2ToL1EventResult
 ): BigNumber {
+  const nitroEvent = event as EventArgs<NitroL2ToL1TransactionEvent>
+  const classicEvent = event as EventArgs<ClassicL2ToL1TransactionEvent>
+
   // Nitro
-  if ('hash' in event) {
-    return event.hash
+  if (typeof nitroEvent.hash !== 'undefined') {
+    return nitroEvent.hash
   }
   // Classic
-  return event.uniqueId
+  return classicEvent.uniqueId
 }
 
 class TokenDisabledError extends Error {
