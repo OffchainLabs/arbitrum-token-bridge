@@ -75,7 +75,6 @@ export type TransactionsTableProps = {
   transactions: MergedTransaction[]
   loading: boolean
   error: boolean
-  pendingTransactions: MergedTransaction[]
 }
 
 export function TransactionsTable({
@@ -84,8 +83,7 @@ export function TransactionsTable({
   setPageParams,
   transactions,
   loading,
-  error,
-  pendingTransactions
+  error
 }: TransactionsTableProps) {
   const { isSmartContractWallet } = useNetworksAndSigners()
 
@@ -142,15 +140,15 @@ export function TransactionsTable({
     )
   }, [transactions, localTransactionsKey])
 
-  const pendingTransactionsMap = useMemo(() => {
-    // map of all the locally-stored pending transactions
+  const locallyStoredTransactionsMap = useMemo(() => {
+    // map of all the locally-stored transactions (pending + recently executed)
     // so that tx rows can easily subscribe to live-local status without refetching table data
-    const pendingTxMap = new Map<string, MergedTransaction>()
-    pendingTransactions.forEach(tx => {
-      pendingTxMap.set(tx.txId, tx)
+    const localTxMap = new Map<string, MergedTransaction>()
+    locallyStoredTransactions.forEach(tx => {
+      localTxMap.set(tx.txId, tx)
     })
-    return pendingTxMap
-  }, [localTransactionsKey])
+    return localTxMap
+  }, [locallyStoredTransactions])
 
   const status = (() => {
     if (loading) return TableStatus.LOADING
@@ -218,11 +216,12 @@ export function TransactionsTable({
               _transactions.map((tx, index) => {
                 const isLastRow = index === _transactions.length - 1
 
-                // if transaction is present in pending transactions, subscribe to that in this row,
-                // this will make sure the row updates with any updates in the pending tx state
+                // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
+                // this will make sure the row updates with any updates in the local app state
                 // else show static subgraph table data
-                const pendingTransaction = pendingTransactionsMap.get(tx.txId)
-                const finalTx = pendingTransaction ? pendingTransaction : tx
+                const locallyStoredTransaction =
+                  locallyStoredTransactionsMap.get(tx.txId)
+                const finalTx = locallyStoredTransaction ?? tx
 
                 if (isDeposit(finalTx)) {
                   return (
