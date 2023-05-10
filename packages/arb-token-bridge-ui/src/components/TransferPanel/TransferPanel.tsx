@@ -495,6 +495,10 @@ export function TransferPanel() {
               return
             }
 
+            if (isSmartContractWallet) {
+              showDelayedSCTxRequest()
+            }
+
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
               l1Signer
