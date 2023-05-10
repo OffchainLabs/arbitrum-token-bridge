@@ -29,8 +29,7 @@ const AdvancedSettings = ({
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2, isSmartContractWallet } = networksAndSigners
+  const { l1, l2, isSmartContractWallet } = useNetworksAndSigners()
   const { walletAddress } = arbTokenBridge
   // hide by default for EOA
   const [collapsed, setCollapsed] = useState(!isSmartContractWallet)
