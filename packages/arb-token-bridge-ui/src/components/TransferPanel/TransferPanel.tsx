@@ -375,12 +375,6 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
-    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
-      console.error("ETH transfers aren't enabled for smart contract wallets.")
-      return
-    }
-
     const l2NetworkName = getNetworkName(l2Network.chainID)
 
     // SC wallet transfer requests are sent immediately, delay it to give the user an impression of a tx sent
