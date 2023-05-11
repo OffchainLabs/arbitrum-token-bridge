@@ -8,7 +8,7 @@ import { BigNumber } from 'ethers'
 import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
-import { useBalance } from './../useBalance'
+import { useBalance } from '../useBalance'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<unknown>) => (
