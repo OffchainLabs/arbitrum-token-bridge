@@ -18,10 +18,7 @@ import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__fact
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
-import {
-  L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent,
-  L2ToL1TxEvent as NitroL2ToL1TransactionEvent
-} from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -49,10 +46,7 @@ export const wait = (ms = 0) => {
 function isClassicL2ToL1TransactionEvent(
   event: L2ToL1TransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
-  return (
-    typeof (event as EventArgs<ClassicL2ToL1TransactionEvent>).batchNumber !==
-    'undefined'
-  )
+  return typeof (event as any).batchNumber !== 'undefined'
 }
 
 export function getExecutedMessagesCacheKey({
@@ -70,15 +64,15 @@ export function getExecutedMessagesCacheKey({
 export function getUniqueIdOrHashFromEvent(
   event: L2ToL1EventResult
 ): BigNumber {
-  const nitroEvent = event as EventArgs<NitroL2ToL1TransactionEvent>
-  const classicEvent = event as EventArgs<ClassicL2ToL1TransactionEvent>
+  const anyEvent = event as any
 
   // Nitro
-  if (typeof nitroEvent.hash !== 'undefined') {
-    return nitroEvent.hash
+  if (anyEvent.hash) {
+    return anyEvent.hash as BigNumber
   }
+
   // Classic
-  return classicEvent.uniqueId
+  return anyEvent.uniqueId as BigNumber
 }
 
 class TokenDisabledError extends Error {
