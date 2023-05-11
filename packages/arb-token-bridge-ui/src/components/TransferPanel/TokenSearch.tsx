@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
+import { useBalance, ERC20BridgeToken } from 'token-bridge-sdk'
 import Image from 'next/image'
 
 import { Loader } from '../common/atoms/Loader'
@@ -24,6 +24,7 @@ import {
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
+import { getL1TokenData } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
