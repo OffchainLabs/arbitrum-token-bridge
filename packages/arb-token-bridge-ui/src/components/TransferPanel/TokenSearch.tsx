@@ -188,12 +188,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   }, [token])
 
   const tokenIsBridgeable = useMemo(() => {
-    if (isDepositMode) {
-      return true
-    }
-
     if (isL2OnlyToken) {
       return false
+    }
+
+    if (isDepositMode) {
+      return true
     }
 
     return tokenHasL2Address
