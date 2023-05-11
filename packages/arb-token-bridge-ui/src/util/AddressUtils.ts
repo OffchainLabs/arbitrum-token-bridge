@@ -64,7 +64,6 @@ export const getEOATransferError = async ({
 }): Promise<TransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
   if (to && !isAddress(to)) {
-    console.log({ to })
     return TransferValidationErrors.EOA_INVALID_ADDRESS
   }
   if (!isAddress(from)) {
