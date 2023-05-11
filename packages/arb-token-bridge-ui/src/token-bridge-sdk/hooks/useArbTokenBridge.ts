@@ -17,7 +17,10 @@ import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transa
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
-import { getL1ERC20Address, isValidERC20Token } from '../util/getL1ERC20Address'
+import {
+  getL1ERC20Address,
+  getERC20TokenDetails
+} from '../util/getL1ERC20Address'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   ArbTokenBridge,
@@ -36,7 +39,11 @@ import {
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
+import {
+  getL1TokenData,
+  getL2TokenData,
+  isClassicL2ToL1TransactionEvent
+} from '../util'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -853,49 +860,26 @@ export const useArbTokenBridge = (
     })
   }
 
-  async function addToken(erc20L1orL2Address: string) {
-    let l1Address: string
-    let l2Address: string | undefined
-    let isConflictingTokenAddress = false
-
-    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
-    const maybeL1Address = await getL1ERC20Address({
-      erc20L2Address: lowercasedErc20L1orL2Address,
-      l2Provider: l2.provider
-    })
-
-    if (maybeL1Address) {
-      // looks like l2 address was provided
-      l1Address = maybeL1Address
-      l2Address = lowercasedErc20L1orL2Address
-    } else {
-      // looks like l1 address was provided
-      l1Address = lowercasedErc20L1orL2Address
-      l2Address = await getL2ERC20Address(l1Address)
-    }
-
+  // Add a bridgeable token (bridged properly through our token-gateway) and having both L1-L2 contracts to bridge
+  const addValidBridgeableToken = async ({
+    l1Address,
+    l2Address,
+    name,
+    symbol,
+    decimals
+  }: {
+    l1Address: string
+    l2Address: string
+    name: string
+    symbol: string
+    decimals: number
+  }) => {
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
-    const { name, symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
-      erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
-
     const isDisabled = await l1TokenIsDisabled(l1Address)
-
     if (isDisabled) {
       throw new TokenDisabledError('Token currently disabled')
     }
-
-    // does the same address belong to another token on another chain?
-    // if token was l2, search the address on l1, and vice-versa
-    isConflictingTokenAddress = await isValidERC20Token({
-      erc20L1orL2Address: lowercasedErc20L1orL2Address,
-      provider: maybeL1Address ? l1.provider : l2.provider
-    })
-
     const l1AddressLowerCased = l1Address.toLowerCase()
     bridgeTokensToAdd[l1AddressLowerCased] = {
       name,
@@ -904,17 +888,93 @@ export const useArbTokenBridge = (
       address: l1AddressLowerCased,
       l2Address: l2Address?.toLowerCase(),
       decimals,
-      listIds: new Set(),
-      isConflictingTokenAddress
+      listIds: new Set()
     }
-
     setBridgeTokens(oldBridgeTokens => {
       return { ...oldBridgeTokens, ...bridgeTokensToAdd }
     })
-
     updateErc20L1Balance([l1AddressLowerCased])
     if (l2Address) {
       updateErc20L2Balance([l2Address])
+    }
+  }
+
+  async function addToken(erc20L1orL2Address: string) {
+    // 1. first check where the token exists - on l1 or l2
+    // if found on l1, then extract its l2 and add it. simple. (addValidBridgeableToken(l1Address, l2Address))
+    // (not else) if found on l2, there are 2 possibilities, it is standard bridged (it's l1 exists) or it is a native token (only l2, no bridge)
+    // - for standard bridged l2, extract its l1 and add it. simple. (addValidBridgeableToken(l1Address, l2Address))
+    // - for l2-only token, we cant extract l1, but we add it to the list for better UX with a flag `isL2OnlyToken`
+
+    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
+
+    // check if the address can be found on  L1
+    const l1TokenDetails = await getERC20TokenDetails({
+      walletAddress,
+      erc20L1orL2Address,
+      provider: l1.provider
+    })
+    if (l1TokenDetails) {
+      const l1Address = lowercasedErc20L1orL2Address
+      const l2Address = await getL2ERC20Address(lowercasedErc20L1orL2Address) // if this fails, then L2-only token
+      const { name, symbol, decimals } = l1TokenDetails
+      addValidBridgeableToken({
+        l1Address,
+        l2Address,
+        name,
+        symbol,
+        decimals
+      })
+    }
+
+    // check if the same address can be found on L2
+    const l2TokenDetails = await getERC20TokenDetails({
+      walletAddress,
+      erc20L1orL2Address,
+      provider: l2.provider
+    })
+    if (l2TokenDetails) {
+      // if found on l2, there are 2 possibilities:
+      // - it is standard bridged (l1 exists) -OR-
+      // - it is a native token (only l2, no bridge)
+
+      const l2Address = lowercasedErc20L1orL2Address
+
+      // check if l1Address exist for this l2-token, if yes, it is bridgeable :) add it to the bridge.
+      const l1Address = await getL1ERC20Address({
+        erc20L2Address: lowercasedErc20L1orL2Address,
+        l2Provider: l2.provider
+      })
+      const { name, symbol, decimals } = l2TokenDetails
+      if (l1Address) {
+        addValidBridgeableToken({
+          l1Address,
+          l2Address,
+          name,
+          symbol,
+          decimals
+        })
+      } else {
+        // no l1 address found - it is an l2-only-token and cannot be bridged to l1
+        // we still show it on UI for good UX but dont let user select it. `isL2OnlyToken` takes care of that
+        // here, we use a composite key instead of address because else, it can override valid l1 token added to the bridge..
+        const l2OnlyTokenKey = `${l2Address}_isL2Only`
+        setBridgeTokens(oldBridgeTokens => {
+          return {
+            ...oldBridgeTokens,
+            [l2OnlyTokenKey]: {
+              name,
+              type: TokenType.ERC20,
+              symbol,
+              address: l2Address,
+              l2Address,
+              decimals,
+              listIds: new Set(),
+              isL2OnlyToken: true // this is an L2 only token
+            }
+          }
+        })
+      }
     }
   }
 

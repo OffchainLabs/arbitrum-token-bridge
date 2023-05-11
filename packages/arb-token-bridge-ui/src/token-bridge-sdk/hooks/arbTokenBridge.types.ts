@@ -105,12 +105,12 @@ export interface BridgeToken {
   l2Address?: string
   logoURI?: string
   listIds: Set<number> // no listID indicates added by user
+  isL2OnlyToken?: boolean // token only exists on L2 and doesnt have L1 address (cant be bridged but we show for good UX)
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
   decimals: number
-  isConflictingTokenAddress?: boolean // does the same l1 address belong to another token on L2 chain?
 }
 
 export interface L1TokenData {

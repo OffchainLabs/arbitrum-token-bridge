@@ -1,12 +1,12 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
 import {
   CheckCircleIcon,
   XIcon,
   ArrowSmLeftIcon,
-  ExclamationCircleIcon,
-  ExclamationIcon
+  ExclamationCircleIcon
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
@@ -76,6 +76,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
+  const isL2OnlyToken = useMemo(() => !!token?.isL2OnlyToken, [token])
 
   const {
     eth: [ethL1Balance],
@@ -191,8 +192,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return true
     }
 
+    if (isL2OnlyToken) {
+      return false
+    }
+
     return tokenHasL2Address
-  }, [isDepositMode, tokenHasL2Address])
+  }, [isDepositMode, tokenHasL2Address, isL2OnlyToken])
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
@@ -213,7 +218,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
-      className="flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100"
+      className={twMerge(
+        'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
+        !tokenIsBridgeable
+          ? 'cursor-not-allowed opacity-50'
+          : 'cursor-pointer opacity-100'
+      )}
     >
       <div className="flex w-full flex-row items-center justify-start space-x-4">
         <SafeImage
@@ -241,17 +251,6 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
-                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
-                  <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
-                  <span className="text-xs text-gray-10">Careful</span>
-                </div>
-              </Tooltip>
-            )}
-
-            {token?.isConflictingTokenAddress && (
-              <Tooltip
-                content={`Another token with the same address was identified, but it was not bridged to Arbitrum through our standard gateway. Only this token (${token.symbol}) is valid for bridging here.`}
-              >
                 <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
                   <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
                   <span className="text-xs text-gray-10">Careful</span>
@@ -297,9 +296,18 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                   )}
                 </>
               )}
-              <span className="flex gap-1 text-xs font-normal text-gray-500">
-                {tokenListInfo}
-              </span>
+              {!isL2OnlyToken && (
+                <span className="flex gap-1 text-xs font-normal text-gray-500">
+                  {tokenListInfo}
+                </span>
+              )}
+              {isL2OnlyToken && (
+                <span className="flex gap-1 text-xs font-normal text-error">
+                  {`Token contract not found on ${getNetworkName(
+                    l1Network.chainID
+                  )}, so cannot be bridged`}
+                </span>
+              )}
             </div>
           )}
         </div>
