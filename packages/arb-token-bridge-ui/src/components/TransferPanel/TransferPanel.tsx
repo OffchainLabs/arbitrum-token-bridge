@@ -6,11 +6,7 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
-import {
-  ArbTokenBridge,
-  useBalance,
-  getL1TokenAllowance
-} from 'token-bridge-sdk'
+import { ArbTokenBridge, useBalance } from 'token-bridge-sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -46,6 +42,7 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import { getL1TokenAllowance } from '../../util/TokenUtils'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
