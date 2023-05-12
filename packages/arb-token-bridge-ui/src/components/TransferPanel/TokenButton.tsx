@@ -12,14 +12,15 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 
-export function TokenButton(): JSX.Element {
+export function TokenButton({ isETH }: { isETH?: boolean }): JSX.Element {
   const {
     app: {
-      selectedToken,
+      selectedToken: _selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
+  const selectedToken = isETH ? null : _selectedToken
   const { status } = useNetworksAndSigners()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
@@ -70,6 +71,7 @@ export function TokenButton(): JSX.Element {
         <Popover.Button
           className="arb-hover h-full w-max rounded-bl-xl rounded-tl-xl bg-white px-3 hover:bg-gray-2"
           aria-label="Select Token"
+          disabled={isETH}
         >
           <div className="flex items-center space-x-2">
             {tokenLogo && (
@@ -85,7 +87,7 @@ export function TokenButton(): JSX.Element {
             <span className="text-xl font-light sm:text-3xl">
               {selectedToken ? selectedToken.symbol : 'ETH'}
             </span>
-            <ChevronDownIcon className="h-4 w-4 text-gray-9" />
+            {!isETH && <ChevronDownIcon className="h-4 w-4 text-gray-9" />}
           </div>
         </Popover.Button>
         <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">

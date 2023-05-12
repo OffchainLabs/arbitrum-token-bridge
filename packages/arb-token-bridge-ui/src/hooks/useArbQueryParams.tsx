@@ -37,6 +37,7 @@ export const useArbQueryParams = () => {
   */
   return useQueryParams({
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
+    extraEthAmount: withDefault(AmountQueryParam, ''), // eth amount optionally sent with a token
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam // import a new token using a Dialog Box
   })

@@ -197,6 +197,7 @@ export type TransferPanelSummaryToken = { symbol: string; address: string }
 
 export type TransferPanelSummaryProps = {
   amount: number
+  extraEthAmount?: number
   token: TransferPanelSummaryToken | null
   gasSummary: UseGasSummaryResult
 }
@@ -228,10 +229,13 @@ function TransferPanelSummaryContainer({
 
 export function TransferPanelSummary({
   amount,
+  extraEthAmount,
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
   const isETH = token === null
+  const isValidExtraEth =
+    typeof extraEthAmount !== 'undefined' && !isNaN(extraEthAmount)
   const {
     status,
     estimatedL1GasFees,
@@ -277,16 +281,31 @@ export function TransferPanelSummary({
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
         <span className="w-2/5 font-light">You’re moving</span>
-        <div className="flex w-3/5 flex-row justify-between">
-          <span>
-            {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
-          </span>
-          {/* Only show USD price for ETH */}
-          {isETH && isMainnet && (
-            <span className="font-medium text-dark">
-              {formatUSD(ethToUSD(amount))}
+
+        <div className="flex flex-1">
+          <div className="flex flex-col space-y-1">
+            <span>
+              {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
             </span>
-          )}
+            {/* Only show if extra ETH sent */}
+            {isValidExtraEth && (
+              <span>{formatAmount(extraEthAmount, { symbol: 'ETH' })}</span>
+            )}
+          </div>
+        </div>
+        <div className="flex">
+          <div className="flex flex-col space-y-1">
+            {/* Only show USD price for ETH but render element to occupy space */}
+            <span className="flex-1 font-medium text-dark">
+              {isETH && isMainnet && formatUSD(ethToUSD(amount))}
+            </span>
+            {/* Only show if extra ETH sent */}
+            {isValidExtraEth && isMainnet && (
+              <span className="font-medium text-dark">
+                {formatUSD(ethToUSD(extraEthAmount))}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

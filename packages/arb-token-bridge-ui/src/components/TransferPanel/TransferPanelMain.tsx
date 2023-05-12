@@ -317,13 +317,20 @@ export enum TransferPanelMainErrorMessage {
 export function TransferPanelMain({
   amount,
   setAmount,
+  extraEthAmount,
+  setExtraEthAmount,
   errorMessage,
   destinationAddress,
   setDestinationAddress
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainErrorMessage
+  extraEthAmount: string
+  setExtraEthAmount: (value: string) => void
+  errorMessage?: {
+    amount?: TransferPanelMainErrorMessage
+    extraEthAmount?: TransferPanelMainErrorMessage
+  }
   destinationAddress?: string
   setDestinationAddress: React.Dispatch<
     React.SetStateAction<string | undefined>
@@ -366,13 +373,20 @@ export function TransferPanelMain({
   const [to, setTo] = useState<L1Network | L2Network>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const [loadingMaxExtraEthAmount, setLoadingMaxExtraEthAmount] =
+    useState(false)
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+  const isMaxEthAmount = extraEthAmount === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
+
+  const extraEthInputVisible = useMemo(() => {
+    return selectedToken && isDepositMode
+  }, [selectedToken, isDepositMode])
 
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum
@@ -395,9 +409,15 @@ export function TransferPanelMain({
       estimatedL2SubmissionCost: BigNumber
     }> => {
       if (isDepositMode) {
-        const result = await arbTokenBridge.eth.depositEstimateGas({
-          amount: weiValue
-        })
+        // When transferring extra eth we use token bridge gas
+        const result = await (extraEthInputVisible && selectedToken
+          ? arbTokenBridge.token.depositEstimateGas({
+              erc20L1Address: selectedToken?.address,
+              amount: weiValue
+            })
+          : arbTokenBridge.eth.depositEstimateGas({
+              amount: weiValue
+            }))
 
         return result
       }
@@ -408,30 +428,17 @@ export function TransferPanelMain({
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [arbTokenBridge.eth, isDepositMode]
+    [arbTokenBridge.eth, isDepositMode, extraEthInputVisible]
   )
 
-  const setMaxAmount = useCallback(async () => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+  const estimateMaxEthAmount = useCallback(
+    async (setAmountFunc: (value: string) => void) => {
+      const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
-    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
-
-    if (selectedToken) {
-      if (!tokenBalance) {
+      if (!ethBalance) {
         return
       }
 
-      // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
-      return
-    }
-
-    if (!ethBalance) {
-      return
-    }
-
-    try {
-      setLoadingMaxAmount(true)
       const result = await estimateGas(ethBalance)
 
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
@@ -446,31 +453,62 @@ export function TransferPanelMain({
 
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoadingMaxAmount(false)
-    }
-  }, [
-    estimateGas,
-    ethL1Balance,
-    ethL2Balance,
-    isDepositMode,
-    l1GasPrice,
-    l2GasPrice,
-    selectedToken,
-    setAmount,
-    tokenBalances.l1,
-    tokenBalances.l2
-  ])
+      setAmountFunc(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
+    },
+    [
+      estimateGas,
+      ethL1Balance,
+      ethL2Balance,
+      isDepositMode,
+      l1GasPrice,
+      l2GasPrice
+    ]
+  )
+
+  const setMaxAmount = useCallback(
+    async (isExtraEth: boolean) => {
+      const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+
+      if (selectedToken && !isExtraEth) {
+        if (!tokenBalance) {
+          return
+        }
+
+        // For tokens, we can set the max amount, and have the gas summary component handle the rest
+        setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
+        return
+      }
+
+      const setLoading = isExtraEth
+        ? setLoadingMaxExtraEthAmount
+        : setLoadingMaxAmount
+
+      try {
+        setLoading(true)
+        await estimateMaxEthAmount(isExtraEth ? setExtraEthAmount : setAmount)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [
+      isDepositMode,
+      selectedToken,
+      setAmount,
+      tokenBalances.l1,
+      tokenBalances.l2,
+      estimateMaxEthAmount,
+      setExtraEthAmount
+    ]
+  )
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
     setQueryParams({ amount })
 
     if (isMaxAmount) {
-      setMaxAmount()
+      setMaxAmount(false)
     }
   }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
 
@@ -521,28 +559,29 @@ export function TransferPanelMain({
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
     const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+    const result = { token: false, eth: false }
 
     if (selectedToken) {
-      if (!tokenBalance) {
-        return false
+      if (tokenBalance) {
+        result.token = !tokenBalance.isZero()
       }
-
-      return !tokenBalance.isZero()
+    }
+    if (ethBalance) {
+      result.eth = !ethBalance.isZero()
     }
 
-    if (!ethBalance) {
-      return false
-    }
-
-    return !ethBalance.isZero()
+    return result
   }, [ethL1Balance, ethL2Balance, tokenBalances, selectedToken, isDepositMode])
 
   const errorMessageText = useMemo(() => {
-    if (typeof errorMessage === 'undefined') {
+    if (typeof errorMessage?.amount === 'undefined') {
       return undefined
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE) {
+    if (
+      errorMessage.amount ===
+      TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
+    ) {
       return (
         <span>
           Gas estimation failed, join our{' '}
@@ -557,7 +596,7 @@ export function TransferPanelMain({
       )
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
+    if (errorMessage.amount === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
       return (
         <>
           <span>This token can&apos;t be bridged over. </span>
@@ -572,7 +611,8 @@ export function TransferPanelMain({
     }
 
     if (
-      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
+      errorMessage.amount ===
+      TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
     ) {
       return "ETH transfers using smart contract wallets aren't supported yet."
     }
@@ -581,6 +621,14 @@ export function TransferPanelMain({
       isDepositMode ? 'L1' : 'L2'
     }.`
   }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
+
+  const errorMessageExtraEthText = useMemo(() => {
+    if (typeof errorMessage?.extraEthAmount === 'undefined') {
+      return undefined
+    }
+
+    return 'Insufficient balance, please add more to L1.'
+  }, [errorMessage])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
@@ -798,9 +846,11 @@ export function TransferPanelMain({
         <div className="flex flex-col space-y-1 pb-2.5">
           <TransferPanelMainInput
             maxButtonProps={{
-              visible: maxButtonVisible,
+              visible: selectedToken
+                ? maxButtonVisible.token
+                : maxButtonVisible.eth,
               loading: isMaxAmount || loadingMaxAmount,
-              onClick: setMaxAmount
+              onClick: () => setMaxAmount(false)
             }}
             errorMessage={errorMessageText}
             disabled={isSwitchingL2Chain}
@@ -809,7 +859,6 @@ export function TransferPanelMain({
               setAmount(e.target.value)
             }}
           />
-
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have ETH in your L2 wallet, you’ll need it to power
@@ -822,6 +871,29 @@ export function TransferPanelMain({
                 Learn more.
               </ExternalLink>
             </p>
+          )}
+          {extraEthInputVisible && (
+            <>
+              <div className="pt-3">
+                <TransferPanelMainInput
+                  isETH
+                  maxButtonProps={{
+                    visible: maxButtonVisible.eth,
+                    loading: isMaxEthAmount || loadingMaxExtraEthAmount,
+                    onClick: () => setMaxAmount(true)
+                  }}
+                  errorMessage={errorMessageExtraEthText}
+                  disabled={isSwitchingL2Chain}
+                  value={isMaxEthAmount ? '' : extraEthAmount}
+                  onChange={e => {
+                    setExtraEthAmount(e.target.value)
+                  }}
+                />
+              </div>
+              <p className="mt-1 text-xs font-light text-white">
+                You are able to move ETH to L2, but it is not required to do so.
+              </p>
+            </>
           )}
         </div>
       </NetworkContainer>

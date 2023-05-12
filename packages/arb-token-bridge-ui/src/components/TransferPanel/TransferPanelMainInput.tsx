@@ -29,6 +29,7 @@ function MaxButton(props: MaxButtonProps) {
 
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
+    isETH?: boolean
     errorMessage?: string | React.ReactNode
     maxButtonProps: MaxButtonProps & {
       visible: boolean
@@ -49,7 +50,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
       <div
         className={`flex h-12 flex-row items-center rounded-lg bg-white lg:h-16 ${borderClassName}`}
       >
-        <TokenButton />
+        <TokenButton isETH={props.isETH} />
         <div className="h-full border-r border-gray-4" />
         <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
           <input

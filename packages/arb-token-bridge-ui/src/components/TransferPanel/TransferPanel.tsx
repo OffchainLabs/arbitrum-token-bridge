@@ -155,11 +155,18 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const [{ amount, extraEthAmount }, setQueryParams] = useArbQueryParams()
   const amountNum = parseFloat(amount) // just a numerical variant of amount
+  const extraEthAmountNum = parseFloat(extraEthAmount)
   const setAmount = useCallback(
     (newAmount: string) => {
       setQueryParams({ amount: newAmount })
+    },
+    [setQueryParams]
+  )
+  const setEthAmount = useCallback(
+    (newAmount: string) => {
+      setQueryParams({ extraEthAmount: newAmount })
     },
     [setQueryParams]
   )
@@ -715,22 +722,29 @@ export function TransferPanel() {
   const getErrorMessage = useCallback(
     (
       _amountEntered: string,
-      _balance: string | null
+      _balance: string | null,
+      _isETH: boolean
     ): TransferPanelMainErrorMessage | undefined => {
       // No error while loading balance
       if (_balance === null || ethBalance === null) {
         return undefined
       }
 
+      // To validate extra eth input
+      const _selectedToken = _isETH ? null : selectedToken
+      if (_isETH) {
+        _balance = utils.formatUnits(ethBalance, 18)
+      }
+
       // ETH transfers using SC wallets not enabled yet
-      if (isSmartContractWallet && !selectedToken) {
+      if (isSmartContractWallet && !_selectedToken) {
         return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
       }
 
       if (
         isDepositMode &&
-        selectedToken &&
-        isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
+        _selectedToken &&
+        isWithdrawOnlyToken(_selectedToken.address, l2Network.chainID)
       ) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
@@ -753,7 +767,7 @@ export function TransferPanel() {
           return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
         case 'success': {
-          if (selectedToken) {
+          if (_selectedToken) {
             // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
             const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
 
@@ -772,7 +786,14 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
+    [
+      gasSummary,
+      ethBalance,
+      selectedToken,
+      isDepositMode,
+      l2Network,
+      isSmartContractWallet
+    ]
   )
 
   const disableDeposit = useMemo(() => {
@@ -818,12 +839,27 @@ export function TransferPanel() {
 
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      // We also account for extra ETH sent if any
+      if (isNaN(extraEthAmountNum)) {
+        return false
+      }
+
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+      return (
+        gasSummary.estimatedTotalGasFees + extraEthAmountNum > ethBalanceFloat
+      )
     }
 
     return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
-  }, [ethBalance, disableDeposit, selectedToken, gasSummary, amount, l1Balance])
+  }, [
+    ethBalance,
+    disableDeposit,
+    selectedToken,
+    gasSummary,
+    amount,
+    extraEthAmountNum,
+    l1Balance
+  ])
 
   const disableWithdrawal = useMemo(() => {
     return (
@@ -916,11 +952,16 @@ export function TransferPanel() {
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
-          errorMessage={
-            isDepositMode
-              ? getErrorMessage(amount, l1Balance)
-              : getErrorMessage(amount, l2Balance)
-          }
+          extraEthAmount={extraEthAmount}
+          setExtraEthAmount={setEthAmount}
+          errorMessage={{
+            amount: isDepositMode
+              ? getErrorMessage(amount, l1Balance, false)
+              : getErrorMessage(amount, l2Balance, false),
+            extraEthAmount: isDepositMode
+              ? getErrorMessage(extraEthAmount, l1Balance, true)
+              : undefined
+          }}
           destinationAddress={destinationAddress}
           setDestinationAddress={setDestinationAddress}
         />
@@ -949,6 +990,7 @@ export function TransferPanel() {
             {isSummaryVisible ? (
               <TransferPanelSummary
                 amount={amountNum}
+                extraEthAmount={extraEthAmountNum}
                 token={selectedToken}
                 gasSummary={gasSummary}
               />
