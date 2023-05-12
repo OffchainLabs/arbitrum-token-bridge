@@ -412,7 +412,7 @@ export function TransferPanelMain({
         // When transferring extra eth we use token bridge gas
         const result = await (extraEthInputVisible && selectedToken
           ? arbTokenBridge.token.depositEstimateGas({
-              erc20L1Address: selectedToken?.address,
+              erc20L1Address: selectedToken.address,
               amount: weiValue
             })
           : arbTokenBridge.eth.depositEstimateGas({
@@ -428,7 +428,13 @@ export function TransferPanelMain({
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [arbTokenBridge.eth, isDepositMode, extraEthInputVisible]
+    [
+      isDepositMode,
+      arbTokenBridge.eth,
+      arbTokenBridge.token,
+      extraEthInputVisible,
+      selectedToken
+    ]
   )
 
   const estimateMaxEthAmount = useCallback(

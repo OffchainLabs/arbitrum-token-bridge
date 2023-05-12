@@ -164,7 +164,7 @@ export function TransferPanel() {
     },
     [setQueryParams]
   )
-  const setEthAmount = useCallback(
+  const setExtraEthAmount = useCallback(
     (newAmount: string) => {
       setQueryParams({ extraEthAmount: newAmount })
     },
@@ -953,7 +953,7 @@ export function TransferPanel() {
           amount={amount}
           setAmount={setAmount}
           extraEthAmount={extraEthAmount}
-          setExtraEthAmount={setEthAmount}
+          setExtraEthAmount={setExtraEthAmount}
           errorMessage={{
             amount: isDepositMode
               ? getErrorMessage(amount, l1Balance, false)
