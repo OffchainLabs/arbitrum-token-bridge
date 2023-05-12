@@ -50,7 +50,7 @@ export function SwitchNetworksButton(
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
+      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
       <SwitchVerticalIcon className="text-dark" />
@@ -877,12 +877,12 @@ export function TransferPanelMain({
           {showAdvancedSettings && (
             <>
               <div className="mt-2">
-                <span className="text-md text-gray-10">
+                <span className="text-md text-gray-7">
                   Destination Address
                   {!isSmartContractWallet ? ' (optional)' : ''}
                 </span>
                 <input
-                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                  className="mt-1 w-full rounded border border-gray-4 px-2 py-1"
                   placeholder="Enter destination address"
                   defaultValue={destinationAddress}
                   spellCheck={false}

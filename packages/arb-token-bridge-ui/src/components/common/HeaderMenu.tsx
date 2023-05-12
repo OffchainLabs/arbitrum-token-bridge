@@ -1,5 +1,4 @@
 import React from 'react'
-import { twMerge } from 'tailwind-merge'
 import { Disclosure, Popover } from '@headlessui/react'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline'
 
@@ -92,10 +91,9 @@ export function HeaderMenuMobile(
             }`}
           >
             <span
-              className={twMerge(
-                `flex flex-row flex-nowrap items-center space-x-4 text-2xl font-medium`,
-                open ? `text-blue-arbitrum` : `text-white`
-              )}
+              className={`flex flex-row flex-nowrap items-center space-x-4 text-2xl font-medium text-white ${
+                open && `text-blue-arbitrum`
+              }`}
             >
               {props.children}
             </span>

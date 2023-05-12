@@ -26,17 +26,13 @@ module.exports = {
         'lime-dark': '#31572A',
 
         // NEUTRAL (GRAYS)
-        'gray-1': '#FAFAFA',
-        'gray-2': '#F4F4F4',
-        'gray-3': '#EEEEEE',
-        'gray-4': '#E6E6E6',
-        'gray-5': '#DADADA',
-        'gray-6': '#CCCCCC',
-        'gray-7': '#BDBDBD',
-        'gray-8': '#AEAEAE',
-        'gray-9': '#999999',
-        'gray-10': '#6D6D6D',
-        'gray-11': '#212121',
+        'gray-1': '#F4F4F4',
+        'gray-2': '#E5E5E5',
+        'gray-3': '#DADADA',
+        'gray-5': '#AEAEAE',
+        'gray-4': '#CCCCCC',
+        'gray-6': '#999999',
+        'gray-7': '#6D6D6D',
         dark: '#1A1C1D',
 
         // BRAND

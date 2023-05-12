@@ -1,9 +1,28 @@
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+import { schema, TokenList } from '@uniswap/token-lists'
 import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { L1TokenData, L2TokenData } from '../token-bridge-sdk/index'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+
+import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
+
+export function assertNever(x: never, message = 'Unexpected object'): never {
+  console.error(message, x)
+  throw new Error('see console ' + message)
+}
+
+export const validateTokenList = (tokenList: TokenList) => {
+  const ajv = new Ajv()
+  addFormats(ajv)
+  const validate = ajv.compile(schema)
+
+  return validate(tokenList)
+}
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -169,23 +188,8 @@ export async function getL2TokenData({
   }
 }
 
-/**
- * Retrieves the L1 address of an ERC-20 token using its L2 address.
- * @param erc20L2Address
- * @param l2Provider
- * @returns
- */
-export async function getL1ERC20Address({
-  erc20L2Address,
-  l2Provider
-}: {
-  erc20L2Address: string
-  l2Provider: Provider
-}): Promise<string | null> {
-  try {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-    return await erc20Bridger.getL1ERC20Address(erc20L2Address, l2Provider)
-  } catch (error) {
-    return null
-  }
+export function isClassicL2ToL1TransactionEvent(
+  event: L2ToL1TransactionEvent
+): event is EventArgs<ClassicL2ToL1TransactionEvent> {
+  return typeof (event as any).batchNumber !== 'undefined'
 }

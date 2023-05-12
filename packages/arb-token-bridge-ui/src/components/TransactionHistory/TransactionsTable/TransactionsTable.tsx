@@ -75,6 +75,7 @@ export type TransactionsTableProps = {
   transactions: MergedTransaction[]
   loading: boolean
   error: boolean
+  pendingTransactions: MergedTransaction[]
 }
 
 export function TransactionsTable({
@@ -83,7 +84,8 @@ export function TransactionsTable({
   setPageParams,
   transactions,
   loading,
-  error
+  error,
+  pendingTransactions
 }: TransactionsTableProps) {
   const { isSmartContractWallet } = useNetworksAndSigners()
 
@@ -138,15 +140,15 @@ export function TransactionsTable({
     return [...newerTransactions.reverse(), ...subgraphTransactions]
   }, [transactions, localTransactionsKey])
 
-  const locallyStoredTransactionsMap = useMemo(() => {
-    // map of all the locally-stored transactions (pending + recently executed)
+  const pendingTransactionsMap = useMemo(() => {
+    // map of all the locally-stored pending transactions
     // so that tx rows can easily subscribe to live-local status without refetching table data
-    const localTxMap = new Map<string, MergedTransaction>()
-    locallyStoredTransactions.forEach(tx => {
-      localTxMap.set(tx.txId, tx)
+    const pendingTxMap = new Map<string, MergedTransaction>()
+    pendingTransactions.forEach(tx => {
+      pendingTxMap.set(tx.txId, tx)
     })
-    return localTxMap
-  }, [locallyStoredTransactions])
+    return pendingTxMap
+  }, [localTransactionsKey])
 
   const status = (() => {
     if (loading) return TableStatus.LOADING
@@ -173,7 +175,7 @@ export function TransactionsTable({
 
       {
         <table className="w-full overflow-hidden  rounded-b-lg bg-white">
-          <thead className="text-left text-sm text-gray-10">
+          <thead className="text-left text-sm text-gray-7">
             <tr>
               <th className="py-3 pl-6 pr-3 font-normal">Status</th>
               <th className="px-3 py-3 font-normal">Time</th>
@@ -214,19 +216,18 @@ export function TransactionsTable({
               _transactions.map((tx, index) => {
                 const isLastRow = index === _transactions.length - 1
 
-                // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
-                // this will make sure the row updates with any updates in the local app state
+                // if transaction is present in pending transactions, subscribe to that in this row,
+                // this will make sure the row updates with any updates in the pending tx state
                 // else show static subgraph table data
-                const locallyStoredTransaction =
-                  locallyStoredTransactionsMap.get(tx.txId)
-                const finalTx = locallyStoredTransaction ?? tx
+                const pendingTransaction = pendingTransactionsMap.get(tx.txId)
+                const finalTx = pendingTransaction ? pendingTransaction : tx
 
                 if (isDeposit(finalTx)) {
                   return (
                     <TransactionsTableDepositRow
                       key={`${finalTx.txId}-${finalTx.direction}`}
                       tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-5' : ''}
+                      className={!isLastRow ? 'border-b border-gray-3' : ''}
                     />
                   )
                 } else if (isWithdrawal(finalTx)) {
@@ -234,7 +235,7 @@ export function TransactionsTable({
                     <TransactionsTableWithdrawalRow
                       key={`${finalTx.txId}-${finalTx.direction}`}
                       tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-5' : ''}
+                      className={!isLastRow ? 'border-b border-gray-3' : ''}
                     />
                   )
                 } else {

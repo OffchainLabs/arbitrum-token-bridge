@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-import { useBalance, ERC20BridgeToken } from 'token-bridge-sdk'
+import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import Image from 'next/image'
 
 import { Loader } from '../common/atoms/Loader'
@@ -24,7 +24,6 @@ import {
 } from '../../tokenLists'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { getL1TokenData } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -241,9 +240,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
-                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
-                  <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
-                  <span className="text-xs text-gray-10">Careful</span>
+                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-7 px-1 py-[2px] pr-2 text-sm">
+                  <ExclamationCircleIcon className="h-4 w-4 text-gray-7" />
+                  <span className="text-xs text-gray-7">Careful</span>
                 </div>
               </Tooltip>
             )}
@@ -575,16 +574,16 @@ function TokensPanel({
               setNewToken(e.target.value)
             }}
             placeholder="Search by token name, symbol, L1 or L2 address"
-            className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
+            className="h-10 w-full rounded-md border border-gray-2 px-2 text-sm text-dark"
           />
 
           <Button
             type="submit"
             variant="secondary"
             loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
+            loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-6"
+            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
             aria-label="Add New Token"
           >
             Add
@@ -593,7 +592,7 @@ function TokensPanel({
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
       <div
-        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
+        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
         data-cy="tokenSearchList"
       >
         <AutoSizer disableHeight>
@@ -714,13 +713,13 @@ export function TokenSearch({
         <div className="flex flex-row items-center justify-between pb-4">
           <span className="text-xl font-medium">Select Token</span>
           <button className="arb-hover" onClick={close}>
-            <XIcon className="h-6 w-6 text-gray-7" />
+            <XIcon className="h-6 w-6 text-gray-5" />
           </button>
         </div>
         <TokensPanel onTokenSelected={selectToken} />
         <div className="flex justify-end pt-6">
           {isFetchingTokenLists ? (
-            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
+            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
               <Loader color="#28A0F0" size="small" />
               Fetching Tokens...
             </span>
@@ -742,7 +741,7 @@ export function TokenSearch({
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">Token Lists</span>
         <button className="arb-hover" onClick={close}>
-          <XIcon className="h-6 w-6 text-gray-7" />
+          <XIcon className="h-6 w-6 text-gray-5" />
         </button>
       </div>
       <div className="flex justify-start pb-6">

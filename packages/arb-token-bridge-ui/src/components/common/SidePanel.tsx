@@ -33,7 +33,7 @@ export const SidePanel = ({
               panelClassNameOverrides
             )}
           >
-            <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-9 bg-dark py-4 text-white">
+            <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-dark py-4 text-white">
               <span className="text-xl">{heading}</span>
               <button className="arb-hover" onClick={onClose}>
                 <XIcon className="h-6 w-6 text-white" />

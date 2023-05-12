@@ -75,7 +75,7 @@
 }
 
 .arbitrum-classic-theme .bg-cyan,
-.arbitrum-classic-theme .bg-gray-3:not(.transfer-panel-stats),
+.arbitrum-classic-theme .bg-gray-2:not(.transfer-panel-stats),
 .arbitrum-classic-theme button:disabled {
 	background-color: #8c89bc4f !important;
 }

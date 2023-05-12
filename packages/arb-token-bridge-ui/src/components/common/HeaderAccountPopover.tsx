@@ -163,7 +163,7 @@ export function HeaderAccountPopover({
               </span>
             </Transition>
             <button
-              className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-7 hover:bg-blue-arbitrum hover:text-white lg:flex"
+              className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-5 hover:bg-blue-arbitrum hover:text-white lg:flex"
               onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
             >
               {/* Blurred background */}
