@@ -131,14 +131,14 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="h-4" />
         <div className="flex flex-col space-y-4">
           <button
-            className="arb-hover flex w-full items-center justify-between rounded-lg bg-gray-2 p-4 text-left text-xl text-blue-arbitrum"
+            className="arb-hover flex w-full items-center justify-between rounded-lg bg-gray-2 p-4 text-left text-xl text-ocl-blue"
             onClick={() => props.onClose(false)}
           >
             <span>Go to bridge</span>
-            <ArrowRightIcon className="h-8 w-8 text-blue-arbitrum" />
+            <ArrowRightIcon className="h-8 w-8 text-ocl-blue" />
           </button>
           <div className="rounded-lg bg-gray-2 p-4">
-            <span className="text-xl text-blue-arbitrum">Skip the bridge</span>
+            <span className="text-xl text-ocl-blue">Skip the bridge</span>
             <div className="h-2" />
             <p className="pb-1 font-light text-dark">
               Given your wallet balance, bridging gas fees (~$2-5) might not be

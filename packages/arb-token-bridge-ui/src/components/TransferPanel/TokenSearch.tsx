@@ -5,7 +5,8 @@ import {
   CheckCircleIcon,
   XIcon,
   ArrowSmLeftIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  SearchIcon
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
@@ -50,7 +51,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
   )
@@ -241,9 +242,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
-                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-7 px-1 py-[2px] pr-2 text-sm">
-                  <ExclamationCircleIcon className="h-4 w-4 text-gray-7" />
-                  <span className="text-xs text-gray-7">Careful</span>
+                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-dark px-1 py-[2px] pr-2 text-sm">
+                  <ExclamationCircleIcon className="h-4 w-4 text-gray-dark" />
+                  <span className="text-xs text-gray-dark">Careful</span>
                 </div>
               </Tooltip>
             )}
@@ -567,16 +568,20 @@ function TokensPanel({
     <div className="flex flex-col space-y-3">
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <input
-            id="newTokenAddress"
-            value={newToken}
-            onChange={e => {
-              setErrorMessage('')
-              setNewToken(e.target.value)
-            }}
-            placeholder="Search by token name, symbol, L1 or L2 address"
-            className="h-10 w-full rounded-md border border-gray-2 px-2 text-sm text-dark"
-          />
+          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark">
+            <SearchIcon className="h-4 w-4 shrink-0 text-gray-dark" />
+
+            <input
+              id="newTokenAddress"
+              value={newToken}
+              onChange={e => {
+                setErrorMessage('')
+                setNewToken(e.target.value)
+              }}
+              placeholder="Search by token name, symbol, L1 or L2 address"
+              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-6"
+            />
+          </div>
 
           <Button
             type="submit"

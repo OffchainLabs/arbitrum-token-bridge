@@ -877,7 +877,7 @@ export function TransferPanelMain({
           {showAdvancedSettings && (
             <>
               <div className="mt-2">
-                <span className="text-md text-gray-7">
+                <span className="text-md text-gray-dark">
                   Destination Address
                   {!isSmartContractWallet ? ' (optional)' : ''}
                 </span>

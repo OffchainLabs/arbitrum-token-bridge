@@ -32,8 +32,8 @@ module.exports = {
         'gray-5': '#AEAEAE',
         'gray-4': '#CCCCCC',
         'gray-6': '#999999',
-        'gray-7': '#6D6D6D',
-        dark: '#1A1C1D',
+        'gray-dark': '#6D6D6D',
+        dark: '#1A1C1D', // (or default-black)
 
         // BRAND
         'arb-one-primary': '#1B4ADD',
@@ -42,9 +42,7 @@ module.exports = {
         'arb-nova-dark': '#743600',
         'eth-primary': '#454A75',
         'eth-dark': '#1A1C33',
-
-        // legacy
-        'blue-arbitrum': '#2D374B' // looks more like `eth-primary` but looks weird if we replace it
+        'ocl-blue': '#243145'
       },
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"

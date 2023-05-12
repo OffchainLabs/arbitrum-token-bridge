@@ -55,10 +55,8 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
   return (
     <WithdrawalCardContainer tx={tx}>
-      <span className="text-4xl font-semibold text-blue-arbitrum">
-        Success!
-      </span>
-      <span className="flex flex-col space-y-4 text-2xl font-light text-blue-arbitrum">
+      <span className="text-4xl font-semibold text-ocl-blue">Success!</span>
+      <span className="flex flex-col space-y-4 text-2xl font-light text-ocl-blue">
         <span>
           {tx.value} {tx.asset.toUpperCase()} has been moved to your wallet.
         </span>

@@ -33,7 +33,7 @@ function Notification({
     >
       {infoIcon && (
         <InformationCircleIcon
-          className="inline-block h-5 w-5 text-gray-7"
+          className="inline-block h-5 w-5 text-gray-dark"
           aria-hidden="true"
         />
       )}

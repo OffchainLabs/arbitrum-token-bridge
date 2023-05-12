@@ -91,9 +91,9 @@ export function BridgesTable(props: {
                   }}
                 >
                   {isFavorite(bridge.name) ? (
-                    <StarIconSolid className="h-6 w-6 text-blue-arbitrum" />
+                    <StarIconSolid className="h-6 w-6 text-ocl-blue" />
                   ) : (
-                    <StarIconOutline className="h-6 w-6 text-blue-arbitrum" />
+                    <StarIconOutline className="h-6 w-6 text-ocl-blue" />
                   )}
                 </button>
               </ExternalLink>
@@ -120,7 +120,7 @@ export function BridgesTable(props: {
             <td>
               <ExternalLink
                 href={bridge.href}
-                className="arb-hover flex h-16 w-full items-center justify-center text-gray-4 hover:text-blue-arbitrum"
+                className="arb-hover flex h-16 w-full items-center justify-center text-gray-4 hover:text-ocl-blue"
                 onClick={() => onClick(bridge.name)}
               >
                 <ExternalLinkIcon className="h-5 w-5" />

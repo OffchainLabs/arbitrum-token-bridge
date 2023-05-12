@@ -68,7 +68,7 @@ export function DepositConfirmationDialog(
     <Dialog {...props} isCustom>
       <div className="flex flex-col md:min-w-[725px] md:max-w-[725px]">
         <Tab.Group>
-          <div className="flex flex-row items-center justify-between bg-blue-arbitrum px-8 py-4">
+          <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
               Move funds to {networkName}
             </HeadlessUIDialog.Title>
@@ -82,7 +82,7 @@ export function DepositConfirmationDialog(
             </button>
           </div>
 
-          <Tab.List className="bg-blue-arbitrum">
+          <Tab.List className="bg-ocl-blue">
             {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
             <TabButton>Use Arbitrum’s bridge</TabButton>
           </Tab.List>
@@ -137,7 +137,7 @@ export function DepositConfirmationDialog(
                 </ol>
                 <div>
                   <button
-                    className="arb-hover ml-4 rounded-xl border border-blue-arbitrum bg-gray-300 px-6 py-3"
+                    className="arb-hover ml-4 rounded-xl border border-ocl-blue bg-gray-300 px-6 py-3"
                     onClick={() => {
                       copy(bridgeInfo.bridgeUrl)
                       trackEvent('Copy Bridge Link Click', { tokenSymbol })

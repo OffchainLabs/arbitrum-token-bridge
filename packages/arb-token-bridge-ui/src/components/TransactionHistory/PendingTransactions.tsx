@@ -45,8 +45,8 @@ export const PendingTransactions = ({
   })
 
   const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
-    ? 'bg-gray-7'
-    : 'bg-blue-arbitrum'
+    ? 'bg-gray-dark'
+    : 'bg-ocl-blue'
 
   return (
     <div

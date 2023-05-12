@@ -128,7 +128,7 @@ export function HeaderAccountPopover({
   }
 
   const headerItemsClassName =
-    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-lg lg:text-sm font-light text-white hover:bg-blue-arbitrum lg:px-4'
+    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-lg lg:text-sm font-light text-white hover:bg-ocl-blue lg:px-4'
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -163,7 +163,7 @@ export function HeaderAccountPopover({
               </span>
             </Transition>
             <button
-              className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-5 hover:bg-blue-arbitrum hover:text-white lg:flex"
+              className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-5 hover:bg-ocl-blue hover:text-white lg:flex"
               onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
             >
               {/* Blurred background */}

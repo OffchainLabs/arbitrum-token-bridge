@@ -86,7 +86,7 @@ function ProjectCard({
         </span>
 
         <div className="self-start p-4">
-          <ExternalLinkIcon className="h-6 w-6 text-blue-arbitrum" />
+          <ExternalLinkIcon className="h-6 w-6 text-ocl-blue" />
         </div>
       </div>
       <div className="flex flex-row justify-between space-x-2 rounded-bl-xl rounded-br-xl bg-[rgba(0,0,0,0.29)] p-4 backdrop-blur-sm backdrop-filter">
@@ -162,7 +162,7 @@ export function ExploreArbitrum() {
 
   return (
     <div className="explore-arbitrum-card w-full bg-white lg:rounded-xl">
-      <div className="bg-blue-arbitrum p-6 lg:rounded-tl-xl lg:rounded-tr-xl">
+      <div className="bg-ocl-blue p-6 lg:rounded-tl-xl lg:rounded-tr-xl">
         <p className="text-2xl text-white">For your enjoyment</p>
       </div>
 
@@ -173,7 +173,7 @@ export function ExploreArbitrum() {
           )
         }
       >
-        <Tab.List className="bg-blue-arbitrum">
+        <Tab.List className="bg-ocl-blue">
           <TabButton>Explore</TabButton>
           <TabButton>Play</TabButton>
         </Tab.List>
@@ -196,7 +196,7 @@ export function ExploreArbitrum() {
             <Button
               variant="primary"
               onClick={randomize}
-              className="bg-blue-arbitrum px-8 text-2xl"
+              className="bg-ocl-blue px-8 text-2xl"
             >
               Randomize ✨
             </Button>

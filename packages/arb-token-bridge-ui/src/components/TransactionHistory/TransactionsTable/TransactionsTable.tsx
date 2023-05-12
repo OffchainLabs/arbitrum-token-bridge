@@ -226,7 +226,7 @@ export function TransactionsTable({
                     <TransactionsTableDepositRow
                       key={`${finalTx.txId}-${finalTx.direction}`}
                       tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-5' : ''}
+                      className={!isLastRow ? 'border-b border-gray-3' : ''}
                     />
                   )
                 } else if (isWithdrawal(finalTx)) {
@@ -234,7 +234,7 @@ export function TransactionsTable({
                     <TransactionsTableWithdrawalRow
                       key={`${finalTx.txId}-${finalTx.direction}`}
                       tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-5' : ''}
+                      className={!isLastRow ? 'border-b border-gray-3' : ''}
                     />
                   )
                 } else {

@@ -91,7 +91,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             alt={`${token?.name} logo`}
             className="h-8 w-8 grow-0 rounded-full"
             fallback={
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
                 ?
               </div>
             }

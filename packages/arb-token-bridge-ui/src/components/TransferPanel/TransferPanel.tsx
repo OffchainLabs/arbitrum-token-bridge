@@ -942,7 +942,7 @@ export function TransferPanel() {
         >
           <div className="flex flex-col">
             <div className="hidden lg:block">
-              <span className="text-2xl text-gray-7">Summary</span>
+              <span className="text-2xl text-gray-dark">Summary</span>
               <div className="h-4" />
             </div>
 
