@@ -9,7 +9,8 @@ import {
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Provider } from '@ethersproject/providers'
-import { AssetType, Transaction } from 'token-bridge-sdk'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { Transaction } from '../../hooks/useTransactions'
 import { getL1TokenData } from '../TokenUtils'
 
 export const updateAdditionalDepositData = async (

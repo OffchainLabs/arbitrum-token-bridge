@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { BigNumber, constants } from 'ethers'
 
-import { useBalance } from 'token-bridge-sdk'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
+import { useBalance } from '../../hooks/useBalance'
 
 export enum NetworkType {
   l1 = 'l1',

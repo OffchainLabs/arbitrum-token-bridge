@@ -1,5 +1,11 @@
+import { useMemo } from 'react'
+import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
-import { NodeBlockDeadlineStatusTypes } from 'token-bridge-sdk'
+import {
+  DotsVerticalIcon,
+  InformationCircleIcon
+} from '@heroicons/react/outline'
+import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
@@ -10,14 +16,8 @@ import { shortenTxHash } from '../../../util/CommonUtils'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import {
-  DotsVerticalIcon,
-  InformationCircleIcon
-} from '@heroicons/react/outline'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
-import { useMemo } from 'react'
-import { Popover } from '@headlessui/react'
 import {
   findMatchingL1TxForWithdrawal,
   isPending

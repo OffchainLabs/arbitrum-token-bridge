@@ -1,5 +1,7 @@
-import { ArbTokenBridge, ERC20BridgeToken } from 'token-bridge-sdk'
-
+import {
+  ArbTokenBridge,
+  ERC20BridgeToken
+} from '../../hooks/arbTokenBridge.types'
 import { Context } from '..'
 import { ConnectionState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
