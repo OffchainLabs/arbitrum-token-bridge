@@ -173,7 +173,7 @@ export function TransactionsTable({
 
       {
         <table className="w-full overflow-hidden  rounded-b-lg bg-white">
-          <thead className="text-left text-sm text-gray-10">
+          <thead className="text-gray-10 text-left text-sm">
             <tr>
               <th className="py-3 pl-6 pr-3 font-normal">Status</th>
               <th className="px-3 py-3 font-normal">Time</th>
