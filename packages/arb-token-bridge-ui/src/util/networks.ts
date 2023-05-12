@@ -281,7 +281,7 @@ export function getNetworkLogo(chainId: number) {
     // L1 networks
     case ChainId.Mainnet:
     case ChainId.Goerli:
-      return '/images/EthereumLogo.webp'
+      return '/images/EthereumLogo.svg'
 
     // L2 networks
     case ChainId.ArbitrumOne:
@@ -292,7 +292,7 @@ export function getNetworkLogo(chainId: number) {
       return '/images/ArbitrumNovaLogo.svg'
 
     default:
-      return '/images/EthereumLogo.webp'
+      return '/images/EthereumLogo.svg'
   }
 }
 
