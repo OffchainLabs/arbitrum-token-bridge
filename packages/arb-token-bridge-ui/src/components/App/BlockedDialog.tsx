@@ -16,7 +16,7 @@ export function BlockedDialog(props: UseDialogProps & { address: string }) {
         <div className="h-4" />
 
         <div className="flex flex-col space-y-8 break-words">
-          <span className="text-gray-10">{props.address.toLowerCase()}</span>
+          <span className="text-gray-7">{props.address.toLowerCase()}</span>
           <span>This address is affiliated with a blocked activity.</span>
           <span>
             If you think this was an error, you can request a review with{' '}

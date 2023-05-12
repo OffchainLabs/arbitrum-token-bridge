@@ -70,7 +70,7 @@ function ProjectCard({
   return (
     <ExternalLink
       href={href}
-      className="arb-hover animate__animated animate__flipInX flex h-72 flex-col justify-between rounded-xl bg-gray-4 bg-cover bg-center"
+      className="arb-hover animate__animated animate__flipInX flex h-72 flex-col justify-between rounded-xl bg-gray-2 bg-cover bg-center"
       style={{ backgroundImage: `url(${imageSrc}` }}
       onClick={() => {
         if (type === 'defi') {

@@ -21,7 +21,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             to {networkName}
           </span>
 
-          <span className="animate-pulse text-sm text-gray-10">
+          <span className="animate-pulse text-sm text-gray-7">
             {tx.nodeBlockDeadline ? (
               <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
             ) : (

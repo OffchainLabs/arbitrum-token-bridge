@@ -19,7 +19,7 @@ function MaxButton(props: MaxButtonProps) {
   return (
     <button
       type="button"
-      className={`p-2 text-sm font-light text-gray-9 ${className}`}
+      className={`p-2 text-sm font-light text-gray-6 ${className}`}
       {...rest}
     >
       MAX
@@ -42,7 +42,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const borderClassName =
     typeof errorMessage !== 'undefined'
       ? 'border border-[#cd0000]'
-      : 'border border-gray-9'
+      : 'border border-gray-6'
 
   return (
     <>
@@ -50,13 +50,13 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         className={`flex h-12 flex-row items-center rounded-lg bg-white lg:h-16 ${borderClassName}`}
       >
         <TokenButton />
-        <div className="h-full border-r border-gray-4" />
+        <div className="h-full border-r border-gray-2" />
         <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
           <input
             type="text"
             inputMode="decimal"
             placeholder="Enter amount"
-            className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-9 sm:text-3xl"
+            className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-6 sm:text-3xl"
             {...rest}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}

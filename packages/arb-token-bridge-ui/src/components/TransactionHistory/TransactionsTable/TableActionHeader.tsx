@@ -79,9 +79,9 @@ export const TableActionHeader = ({
     >
       {/* Search bar */}
       <div className="relative flex h-full w-full grow items-center rounded border-2 bg-white px-2">
-        <SearchIcon className="h-4 w-4 shrink-0 text-gray-9" />
+        <SearchIcon className="h-4 w-4 shrink-0 text-gray-6" />
         <input
-          className="text-normal h-full w-full p-2 font-light placeholder:text-gray-9"
+          className="text-normal h-full w-full p-2 font-light placeholder:text-gray-6"
           type="text"
           placeholder={`Search for a full or partial ${layerType} tx ID`}
           value={searchString}
@@ -94,10 +94,10 @@ export const TableActionHeader = ({
 
       {/* Pagination buttons */}
       {!hidePaginationBtns && (
-        <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-10">
+        <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-7">
           <button
             disabled={disablePrevBtn}
-            className={`rounded border border-gray-10 p-1 ${
+            className={`rounded border border-gray-7 p-1 ${
               disablePrevBtn
                 ? 'cursor-not-allowed opacity-30'
                 : 'cursor-pointer'
@@ -114,7 +114,7 @@ export const TableActionHeader = ({
 
           <button
             disabled={disableNextBtn}
-            className={`rounded border border-gray-10 p-1 ${
+            className={`rounded border border-gray-7 p-1 ${
               disableNextBtn
                 ? 'cursor-not-allowed opacity-30'
                 : 'cursor-pointer'
