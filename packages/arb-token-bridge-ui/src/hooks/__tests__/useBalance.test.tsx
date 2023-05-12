@@ -3,12 +3,12 @@
  */
 
 import { act, renderHook } from '@testing-library/react-hooks'
-import { useBalance } from '../useBalance'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
+import { useBalance } from '../useBalance'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<unknown>) => (
