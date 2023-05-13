@@ -13,19 +13,31 @@ export type Balances = {
   [NetworkType.l1]: BigNumber | null
   [NetworkType.l2]: BigNumber | null
 }
-export function useTokenBalances(erc20L1Address?: string): Balances {
+export function useTokenBalances({
+  erc20L1Address,
+  walletAddress
+}: {
+  erc20L1Address?: string
+  walletAddress?: string
+}): Balances {
   const {
     app: {
-      arbTokenBridge: { walletAddress, bridgeTokens }
+      arbTokenBridge: { walletAddress: senderWalletAddress, bridgeTokens }
     }
   } = useAppState()
+
+  const _walletAddress = walletAddress || senderWalletAddress
+
   const { l1, l2 } = useNetworksAndSigners()
   const {
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: _walletAddress
+  })
   const {
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({ provider: l2.provider, walletAddress: _walletAddress })
 
   return useMemo(() => {
     const defaultResult = { [NetworkType.l1]: null, [NetworkType.l2]: null }

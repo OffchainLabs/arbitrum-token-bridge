@@ -40,6 +40,7 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { isAddress } from 'ethers/lib/utils.js'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -221,13 +222,17 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+function ETHBalance({
+  on,
+  walletAddress,
+  prefix = ''
+}: {
+  on: NetworkType
+  walletAddress: string
+  prefix?: string
+}) {
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
-  const walletAddress = arbTokenBridge.walletAddress
 
   const {
     eth: [ethL1Balance]
@@ -253,13 +258,18 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 function TokenBalance({
   forToken,
   on,
+  walletAddress,
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
   on: NetworkType
+  walletAddress?: string
   prefix?: string
 }) {
-  const balance = useTokenBalances(forToken?.address)[on]
+  const balance = useTokenBalances({
+    erc20L1Address: forToken?.address,
+    walletAddress
+  })[on]
 
   if (!forToken) {
     return null
@@ -342,16 +352,39 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
+  const destinationAddressOrWalletAddress = useMemo(() => {
+    return destinationAddress || walletAddress
+  }, [destinationAddress, walletAddress])
+
+  const l1WalletAddress = isDepositMode
+    ? walletAddress
+    : destinationAddressOrWalletAddress
+
+  const l2WalletAddress = isDepositMode
+    ? destinationAddressOrWalletAddress
+    : walletAddress
+
   const {
+    erc20: [, updateErc20L1Balance],
     eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: l1WalletAddress
+  })
   const {
+    erc20: [, updateErc20L2Balance],
     eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress: l2WalletAddress
+  })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const tokenBalances = useTokenBalances(selectedToken?.address)
+  const tokenBalances = useTokenBalances({
+    erc20L1Address: selectedToken?.address,
+    walletAddress
+  })
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
@@ -377,6 +410,24 @@ export function TransferPanelMain({
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
   }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
+
+  useEffect(() => {
+    // If a different destination address is specified, we want to update the ERC-20 balance accordingly
+    if (!selectedToken || !isAddress(destinationAddressOrWalletAddress)) return
+    if (isDepositMode) {
+      updateErc20L1Balance([selectedToken.address])
+      updateErc20L2Balance([String(selectedToken.l2Address)])
+    } else {
+      updateErc20L1Balance([selectedToken.address])
+      updateErc20L2Balance([String(selectedToken.l2Address)])
+    }
+  }, [
+    destinationAddressOrWalletAddress,
+    isDepositMode,
+    selectedToken,
+    updateErc20L1Balance,
+    updateErc20L2Balance
+  ])
 
   const estimateGas = useCallback(
     async (
@@ -736,10 +787,12 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   forToken={selectedToken}
+                  walletAddress={walletAddress}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  walletAddress={walletAddress}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
@@ -796,10 +849,12 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
+                  walletAddress={destinationAddressOrWalletAddress}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                  walletAddress={destinationAddressOrWalletAddress}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
