@@ -413,11 +413,7 @@ export function TransferPanelMain({
 
   useEffect(() => {
     // If a different destination address is specified, we want to update the ERC-20 balance accordingly
-    if (!selectedToken || !isAddress(destinationAddressOrWalletAddress)) return
-    if (isDepositMode) {
-      updateErc20L1Balance([selectedToken.address])
-      updateErc20L2Balance([String(selectedToken.l2Address)])
-    } else {
+    if (selectedToken && isAddress(destinationAddressOrWalletAddress)) {
       updateErc20L1Balance([selectedToken.address])
       updateErc20L2Balance([String(selectedToken.l2Address)])
     }
