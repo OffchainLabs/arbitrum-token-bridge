@@ -253,7 +253,6 @@ function WithdrawalRowAction({
   isError: boolean
 }) {
   const {
-    isConnectedToArbitrum,
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
@@ -283,24 +282,9 @@ function WithdrawalRowAction({
 
   if (tx.status === 'Confirmed') {
     return (
-      <Tooltip
-        show={isConnectedToArbitrum || false}
-        wrapperClassName=""
-        content={
-          <span>
-            Please connect to the L1 network to claim your withdrawal.
-          </span>
-        }
-      >
-        <Button
-          variant="primary"
-          loading={isClaiming}
-          disabled={isConnectedToArbitrum}
-          onClick={() => claim(tx)}
-        >
-          Claim
-        </Button>
-      </Tooltip>
+      <Button variant="primary" loading={isClaiming} onClick={() => claim(tx)}>
+        Claim
+      </Button>
     )
   }
 

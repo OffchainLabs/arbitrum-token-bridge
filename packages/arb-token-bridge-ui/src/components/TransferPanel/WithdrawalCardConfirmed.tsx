@@ -1,24 +1,11 @@
-import { useMemo } from 'react'
-
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
-
-  const isClaimButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
 
   return (
     <WithdrawalCardContainer tx={tx}>
@@ -41,32 +28,21 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <Tooltip
-          wrapperClassName=""
-          show={isClaimButtonDisabled}
-          content={
-            <span>
-              Please connect to the L1 network to claim your withdrawal.
-            </span>
-          }
+        <Button
+          variant="primary"
+          loading={isClaiming}
+          onClick={() => claim(tx)}
+          className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
         >
-          <Button
-            variant="primary"
-            loading={isClaiming}
-            disabled={isClaimButtonDisabled}
-            onClick={() => claim(tx)}
-            className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
-          >
-            <div className="flex flex-nowrap whitespace-pre">
-              Claim{' '}
-              <span className="hidden lg:flex">
-                {formatAmount(Number(tx.value), {
-                  symbol: tx.asset.toUpperCase()
-                })}
-              </span>
-            </div>
-          </Button>
-        </Tooltip>
+          <div className="flex flex-nowrap whitespace-pre">
+            Claim{' '}
+            <span className="hidden lg:flex">
+              {formatAmount(Number(tx.value), {
+                symbol: tx.asset.toUpperCase()
+              })}
+            </span>
+          </div>
+        </Button>
       </div>
     </WithdrawalCardContainer>
   )
