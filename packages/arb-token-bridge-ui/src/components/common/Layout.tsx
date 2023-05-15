@@ -1,6 +1,6 @@
 import React from 'react'
 import { useWindowSize } from 'react-use'
-import { motion, useViewportScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
@@ -13,7 +13,7 @@ function Moon() {
   const { width } = useWindowSize()
   const moonScaleRange = width >= 1024 ? [0.75, 1] : [0.75, 1.25]
 
-  const { scrollYProgress } = useViewportScroll()
+  const { scrollYProgress } = useScroll()
   const scale = useTransform(scrollYProgress, [0, 1], moonScaleRange)
 
   return (

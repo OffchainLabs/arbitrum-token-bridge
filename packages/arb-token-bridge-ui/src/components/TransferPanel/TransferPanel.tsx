@@ -6,11 +6,7 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
-import {
-  ArbTokenBridge,
-  useBalance,
-  getL1TokenAllowance
-} from 'token-bridge-sdk'
+import { ArbTokenBridge, useBalance } from 'token-bridge-sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -46,6 +42,7 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import { getL1TokenAllowance } from '../../util/TokenUtils'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -187,6 +184,11 @@ export function TransferPanel() {
   }, [ethL1Balance, ethL2Balance, isDepositMode])
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
+
+  function clearAmountInput() {
+    // clear amount input on transfer panel
+    setAmount('')
+  }
 
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
@@ -354,7 +356,7 @@ export function TransferPanel() {
 
     const l2NetworkName = getNetworkName(l2Network.chainID)
 
-    // SC wallet transfer requests are sent immediatelly, delay it to give user an impression of a tx sent
+    // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
       setTimeout(() => {
         setTransferring(false)
@@ -503,6 +505,7 @@ export function TransferPanel() {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
                 setTransferring(false)
+                clearAmountInput()
                 if (
                   !isSmartContractWallet &&
                   shouldTrackAnalytics(l2NetworkName)
@@ -529,6 +532,7 @@ export function TransferPanel() {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
                 setTransferring(false)
+                clearAmountInput()
                 if (
                   !isSmartContractWallet &&
                   shouldTrackAnalytics(l2NetworkName)
@@ -641,6 +645,7 @@ export function TransferPanel() {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
                 setTransferring(false)
+                clearAmountInput()
                 if (
                   !isSmartContractWallet &&
                   shouldTrackAnalytics(l2NetworkName)
@@ -667,6 +672,7 @@ export function TransferPanel() {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
                 setTransferring(false)
+                clearAmountInput()
                 if (
                   !isSmartContractWallet &&
                   shouldTrackAnalytics(l2NetworkName)

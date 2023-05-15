@@ -1,28 +1,9 @@
-import Ajv from 'ajv'
-import addFormats from 'ajv-formats'
-import { schema, TokenList } from '@uniswap/token-lists'
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, ethers } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
-import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
-
-import { ERC20__factory, L1TokenData, L2TokenData } from '../index'
-
-export function assertNever(x: never, message = 'Unexpected object'): never {
-  console.error(message, x)
-  throw new Error('see console ' + message)
-}
-
-export const validateTokenList = (tokenList: TokenList) => {
-  const ajv = new Ajv()
-  addFormats(ajv)
-  const validate = ajv.compile(schema)
-
-  return validate(tokenList)
-}
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { L1TokenData, L2TokenData } from '../token-bridge-sdk/index'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -188,8 +169,56 @@ export async function getL2TokenData({
   }
 }
 
-export function isClassicL2ToL1TransactionEvent(
-  event: L2ToL1TransactionEvent
-): event is EventArgs<ClassicL2ToL1TransactionEvent> {
-  return typeof (event as any).batchNumber !== 'undefined'
+/**
+ * Retrieves the L1 address of an ERC-20 token using its L2 address.
+ * @param erc20L2Address
+ * @returns
+ */
+export async function getL1ERC20Address({
+  erc20L2Address,
+  l2Provider
+}: {
+  erc20L2Address: string
+  l2Provider: Provider
+}): Promise<string | null> {
+  try {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+    return await erc20Bridger.getL1ERC20Address(erc20L2Address, l2Provider)
+  } catch (error) {
+    return null
+  }
+}
+
+export const getERC20TokenDetails = async ({
+  walletAddress,
+  erc20L1orL2Address,
+  provider
+}: {
+  walletAddress: string
+  erc20L1orL2Address: string
+  provider: Provider
+}) => {
+  try {
+    const abi = [
+      // erc-20 functions that interest us
+      'function balanceOf(address owner) view returns (uint256)',
+      'function decimals() view returns (uint8)',
+      'function symbol() view returns (string)',
+      'function name() view returns (string)'
+    ]
+
+    const erc20 = new ethers.Contract(erc20L1orL2Address, abi, provider)
+    const decimals: number = await erc20.decimals()
+    const name: string = await erc20.name()
+    const symbol: string = await erc20.symbol()
+    const balance: BigNumber = await erc20.balanceOf(walletAddress)
+
+    // if found valid functions in the contract, then yes, we can assume it is a valid ERC20 token
+    return { name, decimals, symbol, balance }
+  } catch (e) {
+    // some error in fetching the token details
+    // most likely the contract is either not a valid ERC20 token
+    // or it doesn't exist on the network provided
+    return null
+  }
 }

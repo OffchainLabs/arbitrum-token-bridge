@@ -8,11 +8,11 @@ import {
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated,
-  getL1TokenData,
   getExecutedMessagesCacheKey
 } from 'token-bridge-sdk'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
+import { getL1TokenData } from '../TokenUtils'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
