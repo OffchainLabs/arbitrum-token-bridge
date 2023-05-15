@@ -1,5 +1,8 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
+import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
+import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
+import { getL1TokenData } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
@@ -7,12 +10,9 @@ import {
   NodeBlockDeadlineStatus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
-  WithdrawalInitiated,
-  getExecutedMessagesCacheKey
-} from 'token-bridge-sdk'
-import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
-import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
-import { getL1TokenData } from '../TokenUtils'
+  WithdrawalInitiated
+} from '../../hooks/arbTokenBridge.types'
+import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,

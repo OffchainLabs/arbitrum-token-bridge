@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
 import { ExclamationIcon } from '@heroicons/react/outline'
 
 import { useAppState } from '../../state'
@@ -13,6 +12,8 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useGasPrice } from '../../hooks/useGasPrice'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null

@@ -4,16 +4,6 @@ import {
   sortBy as _sortBy
 } from 'lodash-es'
 import { derived } from 'overmind'
-import {
-  ArbTokenBridge,
-  ERC20BridgeToken,
-  L1ToL2MessageData,
-  L2ToL1EventResultPlus,
-  L2ToL1MessageData,
-  NodeBlockDeadlineStatus,
-  Transaction,
-  TxnType
-} from 'token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { ConnectionState } from '../../util'
@@ -24,6 +14,18 @@ import {
 } from './utils'
 import { BigNumber } from 'ethers'
 import dayjs from 'dayjs'
+import {
+  ArbTokenBridge,
+  ERC20BridgeToken,
+  L2ToL1EventResultPlus,
+  NodeBlockDeadlineStatus
+} from '../../hooks/arbTokenBridge.types'
+import {
+  L1ToL2MessageData,
+  L2ToL1MessageData,
+  Transaction,
+  TxnType
+} from '../../hooks/useTransactions'
 
 export enum WhiteListState {
   VERIFYING,
