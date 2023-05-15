@@ -16,8 +16,10 @@ import {
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
-import { getL1ERC20Address } from '../util/getL1ERC20Address'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   ArbTokenBridge,
@@ -35,11 +37,16 @@ import {
   NodeBlockDeadlineStatusTypes
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
+import { getL1TokenData, getL1ERC20Address } from '../util/TokenUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
+}
+
+function isClassicL2ToL1TransactionEvent(
+  event: L2ToL1TransactionEvent
+): event is EventArgs<ClassicL2ToL1TransactionEvent> {
+  return typeof (event as any).batchNumber !== 'undefined'
 }
 
 export function getExecutedMessagesCacheKey({
@@ -52,6 +59,20 @@ export function getExecutedMessagesCacheKey({
   return isClassicL2ToL1TransactionEvent(event)
     ? `l2ChainId: ${l2ChainId}, batchNumber: ${event.batchNumber.toString()}, indexInBatch: ${event.indexInBatch.toString()}`
     : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
+}
+
+export function getUniqueIdOrHashFromEvent(
+  event: L2ToL1EventResult
+): BigNumber {
+  const anyEvent = event as any
+
+  // Nitro
+  if (anyEvent.hash) {
+    return anyEvent.hash as BigNumber
+  }
+
+  // Classic
+  return anyEvent.uniqueId as BigNumber
 }
 
 class TokenDisabledError extends Error {

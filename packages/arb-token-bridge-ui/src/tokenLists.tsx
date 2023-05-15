@@ -1,8 +1,10 @@
 import useSWRImmutable from 'swr/immutable'
 import { SWRResponse } from 'swr'
 import axios from 'axios'
-import { TokenList } from '@uniswap/token-lists'
-import { ArbTokenBridge, validateTokenList } from 'token-bridge-sdk'
+import { schema, TokenList } from '@uniswap/token-lists'
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+import { ArbTokenBridge } from './hooks/arbTokenBridge.types'
 import { ImageProps } from 'next/image'
 import ArbitrumLogo from '@/images/lists/arbitrum.svg'
 import UniswapLogo from '@/images/lists/uniswap.png'
@@ -113,6 +115,14 @@ export interface TokenListWithId extends TokenList {
   l2ChainId: string
   bridgeTokenListId: number
   isValid?: boolean
+}
+
+export const validateTokenList = (tokenList: TokenList) => {
+  const ajv = new Ajv()
+  addFormats(ajv)
+  const validate = ajv.compile(schema)
+
+  return validate(tokenList)
 }
 
 export const addBridgeTokenListToBridge = (

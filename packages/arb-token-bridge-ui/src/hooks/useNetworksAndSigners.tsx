@@ -32,7 +32,7 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
-import { TOS_LOCALSTORAGE_KEY } from 'src/constants'
+import { TOS_LOCALSTORAGE_KEY } from '../constants'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
