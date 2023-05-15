@@ -44,7 +44,7 @@ import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken } from 'src/hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>

@@ -1,8 +1,7 @@
 import { useCallback, useEffect } from 'react'
-
 import { TransactionReceipt } from '@ethersproject/providers'
-import { Transaction, txnTypeToLayer } from 'src/hooks/useTransactions'
 
+import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
