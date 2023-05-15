@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
-import { useArbTokenBridge, TokenBridgeParams } from 'token-bridge-sdk'
+import {
+  useArbTokenBridge,
+  TokenBridgeParams
+} from '../../hooks/useArbTokenBridge'
 
 import { useActions } from '../../state'
 

@@ -1,9 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { constants, utils } from 'ethers'
 import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
-import { useBalance } from 'token-bridge-sdk'
 import Image from 'next/image'
 
+import { useBalance } from '../../hooks/useBalance'
 import { useAppState } from '../../state'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'

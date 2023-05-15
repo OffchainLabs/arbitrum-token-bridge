@@ -10,7 +10,6 @@ import {
 } from '@heroicons/react/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-import { useBalance, ERC20BridgeToken } from 'token-bridge-sdk'
 import Image from 'next/image'
 
 import { Loader } from '../common/atoms/Loader'
@@ -37,6 +36,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
+import { useBalance } from '../../hooks/useBalance'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 enum Panel {
   TOKENS,
