@@ -1,12 +1,12 @@
-import {
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes
-} from 'token-bridge-sdk'
+import dayjs from 'dayjs'
 
 import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getBlockTime, getConfirmPeriodBlocks } from '../../util/networks'
-import dayjs from 'dayjs'
+import {
+  NodeBlockDeadlineStatus,
+  NodeBlockDeadlineStatusTypes
+} from '../../hooks/arbTokenBridge.types'
 import { Tooltip } from './Tooltip'
 
 export function WithdrawalCountdown({

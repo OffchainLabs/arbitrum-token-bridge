@@ -1,14 +1,15 @@
 import dayjs from 'dayjs'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { ethers, BigNumber } from 'ethers'
+
+import { DepositStatus, MergedTransaction } from './state'
 import {
   L2ToL1EventResultPlus,
-  Transaction,
-  OutgoingMessageState,
-  getUniqueIdOrHashFromEvent,
-  NodeBlockDeadlineStatusTypes
-} from 'token-bridge-sdk'
-import { DepositStatus, MergedTransaction } from './state'
+  NodeBlockDeadlineStatusTypes,
+  OutgoingMessageState
+} from '../../hooks/arbTokenBridge.types'
+import { Transaction } from '../../hooks/useTransactions'
+import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
