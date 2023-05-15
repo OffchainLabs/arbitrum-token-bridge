@@ -4,7 +4,6 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'

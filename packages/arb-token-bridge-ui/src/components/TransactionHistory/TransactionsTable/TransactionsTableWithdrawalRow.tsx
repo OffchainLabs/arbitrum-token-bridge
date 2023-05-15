@@ -1,10 +1,7 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
-import {
-  DotsVerticalIcon,
-  InformationCircleIcon
-} from '@heroicons/react/outline'
+
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
