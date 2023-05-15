@@ -1,7 +1,8 @@
-import { Transaction, AssetType } from '../../../src/token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { shortenTxHash } from '../../../src/util/CommonUtils'
+import { Transaction } from '../../../src/hooks/useTransactions'
+import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 
 type MockClassicDepositTransactionParams = {
   txID: string

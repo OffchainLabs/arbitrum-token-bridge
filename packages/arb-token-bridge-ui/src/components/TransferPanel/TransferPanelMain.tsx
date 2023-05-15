@@ -10,7 +10,6 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
 import { useSwitchNetwork } from 'wagmi'
@@ -43,6 +42,9 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { useBalance } from '../../hooks/useBalance'
+import { useGasPrice } from '../../hooks/useGasPrice'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>

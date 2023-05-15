@@ -1,5 +1,4 @@
 import useSWRImmutable from 'swr/immutable'
-import { Transaction } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -9,6 +8,7 @@ import {
   fetchDeposits
 } from '../util/deposits/fetchDeposits'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { Transaction } from './useTransactions'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
