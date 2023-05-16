@@ -994,6 +994,8 @@ export const useArbTokenBridge = (
         })
       }
     }
+
+    if (!(l1TokenDetails || l2TokenDetails)) throw Error('Token not found')
   }
 
   const updateTokenData = useCallback(
