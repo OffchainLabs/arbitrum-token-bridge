@@ -2,11 +2,11 @@ import React from 'react'
 
 import {
   CheckCircleIcon,
-  ExclamationIcon,
+  ExclamationTriangleIcon,
   InformationCircleIcon,
   XCircleIcon,
   CreditCardIcon
-} from '@heroicons/react/solid'
+} from '@heroicons/react/24/solid'
 
 const Alert = ({
   children,
@@ -39,7 +39,7 @@ const Alert = ({
             />
           )}
           {type === 'yellow' && (
-            <ExclamationIcon
+            <ExclamationTriangleIcon
               className="h-5 w-5 text-yellow-400"
               aria-hidden="true"
             />

@@ -1,9 +1,9 @@
 import useLocalStorage from '@rehooks/local-storage'
 import {
   StarIcon as StarIconOutline,
-  ExternalLinkIcon
-} from '@heroicons/react/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/solid'
+  ArrowTopRightOnSquareIcon
+} from '@heroicons/react/24/outline'
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 
 import { ExternalLink } from './ExternalLink'
 import {
@@ -123,7 +123,7 @@ export function BridgesTable(props: {
                 className="arb-hover flex h-16 w-full items-center justify-center text-gray-6 hover:text-blue-arbitrum"
                 onClick={() => onClick(bridge.name)}
               >
-                <ExternalLinkIcon className="h-5 w-5" />
+                <ArrowTopRightOnSquareIcon className="h-5 w-5" />
               </ExternalLink>
             </td>
           </tr>

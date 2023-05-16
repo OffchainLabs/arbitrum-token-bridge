@@ -1,4 +1,4 @@
-import { PlusCircleIcon } from '@heroicons/react/outline'
+import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 import { HeaderNetworkInformation } from './HeaderNetworkInformation'
