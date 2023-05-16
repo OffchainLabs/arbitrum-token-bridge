@@ -1,6 +1,6 @@
 import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
 import { Fragment, useCallback, useRef, useState } from 'react'
-import { XIcon } from '@heroicons/react/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
@@ -125,7 +125,7 @@ export function Dialog(props: DialogProps) {
                 </HeadlessUIDialog.Title>
                 {closeable && (
                   <button type="button" onClick={() => props.onClose(false)}>
-                    <XIcon className="arb-hover h-5 w-5" />
+                    <XMarkIcon className="arb-hover h-5 w-5" />
                   </button>
                 )}
               </div>

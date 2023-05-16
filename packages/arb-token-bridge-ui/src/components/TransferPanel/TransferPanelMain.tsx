@@ -3,8 +3,8 @@ import { Listbox } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  SwitchVerticalIcon
-} from '@heroicons/react/outline'
+  ArrowsUpDownIcon
+} from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
@@ -55,7 +55,7 @@ export function SwitchNetworksButton(
       className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
-      <SwitchVerticalIcon className="text-dark" />
+      <ArrowsUpDownIcon className="text-dark" />
     </button>
   )
 }
