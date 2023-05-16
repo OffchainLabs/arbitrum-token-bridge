@@ -166,7 +166,6 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { redeem, isRedeeming } = useRedeemRetryable()
 
   const isError = useMemo(() => {
@@ -228,20 +227,17 @@ export function TransactionsTableDepositRow({
       <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
         {showRedeemRetryableButton && (
           <Tooltip
-            show={!isConnectedToArbitrum}
             wrapperClassName=""
             content={
               <span>
-                Please connect to the L2 network to re-execute your deposit. You
-                have 7 days to re-execute a failed tx. After that, the tx is no
-                longer recoverable.
+                Retry now! You have 7 days to re-execute a failed tx. After
+                that, the tx is no longer recoverable.
               </span>
             }
           >
             <Button
               variant="primary"
               loading={isRedeeming}
-              disabled={!isConnectedToArbitrum}
               onClick={() => redeem(tx)}
             >
               Retry

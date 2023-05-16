@@ -23,20 +23,11 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   }>({ isValid: false, days: 0 })
 
   const {
-    isConnectedToArbitrum,
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
   } = useNetworksAndSigners()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
-
-  const isRedeemButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? !isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
 
   const updateRetryableTicketExpirationDate =
     useCallback(async (): Promise<void> => {
@@ -88,17 +79,16 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
           <div className="h-1" />
 
           <Tooltip
-            show={isRedeemButtonDisabled}
             content={
               <span>
-                Please connect to the L2 network to re-execute your deposit.
+                Re-execute now! You have 7 days to re-execute a failed tx. After
+                that, the tx is no longer recoverable.
               </span>
             }
           >
             <Button
               variant="primary"
               loading={isRedeeming}
-              disabled={isRedeemButtonDisabled}
               onClick={() => redeem(tx)}
               className="text-2xl"
             >

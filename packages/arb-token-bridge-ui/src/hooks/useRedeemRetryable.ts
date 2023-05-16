@@ -3,14 +3,18 @@ import {
   L1ToL2MessageWriter as IL1ToL2MessageWriter,
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
-import { useSigner } from 'wagmi'
+import { useSigner, useSwitchNetwork } from 'wagmi'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
-import { getNetworkName } from '../util/networks'
+import {
+  getNetworkName,
+  handleSwitchNetworkError,
+  handleSwitchNetworkOnMutate
+} from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 
 export type UseRedeemRetryableResult = {
@@ -24,10 +28,19 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
   } = useAppState()
   const {
     l1: { provider: l1Provider },
-    l2: { network: l2Network }
+    l2: { network: l2Network },
+    isConnectedToArbitrum
   } = useNetworksAndSigners()
-  const { data: signer } = useSigner()
+  const { data: l2Signer } = useSigner({
+    chainId: l2Network.chainID
+  })
   const l2NetworkName = getNetworkName(l2Network.chainID)
+  const { switchNetworkAsync } = useSwitchNetwork({
+    throwForSwitchChainNotSupported: true,
+    onMutate: () =>
+      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
+    onError: handleSwitchNetworkError
+  })
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -41,15 +54,18 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     try {
       setIsRedeeming(true)
 
-      if (!signer) {
+      if (!l2Signer) {
         throw 'Signer is undefined'
+      }
+      if (!isConnectedToArbitrum) {
+        await switchNetworkAsync?.(l2Network.chainID)
       }
 
       retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
         l1Provider,
-        l2Signer: signer
+        l2Signer
       })
     } catch (error: any) {
       setIsRedeeming(false)
