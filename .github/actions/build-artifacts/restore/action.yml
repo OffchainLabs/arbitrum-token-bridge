@@ -8,6 +8,6 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: |
-          ./packages/arb-token-bridge-ui/build
+          ./build
         key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
         fail-on-cache-miss: true

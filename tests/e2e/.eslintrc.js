@@ -9,7 +9,7 @@ module.exports = {
   extends: `${synpressPath}/.eslintrc.js`,
   parserOptions: {
     project: path.resolve(
-      './packages/arb-token-bridge-ui/tests/e2e/tsconfig.json'
+      './tests/e2e/tsconfig.json'
     )
   },
   rules: {

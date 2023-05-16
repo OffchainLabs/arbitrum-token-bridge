@@ -3,7 +3,7 @@ dist
 synpress.config.ts
 tailwind.config.js
 
-packages/arb-token-bridge/craco.config.js
-packages/arb-token-bridge/prettier.config.js
-packages/arb-token-bridge/build/static/js/*.js
-packages/arb-token-bridge/tests/**/*.ts
+craco.config.js
+prettier.config.js
+build/static/js/*.js
+tests/**/*.ts

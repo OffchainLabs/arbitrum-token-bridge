@@ -8,17 +8,14 @@ module.exports = {
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ["./tsconfig.eslint.json", "./packages/*/tsconfig.json"],
+    project: ["./tsconfig.eslint.json", "./tsconfig.json"],
     tsconfigRootDir: __dirname,
     sourceType: "module",
   },
   settings: {
     react: {
       version: "detect",
-    },
-    next: {
-      rootDir: "packages/arb-token-bridge-ui/",
-    },
+    }
   },
   rules: {
     "react/jsx-uses-react": "off", // we're using React 17+ so it's irrelevant

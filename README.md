@@ -64,7 +64,7 @@ Interested in contributing to this repo? We welcome your contribution.
    1. Copy the existing env.sample file present.
 
       ```bash
-      $ cp ./packages/arb-token-bridge-ui/.env.local.sample  ./packages/arb-token-bridge-ui/.env
+      $ cp .env.local.sample  arb-token-bridge-ui/.env
       ```
 
    2. In `.env` created, add `NEXT_PUBLIC_INFURA_KEY=my-infura-key`
@@ -73,7 +73,7 @@ Interested in contributing to this repo? We welcome your contribution.
 
    - `NEXT_PUBLIC_ETHEREUM_RPC_URL=my-eth-node`
    - `NEXT_PUBLIC_GOERLI_RPC_URL=my-goerli-node`
-     (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
+     (see [.env.sample](.env.sample))
      If no custom URL is provided, Infura will be used by default.
 
 5. Build the project and internal packages
@@ -123,7 +123,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
    1. At this folder's root,
 
       ```bash
-      $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
+      $ cp .e2e.env.sample .e2e.env
       ```
 
    2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file.
@@ -133,7 +133,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
    $ yarn test:e2e
    ```
 
-Read more about the test setup [here](/packages/arb-token-bridge-ui/tests/e2e/README.md).
+Read more about the test setup [here](tests/e2e/README.md).
 
 <br />
 
