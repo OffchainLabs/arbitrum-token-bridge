@@ -23,6 +23,7 @@
     "boring-avatars": "^1.7.0",
     "cheerio": "^1.0.0-rc.12",
     "dayjs": "^1.10.6",
+    "eslint-config-prettier": "^8.8.0",
     "ethers": "^5.6.0",
     "fetch-retry": "^5.0.3",
     "framer-motion": "^10.12.10",
@@ -51,7 +52,7 @@
     "start": "next start",
     "audit:ci": "audit-ci --config ./audit-ci.jsonc",
     "prettier:check": "./node_modules/.bin/prettier --check .",
-    "prettier:format": "./node_modules/.bin/prettier --write .",
+    "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
     "lint": "tsc && eslint 'src/**/*.{js,ts,tsx}'",
     "lint:fix": "tsc && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
@@ -89,6 +90,7 @@
     "@types/react-virtualized": "^9.21.20",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.44.0",
+    "audit-ci": "^6.3.0",
     "autoprefixer": "^10.4.13",
     "cypress-localstorage-commands": "^2.2.1",
     "cypress-recurse": "^1.27.0",
@@ -110,7 +112,6 @@
     "prettier-plugin-tailwindcss": "^0.1.11",
     "tailwindcss": "^3.2.4",
     "ts-prune": "^0.10.1",
-    "typescript": "^4.7.4",
-    "audit-ci": "^6.3.0"
+    "typescript": "^4.7.4"
   }
 }
