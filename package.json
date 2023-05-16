@@ -49,20 +49,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "jest --watch",
-    "test:ci": "jest --ci",
+    "audit:ci": "audit-ci --config ./audit-ci.jsonc",
+    "prettier:check": "./node_modules/.bin/prettier --check .",
+    "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "tsc && eslint 'src/**/*.{js,ts,tsx}'",
     "lint:fix": "tsc && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
-    "prettier:format": "prettier --config-precedence file-override --write \"src/**/*.{tsx,ts,scss,md,json}\"",
-    "getUnusedComponents": "ts-prune | grep ' default$'",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
     "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
     "e2e:install": "cypress install",
-    "audit:ci": "audit-ci --config ./audit-ci.jsonc",
+    "test:ci": "jest --ci",
     "test:e2e": "yarn e2e:run --browser chrome",
     "test:ci:e2e": "start-server-and-test 'yarn build && yarn start' http-get://localhost:3000 'env-cmd -f .e2e.env synpress run --configFile synpress.config.ts'",
     "test:ci:e2e:install": "e2e:install",
-    "prettier:check": "./node_modules/.bin/prettier --check ."
+    "getUnusedComponents": "ts-prune | grep ' default$'"
   },
   "browserslist": {
     "production": [
