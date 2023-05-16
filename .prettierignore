@@ -4,3 +4,5 @@
 **/dist
 .github/
 **/src/styles/
+docker-compose.ci.yml
+**/.eslintrc.js
