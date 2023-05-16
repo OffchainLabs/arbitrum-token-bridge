@@ -64,7 +64,7 @@ Interested in contributing to this repo? We welcome your contribution.
    1. Copy the existing env.sample file present.
 
       ```bash
-      $ cp .env.local.sample  arb-token-bridge-ui/.env
+      $ cp .env.local.sample .env
       ```
 
    2. In `.env` created, add `NEXT_PUBLIC_INFURA_KEY=my-infura-key`
