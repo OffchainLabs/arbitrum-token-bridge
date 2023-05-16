@@ -1,10 +1,7 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
-import {
-  DotsVerticalIcon,
-  InformationCircleIcon
-} from '@heroicons/react/outline'
+
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
@@ -16,6 +13,10 @@ import { shortenTxHash } from '../../../util/CommonUtils'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
+import {
+  EllipsisVerticalIcon,
+  InformationCircleIcon
+} from '@heroicons/react/24/outline'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import {
@@ -297,7 +298,7 @@ function WithdrawalRowAction({
           // show a dropdown menu with the button
           <Popover>
             <Popover.Button>
-              <DotsVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
+              <EllipsisVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
             </Popover.Button>
             <Popover.Panel
               className={'absolute top-4 z-50 rounded-md bg-white shadow-lg'}
