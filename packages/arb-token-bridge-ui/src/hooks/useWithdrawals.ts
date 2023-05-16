@@ -1,5 +1,4 @@
 import useSWRImmutable from 'swr/immutable'
-import { L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -8,6 +7,7 @@ import {
   FetchWithdrawalsParams,
   fetchWithdrawals
 } from '../util/withdrawals/fetchWithdrawals'
+import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 

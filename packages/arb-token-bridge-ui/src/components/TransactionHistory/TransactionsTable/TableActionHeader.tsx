@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  SearchIcon
-} from '@heroicons/react/outline'
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline'
 import { TransactionsTableProps } from './TransactionsTable'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
 import { Loader } from '../../common/atoms/Loader'
@@ -79,7 +79,7 @@ export const TableActionHeader = ({
     >
       {/* Search bar */}
       <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark">
-        <SearchIcon className="h-4 w-4 shrink-0 text-gray-dark" />
+        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-gray-dark" />
         <input
           className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-6"
           type="text"

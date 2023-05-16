@@ -3,14 +3,13 @@ import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
 import {
   CheckCircleIcon,
-  XIcon,
-  ArrowSmLeftIcon,
+  XMarkIcon,
+  ArrowSmallLeftIcon,
   ExclamationCircleIcon,
-  SearchIcon
-} from '@heroicons/react/outline'
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-import { useBalance, ERC20BridgeToken } from 'token-bridge-sdk'
 import Image from 'next/image'
 
 import { Loader } from '../common/atoms/Loader'
@@ -37,6 +36,8 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
+import { useBalance } from '../../hooks/useBalance'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 enum Panel {
   TOKENS,
@@ -569,7 +570,7 @@ function TokensPanel({
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark">
-            <SearchIcon className="h-4 w-4 shrink-0 text-gray-dark" />
+            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-gray-dark" />
 
             <input
               id="newTokenAddress"
@@ -719,7 +720,7 @@ export function TokenSearch({
         <div className="flex flex-row items-center justify-between pb-4">
           <span className="text-xl font-medium">Select Token</span>
           <button className="arb-hover" onClick={close}>
-            <XIcon className="h-6 w-6 text-gray-5" />
+            <XMarkIcon className="h-6 w-6 text-gray-5" />
           </button>
         </div>
         <TokensPanel onTokenSelected={selectToken} />
@@ -747,7 +748,7 @@ export function TokenSearch({
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">Token Lists</span>
         <button className="arb-hover" onClick={close}>
-          <XIcon className="h-6 w-6 text-gray-5" />
+          <XMarkIcon className="h-6 w-6 text-gray-5" />
         </button>
       </div>
       <div className="flex justify-start pb-6">
@@ -755,7 +756,7 @@ export function TokenSearch({
           className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
           onClick={() => setCurrentPanel(Panel.TOKENS)}
         >
-          <ArrowSmLeftIcon className="h-6 w-6" />
+          <ArrowSmallLeftIcon className="h-6 w-6" />
           <span>Back to Select Token</span>
         </button>
       </div>

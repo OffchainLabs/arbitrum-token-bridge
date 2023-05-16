@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { DocumentDuplicateIcon, XIcon } from '@heroicons/react/outline'
+import { DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Button } from '../common/Button'
@@ -78,7 +78,7 @@ export function DepositConfirmationDialog(
                 props.onClose(false)
               }}
             >
-              <XIcon className="h-6 w-6 text-white" />
+              <XMarkIcon className="h-6 w-6 text-white" />
             </button>
           </div>
 

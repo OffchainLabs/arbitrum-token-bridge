@@ -3,14 +3,13 @@ import { Listbox } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  SwitchVerticalIcon
-} from '@heroicons/react/outline'
+  ArrowsUpDownIcon
+} from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
 import { useSwitchNetwork } from 'wagmi'
@@ -43,6 +42,9 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { useBalance } from '../../hooks/useBalance'
+import { useGasPrice } from '../../hooks/useGasPrice'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -53,7 +55,7 @@ export function SwitchNetworksButton(
       className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
-      <SwitchVerticalIcon className="text-dark" />
+      <ArrowsUpDownIcon className="text-dark" />
     </button>
   )
 }

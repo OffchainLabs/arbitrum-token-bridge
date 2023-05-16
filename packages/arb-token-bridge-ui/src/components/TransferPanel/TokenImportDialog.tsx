@@ -1,13 +1,12 @@
 import {
   ExclamationCircleIcon,
   InformationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import Tippy from '@tippyjs/react'
 
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken } from 'token-bridge-sdk'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -23,6 +22,7 @@ import {
   useTokensFromLists,
   useTokensFromUser
 } from './TokenSearchUtils'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 enum ImportStatus {
   LOADING,

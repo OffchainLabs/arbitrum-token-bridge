@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useSwitchNetwork } from 'wagmi'
 
 import { MergedTransaction } from '../../state/app/state'

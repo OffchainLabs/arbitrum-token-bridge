@@ -1,9 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { constants, utils } from 'ethers'
-import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
-import { useBalance } from 'token-bridge-sdk'
+import {
+  ArrowTopRightOnSquareIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline'
 import Image from 'next/image'
 
+import { useBalance } from '../../hooks/useBalance'
 import { useAppState } from '../../state'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -65,7 +68,7 @@ function ExternalLinkCard({
             width={40}
             height={40}
           />
-          <ExternalLinkIcon className="h-4 w-4 text-gray-4" />
+          <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-4" />
         </div>
         <div className="flex w-full justify-center">
           <span className="text-xs sm:text-base">{title}</span>

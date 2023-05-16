@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import {
   CheckIcon,
-  XIcon,
+  XMarkIcon,
   ExclamationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
@@ -103,7 +103,7 @@ export function WithdrawalConfirmationDialog(
               Move funds to {networkName}
             </HeadlessUIDialog.Title>
             <button className="arb-hover" onClick={() => closeWithReset(false)}>
-              <XIcon className="h-6 w-6 text-white" />
+              <XMarkIcon className="h-6 w-6 text-white" />
             </button>
           </div>
 
