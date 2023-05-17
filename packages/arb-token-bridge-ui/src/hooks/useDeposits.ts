@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
@@ -41,8 +42,8 @@ export const fetchCompleteDepositData = async (
 export const useDeposits = (depositPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
 
-  const l1Provider = l1.provider
-  const l2Provider = l2.provider
+  const l1Provider = useMemo(() => l1.provider, [l1.network.chainID])
+  const l2Provider = useMemo(() => l2.provider, [l2.network.chainID])
 
   const {
     app: {
