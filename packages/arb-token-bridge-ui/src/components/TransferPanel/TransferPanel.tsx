@@ -120,7 +120,7 @@ export function TransferPanel() {
   const { isTransferring } = layout
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
-  const { switchNetwork } = useSwitchNetwork({
+  const { switchNetworkAsync } = useSwitchNetwork({
     throwForSwitchChainNotSupported: true,
     onMutate: () =>
       handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
@@ -409,7 +409,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
+          await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l1.network.chainID
           )
 
@@ -562,7 +562,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
+          await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l2.network.chainID
           )
 
