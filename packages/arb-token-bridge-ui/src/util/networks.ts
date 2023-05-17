@@ -3,12 +3,15 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { Chain } from 'wagmi'
+import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
 
 import * as Sentry from '@sentry/react'
 import { SwitchNetworkArgs } from '@wagmi/core'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { isUserRejectedError } from './isUserRejectedError'
+import { arbitrumNova } from './wagmi/wagmiAdditionalNetworks'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -18,6 +21,40 @@ if (typeof INFURA_KEY === 'undefined') {
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
+
+export function getWagmiChain(chainId: number): Chain {
+  switch (chainId) {
+    case ChainId.Mainnet:
+      return mainnet
+
+    case ChainId.Goerli:
+      return goerli
+
+    case ChainId.ArbitrumOne:
+      return arbitrum
+
+    case ChainId.ArbitrumNova:
+      return arbitrumNova
+
+    case ChainId.ArbitrumGoerli:
+      return arbitrumGoerli
+
+    default:
+      throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
+  }
+}
+
+export function getL2ChainIds(l1ChainId: number): ChainId[] {
+  if (l1ChainId === ChainId.Mainnet) {
+    return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+  }
+
+  if (l1ChainId === ChainId.Goerli) {
+    return [ChainId.ArbitrumGoerli]
+  }
+
+  return []
+}
 
 export enum ChainId {
   // L1

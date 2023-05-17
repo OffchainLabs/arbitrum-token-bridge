@@ -34,7 +34,7 @@ export function DepositL1TxStatus({
     case DepositStatus.EXPIRED:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -62,7 +62,7 @@ export function DepositL2TxStatus({
     case DepositStatus.L2_SUCCESS:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(l2.network.chainID)}/tx/${
+          href={`${getExplorerUrl(l2.network.id)}/tx/${
             tx.l1ToL2MsgData?.l2TxID
           }`}
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
@@ -114,7 +114,7 @@ export function DepositCardContainer({
   }, [tx])
 
   const borderColor =
-    l2Network?.chainID === ChainId.ArbitrumNova
+    l2Network.id === ChainId.ArbitrumNova
       ? 'border-arb-nova-primary'
       : 'border-arb-one-primary'
 
@@ -125,7 +125,7 @@ export function DepositCardContainer({
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <Image
-          src={getNetworkLogo(l2Network.chainID)}
+          src={getNetworkLogo(l2Network.id)}
           className="absolute left-0 top-[1px] z-10 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:opacity-[60%]"
           alt="Deposit"
           height={90}

@@ -44,7 +44,7 @@ export const PendingTransactions = ({
     onError: handleSwitchNetworkError
   })
 
-  const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
+  const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-10'
     : 'bg-blue-arbitrum'
 
@@ -57,20 +57,18 @@ export const PendingTransactions = ({
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}
-          {`${getNetworkName(l2Network.chainID)}/${getNetworkName(
-            l1Network.chainID
-          )}`}
+          {`${getNetworkName(l2Network.id)}/${getNetworkName(l1Network.id)}`}
         </div>
 
         {/* For mainnets, show the corresponding network to switch - One < > Nova */}
-        {!isNetwork(l2Network.chainID).isTestnet && (
+        {!isNetwork(l2Network.id).isTestnet && (
           <ExternalLink
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
-              switchNetwork?.(getOtherL2NetworkChainId(l2Network.chainID))
+              switchNetwork?.(getOtherL2NetworkChainId(l2Network.id))
             }}
           >{`See ${getNetworkName(
-            getOtherL2NetworkChainId(l2Network.chainID)
+            getOtherL2NetworkChainId(l2Network.id)
           )}`}</ExternalLink>
         )}
       </div>

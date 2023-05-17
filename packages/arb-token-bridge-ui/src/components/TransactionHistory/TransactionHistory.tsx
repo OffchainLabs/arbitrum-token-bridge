@@ -77,13 +77,13 @@ export const TransactionHistory = ({
             >
               {/* Deposits */}
               <Image
-                src={getNetworkLogo(l2.network.chainID)}
+                src={getNetworkLogo(l2.network.id)}
                 className="h-6 w-auto"
                 alt="Deposit"
                 height={24}
                 width={24}
               />
-              {`To ${getNetworkName(l2.network.chainID)}`}
+              {`To ${getNetworkName(l2.network.id)}`}
             </TabButton>
             <TabButton
               aria-label="show withdrawal transactions"
@@ -91,13 +91,13 @@ export const TransactionHistory = ({
             >
               {/* Withdrawals */}
               <Image
-                src={getNetworkLogo(l1.network.chainID)}
+                src={getNetworkLogo(l1.network.id)}
                 className="h-6 w-auto"
                 alt="Withdraw"
                 width={24}
                 height={24}
               />
-              {`To ${getNetworkName(l1.network.chainID)}`}
+              {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
           </Tab.List>
           <Tab.Panel className="overflow-auto">

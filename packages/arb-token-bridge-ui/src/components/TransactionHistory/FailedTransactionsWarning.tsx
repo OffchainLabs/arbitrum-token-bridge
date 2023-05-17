@@ -21,7 +21,7 @@ export const FailedTransactionsWarning = ({
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.chainID)
+  const l2NetworkName = getNetworkName(l2Network.id)
 
   const numFailedTransactions = transactions?.length
 

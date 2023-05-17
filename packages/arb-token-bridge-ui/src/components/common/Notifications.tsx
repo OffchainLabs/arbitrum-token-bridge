@@ -57,7 +57,7 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const { l1 } = useNetworksAndSigners()
-  const { isGoerli } = isNetwork(l1.network.chainID)
+  const { isGoerli } = isNetwork(l1.network.id)
 
   return (
     <NotificationContainer>
