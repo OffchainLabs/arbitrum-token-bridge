@@ -768,7 +768,7 @@ export function TransferPanelMain({
     to,
     isDepositMode,
     setQueryParams,
-    switchNetwork,
+    switchNetworkAsync,
     switchNetworksOnTransferPanel,
     isConnectedToArbitrum
   ])
