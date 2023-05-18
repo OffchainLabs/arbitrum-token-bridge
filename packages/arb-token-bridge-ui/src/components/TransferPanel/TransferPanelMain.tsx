@@ -12,7 +12,6 @@ import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { useSwitchNetwork } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -21,8 +20,6 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -45,6 +42,7 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -336,11 +334,8 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetwork } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })

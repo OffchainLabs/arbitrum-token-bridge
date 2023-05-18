@@ -1,15 +1,15 @@
 import { Popover, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import { useCallback } from 'react'
-import { useNetwork, useSwitchNetwork } from 'wagmi'
+import { useNetwork } from 'wagmi'
 
 import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  getSupportedNetworks,
-  handleSwitchNetworkError
+  getSupportedNetworks
 } from '../../util/networks'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export const NetworkSelectionContainer = ({
   children
@@ -17,10 +17,7 @@ export const NetworkSelectionContainer = ({
   children: React.ReactNode
 }) => {
   const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onError: handleSwitchNetworkError
-  })
+  const { switchNetwork } = useSwitchNetworkWithConfig()
   const supportedNetworks = getSupportedNetworks(chain?.id).filter(
     chainId => chainId !== chain?.id
   )

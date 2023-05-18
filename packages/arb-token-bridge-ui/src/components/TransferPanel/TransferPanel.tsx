@@ -5,18 +5,13 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
+import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import {
-  getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
@@ -44,6 +39,7 @@ import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { getL1TokenAllowance } from '../../util/TokenUtils'
 import { ArbTokenBridge } from '../../hooks/arbTokenBridge.types'
 import { useBalance } from '../../hooks/useBalance'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -120,11 +116,8 @@ export function TransferPanel() {
   const { isTransferring } = layout
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetwork } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
   const latestConnectedProvider = useLatest(provider)
 
