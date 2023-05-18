@@ -334,7 +334,7 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { switchNetwork } = useSwitchNetworkWithConfig({
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
 
@@ -646,7 +646,7 @@ export function TransferPanelMain({
             }
 
             try {
-              await switchNetwork?.(network.chainID)
+              await switchNetworkAsync?.(network.chainID)
               updatePreferredL2Chain(network.chainID)
 
               // If L2 selected, change to withdraw mode and set new selections
@@ -683,7 +683,7 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await switchNetwork?.(l1.network.chainID)
+                await switchNetworkAsync?.(l1.network.chainID)
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -719,7 +719,7 @@ export function TransferPanelMain({
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await switchNetwork?.(network.chainID)
+            await switchNetworkAsync?.(network.chainID)
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -742,7 +742,7 @@ export function TransferPanelMain({
 
           // Destination network is L2, connect to L1
           try {
-            await switchNetwork?.(l1.network.chainID)
+            await switchNetworkAsync?.(l1.network.chainID)
             updatePreferredL2Chain(network.chainID)
 
             // Change to withdraw mode and set new selections
@@ -763,7 +763,7 @@ export function TransferPanelMain({
     to,
     isDepositMode,
     setQueryParams,
-    switchNetwork,
+    switchNetworkAsync,
     switchNetworksOnTransferPanel,
     isConnectedToArbitrum
   ])

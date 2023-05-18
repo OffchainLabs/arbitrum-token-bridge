@@ -116,7 +116,7 @@ export function TransferPanel() {
   const { isTransferring } = layout
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
-  const { switchNetwork } = useSwitchNetworkWithConfig({
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
   const latestConnectedProvider = useLatest(provider)
@@ -402,7 +402,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
+          await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l1.network.chainID
           )
 
@@ -555,7 +555,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
+          await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l2.network.chainID
           )
 
