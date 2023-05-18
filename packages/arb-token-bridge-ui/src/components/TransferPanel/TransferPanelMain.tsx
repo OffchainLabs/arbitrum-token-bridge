@@ -19,13 +19,13 @@ import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getL2ChainIds,
-  getWagmiChain,
   getNetworkLogo,
   getNetworkName,
   handleSwitchNetworkError,
   handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
