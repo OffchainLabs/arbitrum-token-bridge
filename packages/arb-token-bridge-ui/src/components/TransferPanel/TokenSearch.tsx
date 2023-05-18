@@ -18,9 +18,8 @@ import {
   BridgeTokenList,
   listIdsToNames,
   addBridgeTokenListToBridge,
-  useTokenLists,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
-} from '../../tokenLists'
+} from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { getL1TokenData } from '../../util/TokenUtils'
@@ -37,6 +36,7 @@ import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useTokenLists } from '../../hooks/useTokenLists'
 
 enum Panel {
   TOKENS,
