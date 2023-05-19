@@ -4,7 +4,12 @@ import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
 import { useAppState } from '../../state'
-import { getNetworkLogo, getNetworkName } from '../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkLogo,
+  getNetworkName,
+  isNetwork
+} from '../../util/networks'
 import {
   PageParams,
   TransactionsTable
@@ -14,6 +19,10 @@ import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
+import { MAX_EVENT_LOG_BLOCK_DIFF } from '../../util/withdrawals/fetchWithdrawals'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { formatAmount } from '../../util/NumberUtils'
+import { ExternalLink } from '../common/ExternalLink'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -39,6 +48,13 @@ export const TransactionHistory = ({
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
   const { l1, l2 } = useNetworksAndSigners()
+
+  const { isArbitrumNova } = isNetwork(l2.network.chainID)
+  const {
+    app: {
+      arbTokenBridge: { walletAddress }
+    }
+  } = useAppState()
 
   const {
     app: { mergedTransactions }
@@ -66,6 +82,23 @@ export const TransactionHistory = ({
 
       {/* Warning to show when there are 3 or more failed transactions for the user */}
       <FailedTransactionsWarning transactions={failedTransactions} />
+
+      {/* Nova blocks limited warning */}
+      {isArbitrumNova && (
+        <div className="flex items-center gap-1 rounded-md bg-orange p-2 text-sm text-dark lg:flex-nowrap">
+          <InformationCircleIcon className="h-4 w-4" />
+          Tx history currently shows Nova withdrawals limited to the latest{' '}
+          {formatAmount(MAX_EVENT_LOG_BLOCK_DIFF)} blocks.
+          <ExternalLink
+            href={`${getExplorerUrl(
+              l2.network.chainID
+            )}/address/${walletAddress}#withdrawaltxs`}
+            className="arb-hover cursor-pointer text-sm text-blue-link underline"
+          >
+            Check all withdrawals here.
+          </ExternalLink>
+        </div>
+      )}
 
       {/* Transaction history table */}
       <div>
