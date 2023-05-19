@@ -51,34 +51,25 @@ function handleSwitchNetworkError(
   }
 }
 
-/**
- * The return value will be the `context` param received by the error
- * handler of `switchNetwork`.
- *
- * Function fires before switch network function and is passed same
- * variables switch network function would receive.
- * Value returned from this function will be passed to both `onError` and
- * `onSettled` functions in event of a switch network failure.
- * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
- *
- * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
- */
-function handleSwitchNetworkOnMutate({
-  isSwitchingNetworkBeforeTx
-}: {
-  isSwitchingNetworkBeforeTx: boolean
-}) {
-  return {
-    isSwitchingNetworkBeforeTx
-  }
-}
-
 export function useSwitchNetworkWithConfig({
   isSwitchingNetworkBeforeTx = false
 }: SwitchNetworkConfig = {}) {
   const config = {
     throwForSwitchChainNotSupported: true,
-    onMutate: () => handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx }),
+    /**
+     * onMutate:
+     * The return value will be the `context` param received by the error
+     * handler of `switchNetwork`.
+     *
+     * Function fires before switch network function and is passed same
+     * variables switch network function would receive.
+     * Value returned from this function will be passed to both `onError` and
+     * `onSettled` functions in event of a switch network failure.
+     * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
+     *
+     * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
+     */
+    onMutate: () => ({ isSwitchingNetworkBeforeTx }),
     onError: handleSwitchNetworkError
   }
 
