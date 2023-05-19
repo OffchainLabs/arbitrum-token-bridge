@@ -6181,11 +6181,6 @@ csstype@^3.0.2, csstype@^3.0.6, csstype@^3.0.7:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.2.tgz#1d4bf9d572f11c14031f0436e1c10bc1f571f50b"
   integrity sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==
 
-cypress-localstorage-commands@^2.2.1:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/cypress-localstorage-commands/-/cypress-localstorage-commands-2.2.3.tgz#ef5b736226b8316b7d948e30bc4b94a157cfa025"
-  integrity sha512-EUEaHzbstw9AsEheIqr+RyXuxIzUS64nBBwl+Q4/mSdzfXpfcaV1nrHF+6H9zbTuFVTc+oWu6eC1l8aSjiWW6w==
-
 cypress-recurse@^1.27.0:
   version "1.29.0"
   resolved "https://registry.yarnpkg.com/cypress-recurse/-/cypress-recurse-1.29.0.tgz#81960c78682f13571bcc3f8d823e6db00a34aa7d"

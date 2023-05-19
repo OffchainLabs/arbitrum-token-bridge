@@ -46,7 +46,7 @@ describe('Read classic deposit messages', () => {
     })
 
     it('can read successful ETH deposit', () => {
-      cy.setLocalStorage(
+      window.localStorage.setItem(
         'arbTransactions',
         JSON.stringify([
           mockClassicDepositTransaction({
@@ -88,7 +88,7 @@ describe('Read classic deposit messages', () => {
     })
 
     it('can read successful ERC-20 deposit', () => {
-      cy.setLocalStorage(
+      window.localStorage.setItem(
         'arbTransactions',
         JSON.stringify([
           mockClassicDepositTransaction({
