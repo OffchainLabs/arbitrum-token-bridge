@@ -11,7 +11,7 @@ import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { Chain, useSwitchNetwork } from 'wagmi'
+import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -21,8 +21,6 @@ import {
   getL2ChainIds,
   getNetworkLogo,
   getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -46,6 +44,7 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -328,11 +327,8 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -641,7 +637,7 @@ export function TransferPanelMain({
             }
 
             try {
-              await switchNetwork?.(network.id)
+              await switchNetworkAsync?.(network.id)
               updatePreferredL2Chain(network.id)
 
               // If L2 selected, change to withdraw mode and set new selections
@@ -678,7 +674,7 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await switchNetwork?.(l1.network.id)
+                await switchNetworkAsync?.(l1.network.id)
                 updatePreferredL2Chain(network.id)
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -714,7 +710,7 @@ export function TransferPanelMain({
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await switchNetwork?.(network.id)
+            await switchNetworkAsync?.(network.id)
             updatePreferredL2Chain(network.id)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -737,7 +733,7 @@ export function TransferPanelMain({
 
           // Destination network is L2, connect to L1
           try {
-            await switchNetwork?.(l1.network.id)
+            await switchNetworkAsync?.(l1.network.id)
             updatePreferredL2Chain(network.id)
 
             // Change to withdraw mode and set new selections
@@ -758,7 +754,7 @@ export function TransferPanelMain({
     to,
     isDepositMode,
     setQueryParams,
-    switchNetwork,
+    switchNetworkAsync,
     switchNetworksOnTransferPanel,
     isConnectedToArbitrum
   ])

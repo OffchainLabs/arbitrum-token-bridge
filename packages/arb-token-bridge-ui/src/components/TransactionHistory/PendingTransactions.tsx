@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useSwitchNetwork } from 'wagmi'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit } from '../../state/app/utils'
@@ -8,14 +7,10 @@ import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import {
-  ChainId,
-  getNetworkName,
-  handleSwitchNetworkError,
-  isNetwork
-} from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -39,10 +34,7 @@ export const PendingTransactions = ({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onError: handleSwitchNetworkError
-  })
+  const { switchNetwork } = useSwitchNetworkWithConfig()
 
   const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-10'

@@ -4,11 +4,7 @@ import {
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
-import * as Sentry from '@sentry/react'
-import { SwitchNetworkArgs } from '@wagmi/core'
-
 import { loadEnvironmentVariableWithFallback } from './index'
-import { isUserRejectedError } from './isUserRejectedError'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -312,68 +308,4 @@ export function getSupportedNetworks(chainId = 0) {
   return isNetwork(chainId).isTestnet
     ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
-}
-
-const handleSwitchNetworkNotSupported = (
-  attemptedChainId: number,
-  isSwitchingNetworkBeforeTx: boolean
-) => {
-  const isDeposit = isNetwork(attemptedChainId).isEthereum
-  const targetTxName = isDeposit ? 'deposit' : 'withdraw'
-  const networkName = getNetworkName(attemptedChainId)
-
-  const message = isSwitchingNetworkBeforeTx
-    ? `Please connect to ${networkName} on your wallet before signing your ${targetTxName} transaction.`
-    : `Please connect to ${networkName} on your wallet.`
-
-  // TODO: show user a nice dialogue box instead of
-  // eslint-disable-next-line no-alert
-  alert(message)
-}
-
-/**
- * Function to invoke when an error is thrown while attempting to switch network.
- * https://wagmi.sh/react/hooks/useSwitchNetwork#onerror-optional
- * @param error
- * @param param1 - `{ chainId: number }`
- * @param context - default value `{ isSwitchingNetworkBeforeTx: false }`
- */
-export function handleSwitchNetworkError(
-  error: any,
-  { chainId }: SwitchNetworkArgs,
-  context: unknown = { isSwitchingNetworkBeforeTx: false }
-) {
-  const { isSwitchingNetworkBeforeTx } = context as {
-    isSwitchingNetworkBeforeTx: boolean
-  }
-  if (isUserRejectedError(error)) {
-    return
-  }
-  if (error.name === 'SwitchChainNotSupportedError') {
-    handleSwitchNetworkNotSupported(chainId, isSwitchingNetworkBeforeTx)
-  } else {
-    Sentry.captureException(error)
-  }
-}
-
-/**
- * The return value will be the `context` param received by the error
- * handler of `switchNetwork`.
- *
- * Function fires before switch network function and is passed same
- * variables switch network function would receive.
- * Value returned from this function will be passed to both `onError` and
- * `onSettled` functions in event of a switch network failure.
- * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
- *
- * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
- */
-export function handleSwitchNetworkOnMutate({
-  isSwitchingNetworkBeforeTx = false
-}: {
-  isSwitchingNetworkBeforeTx: boolean
-}) {
-  return {
-    isSwitchingNetworkBeforeTx
-  }
 }
