@@ -357,7 +357,7 @@ export function handleSwitchNetworkError(
  * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
  */
 export function handleSwitchNetworkOnMutate({
-  isSwitchingNetworkBeforeTx = false
+  isSwitchingNetworkBeforeTx
 }: {
   isSwitchingNetworkBeforeTx: boolean
 }) {
