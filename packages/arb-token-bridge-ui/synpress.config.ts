@@ -2,7 +2,6 @@ import { BigNumber, constants, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
-import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
@@ -88,7 +87,6 @@ export default defineConfig({
         await Erc20Bridger.fromProvider(arbProvider)
       ).getL2ERC20Address(l1ERC20Token.address, ethProvider)
 
-      cypressLocalStoragePlugin(on, config)
       synpressPlugins(on, config)
       setupCypressTasks(on)
       return config
