@@ -86,7 +86,6 @@
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.44.0",
     "autoprefixer": "^10.4.13",
-    "cypress-localstorage-commands": "^2.2.1",
     "cypress-recurse": "^1.27.0",
     "cypress-wait-until": "^1.7.2",
     "env-cmd": "^10.1.0",
