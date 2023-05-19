@@ -37,7 +37,13 @@ import {
   NodeBlockDeadlineStatusTypes
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { getL1TokenData, getL1ERC20Address } from '../util/TokenUtils'
+import {
+  getL1TokenData,
+  getL1ERC20Address,
+  getL2GatewayAddress,
+  getL2ERC20Address,
+  l1TokenIsDisabled
+} from '../util/TokenUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -154,31 +160,6 @@ export const useArbTokenBridge = (
 
   const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
-
-  async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider)
-  }
-
-  /**
-   * Retrieves the L2 address of an ERC-20 token using its L1 address.
-   * @param erc20L1Address
-   * @returns
-   */
-  async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1.provider)
-  }
-
-  /**
-   * Retrieves data about whether an ERC-20 token is disabled on the router.
-   * @param erc20L1Address
-   * @returns
-   */
-  async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider)
-  }
 
   const depositEth = async ({
     amount,
@@ -435,7 +416,10 @@ export const useArbTokenBridge = (
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
-    const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
+    const gatewayAddress = await getL2GatewayAddress({
+      erc20L1Address,
+      l2Provider: l2.provider
+    })
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const { symbol } = await getL1TokenData({
@@ -891,7 +875,11 @@ export const useArbTokenBridge = (
     } else {
       // looks like l1 address was provided
       l1Address = lowercasedErc20L1orL2Address
-      l2Address = await getL2ERC20Address(l1Address)
+      l2Address = await getL2ERC20Address({
+        erc20L1Address: l1Address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
@@ -903,7 +891,11 @@ export const useArbTokenBridge = (
       l2Provider: l2.provider
     })
 
-    const isDisabled = await l1TokenIsDisabled(l1Address)
+    const isDisabled = await l1TokenIsDisabled({
+      erc20L1Address: l1Address,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     if (isDisabled) {
       throw new TokenDisabledError('Token currently disabled')
@@ -1116,9 +1108,7 @@ export const useArbTokenBridge = (
       depositEstimateGas: depositTokenEstimateGas,
       withdraw: withdrawToken,
       withdrawEstimateGas: withdrawTokenEstimateGas,
-      triggerOutbox: triggerOutboxToken,
-      getL2ERC20Address,
-      getL2GatewayAddress
+      triggerOutbox: triggerOutboxToken
     },
     transactions: {
       transactions,

@@ -41,8 +41,11 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { getL1TokenAllowance } from '../../util/TokenUtils'
-import { ArbTokenBridge } from '../../hooks/arbTokenBridge.types'
+import {
+  getL1TokenAllowance,
+  getL2ERC20Address,
+  getL2GatewayAddress
+} from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 
 const onTxError = (error: any) => {
@@ -51,18 +54,24 @@ const onTxError = (error: any) => {
   }
 }
 
-const isAllowedL2 = async (
-  arbTokenBridge: ArbTokenBridge,
-  l1TokenAddress: string,
-  l2TokenAddress: string,
-  walletAddress: string,
-  amountNeeded: BigNumber,
+const isAllowedL2 = async ({
+  l1TokenAddress,
+  l2TokenAddress,
+  walletAddress,
+  amountNeeded,
+  l2Provider
+}: {
+  l1TokenAddress: string
+  l2TokenAddress: string
+  walletAddress: string
+  amountNeeded: BigNumber
   l2Provider: JsonRpcProvider
-) => {
+}) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
-  const gatewayAddress = await arbTokenBridge.token.getL2GatewayAddress(
-    l1TokenAddress
-  )
+  const gatewayAddress = await getL2GatewayAddress({
+    erc20L1Address: l1TokenAddress,
+    l2Provider
+  })
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -437,9 +446,11 @@ export function TransferPanel() {
           const amountRaw = utils.parseUnits(amount, decimals)
 
           // check that a registration is not currently in progress
-          const l2RoutedAddress = await arbTokenBridge.token.getL2ERC20Address(
-            selectedToken.address
-          )
+          const l2RoutedAddress = await getL2ERC20Address({
+            erc20L1Address: selectedToken.address,
+            l1Provider,
+            l2Provider
+          })
 
           if (
             selectedToken.l2Address &&
@@ -603,14 +614,13 @@ export function TransferPanel() {
             tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
             selectedToken.l2Address
           ) {
-            const allowed = await isAllowedL2(
-              arbTokenBridge,
-              selectedToken.address,
-              selectedToken.l2Address,
+            const allowed = await isAllowedL2({
+              l1TokenAddress: selectedToken.address,
+              l2TokenAddress: selectedToken.l2Address,
               walletAddress,
-              amountRaw,
-              latestNetworksAndSigners.current.l2.provider
-            )
+              amountNeeded: amountRaw,
+              l2Provider: latestNetworksAndSigners.current.l2.provider
+            })
             if (!allowed) {
               if (isSmartContractWallet) {
                 showDelayedSCTxRequest()
