@@ -16,6 +16,7 @@ const customJestConfig = {
 // Lists out node modules that need to be transformed before running tests
 const transformNodeModules = [
   'query-string',
+  // The following are dependencies for query-string (https://github.com/sindresorhus/query-string/blob/main/package.json)
   'decode-uri-component',
   'split-on-first',
   'filter-obj'
