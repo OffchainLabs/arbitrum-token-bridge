@@ -25,6 +25,8 @@ export type FetchWithdrawalsParams = {
   searchString?: string
 }
 
+const MAX_EVENT_LOG_BLOCK_DIFF = 500000 // if falling back to event-logs, we don't fetch from block-0 but latest n-blocks
+
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
@@ -55,6 +57,12 @@ export const fetchWithdrawals = async ({
       l2ChainID
     )
     toBlock = latestSubgraphBlockNumber
+  }
+
+  if (!toBlock) {
+    // if the previous call returns 0 (subgraph down or not supported - eg Nova), then fetch the latest block on-chain
+    const latestEventLogBlockNumber = await l1Provider.getBlockNumber()
+    toBlock = latestEventLogBlockNumber - MAX_EVENT_LOG_BLOCK_DIFF // fetch from block 0->toBlock from subgraph, toBlock->latest from logs
   }
 
   const [
