@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 
 import { useAppState } from '../../state'
 import {
-  BRIDGE_TOKEN_LISTS,
-  addBridgeTokenListToBridge
-} from '../../tokenLists'
+  addBridgeTokenListToBridge,
+  BRIDGE_TOKEN_LISTS
+} from '../../util/TokenListUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 // Adds whitelisted tokens to the bridge data on app load
