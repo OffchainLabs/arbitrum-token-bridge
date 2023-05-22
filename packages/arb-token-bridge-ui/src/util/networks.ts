@@ -24,6 +24,10 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
     return [ChainId.ArbitrumGoerli]
   }
 
+  if (l1ChainId === ChainId.Local) {
+    return [ChainId.ArbitrumLocal]
+  }
+
   return []
 }
 
