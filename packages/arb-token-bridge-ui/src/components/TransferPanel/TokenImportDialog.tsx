@@ -356,7 +356,7 @@ export function TokenImportDialog({
           </span>
           <span className="mb-3 mt-0">{tokenToImport?.name}</span>
           <a
-            href={`${getExplorerUrl(l1.network.chainID)}/token/${
+            href={`${getExplorerUrl(l1.network.id)}/token/${
               tokenToImport?.address
             }`}
             target="_blank"

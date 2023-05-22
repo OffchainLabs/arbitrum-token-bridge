@@ -41,7 +41,7 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
 export const useNetworkTPS = () => {
   const {
     l2: {
-      network: { chainID: l2ChainId }
+      network: { id: l2ChainId }
     }
   } = useNetworksAndSigners()
 

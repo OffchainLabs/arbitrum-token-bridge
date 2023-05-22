@@ -27,8 +27,8 @@ export function WithdrawalCountdown({
     return <span>Calculating...</span>
   }
 
-  const blockTime = getBlockTime(l1Network.chainID) ?? 15
-  const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.chainID)
+  const blockTime = getBlockTime(l1Network.id) ?? 15
+  const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.id)
 
   if (nodeBlockDeadline === NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED) {
     const withdrawalTimeInSeconds = confirmPeriodBlocks * blockTime

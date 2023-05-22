@@ -53,8 +53,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   // only change l1-l2 providers (and hence, reload withdrawals) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
-  const l1Provider = useMemo(() => l1.provider, [l1.network.chainID])
-  const l2Provider = useMemo(() => l2.provider, [l2.network.chainID])
+  const l1Provider = useMemo(() => l1.provider, [l1.network.id])
+  const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const gatewaysToUse = useL2Gateways({ l2Provider })
 

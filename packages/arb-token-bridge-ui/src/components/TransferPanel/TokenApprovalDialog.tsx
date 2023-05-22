@@ -33,7 +33,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet } = isNetwork(l1.network.chainID)
+  const { isMainnet } = isNetwork(l1.network.id)
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
 
@@ -106,9 +106,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(l1.network.chainID)}/token/${
-                token?.address
-              }`}
+              href={`${getExplorerUrl(l1.network.id)}/token/${token?.address}`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}
