@@ -15,6 +15,7 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { approveTokenEstimateGas } from '../../util/ApproveTokenUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -28,11 +29,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     app: { arbTokenBridge }
   } = useAppState()
 
+  const walletAddress = arbTokenBridge.walletAddress
+
   const allowanceParsed =
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const { isMainnet } = isNetwork(l1.network.id)
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -60,15 +63,25 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     async function getEstimatedGas() {
       if (arbTokenBridge.token && token?.address) {
         setEstimatedGas(
-          await arbTokenBridge.token.approveEstimateGas({
-            erc20L1Address: token.address
+          await approveTokenEstimateGas({
+            erc20L1Address: token.address,
+            walletAddress,
+            l1Provider: l1.provider,
+            l2Provider: l2.provider
           })
         )
       }
     }
 
     getEstimatedGas()
-  }, [isOpen, token?.address])
+  }, [
+    isOpen,
+    token?.address,
+    arbTokenBridge.token,
+    l1.provider,
+    l2.provider,
+    walletAddress
+  ])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)

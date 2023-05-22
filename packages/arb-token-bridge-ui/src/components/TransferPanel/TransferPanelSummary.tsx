@@ -12,6 +12,10 @@ import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { depositEthEstimateGas } from '../../util/EthDepositUtils'
+import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
+import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
+import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -40,6 +44,7 @@ export function useGasSummary(
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
+  const walletAddress = arbTokenBridge.walletAddress
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -108,18 +113,19 @@ export function useGasSummary(
 
         if (isDepositMode) {
           if (token) {
-            const estimateGasResult =
-              await arbTokenBridge.token.depositEstimateGas({
-                erc20L1Address: token.address,
-                amount: amountDebounced
-              })
+            const estimateGasResult = await depositTokenEstimateGas({
+              l1Provider: l1.provider,
+              l2Provider: l2.provider
+            })
 
             setResult(estimateGasResult)
           } else {
-            const estimateGasResult =
-              await arbTokenBridge.eth.depositEstimateGas({
-                amount: amountDebounced
-              })
+            const estimateGasResult = await depositEthEstimateGas({
+              amount: amountDebounced,
+              walletAddress,
+              l1Provider: l1.provider,
+              l2Provider: l2.provider
+            })
 
             setResult(estimateGasResult)
           }
@@ -142,11 +148,12 @@ export function useGasSummary(
                 estimatedL2Gas: BigNumber.from(10_000)
               }
             } else {
-              estimateGasResult =
-                await arbTokenBridge.token.withdrawEstimateGas({
-                  erc20L1Address: token.address,
-                  amount: amountDebounced
-                })
+              estimateGasResult = await withdrawTokenEstimateGas({
+                amount: amountDebounced,
+                erc20L1Address: token.address,
+                walletAddress,
+                l2Provider: l2.provider
+              })
             }
 
             setResult({
@@ -154,10 +161,11 @@ export function useGasSummary(
               estimatedL2SubmissionCost: constants.Zero
             })
           } else {
-            const estimateGasResult =
-              await arbTokenBridge.eth.withdrawEstimateGas({
-                amount: amountDebounced
-              })
+            const estimateGasResult = await withdrawEthEstimateGas({
+              amount: amountDebounced,
+              walletAddress,
+              l2Provider: l2.provider
+            })
 
             setResult({
               ...estimateGasResult,
@@ -182,7 +190,11 @@ export function useGasSummary(
     amountDebounced,
     token,
     shouldRunGasEstimation,
-    latestNetworksAndSigners
+    latestNetworksAndSigners,
+    arbTokenBridge,
+    l1.provider,
+    l2.provider,
+    walletAddress
   ])
 
   return {
