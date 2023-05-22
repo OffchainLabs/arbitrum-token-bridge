@@ -15,7 +15,7 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { approveTokenEstimateGas } from '../../util/ApproveTokenUtils'
+import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
