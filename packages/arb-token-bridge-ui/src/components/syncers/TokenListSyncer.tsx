@@ -33,7 +33,7 @@ const TokenListSyncer = (): JSX.Element => {
       }
 
       return (
-        bridgeTokenList.originChainID === l2Network.chainID &&
+        bridgeTokenList.originChainID === l2Network.id &&
         bridgeTokenList.isDefault
       )
     })

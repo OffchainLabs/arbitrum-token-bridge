@@ -50,7 +50,7 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const networkName = getNetworkName(l1.network.chainID)
+  const networkName = getNetworkName(l1.network.id)
   const {
     app: { selectedToken }
   } = useAppState()
@@ -58,8 +58,8 @@ export function WithdrawalConfirmationDialog(
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
   const fastBridges = getFastBridges(
-    from.chainID,
-    to.chainID,
+    from.id,
+    to.id,
     selectedToken?.symbol,
     props.amount
   )
@@ -69,8 +69,7 @@ export function WithdrawalConfirmationDialog(
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
-    getBlockTime(l1.network.chainID) *
-    getConfirmPeriodBlocks(l2.network.chainID)
+    getBlockTime(l1.network.id) * getConfirmPeriodBlocks(l2.network.id)
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
   const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
@@ -85,7 +84,7 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  const { isArbitrumOne } = isNetwork(l2.network.chainID)
+  const { isArbitrumOne } = isNetwork(l2.network.id)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -190,7 +189,7 @@ export function WithdrawalConfirmationDialog(
                         confirmationHours,
                         props.amount,
                         selectedToken?.symbol || 'ETH',
-                        getNetworkName(l2.network.chainID)
+                        getNetworkName(l2.network.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-blue-arbitrum px-4 py-2 text-blue-arbitrum"
