@@ -134,7 +134,7 @@ export function useGasSummary(
             if (
               tokenRequiresApprovalOnL2(
                 token.address,
-                latestNetworksAndSigners.current.l2.network.chainID
+                latestNetworksAndSigners.current.l2.network.id
               )
             ) {
               estimateGasResult = {
@@ -243,7 +243,7 @@ export function TransferPanelSummary({
   const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
-  const { isMainnet } = isNetwork(l1.network.chainID)
+  const { isMainnet } = isNetwork(l1.network.id)
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'

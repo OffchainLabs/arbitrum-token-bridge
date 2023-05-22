@@ -59,7 +59,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(l1.network.chainID)} (L1)
+          {getNetworkName(l1.network.id)} (L1)
         </span>
         <span>
           &gt; Block:{' '}
@@ -79,7 +79,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(l2.network.chainID)} (L2)
+          {getNetworkName(l2.network.id)} (L2)
         </span>
         <span>
           &gt; Block:{' '}
@@ -94,7 +94,7 @@ export const ArbitrumStats = () => {
         </span>
 
         {/* TPS info is not available for testnets */}
-        {!isNetwork(l2.network.chainID).isTestnet && (
+        {!isNetwork(l2.network.id).isTestnet && (
           <span>
             &gt; TPS: {tpsLoading && <span>Loading...</span>}
             {!tpsLoading && (

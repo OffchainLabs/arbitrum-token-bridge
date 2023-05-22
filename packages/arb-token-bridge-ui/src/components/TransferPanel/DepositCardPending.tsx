@@ -11,7 +11,7 @@ import { formatAmount } from '../../util/NumberUtils'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l2 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network.chainID)
+  const networkName = getNetworkName(l2.network.id)
 
   return (
     <DepositCardContainer tx={tx}>

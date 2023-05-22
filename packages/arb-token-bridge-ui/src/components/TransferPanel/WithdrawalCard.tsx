@@ -37,7 +37,7 @@ export function WithdrawalL2TxStatus({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(l2Network.chainID)}/tx/${tx.txId}`}
+      href={`${getExplorerUrl(l2Network.id)}/tx/${tx.txId}`}
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(tx.txId)}
@@ -67,7 +67,7 @@ export function WithdrawalL1TxStatus({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(l1Network.chainID)}/tx/${l1Tx.txId}`}
+      href={`${getExplorerUrl(l1Network.id)}/tx/${l1Tx.txId}`}
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}

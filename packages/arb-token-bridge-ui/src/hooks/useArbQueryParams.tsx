@@ -15,7 +15,7 @@
 */
 import React from 'react'
 import { NextAdapter } from 'next-query-params'
-import { parse, stringify } from 'query-string'
+import queryString from 'query-string'
 import {
   NumberParam,
   QueryParamProvider,
@@ -104,8 +104,8 @@ export function ArbQueryParamProvider({
     <QueryParamProvider
       adapter={NextAdapter}
       options={{
-        searchStringToObject: parse,
-        objectToSearchString: stringify,
+        searchStringToObject: queryString.parse,
+        objectToSearchString: queryString.stringify,
         updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
         removeDefaultsFromUrl: true
       }}

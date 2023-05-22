@@ -9,7 +9,7 @@ import { formatAmount } from '../../util/NumberUtils'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l1.network.chainID)
+  const networkName = getNetworkName(l1.network.id)
 
   return (
     <WithdrawalCardContainer tx={tx}>

@@ -42,6 +42,6 @@ export function useIsSwitchingL2Chain() {
       return false
     }
 
-    return l2.network.chainID !== l2ChainIdSearchParam
+    return l2.network.id !== l2ChainIdSearchParam
   }, [isConnectedToArbitrum, isDepositMode, l2, l2ChainIdSearchParam])
 }

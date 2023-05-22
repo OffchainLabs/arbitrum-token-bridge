@@ -183,8 +183,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const { l1, l2, isConnectedToArbitrum } = networksAndSigners
 
-    const l1NetworkChainId = l1.network.chainID
-    const l2NetworkChainId = l2.network.chainID
+    const l1NetworkChainId = l1.network.id
+    const l2NetworkChainId = l2.network.id
 
     actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })

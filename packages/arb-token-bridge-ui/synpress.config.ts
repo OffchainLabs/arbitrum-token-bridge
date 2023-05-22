@@ -2,10 +2,10 @@ import { BigNumber, constants, Wallet, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
-import cypressLocalStoragePlugin from 'cypress-localstorage-commands/plugin'
 import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWETH9__factory'
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
+import { getL2ERC20Address } from './src/util/TokenUtils'
 
 import {
   NetworkName,
@@ -84,11 +84,13 @@ export default defineConfig({
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
-      config.env.ERC20_TOKEN_ADDRESS_L2 = await (
-        await Erc20Bridger.fromProvider(arbProvider)
-      ).getL2ERC20Address(l1ERC20Token.address, ethProvider)
 
-      cypressLocalStoragePlugin(on, config)
+      config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
+        erc20L1Address: l1ERC20Token.address,
+        l1Provider: ethProvider,
+        l2Provider: arbProvider
+      })
+
       synpressPlugins(on, config)
       setupCypressTasks(on)
       return config

@@ -6,7 +6,7 @@ Are you a developer looking to explore the Arbitrum token bridge and its underly
 
 <br />
 
-Arbitrum ❤️ Open-source
+Offchain Labs ❤️ Open-source
 
 Interested in contributing to this repo? We welcome your contribution.
 [Check out the contribution guidelines and instructions here](CONTRIBUTING.md).

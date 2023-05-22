@@ -27,8 +27,8 @@ export function DepositConfirmationDialog(
     app: { selectedToken }
   } = useAppState()
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network.chainID)
-  const { isArbitrumOne } = isNetwork(l2.network.chainID)
+  const networkName = getNetworkName(l2.network.id)
+  const { isArbitrumOne } = isNetwork(l2.network.id)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)
@@ -48,7 +48,7 @@ export function DepositConfirmationDialog(
     tokenAddress && bridgeInfo && bridgeInfo.tokenSymbolOnArbitrum
 
   const fastBridges = [
-    ...getFastBridges(from.chainID, to.chainID, tokenSymbol, props.amount)
+    ...getFastBridges(from.id, to.id, tokenSymbol, props.amount)
   ].filter(bridge => {
     return (
       tokenSymbol &&

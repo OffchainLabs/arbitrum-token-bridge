@@ -185,7 +185,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       return (
         <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
           <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-          {getNetworkName(l1.network.chainID)}: Not available
+          {getNetworkName(l1.network.id)}: Not available
         </span>
       )
     }
@@ -196,9 +196,9 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         aria-label="L1 Transaction Link"
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-        {getNetworkName(l1.network.chainID)}:{' '}
+        {getNetworkName(l1.network.id)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
+          href={`${getExplorerUrl(l1.network.id)}/tx/${matchingL1Tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(matchingL1Tx.txId)}
@@ -214,9 +214,9 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         aria-label="L2 Transaction Link"
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
-        {getNetworkName(l2.network.chainID)}:{' '}
+        {getNetworkName(l2.network.id)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l2.network.id)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -258,7 +258,7 @@ function WithdrawalRowAction({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
-  const l2NetworkName = getNetworkName(l2Network.chainID)
+  const l2NetworkName = getNetworkName(l2Network.id)
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
