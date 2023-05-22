@@ -222,3 +222,49 @@ export const getERC20TokenDetails = async ({
     return null
   }
 }
+
+/*
+ Retrieves the L2 gateway of an ERC-20 token using its L1 address.
+*/
+export async function getL2GatewayAddress({
+  erc20L1Address,
+  l2Provider
+}: {
+  erc20L1Address: string
+  l2Provider: Provider
+}): Promise<string> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2Provider)
+}
+
+/*
+ Retrieves the L2 address of an ERC-20 token using its L1 address.
+*/
+export async function getL2ERC20Address({
+  erc20L1Address,
+  l1Provider,
+  l2Provider
+}: {
+  erc20L1Address: string
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<string> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
+}
+
+/*
+ Retrieves data about whether an ERC-20 token is disabled on the router.
+ */
+export async function l1TokenIsDisabled({
+  erc20L1Address,
+  l1Provider,
+  l2Provider
+}: {
+  erc20L1Address: string
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<boolean> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
+}

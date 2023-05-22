@@ -5,18 +5,13 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
+import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import {
-  getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
@@ -41,9 +36,13 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
-import { getL1TokenAllowance } from '../../util/TokenUtils'
-import { ArbTokenBridge } from '../../hooks/arbTokenBridge.types'
+import {
+  getL1TokenAllowance,
+  getL2ERC20Address,
+  getL2GatewayAddress
+} from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -51,18 +50,24 @@ const onTxError = (error: any) => {
   }
 }
 
-const isAllowedL2 = async (
-  arbTokenBridge: ArbTokenBridge,
-  l1TokenAddress: string,
-  l2TokenAddress: string,
-  walletAddress: string,
-  amountNeeded: BigNumber,
+const isAllowedL2 = async ({
+  l1TokenAddress,
+  l2TokenAddress,
+  walletAddress,
+  amountNeeded,
+  l2Provider
+}: {
+  l1TokenAddress: string
+  l2TokenAddress: string
+  walletAddress: string
+  amountNeeded: BigNumber
   l2Provider: JsonRpcProvider
-) => {
+}) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
-  const gatewayAddress = await arbTokenBridge.token.getL2GatewayAddress(
-    l1TokenAddress
-  )
+  const gatewayAddress = await getL2GatewayAddress({
+    erc20L1Address: l1TokenAddress,
+    l2Provider
+  })
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -120,11 +125,8 @@ export function TransferPanel() {
   const { isTransferring } = layout
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
   const latestConnectedProvider = useLatest(provider)
 
@@ -137,17 +139,17 @@ export function TransferPanel() {
   } = networksAndSigners
 
   const { data: l1Signer } = useSigner({
-    chainId: l1Network.chainID
+    chainId: l1Network.id
   })
   const { data: l2Signer } = useSigner({
-    chainId: l2Network.chainID
+    chainId: l2Network.id
   })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
 
-  const { isMainnet } = isNetwork(l1Network.chainID)
-  const { isArbitrumNova } = isNetwork(l2Network.chainID)
+  const { isMainnet } = isNetwork(l1Network.id)
+  const { isArbitrumNova } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -355,7 +357,7 @@ export function TransferPanel() {
       return
     }
 
-    const l2NetworkName = getNetworkName(l2Network.chainID)
+    const l2NetworkName = getNetworkName(l2Network.id)
 
     // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
@@ -409,8 +411,8 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
-            latestNetworksAndSigners.current.l1.network.chainID
+          await switchNetworkAsync?.(
+            latestNetworksAndSigners.current.l1.network.id
           )
 
           while (
@@ -424,7 +426,7 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = latestNetworksAndSigners.current.l1.network.chainID
+        const l1ChainID = latestNetworksAndSigners.current.l1.network.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -437,9 +439,11 @@ export function TransferPanel() {
           const amountRaw = utils.parseUnits(amount, decimals)
 
           // check that a registration is not currently in progress
-          const l2RoutedAddress = await arbTokenBridge.token.getL2ERC20Address(
-            selectedToken.address
-          )
+          const l2RoutedAddress = await getL2ERC20Address({
+            erc20L1Address: selectedToken.address,
+            l1Provider,
+            l2Provider
+          })
 
           if (
             selectedToken.l2Address &&
@@ -562,8 +566,8 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
-            latestNetworksAndSigners.current.l2.network.chainID
+          await switchNetworkAsync?.(
+            latestNetworksAndSigners.current.l2.network.id
           )
 
           while (
@@ -586,7 +590,7 @@ export function TransferPanel() {
           }
         }
 
-        const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
+        const l2ChainID = latestNetworksAndSigners.current.l2.network.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -603,14 +607,13 @@ export function TransferPanel() {
             tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
             selectedToken.l2Address
           ) {
-            const allowed = await isAllowedL2(
-              arbTokenBridge,
-              selectedToken.address,
-              selectedToken.l2Address,
+            const allowed = await isAllowedL2({
+              l1TokenAddress: selectedToken.address,
+              l2TokenAddress: selectedToken.l2Address,
               walletAddress,
-              amountRaw,
-              latestNetworksAndSigners.current.l2.provider
-            )
+              amountNeeded: amountRaw,
+              l2Provider: latestNetworksAndSigners.current.l2.provider
+            })
             if (!allowed) {
               if (isSmartContractWallet) {
                 showDelayedSCTxRequest()
@@ -740,7 +743,7 @@ export function TransferPanel() {
       if (
         isDepositMode &&
         selectedToken &&
-        isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
+        isWithdrawOnlyToken(selectedToken.address, l2Network.id)
       ) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
@@ -789,7 +792,7 @@ export function TransferPanel() {
     if (
       isDepositMode &&
       selectedToken &&
-      isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
+      isWithdrawOnlyToken(selectedToken.address, l2Network.id)
     ) {
       return true
     }
@@ -990,7 +993,7 @@ export function TransferPanel() {
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.chainID)}`}
+                : `Move funds to ${getNetworkName(l2Network.id)}`}
             </Button>
           ) : (
             <Button
@@ -1002,7 +1005,7 @@ export function TransferPanel() {
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.chainID)}`}
+                : `Move funds to ${getNetworkName(l1Network.id)}`}
             </Button>
           )}
         </div>

@@ -203,7 +203,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
-      isDepositMode ? l1Network.chainID : l2Network.chainID
+      isDepositMode ? l1Network.id : l2Network.id
     )
 
     return (
@@ -265,7 +265,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${getExplorerUrl(l1Network.chainID)}/token/${
+                  href={`${getExplorerUrl(l1Network.id)}/token/${
                     token.address
                   }`}
                   target="_blank"
@@ -279,7 +279,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${getExplorerUrl(l2Network.chainID)}/token/${
+                      href={`${getExplorerUrl(l2Network.id)}/token/${
                         token.l2Address
                       }`}
                       target="_blank"
@@ -359,7 +359,7 @@ function TokenListsPanel() {
         return false
       }
 
-      return tokenList.originChainID === l2Network.chainID
+      return tokenList.originChainID === l2Network.id
     })
   }, [l2Network])
 
@@ -677,9 +677,7 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(
-    l2.network.chainID
-  ) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 

@@ -21,12 +21,13 @@ import {
   StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
-import { L1Network, L2Network, getL1Network, getL2Network } from '@arbitrum/sdk'
-import { useAccount, useNetwork, useProvider } from 'wagmi'
+import { getL1Network, getL2Network } from '@arbitrum/sdk'
+import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
@@ -74,11 +75,11 @@ export type UseNetworksAndSignersBlockedResult = {
 export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
   l1: {
-    network: L1Network
+    network: Chain
     provider: JsonRpcProvider
   }
   l2: {
-    network: L2Network
+    network: Chain
     provider: JsonRpcProvider
   }
   isConnectedToArbitrum: boolean
@@ -289,11 +290,11 @@ export function NetworksAndSignersProvider(
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
-            network: l1Network,
+            network: getWagmiChain(l1Network.chainID),
             provider: l1Provider
           },
           l2: {
-            network: l2Network,
+            network: getWagmiChain(l2Network.chainID),
             provider: l2Provider
           },
           isConnectedToArbitrum: false,
@@ -329,11 +330,11 @@ export function NetworksAndSignersProvider(
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
-                network: l1Network,
+                network: getWagmiChain(l1Network.chainID),
                 provider: l1Provider
               },
               l2: {
-                network: l2Network,
+                network: getWagmiChain(l2Network.chainID),
                 provider: l2Provider
               },
               isConnectedToArbitrum: true,
