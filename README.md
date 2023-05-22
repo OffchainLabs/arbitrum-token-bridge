@@ -123,33 +123,36 @@ It is important for any code change to pass both unit and end-to-end tests. This
    2. Check out the [Nitro repo](https://github.com/OffchainLabs/nitro)
 
    3. Run:
+
       ```bash
       $ yarn
       ```
 
    4. Run: (Make sure your Docker App is running)
-   
+
       ```bash
       $ ./test-node.bash --init --no-blockscout
       ```
 
-   5. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes.
+   5. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
 
-2. Run the token bridge UI locally on `http://localhost:3000/` with:
+2. In the root of the token bridge UI:
+
+   1. Run:
+
+   ```bash
+   $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
+   ```
+
+   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file. Some tests will require you to have 10+ transactions in the transaction history. If your wallet doesn't have enough transactions, you can import and use this private key: `PRIVATE_KEY_USER=INSERT_KEY`
+
+3. Run the token bridge UI locally on `http://localhost:3000/` with:
 
    ```bash
    $ yarn dev
    ```
 
-   1. At the project's root:
-
-      ```bash
-      $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
-      ```
-
-   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file. Some tests will require you to have 10+ transactions in the transaction history. If your wallet doesn't have enough transactions, you can import and use this private key: `PRIVATE_KEY_USER=INSERT_KEY`
-
-3. Run e2e tests
+4. Run e2e tests
 
    ```bash
    $ yarn test:e2e
