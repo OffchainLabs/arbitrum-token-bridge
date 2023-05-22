@@ -187,6 +187,7 @@ export interface ArbTokenBridgeToken {
   deposit: (params: {
     erc20L1Address: string
     amount: BigNumber
+    extraEthAmount?: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string

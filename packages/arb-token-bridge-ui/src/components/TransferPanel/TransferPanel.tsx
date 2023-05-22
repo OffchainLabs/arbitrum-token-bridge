@@ -406,7 +406,8 @@ export function TransferPanel() {
               assetType: selectedToken ? 'ERC-20' : 'ETH',
               accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
               network: l2NetworkName,
-              amount: Number(amount)
+              amount: Number(amount),
+              extraEthAmount: Number(extraEthAmount) || undefined
             })
           }
           await switchNetworkAsync?.(
@@ -492,14 +493,20 @@ export function TransferPanel() {
                 assetType: 'ERC-20',
                 accountType: 'Smart Contract',
                 network: l2NetworkName,
-                amount: Number(amount)
+                amount: Number(amount),
+                extraEthAmount: Number(extraEthAmount) || undefined
               })
             }
           }
 
+          const extraEthAmountRaw = extraEthAmount
+            ? utils.parseEther(extraEthAmount)
+            : undefined
+
           await latestToken.current.deposit({
             erc20L1Address: selectedToken.address,
             amount: amountRaw,
+            extraEthAmount: extraEthAmountRaw,
             l1Signer,
             destinationAddress,
             txLifecycle: {
@@ -516,7 +523,8 @@ export function TransferPanel() {
                     assetType: 'ERC-20',
                     accountType: 'EOA',
                     network: l2NetworkName,
-                    amount: Number(amount)
+                    amount: Number(amount),
+                    extraEthAmount: Number(extraEthAmount) || undefined
                   })
                 }
               },

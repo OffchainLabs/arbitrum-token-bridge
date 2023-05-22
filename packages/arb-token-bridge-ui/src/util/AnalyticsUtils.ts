@@ -200,6 +200,7 @@ type AnalyticsEventMap = {
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
+    extraEthAmount: number
   }
   Withdraw: {
     tokenSymbol?: string
@@ -228,6 +229,7 @@ type AnalyticsEventMap = {
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
+    extraEthAmount?: number
   }
   'Redeem Retryable': { network: AnalyticsNetworkName }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }

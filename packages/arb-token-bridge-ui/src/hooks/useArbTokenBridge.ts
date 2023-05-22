@@ -466,12 +466,14 @@ export const useArbTokenBridge = (
   async function depositToken({
     erc20L1Address,
     amount,
+    extraEthAmount,
     l1Signer,
     txLifecycle,
     destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
+    extraEthAmount?: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string
@@ -486,12 +488,23 @@ export const useArbTokenBridge = (
         l2Provider: l2.provider
       })
 
+      // if sending extra ETH alongside the token we want to make sure that funds go to the destination address
+      // extra ETH is passed as additional max gas and refunded as such
+      // otherwise we set to undefined - will default to the sender address
+      const gasRefundAddress =
+        destinationAddress && extraEthAmount ? destinationAddress : undefined
+
       const depositRequest = await erc20Bridger.getDepositRequest({
         l1Provider: l1.provider,
         l2Provider: l2.provider,
         from: walletAddress,
         erc20L1Address,
         destinationAddress,
+        // TODO: uncomment maxSubmissionCost after SDK merge
+        // adds extra ETH to max gas
+        // maxSubmissionCost: extraEthAmount,
+        // refunds unused gas (i.e. sends extra ETH)
+        excessFeeRefundAddress: gasRefundAddress,
         amount
       })
 
