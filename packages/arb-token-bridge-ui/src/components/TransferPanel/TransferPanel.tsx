@@ -5,18 +5,13 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-import { useAccount, useProvider, useSigner, useSwitchNetwork } from 'wagmi'
+import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import {
-  getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
@@ -47,6 +42,7 @@ import {
   getL2GatewayAddress
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -129,11 +125,8 @@ export function TransferPanel() {
   const { isTransferring } = layout
   const { address: account, isConnected } = useAccount()
   const provider = useProvider()
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
   const latestConnectedProvider = useLatest(provider)
 
@@ -418,7 +411,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
+          await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l1.network.chainID
           )
 
@@ -573,7 +566,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetwork?.(
+          await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l2.network.chainID
           )
 

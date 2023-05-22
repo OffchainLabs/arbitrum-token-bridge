@@ -13,5 +13,23 @@ const customJestConfig = {
   testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)']
 }
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+// Lists out node modules that need to be transformed before running tests
+const transformNodeModules = [
+  'query-string',
+  // The following are dependencies for query-string (https://github.com/sindresorhus/query-string/blob/main/package.json)
+  'decode-uri-component',
+  'split-on-first',
+  'filter-obj'
+]
+
+module.exports = async function () {
+  const config = await createJestConfig(customJestConfig)()
+
+  return {
+    ...config,
+    transformIgnorePatterns: [
+      `node_modules/(?!(${transformNodeModules.join('|')})/)`,
+      '^.+\\.module\\.(css|sass|scss)$'
+    ]
+  }
+}

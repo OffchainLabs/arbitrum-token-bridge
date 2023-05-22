@@ -5,8 +5,7 @@
       "cypress.d.ts",
       "@synthetixio/synpress/support",
       "cypress-wait-until",
-      "@testing-library/cypress",
-      "cypress-localstorage-commands"
+      "@testing-library/cypress"
     ],
     "outDir": "./output"
   },
