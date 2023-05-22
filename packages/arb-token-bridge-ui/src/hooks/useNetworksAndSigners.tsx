@@ -83,7 +83,6 @@ export type UseNetworksAndSignersConnectedResult = {
     provider: JsonRpcProvider
   }
   isConnectedToArbitrum: boolean
-  chainId: number // the current chainId which is connected to UI
   isSmartContractWallet: boolean
 }
 
@@ -111,7 +110,7 @@ export function useNetworksAndSigners() {
 
 export type FallbackProps =
   | { status: UseNetworksAndSignersLoadingOrErrorStatus }
-  | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
+  | { status: UseNetworksAndSignersNotSupportedStatus }
   | { status: UseNetworksAndSignersStatus.BLOCKED; address: string }
 
 export type NetworksAndSignersProviderProps = {
@@ -298,7 +297,6 @@ export function NetworksAndSignersProvider(
             provider: l2Provider
           },
           isConnectedToArbitrum: false,
-          chainId: l1Network.chainID,
           isSmartContractWallet: await addressIsSmartContract(
             address as string,
             l1Provider
@@ -338,7 +336,6 @@ export function NetworksAndSignersProvider(
                 provider: l2Provider
               },
               isConnectedToArbitrum: true,
-              chainId: l2Network.chainID,
               isSmartContractWallet: await addressIsSmartContract(
                 address,
                 l2Provider
@@ -366,10 +363,7 @@ export function NetworksAndSignersProvider(
 
     const fallbackProps =
       result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
-        ? {
-            status: result.status,
-            chainId: result.chainId
-          }
+        ? { status: result.status }
         : { status: result.status }
 
     return props.fallback(fallbackProps)
