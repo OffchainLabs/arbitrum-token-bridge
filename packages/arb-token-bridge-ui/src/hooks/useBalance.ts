@@ -11,8 +11,13 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
 
-type Erc20Balances = {
+export type Erc20Balances = {
   [address: string]: BigNumber | undefined
+}
+
+export type UseBalanceProps = {
+  provider: Provider
+  walletAddress: string | undefined
 }
 
 const merge: Middleware = (useSWRNext: SWRHook) => {
@@ -35,13 +40,7 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
   }
 }
 
-const useBalance = ({
-  provider,
-  walletAddress
-}: {
-  provider: Provider
-  walletAddress: string | undefined
-}) => {
+const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),
