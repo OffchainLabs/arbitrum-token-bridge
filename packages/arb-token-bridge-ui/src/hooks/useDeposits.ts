@@ -1,5 +1,5 @@
+import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { Transaction } from 'token-bridge-sdk'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -9,6 +9,7 @@ import {
   fetchDeposits
 } from '../util/deposits/fetchDeposits'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { Transaction } from './useTransactions'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -41,8 +42,10 @@ export const fetchCompleteDepositData = async (
 export const useDeposits = (depositPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
 
-  const l1Provider = l1.provider
-  const l2Provider = l2.provider
+  // only change l1-l2 providers (and hence, reload deposits) when the connected chain id changes
+  // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
+  const l1Provider = useMemo(() => l1.provider, [l1.network.chainID])
+  const l2Provider = useMemo(() => l2.provider, [l2.network.chainID])
 
   const {
     app: {

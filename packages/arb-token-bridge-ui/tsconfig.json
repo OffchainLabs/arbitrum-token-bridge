@@ -14,8 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "@/images/*": ["public/images/*"],
-      "@/icons/*": ["public/icons/*"],
-      "token-bridge-sdk": ["./src/token-bridge-sdk/"]
+      "@/icons/*": ["public/icons/*"]
     }
   },
   "exclude": ["node_modules"]

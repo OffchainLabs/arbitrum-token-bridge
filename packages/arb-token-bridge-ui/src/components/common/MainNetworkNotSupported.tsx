@@ -1,13 +1,8 @@
-import { useSwitchNetwork } from 'wagmi'
 import Image from 'next/image'
 
-import {
-  ChainId,
-  getNetworkLogo,
-  getNetworkName,
-  handleSwitchNetworkError
-} from '../../util/networks'
+import { ChainId, getNetworkLogo, getNetworkName } from '../../util/networks'
 import { Button } from './Button'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 // info about the logo and the button class of network list
 const networkButtonsStyles: {
@@ -29,10 +24,7 @@ export const MainNetworkNotSupported = ({
 }: {
   supportedNetworks: ChainId[]
 }) => {
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onError: handleSwitchNetworkError
-  })
+  const { switchNetwork } = useSwitchNetworkWithConfig()
 
   return (
     <div className="flex max-w-lg flex-col items-center space-y-8 px-12 py-12 md:items-start md:pl-0 md:pr-24">

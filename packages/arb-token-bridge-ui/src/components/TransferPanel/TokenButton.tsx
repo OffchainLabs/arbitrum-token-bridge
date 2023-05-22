@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Popover } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'

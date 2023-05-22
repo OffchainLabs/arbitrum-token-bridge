@@ -1,6 +1,6 @@
 import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
-import { XIcon } from '@heroicons/react/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Transition } from './Transition'
 
 type SidePanelProps = {
@@ -36,7 +36,7 @@ export const SidePanel = ({
             <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-9 bg-dark py-4 text-white">
               <span className="text-xl">{heading}</span>
               <button className="arb-hover" onClick={onClose}>
-                <XIcon className="h-6 w-6 text-white" />
+                <XMarkIcon className="h-6 w-6 text-white" />
               </button>
             </Dialog.Title>
 

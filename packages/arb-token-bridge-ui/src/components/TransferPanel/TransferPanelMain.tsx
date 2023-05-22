@@ -3,17 +3,15 @@ import { Listbox } from '@headlessui/react'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  SwitchVerticalIcon
-} from '@heroicons/react/outline'
+  ArrowsUpDownIcon
+} from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { L1Network, L2Network } from '@arbitrum/sdk'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { useSwitchNetwork } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -22,8 +20,6 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -43,6 +39,10 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { useBalance } from '../../hooks/useBalance'
+import { useGasPrice } from '../../hooks/useGasPrice'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -53,7 +53,7 @@ export function SwitchNetworksButton(
       className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
-      <SwitchVerticalIcon className="text-dark" />
+      <ArrowsUpDownIcon className="text-dark" />
     </button>
   )
 }
@@ -341,11 +341,8 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -703,7 +700,7 @@ export function TransferPanelMain({
             }
 
             try {
-              await switchNetwork?.(network.chainID)
+              await switchNetworkAsync?.(network.chainID)
               updatePreferredL2Chain(network.chainID)
 
               // If L2 selected, change to withdraw mode and set new selections
@@ -740,7 +737,7 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await switchNetwork?.(l1.network.chainID)
+                await switchNetworkAsync?.(l1.network.chainID)
                 updatePreferredL2Chain(network.chainID)
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -776,7 +773,7 @@ export function TransferPanelMain({
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await switchNetwork?.(network.chainID)
+            await switchNetworkAsync?.(network.chainID)
             updatePreferredL2Chain(network.chainID)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -799,7 +796,7 @@ export function TransferPanelMain({
 
           // Destination network is L2, connect to L1
           try {
-            await switchNetwork?.(l1.network.chainID)
+            await switchNetworkAsync?.(l1.network.chainID)
             updatePreferredL2Chain(network.chainID)
 
             // Change to withdraw mode and set new selections
@@ -820,7 +817,7 @@ export function TransferPanelMain({
     to,
     isDepositMode,
     setQueryParams,
-    switchNetwork,
+    switchNetworkAsync,
     switchNetworksOnTransferPanel,
     isConnectedToArbitrum
   ])

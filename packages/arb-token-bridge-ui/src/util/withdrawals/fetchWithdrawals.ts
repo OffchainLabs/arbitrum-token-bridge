@@ -10,8 +10,8 @@ import {
 } from './helpers'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
-import { L2ToL1EventResultPlus } from 'token-bridge-sdk'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
+import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
 
 export type FetchWithdrawalsParams = {
   walletAddress: string

@@ -4,7 +4,7 @@
   This way users can seek help without going to the individual ticket id
 */
 
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { GET_HELP_LINK } from '../../constants'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'

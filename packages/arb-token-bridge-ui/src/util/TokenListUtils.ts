@@ -1,16 +1,14 @@
-import useSWRImmutable from 'swr/immutable'
-import { SWRResponse } from 'swr'
 import axios from 'axios'
 import { schema, TokenList } from '@uniswap/token-lists'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
-import { ArbTokenBridge } from 'token-bridge-sdk'
 import { ImageProps } from 'next/image'
 import ArbitrumLogo from '@/images/lists/arbitrum.svg'
 import UniswapLogo from '@/images/lists/uniswap.png'
 import GeminiLogo from '@/images/lists/gemini.png'
 import CMCLogo from '@/images/lists/cmc.png'
 import ArbitrumFoundation from '@/images/lists/ArbitrumFoundation.png'
+import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
 
@@ -159,56 +157,4 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
     console.warn('Token List URL Invalid', tokenListURL)
     return { isValid: false, data: undefined }
   }
-}
-
-export function fetchTokenLists(
-  forL2ChainId: number
-): Promise<TokenListWithId[]> {
-  return new Promise(resolve => {
-    const requestListArray = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList =>
-        bridgeTokenList.originChainID === forL2ChainId ||
-        // Always load the Arbitrum Token token list
-        bridgeTokenList.isArbitrumTokenTokenList
-    )
-
-    Promise.all(
-      requestListArray.map(bridgeTokenList =>
-        fetchTokenListFromURL(bridgeTokenList.url)
-      )
-    ).then(responses => {
-      const tokenListsWithBridgeTokenListId = responses
-        .map(({ data, isValid }, index) => {
-          const bridgeTokenListId = requestListArray[index]?.id
-
-          if (typeof bridgeTokenListId === 'undefined') {
-            return { ...data, isValid }
-          }
-
-          return {
-            l2ChainId: forL2ChainId,
-            bridgeTokenListId,
-            isValid,
-            ...data
-          }
-        })
-        .filter(list => list?.isValid)
-
-      resolve(tokenListsWithBridgeTokenListId as TokenListWithId[])
-    })
-  })
-}
-
-export function useTokenLists(
-  forL2ChainId: number
-): SWRResponse<TokenListWithId[]> {
-  return useSWRImmutable(
-    ['useTokenLists', forL2ChainId],
-    ([, _forL2ChainId]) => fetchTokenLists(_forL2ChainId),
-    {
-      shouldRetryOnError: true,
-      errorRetryCount: 2,
-      errorRetryInterval: 1_000
-    }
-  )
 }
