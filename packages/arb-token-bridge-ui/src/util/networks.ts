@@ -15,6 +15,22 @@ if (typeof INFURA_KEY === 'undefined') {
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 
+export function getL2ChainIds(l1ChainId: number): ChainId[] {
+  if (l1ChainId === ChainId.Mainnet) {
+    return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+  }
+
+  if (l1ChainId === ChainId.Goerli) {
+    return [ChainId.ArbitrumGoerli]
+  }
+
+  if (l1ChainId === ChainId.Local) {
+    return [ChainId.ArbitrumLocal]
+  }
+
+  return []
+}
+
 export enum ChainId {
   // L1
   Mainnet = 1,

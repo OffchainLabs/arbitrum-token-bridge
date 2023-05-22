@@ -139,17 +139,17 @@ export function TransferPanel() {
   } = networksAndSigners
 
   const { data: l1Signer } = useSigner({
-    chainId: l1Network.chainID
+    chainId: l1Network.id
   })
   const { data: l2Signer } = useSigner({
-    chainId: l2Network.chainID
+    chainId: l2Network.id
   })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
 
-  const { isMainnet } = isNetwork(l1Network.chainID)
-  const { isArbitrumNova } = isNetwork(l2Network.chainID)
+  const { isMainnet } = isNetwork(l1Network.id)
+  const { isArbitrumNova } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -357,7 +357,7 @@ export function TransferPanel() {
       return
     }
 
-    const l2NetworkName = getNetworkName(l2Network.chainID)
+    const l2NetworkName = getNetworkName(l2Network.id)
 
     // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
@@ -412,7 +412,7 @@ export function TransferPanel() {
             })
           }
           await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l1.network.chainID
+            latestNetworksAndSigners.current.l1.network.id
           )
 
           while (
@@ -426,7 +426,7 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = latestNetworksAndSigners.current.l1.network.chainID
+        const l1ChainID = latestNetworksAndSigners.current.l1.network.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -567,7 +567,7 @@ export function TransferPanel() {
             })
           }
           await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l2.network.chainID
+            latestNetworksAndSigners.current.l2.network.id
           )
 
           while (
@@ -590,7 +590,7 @@ export function TransferPanel() {
           }
         }
 
-        const l2ChainID = latestNetworksAndSigners.current.l2.network.chainID
+        const l2ChainID = latestNetworksAndSigners.current.l2.network.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -743,7 +743,7 @@ export function TransferPanel() {
       if (
         isDepositMode &&
         selectedToken &&
-        isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
+        isWithdrawOnlyToken(selectedToken.address, l2Network.id)
       ) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
@@ -792,7 +792,7 @@ export function TransferPanel() {
     if (
       isDepositMode &&
       selectedToken &&
-      isWithdrawOnlyToken(selectedToken.address, l2Network.chainID)
+      isWithdrawOnlyToken(selectedToken.address, l2Network.id)
     ) {
       return true
     }
@@ -993,7 +993,7 @@ export function TransferPanel() {
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.chainID)}`}
+                : `Move funds to ${getNetworkName(l2Network.id)}`}
             </Button>
           ) : (
             <Button
@@ -1005,7 +1005,7 @@ export function TransferPanel() {
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.chainID)}`}
+                : `Move funds to ${getNetworkName(l1Network.id)}`}
             </Button>
           )}
         </div>

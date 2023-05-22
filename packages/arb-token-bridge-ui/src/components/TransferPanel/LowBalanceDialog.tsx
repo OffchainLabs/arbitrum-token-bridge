@@ -85,7 +85,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const { isMainnet } = isNetwork(l1.network.chainID)
+  const { isMainnet } = isNetwork(l1.network.id)
   const {
     eth: [ethBalance]
   } = useBalance({
@@ -119,7 +119,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
               height={32}
             />
             <span className="text-2xl text-eth-dark">
-              {getNetworkName(l1.network.chainID)} Balance
+              {getNetworkName(l1.network.id)} Balance
             </span>
           </div>
           <span className="text-center text-3xl font-light text-eth-dark">
