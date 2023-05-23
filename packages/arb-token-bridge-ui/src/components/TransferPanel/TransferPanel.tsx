@@ -966,7 +966,7 @@ export function TransferPanel() {
       }
     } else {
       if (approving) {
-        return `Approving ${selectedToken?.symbol}...`
+        return `Approving...`
       }
     }
     if (isDepositMode && needsApprovalL1) {
@@ -986,8 +986,7 @@ export function TransferPanel() {
     isTransferring,
     approving,
     needsApprovalL1,
-    needsApprovalL2,
-    selectedToken
+    needsApprovalL2
   ])
 
   return (

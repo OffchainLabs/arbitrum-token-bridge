@@ -56,7 +56,7 @@ describe('Approve token and deposit afterwards', () => {
       // metamask approval popup
       cy.confirmMetamaskPermissionToSpend('1').then(() => {
         // make sure it starts to approve
-        cy.waitUntil(() => cy.findByRole('button', { name: /Approving/i }))
+        cy.waitUntil(() => cy.findByRole('button', { name: /Approving.../i }))
       })
     })
 
