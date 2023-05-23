@@ -11,9 +11,10 @@ export async function depositTokenEstimateGas({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<DepositGasEstimates> {
-  const l1BaseFee = await l1Provider.getGasPrice()
-  const l2Network = await getL2Network(l2Provider)
-
+  const [l1BaseFee, l2Network] = await Promise.all([
+    l1Provider.getGasPrice(),
+    getL2Network(l2Provider)
+  ])
   const inbox = Inbox__factory.connect(l2Network.ethBridge.inbox, l1Provider)
 
   const estimatedL2SubmissionCost = await inbox.calculateRetryableSubmissionFee(

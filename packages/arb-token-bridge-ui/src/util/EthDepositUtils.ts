@@ -23,7 +23,9 @@ export async function depositEthEstimateGas({
 
   const estimatedL1Gas = await l1Provider.estimateGas(depositRequest.txRequest)
 
-  const estimatedL2Gas = constants.Zero
-  const estimatedL2SubmissionCost = constants.Zero
-  return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
+  return {
+    estimatedL1Gas,
+    estimatedL2Gas: constants.Zero,
+    estimatedL2SubmissionCost: constants.Zero
+  }
 }
