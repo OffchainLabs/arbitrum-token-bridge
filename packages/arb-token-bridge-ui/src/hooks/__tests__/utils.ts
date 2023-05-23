@@ -1,11 +1,10 @@
 import { RenderHookResult, act, renderHook } from '@testing-library/react'
 import { BigNumber } from 'ethers'
-import { Provider } from '@ethersproject/providers'
 import { KeyedMutator } from 'swr'
 
 import { Erc20Balances, UseBalanceProps, useBalance } from '../useBalance'
 
-type RenderHookResultResultType = {
+type RenderUseBalanceHookResultResultType = {
   eth: readonly [BigNumber | null, KeyedMutator<BigNumber>]
   erc20: readonly [
     Erc20Balances | null,
@@ -18,13 +17,11 @@ export const renderHookAsync = async ({
   provider,
   walletAddress,
   wrapper
-}: {
-  provider: Provider
-  walletAddress: string | undefined
+}: UseBalanceProps & {
   wrapper: React.ComponentType
 }) => {
   let hook:
-    | RenderHookResult<RenderHookResultResultType, UseBalanceProps>
+    | RenderHookResult<RenderUseBalanceHookResultResultType, UseBalanceProps>
     | undefined
 
   await act(async () => {
