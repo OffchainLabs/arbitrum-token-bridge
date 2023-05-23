@@ -122,19 +122,13 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
    2. Check out the [Nitro repo](https://github.com/OffchainLabs/nitro)
 
-   3. Run:
-
-      ```bash
-      $ yarn
-      ```
-
-   4. Run: (Make sure your Docker App is running)
+   3. Run: (Make sure your Docker App is running)
 
       ```bash
       $ ./test-node.bash --init --no-blockscout
       ```
 
-   5. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
+   4. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
 
 2. In the root of the token bridge UI:
 
