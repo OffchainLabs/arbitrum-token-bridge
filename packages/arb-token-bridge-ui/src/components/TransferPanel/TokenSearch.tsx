@@ -306,7 +306,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {isL2OnlyToken && (
                 <span className="flex gap-1 text-xs font-normal text-error">
                   {`Token contract not found on ${getNetworkName(
-                    l1Network.chainID
+                    l1Network.id
                   )}, so cannot be bridged`}
                 </span>
               )}
