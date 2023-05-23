@@ -125,7 +125,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
    3. Run: (Make sure your Docker App is running)
 
       ```bash
-      $ ./test-node.bash --init --no-blockscout
+      $ ./test-node.bash --init
       ```
 
    4. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
