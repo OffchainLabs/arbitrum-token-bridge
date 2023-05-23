@@ -138,7 +138,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
    $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
    ```
 
-   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file. Some tests will require you to have 10+ deposits and withdrawals on Goerli in the transaction history. If your wallet doesn't have enough transactions, you can import and use this private key: `PRIVATE_KEY_USER=c791f745783e3545f83e7b4f0adcc0c2f591c5c8bc796e042c639824ec5d7bf0`
+   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file. Some tests will require you to have 10+ deposits and withdrawals on Goerli in the transaction history. If your wallet doesn't have enough transactions, you can use this private key: `PRIVATE_KEY_USER=c791f745783e3545f83e7b4f0adcc0c2f591c5c8bc796e042c639824ec5d7bf0`
 
 3. Run the token bridge UI locally on `http://localhost:3000/` with:
 
