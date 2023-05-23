@@ -130,7 +130,7 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
    4. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
 
-2. In the root of the token bridge UI:
+2. At the root of the token bridge UI:
 
    1. Run:
 
