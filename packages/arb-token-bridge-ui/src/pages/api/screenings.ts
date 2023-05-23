@@ -36,19 +36,15 @@ function isBlocked(response: ExternalApiResponse): boolean {
     result => result.addressRiskIndicators.length > 0
   )
 
-  if (riskIdentified) {
-    let isSevere = false
-    response.forEach(chainInfo => {
-      chainInfo.addressRiskIndicators.forEach(riskIndicator => {
-        if (riskIndicator.categoryRiskScoreLevel > 1) isSevere = true
-      })
-    })
-
-    return isSevere
-  } else {
-    // no risk identified
+  if (!riskIdentified) {
     return false
   }
+
+  return response.some(chainInfo => {
+    return chainInfo.addressRiskIndicators.some(
+      riskIndicator => riskIndicator.categoryRiskScoreLevel > 1
+    )
+  })
 }
 
 export type ApiResponseSuccess = {
