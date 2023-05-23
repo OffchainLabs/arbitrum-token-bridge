@@ -129,6 +129,7 @@ async function deployERC20ToL1() {
   )
   const token = await contract.deploy()
   await token.deployed()
+  console.log(`ERC20 deployed: ${token.address}`)
 
   return token
 }
