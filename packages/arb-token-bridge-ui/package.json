@@ -32,7 +32,7 @@
     "next-query-params": "^4.1.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
-    "posthog-js": "^1.53.4",
+    "posthog-js": "^1.57.2",
     "query-string": "^8.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

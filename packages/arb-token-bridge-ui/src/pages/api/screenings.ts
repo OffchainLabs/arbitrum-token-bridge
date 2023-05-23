@@ -31,8 +31,24 @@ type ExternalApiResponse = [
 ]
 
 function isBlocked(response: ExternalApiResponse): boolean {
-  // Block in case the address has any risk indicators on either network
-  return response.some(result => result.addressRiskIndicators.length > 0)
+  // Block in case the address has any high risk indicators on either network
+  const riskIdentified = response.some(
+    result => result.addressRiskIndicators.length > 0
+  )
+
+  if (riskIdentified) {
+    let isSevere = false
+    response.forEach(chainInfo => {
+      chainInfo.addressRiskIndicators.forEach(riskIndicator => {
+        if (riskIndicator.categoryRiskScoreLevel > 1) isSevere = true
+      })
+    })
+
+    return isSevere
+  } else {
+    // no risk identified
+    return false
+  }
 }
 
 export type ApiResponseSuccess = {
