@@ -171,8 +171,8 @@ export function TransferPanel() {
   }
 
   useEffect(() => {
-    async function getAllowanceL1() {
-      if (!selectedToken) {
+    async function setAllowance() {
+      if (!selectedToken || !walletAddress) {
         setAllowanceL1(null)
       } else {
         setAllowanceL1(
@@ -185,27 +185,28 @@ export function TransferPanel() {
         )
       }
     }
-    getAllowanceL1()
+    setAllowance()
   }, [l1Provider, l2Provider, selectedToken, walletAddress])
 
-  useEffect(() => {
-    async function getAllowanceL2() {
-      if (!selectedToken || !selectedToken.l2Address) {
-        setAllowanceL2(null)
-      } else {
-        const token = ERC20__factory.connect(
-          selectedToken.l2Address,
-          l2Provider
-        )
-        const gatewayAddress = await getL2GatewayAddress({
-          erc20L1Address: selectedToken.address,
-          l2Provider
-        })
-        setAllowanceL2(await token.allowance(walletAddress, gatewayAddress))
-      }
+  const _setAllowanceL2 = useCallback(async () => {
+    if (!selectedToken || !selectedToken.l2Address || !walletAddress) {
+      setAllowanceL2(null)
+    } else {
+      const token = ERC20__factory.connect(selectedToken.l2Address, l2Provider)
+      const gatewayAddress = await getL2GatewayAddress({
+        erc20L1Address: selectedToken.address,
+        l2Provider
+      })
+      setAllowanceL2(await token.allowance(walletAddress, gatewayAddress))
     }
-    getAllowanceL2()
   }, [l2Provider, selectedToken, walletAddress])
+
+  useEffect(() => {
+    async function setAllowance() {
+      await _setAllowanceL2()
+    }
+    setAllowance()
+  }, [l2Provider, selectedToken, walletAddress, _setAllowanceL2])
 
   const needsApprovalL1 = useMemo(() => {
     if (!selectedToken || !amount) {
@@ -524,6 +525,14 @@ export function TransferPanel() {
               l1Signer
             })
 
+            setAllowanceL1(
+              await getL1TokenAllowance({
+                account: walletAddress,
+                erc20L1Address: selectedToken.address,
+                l1Provider: l1Provider,
+                l2Provider: l2Provider
+              })
+            )
             setApproving(false)
           }
 
@@ -662,6 +671,7 @@ export function TransferPanel() {
               erc20L1Address: selectedToken.address,
               l2Signer
             })
+            _setAllowanceL2()
             setApproving(false)
           }
 
