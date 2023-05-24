@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import {
+  InformationCircleIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { ERC20BridgeToken, useGasPrice } from 'token-bridge-sdk'
-import { ExclamationIcon } from '@heroicons/react/outline'
-
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -13,6 +13,8 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useGasPrice } from '../../hooks/useGasPrice'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -31,7 +33,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const { l1 } = useNetworksAndSigners()
-  const { isMainnet } = isNetwork(l1.network.chainID)
+  const { isMainnet } = isNetwork(l1.network.id)
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
 
@@ -104,9 +106,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(l1.network.chainID)}/token/${
-                token?.address
-              }`}
+              href={`${getExplorerUrl(l1.network.id)}/token/${token?.address}`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}
@@ -131,7 +131,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         <div className="flex flex-col md:max-w-[490px]">
           {displayAllowanceWarning && (
             <div className="flex flex-row items-center space-x-2 rounded-lg bg-yellow-50 px-2 py-3">
-              <ExclamationIcon className="h-8 w-8 text-yellow-400" />
+              <ExclamationTriangleIcon className="h-8 w-8 text-yellow-400" />
               <span className="text-sm font-light">
                 You are seeing this dialog because the current allowance you
                 have set for this token

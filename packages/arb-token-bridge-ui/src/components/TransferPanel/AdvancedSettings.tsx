@@ -5,17 +5,18 @@ import {
   ChevronDownIcon,
   LockClosedIcon,
   LockOpenIcon
-} from '@heroicons/react/solid'
+} from '@heroicons/react/24/solid'
 import {
-  ExternalLinkIcon,
+  ArrowTopRightOnSquareIcon,
   QuestionMarkCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
 import { TransferValidationErrors } from 'src/util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getExplorerUrl } from 'src/util/networks'
 
 const AdvancedSettings = ({
   destinationAddress,
@@ -64,7 +65,7 @@ const AdvancedSettings = ({
   }, [error, isSmartContractWallet, walletAddress, toAddressEqualsSenderEOA])
 
   const DestinationAddressExplorer = useMemo(() => {
-    const { explorerUrl } = (isDepositMode ? l2 : l1).network
+    const explorerUrl = getExplorerUrl((isDepositMode ? l2 : l1).network.id)
 
     if (!explorerUrl || error) {
       return null
@@ -74,7 +75,7 @@ const AdvancedSettings = ({
         className="mt-2 flex w-fit text-xs text-slate-500"
         href={`${explorerUrl}/address/${destinationAddress || walletAddress}`}
       >
-        <ExternalLinkIcon className="mr-1 h-4 w-4" />
+        <ArrowTopRightOnSquareIcon className="mr-1 h-4 w-4" />
         View account in explorer
       </ExternalLink>
     )

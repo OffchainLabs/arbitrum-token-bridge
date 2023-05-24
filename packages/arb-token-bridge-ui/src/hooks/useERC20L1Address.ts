@@ -1,6 +1,6 @@
 import { Provider } from '@ethersproject/providers'
 import useSWRImmutable from 'swr/immutable'
-import { getL1ERC20Address } from 'token-bridge-sdk'
+import { getL1ERC20Address } from '../util/TokenUtils'
 
 /**
  * Returns L1 address
@@ -9,7 +9,7 @@ import { getL1ERC20Address } from 'token-bridge-sdk'
  * @param l2Provider L2 Provider
  * @returns
  */
-const useERC20L1Address = ({
+export const useERC20L1Address = ({
   eitherL1OrL2Address,
   l2Provider
 }: {
@@ -35,5 +35,3 @@ const useERC20L1Address = ({
 
   return { data, isLoading: isValidating }
 }
-
-export { useERC20L1Address }

@@ -10,7 +10,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
@@ -131,9 +131,9 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         aria-label="L1 Transaction Link"
       >
         <span className="rounded-md px-2 text-xs text-gray-9">Step 1</span>
-        {getNetworkName(l1.network.chainID)}:{' '}
+        {getNetworkName(l1.network.id)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.chainID)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -146,9 +146,9 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
           aria-label="L2 Transaction Link"
         >
           <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
-          {getNetworkName(l2.network.chainID)}:{' '}
+          {getNetworkName(l2.network.id)}:{' '}
           <ExternalLink
-            href={`${getExplorerUrl(l2.network.chainID)}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(l2.network.id)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}

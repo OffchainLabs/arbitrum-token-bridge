@@ -1,4 +1,5 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
+import { Chain } from 'wagmi'
 import { BigNumber, constants, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -6,12 +7,11 @@ import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
 import {
-  L1Network,
-  L2Network,
   EthBridger,
   Erc20Bridger,
   L1ToL2MessageStatus,
-  L2ToL1Message
+  L2ToL1Message,
+  getL2Network
 } from '@arbitrum/sdk'
 import {
   L1EthDepositTransaction,
@@ -21,8 +21,10 @@ import {
 } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
-import { getL1ERC20Address } from '../util/getL1ERC20Address'
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
   ArbTokenBridge,
@@ -40,11 +42,22 @@ import {
   NodeBlockDeadlineStatusTypes
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import { getUniqueIdOrHashFromEvent } from '../util/migration'
-import { getL1TokenData, isClassicL2ToL1TransactionEvent } from '../util'
+import {
+  getL1TokenData,
+  getL1ERC20Address,
+  getL2GatewayAddress,
+  getL2ERC20Address,
+  l1TokenIsDisabled
+} from '../util/TokenUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
+}
+
+function isClassicL2ToL1TransactionEvent(
+  event: L2ToL1TransactionEvent
+): event is EventArgs<ClassicL2ToL1TransactionEvent> {
+  return typeof (event as any).batchNumber !== 'undefined'
 }
 
 export function getExecutedMessagesCacheKey({
@@ -59,6 +72,20 @@ export function getExecutedMessagesCacheKey({
     : `l2ChainId: ${l2ChainId}, position: ${event.position.toString()}`
 }
 
+export function getUniqueIdOrHashFromEvent(
+  event: L2ToL1EventResult
+): BigNumber {
+  const anyEvent = event as any
+
+  // Nitro
+  if (anyEvent.hash) {
+    return anyEvent.hash as BigNumber
+  }
+
+  // Classic
+  return anyEvent.uniqueId as BigNumber
+}
+
 class TokenDisabledError extends Error {
   constructor(msg: string) {
     super(msg)
@@ -68,8 +95,8 @@ class TokenDisabledError extends Error {
 
 export interface TokenBridgeParams {
   walletAddress: string
-  l1: { provider: JsonRpcProvider; network: L1Network }
-  l2: { provider: JsonRpcProvider; network: L2Network }
+  l1: { provider: JsonRpcProvider; network: Chain }
+  l2: { provider: JsonRpcProvider; network: Chain }
 }
 
 export const useArbTokenBridge = (
@@ -136,33 +163,8 @@ export const useArbTokenBridge = (
     }
   ] = useTransactions()
 
-  const l1NetworkID = useMemo(() => String(l1.network.chainID), [l1.network])
-  const l2NetworkID = useMemo(() => String(l2.network.chainID), [l2.network])
-
-  async function getL2GatewayAddress(erc20L1Address: string): Promise<string> {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2.provider)
-  }
-
-  /**
-   * Retrieves the L2 address of an ERC-20 token using its L1 address.
-   * @param erc20L1Address
-   * @returns
-   */
-  async function getL2ERC20Address(erc20L1Address: string): Promise<string> {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1.provider)
-  }
-
-  /**
-   * Retrieves data about whether an ERC-20 token is disabled on the router.
-   * @param erc20L1Address
-   * @returns
-   */
-  async function l1TokenIsDisabled(erc20L1Address: string): Promise<boolean> {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1.provider)
-  }
+  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network])
+  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network])
 
   const depositEth = async ({
     amount,
@@ -450,7 +452,10 @@ export const useArbTokenBridge = (
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
-    const gatewayAddress = await getL2GatewayAddress(erc20L1Address)
+    const gatewayAddress = await getL2GatewayAddress({
+      erc20L1Address,
+      l2Provider: l2.provider
+    })
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const { symbol } = await getL1TokenData({
@@ -562,11 +567,9 @@ export const useArbTokenBridge = (
 
   async function depositTokenEstimateGas() {
     const l1BaseFee = await l1.provider.getGasPrice()
+    const l2Network = await getL2Network(l2.provider)
 
-    const inbox = Inbox__factory.connect(
-      l2.network.ethBridge.inbox,
-      l1.provider
-    )
+    const inbox = Inbox__factory.connect(l2Network.ethBridge.inbox, l1.provider)
 
     const estimatedL2SubmissionCost =
       await inbox.calculateRetryableSubmissionFee(
@@ -755,8 +758,8 @@ export const useArbTokenBridge = (
   }
 
   const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.chainID
-    const l2ChainID = l2.network.chainID
+    const l1ChainID = l1.network.id
+    const l2ChainID = l2.network.id
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -899,7 +902,11 @@ export const useArbTokenBridge = (
     } else {
       // looks like l1 address was provided
       l1Address = lowercasedErc20L1orL2Address
-      l2Address = await getL2ERC20Address(l1Address)
+      l2Address = await getL2ERC20Address({
+        erc20L1Address: l1Address,
+        l1Provider: l1.provider,
+        l2Provider: l2.provider
+      })
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
@@ -911,7 +918,11 @@ export const useArbTokenBridge = (
       l2Provider: l2.provider
     })
 
-    const isDisabled = await l1TokenIsDisabled(l1Address)
+    const isDisabled = await l1TokenIsDisabled({
+      erc20L1Address: l1Address,
+      l1Provider: l1.provider,
+      l2Provider: l2.provider
+    })
 
     if (isDisabled) {
       throw new TokenDisabledError('Token currently disabled')
@@ -1084,7 +1095,7 @@ export const useArbTokenBridge = (
     events.forEach((event: L2ToL1EventResult) => {
       const cacheKey = getExecutedMessagesCacheKey({
         event,
-        l2ChainId: l2.network.chainID
+        l2ChainId: l2.network.id
       })
 
       added[cacheKey] = true
@@ -1124,9 +1135,7 @@ export const useArbTokenBridge = (
       depositEstimateGas: depositTokenEstimateGas,
       withdraw: withdrawToken,
       withdrawEstimateGas: withdrawTokenEstimateGas,
-      triggerOutbox: triggerOutboxToken,
-      getL2ERC20Address,
-      getL2GatewayAddress
+      triggerOutbox: triggerOutboxToken
     },
     transactions: {
       transactions,

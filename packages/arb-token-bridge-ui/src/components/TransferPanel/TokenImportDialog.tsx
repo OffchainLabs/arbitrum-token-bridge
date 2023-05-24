@@ -1,28 +1,28 @@
 import {
   ExclamationCircleIcon,
   InformationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import Tippy from '@tippyjs/react'
 
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
-import { ERC20BridgeToken, getL1TokenData } from 'token-bridge-sdk'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
+import { getL1TokenData } from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-
 import {
   toERC20BridgeToken,
   useTokensFromLists,
   useTokensFromUser
 } from './TokenSearchUtils'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 enum ImportStatus {
   LOADING,
@@ -356,7 +356,7 @@ export function TokenImportDialog({
           </span>
           <span className="mb-3 mt-0">{tokenToImport?.name}</span>
           <a
-            href={`${getExplorerUrl(l1.network.chainID)}/token/${
+            href={`${getExplorerUrl(l1.network.id)}/token/${
               tokenToImport?.address
             }`}
             target="_blank"

@@ -1,12 +1,12 @@
-import {
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes
-} from 'token-bridge-sdk'
+import dayjs from 'dayjs'
 
 import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getBlockTime, getConfirmPeriodBlocks } from '../../util/networks'
-import dayjs from 'dayjs'
+import {
+  NodeBlockDeadlineStatus,
+  NodeBlockDeadlineStatusTypes
+} from '../../hooks/arbTokenBridge.types'
 import { Tooltip } from './Tooltip'
 
 export function WithdrawalCountdown({
@@ -27,8 +27,8 @@ export function WithdrawalCountdown({
     return <span>Calculating...</span>
   }
 
-  const blockTime = getBlockTime(l1Network.chainID) ?? 15
-  const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.chainID)
+  const blockTime = getBlockTime(l1Network.id) ?? 15
+  const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.id)
 
   if (nodeBlockDeadline === NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED) {
     const withdrawalTimeInSeconds = confirmPeriodBlocks * blockTime

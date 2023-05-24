@@ -1,15 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Listbox } from '@headlessui/react'
-import { ChevronDownIcon, SwitchVerticalIcon } from '@heroicons/react/outline'
+import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-import { L1Network, L2Network } from '@arbitrum/sdk'
-import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
-import { ERC20BridgeToken, useBalance, useGasPrice } from 'token-bridge-sdk'
+
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { useSwitchNetwork } from 'wagmi'
+import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -17,12 +15,12 @@ import { formatAmount } from '../../util/NumberUtils'
 import { TransferValidationErrors } from '../../util/AddressUtils'
 import {
   ChainId,
+  getL2ChainIds,
   getNetworkLogo,
   getNetworkName,
-  handleSwitchNetworkError,
-  handleSwitchNetworkOnMutate,
   isNetwork
 } from '../../util/networks'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -41,6 +39,10 @@ import {
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { isAddress } from 'ethers/lib/utils.js'
+import { useBalance } from '../../hooks/useBalance'
+import { useGasPrice } from '../../hooks/useGasPrice'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -51,7 +53,7 @@ export function SwitchNetworksButton(
       className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
-      <SwitchVerticalIcon className="text-dark" />
+      <ArrowsUpDownIcon className="text-dark" />
     </button>
   )
 }
@@ -64,9 +66,9 @@ type OptionsExtraProps = {
 type NetworkListboxProps = {
   disabled?: boolean
   label: string
-  options: ((L1Network | L2Network) & OptionsExtraProps)[]
-  value: L1Network | L2Network
-  onChange: (value: L1Network | L2Network) => void
+  options: (Chain & OptionsExtraProps)[]
+  value: Chain
+  onChange: (value: Chain) => void
 }
 
 function NetworkListbox({
@@ -77,7 +79,7 @@ function NetworkListbox({
   onChange
 }: NetworkListboxProps) {
   const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value.chainID)
+    const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
 
     if (!isArbitrum) {
       return 'bg-eth-primary'
@@ -117,7 +119,7 @@ function NetworkListbox({
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
       >
         <span>
-          {label} {getNetworkName(value.chainID)}
+          {label} {getNetworkName(value.id)}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
@@ -126,7 +128,7 @@ function NetworkListbox({
         {options.map((option, index) => {
           return (
             <Tooltip
-              key={option.chainID}
+              key={option.id}
               show={option.disabled}
               content={option.disabledTooltip}
               wrapperClassName="w-full"
@@ -143,14 +145,14 @@ function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Image
-                    src={getNetworkLogo(option.chainID)}
-                    alt={`${getNetworkName(option.chainID)} logo`}
+                    src={getNetworkLogo(option.id)}
+                    alt={`${getNetworkName(option.id)} logo`}
                     className="max-h-7 w-auto"
                     width={36}
                     height={36}
                   />
                 </div>
-                <span>{getNetworkName(option.chainID)}</span>
+                <span>{getNetworkName(option.id)}</span>
               </Listbox.Option>
             </Tooltip>
           )
@@ -160,28 +162,19 @@ function NetworkListbox({
   )
 }
 
-function getListboxOptionsFromL1Network(network: L1Network) {
-  const options: L2Network[] = []
-
-  network.partnerChainIDs.forEach(chainId => {
-    const l2Network = l2Networks[chainId]
-    if (l2Network && !options.includes(l2Network)) {
-      options.push(l2Network)
-    }
-  })
-
-  return options
+function getListboxOptionsFromL1Network(network: Chain) {
+  return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
 }
 
 function NetworkContainer({
   network,
   children
 }: {
-  network: L1Network | L2Network
+  network: Chain
   children: React.ReactNode
 }) {
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.chainID)
+    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
     if (!isArbitrum) {
       return {
@@ -338,11 +331,8 @@ export function TransferPanelMain({
   const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
     useNetworksAndSigners()
 
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onMutate: () =>
-      handleSwitchNetworkOnMutate({ isSwitchingNetworkBeforeTx: true }),
-    onError: handleSwitchNetworkError
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
   })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -389,8 +379,8 @@ export function TransferPanelMain({
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
 
-  const [from, setFrom] = useState<L1Network | L2Network>(externalFrom)
-  const [to, setTo] = useState<L1Network | L2Network>(externalTo)
+  const [from, setFrom] = useState<Chain>(externalFrom)
+  const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
@@ -400,9 +390,7 @@ export function TransferPanelMain({
   const [, setQueryParams] = useArbQueryParams()
 
   useEffect(() => {
-    const l2ChainId = isConnectedToArbitrum
-      ? externalFrom.chainID
-      : externalTo.chainID
+    const l2ChainId = isConnectedToArbitrum ? externalFrom.id : externalTo.id
 
     setFrom(externalFrom)
     setTo(externalTo)
@@ -608,7 +596,7 @@ export function TransferPanelMain({
       return [l1.network, ...options]
         .filter(option => {
           // Remove selected network from the list
-          return option.chainID !== selectedChainId
+          return option.id !== selectedChainId
         })
         .map(option => {
           // Set disabled options (currently One<>Nova is disabled)
@@ -616,22 +604,22 @@ export function TransferPanelMain({
             ...option,
             disabled:
               direction === 'from'
-                ? (to.chainID === ChainId.ArbitrumNova &&
-                    option.chainID === ChainId.ArbitrumOne) ||
-                  (to.chainID === ChainId.ArbitrumOne &&
-                    option.chainID === ChainId.ArbitrumNova)
-                : (from.chainID === ChainId.ArbitrumNova &&
-                    option.chainID === ChainId.ArbitrumOne) ||
-                  (from.chainID === ChainId.ArbitrumOne &&
-                    option.chainID === ChainId.ArbitrumNova),
+                ? (to.id === ChainId.ArbitrumNova &&
+                    option.id === ChainId.ArbitrumOne) ||
+                  (to.id === ChainId.ArbitrumOne &&
+                    option.id === ChainId.ArbitrumNova)
+                : (from.id === ChainId.ArbitrumNova &&
+                    option.id === ChainId.ArbitrumOne) ||
+                  (from.id === ChainId.ArbitrumOne &&
+                    option.id === ChainId.ArbitrumNova),
             // That's the only possible tooltip combination
             disabledTooltip: "One<>Nova transfers aren't enabled yet"
           }
         })
     }
 
-    const fromOptions = modifyOptions(from.chainID, 'from')
-    const toOptions = modifyOptions(to.chainID, 'to')
+    const fromOptions = modifyOptions(from.id, 'from')
+    const toOptions = modifyOptions(to.id, 'to')
 
     if (isDepositMode) {
       return {
@@ -640,16 +628,16 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
-            const { isEthereum } = isNetwork(network.chainID)
+            const { isEthereum } = isNetwork(network.id)
 
             // Selecting the same chain or L1 network
-            if (from.chainID === network.chainID || isEthereum) {
+            if (from.id === network.id || isEthereum) {
               return
             }
 
             try {
-              await switchNetwork?.(network.chainID)
-              updatePreferredL2Chain(network.chainID)
+              await switchNetworkAsync?.(network.id)
+              updatePreferredL2Chain(network.id)
 
               // If L2 selected, change to withdraw mode and set new selections
               switchNetworksOnTransferPanel()
@@ -668,11 +656,11 @@ export function TransferPanelMain({
           value: to,
           onChange: async network => {
             // Selecting the same chain
-            if (to.chainID === network.chainID) {
+            if (to.id === network.id) {
               return
             }
 
-            const { isEthereum } = isNetwork(network.chainID)
+            const { isEthereum } = isNetwork(network.id)
 
             // Switch networks if selecting L1 network
             if (isEthereum) {
@@ -685,8 +673,8 @@ export function TransferPanelMain({
               // 1) Switch to the L1 network (to be able to initiate a deposit)
               // 2) Select the preferred L2 network
               try {
-                await switchNetwork?.(l1.network.chainID)
-                updatePreferredL2Chain(network.chainID)
+                await switchNetworkAsync?.(l1.network.id)
+                updatePreferredL2Chain(network.id)
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
                   Sentry.captureException(error)
@@ -694,7 +682,7 @@ export function TransferPanelMain({
               }
             } else {
               // If we are connected to an L1 network, we can just select the preferred L2 network
-              updatePreferredL2Chain(network.chainID)
+              updatePreferredL2Chain(network.id)
             }
           }
         }
@@ -708,11 +696,11 @@ export function TransferPanelMain({
         value: from,
         onChange: async network => {
           // Selecting the same chain
-          if (from.chainID === network.chainID) {
+          if (from.id === network.id) {
             return
           }
 
-          const { isEthereum } = isNetwork(network.chainID)
+          const { isEthereum } = isNetwork(network.id)
 
           // Switch networks if selecting L1 network
           if (isEthereum) {
@@ -721,8 +709,8 @@ export function TransferPanelMain({
 
           // In withdraw mode we always switch to the L2 network
           try {
-            await switchNetwork?.(network.chainID)
-            updatePreferredL2Chain(network.chainID)
+            await switchNetworkAsync?.(network.id)
+            updatePreferredL2Chain(network.id)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
               Sentry.captureException(error)
@@ -735,17 +723,17 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereum } = isNetwork(network.chainID)
+          const { isEthereum } = isNetwork(network.id)
 
           // Selecting the same chain or L1 network
-          if (to.chainID === network.chainID || isEthereum) {
+          if (to.id === network.id || isEthereum) {
             return
           }
 
           // Destination network is L2, connect to L1
           try {
-            await switchNetwork?.(l1.network.chainID)
-            updatePreferredL2Chain(network.chainID)
+            await switchNetworkAsync?.(l1.network.id)
+            updatePreferredL2Chain(network.id)
 
             // Change to withdraw mode and set new selections
             switchNetworksOnTransferPanel()
@@ -765,7 +753,7 @@ export function TransferPanelMain({
     to,
     isDepositMode,
     setQueryParams,
-    switchNetwork,
+    switchNetworkAsync,
     switchNetworksOnTransferPanel,
     isConnectedToArbitrum
   ])

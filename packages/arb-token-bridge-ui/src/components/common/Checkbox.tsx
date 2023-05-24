@@ -1,5 +1,5 @@
 import { Switch } from '@headlessui/react'
-import { CheckIcon } from '@heroicons/react/outline'
+import { CheckIcon } from '@heroicons/react/24/outline'
 
 export type CheckboxProps = {
   label: string | React.ReactNode

@@ -1,9 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { constants, utils } from 'ethers'
-import { ExternalLinkIcon, ArrowRightIcon } from '@heroicons/react/outline'
-import { useBalance } from 'token-bridge-sdk'
+import {
+  ArrowTopRightOnSquareIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline'
 import Image from 'next/image'
 
+import { useBalance } from '../../hooks/useBalance'
 import { useAppState } from '../../state'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -65,7 +68,7 @@ function ExternalLinkCard({
             width={40}
             height={40}
           />
-          <ExternalLinkIcon className="h-4 w-4 text-gray-6" />
+          <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-6" />
         </div>
         <div className="flex w-full justify-center">
           <span className="text-xs sm:text-base">{title}</span>
@@ -82,7 +85,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const { isMainnet } = isNetwork(l1.network.chainID)
+  const { isMainnet } = isNetwork(l1.network.id)
   const {
     eth: [ethBalance]
   } = useBalance({
@@ -116,7 +119,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
               height={32}
             />
             <span className="text-2xl text-eth-dark">
-              {getNetworkName(l1.network.chainID)} Balance
+              {getNetworkName(l1.network.id)} Balance
             </span>
           </div>
           <span className="text-center text-3xl font-light text-eth-dark">

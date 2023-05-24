@@ -4,7 +4,7 @@ import axios from 'axios'
 import { load } from 'cheerio'
 import useSWR from 'swr'
 
-import { getExplorerUrl, isNetwork } from 'src/util/networks'
+import { getExplorerUrl, isNetwork } from '../util/networks'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 const emptyData = { tps: null }
@@ -41,7 +41,7 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
 export const useNetworkTPS = () => {
   const {
     l2: {
-      network: { chainID: l2ChainId }
+      network: { id: l2ChainId }
     }
   } = useNetworksAndSigners()
 
