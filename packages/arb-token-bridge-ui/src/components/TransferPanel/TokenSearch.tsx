@@ -569,8 +569,8 @@ function TokensPanel({
     <div className="flex flex-col space-y-3">
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark">
-            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-gray-dark" />
+          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-[0px_2px_2px_rgba(33,37,41,0.06),0px_0px_1px_rgba(33,37,41,0.08)]">
+            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
 
             <input
               id="newTokenAddress"
@@ -580,7 +580,7 @@ function TokensPanel({
                 setNewToken(e.target.value)
               }}
               placeholder="Search by token name, symbol, L1 or L2 address"
-              className="h-full w-full p-2 text-sm font-light text-dark shadow-[0px_2px_2px_0px_rgba(33,37,41,0.06)] placeholder:text-gray-dark"
+              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-dark"
             />
           </div>
 

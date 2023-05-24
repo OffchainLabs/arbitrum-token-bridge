@@ -855,7 +855,7 @@ export function TransferPanelMain({
             }
             className="flex flex-row items-center text-gray-dark"
           >
-            <span className="text-lg">Advanced Settings</span>
+            <span className="text-lg font-semibold">Advanced Settings</span>
             {showAdvancedSettings ? (
               <ChevronUpIcon className="ml-1 h-4 w-4" />
             ) : (

@@ -78,10 +78,10 @@ export const TableActionHeader = ({
       }`}
     >
       {/* Search bar */}
-      <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark">
-        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-gray-dark" />
+      <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-[0px_2px_2px_rgba(33,37,41,0.06),0px_0px_1px_rgba(33,37,41,0.08)]">
+        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
         <input
-          className="text-normal h-full w-full p-2 font-light text-dark shadow-[0px_2px_2px_0px_rgba(33,37,41,0.06)] placeholder:text-gray-dark"
+          className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-dark"
           type="text"
           placeholder={`Search for a full or partial ${layerType} tx ID`}
           value={searchString}

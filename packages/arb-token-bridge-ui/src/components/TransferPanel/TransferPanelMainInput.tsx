@@ -47,7 +47,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   return (
     <>
       <div
-        className={`flex h-12 flex-row items-center rounded-lg bg-white lg:h-16 ${borderClassName}`}
+        className={`flex h-12 flex-row items-center rounded-lg bg-white lg:h-16 ${borderClassName} shadow-[0px_2px_2px_rgba(33,37,41,0.06),0px_0px_1px_rgba(33,37,41,0.08)]`}
       >
         <TokenButton />
         <div className="h-full border-r border-gray-2" />
@@ -56,7 +56,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             type="text"
             inputMode="decimal"
             placeholder="Enter amount"
-            className="h-full w-full bg-transparent text-xl font-light shadow-[0px_2px_2px_0px_rgba(33,37,41,0.06)] placeholder:text-gray-dark sm:text-3xl"
+            className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
             {...rest}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}

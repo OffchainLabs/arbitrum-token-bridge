@@ -126,7 +126,7 @@ export function DepositCardContainer({
         {/* Logo watermark */}
         <Image
           src={getNetworkLogo(l2Network.id)}
-          className="absolute left-0 top-[1px] z-10 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[-0.75rem] lg:scale-[1.3] lg:opacity-[60%]"
+          className="absolute left-0 top-[1px] z-10 mr-4 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[0.5rem] lg:scale-[1.5] lg:opacity-[60%]"
           alt="Deposit"
           height={90}
           width={90}

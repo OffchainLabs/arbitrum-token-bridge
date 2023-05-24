@@ -298,6 +298,7 @@ export function getNetworkLogo(chainId: number) {
     // L2 networks
     case ChainId.ArbitrumOne:
     case ChainId.ArbitrumGoerli:
+    case ChainId.ArbitrumLocal:
       return '/images/ArbitrumOneLogo.svg'
 
     case ChainId.ArbitrumNova:
