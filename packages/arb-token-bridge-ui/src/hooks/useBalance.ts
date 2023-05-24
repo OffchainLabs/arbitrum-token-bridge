@@ -11,7 +11,7 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
 
-export type Erc20Balances = {
+type Erc20Balances = {
   [address: string]: BigNumber | undefined
 }
 
