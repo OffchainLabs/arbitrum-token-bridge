@@ -15,6 +15,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { TransferValidationErrors } from '../../util/AddressUtils'
 import {
   ChainId,
+  getExplorerUrl,
   getL2ChainIds,
   getNetworkLogo,
   getNetworkName,
@@ -37,6 +38,7 @@ import {
   calculateEstimatedL2GasFees,
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
+import { shortenAddress } from '../../util/CommonUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
@@ -168,9 +170,11 @@ function getListboxOptionsFromL1Network(network: Chain) {
 
 function NetworkContainer({
   network,
+  balanceFor,
   children
 }: {
   network: Chain
+  balanceFor?: string
   children: React.ReactNode
 }) {
   const { backgroundImage, backgroundClassName } = useMemo(() => {
@@ -196,18 +200,35 @@ function NetworkContainer({
     }
   }, [network])
 
+  const explorerUrl = `${getExplorerUrl(network.id)}/address/${balanceFor}`
+
   return (
-    <div
-      className={`relative rounded-xl p-1 transition-colors ${backgroundClassName}`}
-    >
+    <>
+      {balanceFor && (
+        <div className="w-full rounded-t-xl bg-gray-300 pb-1 pt-2 text-center text-sm text-slate-700">
+          <b>
+            Showing balance for{' '}
+            <ExternalLink className="underline" href={explorerUrl}>
+              {shortenAddress(balanceFor)}
+            </ExternalLink>
+          </b>
+        </div>
+      )}
       <div
-        className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
-        style={{ backgroundImage }}
-      ></div>
-      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
-        {children}
+        className={twMerge(
+          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          balanceFor ? 'rounded-t-none' : ''
+        )}
+      >
+        <div
+          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage }}
+        ></div>
+        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -821,7 +842,12 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer network={to}>
+      <NetworkContainer
+        network={to}
+        balanceFor={
+          walletAddress !== destinationAddress ? destinationAddress : undefined
+        }
+      >
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
