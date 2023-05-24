@@ -12,9 +12,9 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
+import { TransferValidationErrors } from '../../util'
 import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
-import { TransferValidationErrors } from 'src/util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl } from 'src/util/networks'
 

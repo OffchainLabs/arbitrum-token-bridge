@@ -11,8 +11,8 @@ import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { TransferValidationErrors } from '../../util'
 import { formatAmount } from '../../util/NumberUtils'
-import { TransferValidationErrors } from '../../util/AddressUtils'
 import {
   ChainId,
   getL2ChainIds,
