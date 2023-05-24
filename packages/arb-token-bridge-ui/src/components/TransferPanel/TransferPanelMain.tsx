@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
-import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
+import { isAddress } from 'ethers/lib/utils'
 
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
@@ -29,6 +29,7 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 
+import { Loader } from '../common/atoms/Loader'
 import { AdvancedSettings } from './AdvancedSettings'
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -38,7 +39,6 @@ import {
 } from './TransferPanelMainUtils'
 import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
-import { isAddress } from 'ethers/lib/utils.js'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -407,7 +407,6 @@ export function TransferPanelMain({
     }
   }, [
     destinationAddressOrWalletAddress,
-    isDepositMode,
     selectedToken,
     updateErc20L1Balance,
     updateErc20L2Balance
