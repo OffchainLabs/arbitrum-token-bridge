@@ -2,27 +2,41 @@ import { RenderHookResult, act, renderHook } from '@testing-library/react'
 
 import { UseBalanceProps, useBalance } from '../useBalance'
 
-// this method is suggested by https://stackoverflow.com/a/73476929/5143717
-export const renderHookAsync = async ({
+export const renderHookAsyncUseBalance = async ({
   provider,
   walletAddress,
   wrapper
 }: UseBalanceProps & {
   wrapper: React.ComponentType
+}) =>
+  renderHookAsync({
+    hookFunction: useBalance,
+    hookFunctionProps: {
+      provider,
+      walletAddress
+    },
+    wrapper
+  })
+
+// this method is suggested by https://stackoverflow.com/a/73476929/5143717
+export const renderHookAsync = async ({
+  hookFunction,
+  hookFunctionProps,
+  wrapper
+}: {
+  hookFunction: (...args: any[]) => any
+  hookFunctionProps: { [key: string]: any }
+  wrapper: React.ComponentType
 }) => {
   let hook:
-    | RenderHookResult<ReturnType<typeof useBalance>, UseBalanceProps>
+    | RenderHookResult<
+        ReturnType<typeof hookFunction>,
+        typeof hookFunctionProps
+      >
     | undefined
 
   await act(async () => {
-    hook = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress
-        }),
-      { wrapper }
-    )
+    hook = renderHook(() => hookFunction(hookFunctionProps), { wrapper })
   })
 
   if (!hook) {

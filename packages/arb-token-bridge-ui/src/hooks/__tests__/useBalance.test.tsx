@@ -9,7 +9,7 @@ import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
 
-import { renderHookAsync } from './utils'
+import { renderHookAsyncUseBalance } from './utils'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<unknown>) => (
@@ -43,7 +43,7 @@ describe('useBalance', () => {
       ])
     )
 
-    const { result } = await renderHookAsync({
+    const { result } = await renderHookAsyncUseBalance({
       provider,
       walletAddress: undefined,
       wrapper: Container
@@ -85,7 +85,7 @@ describe('useBalance', () => {
       ])
     )
 
-    const { result } = await renderHookAsync({
+    const { result } = await renderHookAsyncUseBalance({
       provider,
       walletAddress,
       wrapper: Container
@@ -124,7 +124,7 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result } = await renderHookAsync({
+      const { result } = await renderHookAsyncUseBalance({
         provider,
         walletAddress,
         wrapper: Container
@@ -155,7 +155,7 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result } = await renderHookAsync({
+      const { result } = await renderHookAsyncUseBalance({
         provider,
         walletAddress,
         wrapper: Container
@@ -214,7 +214,7 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result } = await renderHookAsync({
+      const { result } = await renderHookAsyncUseBalance({
         provider,
         walletAddress,
         wrapper: Container
@@ -266,7 +266,7 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result } = await renderHookAsync({
+      const { result } = await renderHookAsyncUseBalance({
         provider,
         walletAddress,
         wrapper: Container
