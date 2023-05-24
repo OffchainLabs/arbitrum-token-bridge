@@ -580,7 +580,7 @@ function TokensPanel({
                 setNewToken(e.target.value)
               }}
               placeholder="Search by token name, symbol, L1 or L2 address"
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-6"
+              className="h-full w-full p-2 text-sm font-light text-dark shadow-[0px_2px_2px_0px_rgba(33,37,41,0.06)] placeholder:text-gray-dark"
             />
           </div>
 

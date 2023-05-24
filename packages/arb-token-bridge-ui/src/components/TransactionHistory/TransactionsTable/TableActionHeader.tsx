@@ -81,7 +81,7 @@ export const TableActionHeader = ({
       <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark">
         <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-gray-dark" />
         <input
-          className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-6"
+          className="text-normal h-full w-full p-2 font-light text-dark shadow-[0px_2px_2px_0px_rgba(33,37,41,0.06)] placeholder:text-gray-dark"
           type="text"
           placeholder={`Search for a full or partial ${layerType} tx ID`}
           value={searchString}
