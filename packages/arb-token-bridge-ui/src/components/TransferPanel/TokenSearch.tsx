@@ -579,17 +579,7 @@ function TokensPanel({
             className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
           />
 
-          <Button
-            type="submit"
-            variant="secondary"
-            loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
-            disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-6"
-            aria-label="Add New Token"
-          >
-            Add
-          </Button>
+
         </div>
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
