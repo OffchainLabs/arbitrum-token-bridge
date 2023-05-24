@@ -1,9 +1,9 @@
 /*
   A small info banner that we show when the user has some pending claim withdrawals OR some retryables to redeem.
-  Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]" 
+  Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]"
 */
 
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -24,7 +24,7 @@ export const TransactionStatusInfo = ({
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.chainID)
+  const l2NetworkName = getNetworkName(l2Network.id)
   const { openTransactionHistoryPanel } = useAppContextActions()
 
   // get the pending withdrawals to claim

@@ -3,13 +3,12 @@ import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
 import {
   CheckCircleIcon,
-  XIcon,
-  ArrowSmLeftIcon,
+  XMarkIcon,
+  ArrowSmallLeftIcon,
   ExclamationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
-import { useBalance, getL1TokenData, ERC20BridgeToken } from 'token-bridge-sdk'
 import Image from 'next/image'
 
 import { Loader } from '../common/atoms/Loader'
@@ -19,11 +18,11 @@ import {
   BridgeTokenList,
   listIdsToNames,
   addBridgeTokenListToBridge,
-  useTokenLists,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
-} from '../../tokenLists'
+} from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
+import { getL1TokenData } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -35,6 +34,9 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
+import { useBalance } from '../../hooks/useBalance'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useTokenLists } from '../../hooks/useTokenLists'
 
 enum Panel {
   TOKENS,
@@ -195,7 +197,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
-      isDepositMode ? l1Network.chainID : l2Network.chainID
+      isDepositMode ? l1Network.id : l2Network.id
     )
 
     return (
@@ -252,7 +254,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
                 <a
-                  href={`${getExplorerUrl(l1Network.chainID)}/token/${
+                  href={`${getExplorerUrl(l1Network.id)}/token/${
                     token.address
                   }`}
                   target="_blank"
@@ -266,7 +268,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <>
                   {tokenHasL2Address ? (
                     <a
-                      href={`${getExplorerUrl(l2Network.chainID)}/token/${
+                      href={`${getExplorerUrl(l2Network.id)}/token/${
                         token.l2Address
                       }`}
                       target="_blank"
@@ -337,7 +339,7 @@ function TokenListsPanel() {
         return false
       }
 
-      return tokenList.originChainID === l2Network.chainID
+      return tokenList.originChainID === l2Network.id
     })
   }, [l2Network])
 
@@ -655,9 +657,7 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(
-    l2.network.chainID
-  ) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -713,7 +713,7 @@ export function TokenSearch({
         <div className="flex flex-row items-center justify-between pb-4">
           <span className="text-xl font-medium">Select Token</span>
           <button className="arb-hover" onClick={close}>
-            <XIcon className="h-6 w-6 text-gray-7" />
+            <XMarkIcon className="h-6 w-6 text-gray-7" />
           </button>
         </div>
         <TokensPanel onTokenSelected={selectToken} />
@@ -741,7 +741,7 @@ export function TokenSearch({
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">Token Lists</span>
         <button className="arb-hover" onClick={close}>
-          <XIcon className="h-6 w-6 text-gray-7" />
+          <XMarkIcon className="h-6 w-6 text-gray-7" />
         </button>
       </div>
       <div className="flex justify-start pb-6">
@@ -749,7 +749,7 @@ export function TokenSearch({
           className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
           onClick={() => setCurrentPanel(Panel.TOKENS)}
         >
-          <ArrowSmLeftIcon className="h-6 w-6" />
+          <ArrowSmallLeftIcon className="h-6 w-6" />
           <span>Back to Select Token</span>
         </button>
       </div>

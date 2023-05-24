@@ -1,4 +1,4 @@
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { ExternalLink } from '../common/ExternalLink'
@@ -46,7 +46,7 @@ function NitroDevnetNotification() {
   return (
     <Notification infoIcon>
       <ExternalLink
-        href="https://consensys.zendesk.com/hc/en-us/articles/7277996058395"
+        href="https://developer.arbitrum.io/for-devs/troubleshooting-building#what-is-a-testnet-or-a-devnet"
         className="arb-hover"
       >
         What is Nitro Testnet?
@@ -57,7 +57,7 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const { l1 } = useNetworksAndSigners()
-  const { isGoerli } = isNetwork(l1.network.chainID)
+  const { isGoerli } = isNetwork(l1.network.id)
 
   return (
     <NotificationContainer>

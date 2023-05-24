@@ -1,7 +1,8 @@
-import { Transaction, AssetType } from '../../../src/token-bridge-sdk'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 import { shortenTxHash } from '../../../src/util/CommonUtils'
+import { Transaction } from '../../../src/hooks/useTransactions'
+import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 
 type MockClassicDepositTransactionParams = {
   txID: string
@@ -45,7 +46,7 @@ describe('Read classic deposit messages', () => {
     })
 
     it('can read successful ETH deposit', () => {
-      cy.setLocalStorage(
+      window.localStorage.setItem(
         'arbTransactions',
         JSON.stringify([
           mockClassicDepositTransaction({
@@ -87,7 +88,7 @@ describe('Read classic deposit messages', () => {
     })
 
     it('can read successful ERC-20 deposit', () => {
-      cy.setLocalStorage(
+      window.localStorage.setItem(
         'arbTransactions',
         JSON.stringify([
           mockClassicDepositTransaction({

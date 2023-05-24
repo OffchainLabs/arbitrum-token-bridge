@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { ExternalLinkIcon } from '@heroicons/react/outline'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
@@ -86,7 +86,7 @@ function ProjectCard({
         </span>
 
         <div className="self-start p-4">
-          <ExternalLinkIcon className="h-6 w-6 text-blue-arbitrum" />
+          <ArrowTopRightOnSquareIcon className="h-6 w-6 text-blue-arbitrum" />
         </div>
       </div>
       <div className="flex flex-row justify-between space-x-2 rounded-bl-xl rounded-br-xl bg-[rgba(0,0,0,0.29)] p-4 backdrop-blur-sm backdrop-filter">

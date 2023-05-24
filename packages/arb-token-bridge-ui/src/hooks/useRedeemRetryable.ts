@@ -27,7 +27,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { data: signer } = useSigner()
-  const l2NetworkName = getNetworkName(l2Network.chainID)
+  const l2NetworkName = getNetworkName(l2Network.id)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 

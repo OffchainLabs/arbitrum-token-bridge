@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
-import { InformationCircleIcon } from '@heroicons/react/outline'
-import { useSwitchNetwork } from 'wagmi'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit } from '../../state/app/utils'
@@ -8,14 +7,10 @@ import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import {
-  ChainId,
-  getNetworkName,
-  handleSwitchNetworkError,
-  isNetwork
-} from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -39,12 +34,9 @@ export const PendingTransactions = ({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { switchNetwork } = useSwitchNetwork({
-    throwForSwitchChainNotSupported: true,
-    onError: handleSwitchNetworkError
-  })
+  const { switchNetwork } = useSwitchNetworkWithConfig()
 
-  const bgClassName = isNetwork(l2Network.chainID).isArbitrumNova
+  const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-10'
     : 'bg-blue-arbitrum'
 
@@ -57,20 +49,18 @@ export const PendingTransactions = ({
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}
-          {`${getNetworkName(l2Network.chainID)}/${getNetworkName(
-            l1Network.chainID
-          )}`}
+          {`${getNetworkName(l2Network.id)}/${getNetworkName(l1Network.id)}`}
         </div>
 
         {/* For mainnets, show the corresponding network to switch - One < > Nova */}
-        {!isNetwork(l2Network.chainID).isTestnet && (
+        {!isNetwork(l2Network.id).isTestnet && (
           <ExternalLink
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
-              switchNetwork?.(getOtherL2NetworkChainId(l2Network.chainID))
+              switchNetwork?.(getOtherL2NetworkChainId(l2Network.id))
             }}
           >{`See ${getNetworkName(
-            getOtherL2NetworkChainId(l2Network.chainID)
+            getOtherL2NetworkChainId(l2Network.id)
           )}`}</ExternalLink>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { useCopyToClipboard } from 'react-use'
-import { ClipboardCopyIcon } from '@heroicons/react/outline'
+import { DocumentDuplicateIcon } from '@heroicons/react/24/outline'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
@@ -31,9 +31,9 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${getExplorerUrl(l1.network.chainID)}/tx/${
+            `L1 transaction: ${getExplorerUrl(l1.network.id)}/tx/${
               tx.txId
-            }\nL2 transaction: ${getExplorerUrl(l2.network.chainID)}/tx/${
+            }\nL2 transaction: ${getExplorerUrl(l2.network.id)}/tx/${
               tx.l1ToL2MsgData?.retryableCreationTxID
             }`
           )
@@ -51,7 +51,7 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
             </span>
           </span>
         </div>
-        <ClipboardCopyIcon className="h-6 w-6 text-brick-dark" />
+        <DocumentDuplicateIcon className="h-6 w-6 text-brick-dark" />
       </button>
 
       <div className="h-2" />

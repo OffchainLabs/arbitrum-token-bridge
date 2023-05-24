@@ -8,7 +8,7 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
-import { TokenBridgeParams } from 'token-bridge-sdk'
+import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
@@ -183,8 +183,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const { l1, l2, isConnectedToArbitrum } = networksAndSigners
 
-    const l1NetworkChainId = l1.network.chainID
-    const l2NetworkChainId = l2.network.chainID
+    const l1NetworkChainId = l1.network.id
+    const l2NetworkChainId = l2.network.id
 
     actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })

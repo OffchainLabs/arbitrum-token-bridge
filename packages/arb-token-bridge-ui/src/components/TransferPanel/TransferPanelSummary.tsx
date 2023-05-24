@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
-import { InformationCircleIcon } from '@heroicons/react/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useLatest } from 'react-use'
-import { useGasPrice } from 'token-bridge-sdk'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -12,6 +11,7 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
+import { useGasPrice } from '../../hooks/useGasPrice'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -134,7 +134,7 @@ export function useGasSummary(
             if (
               tokenRequiresApprovalOnL2(
                 token.address,
-                latestNetworksAndSigners.current.l2.network.chainID
+                latestNetworksAndSigners.current.l2.network.id
               )
             ) {
               estimateGasResult = {
@@ -243,7 +243,7 @@ export function TransferPanelSummary({
   const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
 
-  const { isMainnet } = isNetwork(l1.network.chainID)
+  const { isMainnet } = isNetwork(l1.network.id)
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-blue-arbitrum' : 'bg-eth-dark'

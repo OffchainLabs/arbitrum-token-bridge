@@ -1,5 +1,8 @@
+import { useMemo } from 'react'
+import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
-import { NodeBlockDeadlineStatusTypes } from 'token-bridge-sdk'
+
+import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
@@ -11,13 +14,11 @@ import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import {
-  DotsVerticalIcon,
+  EllipsisVerticalIcon,
   InformationCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
-import { useMemo } from 'react'
-import { Popover } from '@headlessui/react'
 import {
   findMatchingL1TxForWithdrawal,
   isPending
@@ -184,7 +185,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       return (
         <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
           <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
-          {getNetworkName(l1.network.chainID)}: Not available
+          {getNetworkName(l1.network.id)}: Not available
         </span>
       )
     }
@@ -195,9 +196,9 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         aria-label="L1 Transaction Link"
       >
         <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
-        {getNetworkName(l1.network.chainID)}:{' '}
+        {getNetworkName(l1.network.id)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.chainID)}/tx/${matchingL1Tx.txId}`}
+          href={`${getExplorerUrl(l1.network.id)}/tx/${matchingL1Tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(matchingL1Tx.txId)}
@@ -213,9 +214,9 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         aria-label="L2 Transaction Link"
       >
         <span className="rounded-md px-2 text-xs text-gray-9">Step 1</span>
-        {getNetworkName(l2.network.chainID)}:{' '}
+        {getNetworkName(l2.network.id)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l2.network.chainID)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(l2.network.id)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -257,7 +258,7 @@ function WithdrawalRowAction({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
-  const l2NetworkName = getNetworkName(l2Network.chainID)
+  const l2NetworkName = getNetworkName(l2Network.id)
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -313,7 +314,7 @@ function WithdrawalRowAction({
           // show a dropdown menu with the button
           <Popover>
             <Popover.Button>
-              <DotsVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
+              <EllipsisVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
             </Popover.Button>
             <Popover.Panel
               className={'absolute top-4 z-50 rounded-md bg-white shadow-lg'}
