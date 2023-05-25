@@ -201,23 +201,24 @@ function NetworkContainer({
   }, [network])
 
   const explorerUrl = `${getExplorerUrl(network.id)}/address/${balanceFor}`
+  const showCustomAddressBanner = balanceFor && isAddress(balanceFor)
 
   return (
     <>
-      {balanceFor && (
-        <div className="w-full rounded-t-xl bg-gray-300 pb-1 pt-2 text-center text-sm text-slate-700">
-          <b>
-            Showing balance for{' '}
+      {showCustomAddressBanner && (
+        <div className="w-full rounded-t-xl bg-slate-200 pb-1 pt-2 text-center text-sm text-slate-800">
+          <span>
+            Showing balance for custom address:{' '}
             <ExternalLink className="underline" href={explorerUrl}>
               {shortenAddress(balanceFor)}
             </ExternalLink>
-          </b>
+          </span>
         </div>
       )}
       <div
         className={twMerge(
           `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
-          balanceFor ? 'rounded-t-none' : ''
+          showCustomAddressBanner ? 'rounded-t-none' : ''
         )}
       >
         <div
@@ -257,6 +258,10 @@ function ETHBalance({
 
   const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
+  if (!isAddress(String(walletAddress))) {
+    return null
+  }
+
   if (!balance) {
     return <StyledLoader />
   }
@@ -285,7 +290,7 @@ function TokenBalance({
     walletAddress
   })[on]
 
-  if (!forToken) {
+  if (!forToken || !isAddress(String(walletAddress))) {
     return null
   }
 
