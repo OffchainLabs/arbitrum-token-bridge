@@ -5,12 +5,12 @@ import { GasEstimates } from '../hooks/arbTokenBridge.types'
 
 export async function withdrawTokenEstimateGas({
   amount,
-  walletAddress,
+  address,
   erc20L1Address,
   l2Provider
 }: {
   amount: BigNumber
-  walletAddress: string
+  address: string
   erc20L1Address: string
   l2Provider: Provider
 }): Promise<GasEstimates> {
@@ -19,9 +19,9 @@ export async function withdrawTokenEstimateGas({
 
   const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
     amount,
-    destinationAddress: walletAddress,
+    destinationAddress: address,
     erc20l1Address: erc20L1Address,
-    from: walletAddress
+    from: address
   })
 
   const estimatedL2Gas = await l2Provider.estimateGas(

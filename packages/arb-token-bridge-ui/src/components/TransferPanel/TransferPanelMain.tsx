@@ -387,7 +387,7 @@ export function TransferPanelMain({
       if (isDepositMode) {
         const result = await depositEthEstimateGas({
           amount: weiValue,
-          walletAddress,
+          address: walletAddress,
           l1Provider: l1.provider,
           l2Provider: l2.provider
         })
@@ -396,7 +396,7 @@ export function TransferPanelMain({
 
       const result = await withdrawEthEstimateGas({
         amount: weiValue,
-        walletAddress,
+        address: walletAddress,
         l2Provider: l2.provider
       })
 

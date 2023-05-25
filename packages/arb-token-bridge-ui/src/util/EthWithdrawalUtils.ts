@@ -5,19 +5,19 @@ import { GasEstimates } from '../hooks/arbTokenBridge.types'
 
 export async function withdrawEthEstimateGas({
   amount,
-  walletAddress,
+  address,
   l2Provider
 }: {
   amount: BigNumber
-  walletAddress: string
+  address: string
   l2Provider: Provider
 }): Promise<GasEstimates> {
   const ethBridger = await EthBridger.fromProvider(l2Provider)
 
   const withdrawalRequest = await ethBridger.getWithdrawalRequest({
     amount,
-    destinationAddress: walletAddress,
-    from: walletAddress
+    destinationAddress: address,
+    from: address
   })
 
   // Can't do this atm. Hardcoded to 130_000.

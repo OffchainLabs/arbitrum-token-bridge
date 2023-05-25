@@ -117,7 +117,7 @@ export function useGasEstimationSummary(
           } else {
             const estimateGasResult = await depositEthEstimateGas({
               amount: amountDebounced,
-              walletAddress,
+              address: walletAddress,
               l1Provider: l1.provider,
               l2Provider: l2.provider
             })
@@ -146,7 +146,7 @@ export function useGasEstimationSummary(
               estimateGasResult = await withdrawTokenEstimateGas({
                 amount: amountDebounced,
                 erc20L1Address: token.address,
-                walletAddress,
+                address: walletAddress,
                 l2Provider: l2.provider
               })
             }
@@ -158,7 +158,7 @@ export function useGasEstimationSummary(
           } else {
             const estimateGasResult = await withdrawEthEstimateGas({
               amount: amountDebounced,
-              walletAddress,
+              address: walletAddress,
               l2Provider: l2.provider
             })
 
@@ -181,14 +181,15 @@ export function useGasEstimationSummary(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    isDepositMode,
-    amount,
+    // Re-run gas estimation when:
+    isDepositMode, // when user switches deposit/withdraw mode
+    amount, // when user changes the amount (check against the debounced value)
     amountDebounced,
-    token,
-    shouldRunGasEstimation,
-    l1.network.id,
-    l1.network.id,
-    walletAddress
+    token, // when the token changes
+    shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
+    l1.network.id, // when L1 and L2 network id changes
+    l2.network.id,
+    walletAddress // when user switches account
   ])
 
   return {
