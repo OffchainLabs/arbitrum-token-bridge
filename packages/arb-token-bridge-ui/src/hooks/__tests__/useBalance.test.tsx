@@ -2,14 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { act } from '@testing-library/react'
+import { RenderHookResult, act, renderHook } from '@testing-library/react'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
 
-import { renderHookAsyncUseBalance } from './utils'
+import { UseBalanceProps, useBalance } from '../useBalance'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<unknown>) => (
@@ -17,6 +17,27 @@ const Container = ({ children }: PropsWithChildren<unknown>) => (
 )
 
 const walletAddress = '0x58b6a8a3302369daec383334672404ee733ab239'
+
+const renderHookAsyncUseBalance = async ({
+  provider,
+  walletAddress
+}: UseBalanceProps) => {
+  let hook:
+    | RenderHookResult<ReturnType<typeof useBalance>, UseBalanceProps>
+    | undefined
+
+  await act(async () => {
+    hook = renderHook(() => useBalance({ provider, walletAddress }), {
+      wrapper: Container
+    })
+  })
+
+  if (!hook) {
+    throw new Error('Hook is not defined')
+  }
+
+  return { result: hook.result }
+}
 
 describe('useBalance', () => {
   afterEach(() => {
@@ -45,8 +66,7 @@ describe('useBalance', () => {
 
     const { result } = await renderHookAsyncUseBalance({
       provider,
-      walletAddress: undefined,
-      wrapper: Container
+      walletAddress: undefined
     })
 
     const {
@@ -87,8 +107,7 @@ describe('useBalance', () => {
 
     const { result } = await renderHookAsyncUseBalance({
       provider,
-      walletAddress,
-      wrapper: Container
+      walletAddress
     })
 
     const {
@@ -126,8 +145,7 @@ describe('useBalance', () => {
 
       const { result } = await renderHookAsyncUseBalance({
         provider,
-        walletAddress,
-        wrapper: Container
+        walletAddress
       })
 
       expect(result.current.eth[0]?.toNumber()).toEqual(32)
@@ -157,8 +175,7 @@ describe('useBalance', () => {
 
       const { result } = await renderHookAsyncUseBalance({
         provider,
-        walletAddress,
-        wrapper: Container
+        walletAddress
       })
 
       const {
@@ -216,8 +233,7 @@ describe('useBalance', () => {
 
       const { result } = await renderHookAsyncUseBalance({
         provider,
-        walletAddress,
-        wrapper: Container
+        walletAddress
       })
       const {
         current: {
@@ -268,8 +284,7 @@ describe('useBalance', () => {
 
       const { result } = await renderHookAsyncUseBalance({
         provider,
-        walletAddress,
-        wrapper: Container
+        walletAddress
       })
       const {
         current: {
