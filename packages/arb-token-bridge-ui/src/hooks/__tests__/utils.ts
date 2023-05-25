@@ -32,10 +32,7 @@ export const renderHookAsync = async <
   wrapper: React.ComponentType
 }) => {
   let hook:
-    | RenderHookResult<
-        ReturnType<typeof hookFunction>,
-        typeof hookFunctionProps
-      >
+    | RenderHookResult<ReturnType<HookFunction>, HookFunctionProps>
     | undefined
 
   await act(async () => {
