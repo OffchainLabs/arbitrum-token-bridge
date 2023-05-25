@@ -208,7 +208,7 @@ function NetworkContainer({
       {showCustomAddressBanner && (
         <div className="w-full rounded-t-xl bg-slate-200 pb-1 pt-2 text-center text-sm text-slate-800">
           <span>
-            Showing balance for custom address:{' '}
+            Showing balance for:{' '}
             <ExternalLink className="underline" href={explorerUrl}>
               {shortenAddress(balanceFor)}
             </ExternalLink>
