@@ -19,13 +19,16 @@ export const renderHookAsyncUseBalance = async ({
   })
 
 // this method is suggested by https://stackoverflow.com/a/73476929/5143717
-export const renderHookAsync = async ({
+export const renderHookAsync = async <
+  HookFunction extends (p: HookFunctionProps) => any,
+  HookFunctionProps extends Record<string, any>
+>({
   hookFunction,
   hookFunctionProps,
   wrapper
 }: {
-  hookFunction: (...args: any[]) => any
-  hookFunctionProps: { [key: string]: any }
+  hookFunction: HookFunction
+  hookFunctionProps: HookFunctionProps
   wrapper: React.ComponentType
 }) => {
   let hook:
