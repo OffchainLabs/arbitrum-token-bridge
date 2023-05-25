@@ -870,7 +870,7 @@ export function TransferPanelMain({
                   {!isSmartContractWallet ? ' (optional)' : ''}
                 </span>
                 <input
-                  className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1"
+                  className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
                   placeholder="Enter destination address"
                   defaultValue={destinationAddress}
                   spellCheck={false}

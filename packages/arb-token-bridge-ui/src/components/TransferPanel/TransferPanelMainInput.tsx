@@ -1,3 +1,4 @@
+import { twMerge } from 'tailwind-merge'
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 
@@ -47,7 +48,10 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   return (
     <>
       <div
-        className={`flex h-12 flex-row items-center rounded-lg bg-white lg:h-16 ${borderClassName} shadow-[0px_2px_2px_rgba(33,37,41,0.06),0px_0px_1px_rgba(33,37,41,0.08)]`}
+        className={twMerge(
+          'flex h-12 flex-row items-center rounded-lg bg-white shadow-input lg:h-16',
+          borderClassName
+        )}
       >
         <TokenButton />
         <div className="h-full border-r border-gray-2" />
