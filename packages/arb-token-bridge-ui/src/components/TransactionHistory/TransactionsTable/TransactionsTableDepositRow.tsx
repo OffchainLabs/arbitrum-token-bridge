@@ -14,6 +14,7 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -166,8 +167,16 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { redeem, isRedeeming } = useRedeemRetryable()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+
+  const isRedeemButtonDisabled = useMemo(
+    () =>
+      typeof isConnectedToArbitrum !== 'undefined'
+        ? !isConnectedToArbitrum
+        : true,
+    [isConnectedToArbitrum]
+  )
 
   const isError = useMemo(() => {
     if (
@@ -228,7 +237,7 @@ export function TransactionsTableDepositRow({
       <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
         {showRedeemRetryableButton && (
           <Tooltip
-            show={!isConnectedToArbitrum}
+            show={isRedeemButtonDisabled}
             wrapperClassName=""
             content={
               <span>
@@ -241,7 +250,7 @@ export function TransactionsTableDepositRow({
             <Button
               variant="primary"
               loading={isRedeeming}
-              disabled={!isConnectedToArbitrum}
+              disabled={isRedeemButtonDisabled}
               onClick={() => redeem(tx)}
             >
               Retry

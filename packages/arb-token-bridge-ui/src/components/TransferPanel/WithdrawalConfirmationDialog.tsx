@@ -49,14 +49,15 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(l1.network.id)
   const {
-    app: { selectedToken }
+    app: { selectedToken, isDepositMode }
   } = useAppState()
 
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const from = isDepositMode ? l1.network : l2.network
+  const to = isDepositMode ? l2.network : l1.network
+
   const fastBridges = getFastBridges(
     from.id,
     to.id,

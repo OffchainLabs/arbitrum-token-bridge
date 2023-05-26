@@ -1,16 +1,16 @@
 import { useMemo } from 'react'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
   const isClaimButtonDisabled = useMemo(
     () =>

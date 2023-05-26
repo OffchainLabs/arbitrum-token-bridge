@@ -25,6 +25,7 @@ import {
 } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -254,11 +255,20 @@ function WithdrawalRowAction({
   isError: boolean
 }) {
   const {
-    isConnectedToArbitrum,
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { claim, isClaiming } = useClaimWithdrawal()
   const l2NetworkName = getNetworkName(l2Network.id)
+
+  const { claim, isClaiming } = useClaimWithdrawal()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+
+  const isClaimButtonDisabled = useMemo(
+    () =>
+      typeof isConnectedToArbitrum !== 'undefined'
+        ? isConnectedToArbitrum
+        : true,
+    [isConnectedToArbitrum]
+  )
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -285,7 +295,7 @@ function WithdrawalRowAction({
   if (tx.status === 'Confirmed') {
     return (
       <Tooltip
-        show={isConnectedToArbitrum || false}
+        show={isClaimButtonDisabled}
         wrapperClassName=""
         content={
           <span>
@@ -296,7 +306,7 @@ function WithdrawalRowAction({
         <Button
           variant="primary"
           loading={isClaiming}
-          disabled={isConnectedToArbitrum}
+          disabled={isClaimButtonDisabled}
           onClick={() => claim(tx)}
         >
           Claim

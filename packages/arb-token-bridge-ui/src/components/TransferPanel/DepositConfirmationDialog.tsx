@@ -24,17 +24,17 @@ export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const {
-    app: { selectedToken }
+    app: { selectedToken, isDepositMode }
   } = useAppState()
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumOne } = isNetwork(l2.network.id)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)
 
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const from = isDepositMode ? l1.network : l2.network
+  const to = isDepositMode ? l2.network : l1.network
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses

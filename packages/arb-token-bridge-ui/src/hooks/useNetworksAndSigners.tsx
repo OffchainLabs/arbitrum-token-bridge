@@ -82,7 +82,6 @@ export type UseNetworksAndSignersConnectedResult = {
     network: Chain
     provider: JsonRpcProvider
   }
-  isConnectedToArbitrum: boolean
   isSmartContractWallet: boolean
 }
 
@@ -296,7 +295,6 @@ export function NetworksAndSignersProvider(
             network: getWagmiChain(l2Network.chainID),
             provider: l2Provider
           },
-          isConnectedToArbitrum: false,
           isSmartContractWallet: await addressIsSmartContract(
             address as string,
             l1Provider
@@ -335,7 +333,6 @@ export function NetworksAndSignersProvider(
                 network: getWagmiChain(l2Network.chainID),
                 provider: l2Provider
               },
-              isConnectedToArbitrum: true,
               isSmartContractWallet: await addressIsSmartContract(
                 address,
                 l2Provider
