@@ -94,7 +94,7 @@ export const TableActionHeader = ({
 
       {/* Pagination buttons */}
       {!hidePaginationBtns && (
-        <div className="flex  w-auto  shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-dark">
+        <div className="flex w-auto shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-dark">
           <button
             disabled={disablePrevBtn}
             className={`rounded border border-gray-dark p-1 ${
