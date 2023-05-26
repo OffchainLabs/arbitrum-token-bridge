@@ -116,19 +116,38 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 ### Run End-to-End (E2E) Tests
 
-1. Run the token bridge UI locally on `http://localhost:3000/`
+1. Set up the Nitro node
 
-2. Set env vars (one time):
+   1. Download and install [Docker](https://www.docker.com/)
 
-   1. At this folder's root,
+   2. Check out the [Nitro repo](https://github.com/OffchainLabs/nitro)
+
+   3. Run: (Make sure your Docker App is running)
 
       ```bash
-      $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
+      $ ./test-node.bash --init
       ```
 
-   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY, PRIVATE_KEY_USER, etc` in the format mentioned in the file.
+   4. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
 
-3. Run e2e tests
+2. At the root of the token bridge UI:
+
+   1. Run:
+
+   ```bash
+   $ cp ./packages/arb-token-bridge-ui/.e2e.env.sample ./packages/arb-token-bridge-ui/.e2e.env
+   ```
+
+   2. In the newly created file, `.e2e.env`, update your `NEXT_PUBLIC_INFURA_KEY`
+
+3. Run the token bridge UI locally on `http://localhost:3000/` with:
+
+   ```bash
+   $ yarn dev
+   ```
+
+4. Run e2e tests
+
    ```bash
    $ yarn test:e2e
    ```
