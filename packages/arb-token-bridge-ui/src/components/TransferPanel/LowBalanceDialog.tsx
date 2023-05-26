@@ -112,7 +112,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="flex w-full flex-col items-center space-y-2">
           <div className="flex flex-row space-x-2">
             <Image
-              src="/icons/ethereum.webp"
+              src="/images/EthereumLogo.svg"
               alt="Ethereum"
               className="h-8 w-auto opacity-50"
               width={32}
