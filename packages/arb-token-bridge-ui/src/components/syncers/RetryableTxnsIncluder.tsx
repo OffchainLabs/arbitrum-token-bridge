@@ -23,7 +23,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
   } = useAppState()
 
   const fetchAndUpdateDepositStatus = useCallback(
-    async (depositTxId, depositAssetType) => {
+    async (depositTxId: string, depositAssetType: AssetType | string) => {
       const isEthDeposit = depositAssetType === AssetType.ETH
 
       const { l1ToL2Msg, isClassic } = await getL1ToL2MessageDataFromL1TxHash({
