@@ -9,10 +9,10 @@ const networkButtonsStyles: {
   [key in ChainId]?: { btnThemeClass: string }
 } = {
   [ChainId.Mainnet]: {
-    btnThemeClass: 'bg-blue-arbitrum'
+    btnThemeClass: 'bg-ocl-blue'
   },
   [ChainId.ArbitrumOne]: {
-    btnThemeClass: 'bg-blue-arbitrum'
+    btnThemeClass: 'bg-ocl-blue'
   },
   [ChainId.ArbitrumNova]: {
     btnThemeClass: 'bg-brick-dark'

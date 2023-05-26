@@ -20,7 +20,7 @@ export const Switch = ({
           <HeadlessSwitch
             checked={checked}
             onChange={onChange}
-            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors ui-checked:bg-blue-link ui-not-checked:bg-gray-10 [&_span]:ui-checked:translate-x-6 [&_span]:ui-not-checked:translate-x-1"
+            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors ui-checked:bg-blue-link ui-not-checked:bg-gray-dark [&_span]:ui-checked:translate-x-6 [&_span]:ui-not-checked:translate-x-1"
           >
             <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform" />
           </HeadlessSwitch>

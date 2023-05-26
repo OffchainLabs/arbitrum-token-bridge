@@ -6,7 +6,8 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   ArrowSmallLeftIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
@@ -52,7 +53,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
   )
@@ -253,9 +254,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
-                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-10 px-1 py-[2px] pr-2 text-sm">
-                  <ExclamationCircleIcon className="h-4 w-4 text-gray-10" />
-                  <span className="text-xs text-gray-10">Careful</span>
+                <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-dark px-1 py-[2px] pr-2 text-sm">
+                  <ExclamationCircleIcon className="h-4 w-4 text-gray-dark" />
+                  <span className="text-xs text-gray-dark">Careful</span>
                 </div>
               </Tooltip>
             )}
@@ -588,24 +589,28 @@ function TokensPanel({
     <div className="flex flex-col space-y-3">
       <form onSubmit={addNewToken} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <input
-            id="newTokenAddress"
-            value={newToken}
-            onChange={e => {
-              setErrorMessage('')
-              setNewToken(e.target.value)
-            }}
-            placeholder="Search by token name, symbol, L1 or L2 address"
-            className="h-10 w-full rounded-md border border-gray-4 px-2 text-sm text-dark"
-          />
+          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
+            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
+
+            <input
+              id="newTokenAddress"
+              value={newToken}
+              onChange={e => {
+                setErrorMessage('')
+                setNewToken(e.target.value)
+              }}
+              placeholder="Search by token name, symbol, L1 or L2 address"
+              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-dark"
+            />
+          </div>
 
           <Button
             type="submit"
             variant="secondary"
             loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-gray-9 */ }}
+            loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
             disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-6"
+            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
             aria-label="Add New Token"
           >
             Add
@@ -614,7 +619,7 @@ function TokensPanel({
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
       <div
-        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-4 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
+        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
         data-cy="tokenSearchList"
       >
         <AutoSizer disableHeight>
@@ -733,13 +738,13 @@ export function TokenSearch({
         <div className="flex flex-row items-center justify-between pb-4">
           <span className="text-xl font-medium">Select Token</span>
           <button className="arb-hover" onClick={close}>
-            <XMarkIcon className="h-6 w-6 text-gray-7" />
+            <XMarkIcon className="h-6 w-6 text-gray-5" />
           </button>
         </div>
         <TokensPanel onTokenSelected={selectToken} />
         <div className="flex justify-end pt-6">
           {isFetchingTokenLists ? (
-            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-9">
+            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
               <Loader color="#28A0F0" size="small" />
               Fetching Tokens...
             </span>
@@ -761,7 +766,7 @@ export function TokenSearch({
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">Token Lists</span>
         <button className="arb-hover" onClick={close}>
-          <XMarkIcon className="h-6 w-6 text-gray-7" />
+          <XMarkIcon className="h-6 w-6 text-gray-5" />
         </button>
       </div>
       <div className="flex justify-start pb-6">

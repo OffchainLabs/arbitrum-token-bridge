@@ -184,7 +184,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
     if (typeof matchingL1Tx === 'undefined') {
       return (
         <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
-          <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
+          <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
           {getNetworkName(l1.network.id)}: Not available
         </span>
       )
@@ -195,7 +195,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label="L1 Transaction Link"
       >
-        <span className="rounded-md px-2 text-xs text-gray-9">Step 2</span>
+        <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
         {getNetworkName(l1.network.id)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l1.network.id)}/tx/${matchingL1Tx.txId}`}
@@ -213,7 +213,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label="L2 Transaction Link"
       >
-        <span className="rounded-md px-2 text-xs text-gray-9">Step 1</span>
+        <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
         {getNetworkName(l2.network.id)}:{' '}
         <ExternalLink
           href={`${getExplorerUrl(l2.network.id)}/tx/${tx.txId}`}
