@@ -26,18 +26,14 @@ module.exports = {
         'lime-dark': '#31572A',
 
         // NEUTRAL (GRAYS)
-        'gray-1': '#FAFAFA',
-        'gray-2': '#F4F4F4',
-        'gray-3': '#EEEEEE',
-        'gray-4': '#E6E6E6',
-        'gray-5': '#DADADA',
-        'gray-6': '#CCCCCC',
-        'gray-7': '#BDBDBD',
-        'gray-8': '#AEAEAE',
-        'gray-9': '#999999',
-        'gray-10': '#6D6D6D',
-        'gray-11': '#212121',
-        dark: '#1A1C1D',
+        'gray-1': '#F4F4F4',
+        'gray-2': '#E5E5E5',
+        'gray-3': '#DADADA',
+        'gray-5': '#AEAEAE',
+        'gray-4': '#CCCCCC',
+        'gray-6': '#999999',
+        'gray-dark': '#6D6D6D',
+        dark: '#1A1C1D', // (or default-black)
 
         // BRAND
         'arb-one-primary': '#1B4ADD',
@@ -46,9 +42,7 @@ module.exports = {
         'arb-nova-dark': '#743600',
         'eth-primary': '#454A75',
         'eth-dark': '#1A1C33',
-
-        // legacy
-        'blue-arbitrum': '#2D374B' // looks more like `eth-primary` but looks weird if we replace it
+        'ocl-blue': '#243145'
       },
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"
@@ -58,6 +52,11 @@ module.exports = {
         4: '1rem',
         6: '1.5rem',
         8: '2rem'
+      },
+      boxShadow: {
+        // shadow used for input fields across the app
+        input:
+          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)'
       }
     }
   }

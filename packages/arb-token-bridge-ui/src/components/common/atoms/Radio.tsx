@@ -37,9 +37,9 @@ export const Radio = ({
                 <div className="flex w-full cursor-pointer gap-4">
                   {/* radio checkmark */}
                   {checked ? (
-                    <div className="radio-selected mx-2 my-1 h-5 w-5 shrink-0 rounded-full border-2 border-gray-5 bg-blue-link shadow-[inset_0_0_0_3px_rgba(0,0,0,0.5)]"></div>
+                    <div className="radio-selected mx-2 my-1 h-5 w-5 shrink-0 rounded-full border-2 border-gray-3 bg-blue-link shadow-[inset_0_0_0_3px_rgba(0,0,0,0.5)]"></div>
                   ) : (
-                    <div className="mx-2 my-1 h-5 w-5 shrink-0 rounded-full border-2 border-gray-5"></div>
+                    <div className="mx-2 my-1 h-5 w-5 shrink-0 rounded-full border-2 border-gray-3"></div>
                   )}
 
                   {/* radio option text */}
