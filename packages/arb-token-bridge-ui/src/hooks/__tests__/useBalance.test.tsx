@@ -2,13 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { act, renderHook } from '@testing-library/react-hooks'
+import { RenderHookResult, act, renderHook } from '@testing-library/react'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { SWRConfig } from 'swr'
 import { PropsWithChildren } from 'react'
 import { MultiCaller } from '@arbitrum/sdk'
-import { useBalance } from '../useBalance'
+
+import { UseBalanceProps, useBalance } from '../useBalance'
 
 // Create a new cache for every test
 const Container = ({ children }: PropsWithChildren<unknown>) => (
@@ -16,6 +17,27 @@ const Container = ({ children }: PropsWithChildren<unknown>) => (
 )
 
 const walletAddress = '0x58b6a8a3302369daec383334672404ee733ab239'
+
+const renderHookAsyncUseBalance = async ({
+  provider,
+  walletAddress
+}: UseBalanceProps) => {
+  let hook:
+    | RenderHookResult<ReturnType<typeof useBalance>, UseBalanceProps>
+    | undefined
+
+  await act(async () => {
+    hook = renderHook(() => useBalance({ provider, walletAddress }), {
+      wrapper: Container
+    })
+  })
+
+  if (!hook) {
+    throw new Error('Hook is not defined')
+  }
+
+  return { result: hook.result }
+}
 
 describe('useBalance', () => {
   afterEach(() => {
@@ -42,16 +64,10 @@ describe('useBalance', () => {
       ])
     )
 
-    const { result, waitForNextUpdate } = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress: undefined
-        }),
-      { wrapper: Container }
-    )
-
-    await waitForNextUpdate({ timeout: 250 })
+    const { result } = await renderHookAsyncUseBalance({
+      provider,
+      walletAddress: undefined
+    })
 
     const {
       current: {
@@ -89,18 +105,10 @@ describe('useBalance', () => {
       ])
     )
 
-    const { result, waitForNextUpdate } = renderHook(
-      () =>
-        useBalance({
-          provider,
-          walletAddress
-        }),
-      { wrapper: Container }
-    )
-
-    try {
-      await waitForNextUpdate({ timeout: 100 })
-    } catch (err) {}
+    const { result } = await renderHookAsyncUseBalance({
+      provider,
+      walletAddress
+    })
 
     const {
       current: {
@@ -135,16 +143,11 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result, waitForNextUpdate } = renderHook(
-        () =>
-          useBalance({
-            provider,
-            walletAddress
-          }),
-        { wrapper: Container }
-      )
+      const { result } = await renderHookAsyncUseBalance({
+        provider,
+        walletAddress
+      })
 
-      await waitForNextUpdate({ timeout: 100 })
       expect(result.current.eth[0]?.toNumber()).toEqual(32)
       expect(getBalanceSpy).toHaveBeenCalledTimes(1)
       expect(getBalanceSpy).toHaveBeenCalledWith(walletAddress)
@@ -170,16 +173,10 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result, waitForNextUpdate } = renderHook(
-        () =>
-          useBalance({
-            provider,
-            walletAddress
-          }),
-        { wrapper: Container }
-      )
-
-      await waitForNextUpdate({ timeout: 100 })
+      const { result } = await renderHookAsyncUseBalance({
+        provider,
+        walletAddress
+      })
 
       const {
         current: {
@@ -191,8 +188,9 @@ describe('useBalance', () => {
       expect(getBalanceSpy).toHaveBeenCalledTimes(1)
       expect(getBalanceSpy).toHaveBeenCalledWith(walletAddress)
 
-      updateEthBalance()
-      await waitForNextUpdate({ timeout: 100 })
+      await act(async () => {
+        updateEthBalance()
+      })
 
       const {
         current: {
@@ -233,14 +231,10 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result, waitForValueToChange } = renderHook(
-        () =>
-          useBalance({
-            provider,
-            walletAddress
-          }),
-        { wrapper: Container }
-      )
+      const { result } = await renderHookAsyncUseBalance({
+        provider,
+        walletAddress
+      })
       const {
         current: {
           erc20: [, updateErc20Balances]
@@ -252,9 +246,7 @@ describe('useBalance', () => {
         '0x0000000000000000000000000000000000000001',
         '0x0000000000000000000000000000000000000002'
       ]
-      updateErc20Balances(erc20)
-
-      await waitForValueToChange(() => result.current.erc20, { timeout: 100 })
+      await act(async () => updateErc20Balances(erc20))
 
       expect(result.current.erc20[0]).toEqual({
         '0x0000000000000000000000000000000000000000': BigNumber.from(10),
@@ -290,14 +282,10 @@ describe('useBalance', () => {
         ])
       )
 
-      const { result, waitForValueToChange } = renderHook(
-        () =>
-          useBalance({
-            provider,
-            walletAddress
-          }),
-        { wrapper: Container }
-      )
+      const { result } = await renderHookAsyncUseBalance({
+        provider,
+        walletAddress
+      })
       const {
         current: {
           erc20: [, updateErc20Balances]
@@ -308,9 +296,7 @@ describe('useBalance', () => {
         '0xABCdef0000000000000000000000000000000000',
         '0xAAADDD0000000000000000000000000000000001'
       ]
-      updateErc20Balances(erc20)
-
-      await waitForValueToChange(() => result.current.erc20, { timeout: 100 })
+      await act(async () => updateErc20Balances(erc20))
 
       const {
         current: {
@@ -339,32 +325,31 @@ describe('useBalance', () => {
             }
           ])
         )
+      })
 
-        const newAddresses = [
-          '0xAaADDD0000000000000000000000000000000001',
-          '0xAAAAAA0000000000000000000000000000000002'
-        ]
-        updateErc20Balances(newAddresses)
-        await waitForValueToChange(() => result.current.erc20, { timeout: 500 })
+      const newAddresses = [
+        '0xAaADDD0000000000000000000000000000000001',
+        '0xAAAAAA0000000000000000000000000000000002'
+      ]
+      await act(async () => updateErc20Balances(newAddresses))
 
-        /**
-         * 0x..0 is untouched
-         * 0x..1 is updated
-         * 0x..2 is added
-         *
-         * All balances are stored in lowercase
-         */
-        expect(result.current.erc20[0]).toEqual({
-          '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
-          '0xaaaddd0000000000000000000000000000000001': BigNumber.from(25),
-          '0xaaaaaa0000000000000000000000000000000002': BigNumber.from(33)
-        })
+      /**
+       * 0x..0 is untouched
+       * 0x..1 is updated
+       * 0x..2 is added
+       *
+       * All balances are stored in lowercase
+       */
+      expect(result.current.erc20[0]).toEqual({
+        '0xabcdef0000000000000000000000000000000000': BigNumber.from(11),
+        '0xaaaddd0000000000000000000000000000000001': BigNumber.from(25),
+        '0xaaaaaa0000000000000000000000000000000002': BigNumber.from(33)
+      })
 
-        expect(getBalanceSpy).toHaveBeenCalledTimes(1)
-        expect(getTokenDataSpy).toHaveBeenCalledTimes(2)
-        expect(getTokenDataSpy).toHaveBeenLastCalledWith(newAddresses, {
-          balanceOf: { account: walletAddress }
-        })
+      expect(getBalanceSpy).toHaveBeenCalledTimes(1)
+      expect(getTokenDataSpy).toHaveBeenCalledTimes(2)
+      expect(getTokenDataSpy).toHaveBeenLastCalledWith(newAddresses, {
+        balanceOf: { account: walletAddress }
       })
     })
   })
