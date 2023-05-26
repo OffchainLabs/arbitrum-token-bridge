@@ -25,17 +25,17 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="lg:-ml-8">
           {/* Heading */}
-          <span className="ml-8 text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
+          <span className="ml-8 text-lg text-ocl-blue lg:ml-0 lg:text-2xl">
             Funds are ready to claim!
           </span>
 
           {/* Addresses */}
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="flex flex-nowrap gap-1 text-sm text-blue-arbitrum lg:text-base">
+            <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L2 transaction: <WithdrawalL2TxStatus tx={tx} />
             </span>
-            <span className="flex flex-nowrap gap-1 text-sm text-blue-arbitrum lg:text-base">
+            <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L1 transaction: Will show after claiming
             </span>
           </div>

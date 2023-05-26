@@ -15,13 +15,13 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="flex flex-col lg:ml-[-2rem]">
-          <span className="ml-8 text-lg text-blue-arbitrum lg:ml-0 lg:text-2xl">
+          <span className="ml-8 text-lg text-ocl-blue lg:ml-0 lg:text-2xl">
             Moving{' '}
             {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}{' '}
             to {networkName}
           </span>
 
-          <span className="animate-pulse text-sm text-gray-10">
+          <span className="animate-pulse text-sm text-gray-dark">
             {tx.nodeBlockDeadline ? (
               <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
             ) : (
@@ -31,10 +31,10 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="flex flex-nowrap gap-1 text-sm text-blue-arbitrum lg:text-base">
+            <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L2 transaction: <WithdrawalL2TxStatus tx={tx} />
             </span>
-            <span className="flex flex-nowrap gap-1 text-sm text-blue-arbitrum lg:text-base">
+            <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L1 transaction: Will show after claiming
             </span>
           </div>

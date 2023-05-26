@@ -64,9 +64,9 @@ export function BridgesTable(props: {
   })
 
   return (
-    <table className="w-full border border-gray-5">
+    <table className="w-full border border-gray-3">
       <thead className="bg-gray-1 text-left">
-        <tr className="text-gray-9">
+        <tr className="text-gray-6">
           <th className="w-1/6 px-6 py-4 font-normal">Favorite</th>
           <th className="w-4/6 px-6 py-4 font-normal">Exchange</th>
           <th className="w-1/6 px-6 py-4 font-normal"></th>
@@ -76,7 +76,7 @@ export function BridgesTable(props: {
         {sortedFastBridges.map(bridge => (
           <tr
             key={bridge.name}
-            className="cursor-pointer border border-gray-5 hover:bg-cyan"
+            className="cursor-pointer border border-gray-3 hover:bg-cyan"
           >
             <td>
               <ExternalLink
@@ -91,9 +91,9 @@ export function BridgesTable(props: {
                   }}
                 >
                   {isFavorite(bridge.name) ? (
-                    <StarIconSolid className="h-6 w-6 text-blue-arbitrum" />
+                    <StarIconSolid className="h-6 w-6 text-ocl-blue" />
                   ) : (
-                    <StarIconOutline className="h-6 w-6 text-blue-arbitrum" />
+                    <StarIconOutline className="h-6 w-6 text-ocl-blue" />
                   )}
                 </button>
               </ExternalLink>
@@ -120,7 +120,7 @@ export function BridgesTable(props: {
             <td>
               <ExternalLink
                 href={bridge.href}
-                className="arb-hover flex h-16 w-full items-center justify-center text-gray-6 hover:text-blue-arbitrum"
+                className="arb-hover flex h-16 w-full items-center justify-center text-gray-4 hover:text-ocl-blue"
                 onClick={() => onClick(bridge.name)}
               >
                 <ArrowTopRightOnSquareIcon className="h-5 w-5" />
