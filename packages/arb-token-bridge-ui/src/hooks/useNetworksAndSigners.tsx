@@ -30,7 +30,6 @@ import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
-import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
@@ -84,7 +83,6 @@ export type UseNetworksAndSignersConnectedResult = {
   }
   isConnectedToArbitrum: boolean
   chainId: number // the current chainId which is connected to UI
-  isSmartContractWallet: boolean
 }
 
 export type UseNetworksAndSignersResult =
@@ -298,11 +296,7 @@ export function NetworksAndSignersProvider(
             provider: l2Provider
           },
           isConnectedToArbitrum: false,
-          chainId: l1Network.chainID,
-          isSmartContractWallet: await addressIsSmartContract(
-            address as string,
-            l1Provider
-          )
+          chainId: l1Network.chainID
         })
       })
       .catch(() => {
@@ -338,11 +332,7 @@ export function NetworksAndSignersProvider(
                 provider: l2Provider
               },
               isConnectedToArbitrum: true,
-              chainId: l2Network.chainID,
-              isSmartContractWallet: await addressIsSmartContract(
-                address,
-                l2Provider
-              )
+              chainId: l2Network.chainID
             })
           })
           .catch(() => {

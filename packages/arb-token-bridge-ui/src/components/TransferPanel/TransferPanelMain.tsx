@@ -45,6 +45,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedWithSmartContractWallet } from '../../hooks/useIsConnectedWithSmartContractWallet'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -324,8 +325,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
-    useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -464,7 +465,13 @@ export function TransferPanelMain({
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
-    () => setShowAdvancedSettings(isSmartContractWallet),
+    () => {
+      if (typeof isSmartContractWallet === 'undefined') {
+        setShowAdvancedSettings(false)
+      } else {
+        setShowAdvancedSettings(isSmartContractWallet)
+      }
+    },
     [isSmartContractWallet]
   )
 
