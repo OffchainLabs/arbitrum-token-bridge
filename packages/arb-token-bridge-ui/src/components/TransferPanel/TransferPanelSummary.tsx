@@ -211,7 +211,7 @@ function TransferPanelSummaryContainer({
   return (
     <>
       <div className="block lg:hidden">
-        <span className="text-xl text-gray-10 lg:text-2xl">Summary</span>
+        <span className="text-xl text-gray-dark lg:text-2xl">Summary</span>
         <div className="h-4" />
       </div>
 
@@ -246,7 +246,7 @@ export function TransferPanelSummary({
   const { isMainnet } = isNetwork(l1.network.id)
 
   if (status === 'loading') {
-    const bgClassName = app.isDepositMode ? 'bg-blue-arbitrum' : 'bg-eth-dark'
+    const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
@@ -263,7 +263,7 @@ export function TransferPanelSummary({
           <>
             <div>
               <div className="h-2" />
-              <div className="lg:border-b lg:border-gray-3" />
+              <div className="lg:border-b lg:border-gray-2" />
               <div className="h-2" />
             </div>
             <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
@@ -275,7 +275,7 @@ export function TransferPanelSummary({
 
   return (
     <TransferPanelSummaryContainer>
-      <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
+      <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
         <span className="w-2/5 font-light">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span>
@@ -290,7 +290,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      <div className="flex flex-row items-center justify-between text-sm text-gray-10 lg:text-base">
+      <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
         <span className="w-2/5 font-light">You’ll pay in gas fees</span>
         <div className="flex w-3/5 justify-between">
           <span>
@@ -306,7 +306,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 text-sm text-gray-9 lg:text-base">
+      <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light">L1 gas</span>
@@ -327,7 +327,7 @@ export function TransferPanelSummary({
             )}
           </div>
         </div>
-        <div className="flex flex-row justify-between text-gray-9">
+        <div className="flex flex-row justify-between text-gray-dark">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light ">L2 gas</span>
             <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
@@ -353,11 +353,13 @@ export function TransferPanelSummary({
         <>
           <div>
             <div className="h-2" />
-            <div className="border-b border-gray-10" />
+            <div className="border-b border-gray-5" />
             <div className="h-2" />
           </div>
-          <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
-            <span className="w-2/5 font-light text-gray-9">Total amount</span>
+          <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+            <span className="w-2/5 font-light text-gray-dark">
+              Total amount
+            </span>
             <div className="flex w-3/5 flex-row justify-between">
               <span>
                 {formatAmount(amount + estimatedTotalGasFees, {
