@@ -19,7 +19,7 @@ export type UseRedeemRetryableResult = {
 }
 
 export function useRedeemRetryable(): UseRedeemRetryableResult {
-  const [, { fetchAndUpdateL1ToL2MsgStatus }] = useTransactions()
+  const { fetchAndUpdateL1ToL2MsgStatus } = useTransactions()
   const {
     l1: { provider: l1Provider },
     l2: { network: l2Network }

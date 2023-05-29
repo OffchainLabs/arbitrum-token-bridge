@@ -141,15 +141,12 @@ export const useArbTokenBridge = (
     setPendingWithdrawalMap({})
   }, [l1.provider, l2.provider, walletAddress])
 
-  const [
-    ,
-    {
-      addTransaction,
-      setTransactionFailure,
-      setTransactionSuccess,
-      updateTransaction
-    }
-  ] = useTransactions()
+  const {
+    addTransaction,
+    setTransactionFailure,
+    setTransactionSuccess,
+    updateTransaction
+  } = useTransactions()
 
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network])

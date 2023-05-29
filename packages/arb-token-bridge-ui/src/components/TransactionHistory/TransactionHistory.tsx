@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, useMemo } from 'react'
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
-import { useAppState } from '../../state'
+import { useTransactions } from '../../hooks/useTransactions'
 import { getNetworkLogo, getNetworkName } from '../../util/networks'
 import {
   PageParams,
@@ -40,9 +40,7 @@ export const TransactionHistory = ({
 }) => {
   const { l1, l2 } = useNetworksAndSigners()
 
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
+  const { mergedTransactions } = useTransactions()
 
   const pendingTransactions = useMemo(() => {
     return mergedTransactions?.filter(tx => isPending(tx))

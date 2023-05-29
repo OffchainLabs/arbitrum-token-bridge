@@ -17,7 +17,7 @@ export function ArbTokenBridgeStoreSync({
 
   useEffect(() => {
     actions.app.setArbTokenBridge(arbTokenBridge)
-  }, [arbTokenBridge])
+  }, [tokenBridgeParams])
 
   return <></>
 }

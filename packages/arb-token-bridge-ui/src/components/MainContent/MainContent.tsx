@@ -44,7 +44,7 @@ export function MainContent() {
     app: { arbTokenBridge }
   } = useAppState()
 
-  const [, { setDepositsInStore }] = useTransactions()
+  const { setDepositsInStore } = useTransactions()
 
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',

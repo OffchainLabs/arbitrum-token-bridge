@@ -14,7 +14,7 @@ import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
-import { useAppState } from '../../../state'
+import { useTransactions } from '../../../hooks/useTransactions'
 
 export type PageParams = {
   searchString: string
@@ -87,9 +87,7 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   const { isSmartContractWallet } = useNetworksAndSigners()
 
-  const {
-    app: { mergedTransactions: locallyStoredTransactions }
-  } = useAppState()
+  const { mergedTransactions: locallyStoredTransactions } = useTransactions()
 
   // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
   const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])

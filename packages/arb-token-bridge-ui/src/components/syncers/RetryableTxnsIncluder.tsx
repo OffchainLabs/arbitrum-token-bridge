@@ -23,15 +23,14 @@ export function RetryableTxnsIncluder(): JSX.Element {
     app: { arbTokenBridgeLoaded }
   } = useAppState()
 
-  const [
-    ,
-    {
-      addTransactions,
-      fetchAndUpdateL1ToL2MsgClassicStatus,
-      fetchAndUpdateEthDepositMessageStatus,
-      fetchAndUpdateL1ToL2MsgStatus
-    }
-  ] = useTransactions()
+  const {
+    l1DepositsWithUntrackedL2Messages,
+    failedRetryablesToRedeem,
+    addTransactions,
+    fetchAndUpdateL1ToL2MsgClassicStatus,
+    fetchAndUpdateEthDepositMessageStatus,
+    fetchAndUpdateL1ToL2MsgStatus
+  } = useTransactions()
 
   const fetchAndUpdateDepositStatus = useCallback(
     async (depositTxId: string, depositAssetType: AssetType | string) => {
@@ -79,29 +78,29 @@ export function RetryableTxnsIncluder(): JSX.Element {
   )
 
   const checkAndUpdateFailedRetryables = useCallback(async () => {
-    const failedRetryablesToRedeem = actions.app.getFailedRetryablesToRedeem()
     for (const depositTx of failedRetryablesToRedeem) {
       const depositTxId = depositTx.txId
       const depositAssetType = depositTx.asset
 
       fetchAndUpdateDepositStatus(depositTxId, depositAssetType)
     }
-  }, [addTransactions, fetchAndUpdateDepositStatus])
+  }, [addTransactions, fetchAndUpdateDepositStatus, failedRetryablesToRedeem])
 
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
    */
   const checkAndAddMissingL1ToL2Messages = useCallback(async () => {
-    const l1DepositsWithUntrackedL2Messages =
-      actions.app.l1DepositsWithUntrackedL2Messages()
-
     for (const depositTx of l1DepositsWithUntrackedL2Messages) {
       const depositTxId = depositTx.txID
       const depositAssetType = depositTx.assetType
 
       fetchAndUpdateDepositStatus(depositTxId, depositAssetType)
     }
-  }, [addTransactions, fetchAndUpdateDepositStatus])
+  }, [
+    addTransactions,
+    fetchAndUpdateDepositStatus,
+    l1DepositsWithUntrackedL2Messages
+  ])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messages,

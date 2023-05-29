@@ -5,7 +5,7 @@
 
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useAppState } from '../../state'
+import { useTransactions } from '../../hooks/useTransactions'
 import { MergedTransaction } from '../../state/app/state'
 import {
   isDepositReadyToRedeem,
@@ -28,9 +28,7 @@ export const TransactionStatusInfo = ({
   const { openTransactionHistoryPanel } = useAppContextActions()
 
   // get the pending withdrawals to claim
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
+  const { mergedTransactions } = useTransactions()
   const numWithdrawalsReadyToClaim = mergedTransactions.filter(tx =>
     isWithdrawalReadyToClaim(tx)
   ).length

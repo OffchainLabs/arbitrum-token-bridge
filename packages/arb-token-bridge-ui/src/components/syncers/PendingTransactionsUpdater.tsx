@@ -6,12 +6,12 @@ import {
   txnTypeToLayer,
   useTransactions
 } from '../../hooks/useTransactions'
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function PendingTransactionsUpdater(): JSX.Element {
-  const actions = useActions()
+  const { pendingTransactions } = useTransactions()
   const {
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
@@ -21,7 +21,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
     app: { arbTokenBridgeLoaded }
   } = useAppState()
 
-  const [, { updateTransaction }] = useTransactions()
+  const { updateTransaction } = useTransactions()
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
@@ -34,7 +34,6 @@ export function PendingTransactionsUpdater(): JSX.Element {
   // eslint-disable-next-line consistent-return
   const checkAndUpdatePendingTransactions = useCallback(() => {
     if (!arbTokenBridgeLoaded) return
-    const pendingTransactions = actions.app.getPendingTransactions()
     if (pendingTransactions.length) {
       console.info(
         `Checking and updating ${pendingTransactions.length} pending transactions' statuses`
@@ -56,7 +55,12 @@ export function PendingTransactionsUpdater(): JSX.Element {
         })
       })
     }
-  }, [getTransactionReceipt, arbTokenBridgeLoaded, updateTransaction])
+  }, [
+    getTransactionReceipt,
+    arbTokenBridgeLoaded,
+    updateTransaction,
+    pendingTransactions
+  ])
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndUpdatePendingTransactions,
     4000

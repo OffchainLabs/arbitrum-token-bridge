@@ -51,6 +51,7 @@ import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
+import { TransactionsContextProvider } from '../TransactionHistory/TransactionsContext'
 
 declare global {
   interface Window {
@@ -348,7 +349,9 @@ export default function App() {
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <NetworkReady>
               <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
+                <TransactionsContextProvider>
+                  <Injector>{isTosAccepted && <AppContent />}</Injector>
+                </TransactionsContextProvider>
               </AppContextProvider>
             </NetworkReady>
           </RainbowKitProvider>

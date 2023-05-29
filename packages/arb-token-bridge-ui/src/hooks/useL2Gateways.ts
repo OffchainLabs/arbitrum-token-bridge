@@ -20,7 +20,7 @@ export const useL2Gateways = ({ l2Provider }: { l2Provider: Provider }) => {
     }
 
     updateL2Network()
-  })
+  }, [l2Provider]) // only update when l2-provider changes
 
   return useMemo(() => {
     if (typeof l2Network === 'undefined') {
