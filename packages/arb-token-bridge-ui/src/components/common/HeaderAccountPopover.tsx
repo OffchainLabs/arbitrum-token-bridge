@@ -227,10 +227,6 @@ export function HeaderAccountPopover({
               >
                 <Cog6ToothIcon className="h-4 w-4 text-white" />
                 <span>Preferences</span>
-
-                <span className="rounded-md bg-red-600 px-2 text-xs text-white lg:!ml-auto">
-                  NEW
-                </span>
               </button>
             )}
 
