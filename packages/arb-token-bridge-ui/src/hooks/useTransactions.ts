@@ -480,6 +480,8 @@ export const useTransactions = (): UseTransactions => {
   }
 }
 
+// useMergedTransactions hook combines dependencies from both useTransactions (for deposits) and useArbTokenBridge (for withdrawals) to give merged output
+// we cannot combine this within useTransactions, because it will create recursive function call (as useArbTokenBridge calls useTransactions internally)
 export const useMergedTransactions = () => {
   const { depositsTransformed } = useTransactions()
 
