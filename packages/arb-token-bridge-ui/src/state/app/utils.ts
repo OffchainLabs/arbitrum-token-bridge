@@ -112,11 +112,14 @@ export const transformWithdrawals = (
 // filter the transactions based on current wallet address and network ID's
 export const filterTransactions = (
   transactions: Transaction[],
-  walletAddress: string,
+  walletAddress: string | undefined,
   l1ChainId: number | null,
   l2ChainId: number | null
 ): Transaction[] => {
-  const result = []
+  const result = [] as Transaction[]
+
+  if (!walletAddress) return result
+
   for (const tx of transactions) {
     const txSender = tx.sender
     const txL1NetworkID = tx.l1NetworkID

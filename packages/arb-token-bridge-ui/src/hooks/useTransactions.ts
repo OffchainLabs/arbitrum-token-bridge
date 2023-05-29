@@ -24,6 +24,7 @@ import {
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAppState } from '../state'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
+import { useAccount } from 'wagmi'
 
 export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 
@@ -120,8 +121,6 @@ interface UseTransactions {
   l1DepositsWithUntrackedL2Messages: Transaction[]
   failedRetryablesToRedeem: MergedTransaction[]
   depositsTransformed: MergedTransaction[]
-  withdrawalsTransformed: MergedTransaction[]
-  mergedTransactions: MergedTransaction[]
 
   addFailedTransaction: (transaction: FailedTransaction) => void
 
@@ -169,11 +168,15 @@ export const useTransactions = (): UseTransactions => {
     }
   } = useNetworksAndSigners()
 
-  const {
-    app: {
-      arbTokenBridge: { walletAddress, pendingWithdrawalsMap }
-    }
-  } = useAppState()
+  // const {
+  //   app: {
+  //     arbTokenBridge: { walletAddress, pendingWithdrawalsMap }
+  //   }
+  // } = useAppState()
+
+  const { address: walletAddress } = useAccount()
+
+  const pendingWithdrawalsMap = {}
 
   const addTransaction = (transaction: NewTransaction) => {
     if (!transaction.txID) {
@@ -451,6 +454,41 @@ export const useTransactions = (): UseTransactions => {
     )
   }, [depositsTransformed])
 
+  return {
+    // the state and derived values
+    transactions,
+    sortedTransactions,
+    pendingTransactions,
+    l1DepositsWithUntrackedL2Messages,
+    depositsTransformed,
+    failedRetryablesToRedeem,
+
+    // state mutating actions
+    addTransaction,
+    addTransactions,
+    setDepositsInStore,
+    setTransactionSuccess,
+    setTransactionFailure,
+    clearPendingTransactions,
+    setTransactionConfirmed,
+    updateTransaction,
+    removeTransaction,
+    addFailedTransaction,
+    fetchAndUpdateL1ToL2MsgStatus,
+    fetchAndUpdateL1ToL2MsgClassicStatus,
+    fetchAndUpdateEthDepositMessageStatus
+  }
+}
+
+export const useMergedTransactions = () => {
+  const { depositsTransformed } = useTransactions()
+
+  const {
+    app: {
+      arbTokenBridge: { pendingWithdrawalsMap }
+    }
+  } = useAppState()
+
   const withdrawalsTransformed = useMemo(() => {
     const withdrawals = Object.values(
       pendingWithdrawalsMap || []
@@ -470,30 +508,5 @@ export const useTransactions = (): UseTransactions => {
     )
   }, [depositsTransformed, withdrawalsTransformed])
 
-  return {
-    // the state and derived values
-    transactions,
-    sortedTransactions,
-    pendingTransactions,
-    l1DepositsWithUntrackedL2Messages,
-    depositsTransformed,
-    failedRetryablesToRedeem,
-    withdrawalsTransformed,
-    mergedTransactions,
-
-    // state mutating actions
-    addTransaction,
-    addTransactions,
-    setDepositsInStore,
-    setTransactionSuccess,
-    setTransactionFailure,
-    clearPendingTransactions,
-    setTransactionConfirmed,
-    updateTransaction,
-    removeTransaction,
-    addFailedTransaction,
-    fetchAndUpdateL1ToL2MsgStatus,
-    fetchAndUpdateL1ToL2MsgClassicStatus,
-    fetchAndUpdateEthDepositMessageStatus
-  }
+  return { mergedTransactions }
 }
