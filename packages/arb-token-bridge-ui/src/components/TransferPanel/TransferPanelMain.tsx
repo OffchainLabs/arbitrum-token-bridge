@@ -177,28 +177,32 @@ function NetworkContainer({
   balanceFor?: string
   children: React.ReactNode
 }) {
-  const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { backgroundImage, backgroundClassName, addressBannerClassName } =
+    useMemo(() => {
+      const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
-    if (!isArbitrum) {
-      return {
-        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-eth-dark'
+      if (!isArbitrum) {
+        return {
+          backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
+          backgroundClassName: 'bg-eth-dark',
+          addressBannerClassName: 'bg-cyan border-eth-dark'
+        }
       }
-    }
 
-    if (isArbitrumNova) {
-      return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-arb-nova-dark'
+      if (isArbitrumNova) {
+        return {
+          backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
+          backgroundClassName: 'bg-arb-nova-dark',
+          addressBannerClassName: 'bg-orange border-arb-nova-dark'
+        }
       }
-    }
 
-    return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-arb-one-dark'
-    }
-  }, [network])
+      return {
+        backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
+        backgroundClassName: 'bg-arb-one-dark',
+        addressBannerClassName: 'bg-cyan border-arb-one-dark'
+      }
+    }, [network])
 
   const explorerUrl = `${getExplorerUrl(network.id)}/address/${balanceFor}`
   const showCustomAddressBanner = balanceFor && isAddress(balanceFor)
@@ -206,9 +210,14 @@ function NetworkContainer({
   return (
     <>
       {showCustomAddressBanner && (
-        <div className="w-full rounded-t-xl bg-slate-200 pb-1 pt-2 text-center text-sm text-slate-800">
+        <div
+          className={twMerge(
+            'w-full rounded-t-lg border-4 p-1 text-center text-sm',
+            addressBannerClassName
+          )}
+        >
           <span>
-            Showing balance for:{' '}
+            Showing balance for Destination Address:{' '}
             <ExternalLink className="underline" href={explorerUrl}>
               {shortenAddress(balanceFor)}
             </ExternalLink>

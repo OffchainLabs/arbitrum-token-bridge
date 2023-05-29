@@ -8,15 +8,16 @@ import {
 } from '@heroicons/react/24/solid'
 import {
   ArrowTopRightOnSquareIcon,
-  QuestionMarkCircleIcon
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
-import { TransferValidationErrors } from 'src/util/AddressUtils'
+import { TransferValidationErrors } from '../../util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl } from 'src/util/networks'
+import { getExplorerUrl } from '../../util/networks'
+import { shortenAddress } from '../../util/CommonUtils'
 
 const AdvancedSettings = ({
   destinationAddress,
@@ -48,22 +49,6 @@ const AdvancedSettings = ({
     return destinationAddress.toLowerCase() === walletAddress.toLowerCase()
   }, [destinationAddress, isSmartContractWallet, walletAddress])
 
-  const DestinationAddressLabel = useMemo(() => {
-    if (error || isSmartContractWallet || !walletAddress) {
-      return null
-    }
-
-    return toAddressEqualsSenderEOA ? (
-      <div className="w-fit rounded bg-lime px-2 py-1 text-sm text-lime-dark">
-        Sending to your address
-      </div>
-    ) : (
-      <div className="w-fit rounded bg-orange px-2 py-1 text-sm text-orange-dark">
-        Sending to a different address
-      </div>
-    )
-  }, [error, isSmartContractWallet, walletAddress, toAddressEqualsSenderEOA])
-
   const DestinationAddressExplorer = useMemo(() => {
     const explorerUrl = getExplorerUrl((isDepositMode ? l2 : l1).network.id)
 
@@ -72,7 +57,7 @@ const AdvancedSettings = ({
     }
     return (
       <ExternalLink
-        className="mt-2 flex w-fit text-xs text-slate-500"
+        className="mt-2 flex w-fit items-center text-sm"
         href={`${explorerUrl}/address/${destinationAddress || walletAddress}`}
       >
         <ArrowTopRightOnSquareIcon className="mr-1 h-4 w-4" />
@@ -98,7 +83,7 @@ const AdvancedSettings = ({
         onClick={handleAdvancedSettingsToggle}
         className="flex flex-row items-center"
       >
-        <span className=" text-lg">Advanced Settings</span>
+        <span className="text-gray-10">Advanced Settings</span>
         {collapsed ? (
           <ChevronDownIcon className="ml-1 h-4 w-4" />
         ) : (
@@ -108,24 +93,21 @@ const AdvancedSettings = ({
       {!collapsed && (
         <div className="mt-2">
           <div className="flex flex-wrap items-center justify-between">
-            <span className="text-md flex items-center text-gray-10">
+            <span className="flex items-center">
               Destination Address
               <Tooltip
                 wrapperClassName="ml-1"
-                theme="dark"
                 content={
                   <span>
-                    This is where your funds will end up at.{' '}
-                    {isSmartContractWallet
-                      ? ''
-                      : 'Defaults to your wallet address.'}
+                    Send your funds to a different address.{' '}
+                    <b>This is not standard.</b> Be sure you mean to send it
+                    here.
                   </span>
                 }
               >
-                <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
+                <ExclamationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </span>
-            {DestinationAddressLabel}
           </div>
           <div
             className={twMerge(
@@ -138,7 +120,11 @@ const AdvancedSettings = ({
               className="w-full rounded px-2 py-1"
               // we want to keep the input empty for the same wallet address
               // placeholder only displays it to the user for assurance
-              placeholder={!isSmartContractWallet ? walletAddress : undefined}
+              placeholder={
+                !isSmartContractWallet && walletAddress
+                  ? shortenAddress(walletAddress)
+                  : undefined
+              }
               defaultValue={destinationAddress}
               spellCheck={false}
               disabled={disabled && !isSmartContractWallet}
