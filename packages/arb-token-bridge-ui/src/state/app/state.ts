@@ -70,6 +70,7 @@ export interface WarningTokens {
 
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
+  transactions: Transaction[]
   warningTokens: WarningTokens
   connectionState: number
   verifying: WhiteListState
@@ -89,6 +90,7 @@ export type AppState = {
 
 export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
+  transactions: [] as Transaction[],
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
@@ -97,7 +99,7 @@ export const defaultState: AppState = {
   selectedToken: null,
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
-    const transactions = s.arbTokenBridge?.transactions?.transactions || []
+    const transactions = s?.transactions || []
     return filterTransactions(
       [...transactions],
       s.arbTokenBridge.walletAddress,

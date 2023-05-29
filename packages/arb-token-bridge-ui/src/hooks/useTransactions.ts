@@ -1,6 +1,6 @@
 import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { AssetType, TransactionActions } from './arbTokenBridge.types'
+import { AssetType } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
@@ -290,7 +290,42 @@ const localStorageReducer = (state: Transaction[], action: Action) => {
   return newState
 }
 
-const useTransactions = (): [Transaction[], TransactionActions] => {
+interface TransactionActions {
+  addFailedTransaction: (transaction: FailedTransaction) => void
+
+  setDepositsInStore: (transactions: Transaction[]) => void
+  setTransactionSuccess: (txID: string) => void
+  setTransactionFailure: (txID?: string) => void
+  removeTransaction: (txID: string) => void
+
+  addTransaction: (transaction: NewTransaction) => void
+  addTransactions: (transactions: Transaction[]) => void
+  clearPendingTransactions: () => void
+  setTransactionConfirmed: (txID: string) => void
+  updateTransaction: (
+    txReceipt: TransactionReceipt,
+    tx?: ethers.ContractTransaction,
+    l1ToL2MsgData?: L1ToL2MessageData
+  ) => void
+  fetchAndUpdateL1ToL2MsgStatus: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReader,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
+  ) => void
+  fetchAndUpdateL1ToL2MsgClassicStatus: (
+    txID: string,
+    l1ToL2Msg: L1ToL2MessageReaderClassic,
+    isEthDeposit: boolean,
+    status: L1ToL2MessageStatus
+  ) => void
+  fetchAndUpdateEthDepositMessageStatus: (
+    txID: string,
+    ethDepositMessage: EthDepositMessage
+  ) => void
+}
+
+export const useTransactions = (): [Transaction[], TransactionActions] => {
   const [state, dispatch] = useReducer(localStorageReducer, [])
 
   useEffect(() => {
@@ -565,5 +600,3 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   ]
 }
-
-export default useTransactions

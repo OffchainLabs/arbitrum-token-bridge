@@ -8,6 +8,7 @@ import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
 import { useDeposits } from '../../hooks/useDeposits'
+import { useTransactions } from '../../hooks/useTransactions'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
@@ -42,6 +43,8 @@ export function MainContent() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
+
+  const [, { setDepositsInStore }] = useTransactions()
 
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
@@ -78,9 +81,7 @@ export function MainContent() {
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
-    arbTokenBridge?.transactions?.setDepositsInStore?.(
-      depositsData.pendingDeposits
-    )
+    setDepositsInStore(depositsData.pendingDeposits)
   }, [JSON.stringify(depositsData.pendingDeposits)]) // only run side effect on value change, not reference (Call stack exceeded)
 
   useEffect(() => {

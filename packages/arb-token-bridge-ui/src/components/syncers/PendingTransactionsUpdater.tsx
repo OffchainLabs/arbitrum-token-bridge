@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from 'react'
 import { TransactionReceipt } from '@ethersproject/providers'
 
-import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
+import {
+  Transaction,
+  txnTypeToLayer,
+  useTransactions
+} from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -14,8 +18,10 @@ export function PendingTransactionsUpdater(): JSX.Element {
   } = useNetworksAndSigners()
 
   const {
-    app: { arbTokenBridge, arbTokenBridgeLoaded }
+    app: { arbTokenBridgeLoaded }
   } = useAppState()
+
+  const [, { updateTransaction }] = useTransactions()
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
@@ -45,12 +51,12 @@ export function PendingTransactionsUpdater(): JSX.Element {
               pendingTransactions[i]?.txID
             )
           } else {
-            arbTokenBridge?.transactions?.updateTransaction(txReceipt)
+            updateTransaction(txReceipt)
           }
         })
       })
     }
-  }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
+  }, [getTransactionReceipt, arbTokenBridgeLoaded, updateTransaction])
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndUpdatePendingTransactions,
     4000

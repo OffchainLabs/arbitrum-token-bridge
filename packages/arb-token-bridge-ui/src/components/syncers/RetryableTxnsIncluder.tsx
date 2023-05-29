@@ -10,6 +10,7 @@ import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import { useTransactions } from '../../hooks/useTransactions'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
@@ -19,8 +20,18 @@ export function RetryableTxnsIncluder(): JSX.Element {
   } = useNetworksAndSigners()
 
   const {
-    app: { arbTokenBridge, arbTokenBridgeLoaded }
+    app: { arbTokenBridgeLoaded }
   } = useAppState()
+
+  const [
+    ,
+    {
+      addTransactions,
+      fetchAndUpdateL1ToL2MsgClassicStatus,
+      fetchAndUpdateEthDepositMessageStatus,
+      fetchAndUpdateL1ToL2MsgStatus
+    }
+  ] = useTransactions()
 
   const fetchAndUpdateDepositStatus = useCallback(
     async (depositTxId: string, depositAssetType: AssetType | string) => {
@@ -39,7 +50,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
 
       // Classic messages
       if (isClassic) {
-        arbTokenBridge?.transactions?.fetchAndUpdateL1ToL2MsgClassicStatus(
+        fetchAndUpdateL1ToL2MsgClassicStatus(
           depositTxId,
           l1ToL2Msg as L1ToL2MessageReaderClassic,
           isEthDeposit,
@@ -50,13 +61,13 @@ export function RetryableTxnsIncluder(): JSX.Element {
 
       // Non-classic - Eth deposit
       if (isEthDeposit) {
-        arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
+        fetchAndUpdateEthDepositMessageStatus(
           depositTxId,
           l1ToL2Msg as EthDepositMessage
         )
       } else {
         // Non-classic - Token deposit
-        arbTokenBridge.transactions?.fetchAndUpdateL1ToL2MsgStatus(
+        fetchAndUpdateL1ToL2MsgStatus(
           depositTxId,
           l1ToL2Msg as L1ToL2MessageReader,
           false,
@@ -64,7 +75,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     },
-    [l1Provider, l2Provider, arbTokenBridge?.transactions]
+    [l1Provider, l2Provider]
   )
 
   const checkAndUpdateFailedRetryables = useCallback(async () => {
@@ -75,10 +86,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
 
       fetchAndUpdateDepositStatus(depositTxId, depositAssetType)
     }
-  }, [
-    arbTokenBridge?.transactions?.addTransactions,
-    fetchAndUpdateDepositStatus
-  ])
+  }, [addTransactions, fetchAndUpdateDepositStatus])
 
   /**
    * For every L1 deposit, we ensure the relevant L1ToL2MessageIsIncluded
@@ -93,10 +101,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
 
       fetchAndUpdateDepositStatus(depositTxId, depositAssetType)
     }
-  }, [
-    arbTokenBridge?.transactions?.addTransactions,
-    fetchAndUpdateDepositStatus
-  ])
+  }, [addTransactions, fetchAndUpdateDepositStatus])
 
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndAddMissingL1ToL2Messages,

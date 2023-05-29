@@ -20,7 +20,7 @@ import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
-import useTransactions, { L1ToL2MessageData } from './useTransactions'
+import { useTransactions, L1ToL2MessageData } from './useTransactions'
 import {
   ArbTokenBridge,
   AssetType,
@@ -142,19 +142,12 @@ export const useArbTokenBridge = (
   }, [l1.provider, l2.provider, walletAddress])
 
   const [
-    transactions,
+    ,
     {
       addTransaction,
-      addTransactions,
-      setDepositsInStore,
       setTransactionFailure,
-      clearPendingTransactions,
-      setTransactionConfirmed,
       setTransactionSuccess,
-      updateTransaction,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateL1ToL2MsgClassicStatus,
-      fetchAndUpdateEthDepositMessageStatus
+      updateTransaction
     }
   ] = useTransactions()
 
@@ -1107,18 +1100,6 @@ export const useArbTokenBridge = (
       withdraw: withdrawToken,
       withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken
-    },
-    transactions: {
-      transactions,
-      setDepositsInStore,
-      clearPendingTransactions,
-      setTransactionConfirmed,
-      updateTransaction,
-      addTransaction,
-      addTransactions,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateL1ToL2MsgClassicStatus,
-      fetchAndUpdateEthDepositMessageStatus
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
     setWithdrawalsInStore
