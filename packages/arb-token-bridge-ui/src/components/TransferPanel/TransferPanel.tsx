@@ -7,15 +7,11 @@ import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { Provider, JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
-import { ConnectionState } from '../../util'
-import {
-  getEOATransferError,
-  getSmartContractTransferError,
-  TransferValidationErrors
-} from '../../util/AddressUtils'
+import { ConnectionState, TransferValidationErrors } from '../../util'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
@@ -89,6 +85,62 @@ function useTokenFromSearchParams(): string | undefined {
   }
 
   return tokenFromSearchParams
+}
+
+const getSmartContractTransferError = async ({
+  from,
+  to,
+  l1Provider,
+  l2Provider,
+  isDeposit
+}: {
+  from: string
+  to?: string
+  l1Provider: Provider
+  l2Provider: Provider
+  isDeposit: boolean
+}): Promise<TransferValidationErrors | null> => {
+  const providerFrom = isDeposit ? l1Provider : l2Provider
+  const providerTo = isDeposit ? l2Provider : l1Provider
+  if (!isAddress(String(to))) {
+    return TransferValidationErrors.SC_MISSING_ADDRESS
+  }
+  if (!isAddress(from)) {
+    return TransferValidationErrors.GENERIC_ERROR
+  }
+  if (!(await addressIsSmartContract(from, providerFrom))) {
+    return TransferValidationErrors.GENERIC_ERROR
+  }
+  if (!(await addressIsSmartContract(String(to), providerTo))) {
+    return TransferValidationErrors.SC_INVALID_ADDRESS
+  }
+  return null
+}
+
+const getEOATransferError = async ({
+  from,
+  to,
+  l1Provider,
+  l2Provider,
+  isDeposit
+}: {
+  from: string
+  to?: string
+  l1Provider: Provider
+  l2Provider: Provider
+  isDeposit: boolean
+}): Promise<TransferValidationErrors | null> => {
+  const providerFrom = isDeposit ? l1Provider : l2Provider
+  if (to && !isAddress(to)) {
+    return TransferValidationErrors.EOA_INVALID_ADDRESS
+  }
+  if (!isAddress(from)) {
+    return TransferValidationErrors.GENERIC_ERROR
+  }
+  if (await addressIsSmartContract(from, providerFrom)) {
+    return TransferValidationErrors.GENERIC_ERROR
+  }
+  return null
 }
 
 enum ImportTokenModalStatus {
@@ -1004,7 +1056,7 @@ export function TransferPanel() {
           transferValidationError={transferValidationError}
         />
 
-        <div className="border-r border-gray-3" />
+        <div className="border-r border-gray-2" />
 
         <div
           style={
@@ -1021,7 +1073,7 @@ export function TransferPanel() {
         >
           <div className="flex flex-col">
             <div className="hidden lg:block">
-              <span className="text-2xl text-gray-10">Summary</span>
+              <span className="text-2xl text-gray-dark">Summary</span>
               <div className="h-4" />
             </div>
 
@@ -1032,7 +1084,7 @@ export function TransferPanel() {
                 gasSummary={gasSummary}
               />
             ) : (
-              <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[297px]">
+              <div className="hidden text-lg text-gray-dark lg:block lg:min-h-[297px]">
                 <span className="text-xl">
                   Bridging summary will appear here.
                 </span>

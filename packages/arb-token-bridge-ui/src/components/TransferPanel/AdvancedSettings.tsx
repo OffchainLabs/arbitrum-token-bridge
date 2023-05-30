@@ -12,9 +12,9 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
+import { TransferValidationErrors } from '../../util'
 import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
-import { TransferValidationErrors } from '../../util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl } from '../../util/networks'
 import { shortenAddress } from '../../util/CommonUtils'
@@ -39,7 +39,7 @@ const AdvancedSettings = ({
   const [disabled, setDisabled] = useState(!isSmartContractWallet)
 
   const destAddressInputClassName =
-    (error ? 'border border-[#cd0000]' : 'border border-gray-9') +
+    (error ? 'border border-[#cd0000]' : 'border border-gray-dark') +
     ` ${disabled ? 'bg-slate-200' : 'bg-white'}`
 
   const toAddressEqualsSenderEOA = useMemo(() => {
@@ -57,7 +57,7 @@ const AdvancedSettings = ({
     }
     return (
       <ExternalLink
-        className="mt-2 flex w-fit items-center text-sm"
+        className="mt-2 flex w-fit items-center"
         href={`${explorerUrl}/address/${destinationAddress || walletAddress}`}
       >
         <ArrowTopRightOnSquareIcon className="mr-1 h-4 w-4" />
@@ -81,9 +81,9 @@ const AdvancedSettings = ({
     <div className="mt-6">
       <button
         onClick={handleAdvancedSettingsToggle}
-        className="flex flex-row items-center"
+        className="flex flex-row items-center text-gray-dark"
       >
-        <span className="text-gray-10">Advanced Settings</span>
+        <span className="text-md">Advanced Settings</span>
         {collapsed ? (
           <ChevronDownIcon className="ml-1 h-4 w-4" />
         ) : (
@@ -93,7 +93,7 @@ const AdvancedSettings = ({
       {!collapsed && (
         <div className="mt-2">
           <div className="flex flex-wrap items-center justify-between">
-            <span className="flex items-center">
+            <span className="flex items-center font-semibold">
               Destination Address
               <Tooltip
                 wrapperClassName="ml-1"
@@ -111,13 +111,13 @@ const AdvancedSettings = ({
           </div>
           <div
             className={twMerge(
-              'mt-1 flex h-full flex-row items-center rounded',
+              'mt-1 flex w-full rounded-lg px-2 py-1 shadow-input',
               destAddressInputClassName
             )}
           >
             <input
               type="string"
-              className="w-full rounded px-2 py-1"
+              className="w-full"
               // we want to keep the input empty for the same wallet address
               // placeholder only displays it to the user for assurance
               placeholder={

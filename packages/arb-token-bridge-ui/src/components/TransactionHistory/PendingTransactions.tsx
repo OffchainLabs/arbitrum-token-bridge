@@ -37,8 +37,8 @@ export const PendingTransactions = ({
   const { switchNetwork } = useSwitchNetworkWithConfig()
 
   const bgClassName = isNetwork(l2Network.id).isArbitrumNova
-    ? 'bg-gray-10'
-    : 'bg-blue-arbitrum'
+    ? 'bg-gray-dark'
+    : 'bg-ocl-blue'
 
   return (
     <div
