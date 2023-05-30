@@ -65,7 +65,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setEstimatedGas(
           await approveTokenEstimateGas({
             erc20L1Address: token.address,
-            walletAddress,
+            address: walletAddress,
             l1Provider: l1.provider,
             l2Provider: l2.provider
           })

@@ -5,12 +5,12 @@ import { Provider } from '@ethersproject/providers'
 
 export const approveTokenEstimateGas = async ({
   erc20L1Address,
-  walletAddress,
+  address,
   l1Provider,
   l2Provider
 }: {
   erc20L1Address: string
-  walletAddress: string
+  address: string
   l1Provider: Provider
   l2Provider: Provider
 }) => {
@@ -24,6 +24,6 @@ export const approveTokenEstimateGas = async ({
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
 
   return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
-    from: walletAddress
+    from: address
   })
 }
