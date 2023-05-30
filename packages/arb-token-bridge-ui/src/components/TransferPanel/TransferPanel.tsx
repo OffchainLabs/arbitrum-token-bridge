@@ -1056,7 +1056,7 @@ export function TransferPanel() {
           transferValidationError={transferValidationError}
         />
 
-        <div className="border-r border-gray-3" />
+        <div className="border-r border-gray-2" />
 
         <div
           style={
@@ -1073,7 +1073,7 @@ export function TransferPanel() {
         >
           <div className="flex flex-col">
             <div className="hidden lg:block">
-              <span className="text-2xl text-gray-10">Summary</span>
+              <span className="text-2xl text-gray-dark">Summary</span>
               <div className="h-4" />
             </div>
 
@@ -1084,7 +1084,7 @@ export function TransferPanel() {
                 gasSummary={gasSummary}
               />
             ) : (
-              <div className="hidden text-lg text-gray-7 lg:block lg:min-h-[297px]">
+              <div className="hidden text-lg text-gray-dark lg:block lg:min-h-[297px]">
                 <span className="text-xl">
                   Bridging summary will appear here.
                 </span>

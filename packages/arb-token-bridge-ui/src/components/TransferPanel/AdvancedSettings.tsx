@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/solid'
 import {
   ArrowTopRightOnSquareIcon,
-  QuestionMarkCircleIcon
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
@@ -38,7 +38,7 @@ const AdvancedSettings = ({
   const [disabled, setDisabled] = useState(!isSmartContractWallet)
 
   const destAddressInputClassName =
-    (error ? 'border border-[#cd0000]' : 'border border-gray-9') +
+    (error ? 'border border-[#cd0000]' : 'border border-gray-dark') +
     ` ${disabled ? 'bg-slate-200' : 'bg-white'}`
 
   const toAddressEqualsSenderEOA = useMemo(() => {
@@ -48,22 +48,6 @@ const AdvancedSettings = ({
     return destinationAddress.toLowerCase() === walletAddress.toLowerCase()
   }, [destinationAddress, isSmartContractWallet, walletAddress])
 
-  const DestinationAddressLabel = useMemo(() => {
-    if (error || isSmartContractWallet || !walletAddress) {
-      return null
-    }
-
-    return toAddressEqualsSenderEOA ? (
-      <div className="w-fit rounded bg-lime px-2 py-1 text-sm text-lime-dark">
-        Sending to your address
-      </div>
-    ) : (
-      <div className="w-fit rounded bg-orange px-2 py-1 text-sm text-orange-dark">
-        Sending to a different address
-      </div>
-    )
-  }, [error, isSmartContractWallet, walletAddress, toAddressEqualsSenderEOA])
-
   const DestinationAddressExplorer = useMemo(() => {
     const explorerUrl = getExplorerUrl((isDepositMode ? l2 : l1).network.id)
 
@@ -72,7 +56,7 @@ const AdvancedSettings = ({
     }
     return (
       <ExternalLink
-        className="mt-2 flex w-fit text-xs text-slate-500"
+        className="mt-2 flex w-fit items-center"
         href={`${explorerUrl}/address/${destinationAddress || walletAddress}`}
       >
         <ArrowTopRightOnSquareIcon className="mr-1 h-4 w-4" />
@@ -96,9 +80,9 @@ const AdvancedSettings = ({
     <div className="mt-6">
       <button
         onClick={handleAdvancedSettingsToggle}
-        className="flex flex-row items-center"
+        className="flex flex-row items-center text-gray-dark"
       >
-        <span className=" text-lg">Advanced Settings</span>
+        <span className="text-md">Advanced Settings</span>
         {collapsed ? (
           <ChevronDownIcon className="ml-1 h-4 w-4" />
         ) : (
@@ -108,34 +92,31 @@ const AdvancedSettings = ({
       {!collapsed && (
         <div className="mt-2">
           <div className="flex flex-wrap items-center justify-between">
-            <span className="text-md flex items-center text-gray-10">
+            <span className="flex items-center font-semibold">
               Destination Address
               <Tooltip
                 wrapperClassName="ml-1"
-                theme="dark"
                 content={
                   <span>
-                    This is where your funds will end up at.{' '}
-                    {isSmartContractWallet
-                      ? ''
-                      : 'Defaults to your wallet address.'}
+                    Send your funds to a different address.{' '}
+                    <b>This is not standard.</b> Be sure you mean to send it
+                    here.
                   </span>
                 }
               >
-                <QuestionMarkCircleIcon className="h-4 w-4 text-slate-400" />
+                <ExclamationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </span>
-            {DestinationAddressLabel}
           </div>
           <div
             className={twMerge(
-              'mt-1 flex h-full flex-row items-center rounded',
+              'mt-1 flex w-full rounded-lg px-2 py-1 shadow-input',
               destAddressInputClassName
             )}
           >
             <input
               type="string"
-              className="w-full rounded px-2 py-1"
+              className="w-full"
               // we want to keep the input empty for the same wallet address
               // placeholder only displays it to the user for assurance
               placeholder={!isSmartContractWallet ? walletAddress : undefined}

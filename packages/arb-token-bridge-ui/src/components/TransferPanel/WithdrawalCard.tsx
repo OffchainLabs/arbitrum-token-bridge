@@ -108,7 +108,7 @@ export function WithdrawalCardContainer({
         {/* Logo watermark */}
         <Image
           src={getNetworkLogo(ChainId.Mainnet)}
-          className="absolute left-0 top-[1px] z-10 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:opacity-[60%]"
+          className="absolute left-0 top-[1px] z-10 mr-4 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[0.5rem] lg:scale-[1.5] lg:opacity-[60%]"
           alt="Withdrawal"
           width={90}
           height={90}
@@ -119,7 +119,7 @@ export function WithdrawalCardContainer({
 
       {!isTransferPanelVisible && (
         <button
-          className="arb-hover absolute bottom-4 right-4 text-blue-arbitrum underline"
+          className="arb-hover absolute bottom-4 right-4 text-ocl-blue underline"
           onClick={() => {
             trackEvent('Move More Funds Click')
             closeTransactionHistoryPanel()
