@@ -29,8 +29,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     app: { arbTokenBridge }
   } = useAppState()
 
-  const walletAddress = arbTokenBridge.walletAddress
-
   const allowanceParsed =
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
@@ -65,7 +63,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setEstimatedGas(
           await approveTokenEstimateGas({
             erc20L1Address: token.address,
-            address: walletAddress,
+            address: arbTokenBridge.walletAddress,
             l1Provider: l1.provider,
             l2Provider: l2.provider
           })
@@ -80,7 +78,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     arbTokenBridge.token,
     l1.provider,
     l2.provider,
-    walletAddress
+    arbTokenBridge.walletAddress
   ])
 
   function closeWithReset(confirmed: boolean) {
