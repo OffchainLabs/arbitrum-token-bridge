@@ -859,7 +859,9 @@ export function TransferPanelMain({
       <NetworkContainer
         network={to}
         balanceFor={
-          walletAddress !== destinationAddress ? destinationAddress : undefined
+          walletAddress && walletAddress.toLowerCase() !== destinationAddress
+            ? destinationAddress
+            : undefined
         }
       >
         <NetworkListboxPlusBalancesContainer>

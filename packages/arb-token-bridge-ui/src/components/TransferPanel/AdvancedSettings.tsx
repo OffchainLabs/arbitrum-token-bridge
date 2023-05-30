@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/solid'
 import {
   ArrowTopRightOnSquareIcon,
-  ExclamationCircleIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
@@ -17,7 +17,6 @@ import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl } from '../../util/networks'
-import { shortenAddress } from '../../util/CommonUtils'
 
 const AdvancedSettings = ({
   destinationAddress,
@@ -105,7 +104,7 @@ const AdvancedSettings = ({
                   </span>
                 }
               >
-                <ExclamationCircleIcon className="h-4 w-4" />
+                <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </span>
           </div>
@@ -118,13 +117,6 @@ const AdvancedSettings = ({
             <input
               type="string"
               className="w-full"
-              // we want to keep the input empty for the same wallet address
-              // placeholder only displays it to the user for assurance
-              placeholder={
-                !isSmartContractWallet && walletAddress
-                  ? shortenAddress(walletAddress)
-                  : undefined
-              }
               defaultValue={destinationAddress}
               spellCheck={false}
               disabled={disabled && !isSmartContractWallet}
