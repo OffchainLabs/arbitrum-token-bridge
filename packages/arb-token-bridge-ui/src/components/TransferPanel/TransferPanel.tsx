@@ -26,7 +26,7 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
-import { TransferPanelSummary } from './TransferPanelSummary'
+import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import {
@@ -43,7 +43,6 @@ import {
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useGasEstimationSummary } from '../../hooks/useGasEstimationSummary'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -719,7 +718,7 @@ export function TransferPanel() {
     [isDepositMode, l1Balance, amount, l2Balance]
   )
 
-  const gasSummary = useGasEstimationSummary(
+  const gasSummary = useGasSummary(
     amountBigNumber,
     selectedToken,
     shouldRunGasEstimation
