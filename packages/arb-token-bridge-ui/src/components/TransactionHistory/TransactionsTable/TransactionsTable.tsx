@@ -85,7 +85,7 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
 
   const {
     app: { mergedTransactions: locallyStoredTransactions }

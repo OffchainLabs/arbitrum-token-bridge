@@ -138,7 +138,7 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
 
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id

@@ -326,7 +326,7 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
