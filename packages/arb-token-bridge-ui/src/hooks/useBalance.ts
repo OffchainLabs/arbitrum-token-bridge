@@ -15,6 +15,11 @@ type Erc20Balances = {
   [address: string]: BigNumber | undefined
 }
 
+export type UseBalanceProps = {
+  provider: Provider
+  walletAddress: string | undefined
+}
+
 const merge: Middleware = (useSWRNext: SWRHook) => {
   return (key, fetcher, config) => {
     const { cache } = useSWRConfig()
@@ -35,13 +40,7 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
   }
 }
 
-const useBalance = ({
-  provider,
-  walletAddress
-}: {
-  provider: Provider
-  walletAddress: string | undefined
-}) => {
+const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),

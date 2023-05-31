@@ -16,7 +16,7 @@ function getClassNameForVariant(variant: ButtonVariant) {
 
 const defaultClassName = 'arb-hover w-max rounded-lg px-4 py-3 text-sm'
 const disabledClassName =
-  'disabled:bg-gray-5 disabled:text-white disabled:cursor-not-allowed'
+  'disabled:bg-gray-3 disabled:text-white disabled:cursor-not-allowed'
 
 type ButtonLoadingProps = Partial<{
   loaderColor: string

@@ -42,7 +42,7 @@ export function HeaderMenuDesktop(
                     {...item.anchorProps}
                     target="_blank"
                     rel="noreferrer"
-                    className="-mx-6 block cursor-pointer px-6 py-1 font-medium hover:bg-blue-arbitrum hover:text-white"
+                    className="-mx-6 block cursor-pointer px-6 py-1 font-medium hover:bg-ocl-blue hover:text-white"
                   >
                     {item.title}
                   </a>
@@ -63,7 +63,7 @@ export function HeaderMenuDesktop(
                         href={subitem.anchorProps?.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="-mx-6 block py-1 pl-10 pr-6 font-light hover:bg-blue-arbitrum hover:text-white"
+                        className="-mx-6 block py-1 pl-10 pr-6 font-light hover:bg-ocl-blue hover:text-white"
                       >
                         {subitem.title}
                       </a>
@@ -94,7 +94,7 @@ export function HeaderMenuMobile(
             <span
               className={twMerge(
                 `flex flex-row flex-nowrap items-center space-x-4 text-2xl font-medium`,
-                open ? `text-blue-arbitrum` : `text-white`
+                open ? `text-ocl-blue` : `text-white`
               )}
             >
               {props.children}

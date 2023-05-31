@@ -15,6 +15,7 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -32,7 +33,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const { isMainnet } = isNetwork(l1.network.id)
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -58,17 +59,26 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     async function getEstimatedGas() {
-      if (arbTokenBridge.token && token?.address) {
+      if (token?.address) {
         setEstimatedGas(
-          await arbTokenBridge.token.approveEstimateGas({
-            erc20L1Address: token.address
+          await approveTokenEstimateGas({
+            erc20L1Address: token.address,
+            address: arbTokenBridge.walletAddress,
+            l1Provider: l1.provider,
+            l2Provider: l2.provider
           })
         )
       }
     }
 
     getEstimatedGas()
-  }, [isOpen, token?.address])
+  }, [
+    isOpen,
+    token?.address,
+    l1.provider,
+    l2.provider,
+    arbTokenBridge.walletAddress
+  ])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -93,7 +103,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             alt={`${token?.name} logo`}
             className="h-8 w-8 grow-0 rounded-full"
             fallback={
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-arbitrum text-sm font-medium text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
                 ?
               </div>
             }

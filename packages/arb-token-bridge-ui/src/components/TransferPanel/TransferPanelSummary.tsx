@@ -12,6 +12,10 @@ import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
+import { depositEthEstimateGas } from '../../util/EthDepositUtils'
+import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
+import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -40,6 +44,7 @@ export function useGasSummary(
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
+  const walletAddress = arbTokenBridge.walletAddress
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -108,18 +113,19 @@ export function useGasSummary(
 
         if (isDepositMode) {
           if (token) {
-            const estimateGasResult =
-              await arbTokenBridge.token.depositEstimateGas({
-                erc20L1Address: token.address,
-                amount: amountDebounced
-              })
+            const estimateGasResult = await depositTokenEstimateGas({
+              l1Provider: l1.provider,
+              l2Provider: l2.provider
+            })
 
             setResult(estimateGasResult)
           } else {
-            const estimateGasResult =
-              await arbTokenBridge.eth.depositEstimateGas({
-                amount: amountDebounced
-              })
+            const estimateGasResult = await depositEthEstimateGas({
+              amount: amountDebounced,
+              address: walletAddress,
+              l1Provider: l1.provider,
+              l2Provider: l2.provider
+            })
 
             setResult(estimateGasResult)
           }
@@ -142,11 +148,12 @@ export function useGasSummary(
                 estimatedL2Gas: BigNumber.from(10_000)
               }
             } else {
-              estimateGasResult =
-                await arbTokenBridge.token.withdrawEstimateGas({
-                  erc20L1Address: token.address,
-                  amount: amountDebounced
-                })
+              estimateGasResult = await withdrawTokenEstimateGas({
+                amount: amountDebounced,
+                erc20L1Address: token.address,
+                address: walletAddress,
+                l2Provider: l2.provider
+              })
             }
 
             setResult({
@@ -154,10 +161,11 @@ export function useGasSummary(
               estimatedL2SubmissionCost: constants.Zero
             })
           } else {
-            const estimateGasResult =
-              await arbTokenBridge.eth.withdrawEstimateGas({
-                amount: amountDebounced
-              })
+            const estimateGasResult = await withdrawEthEstimateGas({
+              amount: amountDebounced,
+              address: walletAddress,
+              l2Provider: l2.provider
+            })
 
             setResult({
               ...estimateGasResult,
@@ -176,13 +184,17 @@ export function useGasSummary(
     if (arbTokenBridge && arbTokenBridge.eth && arbTokenBridge.token) {
       estimateGas()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    isDepositMode,
-    amount,
+    // Re-run gas estimation when:
+    isDepositMode, // when user switches deposit/withdraw mode
+    amount, // when user changes the amount (check against the debounced value)
     amountDebounced,
-    token,
-    shouldRunGasEstimation,
-    latestNetworksAndSigners
+    token, // when the token changes
+    shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
+    l1.network.id, // when L1 and L2 network id changes
+    l2.network.id,
+    walletAddress // when user switches account
   ])
 
   return {
@@ -211,7 +223,7 @@ function TransferPanelSummaryContainer({
   return (
     <>
       <div className="block lg:hidden">
-        <span className="text-xl text-gray-10 lg:text-2xl">Summary</span>
+        <span className="text-xl text-gray-dark lg:text-2xl">Summary</span>
         <div className="h-4" />
       </div>
 
@@ -246,7 +258,7 @@ export function TransferPanelSummary({
   const { isMainnet } = isNetwork(l1.network.id)
 
   if (status === 'loading') {
-    const bgClassName = app.isDepositMode ? 'bg-blue-arbitrum' : 'bg-eth-dark'
+    const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
@@ -263,7 +275,7 @@ export function TransferPanelSummary({
           <>
             <div>
               <div className="h-2" />
-              <div className="lg:border-b lg:border-gray-3" />
+              <div className="lg:border-b lg:border-gray-2" />
               <div className="h-2" />
             </div>
             <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
@@ -275,7 +287,7 @@ export function TransferPanelSummary({
 
   return (
     <TransferPanelSummaryContainer>
-      <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
+      <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
         <span className="w-2/5 font-light">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span>
@@ -290,7 +302,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      <div className="flex flex-row items-center justify-between text-sm text-gray-10 lg:text-base">
+      <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
         <span className="w-2/5 font-light">You’ll pay in gas fees</span>
         <div className="flex w-3/5 justify-between">
           <span>
@@ -306,7 +318,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 text-sm text-gray-9 lg:text-base">
+      <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light">L1 gas</span>
@@ -327,7 +339,7 @@ export function TransferPanelSummary({
             )}
           </div>
         </div>
-        <div className="flex flex-row justify-between text-gray-9">
+        <div className="flex flex-row justify-between text-gray-dark">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light ">L2 gas</span>
             <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
@@ -353,11 +365,13 @@ export function TransferPanelSummary({
         <>
           <div>
             <div className="h-2" />
-            <div className="border-b border-gray-10" />
+            <div className="border-b border-gray-5" />
             <div className="h-2" />
           </div>
-          <div className="flex flex-row justify-between text-sm text-gray-10 lg:text-base">
-            <span className="w-2/5 font-light text-gray-9">Total amount</span>
+          <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+            <span className="w-2/5 font-light text-gray-dark">
+              Total amount
+            </span>
             <div className="flex w-3/5 flex-row justify-between">
               <span>
                 {formatAmount(amount + estimatedTotalGasFees, {

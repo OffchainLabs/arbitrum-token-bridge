@@ -46,6 +46,8 @@ import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedWithSmartContractWallet } from '../../hooks/useIsConnectedWithSmartContractWallet'
+import { depositEthEstimateGas } from '../../util/EthDepositUtils'
+import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -53,7 +55,7 @@ export function SwitchNetworksButton(
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-6 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
+      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
       {...props}
     >
       <ArrowsUpDownIcon className="text-dark" />
@@ -384,20 +386,24 @@ export function TransferPanelMain({
       estimatedL2SubmissionCost: BigNumber
     }> => {
       if (isDepositMode) {
-        const result = await arbTokenBridge.eth.depositEstimateGas({
-          amount: weiValue
+        const result = await depositEthEstimateGas({
+          amount: weiValue,
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
         })
-
         return result
       }
 
-      const result = await arbTokenBridge.eth.withdrawEstimateGas({
-        amount: weiValue
+      const result = await withdrawEthEstimateGas({
+        amount: weiValue,
+        address: walletAddress,
+        l2Provider: l2.provider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [arbTokenBridge.eth, isDepositMode]
+    [isDepositMode, walletAddress, l1.provider, l2.provider]
   )
 
   const setMaxAmount = useCallback(async () => {
@@ -854,9 +860,9 @@ export function TransferPanelMain({
               !isSmartContractWallet &&
               setShowAdvancedSettings(!showAdvancedSettings)
             }
-            className="flex flex-row items-center"
+            className="flex flex-row items-center text-gray-dark"
           >
-            <span className=" text-lg">Advanced Settings</span>
+            <span className="text-lg font-semibold">Advanced Settings</span>
             {showAdvancedSettings ? (
               <ChevronUpIcon className="ml-1 h-4 w-4" />
             ) : (
@@ -866,12 +872,12 @@ export function TransferPanelMain({
           {showAdvancedSettings && (
             <>
               <div className="mt-2">
-                <span className="text-md text-gray-10">
+                <span className="text-md text-gray-dark">
                   Destination Address
                   {!isSmartContractWallet ? ' (optional)' : ''}
                 </span>
                 <input
-                  className="mt-1 w-full rounded border border-gray-6 px-2 py-1"
+                  className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
                   placeholder="Enter destination address"
                   defaultValue={destinationAddress}
                   spellCheck={false}

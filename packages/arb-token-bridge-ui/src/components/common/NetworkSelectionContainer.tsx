@@ -46,38 +46,40 @@ export const NetworkSelectionContainer = ({
 
       <Transition>
         <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
-          {({ close }) =>
-            supportedNetworks?.map((chainId, i) => (
-              <div // TODO: replace with button
-                key={chainId}
-                className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
-                onClick={() => {
-                  handleClick(chainId, close)
-                }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.keyCode === 13) {
+          {({ close }) => (
+            <>
+              {supportedNetworks?.map((chainId, i) => (
+                <div // TODO: replace with button
+                  key={chainId}
+                  className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
+                  onClick={() => {
                     handleClick(chainId, close)
-                  }
-                }}
-                role="button"
-                tabIndex={i}
-                aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
-              >
-                <div className="flex h-6 w-6 items-center justify-center lg:h-8 lg:w-8">
-                  <Image
-                    src={getNetworkLogo(Number(chainId))}
-                    alt={`${getNetworkName(Number(chainId))} logo`}
-                    className="h-full w-auto"
-                    width={24}
-                    height={24}
-                  />
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.keyCode === 13) {
+                      handleClick(chainId, close)
+                    }
+                  }}
+                  role="button"
+                  tabIndex={i}
+                  aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
+                >
+                  <div className="flex h-6 w-6 items-center justify-center lg:h-8 lg:w-8">
+                    <Image
+                      src={getNetworkLogo(Number(chainId))}
+                      alt={`${getNetworkName(Number(chainId))} logo`}
+                      className="h-full w-auto"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <span className="whitespace-nowrap">
+                    {getNetworkName(Number(chainId))}
+                  </span>
                 </div>
-                <span className="whitespace-nowrap">
-                  {getNetworkName(Number(chainId))}
-                </span>
-              </div>
-            ))
-          }
+              ))}
+            </>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>

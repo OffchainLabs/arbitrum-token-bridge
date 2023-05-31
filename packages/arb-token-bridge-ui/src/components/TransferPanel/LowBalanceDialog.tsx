@@ -58,7 +58,7 @@ function ExternalLinkCard({
         }
       }}
     >
-      <div className="flex flex-col space-y-1 rounded-lg border border-gray-6 bg-white p-1">
+      <div className="flex flex-col space-y-1 rounded-lg border border-gray-4 bg-white p-1">
         <div className="flex w-full justify-between">
           <div className="w-4" />
           <Image
@@ -68,7 +68,7 @@ function ExternalLinkCard({
             width={40}
             height={40}
           />
-          <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-6" />
+          <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-4" />
         </div>
         <div className="flex w-full justify-center">
           <span className="text-xs sm:text-base">{title}</span>
@@ -112,7 +112,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="flex w-full flex-col items-center space-y-2">
           <div className="flex flex-row space-x-2">
             <Image
-              src="/icons/ethereum.webp"
+              src="/images/EthereumLogo.svg"
               alt="Ethereum"
               className="h-8 w-auto opacity-50"
               width={32}
@@ -134,14 +134,14 @@ export function LowBalanceDialog(props: UseDialogProps) {
         <div className="h-4" />
         <div className="flex flex-col space-y-4">
           <button
-            className="arb-hover flex w-full items-center justify-between rounded-lg bg-gray-3 p-4 text-left text-xl text-blue-arbitrum"
+            className="arb-hover flex w-full items-center justify-between rounded-lg bg-gray-2 p-4 text-left text-xl text-ocl-blue"
             onClick={() => props.onClose(false)}
           >
             <span>Go to bridge</span>
-            <ArrowRightIcon className="h-8 w-8 text-blue-arbitrum" />
+            <ArrowRightIcon className="h-8 w-8 text-ocl-blue" />
           </button>
-          <div className="rounded-lg bg-gray-3 p-4">
-            <span className="text-xl text-blue-arbitrum">Skip the bridge</span>
+          <div className="rounded-lg bg-gray-2 p-4">
+            <span className="text-xl text-ocl-blue">Skip the bridge</span>
             <div className="h-2" />
             <p className="pb-1 font-light text-dark">
               Given your wallet balance, bridging gas fees (~$2-5) might not be
