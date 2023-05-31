@@ -19,9 +19,9 @@ export function useIsConnectedWithSmartContractWallet() {
       }
 
       const nonce = await provider.getTransactionCount(address)
-      const isMaybeCounterfactualWallet = nonce === 0
+      const isMaybeUndeployedSmartContractWallet = nonce === 0
 
-      if (isMaybeCounterfactualWallet) {
+      if (isMaybeUndeployedSmartContractWallet) {
         try {
           await signMessageAsync({ message: 'TODO: What message?' })
         } catch (error) {
