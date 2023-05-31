@@ -59,7 +59,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     async function getEstimatedGas() {
-      if (arbTokenBridge.token && token?.address) {
+      if (token?.address) {
         setEstimatedGas(
           await approveTokenEstimateGas({
             erc20L1Address: token.address,
@@ -75,7 +75,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }, [
     isOpen,
     token?.address,
-    arbTokenBridge.token,
     l1.provider,
     l2.provider,
     arbTokenBridge.walletAddress
