@@ -11,9 +11,11 @@ export function useIsConnectedWithSmartContractWallet() {
 
   useEffect(() => {
     async function update() {
-      if (typeof address !== 'undefined') {
-        setResult(await addressIsSmartContract(address, provider))
-      }
+      setResult(
+        typeof address !== 'undefined'
+          ? await addressIsSmartContract(address, provider)
+          : undefined
+      )
     }
 
     update()
