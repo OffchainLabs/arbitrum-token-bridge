@@ -1,6 +1,6 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
 import { Chain } from 'wagmi'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
@@ -10,11 +10,9 @@ import {
   EthBridger,
   Erc20Bridger,
   L1ToL2MessageStatus,
-  L2ToL1Message,
-  getL2Network
+  L2ToL1Message
 } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -215,23 +213,6 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function depositEthEstimateGas({ amount }: { amount: BigNumber }) {
-    const ethBridger = await EthBridger.fromProvider(l2.provider)
-
-    const depositRequest = await ethBridger.getDepositRequest({
-      amount,
-      from: walletAddress
-    })
-
-    const estimatedL1Gas = await l1.provider.estimateGas(
-      depositRequest.txRequest
-    )
-
-    const estimatedL2Gas = constants.Zero
-    const estimatedL2SubmissionCost = constants.Zero
-    return { estimatedL1Gas, estimatedL2Gas, estimatedL2SubmissionCost }
-  }
-
   async function withdrawEth({
     amount,
     l2Signer,
@@ -316,25 +297,6 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function withdrawEthEstimateGas({ amount }: { amount: BigNumber }) {
-    const ethBridger = await EthBridger.fromProvider(l2.provider)
-
-    const withdrawalRequest = await ethBridger.getWithdrawalRequest({
-      amount,
-      destinationAddress: walletAddress,
-      from: walletAddress
-    })
-
-    // Can't do this atm. Hardcoded to 130_000.
-    const estimatedL1Gas = BigNumber.from(130_000)
-
-    const estimatedL2Gas = await l2.provider.estimateGas(
-      withdrawalRequest.txRequest
-    )
-
-    return { estimatedL1Gas, estimatedL2Gas }
-  }
-
   const approveToken = async ({
     erc20L1Address,
     l1Signer
@@ -371,25 +333,6 @@ export const useArbTokenBridge = (
 
     updateTransaction(receipt, tx)
     updateTokenData(erc20L1Address)
-  }
-
-  const approveTokenEstimateGas = async ({
-    erc20L1Address
-  }: {
-    erc20L1Address: string
-  }) => {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-
-    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-      erc20L1Address,
-      l1.provider
-    )
-
-    const contract = ERC20__factory.connect(erc20L1Address, l1.provider)
-
-    return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
-      from: walletAddress
-    })
   }
 
   const approveTokenL2 = async ({
@@ -519,49 +462,6 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function depositTokenEstimateGas() {
-    const l1BaseFee = await l1.provider.getGasPrice()
-    const l2Network = await getL2Network(l2.provider)
-
-    const inbox = Inbox__factory.connect(l2Network.ethBridge.inbox, l1.provider)
-
-    const estimatedL2SubmissionCost =
-      await inbox.calculateRetryableSubmissionFee(
-        // Values set by looking at a couple of L1 gateways
-        //
-        // L1 LPT Gateway: 324
-        // L1 DAI Gateway: 324
-        // L1 Standard Gateway (APE): 740
-        // L1 Custom Gateway (USDT): 324
-        // L1 WETH Gateway: 324
-        BigNumber.from(1_000),
-        // We do the same percent increase in the SDK
-        //
-        // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
-        l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
-      )
-
-    return {
-      // Values set by looking at a couple of different ERC-20 deposits
-      //
-      // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
-      // https://etherscan.io/tx/0x0049a5a171b891c5826ba47e77871fa6bae6eb57fcaf474a97d62ab07a815a2c
-      // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
-      // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
-      // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
-      estimatedL1Gas: BigNumber.from(240_000),
-      // Values set by looking at a couple of different ERC-20 deposits
-      //
-      // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
-      // https://arbiscan.io/tx/0xd2ba11ebc51f546abc2ddda715507948d097e5707fd1dc37c239cc4cf28cc6ed
-      // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
-      // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
-      // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-      estimatedL2Gas: BigNumber.from(100_000),
-      estimatedL2SubmissionCost
-    }
-  }
-
   async function withdrawToken({
     erc20L1Address,
     amount,
@@ -675,30 +575,6 @@ export const useArbTokenBridge = (
       }
       console.warn('withdraw token err', error)
     }
-  }
-
-  async function withdrawTokenEstimateGas({
-    amount,
-    erc20L1Address
-  }: {
-    amount: BigNumber
-    erc20L1Address: string
-  }) {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    const estimatedL1Gas = BigNumber.from(160_000)
-
-    const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
-      amount,
-      destinationAddress: walletAddress,
-      erc20l1Address: erc20L1Address,
-      from: walletAddress
-    })
-
-    const estimatedL2Gas = await l2.provider.estimateGas(
-      withdrawalRequest.txRequest
-    )
-
-    return { estimatedL1Gas, estimatedL2Gas }
   }
 
   const removeTokensFromList = (listID: number) => {
@@ -1079,9 +955,7 @@ export const useArbTokenBridge = (
     bridgeTokens,
     eth: {
       deposit: depositEth,
-      depositEstimateGas: depositEthEstimateGas,
       withdraw: withdrawEth,
-      withdrawEstimateGas: withdrawEthEstimateGas,
       triggerOutbox: triggerOutboxEth
     },
     token: {
@@ -1090,12 +964,9 @@ export const useArbTokenBridge = (
       removeTokensFromList,
       updateTokenData,
       approve: approveToken,
-      approveEstimateGas: approveTokenEstimateGas,
       approveL2: approveTokenL2,
       deposit: depositToken,
-      depositEstimateGas: depositTokenEstimateGas,
       withdraw: withdrawToken,
-      withdrawEstimateGas: withdrawTokenEstimateGas,
       triggerOutbox: triggerOutboxToken
     },
     pendingWithdrawalsMap: pendingWithdrawalsMap,
