@@ -94,6 +94,10 @@ function NetworkListbox({
     return 'bg-arb-one-primary'
   }, [value])
 
+  if (options.length === 0) {
+    disabled = true
+  }
+
   const getOptionClassName = useCallback(
     (index: number) => {
       if (index === 0) {
@@ -626,8 +630,8 @@ export function TransferPanelMain({
     }
 
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
-      // Add L1 network to the list
-      return [l1.network, ...options]
+      // Add L1 network to the list for EOA
+      return [...(!isSmartContractWallet ? [l1.network] : []), ...options]
         .filter(option => {
           // Remove selected network from the list
           return option.id !== selectedChainId
@@ -789,14 +793,19 @@ export function TransferPanelMain({
     setQueryParams,
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
-    isConnectedToArbitrum
+    isConnectedToArbitrum,
+    isSmartContractWallet
   ])
 
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="From:" {...networkListboxProps.from} />
+          <NetworkListbox
+            label="From:"
+            {...networkListboxProps.from}
+            disabled={isSmartContractWallet}
+          />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
               <StyledLoader />
@@ -850,10 +859,12 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
-        <SwitchNetworksButton
-          onClick={switchNetworksOnTransferPanel}
-          aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
-        />
+        {!isSmartContractWallet && (
+          <SwitchNetworksButton
+            onClick={switchNetworksOnTransferPanel}
+            aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
+          />
+        )}
       </div>
 
       <NetworkContainer
