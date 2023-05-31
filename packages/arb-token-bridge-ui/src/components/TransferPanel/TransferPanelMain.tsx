@@ -465,13 +465,7 @@ export function TransferPanelMain({
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
-    () => {
-      if (typeof isSmartContractWallet === 'undefined') {
-        setShowAdvancedSettings(false)
-      } else {
-        setShowAdvancedSettings(isSmartContractWallet)
-      }
-    },
+    () => setShowAdvancedSettings(isSmartContractWallet),
     [isSmartContractWallet]
   )
 
