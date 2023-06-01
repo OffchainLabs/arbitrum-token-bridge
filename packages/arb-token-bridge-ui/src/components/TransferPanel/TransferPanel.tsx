@@ -43,6 +43,7 @@ import {
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { networkConnectionWarningToast } from '../common/atoms/Toast'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -432,7 +433,7 @@ export function TransferPanel() {
         if (
           !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
         if (selectedToken) {
           const { decimals } = selectedToken
@@ -596,7 +597,7 @@ export function TransferPanel() {
         if (
           !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
 
         if (selectedToken) {

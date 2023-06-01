@@ -5,6 +5,7 @@ import { useSigner } from 'wagmi'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { errorToast } from 'src/components/common/atoms/Toast'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
@@ -24,7 +25,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     }
 
     if (tx.uniqueId === null) {
-      return alert("Can't find withdrawal")
+      return errorToast("Can't find withdrawal transaction.")
     }
 
     let res, err
@@ -59,7 +60,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
 
     Sentry.captureException(err)
     if (!res) {
-      alert(`Cannot claim withdrawal: ${err?.message ?? err}`)
+      errorToast(`Can't claim withdrawal: ${err?.message ?? err}`)
     }
   }
 

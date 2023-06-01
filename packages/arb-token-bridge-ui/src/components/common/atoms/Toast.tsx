@@ -1,7 +1,22 @@
 import { ToastContainer, toast } from 'react-toastify'
 
-export const errorToast = (message: string) => {
+import { ExternalLink } from '../ExternalLink'
+import { GET_HELP_LINK } from '../../../constants'
+
+export const networkConnectionWarningToast = () =>
+  warningToast(
+    <>
+      Network connection issue. Please contact{' '}
+      <ExternalLink href={GET_HELP_LINK}>support</ExternalLink>.
+    </>
+  )
+
+export const errorToast = (message: React.ReactNode) => {
   toast.error(message)
+}
+
+export const warningToast = (message: React.ReactNode) => {
+  toast.warning(message)
 }
 
 export const Toast = () => {
