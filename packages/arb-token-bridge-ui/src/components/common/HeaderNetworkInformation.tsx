@@ -12,11 +12,13 @@ export function HeaderNetworkInformation() {
     return null
   }
 
+  const isSmartContractWallet = false // TODO: Change this
+
   const networkName = getNetworkName(chain.id)
 
   return (
     <div
-      className="flex w-max flex-row items-center justify-center space-x-3 rounded-full text-white lg:bg-dark lg:px-4 lg:py-2 "
+      className="flex w-max flex-row items-center justify-center space-x-3 rounded-full text-white lg:bg-dark lg:px-4 lg:py-2"
       aria-label={`Selected Network : ${networkName}`}
     >
       <div
@@ -34,11 +36,16 @@ export function HeaderNetworkInformation() {
         />
       </div>
 
-      <span className="text-2xl font-medium lg:text-base lg:font-normal">
+      <span
+        className={twMerge(
+          'text-2xl font-medium lg:text-base lg:font-normal',
+          isSmartContractWallet ? 'pr-2' : ''
+        )}
+      >
         {networkName}
       </span>
 
-      <ChevronDownIcon className="h-4 w-4" />
+      {!isSmartContractWallet && <ChevronDownIcon className="h-4 w-4" />}
     </div>
   )
 }

@@ -221,7 +221,7 @@ function NetworkContainer({
           )}
         >
           <span>
-            Showing balance for Destination Address:{' '}
+            Showing balance for Custom Destination Address:{' '}
             <ExternalLink className="underline" href={explorerUrl}>
               {shortenAddress(balanceFor)}
             </ExternalLink>

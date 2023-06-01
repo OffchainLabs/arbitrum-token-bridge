@@ -7,6 +7,7 @@ import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { Provider, JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
@@ -42,7 +43,9 @@ import {
   getL2GatewayAddress
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
+import { useTokenLists } from '../..//hooks/useTokenLists'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { BLACKLISTED_DESTINATION_ADDRESSES } from './blacklistAddresses'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -92,27 +95,31 @@ const getSmartContractTransferError = async ({
   to,
   l1Provider,
   l2Provider,
-  isDeposit
+  isDeposit,
+  blockedToAddresses
 }: {
   from: string
   to?: string
   l1Provider: Provider
   l2Provider: Provider
   isDeposit: boolean
+  blockedToAddresses: string[]
 }): Promise<TransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
-  const providerTo = isDeposit ? l2Provider : l1Provider
-  if (!isAddress(String(to))) {
+  if (!to) {
     return TransferValidationErrors.SC_MISSING_ADDRESS
+  }
+  if (!isAddress(to)) {
+    return TransferValidationErrors.INVALID_ADDRESS
+  }
+  if (blockedToAddresses.includes(to.toLowerCase())) {
+    return TransferValidationErrors.BLOCKED_TO_ADDRESS
   }
   if (!isAddress(from)) {
     return TransferValidationErrors.GENERIC_ERROR
   }
   if (!(await addressIsSmartContract(from, providerFrom))) {
     return TransferValidationErrors.GENERIC_ERROR
-  }
-  if (!(await addressIsSmartContract(String(to), providerTo))) {
-    return TransferValidationErrors.SC_INVALID_ADDRESS
   }
   return null
 }
@@ -122,17 +129,25 @@ const getEOATransferError = async ({
   to,
   l1Provider,
   l2Provider,
-  isDeposit
+  isDeposit,
+  blockedToAddresses
 }: {
   from: string
   to?: string
   l1Provider: Provider
   l2Provider: Provider
   isDeposit: boolean
+  blockedToAddresses: string[]
 }): Promise<TransferValidationErrors | null> => {
+  if (!to) {
+    return null
+  }
   const providerFrom = isDeposit ? l1Provider : l2Provider
-  if (to && !isAddress(to)) {
-    return TransferValidationErrors.EOA_INVALID_ADDRESS
+  if (!isAddress(to)) {
+    return TransferValidationErrors.INVALID_ADDRESS
+  }
+  if (blockedToAddresses.includes(to.toLowerCase())) {
+    return TransferValidationErrors.BLOCKED_TO_ADDRESS
   }
   if (!isAddress(from)) {
     return TransferValidationErrors.GENERIC_ERROR
@@ -240,6 +255,33 @@ export function TransferPanel() {
     return isDepositMode ? ethL1Balance : ethL2Balance
   }, [ethL1Balance, ethL2Balance, isDepositMode])
 
+  const tokenLists = useTokenLists((isDepositMode ? l2Network : l1Network).id)
+
+  const tokenListsAddresses = useMemo(() => {
+    return tokenLists.data
+      ?.map(list => list.tokens.map(token => token.address))
+      .flat()
+  }, [tokenLists])
+
+  // list of disallowed destination addresses
+  const destinationAddressBlacklist = useMemo(() => {
+    const blacklist: string[] = [...BLACKLISTED_DESTINATION_ADDRESSES]
+    const networkObject = l2Networks[l2Network.id]
+    if (networkObject) {
+      const { ethBridge, tokenBridge } = networkObject
+      const { classicOutboxes } = ethBridge
+      if (classicOutboxes) {
+        blacklist.push(...Object.keys(classicOutboxes))
+      }
+      delete ethBridge.classicOutboxes
+      blacklist.push(...Object.values(ethBridge), ...Object.values(tokenBridge))
+    }
+    if (tokenListsAddresses) {
+      blacklist.push(...tokenListsAddresses)
+    }
+    return blacklist.map(address => address.toLowerCase())
+  }, [tokenListsAddresses, l2Network])
+
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
   function clearAmountInput() {
@@ -268,7 +310,8 @@ export function TransferPanel() {
         to: destinationAddress,
         l1Provider,
         l2Provider,
-        isDeposit: isDepositMode
+        isDeposit: isDepositMode,
+        blockedToAddresses: destinationAddressBlacklist
       }
       const error = await (isSmartContractWallet
         ? getSmartContractTransferError(funcProps)
@@ -287,7 +330,8 @@ export function TransferPanel() {
     l1Provider,
     l2Provider,
     walletAddress,
-    isSmartContractWallet
+    isSmartContractWallet,
+    destinationAddressBlacklist
   ])
 
   useEffect(() => {
@@ -447,7 +491,8 @@ export function TransferPanel() {
       from: walletAddress,
       to: destinationAddress,
       l1Provider,
-      l2Provider
+      l2Provider,
+      blockedToAddresses: destinationAddressBlacklist
     }
 
     try {

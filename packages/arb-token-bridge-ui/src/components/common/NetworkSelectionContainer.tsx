@@ -10,6 +10,7 @@ import {
   getSupportedNetworks
 } from '../../util/networks'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export const NetworkSelectionContainer = ({
   children
@@ -21,6 +22,7 @@ export const NetworkSelectionContainer = ({
   const supportedNetworks = getSupportedNetworks(chain?.id).filter(
     chainId => chainId !== chain?.id
   )
+  const { isSmartContractWallet } = useNetworksAndSigners()
 
   const handleClick = useCallback(
     (
@@ -40,7 +42,10 @@ export const NetworkSelectionContainer = ({
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0">
+      <Popover.Button
+        disabled={isSmartContractWallet}
+        className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
+      >
         {children}
       </Popover.Button>
 

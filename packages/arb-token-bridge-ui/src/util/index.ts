@@ -8,8 +8,8 @@ export enum ConnectionState {
 
 export enum TransferValidationErrors {
   GENERIC_ERROR = 'Something went wrong. Try again later.',
-  EOA_INVALID_ADDRESS = 'The destination address is not valid.',
-  SC_INVALID_ADDRESS = 'The destination address is not valid. A valid smart contract address is required.',
+  INVALID_ADDRESS = 'The destination address is not valid.',
+  BLOCKED_TO_ADDRESS = 'The destination address is not a valid wallet address. Make sure the provided address is correct.',
   SC_MISSING_ADDRESS = 'The destination address is required for smart contract transfers.'
 }
 
