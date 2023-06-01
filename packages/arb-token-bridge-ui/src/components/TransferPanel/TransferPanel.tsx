@@ -45,6 +45,7 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { useTokenLists } from '../..//hooks/useTokenLists'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedWithSmartContractWallet } from '../../hooks/useIsConnectedWithSmartContractWallet'
 import { BLACKLISTED_DESTINATION_ADDRESSES } from './blacklistAddresses'
 
 const onTxError = (error: any) => {
@@ -203,9 +204,10 @@ export function TransferPanel() {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider },
-    isSmartContractWallet
+    l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
+
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id

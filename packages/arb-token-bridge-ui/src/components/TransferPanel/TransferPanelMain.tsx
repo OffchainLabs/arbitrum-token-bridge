@@ -45,6 +45,9 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedWithSmartContractWallet } from '../../hooks/useIsConnectedWithSmartContractWallet'
+import { depositEthEstimateGas } from '../../util/EthDepositUtils'
+import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -367,8 +370,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
-    useNetworksAndSigners()
+  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -460,20 +463,24 @@ export function TransferPanelMain({
       estimatedL2SubmissionCost: BigNumber
     }> => {
       if (isDepositMode) {
-        const result = await arbTokenBridge.eth.depositEstimateGas({
-          amount: weiValue
+        const result = await depositEthEstimateGas({
+          amount: weiValue,
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
         })
-
         return result
       }
 
-      const result = await arbTokenBridge.eth.withdrawEstimateGas({
-        amount: weiValue
+      const result = await withdrawEthEstimateGas({
+        amount: weiValue,
+        address: walletAddress,
+        l2Provider: l2.provider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [arbTokenBridge.eth, isDepositMode]
+    [isDepositMode, walletAddress, l1.provider, l2.provider]
   )
 
   const setMaxAmount = useCallback(async () => {
