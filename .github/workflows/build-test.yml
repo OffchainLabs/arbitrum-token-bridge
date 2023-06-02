@@ -31,7 +31,7 @@ jobs:
           files=`git diff --name-only HEAD^ HEAD`
           echo "$files"
           for file in $files; do
-            if [[ $file != packages/* ]] && [[ $file != yarn.lock ]]; then
+            if [[ $file != packages/* ]] || [[ $file =~ .*\.(lock$|md$|yml$|svg$|png$|webp$|gif$|txt$) ]]; then
             echo "run_tests=false" >> $GITHUB_OUTPUT
           else
             echo "run_tests=true" >> $GITHUB_OUTPUT
