@@ -32,17 +32,9 @@ export function useAccountType() {
         provider
       )
 
-      if (isSmartContractWallet) {
-        setResult({
-          isEOA: !isSmartContractWallet,
-          isSmartContractWallet
-        })
-        return
-      }
-
       setResult({
-        isEOA: true,
-        isSmartContractWallet: false
+        isEOA: !isSmartContractWallet,
+        isSmartContractWallet
       })
     }
 
