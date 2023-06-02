@@ -16,7 +16,7 @@ const baseQuery = {
 }
 
 export function getQueryCoveringClassicOnlyWithoutResults() {
-  return { ...baseQuery, fromBlock: 0, toBlock: 19416899 }
+  return { ...baseQuery, fromBlock: 19411899, toBlock: 19416899 }
 }
 
 export function getQueryCoveringClassicOnlyWithResults() {
