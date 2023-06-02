@@ -3,11 +3,13 @@ import { useAccount, useProvider } from 'wagmi'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
 
-export function useIsConnectedWithSmartContractWallet() {
+export function useAccountType() {
   const provider = useProvider()
   const { address } = useAccount()
 
-  const [result, setResult] = useState<boolean | undefined>(undefined)
+  const [result, setResult] = useState<'EOA' | 'Smart Contract' | undefined>(
+    undefined
+  )
 
   useEffect(() => {
     async function update() {
@@ -18,7 +20,12 @@ export function useIsConnectedWithSmartContractWallet() {
 
       // TODO: Try to detect counterfactual/just-in-time deployed smart contract wallets
 
-      setResult(await addressIsSmartContract(address, provider))
+      if (await addressIsSmartContract(address, provider)) {
+        setResult('Smart Contract')
+        return
+      }
+
+      setResult('EOA')
     }
 
     update()
