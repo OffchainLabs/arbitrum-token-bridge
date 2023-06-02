@@ -108,12 +108,13 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>L1 Transaction Time</span>}>
-        <TransactionDateTime standardizedDate={tx.createdAt} />
-      </Tooltip>
-      {tx.resolvedAt && (
+      {tx.resolvedAt ? (
         <Tooltip content={<span>L2 Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.resolvedAt} />
+        </Tooltip>
+      ) : (
+        <Tooltip content={<span>L1 Transaction Time</span>}>
+          <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
       )}
     </div>
