@@ -1,7 +1,7 @@
 import { utils } from 'ethers'
 import useLocalStorage from '@rehooks/local-storage'
+import { useBlockNumber } from 'wagmi'
 
-import { useBlockNumber } from '../../hooks/useBlockNumber'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAppContextState } from '../App/AppContext'
@@ -31,8 +31,15 @@ export const ArbitrumStats = () => {
 
   const { l1, l2 } = useNetworksAndSigners()
 
-  const currentL1BlockNumber = useBlockNumber(l1.provider)
-  const currentL2BlockNumber = useBlockNumber(l2.provider)
+  const { data: currentL1BlockNumber } = useBlockNumber({
+    chainId: l1.network.id,
+    watch: true
+  })
+
+  const { data: currentL2BlockNumber } = useBlockNumber({
+    chainId: l2.network.id,
+    watch: true
+  })
 
   const { data: tpsData, isValidating: tpsLoading } = useNetworkTPS()
 
