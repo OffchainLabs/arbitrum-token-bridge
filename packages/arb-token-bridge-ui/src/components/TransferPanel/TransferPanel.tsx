@@ -350,7 +350,8 @@ export function TransferPanel() {
     }
 
     if (!isEOA && !isSmartContractWallet) {
-      throw 'Account type is undefined'
+      console.error('Account type is undefined')
+      return
     }
 
     if (!l1Signer || !l2Signer) {

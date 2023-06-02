@@ -27,10 +27,15 @@ export function useAccountType() {
 
       // TODO: Try to detect counterfactual/just-in-time deployed smart contract wallets
 
-      if (await addressIsSmartContract(address, provider)) {
+      const isSmartContractWallet = await addressIsSmartContract(
+        address,
+        provider
+      )
+
+      if (isSmartContractWallet) {
         setResult({
-          isEOA: false,
-          isSmartContractWallet: true
+          isEOA: !isSmartContractWallet,
+          isSmartContractWallet
         })
         return
       }
