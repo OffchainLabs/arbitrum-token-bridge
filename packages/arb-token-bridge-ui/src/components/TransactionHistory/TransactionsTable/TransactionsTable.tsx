@@ -2,7 +2,6 @@ import React, { Dispatch, SetStateAction, useMemo } from 'react'
 import dayjs from 'dayjs'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import {
   getStandardizedDate,
   getStandardizedTime,
@@ -15,6 +14,7 @@ import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useMergedTransactions } from '../../../hooks/useTransactions'
+import { useIsConnectedWithSmartContractWallet } from '../../../hooks/useIsConnectedWithSmartContractWallet'
 
 export type PageParams = {
   searchString: string
@@ -85,12 +85,12 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const { isSmartContractWallet } = useNetworksAndSigners()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
 
   const { mergedTransactions: locallyStoredTransactions } =
     useMergedTransactions()
 
-  // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
+  // don't want to update hooks on mergedTransactions reference change. Just the exact value of localTransactions
   const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])
 
   // Generating the list of final transactions which will be displayed in the table
