@@ -1,0 +1,35 @@
+name: Feature Request
+description: File a feature request
+title: "[feat]: "
+labels: ["new feature", "triage"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request form!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: textarea
+    id: details
+    attributes:
+      label: Describe the feature or enhancement
+      description: Please include how the feature should behave in all possible scenarios.
+      placeholder: Tell us what you want!
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/OffchainLabs/arbitrum-token-bridge/blob/82e4cfc0f569467f20ad0ba7a82c366e99140cd3/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
