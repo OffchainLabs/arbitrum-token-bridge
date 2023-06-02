@@ -27,16 +27,6 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of our software are you running?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-    validations:
-      required: true
-  - type: dropdown
     id: browsers
     attributes:
       label: What browsers are you seeing the problem on?
@@ -46,6 +36,15 @@ body:
         - Chrome
         - Safari
         - Microsoft Edge
+        - Brave
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser Version
+      description: What is your browser version?
+      placeholder: Version 114.0.5735.90 (Official Build) (arm64)
+    validations:
+      required: false
   - type: textarea
     id: logs
     attributes:
@@ -56,7 +55,7 @@ body:
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/OffchainLabs/arbitrum-token-bridge/blob/82e4cfc0f569467f20ad0ba7a82c366e99140cd3/CODE_OF_CONDUCT.md)
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
