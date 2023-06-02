@@ -7,25 +7,38 @@ export function useAccountType() {
   const provider = useProvider()
   const { address } = useAccount()
 
-  const [result, setResult] = useState<'EOA' | 'Smart Contract' | undefined>(
-    undefined
-  )
+  const [result, setResult] = useState<{
+    isEOA: boolean | undefined
+    isSmartContractWallet: boolean | undefined
+  }>({
+    isEOA: undefined,
+    isSmartContractWallet: undefined
+  })
 
   useEffect(() => {
     async function update() {
       if (typeof address === 'undefined') {
-        setResult(undefined)
+        setResult({
+          isEOA: undefined,
+          isSmartContractWallet: undefined
+        })
         return
       }
 
       // TODO: Try to detect counterfactual/just-in-time deployed smart contract wallets
 
       if (await addressIsSmartContract(address, provider)) {
-        setResult('Smart Contract')
+        setResult({
+          isEOA: false,
+          isSmartContractWallet: true
+        })
         return
       }
 
-      setResult('EOA')
+      setResult({
+        isEOA: true,
+        isSmartContractWallet: false
+      })
     }
 
     update()

@@ -85,7 +85,7 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const isSmartContractWallet = useAccountType() === 'Smart Contract'
+  const { isSmartContractWallet = false } = useAccountType()
 
   const {
     app: { mergedTransactions: locallyStoredTransactions }

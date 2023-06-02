@@ -138,7 +138,7 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
 
-  const isSmartContractWallet = useAccountType() === 'Smart Contract'
+  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
@@ -347,6 +347,10 @@ export function TransferPanel() {
   const transfer = async () => {
     if (!isConnected) {
       return
+    }
+
+    if (!isEOA && !isSmartContractWallet) {
+      throw 'Account type is undefined'
     }
 
     if (!l1Signer || !l2Signer) {
