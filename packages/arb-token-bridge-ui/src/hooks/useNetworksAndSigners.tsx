@@ -27,7 +27,6 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
-import { addressIsSmartContract } from '../util/AddressUtils'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { utils } from 'ethers'
 import { twMerge } from 'tailwind-merge'
 import {
   ChevronUpIcon,
@@ -18,7 +19,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
-import { isAddress } from 'ethers/lib/utils.js'
+import { useIsConnectedWithSmartContractWallet } from 'src/hooks/useIsConnectedWithSmartContractWallet'
 
 const AdvancedSettings = ({
   destinationAddress,
@@ -32,12 +33,13 @@ const AdvancedSettings = ({
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-  const { l1, l2, isSmartContractWallet } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
   const { walletAddress } = arbTokenBridge
   // hide by default for EOA
-  const [collapsed, setCollapsed] = useState(!isSmartContractWallet)
+  const [collapsed, setCollapsed] = useState(true)
   // disable by default for EOA
-  const [disabled, setDisabled] = useState(!isSmartContractWallet)
+  const [disabled, setDisabled] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
   const destAddressInputClassName =
@@ -72,9 +74,16 @@ const AdvancedSettings = ({
   }, [l1, l2, isDepositMode, walletAddress, error, destinationAddress])
 
   useEffect(() => {
+    if (isSmartContractWallet) {
+      setDisabled(false)
+      setCollapsed(false)
+    }
+  }, [isSmartContractWallet])
+
+  useEffect(() => {
     let isLatestUpdate = true
     async function getWarning() {
-      if (!isAddress(destinationAddress)) {
+      if (!utils.isAddress(destinationAddress)) {
         setWarning(null)
         return
       }
@@ -115,6 +124,10 @@ const AdvancedSettings = ({
     }
     setCollapsed(!collapsed)
   }, [collapsed, setCollapsed, toAddressEqualsSenderEOA, isSmartContractWallet])
+
+  if (typeof isSmartContractWallet === 'undefined') {
+    return null
+  }
 
   return (
     <div className="mt-6">

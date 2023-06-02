@@ -52,13 +52,24 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
+  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
+      disabled={isSmartContractWallet !== false}
+      className={twMerge(
+        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4',
+        isSmartContractWallet === false
+          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180'
+          : ''
+      )}
       {...props}
     >
-      <ArrowsUpDownIcon className="text-dark" />
+      {isSmartContractWallet !== true ? (
+        <ArrowsUpDownIcon className="text-dark" />
+      ) : (
+        <ChevronDownIcon className="text-dark" />
+      )}
     </button>
   )
 }
@@ -866,12 +877,10 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
-        {!isSmartContractWallet && (
-          <SwitchNetworksButton
-            onClick={switchNetworksOnTransferPanel}
-            aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
-          />
-        )}
+        <SwitchNetworksButton
+          onClick={switchNetworksOnTransferPanel}
+          aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
+        />
       </div>
 
       <NetworkContainer
