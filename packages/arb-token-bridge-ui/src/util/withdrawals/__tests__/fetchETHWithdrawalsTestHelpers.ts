@@ -9,7 +9,8 @@ const baseQuery = {
 }
 
 export function getQueryCoveringClassicOnlyWithoutResults() {
-  return { ...baseQuery, fromBlock: 0, toBlock: 20785771 }
+  // keeping the block range low (not fetching from 0) to make sure we don't run into event-log deadline-exceeded error #904
+  return { ...baseQuery, fromBlock: 20780771, toBlock: 20785771 }
 }
 
 export function getQueryCoveringClassicOnlyWithResults() {
