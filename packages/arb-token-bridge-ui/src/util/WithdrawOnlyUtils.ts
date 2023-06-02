@@ -110,6 +110,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x1426CF37CAA89628C4DA2864e40cF75E6d66Ac6b',
       l1Address: '0x5D843Fa9495d23dE997C394296ac7B4D721E841c',
       l2Address: '0xaFB5E28Be361248c18bf26647C3D0F1f141129a7'
+    },
+    {
+      symbol: 'tBTC',
+      l2CustomAddr: '0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40',
+      l1Address: '0x18084fba666a33d37592fa2633fd49a74dd93a88',
+      l2Address: '0x7E2a1eDeE171C5B19E6c54D73752396C0A572594'
     }
   ],
   [ChainId.ArbitrumNova]: [
