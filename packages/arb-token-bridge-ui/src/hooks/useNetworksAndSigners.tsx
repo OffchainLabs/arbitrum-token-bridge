@@ -30,7 +30,6 @@ import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
-import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
@@ -82,7 +81,6 @@ export type UseNetworksAndSignersConnectedResult = {
     network: Chain
     provider: JsonRpcProvider
   }
-  isSmartContractWallet: boolean
 }
 
 export type UseNetworksAndSignersResult =
@@ -294,11 +292,7 @@ export function NetworksAndSignersProvider(
           l2: {
             network: getWagmiChain(l2Network.chainID),
             provider: l2Provider
-          },
-          isSmartContractWallet: await addressIsSmartContract(
-            address as string,
-            l1Provider
-          )
+          }
         })
       })
       .catch(() => {
@@ -332,11 +326,7 @@ export function NetworksAndSignersProvider(
               l2: {
                 network: getWagmiChain(l2Network.chainID),
                 provider: l2Provider
-              },
-              isSmartContractWallet: await addressIsSmartContract(
-                address,
-                l2Provider
-              )
+              }
             })
           })
           .catch(() => {
