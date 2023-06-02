@@ -31,12 +31,16 @@ jobs:
           files=`git diff --name-only HEAD^ HEAD`
           echo "$files"
           for file in $files; do
-            if [[ $file != packages/* ]] || [[ $file =~ .*\.(lock$|md$|yml$|svg$|png$|webp$|gif$|txt$) ]]; then
-            echo "run_tests=false" >> $GITHUB_OUTPUT
-          else
-            echo "run_tests=true" >> $GITHUB_OUTPUT
-            break
-          fi
+            if [[ $file != packages/* ]]; then
+              echo "run_tests=false" >> $GITHUB_OUTPUT
+            elif [[ $file =~ ^\.github/(actions|workflows)/.*\.yml$ ]]; then
+              echo "run_tests=true" >> $GITHUB_OUTPUT
+            elif [[ $file =~ .*\.(lock$|md$|yml$|svg$|png$|webp$|gif$|txt$) ]]; then
+              echo "run_tests=false" >> $GITHUB_OUTPUT
+            else
+              echo "run_tests=true" >> $GITHUB_OUTPUT
+              break
+            fi
           done
         shell: bash
 
