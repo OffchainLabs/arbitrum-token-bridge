@@ -10,7 +10,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { Provider, JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
-import { ConnectionState, TransferValidationErrors } from '../../util'
+import { ConnectionState } from '../../util'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
@@ -44,6 +44,13 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
+
+export enum CustomDestinationTransferValidationErrors {
+  GENERIC_ERROR = 'Something went wrong. Please try again later.',
+  EOA_INVALID_ADDRESS = 'The destination address is not valid.',
+  SC_INVALID_ADDRESS = 'The destination address is not a valid smart contract address.',
+  SC_MISSING_ADDRESS = 'The destination address is required for smart contract transfers.'
+}
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -100,20 +107,20 @@ const getSmartContractTransferError = async ({
   l1Provider: Provider
   l2Provider: Provider
   isDeposit: boolean
-}): Promise<TransferValidationErrors | null> => {
+}): Promise<CustomDestinationTransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
   const providerTo = isDeposit ? l2Provider : l1Provider
   if (!isAddress(String(to))) {
-    return TransferValidationErrors.SC_MISSING_ADDRESS
+    return CustomDestinationTransferValidationErrors.SC_MISSING_ADDRESS
   }
   if (!isAddress(from)) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   if (!(await addressIsSmartContract(from, providerFrom))) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   if (!(await addressIsSmartContract(String(to), providerTo))) {
-    return TransferValidationErrors.SC_INVALID_ADDRESS
+    return CustomDestinationTransferValidationErrors.SC_INVALID_ADDRESS
   }
   return null
 }
@@ -130,16 +137,16 @@ const getEOATransferError = async ({
   l1Provider: Provider
   l2Provider: Provider
   isDeposit: boolean
-}): Promise<TransferValidationErrors | null> => {
+}): Promise<CustomDestinationTransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
   if (to && !isAddress(to)) {
-    return TransferValidationErrors.EOA_INVALID_ADDRESS
+    return CustomDestinationTransferValidationErrors.EOA_INVALID_ADDRESS
   }
   if (!isAddress(from)) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   if (await addressIsSmartContract(from, providerFrom)) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   return null
 }
@@ -163,7 +170,7 @@ export function TransferPanel() {
     string | undefined
   >(undefined)
   const [transferValidationError, setTransferValidationError] =
-    useState<TransferValidationErrors | null>(null)
+    useState<CustomDestinationTransferValidationErrors | null>(null)
 
   const {
     app: {
@@ -417,7 +424,7 @@ export function TransferPanel() {
   }
 
   async function verifyTransferOrThrow(
-    verifyFunc: Promise<TransferValidationErrors | null>
+    verifyFunc: Promise<CustomDestinationTransferValidationErrors | null>
   ): Promise<void> {
     const error = await verifyFunc
     if (error) {
