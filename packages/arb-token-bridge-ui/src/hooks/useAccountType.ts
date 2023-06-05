@@ -3,25 +3,26 @@ import { useAccount, useProvider } from 'wagmi'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
 
+type Result = {
+  isEOA: boolean | undefined
+  isSmartContractWallet: boolean | undefined
+}
+
+const defaultResult: Result = {
+  isEOA: undefined,
+  isSmartContractWallet: undefined
+}
+
 export function useAccountType() {
   const provider = useProvider()
   const { address } = useAccount()
 
-  const [result, setResult] = useState<{
-    isEOA: boolean | undefined
-    isSmartContractWallet: boolean | undefined
-  }>({
-    isEOA: undefined,
-    isSmartContractWallet: undefined
-  })
+  const [result, setResult] = useState<Result>(defaultResult)
 
   useEffect(() => {
     async function update() {
       if (typeof address === 'undefined') {
-        setResult({
-          isEOA: undefined,
-          isSmartContractWallet: undefined
-        })
+        setResult(defaultResult)
         return
       }
 
