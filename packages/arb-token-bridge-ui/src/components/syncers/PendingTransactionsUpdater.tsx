@@ -5,6 +5,7 @@ import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { isTxOlderThan7Days } from '../../util/CommonUtils'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -29,13 +30,14 @@ export function PendingTransactionsUpdater(): JSX.Element {
   const checkAndUpdatePendingTransactions = useCallback(() => {
     if (!arbTokenBridgeLoaded) return
     const pendingTransactions = actions.app.getPendingTransactions()
+
     if (pendingTransactions.length) {
       console.info(
         `Checking and updating ${pendingTransactions.length} pending transactions' statuses`
       )
 
       // eslint-disable-next-line consistent-return
-      return Promise.all(
+      Promise.all(
         pendingTransactions.map((tx: Transaction) => getTransactionReceipt(tx))
       ).then((txReceipts: (TransactionReceipt | null)[]) => {
         txReceipts.forEach((txReceipt: TransactionReceipt | null, i) => {
@@ -49,6 +51,16 @@ export function PendingTransactionsUpdater(): JSX.Element {
           }
         })
       })
+
+      // If the Txs have been pending for over 7 days,
+      // they are cancelled so we should clear them from the history
+      const arePendingTxsAllOlderThan7Days = pendingTransactions.every(
+        pendingTx => isTxOlderThan7Days(pendingTx.timestampCreated)
+      )
+
+      if (arePendingTxsAllOlderThan7Days) {
+        arbTokenBridge?.transactions?.clearPendingTransactions()
+      }
     }
   }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
   const { forceTrigger: forceTriggerUpdate } = useInterval(
@@ -59,7 +71,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
   useEffect(() => {
     // force trigger update each time loaded change happens
     forceTriggerUpdate()
-  }, [arbTokenBridgeLoaded])
+  }, [arbTokenBridgeLoaded, forceTriggerUpdate])
 
   return <></>
 }

@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+
 export function shortenAddress(address: string) {
   const addressLength = address.length
 
@@ -18,3 +20,7 @@ export function shortenTxHash(txHash: string) {
 
 export const isTestingEnvironment =
   !!window.Cypress || process.env.NODE_ENV !== 'production'
+
+export function isTxOlderThan7Days(txCreatedAt: string | null | undefined) {
+  return dayjs().diff(dayjs(txCreatedAt), 'days') > 7
+}

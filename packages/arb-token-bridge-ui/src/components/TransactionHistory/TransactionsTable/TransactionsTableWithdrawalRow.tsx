@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
-import dayjs from 'dayjs'
 
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
@@ -9,7 +8,7 @@ import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
 import { ExternalLink } from '../../common/ExternalLink'
-import { shortenTxHash } from '../../../util/CommonUtils'
+import { isTxOlderThan7Days, shortenTxHash } from '../../../util/CommonUtils'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
@@ -306,11 +305,9 @@ function WithdrawalRowAction({
   }
 
   if (isError) {
-    const isTxOlderThan7Days = dayjs().diff(dayjs(tx.createdAt), 'days') > 7
-
     return (
       <>
-        {isTxOlderThan7Days ? (
+        {isTxOlderThan7Days(tx.createdAt) ? (
           // show a dropdown menu with the button
           <Popover>
             <Popover.Button>
