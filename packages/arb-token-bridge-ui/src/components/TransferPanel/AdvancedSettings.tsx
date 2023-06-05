@@ -16,7 +16,8 @@ import { TransferValidationErrors } from '../../util'
 import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl } from 'src/util/networks'
+import { getExplorerUrl } from '../../util/networks'
+import { useAccountType } from '../../hooks/useAccountType'
 
 const AdvancedSettings = ({
   destinationAddress,
@@ -30,12 +31,13 @@ const AdvancedSettings = ({
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-  const { l1, l2, isSmartContractWallet } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const { isSmartContractWallet } = useAccountType()
   const { walletAddress } = arbTokenBridge
   // hide by default for EOA
-  const [collapsed, setCollapsed] = useState(!isSmartContractWallet)
+  const [collapsed, setCollapsed] = useState(true)
   // disable by default for EOA
-  const [disabled, setDisabled] = useState(!isSmartContractWallet)
+  const [disabled, setDisabled] = useState(true)
 
   const destAddressInputClassName =
     (error ? 'border border-[#cd0000]' : 'border border-gray-dark') +
