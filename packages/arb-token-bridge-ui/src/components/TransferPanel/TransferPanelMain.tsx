@@ -642,7 +642,7 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          // only EOA can switch origin networks
+          // only EOA can change the origin network
           disabled: !fromOptions.length || !isEOA,
           options: fromOptions,
           value: from,
