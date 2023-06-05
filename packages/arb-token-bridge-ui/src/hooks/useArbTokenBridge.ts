@@ -179,9 +179,6 @@ export const useArbTokenBridge = (
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
     let tx: L1EthDepositTransaction & L1ContractCallTransaction
-    let receipt:
-      | L1EthDepositTransactionReceipt
-      | L1ContractCallTransactionReceipt
 
     const senderAddress = await l1Signer.getAddress()
 
@@ -204,21 +201,6 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
-      addTransaction({
-        type: 'deposit-l1',
-        status: 'pending',
-        value: utils.formatEther(amount),
-        txID: tx.hash,
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        sender: walletAddress,
-        l1NetworkID,
-        l2NetworkID
-      })
-      receipt = await tx.wait()
-      if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
-      }
     } catch (error: any) {
       if (txLifecycle?.onTxError) {
         txLifecycle.onTxError(error)
@@ -226,24 +208,36 @@ export const useArbTokenBridge = (
       return error.message
     }
 
+    addTransaction({
+      type: 'deposit-l1',
+      status: 'pending',
+      value: utils.formatEther(amount),
+      txID: tx.hash,
+      assetName: 'ETH',
+      assetType: AssetType.ETH,
+      sender: walletAddress,
+      l1NetworkID,
+      l2NetworkID
+    })
+    const receipt = await tx.wait()
+    if (txLifecycle?.onTxConfirm) {
+      txLifecycle.onTxConfirm(receipt)
+    }
     let retryableCreationTxID = ''
     if (destinationAddress) {
       const [l1ToL2Message] = await receipt.getL1ToL2Messages(l2.provider)
       if (l1ToL2Message) {
         retryableCreationTxID = l1ToL2Message.retryableCreationId
-      } else {
-        return
+      }
+    } else {
+      const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
+      if (ethDepositMessage) {
+        retryableCreationTxID = ethDepositMessage?.l2DepositTxHash
       }
     }
 
-    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
-
-    if (!destinationAddress) {
-      if (ethDepositMessage) {
-        retryableCreationTxID = ethDepositMessage?.l2DepositTxHash
-      } else {
-        return
-      }
+    if (!retryableCreationTxID) {
+      return
     }
 
     const l1ToL2MsgData: L1ToL2MessageData = {

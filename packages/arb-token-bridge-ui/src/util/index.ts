@@ -6,13 +6,6 @@ export enum ConnectionState {
   NETWORK_ERROR
 }
 
-export enum TransferValidationErrors {
-  GENERIC_ERROR = 'Something went wrong. Try again later.',
-  INVALID_ADDRESS = 'The destination address is not valid.',
-  BLOCKED_TO_ADDRESS = 'The destination address is not a valid wallet address. Make sure the provided address is correct.',
-  SC_MISSING_ADDRESS = 'The destination address is required for smart contract transfers.'
-}
-
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {
     return `https://ipfs.io/ipfs/${url.substring(7)}`

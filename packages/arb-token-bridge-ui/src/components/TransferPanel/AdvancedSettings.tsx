@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
-import { TransferValidationErrors } from '../../util'
+import { CustomDestinationTransferValidationErrors } from './TransferPanel'
 import { Tooltip } from '../common/Tooltip'
 import { ExternalLink } from '../common/ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -28,7 +28,7 @@ const AdvancedSettings = ({
 }: {
   destinationAddress: string
   onChange: (value?: string) => void
-  error: TransferValidationErrors | null
+  error: CustomDestinationTransferValidationErrors | null
 }) => {
   const {
     app: { arbTokenBridge, isDepositMode }
@@ -42,14 +42,7 @@ const AdvancedSettings = ({
   const [disabled, setDisabled] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  const destAddressInputClassName =
-    (error
-      ? 'border-[#cd0000]'
-      : warning
-      ? 'border-yellow-600'
-      : 'border-gray-dark') + ` ${disabled ? 'bg-slate-200' : 'bg-white'}`
-
-  const toAddressEqualsSenderEOA = useMemo(() => {
+  const destinationAddressSameAsSenderEOA = useMemo(() => {
     if (isSmartContractWallet || !walletAddress) return false
     // defaults to wallet address
     if (!destinationAddress) return true
@@ -118,12 +111,17 @@ const AdvancedSettings = ({
     // keep visible if destination address provided to make clear where funds go
     // or for SC wallets as destination address is mandatory
     // allow to close if destination address is sender address
-    if (!toAddressEqualsSenderEOA || isSmartContractWallet) {
+    if (!destinationAddressSameAsSenderEOA || isSmartContractWallet) {
       setCollapsed(false)
       return
     }
     setCollapsed(!collapsed)
-  }, [collapsed, setCollapsed, toAddressEqualsSenderEOA, isSmartContractWallet])
+  }, [
+    collapsed,
+    setCollapsed,
+    destinationAddressSameAsSenderEOA,
+    isSmartContractWallet
+  ])
 
   if (!isEOA && !isSmartContractWallet) {
     return null
@@ -180,7 +178,9 @@ const AdvancedSettings = ({
           <div
             className={twMerge(
               'my-1 flex w-full rounded-lg border px-2 py-1 shadow-input',
-              destAddressInputClassName
+              error ? 'border border-[#cd0000]' : 'border border-gray-dark',
+              !error && warning ? 'border-yellow-600' : '',
+              disabled ? 'bg-slate-200' : 'bg-white'
             )}
           >
             <input
@@ -221,5 +221,3 @@ const AdvancedSettings = ({
     </div>
   )
 }
-
-export { AdvancedSettings }

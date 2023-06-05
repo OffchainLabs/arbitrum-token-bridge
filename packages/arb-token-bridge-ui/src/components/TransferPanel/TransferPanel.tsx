@@ -11,7 +11,7 @@ import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { Provider, JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
-import { ConnectionState, TransferValidationErrors } from '../../util'
+import { ConnectionState } from '../../util'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
@@ -47,6 +47,14 @@ import { useTokenLists } from '../..//hooks/useTokenLists'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
 import { BLACKLISTED_DESTINATION_ADDRESSES } from './blacklistAddresses'
+
+export enum CustomDestinationTransferValidationErrors {
+  GENERIC_ERROR = 'Something went wrong. Please try again later.',
+  INVALID_ADDRESS = 'The destination address is not valid.',
+  SC_INVALID_ADDRESS = 'The destination address is not a valid smart contract address.',
+  SC_MISSING_ADDRESS = 'The destination address is required for smart contract transfers.',
+  BLOCKED_TO_ADDRESS = 'The destination address is not a valid wallet address.'
+}
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -105,22 +113,22 @@ const getSmartContractTransferError = async ({
   l2Provider: Provider
   isDeposit: boolean
   blockedToAddresses: string[]
-}): Promise<TransferValidationErrors | null> => {
+}): Promise<CustomDestinationTransferValidationErrors | null> => {
   const providerFrom = isDeposit ? l1Provider : l2Provider
   if (!to) {
-    return TransferValidationErrors.SC_MISSING_ADDRESS
+    return CustomDestinationTransferValidationErrors.SC_MISSING_ADDRESS
   }
   if (!isAddress(to)) {
-    return TransferValidationErrors.INVALID_ADDRESS
+    return CustomDestinationTransferValidationErrors.INVALID_ADDRESS
   }
   if (blockedToAddresses.includes(to.toLowerCase())) {
-    return TransferValidationErrors.BLOCKED_TO_ADDRESS
+    return CustomDestinationTransferValidationErrors.BLOCKED_TO_ADDRESS
   }
   if (!isAddress(from)) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   if (!(await addressIsSmartContract(from, providerFrom))) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   return null
 }
@@ -139,22 +147,22 @@ const getEOATransferError = async ({
   l2Provider: Provider
   isDeposit: boolean
   blockedToAddresses: string[]
-}): Promise<TransferValidationErrors | null> => {
+}): Promise<CustomDestinationTransferValidationErrors | null> => {
   if (!to) {
     return null
   }
   const providerFrom = isDeposit ? l1Provider : l2Provider
   if (!isAddress(to)) {
-    return TransferValidationErrors.INVALID_ADDRESS
+    return CustomDestinationTransferValidationErrors.INVALID_ADDRESS
   }
   if (blockedToAddresses.includes(to.toLowerCase())) {
-    return TransferValidationErrors.BLOCKED_TO_ADDRESS
+    return CustomDestinationTransferValidationErrors.BLOCKED_TO_ADDRESS
   }
   if (!isAddress(from)) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   if (await addressIsSmartContract(from, providerFrom)) {
-    return TransferValidationErrors.GENERIC_ERROR
+    return CustomDestinationTransferValidationErrors.GENERIC_ERROR
   }
   return null
 }
@@ -178,7 +186,7 @@ export function TransferPanel() {
     string | undefined
   >(undefined)
   const [transferValidationError, setTransferValidationError] =
-    useState<TransferValidationErrors | null>(null)
+    useState<CustomDestinationTransferValidationErrors | null>(null)
 
   const {
     app: {
@@ -461,7 +469,7 @@ export function TransferPanel() {
   }
 
   async function verifyTransferOrThrow(
-    verifyFunc: Promise<TransferValidationErrors | null>
+    verifyFunc: Promise<CustomDestinationTransferValidationErrors | null>
   ): Promise<void> {
     const error = await verifyFunc
     if (error) {

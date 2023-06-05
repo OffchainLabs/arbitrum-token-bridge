@@ -11,7 +11,7 @@ import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { TransferValidationErrors } from '../../util'
+import { CustomDestinationTransferValidationErrors } from './TransferPanel'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
@@ -375,7 +375,7 @@ export function TransferPanelMain({
   setDestinationAddress: React.Dispatch<
     React.SetStateAction<string | undefined>
   >
-  transferValidationError: TransferValidationErrors | null
+  transferValidationError: CustomDestinationTransferValidationErrors | null
 }) {
   const actions = useActions()
 
