@@ -14,7 +14,7 @@ import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useAppState } from '../../../state'
-import { useIsConnectedWithSmartContractWallet } from '../../../hooks/useIsConnectedWithSmartContractWallet'
+import { useAccountType } from '../../../hooks/useAccountType'
 
 export type PageParams = {
   searchString: string
@@ -85,7 +85,7 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
+  const { isSmartContractWallet = false } = useAccountType()
 
   const {
     app: { mergedTransactions: locallyStoredTransactions }
