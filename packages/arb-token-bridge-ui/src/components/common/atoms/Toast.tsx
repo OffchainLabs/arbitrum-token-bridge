@@ -7,7 +7,10 @@ export const networkConnectionWarningToast = () =>
   warningToast(
     <>
       Network connection issue. Please contact{' '}
-      <ExternalLink href={GET_HELP_LINK}>support</ExternalLink>.
+      <ExternalLink href={GET_HELP_LINK} className="underline">
+        support
+      </ExternalLink>
+      .
     </>
   )
 
