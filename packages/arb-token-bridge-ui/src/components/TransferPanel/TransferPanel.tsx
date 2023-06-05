@@ -43,7 +43,7 @@ import {
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedWithSmartContractWallet } from '../../hooks/useIsConnectedWithSmartContractWallet'
+import { useAccountType } from '../../hooks/useAccountType'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -138,7 +138,7 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
 
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
+  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
@@ -346,6 +346,11 @@ export function TransferPanel() {
 
   const transfer = async () => {
     if (!isConnected) {
+      return
+    }
+
+    if (!isEOA && !isSmartContractWallet) {
+      console.error('Account type is undefined')
       return
     }
 
