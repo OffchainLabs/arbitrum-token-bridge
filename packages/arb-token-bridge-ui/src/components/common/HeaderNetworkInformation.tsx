@@ -4,11 +4,11 @@ import Image from 'next/image'
 import { useNetwork } from 'wagmi'
 
 import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
-import { useIsConnectedWithSmartContractWallet } from 'src/hooks/useIsConnectedWithSmartContractWallet'
+import { useAccountType } from '../../hooks/useAccountType'
 
 export function HeaderNetworkInformation() {
   const { chain } = useNetwork()
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
+  const { isSmartContractWallet } = useAccountType()
 
   if (!chain || chain.unsupported) {
     return null
@@ -39,15 +39,13 @@ export function HeaderNetworkInformation() {
       <span
         className={twMerge(
           'text-2xl font-medium lg:text-base lg:font-normal',
-          isSmartContractWallet === true ? 'pr-2' : ''
+          isSmartContractWallet ? 'pr-2' : ''
         )}
       >
         {networkName}
       </span>
 
-      {isSmartContractWallet !== true && (
-        <ChevronDownIcon className="h-4 w-4" />
-      )}
+      {!isSmartContractWallet && <ChevronDownIcon className="h-4 w-4" />}
     </div>
   )
 }

@@ -19,7 +19,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
-import { useIsConnectedWithSmartContractWallet } from 'src/hooks/useIsConnectedWithSmartContractWallet'
+import { useAccountType } from '../../hooks/useAccountType'
 
 const AdvancedSettings = ({
   destinationAddress,
@@ -34,7 +34,7 @@ const AdvancedSettings = ({
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
+  const { isEOA, isSmartContractWallet } = useAccountType()
   const { walletAddress } = arbTokenBridge
   // hide by default for EOA
   const [collapsed, setCollapsed] = useState(true)
@@ -125,7 +125,7 @@ const AdvancedSettings = ({
     setCollapsed(!collapsed)
   }, [collapsed, setCollapsed, toAddressEqualsSenderEOA, isSmartContractWallet])
 
-  if (typeof isSmartContractWallet === 'undefined') {
+  if (!isEOA && !isSmartContractWallet) {
     return null
   }
 

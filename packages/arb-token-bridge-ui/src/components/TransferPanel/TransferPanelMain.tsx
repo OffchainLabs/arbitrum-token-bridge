@@ -52,23 +52,21 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet()
+  const { isEOA, isSmartContractWallet } = useAccountType()
   return (
     <button
       type="button"
-      disabled={isSmartContractWallet !== false}
+      disabled={!isEOA}
       className={twMerge(
         'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4',
-        isSmartContractWallet === false
-          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180'
-          : ''
+        isEOA ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180' : ''
       )}
       {...props}
     >
-      {isSmartContractWallet !== true ? (
-        <ArrowsUpDownIcon className="text-dark" />
-      ) : (
+      {isSmartContractWallet ? (
         <ChevronDownIcon className="text-dark" />
+      ) : (
+        <ArrowsUpDownIcon className="text-dark" />
       )}
     </button>
   )
@@ -382,7 +380,7 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -822,7 +820,7 @@ export function TransferPanelMain({
           <NetworkListbox
             label="From:"
             {...networkListboxProps.from}
-            disabled={isSmartContractWallet}
+            disabled={!isEOA}
           />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
