@@ -119,6 +119,7 @@ describe('Switch Networks', () => {
     context('Test Networks list in Wrong Network UI', () => {
       it('should show wrong network UI', () => {
         cy.login({ networkType: 'L1' })
+        // wrong network UI flaky right after login, cy.wait fixes the flaky test
         // eslint-disable-next-line
         cy.wait(5000)
         cy.changeMetamaskNetwork('Sepolia test network').then(() => {
