@@ -21,7 +21,7 @@ import { getExplorerUrl } from '../../util/networks'
 import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useAccountType } from '../../hooks/useAccountType'
 
-const AdvancedSettings = ({
+export const AdvancedSettings = ({
   destinationAddress,
   onChange,
   error
