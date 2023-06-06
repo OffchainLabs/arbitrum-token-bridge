@@ -203,7 +203,8 @@ export function TransferPanel() {
   const destinationAddressError = useMemo(
     () =>
       getDestinationAddressError({
-        to: destinationAddress || walletAddress,
+        // only default to wallet address for EOA
+        to: isEOA ? destinationAddress || walletAddress : destinationAddress,
         isEOA
       }),
     [destinationAddress, walletAddress, isEOA]
