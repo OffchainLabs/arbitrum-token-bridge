@@ -5,7 +5,7 @@ import { useSigner } from 'wagmi'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
-import { errorToast } from 'src/components/common/atoms/Toast'
+import { errorToast } from '../components/common/atoms/Toast'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void
