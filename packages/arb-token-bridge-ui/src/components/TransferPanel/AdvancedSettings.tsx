@@ -1,11 +1,36 @@
 import { useEffect, useState } from 'react'
+import { useProvider } from 'wagmi'
+import { isAddress } from 'ethers/lib/utils.js'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 
-export enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
+export enum DestinationAddressErrors {
+  INVALID_ADDRESS = 'The destination address is not a valid wallet address.',
+  REQUIRED_ADDRESS = 'The destination address is required.'
+}
+
+export function getDestinationAddressError({
+  to,
+  isEOA
+}: {
+  to?: string
+  isEOA: boolean
+}): DestinationAddressErrors | null {
+  if (!to) {
+    if (isEOA) {
+      return null
+    } else {
+      // destination address required for contract wallets
+      return DestinationAddressErrors.REQUIRED_ADDRESS
+    }
+  }
+  if (!isAddress(to)) {
+    return DestinationAddressErrors.INVALID_ADDRESS
+  }
+  return null
 }
 
 export const AdvancedSettings = ({
@@ -15,20 +40,45 @@ export const AdvancedSettings = ({
 }: {
   destinationAddress?: string
   onChange: (value?: string) => void
-  error: AdvancedSettingsErrors | null
+  error: DestinationAddressErrors | null
 }) => {
   const {
     app: { selectedToken }
   } = useAppState()
+  const provider = useProvider()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
+  const [warning, setWarning] = useState<string | null>(null)
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
     () => setCollapsed(!isSmartContractWallet),
     [isSmartContractWallet]
   )
+
+  useEffect(() => {
+    // checks if trying to send to a contract address
+    async function getWarning() {
+      // only check for EOA, contract wallets will often send to another contract wallet
+      if (isEOA && isAddress(destinationAddress)) {
+        const isContractAddress = await addressIsSmartContract(
+          destinationAddress,
+          provider
+        )
+        setWarning(
+          isContractAddress
+            ? 'The destination address is a contract address. Please make sure it is a valid wallet address.'
+            : null
+        )
+      } else {
+        setWarning(null)
+      }
+    }
+    getWarning()
+
+    return () => setWarning(null)
+  }, [destinationAddress, provider, isEOA])
 
   // Disabled for ETH
   if (!selectedToken) {
@@ -41,9 +91,12 @@ export const AdvancedSettings = ({
 
   function handleVisibility() {
     // Keep visible for SC wallets since destination address is mandatory
-    if (!isSmartContractWallet) {
-      setCollapsed(!collapsed)
+    // Or if destination address is provided
+    if (isSmartContractWallet || !!destinationAddress) {
+      setCollapsed(false)
+      return
     }
+    setCollapsed(!collapsed)
   }
 
   return (
@@ -74,10 +127,11 @@ export const AdvancedSettings = ({
               onChange={e => onChange(e.target.value?.toLowerCase())}
             />
           </div>
+          {error && <span className="text-xs text-red-400">{error}</span>}
+          {!error && warning && (
+            <span className="text-xs text-yellow-500">{warning}</span>
+          )}
         </>
-      )}
-      {isSmartContractWallet && error && (
-        <span className="text-xs text-red-400">{error}</span>
       )}
     </div>
   )
