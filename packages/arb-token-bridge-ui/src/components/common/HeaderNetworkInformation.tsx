@@ -8,7 +8,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 
 export function HeaderNetworkInformation() {
   const { chain } = useNetwork()
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet = false } = useAccountType()
 
   if (!chain || chain.unsupported) {
     return null
