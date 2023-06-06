@@ -12,7 +12,7 @@ import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
-import { AppContextProvider, useAppContextState } from './AppContext'
+import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
@@ -138,7 +138,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
-  const { currentL1BlockNumber } = useAppContextState()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -165,12 +164,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     },
     [address]
   )
-
-  useEffect(() => {
-    if (currentL1BlockNumber > 0) {
-      console.log('Current block number on L1:', currentL1BlockNumber)
-    }
-  }, [currentL1BlockNumber])
 
   // Listen for account and network changes
   useEffect(() => {
