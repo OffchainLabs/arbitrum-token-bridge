@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useProvider } from 'wagmi'
 import { isAddress } from 'ethers/lib/utils.js'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid wallet address.',
@@ -43,9 +43,9 @@ export const AdvancedSettings = ({
   error: DestinationAddressErrors | null
 }) => {
   const {
-    app: { selectedToken }
+    app: { selectedToken, isDepositMode }
   } = useAppState()
-  const provider = useProvider()
+  const { l1, l2 } = useNetworksAndSigners()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
@@ -64,7 +64,7 @@ export const AdvancedSettings = ({
       if (isEOA && isAddress(destinationAddress)) {
         const isContractAddress = await addressIsSmartContract(
           destinationAddress,
-          provider
+          isDepositMode ? l2.provider : l1.provider
         )
         setWarning(
           isContractAddress
@@ -78,7 +78,7 @@ export const AdvancedSettings = ({
     getWarning()
 
     return () => setWarning(null)
-  }, [destinationAddress, provider, isEOA])
+  }, [destinationAddress, l1.provider, l2.provider, isDepositMode, isEOA])
 
   // Disabled for ETH
   if (!selectedToken) {
