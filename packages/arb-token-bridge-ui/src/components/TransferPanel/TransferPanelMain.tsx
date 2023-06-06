@@ -59,8 +59,10 @@ export function SwitchNetworksButton(
       type="button"
       disabled={!isEOA}
       className={twMerge(
-        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4',
-        isEOA ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180' : ''
+        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
+        isEOA
+          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
+          : ''
       )}
       {...props}
     >
@@ -643,6 +645,7 @@ export function TransferPanelMain({
       return {
         from: {
           // only EOA can change the origin network
+          // we don't use isSmartContractWallet here because we also want to keep it disabled when undefined
           disabled: !fromOptions.length || !isEOA,
           options: fromOptions,
           value: from,
