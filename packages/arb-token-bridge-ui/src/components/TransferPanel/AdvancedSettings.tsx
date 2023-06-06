@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react'
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
+} from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { getExplorerUrl } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 
 export enum AdvancedSettingsErrors {
   INVALID_ADDRESS = 'The destination address is not valid.'
@@ -18,8 +25,13 @@ export const AdvancedSettings = ({
   error: AdvancedSettingsErrors | null
 }) => {
   const {
-    app: { selectedToken }
+    app: {
+      selectedToken,
+      isDepositMode,
+      arbTokenBridge: { walletAddress }
+    }
   } = useAppState()
+  const { l1, l2 } = useNetworksAndSigners()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
@@ -74,6 +86,17 @@ export const AdvancedSettings = ({
               onChange={e => onChange(e.target.value?.toLowerCase())}
             />
           </div>
+          {!error && (
+            <ExternalLink
+              className="mt-2 flex w-fit items-center"
+              href={`${getExplorerUrl(
+                (isDepositMode ? l2 : l1).network.id
+              )}/address/${destinationAddress || walletAddress}`}
+            >
+              <ArrowDownTrayIcon height={16} className="mr-2 -rotate-90" />
+              View account in explorer
+            </ExternalLink>
+          )}
         </>
       )}
       {isSmartContractWallet && error && (
