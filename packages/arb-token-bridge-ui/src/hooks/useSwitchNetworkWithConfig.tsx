@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react'
 
 import { getNetworkName, isNetwork } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { warningToast } from '../components/common/atoms/Toast'
 
 type SwitchNetworkConfig = {
   isSwitchingNetworkBeforeTx?: boolean
@@ -21,9 +22,7 @@ const handleSwitchNetworkNotSupported = (
     ? `Please connect to ${networkName} on your wallet before signing your ${targetTxName} transaction.`
     : `Please connect to ${networkName} on your wallet.`
 
-  // TODO: show user a nice dialogue box instead of
-  // eslint-disable-next-line no-alert
-  alert(message)
+  warningToast(message)
 }
 
 /**

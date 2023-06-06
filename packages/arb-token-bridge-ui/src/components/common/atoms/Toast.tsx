@@ -1,7 +1,11 @@
 import { ToastContainer, toast } from 'react-toastify'
 
-export const errorToast = (message: string) => {
+export const errorToast = (message: React.ReactNode) => {
   toast.error(message)
+}
+
+export const warningToast = (message: React.ReactNode) => {
+  toast.warning(message)
 }
 
 export const Toast = () => {
