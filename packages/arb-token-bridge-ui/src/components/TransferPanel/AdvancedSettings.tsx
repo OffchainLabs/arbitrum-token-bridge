@@ -11,7 +11,7 @@ export const AdvancedSettings = ({
   error
 }: {
   destinationAddress: string
-  onChange: (value: string) => void
+  onChange: (value?: string) => void
   error: AdvancedSettingsErrors | null
 }) => {
   const {
