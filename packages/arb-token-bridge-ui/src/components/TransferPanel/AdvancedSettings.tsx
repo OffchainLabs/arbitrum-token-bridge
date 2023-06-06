@@ -3,10 +3,13 @@ import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
-import { AdvancedSettingsErrors } from './TransferPanelMain'
+
+export enum AdvancedSettingsErrors {
+  INVALID_ADDRESS = 'The destination address is not valid.'
+}
 
 export const AdvancedSettings = ({
-  destinationAddress,
+  destinationAddress = '',
   onChange,
   error
 }: {

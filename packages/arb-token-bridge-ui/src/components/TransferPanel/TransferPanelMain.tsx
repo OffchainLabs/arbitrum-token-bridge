@@ -21,7 +21,7 @@ import {
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { addressIsSmartContract } from '../../util/AddressUtils'
-import { AdvancedSettings } from './AdvancedSettings'
+import { AdvancedSettings, AdvancedSettingsErrors } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -58,10 +58,6 @@ export function SwitchNetworksButton(
       <ArrowsUpDownIcon className="text-dark" />
     </button>
   )
-}
-
-export enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
 }
 
 type OptionsExtraProps = {
