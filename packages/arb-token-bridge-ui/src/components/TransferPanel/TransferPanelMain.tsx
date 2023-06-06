@@ -838,7 +838,7 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <AdvancedSettings
-        destinationAddress={destinationAddress || ''}
+        destinationAddress={destinationAddress}
         onChange={value => setDestinationAddress(value)}
         error={advancedSettingsError}
       />
