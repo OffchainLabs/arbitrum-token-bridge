@@ -39,6 +39,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
+import { warningToast } from '../common/atoms/Toast'
 
 enum Panel {
   TOKENS,
@@ -727,7 +728,7 @@ export function TokenSearch({
       console.warn(error)
 
       if (error.name === 'TokenDisabledError') {
-        alert('This token is currently paused in the bridge')
+        warningToast('This token is currently paused in the bridge')
       }
     }
   }
