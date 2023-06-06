@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -18,17 +20,22 @@ export const AdvancedSettings = ({
   error: AdvancedSettingsErrors | null
 }) => {
   const {
-    app: { selectedToken }
+    app: {
+      selectedToken,
+      arbTokenBridge: { walletAddress }
+    }
   } = useAppState()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
+  const [inputLocked, setInputLocked] = useState(true)
 
-  useEffect(
-    // Show on page load if SC wallet since destination address mandatory
-    () => setCollapsed(!isSmartContractWallet),
-    [isSmartContractWallet]
-  )
+  useEffect(() => {
+    // Initially hide for EOA
+    setCollapsed(isEOA)
+    // Initially lock for EOA
+    setInputLocked(isEOA)
+  }, [isEOA])
 
   // Disabled for ETH
   if (!selectedToken) {
@@ -40,7 +47,7 @@ export const AdvancedSettings = ({
   }
 
   function handleVisibility() {
-    // Keep visible for SC wallets since destination address is mandatory
+    // Keep visible for contract wallets
     if (!isSmartContractWallet) {
       setCollapsed(!collapsed)
     }
@@ -66,13 +73,35 @@ export const AdvancedSettings = ({
               Destination Address
               {!isSmartContractWallet ? ' (optional)' : ''}
             </span>
-            <input
-              className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-              placeholder="Enter destination address"
-              defaultValue={destinationAddress}
-              spellCheck={false}
-              onChange={e => onChange(e.target.value?.toLowerCase())}
-            />
+            <div
+              className={twMerge(
+                'my-1 flex w-full items-center rounded-lg border border-gray-dark px-2 py-1 shadow-input',
+                inputLocked ? 'bg-slate-200' : 'bg-white'
+              )}
+            >
+              <input
+                className="w-full"
+                placeholder={isSmartContractWallet ? undefined : walletAddress}
+                defaultValue={destinationAddress}
+                disabled={inputLocked}
+                spellCheck={false}
+                onChange={e => onChange(e.target.value?.toLowerCase().trim())}
+                // disable 1password
+                data-1p-ignore
+              />
+              {isEOA && (
+                <button onClick={() => setInputLocked(!inputLocked)}>
+                  {inputLocked ? (
+                    <LockClosedIcon
+                      height={20}
+                      className="mr-2 text-slate-600"
+                    />
+                  ) : (
+                    <LockOpenIcon height={20} className="mr-2 text-slate-600" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}
