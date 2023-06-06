@@ -23,6 +23,7 @@ import {
   useTokensFromUser
 } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { warningToast } from '../common/atoms/Toast'
 
 enum ImportStatus {
   LOADING,
@@ -235,7 +236,7 @@ export function TokenImportDialog({
       setStatus(ImportStatus.ERROR)
 
       if (ex.name === 'TokenDisabledError') {
-        alert('This token is currently paused in the bridge')
+        warningToast('This token is currently paused in the bridge')
       }
     })
   }
