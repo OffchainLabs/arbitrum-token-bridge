@@ -19,22 +19,24 @@ import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const {
-    app: { selectedToken, isDepositMode }
+    app: { selectedToken }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumOne } = isNetwork(l2.network.id)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)
 
-  const from = isDepositMode ? l1.network : l2.network
-  const to = isDepositMode ? l2.network : l1.network
+  const from = isConnectedToArbitrum ? l2.network : l1.network
+  const to = isConnectedToArbitrum ? l1.network : l2.network
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
