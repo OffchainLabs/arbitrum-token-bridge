@@ -666,7 +666,8 @@ export const useArbTokenBridge = (
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: new Set([listId])
+          listIds: new Set([listId]),
+          isL2Native: false
         }
       }
       // save potentially unbridged L1 tokens:
@@ -679,7 +680,8 @@ export const useArbTokenBridge = (
           address: address.toLowerCase(),
           decimals,
           logoURI,
-          listIds: new Set([listId])
+          listIds: new Set([listId]),
+          isL2Native: false
         })
       }
     }
@@ -783,7 +785,8 @@ export const useArbTokenBridge = (
       address: l1AddressLowerCased,
       l2Address: l2Address?.toLowerCase(),
       decimals,
-      listIds: new Set()
+      listIds: new Set(),
+      isL2Native: false
     }
 
     setBridgeTokens(oldBridgeTokens => {

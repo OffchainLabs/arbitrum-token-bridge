@@ -104,6 +104,7 @@ export interface BridgeToken {
   l2Address?: string
   logoURI?: string
   listIds: Set<number> // no listID indicates added by user
+  isL2Native: boolean
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
