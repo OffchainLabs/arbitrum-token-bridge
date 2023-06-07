@@ -335,7 +335,7 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
