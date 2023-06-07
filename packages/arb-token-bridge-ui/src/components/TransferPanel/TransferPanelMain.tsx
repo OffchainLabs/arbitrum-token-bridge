@@ -474,12 +474,11 @@ export function TransferPanelMain({
   useEffect(() => {
     setAdvancedSettingsError(
       getDestinationAddressError({
-        // only default to wallet address for EOA
-        to: isEOA ? destinationAddress || walletAddress : destinationAddress,
+        to: destinationAddress,
         isEOA
       })
     )
-  }, [destinationAddress, walletAddress, isEOA])
+  }, [destinationAddress, isEOA])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance

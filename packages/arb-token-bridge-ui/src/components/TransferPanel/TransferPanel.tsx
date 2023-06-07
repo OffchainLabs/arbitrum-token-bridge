@@ -203,11 +203,10 @@ export function TransferPanel() {
   const destinationAddressError = useMemo(
     () =>
       getDestinationAddressError({
-        // only default to wallet address for EOA
-        to: isEOA ? destinationAddress || walletAddress : destinationAddress,
+        to: destinationAddress,
         isEOA
       }),
-    [destinationAddress, walletAddress, isEOA]
+    [destinationAddress, isEOA]
   )
 
   function clearAmountInput() {

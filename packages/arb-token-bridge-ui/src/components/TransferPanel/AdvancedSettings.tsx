@@ -22,10 +22,9 @@ export function getDestinationAddressError({
   if (!to) {
     if (isEOA) {
       return null
-    } else {
-      // destination address required for contract wallets
-      return DestinationAddressErrors.REQUIRED_ADDRESS
     }
+    // destination address required for contract wallets
+    return DestinationAddressErrors.REQUIRED_ADDRESS
   }
   if (!isAddress(to)) {
     return DestinationAddressErrors.INVALID_ADDRESS
