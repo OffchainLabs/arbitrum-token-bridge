@@ -303,6 +303,8 @@ export enum TransferPanelMainErrorMessage {
   SC_WALLET_ETH_NOT_SUPPORTED
 }
 
+const USDC_L1_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -356,6 +358,10 @@ export function TransferPanelMain({
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const showUSDCNotice =
+    selectedToken?.address === USDC_L1_ADDRESS &&
+    isNetwork(l2.network.id).isArbitrumOne
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -802,6 +808,21 @@ export function TransferPanelMain({
               >
                 Learn more.
               </ExternalLink>
+            </p>
+          )}
+
+          {showUSDCNotice && (
+            <p className="mt-1 text-xs font-light text-white">
+              Circle is bringing Native USDC to Arbitrum One on June 8th, 2023!
+              Note that your bridged USDC will function on Arbitrum One but
+              won’t be fungible with the native smart contract used by Circle.{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
             </p>
           )}
         </div>
