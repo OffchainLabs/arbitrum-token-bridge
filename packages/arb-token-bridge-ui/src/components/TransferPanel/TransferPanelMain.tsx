@@ -813,9 +813,8 @@ export function TransferPanelMain({
 
           {showUSDCNotice && (
             <p className="mt-1 text-xs font-light text-white">
-              Circle is bringing Native USDC to Arbitrum One on June 8th, 2023!
-              Note that your bridged USDC will function on Arbitrum One but
-              won’t be fungible with the native smart contract used by Circle.{' '}
+              Native USDC is coming June 8th. Bridged USDC will work on Arbitrum
+              One but won’t be fungible with Circle’s smart contracts.{' '}
               <ExternalLink
                 href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
                 className="arb-hover underline"
