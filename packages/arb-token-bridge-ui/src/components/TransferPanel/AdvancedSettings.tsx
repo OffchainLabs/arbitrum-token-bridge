@@ -25,11 +25,7 @@ export const AdvancedSettings = ({
   error: AdvancedSettingsErrors | null
 }) => {
   const {
-    app: {
-      selectedToken,
-      isDepositMode,
-      arbTokenBridge: { walletAddress }
-    }
+    app: { selectedToken, isDepositMode }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
@@ -86,12 +82,12 @@ export const AdvancedSettings = ({
               onChange={e => onChange(e.target.value?.toLowerCase())}
             />
           </div>
-          {!error && (
+          {destinationAddress && !error && (
             <ExternalLink
               className="mt-2 flex w-fit items-center"
               href={`${getExplorerUrl(
                 (isDepositMode ? l2 : l1).network.id
-              )}/address/${destinationAddress || walletAddress}`}
+              )}/address/${destinationAddress}`}
             >
               <ArrowDownTrayIcon height={16} className="mr-2 -rotate-90" />
               View account in explorer
