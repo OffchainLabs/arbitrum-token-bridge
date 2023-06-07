@@ -11,10 +11,9 @@
     "noEmit": true,
     "incremental": true,
     "jsx": "preserve",
-    "baseUrl": ".",
     "paths": {
-      "@/images/*": ["public/images/*"],
-      "@/icons/*": ["public/icons/*"]
+      "@/images/*": ["./public/images/*"],
+      "@/icons/*": ["./public/icons/*"]
     }
   },
   "exclude": ["node_modules"]
