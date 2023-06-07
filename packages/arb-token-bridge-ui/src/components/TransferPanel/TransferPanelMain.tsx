@@ -603,6 +603,15 @@ export function TransferPanelMain({
       // Add L1 network to the list
       return [l1.network, ...options]
         .filter(option => {
+          // Remove the origin network from the destination list for contract wallets
+          // It's done so that the origin network is not changed
+          if (
+            isSmartContractWallet &&
+            direction === 'to' &&
+            option.id === from.id
+          ) {
+            return false
+          }
           // Remove selected network from the list
           return option.id !== selectedChainId
         })
@@ -702,7 +711,10 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled: !fromOptions.length,
+        disabled:
+          !fromOptions.length ||
+          isSmartContractWallet ||
+          typeof isSmartContractWallet === 'undefined',
         options: fromOptions,
         value: from,
         onChange: async network => {
