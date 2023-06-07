@@ -4,6 +4,7 @@ import { BigNumber, constants } from 'ethers'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
+import { isAddress } from 'ethers/lib/utils.js'
 
 export enum NetworkType {
   l1 = 'l1',
@@ -13,10 +14,16 @@ export type Balances = {
   [NetworkType.l1]: BigNumber | null
   [NetworkType.l2]: BigNumber | null
 }
-export function useTokenBalances(erc20L1Address?: string): Balances {
+export function useTokenBalances({
+  erc20L1Address,
+  walletAddress
+}: {
+  erc20L1Address?: string
+  walletAddress: string
+}): Balances {
   const {
     app: {
-      arbTokenBridge: { walletAddress, bridgeTokens }
+      arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
@@ -30,7 +37,7 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
   return useMemo(() => {
     const defaultResult = { [NetworkType.l1]: null, [NetworkType.l2]: null }
 
-    if (typeof erc20L1Address === 'undefined') {
+    if (typeof erc20L1Address === 'undefined' || !isAddress(walletAddress)) {
       return defaultResult
     }
 
@@ -48,5 +55,11 @@ export function useTokenBalances(erc20L1Address?: string): Balances {
         erc20L1Balances?.[erc20L1Address.toLowerCase()] ?? constants.Zero,
       [NetworkType.l2]: erc20L2Address ? l2Balance : constants.Zero // If l2Address doesn't exist, default balance to zero
     }
-  }, [erc20L1Balances, erc20L2Balances, erc20L1Address, bridgeTokens])
+  }, [
+    erc20L1Balances,
+    erc20L2Balances,
+    erc20L1Address,
+    bridgeTokens,
+    walletAddress
+  ])
 }

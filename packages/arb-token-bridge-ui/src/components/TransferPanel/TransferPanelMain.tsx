@@ -11,9 +11,11 @@ import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { shortenAddress } from '../../util/CommonUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  getExplorerUrl,
   getL2ChainIds,
   getNetworkLogo,
   getNetworkName,
@@ -170,46 +172,77 @@ function getListboxOptionsFromL1Network(network: Chain) {
 
 function NetworkContainer({
   network,
+  balanceFor,
   children
 }: {
   network: Chain
+  balanceFor?: string
   children: React.ReactNode
 }) {
-  const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { backgroundImage, backgroundClassName, customAddressBannerClassName } =
+    useMemo(() => {
+      const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
-    if (!isArbitrum) {
-      return {
-        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-eth-dark'
+      if (!isArbitrum) {
+        return {
+          backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
+          backgroundClassName: 'bg-eth-dark',
+          customAddressBannerClassName: 'bg-cyan border-eth-dark'
+        }
       }
-    }
 
-    if (isArbitrumNova) {
-      return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-arb-nova-dark'
+      if (isArbitrumNova) {
+        return {
+          backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
+          backgroundClassName: 'bg-arb-nova-dark',
+          customAddressBannerClassName: 'bg-orange border-arb-nova-dark'
+        }
       }
-    }
 
-    return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-arb-one-dark'
-    }
-  }, [network])
+      return {
+        backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
+        backgroundClassName: 'bg-arb-one-dark',
+        customAddressBannerClassName: 'bg-cyan border-arb-one-dark'
+      }
+    }, [network])
+
+  const showCustomAddressBanner = balanceFor && utils.isAddress(balanceFor)
 
   return (
-    <div
-      className={`relative rounded-xl p-1 transition-colors ${backgroundClassName}`}
-    >
+    <>
+      {showCustomAddressBanner && (
+        <div
+          className={twMerge(
+            'w-full rounded-t-lg border-4 p-1 text-center text-sm',
+            customAddressBannerClassName
+          )}
+        >
+          <span>
+            Showing balance for Custom Destination Address:{' '}
+            <ExternalLink
+              className="underline"
+              href={`${getExplorerUrl(network.id)}/address/${balanceFor}`}
+            >
+              {shortenAddress(balanceFor)}
+            </ExternalLink>
+          </span>
+        </div>
+      )}
       <div
-        className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
-        style={{ backgroundImage }}
-      ></div>
-      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
-        {children}
+        className={twMerge(
+          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          showCustomAddressBanner ? 'rounded-t-none' : ''
+        )}
+      >
+        <div
+          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage }}
+        ></div>
+        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -217,13 +250,17 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+function ETHBalance({
+  on,
+  walletAddress,
+  prefix = ''
+}: {
+  on: NetworkType
+  walletAddress?: string
+  prefix?: string
+}) {
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
-  const walletAddress = arbTokenBridge.walletAddress
 
   const {
     eth: [ethL1Balance]
@@ -231,6 +268,10 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
   const {
     eth: [ethL2Balance]
   } = useBalance({ provider: l2.provider, walletAddress })
+
+  if (!utils.isAddress(String(walletAddress))) {
+    return null
+  }
 
   const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
@@ -249,15 +290,20 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 function TokenBalance({
   forToken,
   on,
+  walletAddress,
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
   on: NetworkType
+  walletAddress?: string
   prefix?: string
 }) {
-  const balance = useTokenBalances(forToken?.address)[on]
+  const balance = useTokenBalances({
+    erc20L1Address: forToken?.address,
+    walletAddress: String(walletAddress)
+  })[on]
 
-  if (!forToken) {
+  if (!forToken || !utils.isAddress(String(walletAddress))) {
     return null
   }
 
@@ -334,16 +380,39 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
+  const destinationAddressOrWalletAddress = useMemo(() => {
+    return destinationAddress || walletAddress
+  }, [destinationAddress, walletAddress])
+
+  const l1WalletAddress = isDepositMode
+    ? walletAddress
+    : destinationAddressOrWalletAddress
+
+  const l2WalletAddress = isDepositMode
+    ? destinationAddressOrWalletAddress
+    : walletAddress
+
   const {
+    erc20: [, updateErc20L1Balance],
     eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: l1WalletAddress
+  })
   const {
+    erc20: [, updateErc20L2Balance],
     eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress: l2WalletAddress
+  })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const tokenBalances = useTokenBalances(selectedToken?.address)
+  const tokenBalances = useTokenBalances({
+    erc20L1Address: selectedToken?.address,
+    walletAddress
+  })
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
@@ -358,6 +427,19 @@ export function TransferPanelMain({
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const [, setQueryParams] = useArbQueryParams()
+
+  useEffect(() => {
+    // If a different destination address is specified, we want to update the ERC-20 balance accordingly
+    if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
+      updateErc20L1Balance([selectedToken.address])
+      updateErc20L2Balance([String(selectedToken.l2Address)])
+    }
+  }, [
+    destinationAddressOrWalletAddress,
+    selectedToken,
+    updateErc20L1Balance,
+    updateErc20L2Balance
+  ])
 
   useEffect(() => {
     const l2ChainId = isConnectedToArbitrum ? externalFrom.id : externalTo.id
@@ -765,10 +847,12 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   forToken={selectedToken}
+                  walletAddress={walletAddress}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  walletAddress={walletAddress}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
@@ -814,7 +898,14 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer network={to}>
+      <NetworkContainer
+        network={to}
+        balanceFor={
+          walletAddress && walletAddress.toLowerCase() !== destinationAddress
+            ? destinationAddress
+            : undefined
+        }
+      >
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
@@ -825,10 +916,20 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
+                  walletAddress={
+                    isSmartContractWallet
+                      ? destinationAddress
+                      : destinationAddressOrWalletAddress
+                  }
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                  walletAddress={
+                    isSmartContractWallet
+                      ? destinationAddress
+                      : destinationAddressOrWalletAddress
+                  }
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>

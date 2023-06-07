@@ -63,7 +63,7 @@ export const AdvancedSettings = ({
         <>
           <div className="mt-2">
             <span className="text-md text-gray-dark">
-              Destination Address
+              Custom Destination Address
               {!isSmartContractWallet ? ' (optional)' : ''}
             </span>
             <input
