@@ -473,10 +473,7 @@ export function TransferPanelMain({
 
   useEffect(() => {
     setAdvancedSettingsError(
-      getDestinationAddressError({
-        to: destinationAddress,
-        isEOA
-      })
+      getDestinationAddressError({ destinationAddress, isEOA })
     )
   }, [destinationAddress, isEOA])
 

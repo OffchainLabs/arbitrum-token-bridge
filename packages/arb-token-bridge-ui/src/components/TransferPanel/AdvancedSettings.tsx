@@ -13,20 +13,20 @@ export enum DestinationAddressErrors {
 }
 
 export function getDestinationAddressError({
-  to,
+  destinationAddress,
   isEOA
 }: {
-  to?: string
+  destinationAddress?: string
   isEOA: boolean
 }): DestinationAddressErrors | null {
-  if (!to) {
+  if (!destinationAddress) {
     if (isEOA) {
       return null
     }
     // destination address required for contract wallets
     return DestinationAddressErrors.REQUIRED_ADDRESS
   }
-  if (!isAddress(to)) {
+  if (!isAddress(destinationAddress)) {
     return DestinationAddressErrors.INVALID_ADDRESS
   }
   return null

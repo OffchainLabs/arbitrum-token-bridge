@@ -201,11 +201,7 @@ export function TransferPanel() {
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
   const destinationAddressError = useMemo(
-    () =>
-      getDestinationAddressError({
-        to: destinationAddress,
-        isEOA
-      }),
+    () => getDestinationAddressError({ destinationAddress, isEOA }),
     [destinationAddress, isEOA]
   )
 
