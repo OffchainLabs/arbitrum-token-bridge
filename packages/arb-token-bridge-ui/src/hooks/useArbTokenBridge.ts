@@ -42,6 +42,7 @@ import {
   getL2ERC20Address,
   l1TokenIsDisabled
 } from '../util/TokenUtils'
+import { getL2NativeToken } from '../util/L2NativeUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -887,6 +888,27 @@ export const useArbTokenBridge = (
     return rec
   }
 
+  function addL2NativeToken(erc20L2Address: string) {
+    const token = getL2NativeToken(erc20L2Address, l2.network.id)
+
+    setBridgeTokens(oldBridgeTokens => {
+      return {
+        ...oldBridgeTokens,
+        [`L2-NATIVE:${token.address}`]: {
+          name: token.name,
+          type: TokenType.ERC20,
+          symbol: token.symbol,
+          address: token.address,
+          l2Address: token.address,
+          decimals: token.decimals,
+          logoURI: token.logoURI,
+          listIds: new Set(),
+          isL2Native: true
+        }
+      }
+    })
+  }
+
   async function triggerOutboxEth({
     id,
     l1Signer
@@ -973,6 +995,7 @@ export const useArbTokenBridge = (
     },
     token: {
       add: addToken,
+      addL2NativeToken,
       addTokensFromList,
       removeTokensFromList,
       updateTokenData,

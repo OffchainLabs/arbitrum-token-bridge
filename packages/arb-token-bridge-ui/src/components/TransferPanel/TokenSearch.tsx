@@ -1,6 +1,7 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
 import {
   CheckCircleIcon,
   XMarkIcon,
@@ -79,6 +80,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
   const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
+  const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
 
   const {
     eth: [ethL1Balance],
@@ -190,12 +192,16 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   }, [token])
 
   const tokenIsBridgeable = useMemo(() => {
+    if (isL2NativeToken) {
+      return false
+    }
+
     if (isDepositMode) {
       return true
     }
 
     return tokenHasL2Address
-  }, [isDepositMode, tokenHasL2Address])
+  }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
@@ -216,7 +222,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
-      className="flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100"
+      className={twMerge(
+        'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
+        !tokenIsBridgeable
+          ? 'cursor-not-allowed opacity-50'
+          : 'cursor-pointer opacity-100'
+      )}
     >
       <div className="flex w-full flex-row items-center justify-start space-x-4">
         <SafeImage
@@ -289,9 +300,17 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                   )}
                 </>
               )}
-              <span className="text-xs font-normal text-gray-500">
-                {tokenListInfo}
-              </span>
+              {isL2NativeToken ? (
+                <span className="flex gap-1 text-xs font-normal">
+                  {`This token is native to ${getNetworkName(
+                    l2Network.id
+                  )} and can’t be briged.`}
+                </span>
+              ) : (
+                <span className="flex gap-1 text-xs font-normal text-gray-500">
+                  {tokenListInfo}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -536,15 +555,31 @@ function TokensPanel({
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
   const storeNewToken = async () => {
-    return token.add(newToken).catch((ex: Error) => {
-      let error = 'Token not found on this network.'
+    let error = 'Token not found on this network.'
+    let didSucceed = false
 
+    try {
+      // Try to add the token as an L2-native token
+      token.addL2NativeToken(newToken)
+      didSucceed = true
+    } catch (error) {
+      //
+    }
+
+    try {
+      // Try to add the token as a regular bridged token
+      await token.add(newToken)
+      didSucceed = true
+    } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {
         error = 'This token is currently paused in the bridge.'
       }
+    }
 
+    // Only show error message if neither succeeded
+    if (!didSucceed) {
       setErrorMessage(error)
-    })
+    }
   }
 
   const addNewToken: FormEventHandler = async e => {
