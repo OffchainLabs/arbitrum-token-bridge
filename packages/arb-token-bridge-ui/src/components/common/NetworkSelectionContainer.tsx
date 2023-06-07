@@ -22,7 +22,7 @@ export const NetworkSelectionContainer = ({
   const supportedNetworks = getSupportedNetworks(chain?.id).filter(
     chainId => chainId !== chain?.id
   )
-  const { isEOA = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const handleClick = useCallback(
     (
@@ -43,8 +43,9 @@ export const NetworkSelectionContainer = ({
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button
-        // we don't use isSmartContractWallet here because we also want to keep it disabled when undefined
-        disabled={!isEOA}
+        disabled={
+          isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
+        }
         className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
       >
         {children}

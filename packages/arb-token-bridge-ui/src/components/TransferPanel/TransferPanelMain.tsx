@@ -49,12 +49,14 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
+  const { isEOA, isSmartContractWallet } = useAccountType()
 
   return (
     <button
       type="button"
-      disabled={!isEOA}
+      disabled={
+        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
+      }
       className={twMerge(
         'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
         isEOA
@@ -630,9 +632,10 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          // only EOA can change the origin network
-          // we don't use isSmartContractWallet here because we also want to keep it disabled when undefined
-          disabled: !fromOptions.length || !isEOA,
+          disabled:
+            !fromOptions.length ||
+            isSmartContractWallet ||
+            typeof isSmartContractWallet === 'undefined',
           options: fromOptions,
           value: from,
           onChange: async network => {
@@ -759,7 +762,7 @@ export function TransferPanelMain({
     l1.network,
     from,
     to,
-    isEOA,
+    isSmartContractWallet,
     isDepositMode,
     setQueryParams,
     switchNetworkAsync,
