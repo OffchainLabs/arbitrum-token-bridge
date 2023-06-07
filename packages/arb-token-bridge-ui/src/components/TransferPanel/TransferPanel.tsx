@@ -44,7 +44,10 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { warningToast } from '../common/atoms/Toast'
+import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
+import { GET_HELP_LINK } from '../../constants'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -95,6 +98,17 @@ enum ImportTokenModalStatus {
   OPEN,
   CLOSED
 }
+
+const networkConnectionWarningToast = () =>
+  warningToast(
+    <>
+      Network connection issue. Please contact{' '}
+      <ExternalLink href={GET_HELP_LINK} className="underline">
+        support
+      </ExternalLink>
+      .
+    </>
+  )
 
 export function TransferPanel() {
   const tokenFromSearchParams = useTokenFromSearchParams()
@@ -443,7 +457,7 @@ export function TransferPanel() {
         if (
           !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
         if (selectedToken) {
           const { decimals } = selectedToken
@@ -607,7 +621,7 @@ export function TransferPanel() {
         if (
           !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
 
         if (selectedToken) {
