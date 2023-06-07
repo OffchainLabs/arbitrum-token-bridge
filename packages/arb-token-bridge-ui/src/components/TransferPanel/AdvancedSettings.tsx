@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
@@ -20,11 +21,9 @@ export const AdvancedSettings = ({
   error: AdvancedSettingsErrors | null
 }) => {
   const {
-    app: {
-      selectedToken,
-      arbTokenBridge: { walletAddress }
-    }
+    app: { selectedToken }
   } = useAppState()
+  const { address } = useAccount()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
@@ -81,7 +80,7 @@ export const AdvancedSettings = ({
             >
               <input
                 className="w-full"
-                placeholder={isSmartContractWallet ? undefined : walletAddress}
+                placeholder={isSmartContractWallet ? undefined : address}
                 defaultValue={destinationAddress}
                 disabled={inputLocked}
                 spellCheck={false}
