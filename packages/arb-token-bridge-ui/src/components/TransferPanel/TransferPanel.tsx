@@ -43,7 +43,10 @@ import {
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedWithSmartContractWallet } from '../../hooks/useIsConnectedWithSmartContractWallet'
+import { warningToast } from '../common/atoms/Toast'
+import { ExternalLink } from '../common/ExternalLink'
+import { useAccountType } from '../../hooks/useAccountType'
+import { GET_HELP_LINK } from '../../constants'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -95,6 +98,17 @@ enum ImportTokenModalStatus {
   CLOSED
 }
 
+const networkConnectionWarningToast = () =>
+  warningToast(
+    <>
+      Network connection issue. Please contact{' '}
+      <ExternalLink href={GET_HELP_LINK} className="underline">
+        support
+      </ExternalLink>
+      .
+    </>
+  )
+
 export function TransferPanel() {
   const tokenFromSearchParams = useTokenFromSearchParams()
 
@@ -138,7 +152,7 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
 
-  const isSmartContractWallet = useIsConnectedWithSmartContractWallet() ?? false
+  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
@@ -349,6 +363,11 @@ export function TransferPanel() {
       return
     }
 
+    if (!isEOA && !isSmartContractWallet) {
+      console.error('Account type is undefined')
+      return
+    }
+
     if (!l1Signer || !l2Signer) {
       throw 'Signer is undefined'
     }
@@ -434,7 +453,7 @@ export function TransferPanel() {
         if (
           !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
         if (selectedToken) {
           const { decimals } = selectedToken
@@ -598,7 +617,7 @@ export function TransferPanel() {
         if (
           !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
 
         if (selectedToken) {

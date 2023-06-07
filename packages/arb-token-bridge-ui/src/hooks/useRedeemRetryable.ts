@@ -12,6 +12,7 @@ import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { errorToast } from '../components/common/atoms/Toast'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -53,7 +54,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       })
     } catch (error: any) {
       setIsRedeeming(false)
-      return alert(
+      return errorToast(
         `There was an error, here is more information: ${error.message}`
       )
     }
@@ -66,7 +67,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
         return
       }
 
-      return alert(
+      return errorToast(
         `There was an error, here is more information: ${error.message}`
       )
     } finally {

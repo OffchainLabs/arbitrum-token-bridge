@@ -1,16 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  Dispatch
-} from 'react'
-
-import { useBlockNumber } from '../../hooks/useBlockNumber'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { createContext, useContext, useReducer, Dispatch } from 'react'
 
 type AppContextState = {
-  currentL1BlockNumber: number
   layout: {
     isTransferPanelVisible: boolean
     isTransferring: boolean
@@ -20,7 +10,6 @@ type AppContextState = {
 }
 
 const initialState: AppContextState = {
-  currentL1BlockNumber: 0,
   layout: {
     isTransferPanelVisible: true,
     isTransferring: false,
@@ -35,7 +24,6 @@ type AppContextValue = [AppContextState, Dispatch<Action>]
 const AppContext = createContext<AppContextValue>([initialState, () => {}])
 
 type Action =
-  | { type: 'set_current_l1_block_number'; payload: number }
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
@@ -43,9 +31,6 @@ type Action =
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
-    case 'set_current_l1_block_number':
-      return { ...state, currentL1BlockNumber: action.payload }
-
     case 'layout.set_is_transfer_panel_visible':
       return {
         ...state,
@@ -87,14 +72,6 @@ export function AppContextProvider({
   children: React.ReactNode
 }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { setCurrentL1BlockNumber } = useAppContextActions(dispatch) // override `dispatch` here because this is currently outside of app-context
-
-  const { l1 } = useNetworksAndSigners()
-  const currentL1BlockNumber = useBlockNumber(l1.provider)
-
-  useEffect(() => {
-    setCurrentL1BlockNumber(currentL1BlockNumber)
-  }, [currentL1BlockNumber])
 
   return (
     <AppContext.Provider value={[state, dispatch]}>
@@ -118,13 +95,6 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_is_transferring', payload })
   }
 
-  const setCurrentL1BlockNumber = (currentL1BlockNumber: number) => {
-    dispatch({
-      type: 'set_current_l1_block_number',
-      payload: currentL1BlockNumber
-    })
-  }
-
   const openTransactionHistoryPanel = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
@@ -143,7 +113,6 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
 
   return {
     setTransferring,
-    setCurrentL1BlockNumber,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
     openPreferences,

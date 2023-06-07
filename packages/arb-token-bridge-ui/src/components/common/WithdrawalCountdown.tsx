@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
+import { useBlockNumber } from 'wagmi'
 
-import { useAppContextState } from '../App/AppContext'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getBlockTime, getConfirmPeriodBlocks } from '../../util/networks'
 import {
@@ -18,7 +18,10 @@ export function WithdrawalCountdown({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { currentL1BlockNumber } = useAppContextState()
+  const { data: currentL1BlockNumber = 0 } = useBlockNumber({
+    chainId: l1Network.id,
+    watch: true
+  })
 
   if (
     typeof nodeBlockDeadline === 'undefined' ||
