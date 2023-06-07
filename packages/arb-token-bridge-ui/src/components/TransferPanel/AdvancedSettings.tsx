@@ -91,7 +91,7 @@ export const AdvancedSettings = ({
   function handleVisibility() {
     // Keep visible for SC wallets since destination address is mandatory
     // Or if destination address is provided
-    if (isSmartContractWallet || !!destinationAddress) {
+    if (isSmartContractWallet || destinationAddress) {
       setCollapsed(false)
       return
     }

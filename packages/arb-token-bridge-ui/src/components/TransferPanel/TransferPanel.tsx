@@ -810,7 +810,7 @@ export function TransferPanel() {
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
       (isSmartContractWallet && !selectedToken) ||
-      !!destinationAddressError
+      destinationAddressError
     )
   }, [
     isTransferring,
