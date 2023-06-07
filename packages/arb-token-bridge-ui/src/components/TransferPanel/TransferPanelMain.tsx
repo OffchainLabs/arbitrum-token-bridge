@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Listbox } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ArrowsUpDownIcon
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
@@ -25,6 +21,7 @@ import {
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { AdvancedSettings, AdvancedSettingsErrors } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -61,10 +58,6 @@ export function SwitchNetworksButton(
       <ArrowsUpDownIcon className="text-dark" />
     </button>
   )
-}
-
-enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
 }
 
 type OptionsExtraProps = {
@@ -359,7 +352,6 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
@@ -468,12 +460,6 @@ export function TransferPanelMain({
       setMaxAmount()
     }
   }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
-
-  useEffect(
-    // Show on page load if SC wallet since destination address mandatory
-    () => setShowAdvancedSettings(isSmartContractWallet),
-    [isSmartContractWallet]
-  )
 
   useEffect(() => {
     // Different destination address only allowed for tokens
@@ -851,55 +837,11 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      {/* Only allow different destination address for tokens */}
-      {selectedToken && (
-        <div className="mt-6">
-          <button
-            onClick={() =>
-              // Keep visible for SC wallets since destination address is mandatory
-              !isSmartContractWallet &&
-              setShowAdvancedSettings(!showAdvancedSettings)
-            }
-            className="flex flex-row items-center text-gray-dark"
-          >
-            <span className="text-lg font-semibold">Advanced Settings</span>
-            {showAdvancedSettings ? (
-              <ChevronUpIcon className="ml-1 h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="ml-1 h-4 w-4" />
-            )}
-          </button>
-          {showAdvancedSettings && (
-            <>
-              <div className="mt-2">
-                <span className="text-md text-gray-dark">
-                  Destination Address
-                  {!isSmartContractWallet ? ' (optional)' : ''}
-                </span>
-                <input
-                  className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-                  placeholder="Enter destination address"
-                  defaultValue={destinationAddress}
-                  spellCheck={false}
-                  onChange={e => {
-                    if (!e.target.value) {
-                      setDestinationAddress(undefined)
-                    } else {
-                      setDestinationAddress(e.target.value.toLowerCase())
-                    }
-                  }}
-                />
-              </div>
-            </>
-          )}
-          {isSmartContractWallet && advancedSettingsError && (
-            <span className="text-xs text-red-400">
-              {advancedSettingsError}
-            </span>
-          )}
-        </div>
-      )}
-
+      <AdvancedSettings
+        destinationAddress={destinationAddress}
+        onChange={value => setDestinationAddress(value)}
+        error={advancedSettingsError}
+      />
       <Dialog
         closeable
         title="Token not supported"
