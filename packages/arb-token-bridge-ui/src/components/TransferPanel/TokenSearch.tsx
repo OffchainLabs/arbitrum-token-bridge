@@ -266,17 +266,33 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             <div className="flex flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
-                <a
-                  href={`${getExplorerUrl(l1Network.id)}/token/${
-                    token.address
-                  }`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-link underline"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {shortenAddress(token.address).toLowerCase()}
-                </a>
+                <>
+                  {isL2NativeToken ? (
+                    <a
+                      href={`${getExplorerUrl(l2Network.id)}/token/${
+                        token.address
+                      }`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-link underline"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {shortenAddress(token.address).toLowerCase()}
+                    </a>
+                  ) : (
+                    <a
+                      href={`${getExplorerUrl(l1Network.id)}/token/${
+                        token.address
+                      }`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-link underline"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {shortenAddress(token.address).toLowerCase()}
+                    </a>
+                  )}
+                </>
               ) : (
                 <>
                   {tokenHasL2Address ? (
@@ -295,7 +311,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                     </a>
                   ) : (
                     <span className="text-xs text-gray-900">
-                      This token hasn&apos;t been bridged to L2
+                      This token hasn&apos;t been bridged to L2.
                     </span>
                   )}
                 </>
