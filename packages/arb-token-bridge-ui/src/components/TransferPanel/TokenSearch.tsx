@@ -247,9 +247,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       disabled={!tokenIsBridgeable}
       className={twMerge(
         'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
-        !tokenIsBridgeable
-          ? 'cursor-not-allowed opacity-50'
-          : 'cursor-pointer opacity-100'
+        tokenIsBridgeable
+          ? 'cursor-pointer opacity-100'
+          : 'cursor-not-allowed opacity-50'
       )}
     >
       <div className="flex w-full flex-row items-center justify-start space-x-4">
