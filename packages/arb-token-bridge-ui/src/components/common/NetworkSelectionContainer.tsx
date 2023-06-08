@@ -49,7 +49,7 @@ export const NetworkSelectionContainer = ({
           {({ close }) => (
             <>
               {supportedNetworks?.map((chainId, i) => (
-                <div // TODO: replace with button
+                <button
                   key={chainId}
                   className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
                   onClick={() => {
@@ -60,7 +60,7 @@ export const NetworkSelectionContainer = ({
                       handleClick(chainId, close)
                     }
                   }}
-                  role="button"
+                  type="button"
                   tabIndex={i}
                   aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
                 >
@@ -76,7 +76,7 @@ export const NetworkSelectionContainer = ({
                   <span className="whitespace-nowrap">
                     {getNetworkName(Number(chainId))}
                   </span>
-                </div>
+                </button>
               ))}
             </>
           )}
