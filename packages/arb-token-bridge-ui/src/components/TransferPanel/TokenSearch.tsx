@@ -572,12 +572,12 @@ function TokensPanel({
 
   const storeNewToken = async () => {
     let error = 'Token not found on this network.'
-    let didSucceed = false
+    let isSuccessful = false
 
     try {
       // Try to add the token as an L2-native token
       token.addL2NativeToken(newToken)
-      didSucceed = true
+      isSuccessful = true
     } catch (error) {
       //
     }
@@ -585,7 +585,7 @@ function TokensPanel({
     try {
       // Try to add the token as a regular bridged token
       await token.add(newToken)
-      didSucceed = true
+      isSuccessful = true
     } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {
         error = 'This token is currently paused in the bridge.'
@@ -593,7 +593,7 @@ function TokensPanel({
     }
 
     // Only show error message if neither succeeded
-    if (!didSucceed) {
+    if (!isSuccessful) {
       setErrorMessage(error)
     }
   }
