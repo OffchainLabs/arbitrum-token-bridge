@@ -12,6 +12,7 @@ import {
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import Image from 'next/image'
+import { Chain } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -40,6 +41,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
+import { ExternalLink } from '../common/ExternalLink'
 
 enum Panel {
   TOKENS,
@@ -57,6 +59,27 @@ function TokenLogoFallback() {
     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
+  )
+}
+
+function BlockExplorerTokenLink({
+  chain,
+  address
+}: {
+  chain: Chain
+  address: string | undefined
+}) {
+  const addressShortened =
+    typeof address !== 'undefined' ? shortenAddress(address).toLowerCase() : ''
+
+  return (
+    <ExternalLink
+      href={`${getExplorerUrl(chain.id)}/token/${address}`}
+      className="text-xs text-blue-link underline"
+      onClick={e => e.stopPropagation()}
+    >
+      {addressShortened}
+    </ExternalLink>
   )
 }
 
@@ -268,47 +291,24 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
               {isDepositMode ? (
                 <>
                   {isL2NativeToken ? (
-                    <a
-                      href={`${getExplorerUrl(l2Network.id)}/token/${
-                        token.address
-                      }`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-link underline"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {shortenAddress(token.address).toLowerCase()}
-                    </a>
+                    <BlockExplorerTokenLink
+                      chain={l2Network}
+                      address={token.address}
+                    />
                   ) : (
-                    <a
-                      href={`${getExplorerUrl(l1Network.id)}/token/${
-                        token.address
-                      }`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-link underline"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {shortenAddress(token.address).toLowerCase()}
-                    </a>
+                    <BlockExplorerTokenLink
+                      chain={l1Network}
+                      address={token.address}
+                    />
                   )}
                 </>
               ) : (
                 <>
                   {tokenHasL2Address ? (
-                    <a
-                      href={`${getExplorerUrl(l2Network.id)}/token/${
-                        token.l2Address
-                      }`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-link underline"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {token.l2Address
-                        ? shortenAddress(token.l2Address).toLowerCase()
-                        : ''}
-                    </a>
+                    <BlockExplorerTokenLink
+                      chain={l2Network}
+                      address={token.l2Address}
+                    />
                   ) : (
                     <span className="text-xs text-gray-900">
                       This token hasn&apos;t been bridged to L2.
