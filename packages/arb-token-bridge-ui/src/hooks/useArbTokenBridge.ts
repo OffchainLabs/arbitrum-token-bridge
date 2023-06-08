@@ -736,11 +736,12 @@ export const useArbTokenBridge = (
     })
   }
 
-  async function addToken(erc20L1orL2Address: string, walletAddress: string) {
+  async function addToken(erc20L1orL2Address: string) {
     let l1Address: string
     let l2Address: string | undefined
+    const { address } = useAccount()
 
-    if (!walletAddress) {
+    if (!address) {
       return
     }
 
@@ -767,7 +768,7 @@ export const useArbTokenBridge = (
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
     const { name, symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
+      account: address,
       erc20L1Address: l1Address,
       l1Provider: l1.provider,
       l2Provider: l2.provider

@@ -591,7 +591,7 @@ function TokensPanel({
 
     try {
       // Try to add the token as a regular bridged token
-      await token.add(newToken, address)
+      await token.add(newToken)
       isSuccessful = true
     } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {
