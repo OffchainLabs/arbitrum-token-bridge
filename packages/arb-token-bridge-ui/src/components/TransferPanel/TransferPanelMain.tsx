@@ -256,6 +256,7 @@ function TokenBalance({
   on: NetworkType
   prefix?: string
 }) {
+  const { l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
 
   const symbol = useMemo(() => {
@@ -263,16 +264,17 @@ function TokenBalance({
       return undefined
     }
 
-    // Special case because token symbol for USDC is different on L1 and L2
-    if (
-      on === NetworkType.l2 &&
-      forToken.address.toLowerCase() === CommonAddress.Mainnet.USDC
-    ) {
+    const addressLowercased = forToken.address.toLowerCase()
+    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
+    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
+
+    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
+    if (on === NetworkType.l2 && isUSDC && isL2ArbitrumOne) {
       return 'USDC.e'
     }
 
     return forToken.symbol
-  }, [forToken, on])
+  }, [forToken, on, l2])
 
   if (!forToken) {
     return null

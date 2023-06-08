@@ -12,6 +12,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { isNetwork } from '../../util/networks'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -22,7 +23,7 @@ export function TokenButton(): JSX.Element {
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const { status } = useNetworksAndSigners()
+  const { status, l2 } = useNetworksAndSigners()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -53,13 +54,17 @@ export function TokenButton(): JSX.Element {
       return 'ETH'
     }
 
-    // Special case because token symbol for USDC is different on L1 and L2
-    if (selectedToken.address === CommonAddress.Mainnet.USDC) {
+    const addressLowercased = selectedToken.address.toLowerCase()
+    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
+    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
+
+    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
+    if (isUSDC && isL2ArbitrumOne) {
       return isDepositMode ? 'USDC' : 'USDC.e'
     }
 
     return selectedToken.symbol
-  }, [selectedToken, isDepositMode])
+  }, [selectedToken, isDepositMode, l2])
 
   function closeWithReset() {
     setTokenToImport(undefined)
