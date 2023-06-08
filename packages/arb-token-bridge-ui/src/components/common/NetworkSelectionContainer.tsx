@@ -2,7 +2,6 @@ import { Popover, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import { useCallback } from 'react'
 import { useNetwork } from 'wagmi'
-import { twMerge } from 'tailwind-merge'
 
 import {
   ChainId,
