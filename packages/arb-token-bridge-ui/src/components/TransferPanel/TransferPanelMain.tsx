@@ -813,8 +813,22 @@ export function TransferPanelMain({
 
           {showUSDCNotice && (
             <p className="mt-1 text-xs font-light text-white">
-              Native USDC is coming June 8th. Bridged USDC will work on Arbitrum
-              One but won’t be fungible with Circle’s smart contracts.{' '}
+              Native USDC is live on Arbitrum One!
+              <br />
+              <ExternalLink
+                href="https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+                className="arb-hover underline"
+              >
+                Bridged USDC (USDC.e)
+              </ExternalLink>{' '}
+              will work but is different from{' '}
+              <ExternalLink
+                href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+                className="arb-hover underline"
+              >
+                Native USDC
+              </ExternalLink>
+              .{' '}
               <ExternalLink
                 href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
                 className="arb-hover underline"
