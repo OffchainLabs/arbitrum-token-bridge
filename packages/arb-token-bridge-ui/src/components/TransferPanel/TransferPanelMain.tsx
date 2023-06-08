@@ -303,6 +303,8 @@ export enum TransferPanelMainErrorMessage {
   SC_WALLET_ETH_NOT_SUPPORTED
 }
 
+const USDC_L1_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -356,6 +358,10 @@ export function TransferPanelMain({
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const showUSDCNotice =
+    selectedToken?.address === USDC_L1_ADDRESS &&
+    isNetwork(l2.network.id).isArbitrumOne
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -802,6 +808,34 @@ export function TransferPanelMain({
               >
                 Learn more.
               </ExternalLink>
+            </p>
+          )}
+
+          {showUSDCNotice && (
+            <p className="mt-1 text-xs font-light text-white">
+              Native USDC is live on Arbitrum One!
+              <br />
+              <ExternalLink
+                href="https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+                className="arb-hover underline"
+              >
+                Bridged USDC (USDC.e)
+              </ExternalLink>{' '}
+              will work but is different from{' '}
+              <ExternalLink
+                href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+                className="arb-hover underline"
+              >
+                Native USDC
+              </ExternalLink>
+              .{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
             </p>
           )}
         </div>
