@@ -12,7 +12,7 @@ import { useAccount } from 'wagmi'
 // In the token list we should show later only tokens with positive balances
 const TokenListSyncer = (): JSX.Element => {
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
   const { address } = useAccount()
   const {
@@ -24,7 +24,7 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    if (typeof arbTokenBridge?.token === 'undefined') {
+    if (!arbTokenBridgeLoaded) {
       return
     }
 
@@ -47,7 +47,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [address, l2Network])
+  }, [address, l2Network, arbTokenBridgeLoaded])
 
   return <></>
 }

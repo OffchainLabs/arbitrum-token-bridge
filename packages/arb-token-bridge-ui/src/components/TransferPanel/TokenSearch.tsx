@@ -574,6 +574,10 @@ function TokensPanel({
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
   const storeNewToken = async () => {
+    if (!address) {
+      return
+    }
+
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -587,7 +591,7 @@ function TokensPanel({
 
     try {
       // Try to add the token as a regular bridged token
-      await token.add(newToken)
+      await token.add(newToken, address)
       isSuccessful = true
     } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {

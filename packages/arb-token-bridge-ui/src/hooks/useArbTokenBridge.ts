@@ -137,9 +137,6 @@ export const useArbTokenBridge = (
   // this prevents previous account/chains' transactions to show up in the current account
   // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
   useEffect(() => {
-    if (!address) {
-      return
-    }
     setPendingWithdrawalMap({})
   }, [l1.provider, l2.provider, address])
 
@@ -401,20 +398,16 @@ export const useArbTokenBridge = (
     amount,
     l1Signer,
     txLifecycle,
-    destinationAddress,
-    walletAddress
+    destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string
-    walletAddress?: string
   }) {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    if (!walletAddress) {
-      return
-    }
+    const walletAddress = await l1Signer.getAddress()
 
     try {
       const { symbol, decimals } = await getL1TokenData({
@@ -488,23 +481,17 @@ export const useArbTokenBridge = (
     amount,
     l2Signer,
     txLifecycle,
-    destinationAddress,
-    walletAddress
+    destinationAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
     destinationAddress?: string
-    walletAddress?: string
   }) {
     try {
-      if (!walletAddress) {
-        return
-      }
-
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-
+      const walletAddress = await l2Signer.getAddress()
       const provider = l2Signer.provider
       const isSmartContractAddress =
         provider && (await provider.getCode(String(erc20L1Address))).length < 2
@@ -749,7 +736,7 @@ export const useArbTokenBridge = (
     })
   }
 
-  async function addToken(erc20L1orL2Address: string, walletAddress?: string) {
+  async function addToken(erc20L1orL2Address: string, walletAddress: string) {
     let l1Address: string
     let l2Address: string | undefined
 
