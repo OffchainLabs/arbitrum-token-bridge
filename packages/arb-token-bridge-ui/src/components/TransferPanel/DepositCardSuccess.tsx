@@ -12,13 +12,15 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useBalance } from '../../hooks/useBalance'
+import { useAccount } from 'wagmi'
 
 export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
   const {
     app: {
-      arbTokenBridge: { walletAddress, bridgeTokens, token }
+      arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
+  const { address } = useAccount()
   const {
     l2: { provider: L2Provider }
   } = useNetworksAndSigners()
@@ -28,7 +30,7 @@ export function DepositCardSuccess({ tx }: { tx: MergedTransaction }) {
     erc20: [erc20Balances]
   } = useBalance({
     provider: L2Provider,
-    walletAddress: walletAddress
+    walletAddress: address
   })
 
   useEffect(() => {

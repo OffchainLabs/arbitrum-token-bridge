@@ -12,7 +12,7 @@ import {
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import Image from 'next/image'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -91,9 +91,10 @@ interface TokenRowProps {
 }
 
 function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
+  const { address } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, walletAddress },
+      arbTokenBridge: { bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -109,11 +110,11 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: l1Provider, walletAddress: address })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: l2Provider, walletAddress: address })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -442,9 +443,10 @@ function TokensPanel({
 }: {
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
+  const { address } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, walletAddress, bridgeTokens },
+      arbTokenBridge: { token, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -456,11 +458,11 @@ function TokensPanel({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ provider: L1Provider, walletAddress: address })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ provider: L2Provider, walletAddress: address })
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -705,9 +707,10 @@ export function TokenSearch({
   close: () => void
   onImportToken: (address: string) => void
 }) {
+  const { address } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens, walletAddress }
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
@@ -742,8 +745,12 @@ export function TokenSearch({
         return
       }
 
+      if (!address) {
+        return
+      }
+
       const data = await getL1TokenData({
-        account: walletAddress,
+        account: address,
         erc20L1Address: _token.address,
         l1Provider: l1.provider,
         l2Provider: l2.provider

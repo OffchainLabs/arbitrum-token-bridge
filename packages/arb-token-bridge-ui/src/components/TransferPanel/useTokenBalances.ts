@@ -4,6 +4,7 @@ import { BigNumber, constants } from 'ethers'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
+import { useAccount } from 'wagmi'
 
 export enum NetworkType {
   l1 = 'l1',
@@ -16,16 +17,17 @@ export type Balances = {
 export function useTokenBalances(erc20L1Address?: string): Balances {
   const {
     app: {
-      arbTokenBridge: { walletAddress, bridgeTokens }
+      arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
+  const { address } = useAccount()
   const {
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({ provider: l1.provider, walletAddress: address })
   const {
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({ provider: l2.provider, walletAddress: address })
 
   return useMemo(() => {
     const defaultResult = { [NetworkType.l1]: null, [NetworkType.l2]: null }

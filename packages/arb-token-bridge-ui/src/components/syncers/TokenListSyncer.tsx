@@ -6,6 +6,7 @@ import {
   BRIDGE_TOKEN_LISTS
 } from '../../util/TokenListUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useAccount } from 'wagmi'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
@@ -13,6 +14,7 @@ const TokenListSyncer = (): JSX.Element => {
   const {
     app: { arbTokenBridge }
   } = useAppState()
+  const { address } = useAccount()
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -22,7 +24,11 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    if (!arbTokenBridge?.walletAddress) {
+    if (typeof arbTokenBridge?.token === 'undefined') {
+      return
+    }
+
+    if (typeof address === 'undefined') {
       return
     }
 
@@ -41,7 +47,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [arbTokenBridge?.walletAddress, l2Network])
+  }, [address, l2Network])
 
   return <></>
 }

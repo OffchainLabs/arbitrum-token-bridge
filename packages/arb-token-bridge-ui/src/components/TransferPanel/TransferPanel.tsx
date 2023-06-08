@@ -131,7 +131,7 @@ export function TransferPanel() {
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token, walletAddress },
+      arbTokenBridge: { eth, token },
       arbTokenBridge,
       warningTokens
     }
@@ -192,11 +192,11 @@ export function TransferPanel() {
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: l1Provider, walletAddress: account })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: l2Provider, walletAddress: account })
 
   const ethBalance = useMemo(() => {
     return isDepositMode ? ethL1Balance : ethL2Balance
@@ -236,15 +236,7 @@ export function TransferPanel() {
 
   useEffect(() => {
     // Check in case of an account switch or network switch
-    if (
-      typeof account === 'undefined' ||
-      typeof arbTokenBridge.walletAddress === 'undefined'
-    ) {
-      return
-    }
-
-    // Wait for the bridge object to be in sync
-    if (account.toLowerCase() !== arbTokenBridge.walletAddress.toLowerCase()) {
+    if (typeof account === 'undefined') {
       return
     }
 
@@ -363,6 +355,10 @@ export function TransferPanel() {
       return
     }
 
+    if (!account) {
+      return
+    }
+
     if (!isEOA && !isSmartContractWallet) {
       console.error('Account type is undefined')
       return
@@ -478,7 +474,7 @@ export function TransferPanel() {
           }
 
           const allowance = await getL1TokenAllowance({
-            account: walletAddress,
+            account,
             erc20L1Address: selectedToken.address,
             l1Provider: l1Provider,
             l2Provider: l2Provider
@@ -631,7 +627,7 @@ export function TransferPanel() {
             const allowed = await isAllowedL2({
               l1TokenAddress: selectedToken.address,
               l2TokenAddress: selectedToken.l2Address,
-              walletAddress,
+              walletAddress: account,
               amountNeeded: amountRaw,
               l2Provider: latestNetworksAndSigners.current.l2.provider
             })
@@ -1037,7 +1033,7 @@ export function TransferPanel() {
             onClose={() =>
               setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
             }
-            address={tokenFromSearchParams}
+            tokenAddress={tokenFromSearchParams}
           />
         )}
 

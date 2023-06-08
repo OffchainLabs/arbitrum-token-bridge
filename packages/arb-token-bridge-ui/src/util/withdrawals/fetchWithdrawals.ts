@@ -14,7 +14,7 @@ import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromE
 import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
 
 export type FetchWithdrawalsParams = {
-  walletAddress: string
+  walletAddress?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider

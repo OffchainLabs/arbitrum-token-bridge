@@ -134,7 +134,7 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { address, isConnected } = useAccount()
+  const { isConnected } = useAccount()
   const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
@@ -146,12 +146,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
 
-      if (!address) {
-        return
-      }
-
       setTokenBridgeParams({
-        walletAddress: address,
         l1: {
           network: l1.network,
           provider: l1.provider
@@ -162,7 +157,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         }
       })
     },
-    [address]
+    []
   )
 
   // Listen for account and network changes

@@ -21,6 +21,7 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
+import { useAccount } from 'wagmi'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -79,9 +80,9 @@ function ExternalLinkCard({
 }
 
 export function LowBalanceDialog(props: UseDialogProps) {
-  const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
+  const { address } = useAccount()
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -90,7 +91,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
     eth: [ethBalance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: app.arbTokenBridge.walletAddress
+    walletAddress: address
   })
 
   const balance = useMemo(() => ethBalance ?? constants.Zero, [ethBalance])

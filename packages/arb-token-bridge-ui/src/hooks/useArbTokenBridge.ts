@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -88,7 +88,6 @@ class TokenDisabledError extends Error {
 }
 
 export interface TokenBridgeParams {
-  walletAddress: string
   l1: { provider: JsonRpcProvider; network: Chain }
   l2: { provider: JsonRpcProvider; network: Chain }
 }
@@ -96,7 +95,8 @@ export interface TokenBridgeParams {
 export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
-  const { walletAddress, l1, l2 } = params
+  const { l1, l2 } = params
+  const { address } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
@@ -106,14 +106,14 @@ export const useArbTokenBridge = (
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress
+    walletAddress: address
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress
+    walletAddress: address
   })
 
   interface ExecutedMessagesCache {
@@ -137,8 +137,11 @@ export const useArbTokenBridge = (
   // this prevents previous account/chains' transactions to show up in the current account
   // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
   useEffect(() => {
+    if (!address) {
+      return
+    }
     setPendingWithdrawalMap({})
-  }, [l1.provider, l2.provider, walletAddress])
+  }, [l1.provider, l2.provider, address])
 
   const [
     transactions,
@@ -156,7 +159,6 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
-
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network])
 
@@ -189,6 +191,7 @@ export const useArbTokenBridge = (
       return error.message
     }
 
+    const walletAddress = await l1Signer.getAddress()
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
@@ -235,7 +238,7 @@ export const useArbTokenBridge = (
   }) {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-
+      const walletAddress = await l2Signer.getAddress()
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
@@ -321,7 +324,7 @@ export const useArbTokenBridge = (
       erc20L1Address,
       l1Signer
     })
-
+    const walletAddress = await l1Signer.getAddress()
     const { symbol } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
@@ -348,12 +351,14 @@ export const useArbTokenBridge = (
 
   const approveTokenL2 = async ({
     erc20L1Address,
-    l2Signer
+    l2Signer,
+    walletAddress
   }: {
     erc20L1Address: string
     l2Signer: Signer
+    walletAddress?: string
   }) => {
-    if (typeof bridgeTokens === 'undefined') {
+    if (typeof bridgeTokens === 'undefined' || !walletAddress) {
       return
     }
     const bridgeToken = bridgeTokens[erc20L1Address]
@@ -396,15 +401,20 @@ export const useArbTokenBridge = (
     amount,
     l1Signer,
     txLifecycle,
-    destinationAddress
+    destinationAddress,
+    walletAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l1Signer: Signer
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string
+    walletAddress?: string
   }) {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+    if (!walletAddress) {
+      return
+    }
 
     try {
       const { symbol, decimals } = await getL1TokenData({
@@ -478,15 +488,21 @@ export const useArbTokenBridge = (
     amount,
     l2Signer,
     txLifecycle,
-    destinationAddress
+    destinationAddress,
+    walletAddress
   }: {
     erc20L1Address: string
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
     destinationAddress?: string
+    walletAddress?: string
   }) {
     try {
+      if (!walletAddress) {
+        return
+      }
+
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
       const provider = l2Signer.provider
@@ -733,9 +749,13 @@ export const useArbTokenBridge = (
     })
   }
 
-  async function addToken(erc20L1orL2Address: string) {
+  async function addToken(erc20L1orL2Address: string, walletAddress?: string) {
     let l1Address: string
     let l2Address: string | undefined
+
+    if (!walletAddress) {
+      return
+    }
 
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
     const maybeL1Address = await getL1ERC20Address({
@@ -845,6 +865,7 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
+    const walletAddress = await l1Signer.getAddress()
     const { symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address: tokenAddress as string,
@@ -925,6 +946,8 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
+    const walletAddress = await l1Signer.getAddress()
+
     addTransaction({
       status: 'pending',
       type: 'outbox',
@@ -983,7 +1006,6 @@ export const useArbTokenBridge = (
   }
 
   return {
-    walletAddress,
     bridgeTokens,
     eth: {
       deposit: depositEth,

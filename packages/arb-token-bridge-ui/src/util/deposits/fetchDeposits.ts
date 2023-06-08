@@ -10,7 +10,7 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 
 export type FetchDepositParams = {
-  walletAddress: string
+  walletAddress?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider

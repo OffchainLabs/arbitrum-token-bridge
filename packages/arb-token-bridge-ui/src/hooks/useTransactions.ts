@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useMemo } from 'react'
+import { useReducer, useEffect, useMemo, useCallback } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
@@ -514,7 +514,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('*** Status not included in transaction receipt *** ')
         break
     }
-    console.log('TX for update', tx)
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }
@@ -526,10 +525,9 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
-  const setDepositsInStore = (newTransactions: Transaction[]) => {
+  const setDepositsInStore = useCallback((newTransactions: Transaction[]) => {
     // appends the state with a new set of transactions
     // useful when you want to display some transactions fetched from subgraph without worrying about existing state
-
     const transactionsMap: { [id: string]: Transaction } = {}
 
     ;[...transactions, ...newTransactions].forEach(tx => {
@@ -540,7 +538,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       type: 'SET_TRANSACTIONS',
       transactions: Object.values(transactionsMap)
     })
-  }
+  }, [])
 
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))

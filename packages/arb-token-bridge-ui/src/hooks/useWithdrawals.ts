@@ -11,6 +11,7 @@ import {
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { useAccount } from 'wagmi'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -58,17 +59,12 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   const gatewaysToUse = useL2Gateways({ l2Provider })
 
-  const {
-    app: {
-      arbTokenBridge: { walletAddress }
-    }
-  } = useAppState()
-
+  const { address } = useAccount()
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
     [
       'withdrawals',
-      walletAddress,
+      address,
       l1Provider,
       l2Provider,
       gatewaysToUse,

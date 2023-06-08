@@ -7,7 +7,7 @@ import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -45,6 +45,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -218,19 +219,16 @@ function StyledLoader() {
 }
 
 function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
-  const walletAddress = arbTokenBridge.walletAddress
+  const { address } = useAccount()
 
   const {
     eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({ provider: l1.provider, walletAddress: address })
   const {
     eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({ provider: l2.provider, walletAddress: address })
 
   const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
 
@@ -333,15 +331,15 @@ export function TransferPanelMain({
   const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
-  const { arbTokenBridge, isDepositMode, selectedToken } = app
-  const { walletAddress } = arbTokenBridge
+  const { isDepositMode, selectedToken } = app
+  const { address } = useAccount()
 
   const {
     eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({ provider: l1.provider, walletAddress: address })
   const {
     eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({ provider: l2.provider, walletAddress: address })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
@@ -378,15 +376,19 @@ export function TransferPanelMain({
   const estimateGas = useCallback(
     async (
       weiValue: BigNumber
-    ): Promise<{
-      estimatedL1Gas: BigNumber
-      estimatedL2Gas: BigNumber
-      estimatedL2SubmissionCost: BigNumber
-    }> => {
+    ): Promise<
+      | (GasEstimates & {
+          estimatedL2SubmissionCost: BigNumber
+        })
+      | null
+    > => {
+      if (!address) {
+        return null
+      }
       if (isDepositMode) {
         const result = await depositEthEstimateGas({
           amount: weiValue,
-          address: walletAddress,
+          address,
           l1Provider: l1.provider,
           l2Provider: l2.provider
         })
@@ -395,13 +397,13 @@ export function TransferPanelMain({
 
       const result = await withdrawEthEstimateGas({
         amount: weiValue,
-        address: walletAddress,
+        address,
         l2Provider: l2.provider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [isDepositMode, walletAddress, l1.provider, l2.provider]
+    [isDepositMode, address, l1.provider, l2.provider]
   )
 
   const setMaxAmount = useCallback(async () => {
@@ -426,6 +428,10 @@ export function TransferPanelMain({
     try {
       setLoadingMaxAmount(true)
       const result = await estimateGas(ethBalance)
+
+      if (!result) {
+        return
+      }
 
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,

@@ -10,6 +10,7 @@ import {
 } from '../util/deposits/fetchDeposits'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
+import { useAccount } from 'wagmi'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -22,7 +23,6 @@ export const fetchCompleteDepositData = async (
 ): Promise<CompleteDepositData> => {
   // get the original deposits
   const deposits = await fetchDeposits(depositParams)
-
   // filter out pending deposits
   const pendingDepositsMap = new Map<string, boolean>()
   // get their complete transformed data (so that we get their exact status)
@@ -47,17 +47,13 @@ export const useDeposits = (depositPageParams: PageParams) => {
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
-  const {
-    app: {
-      arbTokenBridge: { walletAddress }
-    }
-  } = useAppState()
+  const { address } = useAccount()
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
     [
       'deposits',
-      walletAddress,
+      address,
       l1Provider,
       l2Provider,
       depositPageParams.pageNumber,

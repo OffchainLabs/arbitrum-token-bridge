@@ -11,17 +11,19 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
+import { useAccount } from 'wagmi'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const { walletAddress, bridgeTokens } = arbTokenBridge
+  const { bridgeTokens } = arbTokenBridge
   const { l1 } = useNetworksAndSigners()
+  const { address } = useAccount()
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({ provider: l1.provider, walletAddress: address })
 
   useEffect(() => {
     // Add token to bridge just in case

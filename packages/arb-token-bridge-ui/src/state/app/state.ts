@@ -5,7 +5,7 @@ import {
 } from 'lodash-es'
 import { derived } from 'overmind'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-
+import { getAccount } from '@wagmi/core'
 import { ConnectionState } from '../../util'
 import {
   filterTransactions,
@@ -100,7 +100,7 @@ export const defaultState: AppState = {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
     return filterTransactions(
       [...transactions],
-      s.arbTokenBridge.walletAddress,
+      getAccount().address || '',
       s.l1NetworkChainId,
       s.l2NetworkChainId
     )
