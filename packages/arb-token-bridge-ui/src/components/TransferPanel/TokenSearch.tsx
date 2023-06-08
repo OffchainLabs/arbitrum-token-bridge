@@ -69,8 +69,9 @@ function BlockExplorerTokenLink({
   chain: Chain
   address: string | undefined
 }) {
-  const addressShortened =
-    typeof address !== 'undefined' ? shortenAddress(address).toLowerCase() : ''
+  if (typeof address === 'undefined') {
+    return null
+  }
 
   return (
     <ExternalLink
@@ -78,7 +79,7 @@ function BlockExplorerTokenLink({
       className="text-xs text-blue-link underline"
       onClick={e => e.stopPropagation()}
     >
-      {addressShortened}
+      {shortenAddress(address).toLowerCase()}
     </ExternalLink>
   )
 }
