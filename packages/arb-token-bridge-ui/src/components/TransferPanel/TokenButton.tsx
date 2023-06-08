@@ -11,10 +11,12 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
+import { CommonAddress } from '../../util/CommonAddressUtils'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
+      isDepositMode,
       selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
@@ -45,6 +47,19 @@ export function TokenButton(): JSX.Element {
     }
     return undefined
   }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
+
+  const tokenSymbol = useMemo(() => {
+    if (!selectedToken) {
+      return 'ETH'
+    }
+
+    // Special case because token symbol for USDC is different on L1 and L2
+    if (selectedToken.address === CommonAddress.Mainnet.USDC) {
+      return isDepositMode ? 'USDC' : 'USDC.e'
+    }
+
+    return selectedToken.symbol
+  }, [selectedToken, isDepositMode])
 
   function closeWithReset() {
     setTokenToImport(undefined)
@@ -83,7 +98,7 @@ export function TokenButton(): JSX.Element {
               />
             )}
             <span className="text-xl font-light sm:text-3xl">
-              {selectedToken ? selectedToken.symbol : 'ETH'}
+              {tokenSymbol}
             </span>
             <ChevronDownIcon className="h-4 w-4 text-gray-6" />
           </div>

@@ -45,6 +45,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -257,6 +258,22 @@ function TokenBalance({
 }) {
   const balance = useTokenBalances(forToken?.address)[on]
 
+  const symbol = useMemo(() => {
+    if (!forToken) {
+      return undefined
+    }
+
+    // Special case because token symbol for USDC is different on L1 and L2
+    if (
+      on === NetworkType.l2 &&
+      forToken.address.toLowerCase() === CommonAddress.Mainnet.USDC
+    ) {
+      return 'USDC.e'
+    }
+
+    return forToken.symbol
+  }, [forToken, on])
+
   if (!forToken) {
     return null
   }
@@ -270,7 +287,7 @@ function TokenBalance({
       {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
-        symbol: forToken.symbol
+        symbol
       })}
     </span>
   )
@@ -360,7 +377,7 @@ export function TransferPanelMain({
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const showUSDCNotice =
-    selectedToken?.address === USDC_L1_ADDRESS &&
+    selectedToken?.address === CommonAddress.Mainnet.USDC &&
     isNetwork(l2.network.id).isArbitrumOne
 
   const [, setQueryParams] = useArbQueryParams()
