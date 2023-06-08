@@ -320,7 +320,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
                     l2Network.id
-                  )} and can’t be briged.`}
+                  )} and can’t be bridged.`}
                 </span>
               ) : (
                 <span className="flex gap-1 text-xs font-normal text-gray-500">
