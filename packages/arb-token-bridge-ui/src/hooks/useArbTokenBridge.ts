@@ -739,7 +739,6 @@ export const useArbTokenBridge = (
   async function addToken(erc20L1orL2Address: string) {
     let l1Address: string
     let l2Address: string | undefined
-    const { address } = useAccount()
 
     if (!address) {
       return
