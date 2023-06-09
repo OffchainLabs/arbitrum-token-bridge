@@ -46,6 +46,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { patchTokenSymbol } from '../../util/TokenUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -258,23 +259,22 @@ function TokenBalance({
 }) {
   const { l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
+  const {
+    app: { isDepositMode }
+  } = useAppState()
 
   const symbol = useMemo(() => {
     if (!forToken) {
       return undefined
     }
 
-    const addressLowercased = forToken.address.toLowerCase()
-    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
-    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
-
-    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
-    if (on === NetworkType.l2 && isUSDC && isL2ArbitrumOne) {
-      return 'USDC.e'
-    }
-
-    return forToken.symbol
-  }, [forToken, on, l2])
+    return patchTokenSymbol({
+      symbol: forToken.symbol,
+      tokenAddress: forToken.address,
+      isDeposit: isDepositMode,
+      isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+    })
+  }, [forToken, l2, isDepositMode])
 
   if (!forToken) {
     return null

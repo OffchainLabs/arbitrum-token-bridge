@@ -16,6 +16,7 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { patchTokenSymbol } from '../../util/TokenUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -253,7 +254,7 @@ export function TransferPanelSummary({
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
 
   const { isMainnet } = isNetwork(l1.network.id)
 
@@ -291,7 +292,14 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span>
-            {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
+            {formatAmount(amount, {
+              symbol: patchTokenSymbol({
+                symbol: token?.symbol || 'ETH',
+                tokenAddress: token?.address || '',
+                isDeposit: app.isDepositMode,
+                isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+              })
+            })}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (

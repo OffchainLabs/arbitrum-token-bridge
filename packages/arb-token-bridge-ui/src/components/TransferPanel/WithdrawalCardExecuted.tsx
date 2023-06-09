@@ -11,17 +11,30 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
+import { patchTokenSymbol } from '../../util/TokenUtils'
+import { isNetwork } from '../../util/networks'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
   const { walletAddress, bridgeTokens } = arbTokenBridge
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
   } = useBalance({ provider: l1.provider, walletAddress })
+
+  const tokenSymbol = useMemo(
+    () =>
+      patchTokenSymbol({
+        symbol: tx.asset.toUpperCase(),
+        tokenAddress: tx.tokenAddress || '',
+        isDeposit: false,
+        isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+      }),
+    [tx, l2]
+  )
 
   useEffect(() => {
     // Add token to bridge just in case
@@ -67,7 +80,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
             <span className="font-medium">
               {formatAmount(balance, {
                 decimals,
-                symbol: tx.asset.toUpperCase()
+                symbol: tokenSymbol
               })}
             </span>
           ) : (

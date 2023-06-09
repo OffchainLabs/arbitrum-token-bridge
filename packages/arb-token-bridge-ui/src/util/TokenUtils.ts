@@ -4,6 +4,7 @@ import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
+import { CommonAddress } from './CommonAddressUtils'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -234,4 +235,30 @@ export async function l1TokenIsDisabled({
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
+}
+
+// temporary patch token symbol until our token lists return correct symbols
+export function patchTokenSymbol({
+  symbol,
+  tokenAddress,
+  isL2ArbitrumOne,
+  isDeposit
+}: {
+  symbol: string
+  tokenAddress: string
+  isL2ArbitrumOne: boolean
+  isDeposit: boolean
+}) {
+  // if L2 network is Arbitrum one and we identify USDC/USDC.e
+  // we conditionally patch the token symbol in this case
+  if (
+    isL2ArbitrumOne &&
+    tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC
+  ) {
+    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
+    return isDeposit ? 'USDC' : 'USDC.e'
+  }
+
+  // else, just return whatever token symbol was provided
+  return symbol
 }

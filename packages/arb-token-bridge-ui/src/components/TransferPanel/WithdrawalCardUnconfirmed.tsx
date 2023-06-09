@@ -1,4 +1,4 @@
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
@@ -6,19 +6,31 @@ import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
+import { useMemo } from 'react'
+import { patchTokenSymbol } from '../../util/TokenUtils'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(l1.network.id)
+
+  const tokenSymbol = useMemo(
+    () =>
+      patchTokenSymbol({
+        symbol: tx.asset.toUpperCase(),
+        tokenAddress: tx.tokenAddress || '',
+        isDeposit: false,
+        isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+      }),
+    [tx, l2]
+  )
 
   return (
     <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="flex flex-col lg:ml-[-2rem]">
           <span className="ml-8 text-lg text-ocl-blue lg:ml-0 lg:text-2xl">
-            Moving{' '}
-            {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}{' '}
-            to {networkName}
+            Moving {formatAmount(Number(tx.value), { symbol: tokenSymbol })} to{' '}
+            {networkName}
           </span>
 
           <span className="animate-pulse text-sm text-gray-dark">
@@ -50,7 +62,7 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
               Claim{' '}
               <span className="hidden lg:flex">
                 {formatAmount(Number(tx.value), {
-                  symbol: tx.asset.toUpperCase()
+                  symbol: tokenSymbol
                 })}
               </span>
             </div>

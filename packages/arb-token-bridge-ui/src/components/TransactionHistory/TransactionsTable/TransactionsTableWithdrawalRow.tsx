@@ -12,7 +12,11 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { shortenTxHash } from '../../../util/CommonUtils'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork
+} from '../../../util/networks'
 import {
   EllipsisVerticalIcon,
   InformationCircleIcon
@@ -25,6 +29,7 @@ import {
 } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
+import { patchTokenSymbol } from '../../../util/TokenUtils'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -341,6 +346,7 @@ export function TransactionsTableWithdrawalRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
+  const { l2 } = useNetworksAndSigners()
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
@@ -364,7 +370,14 @@ export function TransactionsTableWithdrawalRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
+        {formatAmount(Number(tx.value), {
+          symbol: patchTokenSymbol({
+            symbol: tx.asset.toUpperCase(),
+            tokenAddress: tx.tokenAddress ?? '',
+            isDeposit: false,
+            isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+          })
+        })}
       </td>
 
       <td className="w-1/5 px-3 py-3">

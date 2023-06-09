@@ -7,9 +7,11 @@ import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
+import { patchTokenSymbol } from '../../util/TokenUtils'
+import { isNetwork } from '../../util/networks'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
 
   const isClaimButtonDisabled = useMemo(
@@ -18,6 +20,17 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
         ? isConnectedToArbitrum
         : true,
     [isConnectedToArbitrum]
+  )
+
+  const tokenSymbol = useMemo(
+    () =>
+      patchTokenSymbol({
+        symbol: tx.asset.toUpperCase(),
+        tokenAddress: tx.tokenAddress || '',
+        isDeposit: false,
+        isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+      }),
+    [tx, l2]
   )
 
   return (
@@ -61,7 +74,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
               Claim{' '}
               <span className="hidden lg:flex">
                 {formatAmount(Number(tx.value), {
-                  symbol: tx.asset.toUpperCase()
+                  symbol: tokenSymbol
                 })}
               </span>
             </div>

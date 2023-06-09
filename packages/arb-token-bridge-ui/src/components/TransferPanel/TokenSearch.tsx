@@ -25,7 +25,7 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { getL1TokenData } from '../../util/TokenUtils'
+import { getL1TokenData, patchTokenSymbol } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -34,7 +34,7 @@ import {
   toERC20BridgeToken
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
@@ -103,7 +103,18 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   } = useNetworksAndSigners()
 
   const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
-  const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
+  const tokenSymbol = useMemo(
+    () =>
+      token
+        ? patchTokenSymbol({
+            symbol: token.symbol,
+            tokenAddress: token.address,
+            isDeposit: isDepositMode,
+            isL2ArbitrumOne: isNetwork(l2Network.id).isArbitrumOne
+          })
+        : 'ETH',
+    [token, isDepositMode, l2Network.id]
+  )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
 
   const {

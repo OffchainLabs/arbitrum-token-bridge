@@ -11,7 +11,7 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
-import { CommonAddress } from '../../util/CommonAddressUtils'
+import { patchTokenSymbol } from '../../util/TokenUtils'
 import { isNetwork } from '../../util/networks'
 
 export function TokenButton(): JSX.Element {
@@ -54,16 +54,12 @@ export function TokenButton(): JSX.Element {
       return 'ETH'
     }
 
-    const addressLowercased = selectedToken.address.toLowerCase()
-    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
-    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
-
-    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
-    if (isUSDC && isL2ArbitrumOne) {
-      return isDepositMode ? 'USDC' : 'USDC.e'
-    }
-
-    return selectedToken.symbol
+    return patchTokenSymbol({
+      symbol: selectedToken.symbol,
+      tokenAddress: selectedToken.address,
+      isDeposit: isDepositMode,
+      isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+    })
   }, [selectedToken, isDepositMode, l2])
 
   function closeWithReset() {
