@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { mainnet } from 'wagmi'
 
 import { DepositStatus, MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
@@ -15,7 +16,6 @@ import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
-import { mainnet } from 'wagmi'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {

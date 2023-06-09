@@ -12,11 +12,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { shortenTxHash } from '../../../util/CommonUtils'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
-import {
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork
-} from '../../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import {
   EllipsisVerticalIcon,
   InformationCircleIcon
