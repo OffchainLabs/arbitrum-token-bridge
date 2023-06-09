@@ -262,3 +262,22 @@ export function sanitizeTokenSymbol(
 
   return tokenSymbol
 }
+
+// get the exact token name for a particular chain
+export function sanitizeTokenName(
+  tokenName: string,
+  options?: SanitizeTokenSymbolOptions
+) {
+  if (typeof options === 'undefined') {
+    return tokenName
+  }
+
+  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+
+  // only special case for USDC is Arbitrum One
+  if (options.erc20L1Address === CommonAddress.Mainnet.USDC && isArbitrumOne) {
+    return 'Bridged USDC'
+  }
+
+  return tokenName
+}

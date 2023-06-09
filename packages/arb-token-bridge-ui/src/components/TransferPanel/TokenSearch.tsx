@@ -25,7 +25,11 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { getL1TokenData, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  getL1TokenData,
+  sanitizeTokenName,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -102,7 +106,16 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
 
-  const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
+  const tokenName = useMemo(
+    () =>
+      token
+        ? sanitizeTokenName(token.name, {
+            erc20L1Address: token.address,
+            chain: isDepositMode ? mainnet : l2Network
+          })
+        : 'Ether',
+    [token, isDepositMode, l2Network]
+  )
   const tokenSymbol = useMemo(
     () =>
       token
