@@ -7,8 +7,7 @@ import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
-import { patchTokenSymbol } from '../../util/TokenUtils'
-import { isNetwork } from '../../util/networks'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
@@ -24,11 +23,9 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
   const tokenSymbol = useMemo(
     () =>
-      patchTokenSymbol({
-        symbol: tx.asset.toUpperCase(),
-        tokenAddress: tx.tokenAddress || '',
-        isDeposit: false,
-        isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+      sanitizeTokenSymbol(tx.asset.toUpperCase(), {
+        erc20L1Address: tx.tokenAddress || '',
+        chain: l2.network
       }),
     [tx, l2]
   )

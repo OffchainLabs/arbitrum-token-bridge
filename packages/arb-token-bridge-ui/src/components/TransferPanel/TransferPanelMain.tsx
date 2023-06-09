@@ -7,7 +7,7 @@ import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { Chain } from 'wagmi'
+import { Chain, mainnet } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -46,7 +46,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { patchTokenSymbol } from '../../util/TokenUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -268,11 +268,9 @@ function TokenBalance({
       return undefined
     }
 
-    return patchTokenSymbol({
-      symbol: forToken.symbol,
-      tokenAddress: forToken.address,
-      isDeposit: isDepositMode,
-      isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+    return sanitizeTokenSymbol(forToken.symbol, {
+      erc20L1Address: forToken.address,
+      chain: isDepositMode ? mainnet : l2.network
     })
   }, [forToken, l2, isDepositMode])
 

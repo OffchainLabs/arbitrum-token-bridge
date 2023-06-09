@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { mainnet } from 'wagmi'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
@@ -11,8 +12,7 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
-import { patchTokenSymbol } from '../../util/TokenUtils'
-import { isNetwork } from '../../util/networks'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -54,11 +54,9 @@ export function TokenButton(): JSX.Element {
       return 'ETH'
     }
 
-    return patchTokenSymbol({
-      symbol: selectedToken.symbol,
-      tokenAddress: selectedToken.address,
-      isDeposit: isDepositMode,
-      isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+    return sanitizeTokenSymbol(selectedToken.symbol, {
+      erc20L1Address: selectedToken.address,
+      chain: isDepositMode ? mainnet : l2.network
     })
   }, [selectedToken, isDepositMode, l2])
 

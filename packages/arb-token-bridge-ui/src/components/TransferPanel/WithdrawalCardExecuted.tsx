@@ -11,8 +11,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { useTokenDecimals } from '../../hooks/useTokenDecimals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
-import { patchTokenSymbol } from '../../util/TokenUtils'
-import { isNetwork } from '../../util/networks'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
   const {
@@ -27,11 +26,9 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
   const tokenSymbol = useMemo(
     () =>
-      patchTokenSymbol({
-        symbol: tx.asset.toUpperCase(),
-        tokenAddress: tx.tokenAddress || '',
-        isDeposit: false,
-        isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+      sanitizeTokenSymbol(tx.asset.toUpperCase(), {
+        erc20L1Address: tx.tokenAddress || '',
+        chain: l2.network
       }),
     [tx, l2]
   )

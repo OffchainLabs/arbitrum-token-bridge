@@ -7,7 +7,7 @@ import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useMemo } from 'react'
-import { patchTokenSymbol } from '../../util/TokenUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
@@ -15,11 +15,9 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
   const tokenSymbol = useMemo(
     () =>
-      patchTokenSymbol({
-        symbol: tx.asset.toUpperCase(),
-        tokenAddress: tx.tokenAddress || '',
-        isDeposit: false,
-        isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+      sanitizeTokenSymbol(tx.asset.toUpperCase(), {
+        erc20L1Address: tx.tokenAddress || '',
+        chain: l2.network
       }),
     [tx, l2]
   )

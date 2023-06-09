@@ -1,10 +1,12 @@
 import { BigNumber, constants } from 'ethers'
+import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
 import { CommonAddress } from './CommonAddressUtils'
+import { isNetwork } from './networks'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -237,28 +239,26 @@ export async function l1TokenIsDisabled({
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 
-// temporary patch token symbol until our token lists return correct symbols
-export function patchTokenSymbol({
-  symbol,
-  tokenAddress,
-  isL2ArbitrumOne,
-  isDeposit
-}: {
-  symbol: string
-  tokenAddress: string
-  isL2ArbitrumOne: boolean
-  isDeposit: boolean
-}) {
-  // if L2 network is Arbitrum one and we identify USDC/USDC.e
-  // we conditionally patch the token symbol in this case
-  if (
-    isL2ArbitrumOne &&
-    tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC
-  ) {
-    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
-    return isDeposit ? 'USDC' : 'USDC.e'
+type SanitizeTokenSymbolOptions = {
+  erc20L1Address: string // token address
+  chain: Chain // chain for which we want to retrieve the token name
+}
+
+// get the exact token symbol for a particular chain
+export function sanitizeTokenSymbol(
+  tokenSymbol: string,
+  options?: SanitizeTokenSymbolOptions
+) {
+  if (typeof options === 'undefined') {
+    return tokenSymbol
   }
 
-  // else, just return whatever token symbol was provided
-  return symbol
+  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+
+  // only special case for USDC is Arbitrum One
+  if (options.erc20L1Address === CommonAddress.Mainnet.USDC && isArbitrumOne) {
+    return 'USDC.e'
+  }
+
+  return tokenSymbol
 }

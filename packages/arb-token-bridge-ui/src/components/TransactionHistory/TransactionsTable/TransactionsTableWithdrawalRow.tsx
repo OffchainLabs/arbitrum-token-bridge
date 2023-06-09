@@ -29,7 +29,7 @@ import {
 } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
-import { patchTokenSymbol } from '../../../util/TokenUtils'
+import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -371,11 +371,9 @@ export function TransactionsTableWithdrawalRow({
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
         {formatAmount(Number(tx.value), {
-          symbol: patchTokenSymbol({
-            symbol: tx.asset.toUpperCase(),
-            tokenAddress: tx.tokenAddress ?? '',
-            isDeposit: false,
-            isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+          symbol: sanitizeTokenSymbol(tx.asset.toUpperCase(), {
+            erc20L1Address: tx.tokenAddress ?? '',
+            chain: l2.network
           })
         })}
       </td>

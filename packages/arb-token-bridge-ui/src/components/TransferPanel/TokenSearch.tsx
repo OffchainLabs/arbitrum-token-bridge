@@ -12,7 +12,7 @@ import {
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import Image from 'next/image'
-import { Chain } from 'wagmi'
+import { Chain, mainnet } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -25,7 +25,7 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { getL1TokenData, patchTokenSymbol } from '../../util/TokenUtils'
+import { getL1TokenData, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -106,14 +106,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   const tokenSymbol = useMemo(
     () =>
       token
-        ? patchTokenSymbol({
-            symbol: token.symbol,
-            tokenAddress: token.address,
-            isDeposit: isDepositMode,
-            isL2ArbitrumOne: isNetwork(l2Network.id).isArbitrumOne
+        ? sanitizeTokenSymbol(token.symbol, {
+            erc20L1Address: token.address,
+            chain: isDepositMode ? mainnet : l2Network
           })
         : 'ETH',
-    [token, isDepositMode, l2Network.id]
+    [token, isDepositMode, l2Network]
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useLatest } from 'react-use'
+import { mainnet } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -16,7 +17,7 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
-import { patchTokenSymbol } from '../../util/TokenUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -293,11 +294,9 @@ export function TransferPanelSummary({
         <div className="flex w-3/5 flex-row justify-between">
           <span>
             {formatAmount(amount, {
-              symbol: patchTokenSymbol({
-                symbol: token?.symbol || 'ETH',
-                tokenAddress: token?.address || '',
-                isDeposit: app.isDepositMode,
-                isL2ArbitrumOne: isNetwork(l2.network.id).isArbitrumOne
+              symbol: sanitizeTokenSymbol(token?.symbol || 'ETH', {
+                erc20L1Address: token?.address || '',
+                chain: app.isDepositMode ? mainnet : l2.network
               })
             })}
           </span>
