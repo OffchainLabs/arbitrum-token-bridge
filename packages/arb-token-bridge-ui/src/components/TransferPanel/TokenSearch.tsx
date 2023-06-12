@@ -242,6 +242,25 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     )
   }, [isDepositMode, l1Network, l2Network])
 
+  const tokenBalanceContent = useMemo(() => {
+    return tokenIsAddedToTheBridge ? (
+      <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
+        {tokenBalance ? (
+          formatAmount(tokenBalance, {
+            decimals: token?.decimals,
+            symbol: tokenSymbol
+          })
+        ) : (
+          <div className="mr-2">
+            <Loader color="#28A0F0" size="small" />
+          </div>
+        )}
+      </span>
+    ) : (
+      <span className="text-sm font-medium text-blue-link">Import</span>
+    )
+  }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
+
   return (
     <button
       type="button"
@@ -264,7 +283,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
         />
 
         <div className="flex w-full flex-col items-start truncate">
-          <div className="flex w-full items-center space-x-2 sm:w-auto">
+          <div className="flex w-full items-center space-x-2">
             <span className="text-base font-medium text-gray-900">
               {tokenSymbol}
             </span>
@@ -289,6 +308,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                 </div>
               </Tooltip>
             )}
+
+            {!token && (
+              <div className="flex w-full justify-end">
+                {tokenBalanceContent}
+              </div>
+            )}
           </div>
           {token && (
             <div className="flex w-full flex-col items-start">
@@ -306,28 +331,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                       address={token.address}
                     />
                   )}
-                  {tokenIsBridgeable && (
-                    <>
-                      {tokenIsAddedToTheBridge ? (
-                        <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
-                          {tokenBalance ? (
-                            formatAmount(tokenBalance, {
-                              decimals: token?.decimals,
-                              symbol: tokenSymbol
-                            })
-                          ) : (
-                            <div className="mr-2">
-                              <Loader color="#28A0F0" size="small" />
-                            </div>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-sm font-medium text-blue-link">
-                          Import
-                        </span>
-                      )}
-                    </>
-                  )}
+                  {tokenIsBridgeable && tokenBalanceContent}
                 </div>
               ) : (
                 <>
