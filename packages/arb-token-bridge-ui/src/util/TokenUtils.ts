@@ -239,18 +239,18 @@ export async function l1TokenIsDisabled({
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 
-type SanitizeTokenSymbolOptions = {
-  erc20L1Address: string // token address
-  chain: Chain // chain for which we want to retrieve the token name
+type SanitizeTokenOptions = {
+  erc20L1Address?: string | null // token address on L1
+  chain: Chain // chain for which we want to retrieve the token name / symbol
 }
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,
-  options?: SanitizeTokenSymbolOptions
+  options?: SanitizeTokenOptions
 ) {
   if (typeof options === 'undefined') {
-    return tokenSymbol
+    return tokenSymbol.toUpperCase()
   }
 
   const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
@@ -260,13 +260,13 @@ export function sanitizeTokenSymbol(
     return 'USDC.e'
   }
 
-  return tokenSymbol
+  return tokenSymbol.toUpperCase()
 }
 
 // get the exact token name for a particular chain
 export function sanitizeTokenName(
   tokenName: string,
-  options?: SanitizeTokenSymbolOptions
+  options?: SanitizeTokenOptions
 ) {
   if (typeof options === 'undefined') {
     return tokenName

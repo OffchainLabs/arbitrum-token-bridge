@@ -23,8 +23,8 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
           <span className="ml-8 animate-pulse text-lg text-ocl-blue lg:ml-0 lg:text-2xl">
             Moving{' '}
             {formatAmount(Number(tx.value), {
-              symbol: sanitizeTokenSymbol(tx.asset.toUpperCase(), {
-                erc20L1Address: tx.tokenAddress ?? '',
+              symbol: sanitizeTokenSymbol(tx.asset, {
+                erc20L1Address: tx.tokenAddress,
                 chain: mainnet
               })
             })}{' '}

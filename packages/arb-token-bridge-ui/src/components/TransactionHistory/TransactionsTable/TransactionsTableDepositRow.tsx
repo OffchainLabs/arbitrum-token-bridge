@@ -221,8 +221,8 @@ export function TransactionsTableDepositRow({
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
         {formatAmount(Number(tx.value), {
-          symbol: sanitizeTokenSymbol(tx.asset.toUpperCase(), {
-            erc20L1Address: tx.tokenAddress ?? '',
+          symbol: sanitizeTokenSymbol(tx.asset, {
+            erc20L1Address: tx.tokenAddress,
             chain: mainnet
           })
         })}

@@ -1,4 +1,4 @@
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
@@ -15,8 +15,8 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
   const tokenSymbol = useMemo(
     () =>
-      sanitizeTokenSymbol(tx.asset.toUpperCase(), {
-        erc20L1Address: tx.tokenAddress || '',
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
         chain: l2.network
       }),
     [tx, l2]
