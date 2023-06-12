@@ -7,7 +7,7 @@ import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
 import Image from 'next/image'
-import { Chain, mainnet } from 'wagmi'
+import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'

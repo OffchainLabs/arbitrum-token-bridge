@@ -12,7 +12,7 @@ import {
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import Image from 'next/image'
-import { Chain, mainnet } from 'wagmi'
+import { Chain } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'

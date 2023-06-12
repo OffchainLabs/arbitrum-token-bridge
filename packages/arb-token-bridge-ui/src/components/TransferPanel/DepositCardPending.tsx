@@ -1,4 +1,3 @@
-import { mainnet } from 'wagmi'
 import { getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'

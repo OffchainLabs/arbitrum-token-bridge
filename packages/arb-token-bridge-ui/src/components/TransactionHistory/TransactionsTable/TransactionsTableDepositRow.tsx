@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { mainnet } from 'wagmi'
 
 import { DepositStatus, MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
