@@ -273,10 +273,13 @@ export function sanitizeTokenName(
   }
 
   const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const isMainnet = isNetwork(options.chain.id).isMainnet
 
-  // only special case for USDC is Arbitrum One
-  if (options.erc20L1Address === CommonAddress.Mainnet.USDC && isArbitrumOne) {
-    return 'Bridged USDC'
+  // only special case for USDC is Arbitrum One / Mainnet
+  if (options.erc20L1Address === CommonAddress.Mainnet.USDC) {
+    if (isArbitrumOne) return 'Bridged USDC'
+    if (isMainnet) return 'USD Coin (USDC)'
+    return tokenName
   }
 
   return tokenName

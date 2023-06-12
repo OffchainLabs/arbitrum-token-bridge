@@ -259,9 +259,6 @@ function TokenBalance({
 }) {
   const { l1, l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
-  const {
-    app: { isDepositMode }
-  } = useAppState()
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -270,9 +267,9 @@ function TokenBalance({
 
     return sanitizeTokenSymbol(forToken.symbol, {
       erc20L1Address: forToken.address,
-      chain: isDepositMode ? l1.network : l2.network
+      chain: on == NetworkType.l1 ? l1.network : l2.network
     })
-  }, [forToken, l1, l2, isDepositMode])
+  }, [forToken, on, l1, l2])
 
   if (!forToken) {
     return null
@@ -319,8 +316,6 @@ export enum TransferPanelMainErrorMessage {
   WITHDRAW_ONLY,
   SC_WALLET_ETH_NOT_SUPPORTED
 }
-
-const USDC_L1_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 
 export function TransferPanelMain({
   amount,
