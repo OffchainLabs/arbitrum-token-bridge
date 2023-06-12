@@ -13,7 +13,6 @@ import 'tippy.js/themes/light.css'
 
 import '@rainbow-me/rainbowkit/styles.css'
 
-import Package from '../../package.json'
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
 
@@ -33,7 +32,6 @@ dayjs.extend(advancedFormat)
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  release: Package.version,
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
   beforeSend: event => {
