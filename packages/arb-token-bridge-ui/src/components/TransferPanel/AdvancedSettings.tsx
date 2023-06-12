@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { isAddress } from 'ethers/lib/utils.js'
+import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 
