@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
@@ -8,10 +9,20 @@ import {
   DepositL2TxStatus
 } from './DepositCard'
 import { formatAmount } from '../../util/NumberUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
-  const { l2 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network.id)
+
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l1.network
+      }),
+    [l1.network, tx.tokenAddress, tx.asset]
+  )
 
   return (
     <DepositCardContainer tx={tx}>
@@ -20,7 +31,9 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
           {/* Heading */}
           <span className="ml-8 animate-pulse text-lg text-ocl-blue lg:ml-0 lg:text-2xl">
             Moving{' '}
-            {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}{' '}
+            {formatAmount(Number(tx.value), {
+              symbol: tokenSymbol
+            })}{' '}
             to {networkName}
           </span>
 
