@@ -11,16 +11,19 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { isNetwork } from '../../util/networks'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
+      isDepositMode,
       selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const { status } = useNetworksAndSigners()
+  const { status, l2 } = useNetworksAndSigners()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -45,6 +48,23 @@ export function TokenButton(): JSX.Element {
     }
     return undefined
   }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
+
+  const tokenSymbol = useMemo(() => {
+    if (!selectedToken) {
+      return 'ETH'
+    }
+
+    const addressLowercased = selectedToken.address.toLowerCase()
+    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
+    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
+
+    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
+    if (isUSDC && isL2ArbitrumOne) {
+      return isDepositMode ? 'USDC' : 'USDC.e'
+    }
+
+    return selectedToken.symbol
+  }, [selectedToken, isDepositMode, l2])
 
   function closeWithReset() {
     setTokenToImport(undefined)
@@ -83,7 +103,7 @@ export function TokenButton(): JSX.Element {
               />
             )}
             <span className="text-xl font-light sm:text-3xl">
-              {selectedToken ? selectedToken.symbol : 'ETH'}
+              {tokenSymbol}
             </span>
             <ChevronDownIcon className="h-4 w-4 text-gray-6" />
           </div>
