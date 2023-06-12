@@ -51,7 +51,7 @@ export const useAllowance = (erc20L1Address: string | undefined) => {
     return 'allowanceL1'
   }, [isValidQueryKey])
 
-  const queryKeyL2 = useMemo(async () => {
+  const queryKeyL2 = useMemo(() => {
     if (!isValidQueryKey || !erc20L2Address) {
       // don't fetch
       return undefined
