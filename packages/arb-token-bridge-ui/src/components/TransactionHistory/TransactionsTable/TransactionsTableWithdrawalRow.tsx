@@ -350,6 +350,15 @@ export function TransactionsTableWithdrawalRow({
     return ''
   }, [tx, isError])
 
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l2.network
+      }),
+    [l2.network, tx.tokenAddress, tx.asset]
+  )
+
   return (
     <tr
       className={`text-sm text-dark ${
@@ -367,10 +376,7 @@ export function TransactionsTableWithdrawalRow({
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
         {formatAmount(Number(tx.value), {
-          symbol: sanitizeTokenSymbol(tx.asset, {
-            erc20L1Address: tx.tokenAddress,
-            chain: l2.network
-          })
+          symbol: tokenSymbol
         })}
       </td>
 

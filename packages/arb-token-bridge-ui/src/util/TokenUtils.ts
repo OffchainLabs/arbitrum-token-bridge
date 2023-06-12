@@ -278,7 +278,7 @@ export function sanitizeTokenName(
   // only special case for USDC is Arbitrum One / Mainnet
   if (options.erc20L1Address === CommonAddress.Mainnet.USDC) {
     if (isArbitrumOne) return 'Bridged USDC'
-    if (isMainnet) return 'USD Coin (USDC)'
+    if (isMainnet) return 'USD Coin'
     return tokenName
   }
 

@@ -258,6 +258,17 @@ export function TransferPanelSummary({
 
   const { isMainnet } = isNetwork(l1.network.id)
 
+  const tokenSymbol = useMemo(
+    () =>
+      token
+        ? sanitizeTokenSymbol(token.symbol, {
+            erc20L1Address: token.address,
+            chain: app.isDepositMode ? l1.network : l2.network
+          })
+        : 'ETH',
+    [token, app.isDepositMode, l1.network, l2.network]
+  )
+
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
 
@@ -293,10 +304,7 @@ export function TransferPanelSummary({
         <div className="flex w-3/5 flex-row justify-between">
           <span>
             {formatAmount(amount, {
-              symbol: sanitizeTokenSymbol(token?.symbol || 'ETH', {
-                erc20L1Address: token?.address,
-                chain: app.isDepositMode ? l1.network : l2.network
-              })
+              symbol: tokenSymbol
             })}
           </span>
           {/* Only show USD price for ETH */}

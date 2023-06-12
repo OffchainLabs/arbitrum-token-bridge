@@ -204,6 +204,15 @@ export function TransactionsTableDepositRow({
     return ''
   }, [tx, isError, showRedeemRetryableButton, showRetryableExpiredText])
 
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l1.network
+      }),
+    [l1.network, tx.asset, tx.tokenAddress]
+  )
+
   return (
     <tr
       className={`text-sm text-dark ${
@@ -221,10 +230,7 @@ export function TransactionsTableDepositRow({
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
         {formatAmount(Number(tx.value), {
-          symbol: sanitizeTokenSymbol(tx.asset, {
-            erc20L1Address: tx.tokenAddress,
-            chain: l1.network
-          })
+          symbol: tokenSymbol
         })}
       </td>
 

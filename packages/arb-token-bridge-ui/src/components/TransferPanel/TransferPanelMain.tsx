@@ -267,7 +267,7 @@ function TokenBalance({
 
     return sanitizeTokenSymbol(forToken.symbol, {
       erc20L1Address: forToken.address,
-      chain: on == NetworkType.l1 ? l1.network : l2.network
+      chain: on === NetworkType.l1 ? l1.network : l2.network
     })
   }, [forToken, on, l1, l2])
 
