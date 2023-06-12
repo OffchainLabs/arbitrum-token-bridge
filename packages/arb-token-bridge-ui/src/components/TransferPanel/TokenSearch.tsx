@@ -354,7 +354,7 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                   )} and can’t be bridged.`}
                 </span>
               ) : (
-                <span className="flex gap-1 text-xs font-normal text-gray-500">
+                <span className="flex gap-1 whitespace-normal text-left text-xs font-normal text-gray-500">
                   {tokenListInfo}
                 </span>
               )}
