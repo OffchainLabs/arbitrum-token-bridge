@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
+import { Provider } from '@ethersproject/providers'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
@@ -10,6 +11,10 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid wallet address.',
   REQUIRED_ADDRESS = 'The destination address is required.'
+}
+
+enum DestinationAddressWarnings {
+  CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is a valid wallet address.'
 }
 
 export function getDestinationAddressError({
@@ -28,6 +33,26 @@ export function getDestinationAddressError({
   }
   if (!isAddress(destinationAddress)) {
     return DestinationAddressErrors.INVALID_ADDRESS
+  }
+  return null
+}
+
+async function getDestinationAddressWarning({
+  destinationAddress,
+  isEOA,
+  providerTo
+}: {
+  destinationAddress: string
+  isEOA: boolean
+  providerTo: Provider
+}) {
+  // checks if trying to send to a contract address
+  // only check for EOA, contract wallets will often send to another contract wallet
+  if (!isEOA || !isAddress(destinationAddress)) {
+    return null
+  }
+  if (await addressIsSmartContract(destinationAddress, providerTo)) {
+    return DestinationAddressWarnings.CONTRACT_ADDRESS
   }
   return null
 }
@@ -57,27 +82,19 @@ export const AdvancedSettings = ({
   )
 
   useEffect(() => {
-    // checks if trying to send to a contract address
-    async function getWarning() {
-      // only check for EOA, contract wallets will often send to another contract wallet
-      if (isEOA && isAddress(destinationAddress)) {
-        const isContractAddress = await addressIsSmartContract(
+    async function updateWarning() {
+      setWarning(
+        await getDestinationAddressWarning({
           destinationAddress,
-          isDepositMode ? l2.provider : l1.provider
-        )
-        setWarning(
-          isContractAddress
-            ? 'The destination address is a contract address. Please make sure it is a valid wallet address.'
-            : null
-        )
-      } else {
-        setWarning(null)
-      }
+          isEOA,
+          providerTo: (isDepositMode ? l2 : l1).provider
+        })
+      )
     }
-    getWarning()
+    updateWarning()
 
     return () => setWarning(null)
-  }, [destinationAddress, l1.provider, l2.provider, isDepositMode, isEOA])
+  }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
   // Disabled for ETH
   if (!selectedToken) {
