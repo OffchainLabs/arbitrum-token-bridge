@@ -49,6 +49,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -259,7 +260,7 @@ function TokenBalance({
   on: NetworkType
   prefix?: string
 }) {
-  const { l2 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
 
   const symbol = useMemo(() => {
@@ -267,17 +268,11 @@ function TokenBalance({
       return undefined
     }
 
-    const addressLowercased = forToken.address.toLowerCase()
-    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
-    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
-
-    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
-    if (on === NetworkType.l2 && isUSDC && isL2ArbitrumOne) {
-      return 'USDC.e'
-    }
-
-    return forToken.symbol
-  }, [forToken, on, l2])
+    return sanitizeTokenSymbol(forToken.symbol, {
+      erc20L1Address: forToken.address,
+      chain: on === NetworkType.l1 ? l1.network : l2.network
+    })
+  }, [forToken, on, l1, l2])
 
   if (!forToken) {
     return null
@@ -324,8 +319,6 @@ export enum TransferPanelMainErrorMessage {
   WITHDRAW_ONLY,
   SC_WALLET_ETH_NOT_SUPPORTED
 }
-
-const USDC_L1_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
 
 export function TransferPanelMain({
   amount,
