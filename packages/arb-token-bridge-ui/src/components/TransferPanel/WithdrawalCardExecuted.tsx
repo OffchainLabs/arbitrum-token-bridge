@@ -26,7 +26,7 @@ export function WithdrawalCardExecuted({ tx }: { tx: MergedTransaction }) {
 
   const tokenSymbol = useMemo(
     () =>
-      sanitizeTokenSymbol(tx.asset.toUpperCase(), {
+      sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
         chain: l2.network
       }),
