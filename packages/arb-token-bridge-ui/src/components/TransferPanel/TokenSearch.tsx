@@ -243,21 +243,31 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   }, [isDepositMode, l1Network, l2Network])
 
   const tokenBalanceContent = useMemo(() => {
-    return tokenIsAddedToTheBridge ? (
-      <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
-        {tokenBalance ? (
-          formatAmount(tokenBalance, {
-            decimals: token?.decimals,
-            symbol: tokenSymbol
-          })
-        ) : (
-          <div className="mr-2">
-            <Loader color="#28A0F0" size="small" />
-          </div>
-        )}
-      </span>
-    ) : (
-      <span className="text-sm font-medium text-blue-link">Import</span>
+    if (!tokenIsAddedToTheBridge) {
+      return <span className="text-sm font-medium text-blue-link">Import</span>
+    }
+
+    function wrapContent(content: React.ReactNode) {
+      return (
+        <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
+          {content}
+        </span>
+      )
+    }
+
+    if (!tokenBalance) {
+      return wrapContent(
+        <div className="mr-2">
+          <Loader color="#28A0F0" size="small" />
+        </div>
+      )
+    }
+
+    return wrapContent(
+      formatAmount(tokenBalance, {
+        decimals: token?.decimals,
+        symbol: tokenSymbol
+      })
     )
   }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
 
@@ -292,9 +302,9 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             {isArbitrumToken && (
               <Tooltip content={arbitrumTokenTooltipContent}>
                 <StatusBadge variant="green">
-                  {!isSmallScreen && <CheckCircleIcon className="h-4 w-4" />}
+                  <CheckCircleIcon className="h-4 w-4" />
                   <span className="text-xs">
-                    Official ARB{isSmallScreen ? '' : ' token'}
+                    Official{isSmallScreen ? '' : ' ARB token'}
                   </span>
                 </StatusBadge>
               </Tooltip>
