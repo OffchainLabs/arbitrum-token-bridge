@@ -168,6 +168,7 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
+  const { l1 } = useNetworksAndSigners()
   const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { redeem, isRedeeming } = useRedeemRetryable()
 
@@ -223,7 +224,7 @@ export function TransactionsTableDepositRow({
         {formatAmount(Number(tx.value), {
           symbol: sanitizeTokenSymbol(tx.asset, {
             erc20L1Address: tx.tokenAddress,
-            chain: mainnet
+            chain: l1.network
           })
         })}
       </td>

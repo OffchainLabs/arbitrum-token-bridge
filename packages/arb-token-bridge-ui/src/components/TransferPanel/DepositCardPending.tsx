@@ -12,7 +12,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
-  const { l2 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(l2.network.id)
 
   return (
@@ -25,7 +25,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
             {formatAmount(Number(tx.value), {
               symbol: sanitizeTokenSymbol(tx.asset, {
                 erc20L1Address: tx.tokenAddress,
-                chain: mainnet
+                chain: l1.network
               })
             })}{' '}
             to {networkName}

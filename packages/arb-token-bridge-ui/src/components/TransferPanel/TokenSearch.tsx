@@ -111,20 +111,20 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       token
         ? sanitizeTokenName(token.name, {
             erc20L1Address: token.address,
-            chain: isDepositMode ? mainnet : l2Network
+            chain: isDepositMode ? l1Network : l2Network
           })
         : 'Ether',
-    [token, isDepositMode, l2Network]
+    [token, isDepositMode, l2Network, l1Network]
   )
   const tokenSymbol = useMemo(
     () =>
       token
         ? sanitizeTokenSymbol(token.symbol, {
             erc20L1Address: token.address,
-            chain: isDepositMode ? mainnet : l2Network
+            chain: isDepositMode ? l1Network : l2Network
           })
         : 'ETH',
-    [token, isDepositMode, l2Network]
+    [token, isDepositMode, l2Network, l1Network]
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
 

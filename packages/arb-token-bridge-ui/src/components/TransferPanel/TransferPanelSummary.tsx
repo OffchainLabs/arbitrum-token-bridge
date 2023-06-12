@@ -296,7 +296,7 @@ export function TransferPanelSummary({
             {formatAmount(amount, {
               symbol: sanitizeTokenSymbol(token?.symbol || 'ETH', {
                 erc20L1Address: token?.address,
-                chain: app.isDepositMode ? mainnet : l2.network
+                chain: app.isDepositMode ? l1.network : l2.network
               })
             })}
           </span>

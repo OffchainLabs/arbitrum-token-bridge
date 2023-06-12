@@ -257,7 +257,7 @@ function TokenBalance({
   on: NetworkType
   prefix?: string
 }) {
-  const { l2 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
   const {
     app: { isDepositMode }
@@ -270,9 +270,9 @@ function TokenBalance({
 
     return sanitizeTokenSymbol(forToken.symbol, {
       erc20L1Address: forToken.address,
-      chain: isDepositMode ? mainnet : l2.network
+      chain: isDepositMode ? l1.network : l2.network
     })
-  }, [forToken, l2, isDepositMode])
+  }, [forToken, l1, l2, isDepositMode])
 
   if (!forToken) {
     return null
