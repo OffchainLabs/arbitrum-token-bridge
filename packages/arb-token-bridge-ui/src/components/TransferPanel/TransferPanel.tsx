@@ -151,6 +151,7 @@ export function TransferPanel() {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
+  const l2NetworkName = getNetworkName(l2Network.id)
 
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
@@ -358,6 +359,45 @@ export function TransferPanel() {
     }
   }
 
+  async function trySwitchNetworksBeforeTransfer() {
+    const shouldSwitchNetworks =
+      isDepositMode === latestNetworksAndSigners.current.isConnectedToArbitrum
+
+    if (!shouldSwitchNetworks) {
+      return
+    }
+
+    if (shouldTrackAnalytics(l2NetworkName)) {
+      trackEvent('Switch Network and Transfer', {
+        type: isDepositMode ? 'Deposit' : 'Withdrawal',
+        tokenSymbol: selectedToken?.symbol,
+        assetType: selectedToken ? 'ERC-20' : 'ETH',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: l2NetworkName,
+        amount: Number(amount)
+      })
+    }
+
+    await switchNetworkAsync?.(
+      isDepositMode
+        ? latestNetworksAndSigners.current.l1.network.id
+        : latestNetworksAndSigners.current.l2.network.id
+    )
+
+    while (
+      isDepositMode ===
+        latestNetworksAndSigners.current.isConnectedToArbitrum ||
+      !latestEth.current ||
+      !arbTokenBridgeLoaded
+    ) {
+      await new Promise(r => setTimeout(r, 100))
+    }
+
+    await new Promise(r => setTimeout(r, 3000))
+
+    return
+  }
+
   const transfer = async () => {
     if (!isConnected) {
       return
@@ -377,8 +417,6 @@ export function TransferPanel() {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
       return
     }
-
-    const l2NetworkName = getNetworkName(l2Network.id)
 
     // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
     const showDelayedSCTxRequest = () =>
@@ -421,31 +459,7 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Deposit',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l1.network.id
-          )
-
-          while (
-            latestNetworksAndSigners.current.isConnectedToArbitrum ||
-            !latestEth.current ||
-            !arbTokenBridgeLoaded
-          ) {
-            await new Promise(r => setTimeout(r, 100))
-          }
-
-          await new Promise(r => setTimeout(r, 3000))
-        }
+        await trySwitchNetworksBeforeTransfer()
 
         const l1ChainID = latestNetworksAndSigners.current.l1.network.id
         const connectedChainID =
@@ -576,31 +590,7 @@ export function TransferPanel() {
           })
         }
       } else {
-        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Withdrawal',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l2.network.id
-          )
-
-          while (
-            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
-            !latestEth.current ||
-            !arbTokenBridgeLoaded
-          ) {
-            await new Promise(r => setTimeout(r, 100))
-          }
-
-          await new Promise(r => setTimeout(r, 3000))
-        }
+        await trySwitchNetworksBeforeTransfer()
 
         if (!isSmartContractWallet) {
           const waitForInput = openWithdrawalConfirmationDialog()
