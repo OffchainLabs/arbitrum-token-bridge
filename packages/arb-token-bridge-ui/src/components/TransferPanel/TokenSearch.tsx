@@ -56,7 +56,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
+    <div className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
   )
@@ -114,6 +114,8 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
+
+  const isSmallScreen = useMedia('(max-width: 419px)')
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -261,8 +263,8 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
           fallback={<TokenLogoFallback />}
         />
 
-        <div className="flex flex-col items-start truncate">
-          <div className="flex items-center space-x-2">
+        <div className="flex w-full flex-col items-start truncate">
+          <div className="flex w-full items-center space-x-2 sm:w-auto">
             <span className="text-base font-medium text-gray-900">
               {tokenSymbol}
             </span>
@@ -271,8 +273,10 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             {isArbitrumToken && (
               <Tooltip content={arbitrumTokenTooltipContent}>
                 <StatusBadge variant="green">
-                  <CheckCircleIcon className="h-4 w-4" />
-                  <span className="text-xs">Official ARB token</span>
+                  {!isSmallScreen && <CheckCircleIcon className="h-4 w-4" />}
+                  <span className="text-xs">
+                    Official ARB{isSmallScreen ? '' : ' token'}
+                  </span>
                 </StatusBadge>
               </Tooltip>
             )}
@@ -287,10 +291,10 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             )}
           </div>
           {token && (
-            <div className="flex flex-col items-start space-y-1">
+            <div className="flex w-full flex-col items-start">
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
-                <>
+                <div className="flex w-full justify-between">
                   {isL2NativeToken ? (
                     <BlockExplorerTokenLink
                       chain={l2Network}
@@ -302,7 +306,29 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
                       address={token.address}
                     />
                   )}
-                </>
+                  {tokenIsBridgeable && (
+                    <>
+                      {tokenIsAddedToTheBridge ? (
+                        <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
+                          {tokenBalance ? (
+                            formatAmount(tokenBalance, {
+                              decimals: token?.decimals,
+                              symbol: tokenSymbol
+                            })
+                          ) : (
+                            <div className="mr-2">
+                              <Loader color="#28A0F0" size="small" />
+                            </div>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-medium text-blue-link">
+                          Import
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
               ) : (
                 <>
                   {tokenHasL2Address ? (
@@ -332,27 +358,6 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
           )}
         </div>
       </div>
-
-      {tokenIsBridgeable && (
-        <>
-          {tokenIsAddedToTheBridge ? (
-            <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
-              {tokenBalance ? (
-                formatAmount(tokenBalance, {
-                  decimals: token?.decimals,
-                  symbol: tokenSymbol
-                })
-              ) : (
-                <div className="mr-2">
-                  <Loader color="#28A0F0" size="small" />
-                </div>
-              )}
-            </span>
-          ) : (
-            <span className="text-sm font-medium text-blue-link">Import</span>
-          )}
-        </>
-      )}
     </button>
   )
 }
