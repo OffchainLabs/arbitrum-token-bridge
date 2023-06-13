@@ -969,9 +969,8 @@ export function TransferPanelMain({
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
                   walletAddress={
-                    // TODO: check if destination address error instead
-                    isSmartContractWallet
-                      ? destinationAddress
+                    advancedSettingsError
+                      ? undefined
                       : destinationAddressOrWalletAddress
                   }
                   prefix={selectedToken ? 'Balance: ' : ''}
@@ -979,9 +978,8 @@ export function TransferPanelMain({
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   walletAddress={
-                    // TODO: check if destination address error instead
-                    isSmartContractWallet
-                      ? destinationAddress
+                    advancedSettingsError
+                      ? undefined
                       : destinationAddressOrWalletAddress
                   }
                   prefix={selectedToken ? '' : 'Balance: '}
