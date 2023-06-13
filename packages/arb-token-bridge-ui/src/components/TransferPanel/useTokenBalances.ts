@@ -19,7 +19,7 @@ export function useTokenBalances({
   walletAddress
 }: {
   erc20L1Address?: string
-  walletAddress: string
+  walletAddress?: string
 }): Balances {
   const {
     app: {
@@ -37,7 +37,10 @@ export function useTokenBalances({
   return useMemo(() => {
     const defaultResult = { [NetworkType.l1]: null, [NetworkType.l2]: null }
 
-    if (typeof erc20L1Address === 'undefined' || !isAddress(walletAddress)) {
+    if (
+      typeof erc20L1Address === 'undefined' ||
+      !isAddress(String(walletAddress))
+    ) {
       return defaultResult
     }
 
