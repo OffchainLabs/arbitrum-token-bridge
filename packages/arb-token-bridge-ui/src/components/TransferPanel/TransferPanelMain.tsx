@@ -239,7 +239,7 @@ function NetworkContainer({
           <span>
             Showing balance for Custom Destination Address:{' '}
             <ExternalLink
-              className="underline"
+              className="arb-hover underline"
               href={`${getExplorerUrl(network.id)}/address/${balanceFor}`}
             >
               {shortenAddress(balanceFor)}
