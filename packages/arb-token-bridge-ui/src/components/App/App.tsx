@@ -161,7 +161,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         }
       })
     },
-    []
+    [address]
   )
 
   // Listen for account and network changes
