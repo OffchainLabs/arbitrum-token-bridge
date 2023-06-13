@@ -54,13 +54,27 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
+  const { isEOA, isSmartContractWallet } = useAccountType()
+
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
+      disabled={
+        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
+      }
+      className={twMerge(
+        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
+        isEOA
+          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
+          : ''
+      )}
       {...props}
     >
-      <ArrowsUpDownIcon className="text-dark" />
+      {isSmartContractWallet ? (
+        <ChevronDownIcon className="text-dark" />
+      ) : (
+        <ArrowsUpDownIcon className="text-dark" />
+      )}
     </button>
   )
 }
@@ -585,6 +599,15 @@ export function TransferPanelMain({
       // Add L1 network to the list
       return [l1.network, ...options]
         .filter(option => {
+          // Remove the origin network from the destination list for contract wallets
+          // It's done so that the origin network is not changed
+          if (
+            isSmartContractWallet &&
+            direction === 'to' &&
+            option.id === from.id
+          ) {
+            return false
+          }
           // Remove selected network from the list
           return option.id !== selectedChainId
         })
@@ -614,7 +637,10 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          disabled: !fromOptions.length,
+          disabled:
+            !fromOptions.length ||
+            isSmartContractWallet ||
+            typeof isSmartContractWallet === 'undefined',
           options: fromOptions,
           value: from,
           onChange: async network => {
@@ -681,7 +707,10 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled: !fromOptions.length,
+        disabled:
+          !fromOptions.length ||
+          isSmartContractWallet ||
+          typeof isSmartContractWallet === 'undefined',
         options: fromOptions,
         value: from,
         onChange: async network => {
@@ -741,6 +770,7 @@ export function TransferPanelMain({
     l1.network,
     from,
     to,
+    isSmartContractWallet,
     isDepositMode,
     setQueryParams,
     switchNetworkAsync,
