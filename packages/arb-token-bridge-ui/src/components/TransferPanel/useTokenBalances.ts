@@ -19,7 +19,7 @@ export function useTokenBalances({
   walletAddress
 }: {
   erc20L1Address?: string
-  walletAddress?: string
+  walletAddress: string | undefined
 }): Balances {
   const {
     app: {
