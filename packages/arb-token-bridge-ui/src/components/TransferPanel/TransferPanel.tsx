@@ -12,7 +12,6 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -47,6 +46,7 @@ import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
+import { getDestinationAddressError } from './AdvancedSettings'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -120,10 +120,6 @@ export function TransferPanel() {
   const [destinationAddress, setDestinationAddress] = useState<
     string | undefined
   >(undefined)
-  const [
-    isDestinationAddressSmartContract,
-    setIsDestinationAddressSmartContract
-  ] = useState(false)
 
   const {
     app: {
@@ -204,6 +200,12 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
+  const destinationAddressError = useMemo(
+    () =>
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
+    [destinationAddress, isSmartContractWallet]
+  )
+
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
@@ -221,18 +223,6 @@ export function TransferPanel() {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus])
-
-  useEffect(() => {
-    const getDestinationAddressType = async () => {
-      setIsDestinationAddressSmartContract(
-        await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2Provider : l1Provider
-        )
-      )
-    }
-    getDestinationAddressType()
-  }, [destinationAddress, isDepositMode, l1Provider, l2Provider])
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -372,6 +362,11 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
+    if (destinationAddressError) {
+      console.error(destinationAddressError)
+      return
+    }
+
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
@@ -390,19 +385,6 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if (destinationAddress) {
-        if (
-          // Invalid address
-          !isAddress(destinationAddress) ||
-          // Destination address not matching the connected wallet type
-          (isSmartContractWallet && !isDestinationAddressSmartContract)
-        ) {
-          throw new Error(
-            `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
-          )
-        }
-      }
-
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -828,8 +810,8 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      destinationAddressError
     )
   }, [
     isTransferring,
@@ -840,7 +822,7 @@ export function TransferPanel() {
     isBridgingANewStandardToken,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    destinationAddressError
   ])
 
   // TODO: Refactor this and the property above
@@ -872,8 +854,8 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      destinationAddressError
     )
   }, [
     isTransferring,
@@ -882,7 +864,7 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    destinationAddressError
   ])
 
   // TODO: Refactor this and the property above
