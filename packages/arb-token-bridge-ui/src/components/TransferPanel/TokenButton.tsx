@@ -11,16 +11,18 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
+      isDepositMode,
       selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const { status } = useNetworksAndSigners()
+  const { status, l1, l2 } = useNetworksAndSigners()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -45,6 +47,17 @@ export function TokenButton(): JSX.Element {
     }
     return undefined
   }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
+
+  const tokenSymbol = useMemo(() => {
+    if (!selectedToken) {
+      return 'ETH'
+    }
+
+    return sanitizeTokenSymbol(selectedToken.symbol, {
+      erc20L1Address: selectedToken.address,
+      chain: isDepositMode ? l1.network : l2.network
+    })
+  }, [selectedToken, isDepositMode, l2.network, l1.network])
 
   function closeWithReset() {
     setTokenToImport(undefined)
@@ -83,7 +96,7 @@ export function TokenButton(): JSX.Element {
               />
             )}
             <span className="text-xl font-light sm:text-3xl">
-              {selectedToken ? selectedToken.symbol : 'ETH'}
+              {tokenSymbol}
             </span>
             <ChevronDownIcon className="h-4 w-4 text-gray-6" />
           </div>
