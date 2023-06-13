@@ -22,8 +22,11 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { addressIsSmartContract } from '../../util/AddressUtils'
-import { AdvancedSettings, AdvancedSettingsErrors } from './AdvancedSettings'
+import {
+  AdvancedSettings,
+  DestinationAddressErrors,
+  getDestinationAddressError
+} from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -47,17 +50,33 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
+  const { isEOA, isSmartContractWallet } = useAccountType()
+
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
+      disabled={
+        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
+      }
+      className={twMerge(
+        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
+        isEOA
+          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
+          : ''
+      )}
       {...props}
     >
-      <ArrowsUpDownIcon className="text-dark" />
+      {isSmartContractWallet ? (
+        <ChevronDownIcon className="text-dark" />
+      ) : (
+        <ArrowsUpDownIcon className="text-dark" />
+      )}
     </button>
   )
 }
@@ -298,10 +317,22 @@ function TokenBalance({
   walletAddress?: string
   prefix?: string
 }) {
+  const { l1, l2 } = useNetworksAndSigners()
   const balance = useTokenBalances({
     erc20L1Address: forToken?.address,
-    walletAddress: String(walletAddress)
+    walletAddress
   })[on]
+
+  const symbol = useMemo(() => {
+    if (!forToken) {
+      return undefined
+    }
+
+    return sanitizeTokenSymbol(forToken.symbol, {
+      erc20L1Address: forToken.address,
+      chain: on === NetworkType.l1 ? l1.network : l2.network
+    })
+  }, [forToken, on, l1, l2])
 
   if (!forToken || !utils.isAddress(String(walletAddress))) {
     return null
@@ -316,7 +347,7 @@ function TokenBalance({
       {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
-        symbol: forToken.symbol
+        symbol
       })}
     </span>
   )
@@ -422,9 +453,13 @@ export function TransferPanelMain({
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
-    useState<AdvancedSettingsErrors | null>(null)
+    useState<DestinationAddressErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const showUSDCNotice =
+    selectedToken?.address === CommonAddress.Mainnet.USDC &&
+    isNetwork(l2.network.id).isArbitrumOne
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -551,35 +586,10 @@ export function TransferPanelMain({
   }, [selectedToken])
 
   useEffect(() => {
-    const getErrors = async () => {
-      try {
-        const isDestinationAddressSmartContract = await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2.provider : l1.provider
-        )
-        if (
-          // Destination address is not required for EOA wallets
-          (!isSmartContractWallet && !destinationAddress) ||
-          // Make sure address type matches the connected wallet type
-          isSmartContractWallet === isDestinationAddressSmartContract
-        ) {
-          setAdvancedSettingsError(null)
-        } else {
-          setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-        }
-      } catch (err) {
-        console.error(err)
-        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-      }
-    }
-    getErrors()
-  }, [
-    l1.provider,
-    l2.provider,
-    isDepositMode,
-    isSmartContractWallet,
-    destinationAddress
-  ])
+    setAdvancedSettingsError(
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
+    )
+  }, [destinationAddress, isSmartContractWallet])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -671,6 +681,15 @@ export function TransferPanelMain({
       // Add L1 network to the list
       return [l1.network, ...options]
         .filter(option => {
+          // Remove the origin network from the destination list for contract wallets
+          // It's done so that the origin network is not changed
+          if (
+            isSmartContractWallet &&
+            direction === 'to' &&
+            option.id === from.id
+          ) {
+            return false
+          }
           // Remove selected network from the list
           return option.id !== selectedChainId
         })
@@ -700,7 +719,10 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          disabled: !fromOptions.length,
+          disabled:
+            !fromOptions.length ||
+            isSmartContractWallet ||
+            typeof isSmartContractWallet === 'undefined',
           options: fromOptions,
           value: from,
           onChange: async network => {
@@ -767,7 +789,10 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled: !fromOptions.length,
+        disabled:
+          !fromOptions.length ||
+          isSmartContractWallet ||
+          typeof isSmartContractWallet === 'undefined',
         options: fromOptions,
         value: from,
         onChange: async network => {
@@ -827,6 +852,7 @@ export function TransferPanelMain({
     l1.network,
     from,
     to,
+    isSmartContractWallet,
     isDepositMode,
     setQueryParams,
     switchNetworkAsync,
@@ -886,6 +912,34 @@ export function TransferPanelMain({
               >
                 Learn more.
               </ExternalLink>
+            </p>
+          )}
+
+          {showUSDCNotice && (
+            <p className="mt-1 text-xs font-light text-white">
+              Native USDC is live on Arbitrum One!
+              <br />
+              <ExternalLink
+                href="https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+                className="arb-hover underline"
+              >
+                Bridged USDC (USDC.e)
+              </ExternalLink>{' '}
+              will work but is different from{' '}
+              <ExternalLink
+                href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+                className="arb-hover underline"
+              >
+                Native USDC
+              </ExternalLink>
+              .{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
             </p>
           )}
         </div>
