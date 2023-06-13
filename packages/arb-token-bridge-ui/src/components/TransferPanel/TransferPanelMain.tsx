@@ -20,8 +20,11 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { addressIsSmartContract } from '../../util/AddressUtils'
-import { AdvancedSettings, AdvancedSettingsErrors } from './AdvancedSettings'
+import {
+  AdvancedSettings,
+  DestinationAddressErrors,
+  getDestinationAddressError
+} from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import { Tooltip } from '../common/Tooltip'
@@ -381,7 +384,7 @@ export function TransferPanelMain({
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
-    useState<AdvancedSettingsErrors | null>(null)
+    useState<DestinationAddressErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -501,35 +504,10 @@ export function TransferPanelMain({
   }, [selectedToken])
 
   useEffect(() => {
-    const getErrors = async () => {
-      try {
-        const isDestinationAddressSmartContract = await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2.provider : l1.provider
-        )
-        if (
-          // Destination address is not required for EOA wallets
-          (!isSmartContractWallet && !destinationAddress) ||
-          // Make sure address type matches the connected wallet type
-          isSmartContractWallet === isDestinationAddressSmartContract
-        ) {
-          setAdvancedSettingsError(null)
-        } else {
-          setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-        }
-      } catch (err) {
-        console.error(err)
-        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-      }
-    }
-    getErrors()
-  }, [
-    l1.provider,
-    l2.provider,
-    isDepositMode,
-    isSmartContractWallet,
-    destinationAddress
-  ])
+    setAdvancedSettingsError(
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
+    )
+  }, [destinationAddress, isSmartContractWallet])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
