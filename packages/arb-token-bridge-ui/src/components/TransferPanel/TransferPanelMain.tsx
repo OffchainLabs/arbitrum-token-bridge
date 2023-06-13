@@ -45,6 +45,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useDestinationAddressDenylist } from '../../hooks/useDestinationAddressDenylist'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
@@ -373,6 +374,7 @@ export function TransferPanelMain({
   } = useBalance({ provider: l2.provider, walletAddress })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+  const destinationAddressDenylist = useDestinationAddressDenylist()
 
   const tokenBalances = useTokenBalances(selectedToken?.address)
 
@@ -505,9 +507,13 @@ export function TransferPanelMain({
 
   useEffect(() => {
     setAdvancedSettingsError(
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
+      getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet,
+        destinationAddressDenylist
+      })
     )
-  }, [destinationAddress, isSmartContractWallet])
+  }, [destinationAddress, isSmartContractWallet, destinationAddressDenylist])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance

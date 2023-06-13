@@ -45,6 +45,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useDestinationAddressDenylist } from '../../hooks/useDestinationAddressDenylist'
 import { GET_HELP_LINK } from '../../constants'
 import { getDestinationAddressError } from './AdvancedSettings'
 
@@ -179,6 +180,7 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
+  const destinationAddressDenylist = useDestinationAddressDenylist()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
@@ -202,8 +204,12 @@ export function TransferPanel() {
 
   const destinationAddressError = useMemo(
     () =>
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
-    [destinationAddress, isSmartContractWallet]
+      getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet,
+        destinationAddressDenylist
+      }),
+    [destinationAddress, isSmartContractWallet, destinationAddressDenylist]
   )
 
   function clearAmountInput() {

@@ -19,10 +19,12 @@ enum DestinationAddressWarnings {
 
 export function getDestinationAddressError({
   destinationAddress,
-  isSmartContractWallet
+  isSmartContractWallet,
+  destinationAddressDenylist
 }: {
   destinationAddress?: string
   isSmartContractWallet: boolean
+  destinationAddressDenylist: string[]
 }): DestinationAddressErrors | null {
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
@@ -30,6 +32,14 @@ export function getDestinationAddressError({
   }
 
   if (destinationAddress && !isAddress(destinationAddress)) {
+    return DestinationAddressErrors.INVALID_ADDRESS
+  }
+
+  if (
+    destinationAddressDenylist.includes(
+      String(destinationAddress).toLowerCase()
+    )
+  ) {
     return DestinationAddressErrors.INVALID_ADDRESS
   }
 
