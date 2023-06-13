@@ -411,9 +411,7 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
-  const destinationAddressOrWalletAddress = useMemo(() => {
-    return destinationAddress || walletAddress
-  }, [destinationAddress, walletAddress])
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
   const l1WalletAddress = isDepositMode
     ? walletAddress
