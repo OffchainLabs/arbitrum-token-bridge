@@ -275,7 +275,7 @@ function ETHBalance({
   prefix = ''
 }: {
   on: NetworkType
-  walletAddress?: string
+  walletAddress: string | undefined
   prefix?: string
 }) {
   const networksAndSigners = useNetworksAndSigners()
@@ -314,7 +314,7 @@ function TokenBalance({
 }: {
   forToken: ERC20BridgeToken | null
   on: NetworkType
-  walletAddress?: string
+  walletAddress: string | undefined
   prefix?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
