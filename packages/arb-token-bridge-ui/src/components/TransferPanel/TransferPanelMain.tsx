@@ -45,6 +45,8 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -255,7 +257,19 @@ function TokenBalance({
   on: NetworkType
   prefix?: string
 }) {
+  const { l1, l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
+
+  const symbol = useMemo(() => {
+    if (!forToken) {
+      return undefined
+    }
+
+    return sanitizeTokenSymbol(forToken.symbol, {
+      erc20L1Address: forToken.address,
+      chain: on === NetworkType.l1 ? l1.network : l2.network
+    })
+  }, [forToken, on, l1, l2])
 
   if (!forToken) {
     return null
@@ -270,7 +284,7 @@ function TokenBalance({
       {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
-        symbol: forToken.symbol
+        symbol
       })}
     </span>
   )
@@ -356,6 +370,10 @@ export function TransferPanelMain({
     useState<AdvancedSettingsErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const showUSDCNotice =
+    selectedToken?.address === CommonAddress.Mainnet.USDC &&
+    isNetwork(l2.network.id).isArbitrumOne
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -802,6 +820,34 @@ export function TransferPanelMain({
               >
                 Learn more.
               </ExternalLink>
+            </p>
+          )}
+
+          {showUSDCNotice && (
+            <p className="mt-1 text-xs font-light text-white">
+              Native USDC is live on Arbitrum One!
+              <br />
+              <ExternalLink
+                href="https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+                className="arb-hover underline"
+              >
+                Bridged USDC (USDC.e)
+              </ExternalLink>{' '}
+              will work but is different from{' '}
+              <ExternalLink
+                href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+                className="arb-hover underline"
+              >
+                Native USDC
+              </ExternalLink>
+              .{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
             </p>
           )}
         </div>
