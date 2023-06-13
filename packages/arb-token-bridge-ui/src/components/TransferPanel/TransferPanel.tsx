@@ -350,10 +350,16 @@ export function TransferPanel() {
   }
 
   async function trySwitchNetworksBeforeTransfer() {
-    const shouldSwitchNetworks =
-      isDepositMode === latestNetworksAndSigners.current.isConnectedToArbitrum
+    function shouldSwitchNetworks() {
+      return (
+        (isDepositMode &&
+          latestNetworksAndSigners.current.isConnectedToArbitrum) ||
+        (!isDepositMode &&
+          !latestNetworksAndSigners.current.isConnectedToArbitrum)
+      )
+    }
 
-    if (!shouldSwitchNetworks) {
+    if (!shouldSwitchNetworks()) {
       return
     }
 
@@ -375,8 +381,7 @@ export function TransferPanel() {
     )
 
     while (
-      isDepositMode ===
-        latestNetworksAndSigners.current.isConnectedToArbitrum ||
+      shouldSwitchNetworks() ||
       !latestEth.current ||
       !arbTokenBridgeLoaded
     ) {
