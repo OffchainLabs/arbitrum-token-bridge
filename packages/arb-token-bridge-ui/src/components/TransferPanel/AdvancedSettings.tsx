@@ -14,7 +14,7 @@ export enum DestinationAddressErrors {
 }
 
 enum DestinationAddressWarnings {
-  CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is a valid wallet address.'
+  CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
 }
 
 export function getDestinationAddressError({
@@ -46,6 +46,10 @@ async function getDestinationAddressWarning({
   isEOA: boolean
   destinationProvider: Provider
 }) {
+  if (!isAddress(destinationAddress)) {
+    return null
+  }
+
   const destinationIsSmartContract = await addressIsSmartContract(
     destinationAddress,
     destinationProvider
