@@ -388,7 +388,7 @@ export function TransferPanel() {
       await new Promise(r => setTimeout(r, 100))
     }
 
-    await new Promise(r => setTimeout(r, 3000))
+    return new Promise(r => setTimeout(r, 3000))
   }
 
   const transfer = async () => {
