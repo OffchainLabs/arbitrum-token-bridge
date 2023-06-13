@@ -201,8 +201,9 @@ export function TransferPanel() {
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
   const destinationAddressError = useMemo(
-    () => getDestinationAddressError({ destinationAddress, isEOA }),
-    [destinationAddress, isEOA]
+    () =>
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
+    [destinationAddress, isSmartContractWallet]
   )
 
   function clearAmountInput() {

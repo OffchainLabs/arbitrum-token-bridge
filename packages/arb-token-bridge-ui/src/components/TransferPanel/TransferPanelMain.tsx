@@ -345,7 +345,7 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
-  const { isEOA = false } = useAccountType()
+  const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -498,9 +498,9 @@ export function TransferPanelMain({
 
   useEffect(() => {
     setAdvancedSettingsError(
-      getDestinationAddressError({ destinationAddress, isEOA })
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
     )
-  }, [destinationAddress, isEOA])
+  }, [destinationAddress, isSmartContractWallet])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance

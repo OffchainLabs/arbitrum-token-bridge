@@ -9,7 +9,7 @@ import { addressIsSmartContract } from '../../util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export enum DestinationAddressErrors {
-  INVALID_ADDRESS = 'The destination address is not a valid wallet address.',
+  INVALID_ADDRESS = 'The destination address is not a valid address.',
   REQUIRED_ADDRESS = 'The destination address is required.'
 }
 
@@ -19,41 +19,44 @@ enum DestinationAddressWarnings {
 
 export function getDestinationAddressError({
   destinationAddress,
-  isEOA
+  isSmartContractWallet
 }: {
   destinationAddress?: string
-  isEOA: boolean
+  isSmartContractWallet: boolean
 }): DestinationAddressErrors | null {
-  if (!destinationAddress) {
-    if (isEOA) {
-      return null
-    }
+  if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
     return DestinationAddressErrors.REQUIRED_ADDRESS
   }
-  if (!isAddress(destinationAddress)) {
+
+  if (destinationAddress && !isAddress(destinationAddress)) {
     return DestinationAddressErrors.INVALID_ADDRESS
   }
+
+  // no error
   return null
 }
 
 async function getDestinationAddressWarning({
   destinationAddress,
   isEOA,
-  providerTo
+  destinationProvider
 }: {
   destinationAddress: string
   isEOA: boolean
-  providerTo: Provider
+  destinationProvider: Provider
 }) {
-  // checks if trying to send to a contract address
-  // only check for EOA, contract wallets will often send to another contract wallet
-  if (!isEOA || !isAddress(destinationAddress)) {
-    return null
-  }
-  if (await addressIsSmartContract(destinationAddress, providerTo)) {
+  const destinationIsSmartContract = await addressIsSmartContract(
+    destinationAddress,
+    destinationProvider
+  )
+
+  // checks if trying to send to a contract address, only checks EOA
+  if (isEOA && destinationIsSmartContract) {
     return DestinationAddressWarnings.CONTRACT_ADDRESS
   }
+
+  // no warning
   return null
 }
 
@@ -87,7 +90,7 @@ export const AdvancedSettings = ({
         await getDestinationAddressWarning({
           destinationAddress,
           isEOA,
-          providerTo: (isDepositMode ? l2 : l1).provider
+          destinationProvider: (isDepositMode ? l2 : l1).provider
         })
       )
     }
