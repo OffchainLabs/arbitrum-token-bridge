@@ -96,7 +96,7 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
   const { l1, l2 } = params
-  const { address } = useAccount()
+  const { address, connector } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
@@ -137,8 +137,20 @@ export const useArbTokenBridge = (
   // this prevents previous account/chains' transactions to show up in the current account
   // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
   useEffect(() => {
-    setPendingWithdrawalMap({})
-  }, [l1.provider, l2.provider, address])
+    if (!connector) {
+      return
+    }
+
+    const resetPendingWithdrawalMap = () => {
+      setPendingWithdrawalMap({})
+    }
+
+    connector.on('change', resetPendingWithdrawalMap)
+
+    return () => {
+      connector.off('change', resetPendingWithdrawalMap)
+    }
+  }, [connector])
 
   const [
     transactions,
@@ -989,7 +1001,7 @@ export const useArbTokenBridge = (
       const id = getUniqueIdOrHashFromEvent(tx).toString()
       pwMap[id] = tx
     })
-    setPendingWithdrawalMap({ ...pendingWithdrawalsMap, ...pwMap })
+    setPendingWithdrawalMap((previousPendingWithdrawalsMap) => ({ ...previousPendingWithdrawalsMap, ...pwMap }))
   }
 
   return {

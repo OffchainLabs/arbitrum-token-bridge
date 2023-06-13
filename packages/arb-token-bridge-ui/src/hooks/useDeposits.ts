@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
-import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformDeposits } from '../state/app/utils'
 import {

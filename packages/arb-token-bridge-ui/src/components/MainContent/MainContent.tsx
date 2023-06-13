@@ -85,7 +85,7 @@ export function MainContent() {
 
   useEffect(() => {
     // if pending withdrawals found, add them in the store - this will add them to pending div + start polling for their status
-    arbTokenBridge?.setWithdrawalsInStore?.(withdrawalsData.pendingWithdrawals)
+    arbTokenBridge.setWithdrawalsInStore?.(withdrawalsData.pendingWithdrawals)
   }, [JSON.stringify(withdrawalsData.pendingWithdrawals)]) // only run side effect on value change, not reference (Call stack exceeded)
 
   return (

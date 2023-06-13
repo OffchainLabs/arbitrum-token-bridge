@@ -134,7 +134,7 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
@@ -145,6 +145,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const initBridge = useCallback(
     async (params: UseNetworksAndSignersConnectedResult) => {
       const { l1, l2 } = params
+
+      if (!address) {
+        return
+      }
 
       setTokenBridgeParams({
         l1: {

@@ -4,7 +4,6 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
@@ -27,9 +26,6 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { allowance, amount, isOpen, token } = props
   const { address } = useAccount()
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
 
   const allowanceParsed =
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0

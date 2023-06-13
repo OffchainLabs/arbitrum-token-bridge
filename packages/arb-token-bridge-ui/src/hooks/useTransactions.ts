@@ -525,7 +525,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
-  const setDepositsInStore = useCallback((newTransactions: Transaction[]) => {
+  const setDepositsInStore = (newTransactions: Transaction[]) => {
     // appends the state with a new set of transactions
     // useful when you want to display some transactions fetched from subgraph without worrying about existing state
     const transactionsMap: { [id: string]: Transaction } = {}
@@ -538,7 +538,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       type: 'SET_TRANSACTIONS',
       transactions: Object.values(transactionsMap)
     })
-  }, [])
+  }
 
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))

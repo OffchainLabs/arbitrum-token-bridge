@@ -4,7 +4,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Context } from '..'
 import { ConnectionState } from '../../util'
-import { WhiteListState, WarningTokens } from './state'
+import { WarningTokens } from './state'
 
 export const setConnectionState = (
   { state }: Context,
@@ -46,8 +46,6 @@ export const reset = ({ state }: Context, newChainId: number) => {
     state.app.selectedToken = null
   }
 
-  state.app.arbTokenBridge = {} as ArbTokenBridge
-  state.app.verifying = WhiteListState.ALLOWED
   state.app.connectionState = ConnectionState.LOADING
   state.app.arbTokenBridgeLoaded = false
 }
@@ -57,13 +55,6 @@ export const setWarningTokens = (
   warningTokens: WarningTokens
 ) => {
   state.app.warningTokens = warningTokens
-}
-
-export const setWhitelistState = (
-  { state }: Context,
-  verifying: WhiteListState
-) => {
-  state.app.verifying = verifying
 }
 
 export const setArbTokenBridgeLoaded = (

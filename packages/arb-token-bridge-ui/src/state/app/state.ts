@@ -27,12 +27,6 @@ import {
   TxnType
 } from '../../hooks/useTransactions'
 
-export enum WhiteListState {
-  VERIFYING,
-  ALLOWED,
-  DISALLOWED
-}
-
 export enum DepositStatus {
   L1_PENDING = 1,
   L1_FAILURE = 2,
@@ -72,7 +66,6 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   sortedTransactions: Transaction[]
@@ -93,7 +86,6 @@ export const defaultState: AppState = {
   connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
-  verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
