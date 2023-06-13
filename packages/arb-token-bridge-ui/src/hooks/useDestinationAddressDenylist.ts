@@ -16,9 +16,13 @@ export const useDestinationAddressDenylist = () => {
   const tokenLists = useTokenLists(l2Network.id)
 
   const tokenListsAddresses = useMemo(() => {
-    return (tokenLists.data || [])
-      .map(list => list.tokens.map(token => token.address))
-      .flat()
+    return Array.from(
+      new Set(
+        (tokenLists.data || [])
+          .map(list => list.tokens.map(token => token.address))
+          .flat()
+      )
+    )
   }, [tokenLists])
 
   const result = useMemo(() => {
