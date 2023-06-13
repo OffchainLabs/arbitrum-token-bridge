@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
-import { isAddress } from 'ethers/lib/utils.js'
 
 export enum NetworkType {
   l1 = 'l1',
@@ -39,7 +38,7 @@ export function useTokenBalances({
 
     if (
       typeof erc20L1Address === 'undefined' ||
-      !isAddress(String(walletAddress))
+      !utils.isAddress(String(walletAddress))
     ) {
       return defaultResult
     }
