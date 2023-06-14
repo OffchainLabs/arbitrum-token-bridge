@@ -163,7 +163,7 @@ export const AdvancedSettings = ({
           )}
           {destinationAddress && !error && (
             <ExternalLink
-              className="mt-2 flex w-fit items-center"
+              className="arb-hover mt-2 flex w-fit items-center"
               href={`${getExplorerUrl(
                 (isDepositMode ? l2 : l1).network.id
               )}/address/${destinationAddress}`}
