@@ -168,6 +168,7 @@ export function TransferPanel() {
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+  const destinationAddressDenylist = useDestinationAddressDenylist()
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -180,7 +181,6 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
-  const destinationAddressDenylist = useDestinationAddressDenylist()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
