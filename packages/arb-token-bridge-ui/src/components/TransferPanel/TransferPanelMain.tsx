@@ -39,7 +39,6 @@ import {
   calculateEstimatedL2GasFees,
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
-import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
@@ -50,6 +49,11 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+
+enum NetworkType {
+  l1 = 'l1',
+  l2 = 'l2'
+}
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -374,7 +378,10 @@ export function TransferPanelMain({
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const selectedTokenBalances = useMemo(() => {
-    const result: { l1: BigNumber | null; l2: BigNumber | null } = {
+    const result: {
+      [NetworkType.l1]: BigNumber | null
+      [NetworkType.l2]: BigNumber | null
+    } = {
       l1: null,
       l2: null
     }
