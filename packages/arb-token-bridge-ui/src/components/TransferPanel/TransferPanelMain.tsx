@@ -357,25 +357,42 @@ export function TransferPanelMain({
   const { walletAddress } = arbTokenBridge
 
   const {
-    eth: [ethL1Balance]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: walletAddress
+    walletAddress
   })
   const {
-    eth: [ethL2Balance]
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({
     provider: l2.provider,
-    walletAddress: destinationAddress || walletAddress
+    walletAddress
   })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const tokenBalances = useTokenBalances({
-    erc20L1Address: selectedToken?.address,
-    l1WalletAddress: walletAddress,
-    l2WalletAddress: destinationAddress || walletAddress
-  })
+  const selectedTokenBalances = useMemo(() => {
+    const result: { l1: BigNumber | null; l2: BigNumber | null } = {
+      l1: null,
+      l2: null
+    }
+
+    if (!selectedToken) {
+      return result
+    }
+
+    if (erc20L1Balances) {
+      result['l1'] = erc20L1Balances[selectedToken.address] || null
+    }
+
+    if (erc20L2Balances && selectedToken.l2Address) {
+      result['l2'] = erc20L2Balances[selectedToken.l2Address] || null
+    }
+
+    return result
+  }, [erc20L1Balances, erc20L2Balances, selectedToken])
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
@@ -437,7 +454,9 @@ export function TransferPanelMain({
   const setMaxAmount = useCallback(async () => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
-    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.l1
+      : selectedTokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -484,8 +503,7 @@ export function TransferPanelMain({
     l2GasPrice,
     selectedToken,
     setAmount,
-    tokenBalances.l1,
-    tokenBalances.l2
+    selectedTokenBalances
   ])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
@@ -512,7 +530,9 @@ export function TransferPanelMain({
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.l1
+      : selectedTokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -527,7 +547,13 @@ export function TransferPanelMain({
     }
 
     return !ethBalance.isZero()
-  }, [ethL1Balance, ethL2Balance, tokenBalances, selectedToken, isDepositMode])
+  }, [
+    ethL1Balance,
+    ethL2Balance,
+    selectedTokenBalances,
+    selectedToken,
+    isDepositMode
+  ])
 
   const errorMessageText = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
@@ -792,7 +818,9 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   balance={
-                    app.isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+                    app.isDepositMode
+                      ? selectedTokenBalances.l1
+                      : selectedTokenBalances.l2
                   }
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
@@ -882,7 +910,9 @@ export function TransferPanelMain({
               <>
                 <TokenBalance
                   balance={
-                    app.isDepositMode ? tokenBalances.l2 : tokenBalances.l1
+                    app.isDepositMode
+                      ? selectedTokenBalances.l2
+                      : selectedTokenBalances.l1
                   }
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
