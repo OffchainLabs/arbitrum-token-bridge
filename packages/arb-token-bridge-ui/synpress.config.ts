@@ -98,7 +98,7 @@ export default defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: [
       // order of running the tests...
-      process.env.TEST_FILE as string,
+      process.env.TEST_FILE as string
       // 'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
       // 'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
       // 'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
