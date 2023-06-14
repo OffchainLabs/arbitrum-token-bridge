@@ -26,7 +26,7 @@ export const useDestinationAddressDenylist = () => {
   }, [tokenLists])
 
   const result = useMemo(() => {
-    const denylist = [...DESTINATION_ADDRESS_DENYLIST]
+    const denylist = [...tokenListsAddresses, ...DESTINATION_ADDRESS_DENYLIST]
     const networkObject = l2Networks[(isDepositMode ? l2Network : l1Network).id]
 
     if (networkObject) {
@@ -38,8 +38,6 @@ export const useDestinationAddressDenylist = () => {
       delete ethBridge.classicOutboxes
       denylist.push(...Object.values(ethBridge), ...Object.values(tokenBridge))
     }
-
-    denylist.push(...tokenListsAddresses)
 
     return denylist.map(address => address.toLowerCase())
   }, [isDepositMode, l1Network, l2Network, tokenListsAddresses])
