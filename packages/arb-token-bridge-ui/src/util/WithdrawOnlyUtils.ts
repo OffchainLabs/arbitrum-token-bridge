@@ -118,14 +118,7 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2Address: '0x7E2a1eDeE171C5B19E6c54D73752396C0A572594'
     }
   ],
-  [ChainId.ArbitrumNova]: [
-    {
-      symbol: 'MAGIC',
-      l2CustomAddr: '',
-      l1Address: '0xB0c7a3Ba49C7a6EaBa6cD4a96C55a1391070Ac9A',
-      l2Address: '0xe8936ac97A85d708d5312D52C30c18d4533b8A9c'
-    }
-  ]
+  [ChainId.ArbitrumNova]: []
 }
 
 export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
