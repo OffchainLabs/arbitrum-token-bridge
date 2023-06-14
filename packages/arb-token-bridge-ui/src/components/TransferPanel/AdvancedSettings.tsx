@@ -1,18 +1,74 @@
 import { useEffect, useState } from 'react'
+import { isAddress } from 'ethers/lib/utils'
+import { Provider } from '@ethersproject/providers'
 import {
   ArrowDownTrayIcon,
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline'
 
-import { useAppState } from '../../state'
-import { useAccountType } from '../../hooks/useAccountType'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
-export enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
+import { useAppState } from '../../state'
+import { useAccountType } from '../../hooks/useAccountType'
+import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
+export enum DestinationAddressErrors {
+  INVALID_ADDRESS = 'The destination address is not a valid address.',
+  REQUIRED_ADDRESS = 'The destination address is required.'
+}
+
+enum DestinationAddressWarnings {
+  CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
+}
+
+export function getDestinationAddressError({
+  destinationAddress,
+  isSmartContractWallet
+}: {
+  destinationAddress?: string
+  isSmartContractWallet: boolean
+}): DestinationAddressErrors | null {
+  if (!destinationAddress && isSmartContractWallet) {
+    // destination address required for contract wallets
+    return DestinationAddressErrors.REQUIRED_ADDRESS
+  }
+
+  if (destinationAddress && !isAddress(destinationAddress)) {
+    return DestinationAddressErrors.INVALID_ADDRESS
+  }
+
+  // no error
+  return null
+}
+
+async function getDestinationAddressWarning({
+  destinationAddress,
+  isEOA,
+  destinationProvider
+}: {
+  destinationAddress: string
+  isEOA: boolean
+  destinationProvider: Provider
+}) {
+  if (!isAddress(destinationAddress)) {
+    return null
+  }
+
+  const destinationIsSmartContract = await addressIsSmartContract(
+    destinationAddress,
+    destinationProvider
+  )
+
+  // checks if trying to send to a contract address, only checks EOA
+  if (isEOA && destinationIsSmartContract) {
+    return DestinationAddressWarnings.CONTRACT_ADDRESS
+  }
+
+  // no warning
+  return null
 }
 
 export const AdvancedSettings = ({
@@ -22,7 +78,7 @@ export const AdvancedSettings = ({
 }: {
   destinationAddress?: string
   onChange: (value?: string) => void
-  error: AdvancedSettingsErrors | null
+  error: DestinationAddressErrors | null
 }) => {
   const {
     app: { selectedToken, isDepositMode }
@@ -31,12 +87,28 @@ export const AdvancedSettings = ({
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
+  const [warning, setWarning] = useState<string | null>(null)
 
   useEffect(
     // Show on page load if SC wallet since destination address mandatory
     () => setCollapsed(!isSmartContractWallet),
     [isSmartContractWallet]
   )
+
+  useEffect(() => {
+    async function updateWarning() {
+      setWarning(
+        await getDestinationAddressWarning({
+          destinationAddress,
+          isEOA,
+          destinationProvider: (isDepositMode ? l2 : l1).provider
+        })
+      )
+    }
+    updateWarning()
+
+    return () => setWarning(null)
+  }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
   // Disabled for ETH
   if (!selectedToken) {
@@ -49,9 +121,12 @@ export const AdvancedSettings = ({
 
   function handleVisibility() {
     // Keep visible for SC wallets since destination address is mandatory
-    if (!isSmartContractWallet) {
-      setCollapsed(!collapsed)
+    // Or if destination address is provided
+    if (isSmartContractWallet || destinationAddress) {
+      setCollapsed(false)
+      return
     }
+    setCollapsed(!collapsed)
   }
 
   return (
@@ -82,6 +157,10 @@ export const AdvancedSettings = ({
               onChange={e => onChange(e.target.value?.toLowerCase())}
             />
           </div>
+          {error && <span className="text-xs text-red-400">{error}</span>}
+          {!error && warning && (
+            <span className="text-xs text-yellow-500">{warning}</span>
+          )}
           {destinationAddress && !error && (
             <ExternalLink
               className="mt-2 flex w-fit items-center"
@@ -94,9 +173,6 @@ export const AdvancedSettings = ({
             </ExternalLink>
           )}
         </>
-      )}
-      {isSmartContractWallet && error && (
-        <span className="text-xs text-red-400">{error}</span>
       )}
     </div>
   )
