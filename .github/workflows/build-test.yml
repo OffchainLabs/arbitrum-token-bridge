@@ -103,17 +103,17 @@ jobs:
       - name: Check formatting with Prettier
         run: yarn prettier:check
   
-  # setup-node:
-  #   name: Set up the local node
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Set up the local node
-  #       uses: OffchainLabs/actions/run-nitro-test-node@main
+  setup-node:
+    name: Set up the local node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up the local node
+        uses: OffchainLabs/actions/run-nitro-test-node@main
 
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
-    needs: [install, check-files]
+    needs: [install, check-files, setup-node]
     if: needs.check-files.outputs.run_tests == 'true'
     strategy:
       max-parallel: 10
@@ -183,28 +183,25 @@ jobs:
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
-      - name:
+      - name: Run e2e tests
         run: |
-          echo "should be running: ${{ matrix.tests.file }}"
-      # - name: Run e2e tests
-      #   run: |
-      #     docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     COMPOSE_DOCKER_CLI_BUILD: 1
-      #     DOCKER_BUILDKIT: 1
-      #     DOCKER_DEFAULT_PLATFORM: linux/amd64
+          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
+          DOCKER_DEFAULT_PLATFORM: linux/amd64
 
-      # - name: Archive e2e artifacts
-      #   uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
-      #   if: failure() || success()
-      #   with:
-      #     name: e2e-artifacts-docker
-      #     path: |
-      #       docker/videos
-      #       docker/videos-ci
-      #       docker/screenshots
-      #   continue-on-error: false
+      - name: Archive e2e artifacts
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
+        if: failure() || success()
+        with:
+          name: e2e-artifacts-docker
+          path: |
+            docker/videos
+            docker/videos-ci
+            docker/screenshots
+        continue-on-error: false
 
   clean-up:
     name: "Clean Up"
