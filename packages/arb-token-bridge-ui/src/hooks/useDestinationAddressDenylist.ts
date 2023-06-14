@@ -10,7 +10,6 @@ export const useDestinationAddressDenylist = () => {
     app: { isDepositMode }
   } = useAppState()
   const {
-    l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const tokenLists = useTokenLists(l2Network.id)
@@ -27,20 +26,22 @@ export const useDestinationAddressDenylist = () => {
 
   const result = useMemo(() => {
     const denylist = [...tokenListsAddresses, ...DESTINATION_ADDRESS_DENYLIST]
-    const networkObject = l2Networks[(isDepositMode ? l2Network : l1Network).id]
+    const networkObject = isDepositMode ? l2Networks[l2Network.id] : undefined
 
     if (networkObject) {
       const { ethBridge, tokenBridge } = networkObject
       const { classicOutboxes } = ethBridge
+
       if (classicOutboxes) {
         denylist.push(...Object.keys(classicOutboxes))
       }
+
       delete ethBridge.classicOutboxes
       denylist.push(...Object.values(ethBridge), ...Object.values(tokenBridge))
     }
 
     return denylist.map(address => address.toLowerCase())
-  }, [isDepositMode, l1Network, l2Network, tokenListsAddresses])
+  }, [isDepositMode, l2Network, tokenListsAddresses])
 
   return result
 }
