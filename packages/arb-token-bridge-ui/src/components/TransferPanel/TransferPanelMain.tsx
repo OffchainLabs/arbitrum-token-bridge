@@ -236,23 +236,13 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2 } = networksAndSigners
-  const walletAddress = arbTokenBridge.walletAddress
-
-  const {
-    eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
-  const {
-    eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
-
-  const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
-
+function ETHBalance({
+  balance,
+  prefix = ''
+}: {
+  balance: BigNumber | null
+  prefix?: string
+}) {
   if (!balance) {
     return <StyledLoader />
   }
@@ -267,15 +257,16 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 
 function TokenBalance({
   forToken,
+  balance,
   on,
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
+  balance: BigNumber | null
   on: NetworkType
   prefix?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const balance = useTokenBalances(forToken?.address)[on]
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -367,14 +358,24 @@ export function TransferPanelMain({
 
   const {
     eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: walletAddress
+  })
   const {
     eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress: destinationAddress || walletAddress
+  })
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const tokenBalances = useTokenBalances(selectedToken?.address)
+  const tokenBalances = useTokenBalances({
+    erc20L1Address: selectedToken?.address,
+    l1WalletAddress: walletAddress,
+    l2WalletAddress: destinationAddress || walletAddress
+  })
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
@@ -790,11 +791,14 @@ export function TransferPanelMain({
               <>
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  balance={
+                    app.isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+                  }
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
@@ -877,12 +881,15 @@ export function TransferPanelMain({
             ) : (
               <>
                 <TokenBalance
+                  balance={
+                    app.isDepositMode ? tokenBalances.l2 : tokenBalances.l1
+                  }
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                  balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
                   prefix={selectedToken ? '' : 'Balance: '}
                 />
               </>
