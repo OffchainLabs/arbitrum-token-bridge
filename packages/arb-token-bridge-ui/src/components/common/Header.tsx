@@ -36,7 +36,7 @@ const learnMenuProps = toHeaderMenuProps([
   },
   {
     title: 'About bridging',
-    link: 'https://arbitrum.io/bridge-tutorial'
+    link: 'https://developer.arbitrum.io/getting-started-users'
   },
   {
     title: 'About Arbitrum',
