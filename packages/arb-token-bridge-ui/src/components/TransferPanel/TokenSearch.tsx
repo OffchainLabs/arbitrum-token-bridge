@@ -278,10 +278,7 @@ function TokensPanel({
     }
   }
 
-  const addNewToken: FormEventHandler = async e => {
-    e.preventDefault()
-    setErrorMessage('')
-
+  const addNewToken = async () => {
     if (!isAddress(newToken) || isAddingToken) {
       return
     }
@@ -297,36 +294,30 @@ function TokensPanel({
     }
   }
 
+  const tokenSearchFieldChangeHandler = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setErrorMessage('')
+    setNewToken(event.target.value)
+    addNewToken()
+  }
+
   return (
     <div className="flex flex-col space-y-3">
-      <form onSubmit={addNewToken} className="flex flex-col">
+      <form className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
             <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
 
             <input
               id="newTokenAddress"
+              type="search"
               value={newToken}
-              onChange={e => {
-                setErrorMessage('')
-                setNewToken(e.target.value)
-              }}
+              onChange={tokenSearchFieldChangeHandler}
               placeholder="Search by token name, symbol, L1 or L2 address"
               className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-dark"
             />
           </div>
-
-          <Button
-            type="submit"
-            variant="secondary"
-            loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
-            disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
-            aria-label="Add New Token"
-          >
-            Add
-          </Button>
         </div>
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       </form>
