@@ -163,12 +163,12 @@ export const AdvancedSettings = ({
           )}
           {destinationAddress && !error && (
             <ExternalLink
-              className="arb-hover mt-2 flex w-fit items-center"
+              className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
               href={`${getExplorerUrl(
                 (isDepositMode ? l2 : l1).network.id
               )}/address/${destinationAddress}`}
             >
-              <ArrowDownTrayIcon height={16} className="mr-2 -rotate-90" />
+              <ArrowDownTrayIcon height={12} className="mr-2 -rotate-90" />
               View account in explorer
             </ExternalLink>
           )}
