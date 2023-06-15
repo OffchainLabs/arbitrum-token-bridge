@@ -27,7 +27,22 @@ jobs:
       - name: Check modified files
         id: check-files
         run: |
-          echo "run_tests=true" >> $GITHUB_OUTPUT
+          echo "=============== list modified files ==============="
+          files=`git diff --name-only HEAD^ HEAD`
+          echo "$files"
+          for file in $files; do
+            if [[ $file != packages/* ]] && ! [[ $file =~ .*\.(lock|yml)$ ]]; then
+              # if not in packages/ and does not end with .lock or .yml
+              echo "run_tests=false" >> $GITHUB_OUTPUT
+            elif [[ $file == .github/ISSUE_TEMPLATE/* ]]; then
+              echo "run_tests=false" >> $GITHUB_OUTPUT
+            elif [[ $file =~ .*\.(md|svg|png|webp|gif|txt)$ ]]; then
+              echo "run_tests=false" >> $GITHUB_OUTPUT
+            else
+              echo "run_tests=true" >> $GITHUB_OUTPUT
+              break
+            fi
+          done
         shell: bash
 
   install:
