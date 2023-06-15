@@ -730,7 +730,12 @@ export function TransferPanel() {
 
   const requiredGasFees = useMemo(
     // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
-    () => (isSmartContractWallet ? 0 : gasSummary.estimatedTotalGasFees),
+    () =>
+      isSmartContractWallet
+        ? isDepositMode
+          ? gasSummary.estimatedL2GasFees
+          : 0
+        : gasSummary.estimatedTotalGasFees,
     [isSmartContractWallet, gasSummary.estimatedTotalGasFees]
   )
 
