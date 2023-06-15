@@ -730,13 +730,17 @@ export function TransferPanel() {
 
   const requiredGasFees = useMemo(
     // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
-    () =>
-      isSmartContractWallet
-        ? isDepositMode
-          ? gasSummary.estimatedL2GasFees
-          : 0
-        : gasSummary.estimatedTotalGasFees,
-    [isSmartContractWallet, gasSummary.estimatedTotalGasFees]
+    () => {
+      if (isSmartContractWallet) {
+        if (isDepositMode) {
+          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+          return gasSummary.estimatedL2GasFees
+        }
+        return 0
+      }
+      return gasSummary.estimatedTotalGasFees
+    },
+    [isSmartContractWallet, isDepositMode, gasSummary]
   )
 
   const getErrorMessage = useCallback(
