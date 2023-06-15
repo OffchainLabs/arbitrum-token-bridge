@@ -123,8 +123,15 @@ const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
 
-const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM!)
-const userWallet = new Wallet(process.env.PRIVATE_KEY_USER!)
+if (!process.env.PRIVATE_KEY_CUSTOM) {
+  throw new Error('PRIVATE_KEY_CUSTOM variable missing.')
+}
+if (!process.env.PRIVATE_KEY_USER) {
+  throw new Error('PRIVATE_KEY_USER variable missing.')
+}
+
+const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
+const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
 async function deployERC20ToL1() {
   console.log('Deploying ERC20 to L1...')
