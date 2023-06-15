@@ -379,11 +379,11 @@ export function TransferPanelMain({
 
   const selectedTokenBalances = useMemo(() => {
     const result: {
-      [NetworkType.l1]: BigNumber | null
-      [NetworkType.l2]: BigNumber | null
+      [NetworkType.l1]: BigNumber
+      [NetworkType.l2]: BigNumber
     } = {
-      l1: null,
-      l2: null
+      l1: constants.Zero,
+      l2: constants.Zero
     }
 
     if (!selectedToken) {
@@ -391,11 +391,11 @@ export function TransferPanelMain({
     }
 
     if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[selectedToken.address] || null
+      result.l1 = erc20L1Balances[selectedToken.address] ?? constants.Zero
     }
 
     if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] || null
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
     }
 
     return result
