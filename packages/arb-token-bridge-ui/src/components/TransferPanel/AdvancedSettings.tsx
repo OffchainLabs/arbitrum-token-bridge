@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
+} from '@heroicons/react/24/outline'
+
+import { getExplorerUrl } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -163,6 +170,21 @@ export const AdvancedSettings = ({
           {error && <span className="text-xs text-red-400">{error}</span>}
           {!error && warning && (
             <span className="text-xs text-yellow-500">{warning}</span>
+          )}
+          {destinationAddress && !error && (
+            <ExternalLink
+              className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
+              href={`${getExplorerUrl(
+                (isDepositMode ? l2 : l1).network.id
+              )}/address/${destinationAddress}`}
+            >
+              <ArrowDownTrayIcon
+                height={12}
+                strokeWidth={3}
+                className="mr-1 -rotate-90"
+              />
+              View account in explorer
+            </ExternalLink>
           )}
         </>
       )}
