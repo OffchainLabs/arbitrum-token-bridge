@@ -332,7 +332,7 @@ function TokensPanel({
 
   return (
     <div className="flex flex-col space-y-3">
-      <form className="flex flex-col">
+      <div className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
             <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
@@ -348,47 +348,59 @@ function TokensPanel({
           </div>
         </div>
         {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
-      </form>
+      </div>
       <div
         className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
         data-cy="tokenSearchList"
       >
         <AutoSizer disableHeight>
           {({ width }) => (
-            <List
-              width={width - 2}
-              height={numberOfRows * 84}
-              rowCount={tokensToShow.length}
-              rowHeight={84}
-              rowRenderer={virtualizedProps => {
-                const address = tokensToShow[virtualizedProps.index]
+            <>
+              {isAddingToken && (
+                <div
+                  className="flex h-[84px] flex-row items-center justify-center bg-white px-4 py-3 hover:bg-gray-100"
+                  style={{ width: width - 2 }}
+                >
+                  <Loader size="small" />
+                </div>
+              )}
+              <List
+                width={width - 2}
+                height={numberOfRows * 84}
+                rowCount={tokensToShow.length}
+                rowHeight={84}
+                rowRenderer={virtualizedProps => {
+                  const address = tokensToShow[virtualizedProps.index]
 
-                if (address === ETH_IDENTIFIER) {
+                  if (address === ETH_IDENTIFIER) {
+                    return (
+                      <TokenRow
+                        key="TokenRowEther"
+                        onClick={() => onTokenSelected(null)}
+                        token={null}
+                      />
+                    )
+                  }
+
+                  let token: ERC20BridgeToken | null = null
+                  if (address) {
+                    token =
+                      tokensFromLists[address] ||
+                      tokensFromUser[address] ||
+                      null
+                  }
+
                   return (
                     <TokenRow
-                      key="TokenRowEther"
-                      onClick={() => onTokenSelected(null)}
-                      token={null}
+                      key={address}
+                      style={virtualizedProps.style}
+                      onClick={() => onTokenSelected(token)}
+                      token={token}
                     />
                   )
-                }
-
-                let token: ERC20BridgeToken | null = null
-                if (address) {
-                  token =
-                    tokensFromLists[address] || tokensFromUser[address] || null
-                }
-
-                return (
-                  <TokenRow
-                    key={address}
-                    style={virtualizedProps.style}
-                    onClick={() => onTokenSelected(token)}
-                    token={token}
-                  />
-                )
-              }}
-            />
+                }}
+              />
+            </>
           )}
         </AutoSizer>
       </div>
