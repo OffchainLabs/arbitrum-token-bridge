@@ -57,12 +57,6 @@ describe('Deposit ERC20 Token', () => {
           .typeRecursively(wethTokenAddressL1)
           .should('be.visible')
           .then(() => {
-            // Click on the Add new token button
-
-            cy.findByRole('button', { name: 'Add New Token' })
-              .should('be.visible')
-              .click()
-
             // Select the WETH token
             cy.findAllByText('WETH').first().click()
 

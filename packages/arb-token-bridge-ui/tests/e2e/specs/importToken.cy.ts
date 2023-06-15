@@ -140,12 +140,6 @@ describe('Import token', () => {
           .should('be.visible')
           .typeRecursively(ERC20TokenAddressL1.slice(0, -1))
 
-        // Add button should be disabled
-        cy.findByRole('button', { name: 'Add New Token' })
-          .should('be.visible')
-          .should('be.disabled')
-          .as('addButton')
-
         // Add last character
         cy.get('@searchInput').typeRecursively(
           `${moveToEnd}${ERC20TokenAddressL1.slice(-1)}`

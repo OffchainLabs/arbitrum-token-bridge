@@ -73,12 +73,6 @@ export const importTokenThroughUI = (address: string) => {
     .findByPlaceholderText(/Search by token name/i)
     .should('be.visible')
     .typeRecursively(address)
-    .then(() => {
-      // Click on the Add new token button
-      cy.findByRole('button', { name: 'Add New Token' })
-        .should('be.visible')
-        .click()
-    })
 }
 
 export async function getInitialETHBalance(
