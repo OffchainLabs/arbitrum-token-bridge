@@ -1,14 +1,77 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
+import { isAddress } from 'ethers/lib/utils'
+import { Provider } from '@ethersproject/providers'
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
+} from '@heroicons/react/24/outline'
+
+import { getExplorerUrl } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
+import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
-export enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
+export enum DestinationAddressErrors {
+  INVALID_ADDRESS = 'The destination address is not a valid address.',
+  REQUIRED_ADDRESS = 'The destination address is required.'
+}
+
+enum DestinationAddressWarnings {
+  CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
+}
+
+export function getDestinationAddressError({
+  destinationAddress,
+  isSmartContractWallet
+}: {
+  destinationAddress?: string
+  isSmartContractWallet: boolean
+}): DestinationAddressErrors | null {
+  if (!destinationAddress && isSmartContractWallet) {
+    // destination address required for contract wallets
+    return DestinationAddressErrors.REQUIRED_ADDRESS
+  }
+
+  if (destinationAddress && !isAddress(destinationAddress)) {
+    return DestinationAddressErrors.INVALID_ADDRESS
+  }
+
+  // no error
+  return null
+}
+
+async function getDestinationAddressWarning({
+  destinationAddress,
+  isEOA,
+  destinationProvider
+}: {
+  destinationAddress: string
+  isEOA: boolean
+  destinationProvider: Provider
+}) {
+  if (!isAddress(destinationAddress)) {
+    return null
+  }
+
+  const destinationIsSmartContract = await addressIsSmartContract(
+    destinationAddress,
+    destinationProvider
+  )
+
+  // checks if trying to send to a contract address, only checks EOA
+  if (isEOA && destinationIsSmartContract) {
+    return DestinationAddressWarnings.CONTRACT_ADDRESS
+  }
+
+  // no warning
+  return null
 }
 
 export const AdvancedSettings = ({
@@ -18,16 +81,18 @@ export const AdvancedSettings = ({
 }: {
   destinationAddress?: string
   onChange: (value?: string) => void
-  error: AdvancedSettingsErrors | null
+  error: DestinationAddressErrors | null
 }) => {
   const {
-    app: { selectedToken }
+    app: { selectedToken, isDepositMode }
   } = useAppState()
   const { address } = useAccount()
+  const { l1, l2 } = useNetworksAndSigners()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
   const [inputLocked, setInputLocked] = useState(true)
+  const [warning, setWarning] = useState<string | null>(null)
 
   useEffect(() => {
     // Initially hide for EOA
@@ -35,6 +100,21 @@ export const AdvancedSettings = ({
     // Initially lock for EOA
     setInputLocked(isEOA)
   }, [isEOA])
+
+  useEffect(() => {
+    async function updateWarning() {
+      setWarning(
+        await getDestinationAddressWarning({
+          destinationAddress,
+          isEOA,
+          destinationProvider: (isDepositMode ? l2 : l1).provider
+        })
+      )
+    }
+    updateWarning()
+
+    return () => setWarning(null)
+  }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
   // Disabled for ETH
   if (!selectedToken) {
@@ -46,10 +126,13 @@ export const AdvancedSettings = ({
   }
 
   function handleVisibility() {
-    // Keep visible for contract wallets
-    if (!isSmartContractWallet) {
-      setCollapsed(!collapsed)
+    // Keep visible for SC wallets since destination address is mandatory
+    // Or if destination address is provided
+    if (isSmartContractWallet || destinationAddress) {
+      setCollapsed(false)
+      return
     }
+    setCollapsed(!collapsed)
   }
 
   return (
@@ -102,10 +185,26 @@ export const AdvancedSettings = ({
               )}
             </div>
           </div>
+          {error && <span className="text-xs text-red-400">{error}</span>}
+          {!error && warning && (
+            <span className="text-xs text-yellow-500">{warning}</span>
+          )}
+          {destinationAddress && !error && (
+            <ExternalLink
+              className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
+              href={`${getExplorerUrl(
+                (isDepositMode ? l2 : l1).network.id
+              )}/address/${destinationAddress}`}
+            >
+              <ArrowDownTrayIcon
+                height={12}
+                strokeWidth={3}
+                className="mr-1 -rotate-90"
+              />
+              View account in explorer
+            </ExternalLink>
+          )}
         </>
-      )}
-      {isSmartContractWallet && error && (
-        <span className="text-xs text-red-400">{error}</span>
       )}
     </div>
   )

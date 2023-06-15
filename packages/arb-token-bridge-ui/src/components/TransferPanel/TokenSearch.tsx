@@ -1,6 +1,7 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
 import {
   CheckCircleIcon,
   XMarkIcon,
@@ -11,6 +12,7 @@ import {
 import { useMedia } from 'react-use'
 import { constants } from 'ethers'
 import Image from 'next/image'
+import { Chain } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -23,7 +25,11 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { getL1TokenData } from '../../util/TokenUtils'
+import {
+  getL1TokenData,
+  sanitizeTokenName,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { SafeImage } from '../common/SafeImage'
 import {
@@ -39,6 +45,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
+import { ExternalLink } from '../common/ExternalLink'
 
 enum Panel {
   TOKENS,
@@ -56,6 +63,28 @@ function TokenLogoFallback() {
     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
+  )
+}
+
+function BlockExplorerTokenLink({
+  chain,
+  address
+}: {
+  chain: Chain
+  address: string | undefined
+}) {
+  if (typeof address === 'undefined') {
+    return null
+  }
+
+  return (
+    <ExternalLink
+      href={`${getExplorerUrl(chain.id)}/token/${address}`}
+      className="text-xs text-blue-link underline"
+      onClick={e => e.stopPropagation()}
+    >
+      {shortenAddress(address).toLowerCase()}
+    </ExternalLink>
   )
 }
 
@@ -77,8 +106,27 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
 
-  const tokenName = useMemo(() => (token ? token.name : 'Ether'), [token])
-  const tokenSymbol = useMemo(() => (token ? token.symbol : 'ETH'), [token])
+  const tokenName = useMemo(
+    () =>
+      token
+        ? sanitizeTokenName(token.name, {
+            erc20L1Address: token.address,
+            chain: isDepositMode ? l1Network : l2Network
+          })
+        : 'Ether',
+    [token, isDepositMode, l2Network, l1Network]
+  )
+  const tokenSymbol = useMemo(
+    () =>
+      token
+        ? sanitizeTokenSymbol(token.symbol, {
+            erc20L1Address: token.address,
+            chain: isDepositMode ? l1Network : l2Network
+          })
+        : 'ETH',
+    [token, isDepositMode, l2Network, l1Network]
+  )
+  const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
 
   const {
     eth: [ethL1Balance],
@@ -190,12 +238,16 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
   }, [token])
 
   const tokenIsBridgeable = useMemo(() => {
+    if (isL2NativeToken) {
+      return false
+    }
+
     if (isDepositMode) {
       return true
     }
 
     return tokenHasL2Address
-  }, [isDepositMode, tokenHasL2Address])
+  }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
@@ -216,7 +268,12 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
-      className="flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100"
+      className={twMerge(
+        'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
+        tokenIsBridgeable
+          ? 'cursor-pointer opacity-100'
+          : 'cursor-not-allowed opacity-50'
+      )}
     >
       <div className="flex w-full flex-row items-center justify-start space-x-4">
         <SafeImage
@@ -255,43 +312,44 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
             <div className="flex flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
-                <a
-                  href={`${getExplorerUrl(l1Network.id)}/token/${
-                    token.address
-                  }`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-link underline"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {shortenAddress(token.address).toLowerCase()}
-                </a>
+                <>
+                  {isL2NativeToken ? (
+                    <BlockExplorerTokenLink
+                      chain={l2Network}
+                      address={token.address}
+                    />
+                  ) : (
+                    <BlockExplorerTokenLink
+                      chain={l1Network}
+                      address={token.address}
+                    />
+                  )}
+                </>
               ) : (
                 <>
                   {tokenHasL2Address ? (
-                    <a
-                      href={`${getExplorerUrl(l2Network.id)}/token/${
-                        token.l2Address
-                      }`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-link underline"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {token.l2Address
-                        ? shortenAddress(token.l2Address).toLowerCase()
-                        : ''}
-                    </a>
+                    <BlockExplorerTokenLink
+                      chain={l2Network}
+                      address={token.l2Address}
+                    />
                   ) : (
                     <span className="text-xs text-gray-900">
-                      This token hasn&apos;t been bridged to L2
+                      This token hasn&apos;t been bridged to L2.
                     </span>
                   )}
                 </>
               )}
-              <span className="text-xs font-normal text-gray-500">
-                {tokenListInfo}
-              </span>
+              {isL2NativeToken ? (
+                <span className="flex gap-1 text-xs font-normal">
+                  {`This token is native to ${getNetworkName(
+                    l2Network.id
+                  )} and can’t be bridged.`}
+                </span>
+              ) : (
+                <span className="flex gap-1 text-xs font-normal text-gray-500">
+                  {tokenListInfo}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -536,15 +594,31 @@ function TokensPanel({
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
   const storeNewToken = async () => {
-    return token.add(newToken).catch((ex: Error) => {
-      let error = 'Token not found on this network.'
+    let error = 'Token not found on this network.'
+    let isSuccessful = false
 
+    try {
+      // Try to add the token as an L2-native token
+      token.addL2NativeToken(newToken)
+      isSuccessful = true
+    } catch (error) {
+      //
+    }
+
+    try {
+      // Try to add the token as a regular bridged token
+      await token.add(newToken)
+      isSuccessful = true
+    } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {
         error = 'This token is currently paused in the bridge.'
       }
+    }
 
+    // Only show error message if neither succeeded
+    if (!isSuccessful) {
       setErrorMessage(error)
-    })
+    }
   }
 
   const addNewToken: FormEventHandler = async e => {
