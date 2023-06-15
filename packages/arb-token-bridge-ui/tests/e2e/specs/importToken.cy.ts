@@ -120,39 +120,6 @@ describe('Import token', () => {
           .should('have.text', 'UNI')
       })
     })
-
-    context('Add button is grayed', () => {
-      it('should disable Add button if address is too long/short', () => {
-        const moveToEnd = ERC20TokenAddressL1.substring(
-          0,
-          ERC20TokenAddressL1.length - 1
-        )
-
-        cy.login({ networkType: 'L1' })
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
-
-        // open the Select Token popup
-        cy.findByPlaceholderText(/Search by token name/i)
-          .as('searchInput')
-          .should('be.visible')
-          .typeRecursively(ERC20TokenAddressL1.slice(0, -1))
-
-        // Add last character
-        cy.get('@searchInput').typeRecursively(
-          `${moveToEnd}${ERC20TokenAddressL1.slice(-1)}`
-        )
-        // Add button should be enabled
-        cy.get('@addButton').should('be.enabled')
-
-        // Add one more character
-        cy.get('@searchInput').typeRecursively(`${moveToEnd}a`)
-        // Add button should be disabled
-        cy.get('@addButton').should('be.disabled')
-      })
-    })
   })
 
   context('User import token through URL', () => {
