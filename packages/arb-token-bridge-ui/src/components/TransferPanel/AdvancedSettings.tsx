@@ -168,7 +168,11 @@ export const AdvancedSettings = ({
                 (isDepositMode ? l2 : l1).network.id
               )}/address/${destinationAddress}`}
             >
-              <ArrowDownTrayIcon height={12} className="mr-2 -rotate-90" />
+              <ArrowDownTrayIcon
+                height={12}
+                strokeWidth={3}
+                className="mr-1 -rotate-90"
+              />
               View account in explorer
             </ExternalLink>
           )}
