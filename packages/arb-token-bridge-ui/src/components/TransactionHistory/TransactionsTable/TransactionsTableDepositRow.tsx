@@ -15,6 +15,7 @@ import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
+import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -167,6 +168,7 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
+  const { l1 } = useNetworksAndSigners()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
@@ -211,6 +213,15 @@ export function TransactionsTableDepositRow({
     return ''
   }, [tx, isError, showRedeemRetryableButton, showRetryableExpiredText])
 
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l1.network
+      }),
+    [l1.network, tx.asset, tx.tokenAddress]
+  )
+
   return (
     <tr
       className={`text-sm text-dark ${
@@ -227,7 +238,9 @@ export function TransactionsTableDepositRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
+        {formatAmount(Number(tx.value), {
+          symbol: tokenSymbol
+        })}
       </td>
 
       <td className="w-1/5 px-3 py-3">

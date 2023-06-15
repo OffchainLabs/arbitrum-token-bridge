@@ -7,8 +7,11 @@ import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
+  const { l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
@@ -18,6 +21,15 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
         ? isConnectedToArbitrum
         : true,
     [isConnectedToArbitrum]
+  )
+
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l2.network
+      }),
+    [tx, l2]
   )
 
   return (
@@ -61,7 +73,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
               Claim{' '}
               <span className="hidden lg:flex">
                 {formatAmount(Number(tx.value), {
-                  symbol: tx.asset.toUpperCase()
+                  symbol: tokenSymbol
                 })}
               </span>
             </div>

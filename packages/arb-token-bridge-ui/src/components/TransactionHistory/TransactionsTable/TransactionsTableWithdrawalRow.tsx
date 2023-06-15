@@ -26,6 +26,7 @@ import {
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
+import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -351,12 +352,22 @@ export function TransactionsTableWithdrawalRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
+  const { l2 } = useNetworksAndSigners()
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
     return ''
   }, [tx, isError])
+
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l2.network
+      }),
+    [l2.network, tx.tokenAddress, tx.asset]
+  )
 
   return (
     <tr
@@ -374,7 +385,9 @@ export function TransactionsTableWithdrawalRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
+        {formatAmount(Number(tx.value), {
+          symbol: tokenSymbol
+        })}
       </td>
 
       <td className="w-1/5 px-3 py-3">
