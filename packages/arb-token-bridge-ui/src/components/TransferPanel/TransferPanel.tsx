@@ -168,9 +168,7 @@ export function TransferPanel() {
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
-
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const isConnectedToArbitrumLatest = useLatest(isConnectedToArbitrum)
+  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -407,7 +405,7 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (isConnectedToArbitrumLatest.current) {
+        if (isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -423,7 +421,7 @@ export function TransferPanel() {
           )
 
           while (
-            isConnectedToArbitrumLatest.current ||
+            isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -562,7 +560,7 @@ export function TransferPanel() {
           })
         }
       } else {
-        if (!isConnectedToArbitrumLatest.current) {
+        if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -578,7 +576,7 @@ export function TransferPanel() {
           )
 
           while (
-            !isConnectedToArbitrumLatest.current ||
+            !isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
