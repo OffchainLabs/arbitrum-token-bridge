@@ -728,6 +728,12 @@ export function TransferPanel() {
   )
   const { status: gasEstimationStatus } = gasSummary
 
+  const requiredGasFees = useMemo(
+    // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
+    () => (isSmartContractWallet ? 0 : gasSummary.estimatedTotalGasFees),
+    [isSmartContractWallet, gasSummary.estimatedTotalGasFees]
+  )
+
   const getErrorMessage = useCallback(
     (
       _amountEntered: string,
@@ -769,11 +775,6 @@ export function TransferPanel() {
           return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
         case 'success': {
-          // For SC wallets, the relayer pay the gas fees so we don't need to check
-          const requiredGasFees = isSmartContractWallet
-            ? 0
-            : gasSummary.estimatedTotalGasFees
-
           if (selectedToken) {
             // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
             const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
@@ -793,7 +794,15 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
+    [
+      gasSummary,
+      ethBalance,
+      selectedToken,
+      isDepositMode,
+      l2Network,
+      requiredGasFees,
+      isSmartContractWallet
+    ]
   )
 
   const disableDeposit = useMemo(() => {
@@ -837,11 +846,6 @@ export function TransferPanel() {
       return true
     }
 
-    // For SC wallets, the relayer pay the gas fees so we don't need to check
-    const requiredGasFees = isSmartContractWallet
-      ? 0
-      : gasSummary.estimatedTotalGasFees
-
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
@@ -849,7 +853,15 @@ export function TransferPanel() {
     }
 
     return Number(amount) + requiredGasFees > Number(l1Balance)
-  }, [ethBalance, disableDeposit, selectedToken, gasSummary, amount, l1Balance])
+  }, [
+    ethBalance,
+    disableDeposit,
+    selectedToken,
+    gasSummary,
+    amount,
+    l1Balance,
+    requiredGasFees
+  ])
 
   const disableWithdrawal = useMemo(() => {
     return (
@@ -884,11 +896,6 @@ export function TransferPanel() {
       return true
     }
 
-    // For SC wallets, the relayer pay the gas fees so we don't need to check
-    const requiredGasFees = isSmartContractWallet
-      ? 0
-      : gasSummary.estimatedTotalGasFees
-
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
@@ -902,7 +909,8 @@ export function TransferPanel() {
     selectedToken,
     gasSummary,
     amount,
-    l2Balance
+    l2Balance,
+    requiredGasFees
   ])
 
   const isSummaryVisible = useMemo(() => {
