@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
@@ -8,7 +9,6 @@ import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l2 } = useNetworksAndSigners()
