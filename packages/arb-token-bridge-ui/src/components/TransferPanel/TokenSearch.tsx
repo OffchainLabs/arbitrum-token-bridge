@@ -1,4 +1,4 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
 import {
@@ -18,7 +18,6 @@ import {
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import { getL1TokenData } from '../../util/TokenUtils'
-import { Button } from '../common/Button'
 import {
   useTokensFromLists,
   useTokensFromUser,
@@ -144,6 +143,16 @@ function TokensPanel({
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
+  const tokensL2AddressOnly = useMemo(() => {
+    const allTokens = [
+      ...new Set([
+        ...Object.values(tokensFromUser),
+        ...Object.values(tokensFromLists)
+      ])
+    ]
+    return allTokens.map(token => token?.l2Address)
+  }, [tokensFromLists, tokensFromUser])
+
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
@@ -250,7 +259,7 @@ function TokensPanel({
       })
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
-  const storeNewToken = async () => {
+  const storeNewToken = useCallback(async () => {
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -276,31 +285,50 @@ function TokensPanel({
     if (!isSuccessful) {
       setErrorMessage(error)
     }
-  }
-
-  const addNewToken = async () => {
-    if (!isAddress(newToken) || isAddingToken) {
-      return
-    }
-
-    setIsAddingToken(true)
-
-    try {
-      await storeNewToken()
-    } catch (ex) {
-      console.log(ex)
-    } finally {
-      setIsAddingToken(false)
-    }
-  }
+  }, [newToken, token])
 
   const tokenSearchFieldChangeHandler = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setErrorMessage('')
     setNewToken(event.target.value)
-    addNewToken()
   }
+
+  useEffect(() => {
+    async function addNewToken() {
+      const newTokenLowercased = newToken.toLowerCase()
+      const foundL1AddressInTokenList =
+        typeof bridgeTokens?.[newTokenLowercased] !== 'undefined'
+      const foundL2AddressInTokenList =
+        tokensL2AddressOnly.findIndex(token => token === newTokenLowercased) !==
+        -1
+
+      if (
+        foundL1AddressInTokenList ||
+        foundL2AddressInTokenList ||
+        !isAddress(newToken) ||
+        isAddingToken
+      ) {
+        return
+      }
+      setIsAddingToken(true)
+
+      try {
+        await storeNewToken()
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setIsAddingToken(false)
+      }
+    }
+    addNewToken()
+  }, [
+    bridgeTokens,
+    isAddingToken,
+    newToken,
+    storeNewToken,
+    tokensL2AddressOnly
+  ])
 
   return (
     <div className="flex flex-col space-y-3">
