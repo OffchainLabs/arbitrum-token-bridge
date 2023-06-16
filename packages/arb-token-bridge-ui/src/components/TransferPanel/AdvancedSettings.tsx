@@ -91,7 +91,7 @@ export const AdvancedSettings = ({
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
-  const [canCollapse, setCanCollapse] = useState(false)
+  const [collapsible, setCollapsible] = useState(false)
   const [warning, setWarning] = useState<string | null>(null)
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export const AdvancedSettings = ({
     // cannot collapse if:
     // - SCW because the destination address is mandatory
     // - destination address is not empty
-    setCanCollapse(isEOA && !destinationAddress)
+    setCollapsible(isEOA && !destinationAddress)
   }, [isEOA, destinationAddress])
 
   useEffect(() => setCollapsed(isEOA), [isEOA])
@@ -128,7 +128,7 @@ export const AdvancedSettings = ({
   }
 
   function handleVisibility() {
-    if (!canCollapse) {
+    if (!collapsible) {
       setCollapsed(false)
       return
     }
@@ -141,11 +141,11 @@ export const AdvancedSettings = ({
         onClick={handleVisibility}
         className={twMerge(
           'arb-hover flex flex-row items-center text-gray-dark',
-          canCollapse ? '' : 'pointer-events-none'
+          collapsible ? '' : 'pointer-events-none'
         )}
       >
         <span className="font-medium">Advanced Settings</span>
-        {canCollapse && (
+        {collapsible && (
           <ChevronDownIcon
             className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
           />
