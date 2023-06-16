@@ -15,6 +15,7 @@ import { DepositCardContainer, DepositL1TxStatus } from './DepositCard'
 import { Tooltip } from '../common/Tooltip'
 import { Button } from '../common/Button'
 import { getRetryableTicketExpiration } from '../../util/RetryableUtils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
@@ -23,12 +24,12 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   }>({ isValid: false, days: 0 })
 
   const {
-    isConnectedToArbitrum,
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
   } = useNetworksAndSigners()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
   const isRedeemButtonDisabled = useMemo(
     () =>

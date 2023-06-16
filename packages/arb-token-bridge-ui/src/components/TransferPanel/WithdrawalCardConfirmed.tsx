@@ -7,11 +7,13 @@ import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
   const isClaimButtonDisabled = useMemo(
     () =>
