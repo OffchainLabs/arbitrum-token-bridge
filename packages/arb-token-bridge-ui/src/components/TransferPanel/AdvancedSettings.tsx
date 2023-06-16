@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
 import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
 import {
   ArrowDownTrayIcon,
   ChevronDownIcon,
-  ChevronUpIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 
+import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -84,16 +87,12 @@ export const AdvancedSettings = ({
     app: { selectedToken, isDepositMode }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
+  const { address } = useAccount()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
+  const [canCollapse, setCanCollapse] = useState(false)
   const [warning, setWarning] = useState<string | null>(null)
-
-  useEffect(
-    // Show on page load if SC wallet since destination address mandatory
-    () => setCollapsed(!isSmartContractWallet),
-    [isSmartContractWallet]
-  )
 
   useEffect(() => {
     async function updateWarning() {
@@ -110,6 +109,15 @@ export const AdvancedSettings = ({
     return () => setWarning(null)
   }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
+  useEffect(() => {
+    // cannot collapse if:
+    // - SCW because the destination address is mandatory
+    // - destination address is not empty
+    setCanCollapse(isEOA && !destinationAddress)
+  }, [isEOA, destinationAddress])
+
+  useEffect(() => setCollapsed(isEOA), [isEOA])
+
   // Disabled for ETH
   if (!selectedToken) {
     return null
@@ -120,43 +128,74 @@ export const AdvancedSettings = ({
   }
 
   function handleVisibility() {
-    // Keep visible for SC wallets since destination address is mandatory
-    // Or if destination address is provided
-    if (isSmartContractWallet || destinationAddress) {
+    if (!canCollapse) {
       setCollapsed(false)
       return
     }
     setCollapsed(!collapsed)
   }
 
+  function ChevronIcon() {
+    if (!canCollapse) {
+      return null
+    }
+    return (
+      <ChevronDownIcon
+        className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
+      />
+    )
+  }
+
   return (
     <div className="mt-6">
       <button
         onClick={handleVisibility}
-        className="flex flex-row items-center text-gray-dark"
-      >
-        <span className="text-lg font-semibold">Advanced Settings</span>
-        {collapsed ? (
-          <ChevronDownIcon className="ml-1 h-4 w-4" />
-        ) : (
-          <ChevronUpIcon className="ml-1 h-4 w-4" />
+        className={twMerge(
+          'arb-hover flex flex-row items-center text-gray-dark',
+          canCollapse ? '' : 'pointer-events-none'
         )}
+      >
+        <span className="font-medium">Advanced Settings</span>
+        <ChevronIcon />
       </button>
       {!collapsed && (
         <>
           <div className="mt-2">
-            <span className="text-md text-gray-dark">
-              Destination Address
-              {!isSmartContractWallet ? ' (optional)' : ''}
-            </span>
+            <div className="flex items-center space-x-1">
+              <span className="font-medium">Custom Destination Address</span>
+              <Tooltip
+                content={
+                  <span>
+                    This is where your funds will end up at.
+                    {isEOA ? ' Defaults to your wallet address.' : ''}
+                  </span>
+                }
+              >
+                <InformationCircleIcon strokeWidth={2} height={16} />
+              </Tooltip>
+            </div>
+            {isEOA ? (
+              <p className="my-2 text-sm font-light text-gray-dark">
+                Send your funds to a different address.{' '}
+                <span className="font-semibold">This is not standard.</span> Be
+                sure you mean to send it here.
+              </p>
+            ) : (
+              <p className="my-2 text-sm font-light text-gray-dark">
+                With Smart Contract Wallets, you{' '}
+                <span className="font-semibold">must specify an address </span>
+                you&apos;d like the funds sent to.
+              </p>
+            )}
             <input
               className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-              placeholder="Enter destination address"
-              defaultValue={destinationAddress}
+              placeholder={isEOA ? address : undefined}
+              value={destinationAddress}
               spellCheck={false}
               onChange={e => onChange(e.target.value?.toLowerCase())}
             />
           </div>
+
           {error && <span className="text-xs text-red-400">{error}</span>}
           {!error && warning && (
             <span className="text-xs text-yellow-500">{warning}</span>
