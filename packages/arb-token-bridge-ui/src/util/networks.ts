@@ -3,8 +3,11 @@ import {
   l1Networks,
   l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { Chain } from 'wagmi'
+import * as chains from 'wagmi/chains'
 
 import { loadEnvironmentVariableWithFallback } from './index'
+import * as customChains from './wagmi/wagmiAdditionalNetworks'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -29,6 +32,30 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
   }
 
   return []
+}
+
+export function getPartnerChainsForChain(chain: Chain): Chain[] {
+  switch (chain.id) {
+    case ChainId.Mainnet:
+      return [chains.arbitrum, customChains.arbitrumNova]
+
+    case ChainId.Goerli:
+      return [chains.arbitrumGoerli]
+
+    case ChainId.ArbitrumOne:
+      return [chains.mainnet]
+
+    case ChainId.ArbitrumNova:
+      return [chains.mainnet]
+
+    case ChainId.ArbitrumGoerli:
+      return [chains.goerli]
+
+    default:
+      throw new Error(
+        `[getPartnerChainsForChain] Unexpected chain id: ${chain.id}`
+      )
+  }
 }
 
 export enum ChainId {
