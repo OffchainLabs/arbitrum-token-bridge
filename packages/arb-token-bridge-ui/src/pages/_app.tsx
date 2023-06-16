@@ -23,6 +23,7 @@ if (
   process.env.NODE_ENV !== 'production' ||
   process.env.NEXT_PUBLIC_IS_E2E_TEST
 ) {
+  // It's fine not to await the function below and just let it do its thing in the background
   registerLocalNetwork()
 }
 
