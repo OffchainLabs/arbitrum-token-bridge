@@ -31,7 +31,7 @@ export function getDestinationAddressError({
 }: {
   destinationAddress?: string
   isSmartContractWallet: boolean
-  destinationAddressDenylist: string[]
+  destinationAddressDenylist: Set<string>
 }): DestinationAddressErrors | null {
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
@@ -43,9 +43,7 @@ export function getDestinationAddressError({
   }
 
   if (
-    destinationAddressDenylist.includes(
-      String(destinationAddress).toLowerCase()
-    )
+    destinationAddressDenylist.has(String(destinationAddress).toLowerCase())
   ) {
     return DestinationAddressErrors.INVALID_ADDRESS
   }

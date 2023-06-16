@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { constants } from 'ethers'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { useNetworksAndSigners } from './useNetworksAndSigners'
@@ -24,8 +25,12 @@ export const useDestinationAddressDenylist = () => {
     )
   }, [tokenLists])
 
-  const result = useMemo(() => {
-    const denylist = [...tokenListsAddresses, ...DESTINATION_ADDRESS_DENYLIST]
+  return useMemo(() => {
+    const denylist = [
+      ...tokenListsAddresses,
+      ...DESTINATION_ADDRESS_DENYLIST,
+      constants.AddressZero
+    ]
     const networkObject = isDepositMode ? l2Networks[l2Network.id] : undefined
 
     if (networkObject) {
@@ -40,10 +45,8 @@ export const useDestinationAddressDenylist = () => {
       denylist.push(...Object.values(ethBridge), ...Object.values(tokenBridge))
     }
 
-    return denylist.map(address => address.toLowerCase())
+    return new Set(denylist.map(address => address.toLowerCase()))
   }, [isDepositMode, l2Network, tokenListsAddresses])
-
-  return result
 }
 
 // denylisted destination addresses in order: One, Nova, Nitro
