@@ -203,12 +203,19 @@ export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   fallback: 'http://localhost:8547'
 })
 
-export function registerLocalNetwork(
-  params: RegisterLocalNetworkParams = registerLocalNetworkDefaultParams
-) {
-  const { l1Network, l2Network } = params
-
+export function registerLocalNetwork(params?: RegisterLocalNetworkParams) {
   try {
+    let l1Network: L1Network
+    let l2Network: L2Network
+
+    if (typeof params === 'undefined') {
+      l1Network = getDefaultL1Network()
+      l2Network = getDefaultL2Network()
+    } else {
+      l1Network = params.l1Network
+      l2Network = params.l2Network
+    }
+
     rpcURLs[l1Network.chainID] = localL1NetworkRpcUrl
     rpcURLs[l2Network.chainID] = localL2NetworkRpcUrl
 
