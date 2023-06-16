@@ -28,7 +28,6 @@ export function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
-  // const [value, setValue] = useState(initialValue)
   const buttonClassName = useMemo(() => {
     const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
 
