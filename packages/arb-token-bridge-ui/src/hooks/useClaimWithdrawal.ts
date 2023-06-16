@@ -36,7 +36,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (!signer) {
         throw 'Signer is undefined'
       }
-      if (tx.asset === 'eth') {
+      if (tx.asset.toLowerCase() === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
           l1Signer: signer
