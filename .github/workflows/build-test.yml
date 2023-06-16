@@ -154,8 +154,11 @@ jobs:
           - name: URL Query Param
             file: 'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}'
 
-          - name: Rest of the tests
-            file: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}'
+          - name: Read classic deposits
+            file: 'tests/e2e/specs/**/readClassicDeposit.cy.{js,jsx,ts,tsx}'
+
+          - name: Switch network
+            file: 'tests/e2e/specs/**/switchNetwork.cy.{js,jsx,ts,tsx}'
     
     steps:
       - name: Checkout
