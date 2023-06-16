@@ -150,7 +150,7 @@ function TokensPanel({
         ...Object.values(tokensFromLists)
       ])
     ]
-    return allTokens.map(token => token?.l2Address)
+    return allTokens.map(token => token?.l2Address?.toLowerCase())
   }, [tokensFromLists, tokensFromUser])
 
   const [newToken, setNewToken] = useState('')
