@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 2
-      
+
       # run tests only if specific files are changed
       - name: Check modified files
         id: check-files
@@ -128,7 +128,7 @@ jobs:
       matrix:
         tests:
           - name: Login and balance check
-            file: 'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}' 
+            file: 'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}'
 
           - name: Deposit ETH
             file: 'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}'
@@ -162,7 +162,7 @@ jobs:
 
           - name: Vercel
             file: 'tests/e2e/specs/**/vercel.cy.{js,jsx,ts,tsx}'
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -245,4 +245,9 @@ jobs:
         run: gh extension install actions/gh-actions-cache
 
       - name: Delete build artifacts
-        run: gh actions-cache delete build-artifacts-${{ github.run_id }} --confirm
+        run: |
+          if gh-actions-cache list | grep build-artifacts-${{ github.run_id }}
+          then
+            gh actions-cache delete build-artifacts-${{ github.run_id }} --confirm
+          fi
+        shell: bash
