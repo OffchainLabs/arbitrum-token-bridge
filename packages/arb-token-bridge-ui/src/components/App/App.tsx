@@ -51,6 +51,7 @@ import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
+import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 
 declare global {
   interface Window {
@@ -134,8 +135,9 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { address, isConnected } = useAccount()
   const { chain } = useNetwork()
+  const { address, isConnected } = useAccount()
+  const accountIsBlocked = useAccountIsBlocked()
 
   const networksAndSigners = useNetworksAndSigners()
 
@@ -208,6 +210,20 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
+  if (accountIsBlocked) {
+    return (
+      <BlockedDialog
+        address={address as string}
+        isOpen={true}
+        // ignoring until we use the package
+        // https://github.com/OffchainLabs/config-monorepo/pull/11
+        //
+        // eslint-disable-next-line
+        onClose={() => {}}
+      />
+    )
+  }
+
   return (
     <>
       {tokenBridgeParams && (
@@ -261,21 +277,6 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
             </span>
           </AppConnectionFallbackContainer>
         </>
-      )
-
-    case UseNetworksAndSignersStatus.BLOCKED:
-      return (
-        <AppConnectionFallbackContainer>
-          <BlockedDialog
-            address={props.address}
-            isOpen={true}
-            // ignoring until we use the package
-            // https://github.com/OffchainLabs/config-monorepo/pull/11
-            //
-            // eslint-disable-next-line
-            onClose={() => {}}
-          />
-        </AppConnectionFallbackContainer>
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
