@@ -167,19 +167,21 @@ export const AdvancedSettings = ({
                 <InformationCircleIcon strokeWidth={2} height={16} />
               </Tooltip>
             </div>
-            {isEOA ? (
-              <p className="my-2 text-sm font-light text-gray-dark">
-                Send your funds to a different address.{' '}
-                <span className="font-semibold">This is not standard.</span> Be
-                sure you mean to send it here.
-              </p>
-            ) : (
-              <p className="my-2 text-sm font-light text-gray-dark">
-                With Smart Contract Wallets, you{' '}
-                <span className="font-semibold">must specify an address </span>
-                you&apos;d like the funds sent to.
-              </p>
-            )}
+            <p className="my-2 text-sm font-light text-gray-dark">
+              {isEOA ? (
+                <>
+                  Send your funds to a different address.{' '}
+                  <span className="font-semibold">This is not standard.</span>{' '}
+                  Be sure you mean to send it here.
+                </>
+              ) : (
+                <>
+                  With Smart Contract Wallets, you{' '}
+                  <span className="font-semibold">must specify an address</span>{' '}
+                  you&apos;d like the funds sent to.
+                </>
+              )}
+            </p>
             <input
               className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
               placeholder={isEOA ? address : undefined}
