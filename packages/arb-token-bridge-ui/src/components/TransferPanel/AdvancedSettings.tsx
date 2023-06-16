@@ -135,17 +135,6 @@ export const AdvancedSettings = ({
     setCollapsed(!collapsed)
   }
 
-  function ChevronIcon() {
-    if (!canCollapse) {
-      return null
-    }
-    return (
-      <ChevronDownIcon
-        className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
-      />
-    )
-  }
-
   return (
     <div className="mt-6">
       <button
@@ -156,7 +145,11 @@ export const AdvancedSettings = ({
         )}
       >
         <span className="font-medium">Advanced Settings</span>
-        <ChevronIcon />
+        {canCollapse && (
+          <ChevronDownIcon
+            className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
+          />
+        )}
       </button>
       {!collapsed && (
         <>
