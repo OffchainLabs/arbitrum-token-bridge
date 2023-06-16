@@ -155,10 +155,10 @@ jobs:
             file: 'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}'
 
           - name: Read classic deposits
-            file: 'tests/e2e/specs/**/readClassicDeposit.cy.{js,jsx,ts,tsx}'
+            file: 'tests/e2e/specs/**/readClassicDeposits.cy.{js,jsx,ts,tsx}'
 
           - name: Switch network
-            file: 'tests/e2e/specs/**/switchNetwork.cy.{js,jsx,ts,tsx}'
+            file: 'tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}'
 
           - name: Vercel
             file: 'tests/e2e/specs/**/vercel.cy.{js,jsx,ts,tsx}'
