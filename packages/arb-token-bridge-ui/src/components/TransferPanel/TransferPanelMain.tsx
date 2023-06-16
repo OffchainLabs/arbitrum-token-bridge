@@ -310,7 +310,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium lg:uppercase">
+    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium">
       {children}
     </div>
   )
