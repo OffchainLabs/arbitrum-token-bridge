@@ -71,8 +71,6 @@ export type UseNetworksAndSignersConnectedResult = {
     network: Chain
     provider: JsonRpcProvider
   }
-  isConnectedToArbitrum: boolean
-  chainId: number // the current chainId which is connected to UI
 }
 
 export type UseNetworksAndSignersResult =
@@ -98,7 +96,7 @@ export function useNetworksAndSigners() {
 
 export type FallbackProps =
   | { status: UseNetworksAndSignersLoadingOrErrorStatus }
-  | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
+  | { status: UseNetworksAndSignersNotSupportedStatus }
 
 export type NetworksAndSignersProviderProps = {
   /**
@@ -251,9 +249,7 @@ export function NetworksAndSignersProvider(
           l2: {
             network: getWagmiChain(l2Network.chainID),
             provider: l2Provider
-          },
-          isConnectedToArbitrum: false,
-          chainId: l1Network.chainID
+          }
         })
       })
       .catch(() => {
@@ -287,9 +283,7 @@ export function NetworksAndSignersProvider(
               l2: {
                 network: getWagmiChain(l2Network.chainID),
                 provider: l2Provider
-              },
-              isConnectedToArbitrum: true,
-              chainId: l2Network.chainID
+              }
             })
           })
           .catch(() => {
@@ -309,10 +303,7 @@ export function NetworksAndSignersProvider(
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
     const fallbackProps =
       result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
-        ? {
-            status: result.status,
-            chainId: result.chainId
-          }
+        ? { status: result.status }
         : { status: result.status }
 
     return props.fallback(fallbackProps)

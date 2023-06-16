@@ -4,6 +4,7 @@ import { BigNumber, utils } from 'ethers'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,
@@ -29,10 +30,15 @@ export function useIsSwitchingL2Chain() {
   const { app } = useAppState()
   const { isDepositMode } = app
 
-  const { l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const [{ l2ChainId: l2ChainIdSearchParam }] = useArbQueryParams()
 
   return useMemo(() => {
+    if (typeof isConnectedToArbitrum === 'undefined') {
+      return false
+    }
+
     if (isConnectedToArbitrum || !isDepositMode) {
       return false
     }
