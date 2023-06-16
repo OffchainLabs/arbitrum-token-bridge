@@ -266,7 +266,7 @@ function TokenBalance({
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
-  balance: BigNumber | null
+  balance: BigNumber
   on: NetworkType
   prefix?: string
 }) {
@@ -378,10 +378,7 @@ export function TransferPanelMain({
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const selectedTokenBalances = useMemo(() => {
-    const result: {
-      [NetworkType.l1]: BigNumber
-      [NetworkType.l2]: BigNumber
-    } = {
+    const result = {
       l1: constants.Zero,
       l2: constants.Zero
     }
