@@ -44,6 +44,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
@@ -346,7 +347,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
