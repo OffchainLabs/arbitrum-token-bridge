@@ -498,8 +498,7 @@ export function TransferPanelMain({
           ) {
             return false
           }
-          // Remove selected network from the list
-          return option.id !== selectedChainId
+          return true
         })
         .map(option => {
           // Set disabled options (currently One<>Nova is disabled)

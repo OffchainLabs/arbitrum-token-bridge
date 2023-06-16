@@ -87,7 +87,7 @@ export function NetworkListbox({
               <Listbox.Option
                 value={option}
                 className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)]',
+                  'ui-selected:bg-[rgba(0,0,0,0.2) flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)] ui-active:bg-[rgba(0,0,0,0.2)]',
                   getOptionClassName(index),
                   option.disabled ? 'pointer-events-none opacity-40' : ''
                 )}
