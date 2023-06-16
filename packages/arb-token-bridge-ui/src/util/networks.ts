@@ -1,7 +1,9 @@
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 import {
   l1Networks,
-  l2Networks
+  l2Networks,
+  getEthBridgeInformation
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -145,17 +147,16 @@ function getDefaultL1Network(): L1Network {
   }
 }
 
-function getDefaultL2Network(): L2Network {
+async function getDefaultL2Network(): Promise<L2Network> {
+  const rollup = '0x65a59d67da8e710ef9a01eca37f83f84aedec416'
+
+  const localL1Provider = new StaticJsonRpcProvider(localL1NetworkRpcUrl)
+  const ethBridge = await getEthBridgeInformation(rollup, localL1Provider)
+
   return {
     chainID: 412346,
     confirmPeriodBlocks: 20,
-    ethBridge: {
-      bridge: '0x2b360a9881f21c3d7aa0ea6ca0de2a3341d4ef3c',
-      inbox: '0xff4a24b22f94979e9ba5f3eb35838aa814bad6f1',
-      outbox: '0x49940929c7cA9b50Ff57a01d3a92817A414E6B9B',
-      rollup: '0x65a59d67da8e710ef9a01eca37f83f84aedec416',
-      sequencerInbox: '0xe7362d0787b51d8c72d504803e5b1d6dcda89540'
-    },
+    ethBridge,
     explorerUrl: '',
     isArbitrum: true,
     isCustom: true,
@@ -189,28 +190,26 @@ export type RegisterLocalNetworkParams = {
   l2Network: L2Network
 }
 
-const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
-  l1Network: getDefaultL1Network(),
-  l2Network: getDefaultL2Network()
-}
-
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
   fallback: 'http://localhost:8545'
 })
+
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
   fallback: 'http://localhost:8547'
 })
 
-export function registerLocalNetwork(params?: RegisterLocalNetworkParams) {
+export async function registerLocalNetwork(
+  params?: RegisterLocalNetworkParams
+) {
   try {
     let l1Network: L1Network
     let l2Network: L2Network
 
     if (typeof params === 'undefined') {
       l1Network = getDefaultL1Network()
-      l2Network = getDefaultL2Network()
+      l2Network = await getDefaultL2Network()
     } else {
       l1Network = params.l1Network
       l2Network = params.l2Network

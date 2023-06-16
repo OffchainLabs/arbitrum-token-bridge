@@ -35,7 +35,7 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
-      registerLocalNetwork()
+      await registerLocalNetwork()
 
       if (!ethRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
