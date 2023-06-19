@@ -19,6 +19,16 @@ function getPartnerChainsQueryParams(
   return partnerChains.map(chain => getChainQueryParamForChain(chain))
 }
 
+function getProviderForChain(chain: Chain): StaticJsonRpcProvider {
+  const rpcUrl = rpcURLs[chain.id]
+
+  if (typeof rpcUrl === 'undefined') {
+    throw new Error(`[getProviderForChain] Unexpected chain id: ${chain.id}`)
+  }
+
+  return new StaticJsonRpcProvider(rpcUrl)
+}
+
 export function sanitizeQueryParams({
   from,
   to
@@ -78,8 +88,8 @@ export function useNetworks(): UseNetworksResult {
 
   return {
     from: fromChain,
-    fromProvider: new StaticJsonRpcProvider(rpcURLs[fromChain.id]),
+    fromProvider: getProviderForChain(fromChain),
     to: toChain,
-    toProvider: new StaticJsonRpcProvider(rpcURLs[toChain.id])
+    toProvider: getProviderForChain(toChain)
   }
 }
