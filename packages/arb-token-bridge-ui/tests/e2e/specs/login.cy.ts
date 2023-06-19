@@ -28,8 +28,8 @@ describe('Login Account', () => {
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({ networkType: 'L1' })
     cy.findByText('Bridging summary will appear here.').should('be.visible')
-    cy.findByText(`Balance: ${l1ETHbal}`).should('be.visible')
-    cy.findByText(`Balance: ${l2ETHbal}`).should('be.visible')
+    cy.findByText(`BALANCE: ${l1ETHbal}`).should('be.visible')
+    cy.findByText(`BALANCE: ${l2ETHbal}`).should('be.visible')
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
   })

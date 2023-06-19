@@ -83,7 +83,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
       tx.txId,
       retryableTicket,
-      tx.asset === 'eth',
+      tx.asset.toLowerCase() === 'eth',
       L1ToL2MessageStatus.REDEEMED
     )
   }

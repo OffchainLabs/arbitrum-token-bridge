@@ -193,7 +193,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium lg:uppercase">
+    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium">
       {children}
     </div>
   )
@@ -717,11 +717,11 @@ export function TransferPanelMain({
                       : selectedTokenBalances.l2
                   }
                   forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
+                  prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
                 <ETHBalance
                   balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
-                  prefix={selectedToken ? '' : 'Balance: '}
+                  prefix={selectedToken ? '' : 'BALANCE: '}
                 />
               </>
             )}
@@ -810,11 +810,11 @@ export function TransferPanelMain({
                   }
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
+                  prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
                 <ETHBalance
                   balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
-                  prefix={selectedToken ? '' : 'Balance: '}
+                  prefix={selectedToken ? '' : 'BALANCE: '}
                 />
               </>
             )}
