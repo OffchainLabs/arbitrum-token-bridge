@@ -247,27 +247,31 @@ function TokenRow({ style, onClick, token }: TokenRowProps): JSX.Element {
       return <span className="text-sm font-medium text-blue-link">Import</span>
     }
 
-    function wrapContent(content: React.ReactNode) {
+    function BalanceWrapper({ children }: React.PropsWithChildren) {
       return (
         <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
-          {content}
+          {children}
         </span>
       )
     }
 
     if (!tokenBalance) {
-      return wrapContent(
-        <div className="mr-2">
-          <Loader color="#28A0F0" size="small" />
-        </div>
+      return (
+        <BalanceWrapper>
+          <div className="mr-2">
+            <Loader color="#28A0F0" size="small" />
+          </div>
+        </BalanceWrapper>
       )
     }
 
-    return wrapContent(
-      formatAmount(tokenBalance, {
-        decimals: token?.decimals,
-        symbol: tokenSymbol
-      })
+    return (
+      <BalanceWrapper>
+        {formatAmount(tokenBalance, {
+          decimals: token?.decimals,
+          symbol: tokenSymbol
+        })}
+      </BalanceWrapper>
     )
   }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
 
