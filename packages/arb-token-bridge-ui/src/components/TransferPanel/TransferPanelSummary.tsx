@@ -16,6 +16,7 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -253,9 +254,20 @@ export function TransferPanelSummary({
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
 
   const { isMainnet } = isNetwork(l1.network.id)
+
+  const tokenSymbol = useMemo(
+    () =>
+      token
+        ? sanitizeTokenSymbol(token.symbol, {
+            erc20L1Address: token.address,
+            chain: app.isDepositMode ? l1.network : l2.network
+          })
+        : 'ETH',
+    [token, app.isDepositMode, l1.network, l2.network]
+  )
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
@@ -291,7 +303,9 @@ export function TransferPanelSummary({
         <span className="w-2/5 font-light">You’re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span>
-            {formatAmount(amount, { symbol: token?.symbol || 'ETH' })}
+            {formatAmount(amount, {
+              symbol: tokenSymbol
+            })}
           </span>
           {/* Only show USD price for ETH */}
           {isETH && isMainnet && (

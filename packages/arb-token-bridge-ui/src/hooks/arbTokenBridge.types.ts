@@ -104,6 +104,7 @@ export interface BridgeToken {
   l2Address?: string
   logoURI?: string
   listIds: Set<number> // no listID indicates added by user
+  isL2Native?: boolean
 }
 
 export interface ERC20BridgeToken extends BridgeToken {
@@ -168,6 +169,7 @@ export interface ArbTokenBridgeEth {
 
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
+  addL2NativeToken: (erc20L2Address: string) => void
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>

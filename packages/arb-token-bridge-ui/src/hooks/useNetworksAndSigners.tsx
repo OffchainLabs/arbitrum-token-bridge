@@ -30,7 +30,6 @@ import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
-import { addressIsSmartContract } from '../util/AddressUtils'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
@@ -82,9 +81,6 @@ export type UseNetworksAndSignersConnectedResult = {
     network: Chain
     provider: JsonRpcProvider
   }
-  isConnectedToArbitrum: boolean
-  chainId: number // the current chainId which is connected to UI
-  isSmartContractWallet: boolean
 }
 
 export type UseNetworksAndSignersResult =
@@ -111,7 +107,7 @@ export function useNetworksAndSigners() {
 
 export type FallbackProps =
   | { status: UseNetworksAndSignersLoadingOrErrorStatus }
-  | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
+  | { status: UseNetworksAndSignersNotSupportedStatus }
   | { status: UseNetworksAndSignersStatus.BLOCKED; address: string }
 
 export type NetworksAndSignersProviderProps = {
@@ -296,13 +292,7 @@ export function NetworksAndSignersProvider(
           l2: {
             network: getWagmiChain(l2Network.chainID),
             provider: l2Provider
-          },
-          isConnectedToArbitrum: false,
-          chainId: l1Network.chainID,
-          isSmartContractWallet: await addressIsSmartContract(
-            address as string,
-            l1Provider
-          )
+          }
         })
       })
       .catch(() => {
@@ -336,13 +326,7 @@ export function NetworksAndSignersProvider(
               l2: {
                 network: getWagmiChain(l2Network.chainID),
                 provider: l2Provider
-              },
-              isConnectedToArbitrum: true,
-              chainId: l2Network.chainID,
-              isSmartContractWallet: await addressIsSmartContract(
-                address,
-                l2Provider
-              )
+              }
             })
           })
           .catch(() => {
@@ -366,10 +350,7 @@ export function NetworksAndSignersProvider(
 
     const fallbackProps =
       result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
-        ? {
-            status: result.status,
-            chainId: result.chainId
-          }
+        ? { status: result.status }
         : { status: result.status }
 
     return props.fallback(fallbackProps)

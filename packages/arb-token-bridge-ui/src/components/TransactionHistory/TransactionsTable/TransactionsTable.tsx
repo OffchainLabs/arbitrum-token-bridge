@@ -2,7 +2,6 @@ import React, { Dispatch, SetStateAction, useMemo } from 'react'
 import dayjs from 'dayjs'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import {
   getStandardizedDate,
   getStandardizedTime,
@@ -15,6 +14,7 @@ import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useAppState } from '../../../state'
+import { useAccountType } from '../../../hooks/useAccountType'
 
 export type PageParams = {
   searchString: string
@@ -85,7 +85,7 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const { isSmartContractWallet } = useNetworksAndSigners()
+  const { isSmartContractWallet = false } = useAccountType()
 
   const {
     app: { mergedTransactions: locallyStoredTransactions }

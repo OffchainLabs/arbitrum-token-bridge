@@ -12,7 +12,7 @@ import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
-import { AppContextProvider, useAppContextState } from './AppContext'
+import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
@@ -138,7 +138,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
 
   const networksAndSigners = useNetworksAndSigners()
-  const { currentL1BlockNumber } = useAppContextState()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -166,22 +165,18 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     [address]
   )
 
-  useEffect(() => {
-    if (currentL1BlockNumber > 0) {
-      console.log('Current block number on L1:', currentL1BlockNumber)
-    }
-  }, [currentL1BlockNumber])
-
   // Listen for account and network changes
   useEffect(() => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
+
     if (!isConnected || !chain) {
       return
     }
 
-    const { l1, l2, isConnectedToArbitrum } = networksAndSigners
+    const { l1, l2 } = networksAndSigners
+    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
 
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
@@ -239,6 +234,8 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
+  const { chain } = useNetwork()
+
   switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
@@ -286,7 +283,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
 
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = getSupportedNetworks(props.chainId)
+      const supportedNetworks = getSupportedNetworks(chain?.id)
 
       return (
         <>

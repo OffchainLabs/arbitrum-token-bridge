@@ -1,33 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Listbox } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ArrowsUpDownIcon
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
-import Image from 'next/image'
 import { Chain } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  ChainId,
-  getL2ChainIds,
-  getNetworkLogo,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { ChainId, getL2ChainIds, isNetwork } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { addressIsSmartContract } from '../../util/AddressUtils'
+import {
+  AdvancedSettings,
+  DestinationAddressErrors,
+  getDestinationAddressError
+} from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
-import { Tooltip } from '../common/Tooltip'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -45,128 +36,39 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
+  const { isEOA, isSmartContractWallet } = useAccountType()
+
   return (
     <button
       type="button"
-      className="min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 hover:animate-rotate-180 focus-visible:animate-rotate-180 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2 lg:h-16 lg:w-16 lg:p-4"
+      disabled={
+        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
+      }
+      className={twMerge(
+        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
+        isEOA
+          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
+          : ''
+      )}
       {...props}
     >
-      <ArrowsUpDownIcon className="text-dark" />
+      {isSmartContractWallet ? (
+        <ChevronDownIcon className="text-dark" />
+      ) : (
+        <ArrowsUpDownIcon className="text-dark" />
+      )}
     </button>
-  )
-}
-
-enum AdvancedSettingsErrors {
-  INVALID_ADDRESS = 'The destination address is not valid.'
-}
-
-type OptionsExtraProps = {
-  disabled?: boolean
-  disabledTooltip?: string
-}
-
-type NetworkListboxProps = {
-  disabled?: boolean
-  label: string
-  options: (Chain & OptionsExtraProps)[]
-  value: Chain
-  onChange: (value: Chain) => void
-}
-
-function NetworkListbox({
-  disabled = false,
-  label,
-  options,
-  value,
-  onChange
-}: NetworkListboxProps) {
-  const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
-
-    if (!isArbitrum) {
-      return 'bg-eth-primary'
-    }
-
-    if (isArbitrumNova) {
-      return 'bg-arb-nova-primary'
-    }
-
-    return 'bg-arb-one-primary'
-  }, [value])
-
-  const getOptionClassName = useCallback(
-    (index: number) => {
-      if (index === 0) {
-        return 'rounded-tl-xl rounded-tr-xl'
-      }
-
-      if (index === options.length - 1) {
-        return 'rounded-bl-xl rounded-br-xl'
-      }
-
-      return ''
-    },
-    [options.length]
-  )
-
-  return (
-    <Listbox
-      as="div"
-      className="relative"
-      disabled={disabled}
-      value={value}
-      onChange={onChange}
-    >
-      <Listbox.Button
-        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
-      >
-        <span>
-          {label} {getNetworkName(value.id)}
-        </span>
-        {!disabled && <ChevronDownIcon className="h-4 w-4" />}
-      </Listbox.Button>
-
-      <Listbox.Options className="absolute z-20 ml-2 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {options.map((option, index) => {
-          return (
-            <Tooltip
-              key={option.id}
-              show={option.disabled}
-              content={option.disabledTooltip}
-              wrapperClassName="w-full"
-              theme="dark"
-            >
-              <Listbox.Option
-                value={option}
-                className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)]',
-                  getOptionClassName(index),
-                  option.disabled ? 'pointer-events-none opacity-40' : ''
-                )}
-                disabled={option.disabled}
-              >
-                <div className="flex h-8 w-8 items-center justify-center">
-                  <Image
-                    src={getNetworkLogo(option.id)}
-                    alt={`${getNetworkName(option.id)} logo`}
-                    className="max-h-7 w-auto"
-                    width={36}
-                    height={36}
-                  />
-                </div>
-                <span>{getNetworkName(option.id)}</span>
-              </Listbox.Option>
-            </Tooltip>
-          )
-        })}
-      </Listbox.Options>
-    </Listbox>
   )
 }
 
@@ -261,7 +163,19 @@ function TokenBalance({
   on: NetworkType
   prefix?: string
 }) {
+  const { l1, l2 } = useNetworksAndSigners()
   const balance = useTokenBalances(forToken?.address)[on]
+
+  const symbol = useMemo(() => {
+    if (!forToken) {
+      return undefined
+    }
+
+    return sanitizeTokenSymbol(forToken.symbol, {
+      erc20L1Address: forToken.address,
+      chain: on === NetworkType.l1 ? l1.network : l2.network
+    })
+  }, [forToken, on, l1, l2])
 
   if (!forToken) {
     return null
@@ -276,7 +190,7 @@ function TokenBalance({
       {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
-        symbol: forToken.symbol
+        symbol
       })}
     </span>
   )
@@ -326,8 +240,9 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum, isSmartContractWallet } =
-    useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -358,11 +273,14 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [advancedSettingsError, setAdvancedSettingsError] =
-    useState<AdvancedSettingsErrors | null>(null)
+    useState<DestinationAddressErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const showUSDCNotice =
+    selectedToken?.address === CommonAddress.Mainnet.USDC &&
+    isNetwork(l2.network.id).isArbitrumOne
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -468,12 +386,6 @@ export function TransferPanelMain({
     }
   }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
 
-  useEffect(
-    // Show on page load if SC wallet since destination address mandatory
-    () => setShowAdvancedSettings(isSmartContractWallet),
-    [isSmartContractWallet]
-  )
-
   useEffect(() => {
     // Different destination address only allowed for tokens
     if (!selectedToken) {
@@ -482,35 +394,10 @@ export function TransferPanelMain({
   }, [selectedToken])
 
   useEffect(() => {
-    const getErrors = async () => {
-      try {
-        const isDestinationAddressSmartContract = await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2.provider : l1.provider
-        )
-        if (
-          // Destination address is not required for EOA wallets
-          (!isSmartContractWallet && !destinationAddress) ||
-          // Make sure address type matches the connected wallet type
-          isSmartContractWallet === isDestinationAddressSmartContract
-        ) {
-          setAdvancedSettingsError(null)
-        } else {
-          setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-        }
-      } catch (err) {
-        console.error(err)
-        setAdvancedSettingsError(AdvancedSettingsErrors.INVALID_ADDRESS)
-      }
-    }
-    getErrors()
-  }, [
-    l1.provider,
-    l2.provider,
-    isDepositMode,
-    isSmartContractWallet,
-    destinationAddress
-  ])
+    setAdvancedSettingsError(
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
+    )
+  }, [destinationAddress, isSmartContractWallet])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -602,6 +489,15 @@ export function TransferPanelMain({
       // Add L1 network to the list
       return [l1.network, ...options]
         .filter(option => {
+          // Remove the origin network from the destination list for contract wallets
+          // It's done so that the origin network is not changed
+          if (
+            isSmartContractWallet &&
+            direction === 'to' &&
+            option.id === from.id
+          ) {
+            return false
+          }
           // Remove selected network from the list
           return option.id !== selectedChainId
         })
@@ -631,7 +527,10 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          disabled: !fromOptions.length,
+          disabled:
+            !fromOptions.length ||
+            isSmartContractWallet ||
+            typeof isSmartContractWallet === 'undefined',
           options: fromOptions,
           value: from,
           onChange: async network => {
@@ -698,7 +597,10 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled: !fromOptions.length,
+        disabled:
+          !fromOptions.length ||
+          isSmartContractWallet ||
+          typeof isSmartContractWallet === 'undefined',
         options: fromOptions,
         value: from,
         onChange: async network => {
@@ -758,6 +660,7 @@ export function TransferPanelMain({
     l1.network,
     from,
     to,
+    isSmartContractWallet,
     isDepositMode,
     setQueryParams,
     switchNetworkAsync,
@@ -817,6 +720,34 @@ export function TransferPanelMain({
               </ExternalLink>
             </p>
           )}
+
+          {showUSDCNotice && (
+            <p className="mt-1 text-xs font-light text-white">
+              Native USDC is live on Arbitrum One!
+              <br />
+              <ExternalLink
+                href="https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
+                className="arb-hover underline"
+              >
+                Bridged USDC (USDC.e)
+              </ExternalLink>{' '}
+              will work but is different from{' '}
+              <ExternalLink
+                href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+                className="arb-hover underline"
+              >
+                Native USDC
+              </ExternalLink>
+              .{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
+            </p>
+          )}
         </div>
       </NetworkContainer>
 
@@ -850,55 +781,11 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      {/* Only allow different destination address for tokens */}
-      {selectedToken && (
-        <div className="mt-6">
-          <button
-            onClick={() =>
-              // Keep visible for SC wallets since destination address is mandatory
-              !isSmartContractWallet &&
-              setShowAdvancedSettings(!showAdvancedSettings)
-            }
-            className="flex flex-row items-center text-gray-dark"
-          >
-            <span className="text-lg font-semibold">Advanced Settings</span>
-            {showAdvancedSettings ? (
-              <ChevronUpIcon className="ml-1 h-4 w-4" />
-            ) : (
-              <ChevronDownIcon className="ml-1 h-4 w-4" />
-            )}
-          </button>
-          {showAdvancedSettings && (
-            <>
-              <div className="mt-2">
-                <span className="text-md text-gray-dark">
-                  Destination Address
-                  {!isSmartContractWallet ? ' (optional)' : ''}
-                </span>
-                <input
-                  className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-                  placeholder="Enter destination address"
-                  defaultValue={destinationAddress}
-                  spellCheck={false}
-                  onChange={e => {
-                    if (!e.target.value) {
-                      setDestinationAddress(undefined)
-                    } else {
-                      setDestinationAddress(e.target.value.toLowerCase())
-                    }
-                  }}
-                />
-              </div>
-            </>
-          )}
-          {isSmartContractWallet && advancedSettingsError && (
-            <span className="text-xs text-red-400">
-              {advancedSettingsError}
-            </span>
-          )}
-        </div>
-      )}
-
+      <AdvancedSettings
+        destinationAddress={destinationAddress}
+        onChange={value => setDestinationAddress(value)}
+        error={advancedSettingsError}
+      />
       <Dialog
         closeable
         title="Token not supported"

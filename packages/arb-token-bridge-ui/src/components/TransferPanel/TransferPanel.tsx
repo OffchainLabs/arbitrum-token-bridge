@@ -12,7 +12,6 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -43,6 +42,12 @@ import {
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { warningToast } from '../common/atoms/Toast'
+import { ExternalLink } from '../common/ExternalLink'
+import { useAccountType } from '../../hooks/useAccountType'
+import { GET_HELP_LINK } from '../../constants'
+import { getDestinationAddressError } from './AdvancedSettings'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -94,6 +99,17 @@ enum ImportTokenModalStatus {
   CLOSED
 }
 
+const networkConnectionWarningToast = () =>
+  warningToast(
+    <>
+      Network connection issue. Please contact{' '}
+      <ExternalLink href={GET_HELP_LINK} className="underline">
+        support
+      </ExternalLink>
+      .
+    </>
+  )
+
 export function TransferPanel() {
   const tokenFromSearchParams = useTokenFromSearchParams()
 
@@ -105,10 +121,6 @@ export function TransferPanel() {
   const [destinationAddress, setDestinationAddress] = useState<
     string | undefined
   >(undefined)
-  const [
-    isDestinationAddressSmartContract,
-    setIsDestinationAddressSmartContract
-  ] = useState(false)
 
   const {
     app: {
@@ -134,9 +146,10 @@ export function TransferPanel() {
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const {
     l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider },
-    isSmartContractWallet
+    l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
+
+  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
@@ -155,6 +168,7 @@ export function TransferPanel() {
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -188,6 +202,12 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
+  const destinationAddressError = useMemo(
+    () =>
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
+    [destinationAddress, isSmartContractWallet]
+  )
+
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
@@ -205,18 +225,6 @@ export function TransferPanel() {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus])
-
-  useEffect(() => {
-    const getDestinationAddressType = async () => {
-      setIsDestinationAddressSmartContract(
-        await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2Provider : l1Provider
-        )
-      )
-    }
-    getDestinationAddressType()
-  }, [destinationAddress, isDepositMode, l1Provider, l2Provider])
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -347,8 +355,18 @@ export function TransferPanel() {
       return
     }
 
+    if (!isEOA && !isSmartContractWallet) {
+      console.error('Account type is undefined')
+      return
+    }
+
     if (!l1Signer || !l2Signer) {
       throw 'Signer is undefined'
+    }
+
+    if (destinationAddressError) {
+      console.error(destinationAddressError)
+      return
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
@@ -369,19 +387,6 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if (destinationAddress) {
-        if (
-          // Invalid address
-          !isAddress(destinationAddress) ||
-          // Destination address not matching the connected wallet type
-          (isSmartContractWallet && !isDestinationAddressSmartContract)
-        ) {
-          throw new Error(
-            `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
-          )
-        }
-      }
-
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -400,7 +405,7 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+        if (isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -416,7 +421,7 @@ export function TransferPanel() {
           )
 
           while (
-            latestNetworksAndSigners.current.isConnectedToArbitrum ||
+            isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -432,7 +437,7 @@ export function TransferPanel() {
         if (
           !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
         if (selectedToken) {
           const { decimals } = selectedToken
@@ -555,7 +560,7 @@ export function TransferPanel() {
           })
         }
       } else {
-        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+        if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -571,7 +576,7 @@ export function TransferPanel() {
           )
 
           while (
-            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
+            !isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -596,7 +601,7 @@ export function TransferPanel() {
         if (
           !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
         ) {
-          return alert('Network connection issue; contact support')
+          return networkConnectionWarningToast()
         }
 
         if (selectedToken) {
@@ -807,8 +812,8 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      destinationAddressError
     )
   }, [
     isTransferring,
@@ -819,7 +824,7 @@ export function TransferPanel() {
     isBridgingANewStandardToken,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    destinationAddressError
   ])
 
   // TODO: Refactor this and the property above
@@ -851,8 +856,8 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      destinationAddressError
     )
   }, [
     isTransferring,
@@ -861,7 +866,7 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    destinationAddressError
   ])
 
   // TODO: Refactor this and the property above
