@@ -54,7 +54,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
         }
       })
     })
-  }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded, actions.app])
+  }, [getTransactionReceipt, arbTokenBridge, arbTokenBridgeLoaded])
   const { forceTrigger: forceTriggerUpdate } = useInterval(
     checkAndUpdatePendingTransactions,
     4000
