@@ -109,8 +109,6 @@ const DESTINATION_ADDRESS_DENYLIST = [
 ]
 
 async function main() {
-  const resultJson: { [key in string]: string[] } = {}
-
   const promises = tokenListsUrls.map(url => axios.get<TokenList>(url))
   const tokenLists = (await Promise.all(promises)).map(res => res.data)
   const allTokens = tokenLists.map(list => list.tokens).flat()
@@ -121,29 +119,28 @@ async function main() {
     ...allTokenAddresses
   ]
 
-  resultJson['anyChain'] = denylistedAddresses.map(address =>
-    address.toLowerCase()
-  )
-
   Object.keys(l2Networks).map(chainId => {
-    const networkDenylist = []
     const networkObject = l2Networks[chainId]
 
     const { ethBridge, tokenBridge } = networkObject
     const { classicOutboxes } = ethBridge
 
     if (classicOutboxes) {
-      networkDenylist.push(...Object.keys(classicOutboxes))
+      denylistedAddresses.push(...Object.keys(classicOutboxes))
     }
 
     delete ethBridge.classicOutboxes
-    networkDenylist.push(
+    denylistedAddresses.push(
       ...Object.values(ethBridge),
       ...Object.values(tokenBridge)
     )
-
-    resultJson[chainId] = networkDenylist.map(address => address.toLowerCase())
   })
+
+  const resultJson = {
+    denylist: [
+      ...new Set(denylistedAddresses.map(address => address.toLowerCase()))
+    ]
+  }
 
   fs.writeFileSync(
     './public/__auto-generated-denylist.json',
