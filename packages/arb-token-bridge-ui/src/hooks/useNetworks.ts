@@ -1,6 +1,6 @@
 import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useArbQueryParams } from './useArbQueryParams'
 import {
@@ -85,9 +85,6 @@ export function sanitizeQueryParams({
   return { from: from!, to: to! }
 }
 
-type UseNetworksSetStateProps = { from: Chain; to: Chain }
-type UseNetworksSetState = (props: UseNetworksSetStateProps) => void
-
 export type UseNetworksState = {
   from: Chain
   fromProvider: StaticJsonRpcProvider
@@ -95,11 +92,24 @@ export type UseNetworksState = {
   toProvider: StaticJsonRpcProvider
 }
 
-export function useNetworks(): [UseNetworksState] {
+export type UseNetworksSetStateParams = { from: Chain; to: Chain }
+export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
+
+export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const [{ from, to }, setQueryParams] = useArbQueryParams()
   const { from: validFrom, to: validTo } = sanitizeQueryParams({ from, to })
 
-  console.log({ from, to })
+  const setState = useCallback(
+    (params: UseNetworksSetStateParams) => {
+      const fromQueryParam = getChainQueryParamForChain(params.from)
+      const toQueryParam = getChainQueryParamForChain(params.to)
+
+      setQueryParams(
+        sanitizeQueryParams({ from: fromQueryParam, to: toQueryParam })
+      )
+    },
+    [setQueryParams]
+  )
 
   if (from !== validFrom || to !== validTo) {
     // On the first render, update query params with the sanitized values
@@ -117,7 +127,8 @@ export function useNetworks(): [UseNetworksState] {
         fromProvider: getProviderForChain(fromChain),
         to: toChain,
         toProvider: getProviderForChain(toChain)
-      }
+      },
+      setState
     ]
-  }, [validFrom, validTo])
+  }, [validFrom, validTo, setState])
 }
