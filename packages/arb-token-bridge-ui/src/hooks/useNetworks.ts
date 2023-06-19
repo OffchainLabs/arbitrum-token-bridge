@@ -1,6 +1,6 @@
 import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { create } from 'zustand'
+import { useMemo } from 'react'
 
 import { useArbQueryParams } from './useArbQueryParams'
 import {
@@ -10,7 +10,6 @@ import {
 } from '../types/ChainQueryParam'
 import { rpcURLs } from '../util/networks'
 import { getPartnerChainsForChain } from '../util/wagmi/getPartnerChainsForChain'
-import { chains } from '../constants'
 
 function getPartnerChainsQueryParams(
   chainQueryParam: ChainQueryParam
@@ -21,6 +20,18 @@ function getPartnerChainsQueryParams(
   return partnerChains.map(chain => getChainQueryParamForChain(chain))
 }
 
+const getProviderForChainCache: {
+  [rpcUrl: string]: StaticJsonRpcProvider
+} = {
+  // start with empty cache
+}
+
+function createProviderWithCache(rpcUrl: string) {
+  const provider = new StaticJsonRpcProvider(rpcUrl)
+  getProviderForChainCache[rpcUrl] = provider
+  return provider
+}
+
 function getProviderForChain(chain: Chain): StaticJsonRpcProvider {
   const rpcUrl = rpcURLs[chain.id]
 
@@ -28,7 +39,13 @@ function getProviderForChain(chain: Chain): StaticJsonRpcProvider {
     throw new Error(`[getProviderForChain] Unexpected chain id: ${chain.id}`)
   }
 
-  return new StaticJsonRpcProvider(rpcUrl)
+  const cachedProvider = getProviderForChainCache[rpcUrl]
+
+  if (typeof cachedProvider !== 'undefined') {
+    return cachedProvider
+  }
+
+  return createProviderWithCache(rpcUrl)
 }
 
 export function sanitizeQueryParams({
@@ -71,56 +88,28 @@ export function sanitizeQueryParams({
 type UseNetworksSetStateProps = { from: Chain; to: Chain }
 type UseNetworksSetState = (props: UseNetworksSetStateProps) => void
 
-export type UseNetworksState = [
-  {
-    from: Chain
-    fromProvider: StaticJsonRpcProvider
-    to: Chain
-    toProvider: StaticJsonRpcProvider
-  },
-  UseNetworksSetState
-]
+export type UseNetworksState = {
+  from: Chain
+  fromProvider: StaticJsonRpcProvider
+  to: Chain
+  toProvider: StaticJsonRpcProvider
+}
 
-const useNetworksState = create<UseNetworksState>(set => [
-  {
-    from: chains.mainnet,
-    fromProvider: getProviderForChain(chains.mainnet),
-    to: chains.arbitrumOne,
-    toProvider: getProviderForChain(chains.arbitrumOne)
-  },
-  (props: UseNetworksSetStateProps) => {
-    set(state => {
-      const [, setNetworks] = state
-
-      // Update the state but keep the second element (setter) intact
-      return [
-        {
-          from: props.from,
-          fromProvider: getProviderForChain(props.from),
-          to: props.to,
-          toProvider: getProviderForChain(props.to)
-        },
-        setNetworks
-      ]
-    })
-  }
-])
-
-export function useNetworks(): UseNetworksState {
-  const [state, setState] = useNetworksState()
+export function useNetworks(): [UseNetworksState] {
   const [{ from, to }, setQueryParams] = useArbQueryParams()
   const { from: validFrom, to: validTo } = sanitizeQueryParams({ from, to })
 
   console.log({ from, to })
 
   if (from !== validFrom || to !== validTo) {
-    // The return values of the hook will always be the sanitized values (including the first render)
-    const fromChain = getChainForChainQueryParam(validFrom)
-    const toChain = getChainForChainQueryParam(validTo)
-
     // On the first render, update query params with the sanitized values
     setQueryParams({ from: validFrom, to: validTo })
-    setState({ from: fromChain, to: toChain })
+  }
+
+  // The return values of the hook will always be the sanitized values
+  return useMemo(() => {
+    const fromChain = getChainForChainQueryParam(validFrom)
+    const toChain = getChainForChainQueryParam(validTo)
 
     return [
       {
@@ -128,11 +117,7 @@ export function useNetworks(): UseNetworksState {
         fromProvider: getProviderForChain(fromChain),
         to: toChain,
         toProvider: getProviderForChain(toChain)
-      },
-      setState
+      }
     ]
-  }
-
-  // Everything is in sync, so we can just return values from the store
-  return [state, setState]
+  }, [validFrom, validTo])
 }
