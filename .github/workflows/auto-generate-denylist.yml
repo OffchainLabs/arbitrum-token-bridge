@@ -1,7 +1,7 @@
 name: Auto-Generate Denylist
 
 on:
-  workflow-dispatch:
+  workflow_dispatch:
 
 jobs:
   install:
