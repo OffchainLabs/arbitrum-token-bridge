@@ -49,6 +49,8 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
 import { getDestinationAddressError } from './AdvancedSettings'
 
+import denylist from '../../../public/__auto-generated-denylist.json'
+
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
     Sentry.captureException(error)
@@ -111,6 +113,8 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
+  console.log(denylist)
+
   const tokenFromSearchParams = useTokenFromSearchParams()
 
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
