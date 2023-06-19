@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useMemo, useCallback } from 'react'
+import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
@@ -514,6 +514,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('*** Status not included in transaction receipt *** ')
         break
     }
+    console.log('TX for update', tx)
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }

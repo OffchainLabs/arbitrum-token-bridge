@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
+
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'

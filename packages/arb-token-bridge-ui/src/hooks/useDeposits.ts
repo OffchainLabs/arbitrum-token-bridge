@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
+import { useAccount } from 'wagmi'
+
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformDeposits } from '../state/app/utils'
@@ -9,7 +11,6 @@ import {
 } from '../util/deposits/fetchDeposits'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
-import { useAccount } from 'wagmi'
 
 export type CompleteDepositData = {
   deposits: Transaction[]

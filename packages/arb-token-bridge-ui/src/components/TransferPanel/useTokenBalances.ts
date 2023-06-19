@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { BigNumber, constants } from 'ethers'
+import { useAccount } from 'wagmi'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
-import { useAccount } from 'wagmi'
 
 export enum NetworkType {
   l1 = 'l1',

@@ -6,14 +6,15 @@ import {
 import { derived } from 'overmind'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { getAccount } from '@wagmi/core'
-import { ConnectionState } from '../../util'
+import { BigNumber } from 'ethers'
+import dayjs from 'dayjs'
+
 import {
   filterTransactions,
   transformDeposits,
   transformWithdrawals
 } from './utils'
-import { BigNumber } from 'ethers'
-import dayjs from 'dayjs'
+
 import {
   ArbTokenBridge,
   ERC20BridgeToken,
@@ -26,6 +27,7 @@ import {
   Transaction,
   TxnType
 } from '../../hooks/useTransactions'
+import { ConnectionState } from '../../util'
 
 export enum DepositStatus {
   L1_PENDING = 1,

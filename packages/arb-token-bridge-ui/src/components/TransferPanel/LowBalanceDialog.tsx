@@ -5,6 +5,7 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 import { useBalance } from '../../hooks/useBalance'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
@@ -20,7 +21,6 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
-import { useAccount } from 'wagmi'
 
 type ExternalLinkCardDynamicProps =
   | {

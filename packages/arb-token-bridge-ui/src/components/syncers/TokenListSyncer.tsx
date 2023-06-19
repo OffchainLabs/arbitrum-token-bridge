@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
 import {
@@ -6,7 +7,6 @@ import {
   BRIDGE_TOKEN_LISTS
 } from '../../util/TokenListUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useAccount } from 'wagmi'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances

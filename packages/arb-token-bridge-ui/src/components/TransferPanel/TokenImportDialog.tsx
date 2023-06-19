@@ -3,7 +3,6 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import Tippy from '@tippyjs/react'
-
 import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'

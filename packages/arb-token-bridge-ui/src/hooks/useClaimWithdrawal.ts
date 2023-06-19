@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import * as Sentry from '@sentry/react'
-import { useAccount, useSigner } from 'wagmi'
+import { useSigner } from 'wagmi'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -18,7 +18,6 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   } = useAppState()
   const { data: signer } = useSigner()
   const [isClaiming, setIsClaiming] = useState(false)
-  const { address } = useAccount()
 
   async function claim(tx: MergedTransaction) {
     if (isClaiming) {
@@ -37,9 +36,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (!signer) {
         throw 'Signer is undefined'
       }
-      if (!address) {
-        return
-      }
+
       if (tx.asset === 'eth') {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),

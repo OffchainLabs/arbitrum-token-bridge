@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
+import { useAccount } from 'wagmi'
+
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformWithdrawals } from '../state/app/utils'
@@ -10,7 +12,6 @@ import {
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { useAccount } from 'wagmi'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
