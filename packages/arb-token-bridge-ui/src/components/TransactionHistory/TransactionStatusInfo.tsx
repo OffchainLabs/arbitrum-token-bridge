@@ -96,7 +96,7 @@ export const TransactionStatusInfo = ({
         ) : null}
         <span>.{` `}</span>
         {/* open tx history panel cta */}
-        <ExternalLink className="arb-hover text-sm underline">
+        <ExternalLink className="arb-hover text-sm underline lg:text-base">
           Open Transaction History panel.
         </ExternalLink>
       </div>
