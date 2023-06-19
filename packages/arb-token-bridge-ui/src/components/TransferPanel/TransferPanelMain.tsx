@@ -260,7 +260,7 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 
   return (
     <span>
-      <span className="uppercase">{prefix}</span>
+      {prefix}
       {formatAmount(balance, { symbol: 'ETH' })}
     </span>
   )
@@ -299,7 +299,7 @@ function TokenBalance({
 
   return (
     <span>
-      <span className="uppercase">{prefix}</span>
+      <span>{prefix}</span>
       {formatAmount(balance, {
         decimals: forToken.decimals,
         symbol
@@ -793,11 +793,11 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                   forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
+                  prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                  prefix={selectedToken ? '' : 'Balance: '}
+                  prefix={selectedToken ? '' : 'BALANCE: '}
                 />
               </>
             )}
@@ -881,11 +881,11 @@ export function TransferPanelMain({
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                   forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
+                  prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
                 <ETHBalance
                   on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                  prefix={selectedToken ? '' : 'Balance: '}
+                  prefix={selectedToken ? '' : 'BALANCE: '}
                 />
               </>
             )}
