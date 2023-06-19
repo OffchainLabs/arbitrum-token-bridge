@@ -228,9 +228,14 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumNova = chainId === ChainId.ArbitrumNova
   const isArbitrumGoerli = chainId === ChainId.ArbitrumGoerli
   const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
+  const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
   const isArbitrum =
-    isArbitrumOne || isArbitrumNova || isArbitrumGoerli || isArbitrumRinkeby
+    isArbitrumOne ||
+    isArbitrumNova ||
+    isArbitrumGoerli ||
+    isArbitrumRinkeby ||
+    isArbitrumLocal
 
   const isTestnet =
     isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
