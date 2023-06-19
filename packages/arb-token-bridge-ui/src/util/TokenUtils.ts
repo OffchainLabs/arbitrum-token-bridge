@@ -1,9 +1,12 @@
 import { BigNumber, constants } from 'ethers'
+import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
+import { CommonAddress } from './CommonAddressUtils'
+import { isNetwork } from './networks'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -234,4 +237,53 @@ export async function l1TokenIsDisabled({
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
+}
+
+type SanitizeTokenOptions = {
+  erc20L1Address?: string | null // token address on L1
+  chain: Chain // chain for which we want to retrieve the token name / symbol
+}
+
+const isTokenMainnetUSDC = (tokenAddress: string) => {
+  return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+}
+
+// get the exact token symbol for a particular chain
+export function sanitizeTokenSymbol(
+  tokenSymbol: string,
+  options: SanitizeTokenOptions
+) {
+  if (!options.erc20L1Address) {
+    return tokenSymbol
+  }
+
+  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+
+  if (isTokenMainnetUSDC(options.erc20L1Address)) {
+    // It should be `USDC` on all chains except Arbitrum One
+    if (isArbitrumOne) return 'USDC.e'
+    return 'USDC'
+  }
+
+  return tokenSymbol
+}
+
+// get the exact token name for a particular chain
+export function sanitizeTokenName(
+  tokenName: string,
+  options: SanitizeTokenOptions
+) {
+  if (!options.erc20L1Address) {
+    return tokenName
+  }
+
+  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+
+  if (isTokenMainnetUSDC(options.erc20L1Address)) {
+    // It should be `USD Coin` on all chains except Arbitrum One
+    if (isArbitrumOne) return 'Bridged USDC'
+    return 'USD Coin'
+  }
+
+  return tokenName
 }

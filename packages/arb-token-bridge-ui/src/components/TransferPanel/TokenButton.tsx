@@ -11,8 +11,7 @@ import {
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
-import { CommonAddress } from '../../util/CommonAddressUtils'
-import { isNetwork } from '../../util/networks'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -23,7 +22,7 @@ export function TokenButton(): JSX.Element {
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const { status, l2 } = useNetworksAndSigners()
+  const { status, l1, l2 } = useNetworksAndSigners()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -54,17 +53,11 @@ export function TokenButton(): JSX.Element {
       return 'ETH'
     }
 
-    const addressLowercased = selectedToken.address.toLowerCase()
-    const isUSDC = addressLowercased === CommonAddress.Mainnet.USDC
-    const isL2ArbitrumOne = isNetwork(l2.network.id).isArbitrumOne
-
-    // Special case because token symbol for USDC is different on Mainnet and Arbitrum One
-    if (isUSDC && isL2ArbitrumOne) {
-      return isDepositMode ? 'USDC' : 'USDC.e'
-    }
-
-    return selectedToken.symbol
-  }, [selectedToken, isDepositMode, l2])
+    return sanitizeTokenSymbol(selectedToken.symbol, {
+      erc20L1Address: selectedToken.address,
+      chain: isDepositMode ? l1.network : l2.network
+    })
+  }, [selectedToken, isDepositMode, l2.network, l1.network])
 
   function closeWithReset() {
     setTokenToImport(undefined)
