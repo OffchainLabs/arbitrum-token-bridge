@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 import { isAddress } from 'ethers/lib/utils'
@@ -91,7 +91,6 @@ export const AdvancedSettings = ({
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
-  const [collapsible, setCollapsible] = useState(false)
   const [warning, setWarning] = useState<string | null>(null)
 
   useEffect(() => {
@@ -109,14 +108,14 @@ export const AdvancedSettings = ({
     return () => setWarning(null)
   }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
-  useEffect(() => {
+  useEffect(() => setCollapsed(isEOA), [isEOA])
+
+  const collapsible = useMemo(() => {
     // cannot collapse if:
     // - SCW because the destination address is mandatory
     // - destination address is not empty
-    setCollapsible(isEOA && !destinationAddress)
-  }, [isEOA, destinationAddress])
-
-  useEffect(() => setCollapsed(isEOA), [isEOA])
+    return isEOA && !destinationAddress
+  }, [destinationAddress, isEOA])
 
   // Disabled for ETH
   if (!selectedToken) {
