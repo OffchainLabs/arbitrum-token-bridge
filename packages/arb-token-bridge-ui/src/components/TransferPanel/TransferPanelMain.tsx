@@ -299,7 +299,7 @@ function TokenBalance({
 
   return (
     <span>
-      <span>{prefix}</span>
+      {prefix}
       {formatAmount(balance, {
         decimals: forToken.decimals,
         symbol
