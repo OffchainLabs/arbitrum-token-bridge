@@ -190,7 +190,7 @@ export function TransactionsTableDepositRow({
 
     if (tx.depositStatus === DepositStatus.CREATION_FAILED) {
       // In case of a retryable ticket creation failure, mark only the token deposits as errors
-      return tx.asset !== 'eth'
+      return tx.asset.toLowerCase() !== 'eth'
     }
 
     return false
