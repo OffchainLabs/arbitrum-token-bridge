@@ -171,7 +171,8 @@ export const AdvancedSettings = ({
                 <>
                   Send your funds to a different address.{' '}
                   <span className="font-semibold">This is not standard.</span>{' '}
-                  Be sure you mean to send it here.
+                  Be sure you mean to send it here, or it may lead to an
+                  irrecoverable loss of funds.
                 </>
               ) : (
                 <>
@@ -183,7 +184,7 @@ export const AdvancedSettings = ({
             </p>
             <input
               className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-              placeholder={isEOA ? address : undefined}
+              placeholder={isEOA ? address : 'Enter Custom Destination Address'}
               value={destinationAddress}
               spellCheck={false}
               onChange={e => onChange(e.target.value?.toLowerCase())}
