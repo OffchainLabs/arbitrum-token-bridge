@@ -154,12 +154,15 @@ export interface ArbTokenBridgeEth {
   deposit: (params: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    txLifecycle?: L1EthDepositTransactionLifecycle &
+      L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   withdraw: (params: {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     id: string

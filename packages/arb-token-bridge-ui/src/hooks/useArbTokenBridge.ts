@@ -12,7 +12,10 @@ import {
   L1ToL2MessageStatus,
   L2ToL1Message
 } from '@arbitrum/sdk'
-import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import {
+  L1EthDepositTransaction,
+  L1ContractCallTransaction
+} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -163,21 +166,33 @@ export const useArbTokenBridge = (
   const depositEth = async ({
     amount,
     l1Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    txLifecycle?:
+      | L1EthDepositTransactionLifecycle & L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
-    let tx: L1EthDepositTransaction
+    let tx: L1EthDepositTransaction & L1ContractCallTransaction
 
     try {
-      tx = await ethBridger.deposit({
-        amount,
-        l1Signer
-      })
+      tx = (
+        destinationAddress
+          ? await ethBridger.depositTo({
+              amount,
+              l1Signer,
+              l2Provider: l2.provider,
+              destinationAddress
+            })
+          : await ethBridger.deposit({
+              amount,
+              l1Signer
+            })
+      ) as typeof tx
 
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
@@ -213,10 +228,24 @@ export const useArbTokenBridge = (
       return
     }
 
+    let retryableCreationTxID: string | undefined
+
+    if (destinationAddress) {
+      const [l1ToL2Message] = await receipt.getL1ToL2Messages(l2.provider)
+      retryableCreationTxID = l1ToL2Message?.retryableCreationId
+    } else {
+      const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
+      retryableCreationTxID = ethDepositMessage?.l2DepositTxHash
+    }
+
+    if (!retryableCreationTxID) {
+      return
+    }
+
     const l1ToL2MsgData: L1ToL2MessageData = {
       fetchingUpdate: false,
       status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
+      retryableCreationTxID,
       l2TxID: undefined
     }
 
@@ -227,11 +256,13 @@ export const useArbTokenBridge = (
   async function withdrawEth({
     amount,
     l2Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
@@ -239,7 +270,7 @@ export const useArbTokenBridge = (
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
-        destinationAddress: walletAddress,
+        destinationAddress: destinationAddress ?? walletAddress,
         from: walletAddress
       })
 

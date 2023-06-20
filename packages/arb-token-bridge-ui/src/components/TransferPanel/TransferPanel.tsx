@@ -369,16 +369,10 @@ export function TransferPanel() {
       return
     }
 
-    // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
-      console.error("ETH transfers aren't enabled for smart contract wallets.")
-      return
-    }
-
     const l2NetworkName = getNetworkName(l2Network.id)
 
     // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
-    const showDelayedSCTxRequest = () =>
+    const showSmartContractWalletTxConfirmation = () =>
       setTimeout(() => {
         setTransferring(false)
         setShowSCWalletTooltip(true)
@@ -477,6 +471,10 @@ export function TransferPanel() {
               return
             }
 
+            if (isSmartContractWallet) {
+              showSmartContractWalletTxConfirmation()
+            }
+
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
               l1Signer
@@ -493,7 +491,7 @@ export function TransferPanel() {
           }
 
           if (isSmartContractWallet) {
-            showDelayedSCTxRequest()
+            showSmartContractWalletTxConfirmation()
             // we can't call this inside the deposit method because tx is executed in an external app
             if (shouldTrackAnalytics(l2NetworkName)) {
               trackEvent('Deposit', {
@@ -535,9 +533,23 @@ export function TransferPanel() {
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
+          if (isSmartContractWallet) {
+            showSmartContractWalletTxConfirmation()
+
+            if (shouldTrackAnalytics(l2NetworkName)) {
+              trackEvent('Withdraw', {
+                assetType: 'ETH',
+                accountType: 'Smart Contract',
+                network: l2NetworkName,
+                amount: Number(amount)
+              })
+            }
+          }
+
           await latestEth.current.deposit({
             amount: amountRaw,
             l1Signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
@@ -621,7 +633,7 @@ export function TransferPanel() {
             })
             if (!allowed) {
               if (isSmartContractWallet) {
-                showDelayedSCTxRequest()
+                showSmartContractWalletTxConfirmation()
               }
 
               await latestToken.current.approveL2({
@@ -632,7 +644,7 @@ export function TransferPanel() {
           }
 
           if (isSmartContractWallet) {
-            showDelayedSCTxRequest()
+            showSmartContractWalletTxConfirmation()
             // we can't call this inside the withdraw method because tx is executed in an external app
             if (shouldTrackAnalytics(l2NetworkName)) {
               trackEvent('Withdraw', {
@@ -674,9 +686,23 @@ export function TransferPanel() {
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
 
+          if (isSmartContractWallet) {
+            showSmartContractWalletTxConfirmation()
+
+            if (shouldTrackAnalytics(l2NetworkName)) {
+              trackEvent('Withdraw', {
+                assetType: 'ETH',
+                accountType: 'Smart Contract',
+                network: l2NetworkName,
+                amount: Number(amount)
+              })
+            }
+          }
+
           await latestEth.current.withdraw({
             amount: amountRaw,
             l2Signer,
+            destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()

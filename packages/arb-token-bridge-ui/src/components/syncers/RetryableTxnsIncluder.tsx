@@ -26,12 +26,13 @@ export function RetryableTxnsIncluder(): JSX.Element {
     async (depositTxId: string, depositAssetType: AssetType | string) => {
       const isEthDeposit = depositAssetType === AssetType.ETH
 
-      const { l1ToL2Msg, isClassic } = await getL1ToL2MessageDataFromL1TxHash({
-        depositTxId,
-        isEthDeposit,
-        l1Provider,
-        l2Provider
-      })
+      const { l1ToL2Msg, isClassic, isCustomAddressDeposit } =
+        await getL1ToL2MessageDataFromL1TxHash({
+          depositTxId,
+          isEthDeposit,
+          l1Provider,
+          l2Provider
+        })
 
       if (!l1ToL2Msg) return
 
@@ -48,14 +49,14 @@ export function RetryableTxnsIncluder(): JSX.Element {
         return
       }
 
-      // Non-classic - Eth deposit
-      if (isEthDeposit) {
+      // Non-classic - Eth deposit - Own address
+      if (isEthDeposit && !isCustomAddressDeposit) {
         arbTokenBridge?.transactions?.fetchAndUpdateEthDepositMessageStatus(
           depositTxId,
           l1ToL2Msg as EthDepositMessage
         )
       } else {
-        // Non-classic - Token deposit
+        // Non-classic - Token deposit & Custom address ETH deposit
         arbTokenBridge.transactions?.fetchAndUpdateL1ToL2MsgStatus(
           depositTxId,
           l1ToL2Msg as L1ToL2MessageReader,
