@@ -853,14 +853,7 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer
-        network={to}
-        balanceFor={
-          walletAddress && walletAddress.toLowerCase() !== destinationAddress
-            ? destinationAddress
-            : undefined
-        }
-      >
+      <NetworkContainer network={to} balanceFor={destinationAddress}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
