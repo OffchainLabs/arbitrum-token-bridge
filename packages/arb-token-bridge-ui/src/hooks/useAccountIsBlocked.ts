@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { trackEvent } from '../util/AnalyticsUtils'
@@ -26,7 +26,7 @@ async function isBlocked(address: `0x${string}`): Promise<boolean> {
   return ((await response.json()) as ApiResponseSuccess).blocked
 }
 
-async function fetcher(address: `0x${string}`) {
+async function fetcher(address: `0x${string}`): Promise<boolean> {
   const accountIsBlocked = await isBlocked(address)
 
   if (accountIsBlocked) {
@@ -45,8 +45,13 @@ export function useAccountIsBlocked() {
       return null
     }
 
-    return ['useAccountIsBlocked', address]
+    return ['useAccountIsBlocked', address.toLowerCase()]
   }, [address])
 
-  return useSWR<boolean>(queryKey, ([, _address]) => fetcher(_address))
+  const { data: isBlocked } = useSWRImmutable<boolean>(
+    queryKey,
+    ([, _address]) => fetcher(_address)
+  )
+
+  return { isBlocked }
 }
