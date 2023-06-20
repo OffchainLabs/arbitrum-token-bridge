@@ -51,6 +51,7 @@ import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
+import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 
 declare global {
   interface Window {
@@ -134,8 +135,9 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { address, isConnected } = useAccount()
   const { chain } = useNetwork()
+  const { address, isConnected } = useAccount()
+  const { isBlocked } = useAccountIsBlocked()
 
   const networksAndSigners = useNetworksAndSigners()
 
@@ -170,11 +172,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
+
     if (!isConnected || !chain) {
       return
     }
 
-    const { l1, l2, isConnectedToArbitrum } = networksAndSigners
+    const { l1, l2 } = networksAndSigners
+    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
 
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
@@ -208,6 +212,20 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
+  if (address && isBlocked) {
+    return (
+      <BlockedDialog
+        address={address}
+        isOpen={true}
+        // ignoring until we use the package
+        // https://github.com/OffchainLabs/config-monorepo/pull/11
+        //
+        // eslint-disable-next-line
+        onClose={() => {}}
+      />
+    )
+  }
+
   return (
     <>
       {tokenBridgeParams && (
@@ -232,6 +250,8 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
+  const { chain } = useNetwork()
+
   switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
@@ -263,23 +283,8 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
         </>
       )
 
-    case UseNetworksAndSignersStatus.BLOCKED:
-      return (
-        <AppConnectionFallbackContainer>
-          <BlockedDialog
-            address={props.address}
-            isOpen={true}
-            // ignoring until we use the package
-            // https://github.com/OffchainLabs/config-monorepo/pull/11
-            //
-            // eslint-disable-next-line
-            onClose={() => {}}
-          />
-        </AppConnectionFallbackContainer>
-      )
-
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = getSupportedNetworks(props.chainId)
+      const supportedNetworks = getSupportedNetworks(chain?.id)
 
       return (
         <>

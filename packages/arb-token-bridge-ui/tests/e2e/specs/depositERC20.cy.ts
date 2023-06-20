@@ -74,7 +74,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        cy.findByText(`Balance: ${l1ERC20bal}`).should('be.visible')
+        cy.findByText(`BALANCE: ${l1ERC20bal}`).should('be.visible')
       })
 
       context('should show summary', () => {

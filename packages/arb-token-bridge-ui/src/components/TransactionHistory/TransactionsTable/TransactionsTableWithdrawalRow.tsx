@@ -24,6 +24,8 @@ import {
 } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
+import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -253,11 +255,20 @@ function WithdrawalRowAction({
   isError: boolean
 }) {
   const {
-    isConnectedToArbitrum,
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { claim, isClaiming } = useClaimWithdrawal()
   const l2NetworkName = getNetworkName(l2Network.id)
+
+  const { claim, isClaiming } = useClaimWithdrawal()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+
+  const isClaimButtonDisabled = useMemo(
+    () =>
+      typeof isConnectedToArbitrum !== 'undefined'
+        ? isConnectedToArbitrum
+        : true,
+    [isConnectedToArbitrum]
+  )
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -284,7 +295,7 @@ function WithdrawalRowAction({
   if (tx.status === 'Confirmed') {
     return (
       <Tooltip
-        show={isConnectedToArbitrum || false}
+        show={isClaimButtonDisabled}
         wrapperClassName=""
         content={
           <span>
@@ -295,7 +306,7 @@ function WithdrawalRowAction({
         <Button
           variant="primary"
           loading={isClaiming}
-          disabled={isConnectedToArbitrum}
+          disabled={isClaimButtonDisabled}
           onClick={() => claim(tx)}
         >
           Claim
@@ -338,12 +349,22 @@ export function TransactionsTableWithdrawalRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
+  const { l2 } = useNetworksAndSigners()
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
     return ''
   }, [tx, isError])
+
+  const tokenSymbol = useMemo(
+    () =>
+      sanitizeTokenSymbol(tx.asset, {
+        erc20L1Address: tx.tokenAddress,
+        chain: l2.network
+      }),
+    [l2.network, tx.tokenAddress, tx.asset]
+  )
 
   return (
     <tr
@@ -361,7 +382,9 @@ export function TransactionsTableWithdrawalRow({
       </td>
 
       <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {formatAmount(Number(tx.value), { symbol: tx.asset.toUpperCase() })}
+        {formatAmount(Number(tx.value), {
+          symbol: tokenSymbol
+        })}
       </td>
 
       <td className="w-1/5 px-3 py-3">

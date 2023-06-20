@@ -31,14 +31,12 @@ import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 
-import { ApiResponseSuccess } from '../pages/api/screenings'
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
   NOT_CONNECTED = 'not_connected',
   NOT_SUPPORTED = 'not_supported',
-  BLOCKED = 'blocked',
   CONNECTED = 'connected'
 }
 
@@ -48,9 +46,6 @@ export type UseNetworksAndSignersLoadingOrErrorStatus =
 
 export type UseNetworksAndSignersNotSupportedStatus =
   UseNetworksAndSignersStatus.NOT_SUPPORTED
-
-export type UseNetworksAndSignersBlockedStatus =
-  UseNetworksAndSignersStatus.BLOCKED
 
 const defaultStatus =
   typeof window.ethereum === 'undefined'
@@ -66,11 +61,6 @@ export type UseNetworksAndSignersNotSupportedResult = {
   chainId: number // the current unsupported chainId which is connected to UI
 }
 
-export type UseNetworksAndSignersBlockedResult = {
-  status: UseNetworksAndSignersStatus.BLOCKED
-  address: string
-}
-
 export type UseNetworksAndSignersConnectedResult = {
   status: UseNetworksAndSignersStatus.CONNECTED
   l1: {
@@ -81,15 +71,12 @@ export type UseNetworksAndSignersConnectedResult = {
     network: Chain
     provider: JsonRpcProvider
   }
-  isConnectedToArbitrum: boolean
-  chainId: number // the current chainId which is connected to UI
 }
 
 export type UseNetworksAndSignersResult =
   | UseNetworksAndSignersLoadingOrErrorResult
   | UseNetworksAndSignersConnectedResult
   | UseNetworksAndSignersNotSupportedResult
-  | UseNetworksAndSignersBlockedResult
 
 export const NetworksAndSignersContext = createContext<
   UseNetworksAndSignersConnectedResult | undefined
@@ -109,8 +96,7 @@ export function useNetworksAndSigners() {
 
 export type FallbackProps =
   | { status: UseNetworksAndSignersLoadingOrErrorStatus }
-  | { status: UseNetworksAndSignersNotSupportedStatus; chainId: number }
-  | { status: UseNetworksAndSignersStatus.BLOCKED; address: string }
+  | { status: UseNetworksAndSignersNotSupportedStatus }
 
 export type NetworksAndSignersProviderProps = {
   /**
@@ -160,27 +146,6 @@ function getWalletName(connectorName: string): ProviderName {
   }
 }
 
-async function isBlocked(address: `0x${string}`): Promise<boolean> {
-  if (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_IS_E2E_TEST
-  ) {
-    return false
-  }
-
-  const searchParams = new URLSearchParams({ address })
-  const response = await fetch('/api/screenings?' + searchParams, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-  })
-
-  if (!response.ok) {
-    return false
-  }
-
-  return ((await response.json()) as ApiResponseSuccess).blocked
-}
-
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
@@ -218,16 +183,6 @@ export function NetworksAndSignersProvider(
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
     if (!address || !chain) {
-      return
-    }
-    const blocked = await isBlocked(address)
-
-    if (blocked) {
-      setResult({
-        status: UseNetworksAndSignersStatus.BLOCKED,
-        address: address as string
-      })
-      trackEvent('Address Block')
       return
     }
 
@@ -294,9 +249,7 @@ export function NetworksAndSignersProvider(
           l2: {
             network: getWagmiChain(l2Network.chainID),
             provider: l2Provider
-          },
-          isConnectedToArbitrum: false,
-          chainId: l1Network.chainID
+          }
         })
       })
       .catch(() => {
@@ -330,9 +283,7 @@ export function NetworksAndSignersProvider(
               l2: {
                 network: getWagmiChain(l2Network.chainID),
                 provider: l2Provider
-              },
-              isConnectedToArbitrum: true,
-              chainId: l2Network.chainID
+              }
             })
           })
           .catch(() => {
@@ -350,16 +301,9 @@ export function NetworksAndSignersProvider(
   }, [chain, update])
 
   if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
-    if (result.status === UseNetworksAndSignersStatus.BLOCKED) {
-      return props.fallback(result)
-    }
-
     const fallbackProps =
       result.status === UseNetworksAndSignersStatus.NOT_SUPPORTED
-        ? {
-            status: result.status,
-            chainId: result.chainId
-          }
+        ? { status: result.status }
         : { status: result.status }
 
     return props.fallback(fallbackProps)

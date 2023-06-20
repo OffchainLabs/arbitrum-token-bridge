@@ -12,7 +12,6 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -43,10 +42,12 @@ import {
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
+import { getDestinationAddressError } from './AdvancedSettings'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -120,10 +121,6 @@ export function TransferPanel() {
   const [destinationAddress, setDestinationAddress] = useState<
     string | undefined
   >(undefined)
-  const [
-    isDestinationAddressSmartContract,
-    setIsDestinationAddressSmartContract
-  ] = useState(false)
 
   const {
     app: {
@@ -171,6 +168,7 @@ export function TransferPanel() {
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -204,6 +202,12 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
+  const destinationAddressError = useMemo(
+    () =>
+      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
+    [destinationAddress, isSmartContractWallet]
+  )
+
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
@@ -221,18 +225,6 @@ export function TransferPanel() {
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus])
-
-  useEffect(() => {
-    const getDestinationAddressType = async () => {
-      setIsDestinationAddressSmartContract(
-        await addressIsSmartContract(
-          String(destinationAddress),
-          isDepositMode ? l2Provider : l1Provider
-        )
-      )
-    }
-    getDestinationAddressType()
-  }, [destinationAddress, isDepositMode, l1Provider, l2Provider])
 
   useEffect(() => {
     // Check in case of an account switch or network switch
@@ -372,6 +364,11 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
+    if (destinationAddressError) {
+      console.error(destinationAddressError)
+      return
+    }
+
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
@@ -390,19 +387,6 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if (destinationAddress) {
-        if (
-          // Invalid address
-          !isAddress(destinationAddress) ||
-          // Destination address not matching the connected wallet type
-          (isSmartContractWallet && !isDestinationAddressSmartContract)
-        ) {
-          throw new Error(
-            `Couldn't initiate the transfer. Invalid destination address: ${destinationAddress}`
-          )
-        }
-      }
-
       if (isDepositMode) {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
@@ -421,7 +405,7 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+        if (isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -437,7 +421,7 @@ export function TransferPanel() {
           )
 
           while (
-            latestNetworksAndSigners.current.isConnectedToArbitrum ||
+            isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -576,7 +560,7 @@ export function TransferPanel() {
           })
         }
       } else {
-        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+        if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -592,7 +576,7 @@ export function TransferPanel() {
           )
 
           while (
-            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
+            !isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -746,6 +730,21 @@ export function TransferPanel() {
   )
   const { status: gasEstimationStatus } = gasSummary
 
+  const requiredGasFees = useMemo(
+    // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
+    () => {
+      if (isSmartContractWallet) {
+        if (isDepositMode) {
+          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+          return gasSummary.estimatedL2GasFees
+        }
+        return 0
+      }
+      return gasSummary.estimatedTotalGasFees
+    },
+    [isSmartContractWallet, isDepositMode, gasSummary]
+  )
+
   const getErrorMessage = useCallback(
     (
       _amountEntered: string,
@@ -791,14 +790,14 @@ export function TransferPanel() {
             // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
             const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
 
-            if (gasSummary.estimatedTotalGasFees > ethBalanceFloat) {
+            if (requiredGasFees > ethBalanceFloat) {
               return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
             }
 
             return undefined
           }
 
-          if (amountEntered + gasSummary.estimatedTotalGasFees > balance) {
+          if (amountEntered + requiredGasFees > balance) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
@@ -806,7 +805,15 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
+    [
+      gasSummary,
+      ethBalance,
+      selectedToken,
+      isDepositMode,
+      l2Network,
+      requiredGasFees,
+      isSmartContractWallet
+    ]
   )
 
   const disableDeposit = useMemo(() => {
@@ -828,8 +835,8 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      destinationAddressError
     )
   }, [
     isTransferring,
@@ -840,7 +847,7 @@ export function TransferPanel() {
     isBridgingANewStandardToken,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    destinationAddressError
   ])
 
   // TODO: Refactor this and the property above
@@ -853,11 +860,19 @@ export function TransferPanel() {
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+      return requiredGasFees > ethBalanceFloat
     }
 
-    return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
-  }, [ethBalance, disableDeposit, selectedToken, gasSummary, amount, l1Balance])
+    return Number(amount) + requiredGasFees > Number(l1Balance)
+  }, [
+    ethBalance,
+    disableDeposit,
+    selectedToken,
+    gasSummary,
+    amount,
+    l1Balance,
+    requiredGasFees
+  ])
 
   const disableWithdrawal = useMemo(() => {
     return (
@@ -872,8 +887,8 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !isDestinationAddressSmartContract) ||
-      (isSmartContractWallet && !selectedToken)
+      (isSmartContractWallet && !selectedToken) ||
+      destinationAddressError
     )
   }, [
     isTransferring,
@@ -882,7 +897,7 @@ export function TransferPanel() {
     l2Balance,
     selectedToken,
     isSmartContractWallet,
-    isDestinationAddressSmartContract
+    destinationAddressError
   ])
 
   // TODO: Refactor this and the property above
@@ -895,17 +910,18 @@ export function TransferPanel() {
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+      return requiredGasFees > ethBalanceFloat
     }
 
-    return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l2Balance)
+    return Number(amount) + requiredGasFees > Number(l2Balance)
   }, [
     ethBalance,
     disableWithdrawal,
     selectedToken,
     gasSummary,
     amount,
-    l2Balance
+    l2Balance,
+    requiredGasFees
   ])
 
   const isSummaryVisible = useMemo(() => {
