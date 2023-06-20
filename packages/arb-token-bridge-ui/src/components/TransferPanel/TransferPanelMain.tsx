@@ -856,7 +856,7 @@ export function TransferPanelMain({
       <NetworkContainer
         network={to}
         balanceFor={
-          walletAddress.toLowerCase() !== destinationAddress
+          walletAddress && walletAddress.toLowerCase() !== destinationAddress
             ? destinationAddress
             : undefined
         }
