@@ -137,7 +137,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
-  const accountIsBlocked = useAccountIsBlocked()
+  const { data: isBlocked } = useAccountIsBlocked()
 
   const networksAndSigners = useNetworksAndSigners()
 
@@ -212,10 +212,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
-  if (accountIsBlocked) {
+  if (address && isBlocked) {
     return (
       <BlockedDialog
-        address={address as string}
+        address={address}
         isOpen={true}
         // ignoring until we use the package
         // https://github.com/OffchainLabs/config-monorepo/pull/11

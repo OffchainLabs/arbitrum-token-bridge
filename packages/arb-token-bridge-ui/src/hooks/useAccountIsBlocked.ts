@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
+import useSWR from 'swr'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { trackEvent } from '../util/AnalyticsUtils'
@@ -25,25 +26,27 @@ async function isBlocked(address: `0x${string}`): Promise<boolean> {
   return ((await response.json()) as ApiResponseSuccess).blocked
 }
 
-export function useAccountIsBlocked(): boolean | undefined {
+async function fetcher(address: `0x${string}`) {
+  const accountIsBlocked = await isBlocked(address)
+
+  if (accountIsBlocked) {
+    trackEvent('Address Block')
+  }
+
+  return accountIsBlocked
+}
+
+export function useAccountIsBlocked() {
   const { address } = useAccount()
-  const [result, setResult] = useState<boolean | undefined>(undefined)
 
-  useEffect(() => {
-    async function update() {
-      if (typeof address !== 'undefined') {
-        const accountIsBlocked = await isBlocked(address)
-
-        if (accountIsBlocked) {
-          trackEvent('Address Block')
-        }
-
-        setResult(accountIsBlocked)
-      }
+  const queryKey = useMemo(() => {
+    if (typeof address === 'undefined') {
+      // Don't fetch
+      return null
     }
 
-    update()
+    return ['useAccountIsBlocked', address]
   }, [address])
 
-  return result
+  return useSWR<boolean>(queryKey, ([, _address]) => fetcher(_address))
 }
