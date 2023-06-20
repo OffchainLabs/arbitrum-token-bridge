@@ -30,7 +30,7 @@ async function fetcher(address: `0x${string}`): Promise<boolean> {
   const accountIsBlocked = await isBlocked(address)
 
   if (accountIsBlocked) {
-    trackEvent('Address Block')
+    trackEvent('Address Block', { address })
   }
 
   return accountIsBlocked
