@@ -233,7 +233,7 @@ type AnalyticsEventMap = {
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
   'Tx Error: Get Help Click': { network: AnalyticsNetworkName }
   'Multiple Tx Error: Get Help Click': { network: AnalyticsNetworkName }
-  'Address Block': undefined
+  'Address Block': { address: string }
   'Slow Bridge Click': undefined
   'Move More Funds Click': undefined
   'Explore: Randomize Click': undefined
