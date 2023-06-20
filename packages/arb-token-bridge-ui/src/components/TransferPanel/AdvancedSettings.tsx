@@ -194,7 +194,9 @@ export const AdvancedSettings = ({
             <div
               className={twMerge(
                 'my-1 flex w-full items-center rounded-lg border border-gray-dark px-2 py-1 shadow-input',
-                inputLocked ? 'bg-slate-200' : 'bg-white'
+                inputLocked ? 'bg-slate-200' : 'bg-white',
+                error ? 'border-red-400' : '',
+                warning && !error ? 'border-yellow-500' : ''
               )}
             >
               <input
