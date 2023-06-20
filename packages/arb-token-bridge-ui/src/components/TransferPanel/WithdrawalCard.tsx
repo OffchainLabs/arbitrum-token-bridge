@@ -8,7 +8,6 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
-import { WithdrawalCardExecuted } from './WithdrawalCardExecuted'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
@@ -143,9 +142,6 @@ export function WithdrawalCard({ tx }: { tx: MergedTransaction }) {
 
     case 'Confirmed':
       return <WithdrawalCardConfirmed tx={tx} />
-
-    case 'Executed':
-      return <WithdrawalCardExecuted tx={tx} />
 
     default:
       return null

@@ -19,6 +19,7 @@ import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -26,7 +27,8 @@ export function DepositConfirmationDialog(
   const {
     app: { selectedToken }
   } = useAppState()
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumOne } = isNetwork(l2.network.id)
 
