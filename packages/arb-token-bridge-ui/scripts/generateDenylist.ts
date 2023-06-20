@@ -136,16 +136,14 @@ async function main() {
     )
   })
 
-  const resultJson = {
-    denylist: [
-      ...new Set(denylistedAddresses.map(address => address.toLowerCase()))
-    ]
-  }
+  const resultJson =
+    JSON.stringify({
+      denylist: [
+        ...new Set(denylistedAddresses.map(address => address.toLowerCase()))
+      ]
+    }, null, 2) + '\n'
 
-  fs.writeFileSync(
-    './public/__auto-generated-denylist.json',
-    JSON.stringify(resultJson)
-  )
+  fs.writeFileSync('./public/__auto-generated-denylist.json', resultJson)
 }
 
 main()
