@@ -8,6 +8,7 @@ import {
   ChevronDownIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
+import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
@@ -190,13 +191,35 @@ export const AdvancedSettings = ({
                 </>
               )}
             </p>
-            <input
-              className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-              placeholder={isEOA ? address : 'Enter Custom Destination Address'}
-              value={destinationAddress}
-              spellCheck={false}
-              onChange={e => onChange(e.target.value?.toLowerCase())}
-            />
+            <div
+              className={twMerge(
+                'my-1 flex w-full items-center rounded-lg border border-gray-dark px-2 py-1 shadow-input',
+                inputLocked ? 'bg-slate-200' : 'bg-white'
+              )}
+            >
+              <input
+                className="w-full"
+                placeholder={
+                  isEOA ? address : 'Enter Custom Destination Address'
+                }
+                value={destinationAddress}
+                disabled={inputLocked}
+                spellCheck={false}
+                onChange={e => onChange(e.target.value?.toLowerCase().trim())}
+              />
+              {isEOA && (
+                <button onClick={() => setInputLocked(!inputLocked)}>
+                  {inputLocked ? (
+                    <LockClosedIcon
+                      height={20}
+                      className="mr-2 text-slate-600"
+                    />
+                  ) : (
+                    <LockOpenIcon height={20} className="mr-2 text-slate-600" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {error && <span className="text-xs text-red-400">{error}</span>}
