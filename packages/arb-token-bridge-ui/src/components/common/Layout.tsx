@@ -35,8 +35,9 @@ export const DAOBanner = () => {
           href="https://arbitrum.foundation"
           className="arb-hover underline"
         >
-          here.
+          here
         </ExternalLink>
+        .
       </span>
     </div>
   )
