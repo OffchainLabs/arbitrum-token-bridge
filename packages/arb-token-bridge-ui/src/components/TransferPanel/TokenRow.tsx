@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useMedia } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import {
   CheckCircleIcon,
@@ -82,6 +83,8 @@ export function TokenRow({
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
+
+  const isSmallScreen = useMedia('(max-width: 419px)')
 
   const tokenName = useMemo(
     () =>
@@ -239,6 +242,27 @@ export function TokenRow({
     )
   }, [isDepositMode, l1Network, l2Network])
 
+  const tokenBalanceContent = useMemo(() => {
+    if (!tokenIsAddedToTheBridge) {
+      return <span className="text-sm font-medium text-blue-link">Import</span>
+    }
+
+    return (
+      <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
+        {tokenBalance ? (
+          formatAmount(tokenBalance, {
+            decimals: token?.decimals,
+            symbol: tokenSymbol
+          })
+        ) : (
+          <div className="mr-2">
+            <Loader color="#28A0F0" size="small" />
+          </div>
+        )}
+      </span>
+    )
+  }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
+
   return (
     <button
       type="button"
@@ -260,8 +284,8 @@ export function TokenRow({
           fallback={<TokenLogoFallback />}
         />
 
-        <div className="flex flex-col items-start truncate">
-          <div className="flex items-center space-x-2">
+        <div className="flex w-full flex-col items-start truncate">
+          <div className="flex w-full items-center space-x-2">
             <span className="text-base font-medium text-gray-900">
               {tokenSymbol}
             </span>
@@ -271,9 +295,17 @@ export function TokenRow({
               <Tooltip content={arbitrumTokenTooltipContent}>
                 <StatusBadge variant="green">
                   <CheckCircleIcon className="h-4 w-4" />
-                  <span className="text-xs">Official ARB token</span>
+                  <span className="text-xs">
+                    Official{isSmallScreen ? '' : ' ARB token'}
+                  </span>
                 </StatusBadge>
               </Tooltip>
+            )}
+
+            {!token && (
+              <div className="flex w-full justify-end">
+                {tokenBalanceContent}
+              </div>
             )}
 
             {isPotentialFakeArbitrumToken && (
@@ -286,10 +318,10 @@ export function TokenRow({
             )}
           </div>
           {token && (
-            <div className="flex flex-col items-start space-y-1">
+            <div className="flex w-full flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
               {isDepositMode ? (
-                <>
+                <div className="flex w-full justify-between">
                   {isL2NativeToken ? (
                     <BlockExplorerTokenLink
                       chain={l2Network}
@@ -301,7 +333,8 @@ export function TokenRow({
                       address={token.address}
                     />
                   )}
-                </>
+                  {tokenIsBridgeable && tokenBalanceContent}
+                </div>
               ) : (
                 <>
                   {tokenHasL2Address ? (
@@ -323,7 +356,7 @@ export function TokenRow({
                   )} and can’t be bridged.`}
                 </span>
               ) : (
-                <span className="flex gap-1 text-xs font-normal text-gray-500">
+                <span className="flex gap-1 whitespace-normal text-left text-xs font-normal text-gray-500">
                   {tokenListInfo}
                 </span>
               )}
@@ -331,27 +364,6 @@ export function TokenRow({
           )}
         </div>
       </div>
-
-      {tokenIsBridgeable && (
-        <>
-          {tokenIsAddedToTheBridge ? (
-            <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
-              {tokenBalance ? (
-                formatAmount(tokenBalance, {
-                  decimals: token?.decimals,
-                  symbol: tokenSymbol
-                })
-              ) : (
-                <div className="mr-2">
-                  <Loader color="#28A0F0" size="small" />
-                </div>
-              )}
-            </span>
-          ) : (
-            <span className="text-sm font-medium text-blue-link">Import</span>
-          )}
-        </>
-      )}
     </button>
   )
 }
