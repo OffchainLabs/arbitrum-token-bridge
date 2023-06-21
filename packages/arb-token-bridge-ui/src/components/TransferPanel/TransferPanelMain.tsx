@@ -91,7 +91,7 @@ function CustomAddressBanner({
   customAddress
 }: {
   network: Chain
-  customAddress?: string
+  customAddress: string | undefined
 }) {
   const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
