@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import Image from 'next/image'
-import { Chain, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
