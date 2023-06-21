@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -86,63 +86,98 @@ function getListboxOptionsFromL1Network(network: Chain) {
   return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
 }
 
+function CustomAddressBanner({
+  network,
+  customAddress
+}: {
+  network: Chain
+  customAddress?: string
+}) {
+  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+
+  const bannerClassName = useMemo(() => {
+    if (!isArbitrum) {
+      return 'bg-cyan border-eth-dark'
+    }
+    if (isArbitrumNova) {
+      return 'bg-orange border-arb-nova-dark'
+    }
+    return 'bg-cyan border-arb-one-dark'
+  }, [isArbitrum, isArbitrumNova])
+
+  if (!customAddress) {
+    return null
+  }
+
+  return (
+    <div
+      className={twMerge(
+        'w-full rounded-t-lg border-4 p-1 text-center text-sm',
+        bannerClassName
+      )}
+    >
+      <span>
+        Showing balance for Custom Destination Address:{' '}
+        <ExternalLink
+          className="arb-hover underline"
+          href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
+        >
+          {shortenAddress(customAddress)}
+        </ExternalLink>
+      </span>
+    </div>
+  )
+}
+
 function NetworkContainer({
   network,
-  balanceFor,
+  customAddress,
   children
 }: {
   network: Chain
-  balanceFor?: string
+  customAddress?: string
   children: React.ReactNode
 }) {
-  const { backgroundImage, backgroundClassName, customAddressBannerClassName } =
-    useMemo(() => {
-      const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { address } = useAccount()
+  const { backgroundImage, backgroundClassName } = useMemo(() => {
+    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
-      if (!isArbitrum) {
-        return {
-          backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-          backgroundClassName: 'bg-eth-dark',
-          customAddressBannerClassName: 'bg-cyan border-eth-dark'
-        }
-      }
-
-      if (isArbitrumNova) {
-        return {
-          backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-          backgroundClassName: 'bg-arb-nova-dark',
-          customAddressBannerClassName: 'bg-orange border-arb-nova-dark'
-        }
-      }
-
+    if (!isArbitrum) {
       return {
-        backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-        backgroundClassName: 'bg-arb-one-dark',
-        customAddressBannerClassName: 'bg-cyan border-arb-one-dark'
+        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
+        backgroundClassName: 'bg-eth-dark'
       }
-    }, [network])
+    }
 
-  const showCustomAddressBanner = balanceFor && utils.isAddress(balanceFor)
+    if (isArbitrumNova) {
+      return {
+        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
+        backgroundClassName: 'bg-arb-nova-dark'
+      }
+    }
+
+    return {
+      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
+      backgroundClassName: 'bg-arb-one-dark'
+    }
+  }, [network])
+
+  const walletAddressLowercased = address?.toLowerCase()
+
+  const showCustomAddressBanner = useMemo(() => {
+    if (!customAddress || !walletAddressLowercased) {
+      return false
+    }
+    if (customAddress === walletAddressLowercased) {
+      return false
+    }
+    return utils.isAddress(customAddress)
+  }, [customAddress, walletAddressLowercased])
 
   return (
     <>
       {showCustomAddressBanner && (
-        <div
-          className={twMerge(
-            'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-            customAddressBannerClassName
-          )}
-        >
-          <span>
-            Showing balance for Custom Destination Address:{' '}
-            <ExternalLink
-              className="arb-hover underline"
-              href={`${getExplorerUrl(network.id)}/address/${balanceFor}`}
-            >
-              {shortenAddress(balanceFor)}
-            </ExternalLink>
-          </span>
-        </div>
+        <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
         className={twMerge(
@@ -315,7 +350,9 @@ export function TransferPanelMain({
   useEffect(() => {
     if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
       updateErc20L1Balances([selectedToken.address])
-      updateErc20L2Balances([String(selectedToken.l2Address)])
+      if (selectedToken.l2Address) {
+        updateErc20L2Balances([selectedToken.l2Address])
+      }
     }
   }, [
     selectedToken,
@@ -853,7 +890,7 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer network={to} balanceFor={destinationAddress}>
+      <NetworkContainer network={to} customAddress={destinationAddress}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
