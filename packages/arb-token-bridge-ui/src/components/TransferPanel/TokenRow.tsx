@@ -320,35 +320,37 @@ export function TokenRow({
           {token && (
             <div className="flex w-full flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
-              {isDepositMode ? (
-                <div className="flex w-full justify-between">
-                  {isL2NativeToken ? (
-                    <BlockExplorerTokenLink
-                      chain={l2Network}
-                      address={token.address}
-                    />
-                  ) : (
-                    <BlockExplorerTokenLink
-                      chain={l1Network}
-                      address={token.address}
-                    />
-                  )}
-                  {tokenIsBridgeable && tokenBalanceContent}
-                </div>
-              ) : (
-                <>
-                  {tokenHasL2Address ? (
-                    <BlockExplorerTokenLink
-                      chain={l2Network}
-                      address={token.l2Address}
-                    />
-                  ) : (
-                    <span className="text-xs text-gray-900">
-                      This token hasn&apos;t been bridged to L2.
-                    </span>
-                  )}
-                </>
-              )}
+              <div className="flex w-full justify-between">
+                {isDepositMode ? (
+                  <>
+                    {isL2NativeToken ? (
+                      <BlockExplorerTokenLink
+                        chain={l2Network}
+                        address={token.address}
+                      />
+                    ) : (
+                      <BlockExplorerTokenLink
+                        chain={l1Network}
+                        address={token.address}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {tokenHasL2Address ? (
+                      <BlockExplorerTokenLink
+                        chain={l2Network}
+                        address={token.l2Address}
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-900">
+                        This token hasn&apos;t been bridged to L2.
+                      </span>
+                    )}
+                  </>
+                )}
+                {tokenIsBridgeable && tokenBalanceContent}
+              </div>
               {isL2NativeToken ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
