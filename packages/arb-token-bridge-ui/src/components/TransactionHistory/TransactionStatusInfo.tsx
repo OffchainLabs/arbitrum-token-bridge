@@ -53,7 +53,7 @@ export const TransactionStatusInfo = ({
       className={twMerge(
         'mx-0 flex cursor-pointer flex-wrap items-center gap-1  p-2 text-sm lg:flex-nowrap lg:rounded-md lg:text-base',
         numRetryablesToRedeem
-          ? 'bg-orange text-brick-dark'
+          ? 'bg-brick text-brick-dark'
           : 'bg-lime text-lime-dark'
       )}
       onClick={() => {
