@@ -12,13 +12,15 @@ export function PendingDepositWarning() {
       as="div"
       className="flex w-full flex-col justify-start gap-1 rounded-lg bg-orange p-3 text-sm text-orange-dark"
     >
-      <Disclosure.Button className="flex items-center gap-1">
-        <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-orange-dark" />
-        <p>
-          Deposit might fail if the gas fee provided was too low. Stay on this
-          page until the L2 transaction succeeds.
-        </p>
-        <ChevronRightIcon className="ml-auto h-4 w-4 ui-open:rotate-90 ui-open:transform" />
+      <Disclosure.Button className="flex items-center text-left">
+        <div className="flex items-start gap-1">
+          <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-orange-dark" />
+          <p>
+            Deposit might fail if the gas fee provided was too low. Stay on this
+            page until the L2 transaction succeeds.
+          </p>
+        </div>
+        <ChevronRightIcon className="ml-auto h-4 w-4 shrink-0 ui-open:rotate-90 ui-open:transform" />
       </Disclosure.Button>
       <Transition
         enter="transition duration-100 ease-out"
