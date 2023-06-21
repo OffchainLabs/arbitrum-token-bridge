@@ -11,6 +11,7 @@ import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { PendingDepositWarning } from './PendingDepositWarning'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -78,6 +79,10 @@ export const PendingTransactions = ({
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
+      )}
+
+      {transactions.length > 0 && transactions.some(tx => isDeposit(tx)) && (
+        <PendingDepositWarning />
       )}
 
       {/* Transaction cards */}
