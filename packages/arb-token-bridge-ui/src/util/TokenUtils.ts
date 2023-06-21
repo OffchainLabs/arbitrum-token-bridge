@@ -254,7 +254,7 @@ export function sanitizeTokenSymbol(
   options: SanitizeTokenOptions
 ) {
   if (!options.erc20L1Address) {
-    return tokenSymbol.toUpperCase()
+    return tokenSymbol
   }
 
   const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
@@ -265,7 +265,7 @@ export function sanitizeTokenSymbol(
     return 'USDC'
   }
 
-  return tokenSymbol.toUpperCase()
+  return tokenSymbol
 }
 
 // get the exact token name for a particular chain
