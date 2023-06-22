@@ -42,7 +42,7 @@ export function PendingDepositWarning() {
           <p>
             Learn more about{' '}
             <ExternalLink
-              href="https://developer.arbitrum.io/arbos/l1-to-l2-messagings"
+              href="https://developer.arbitrum.io/arbos/l1-to-l2-messaging"
               className="arb-hover text-blue-link underline"
             >
               retryable tickets

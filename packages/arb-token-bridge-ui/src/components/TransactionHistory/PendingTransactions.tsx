@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
-import { isDeposit } from '../../state/app/utils'
+import { isDeposit, isTokenDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
@@ -81,9 +81,10 @@ export const PendingTransactions = ({
         </span>
       )}
 
-      {transactions.length > 0 && transactions.some(tx => isDeposit(tx)) && (
-        <PendingDepositWarning />
-      )}
+      {transactions.length > 0 &&
+        transactions.some(tx => isTokenDeposit(tx)) && (
+          <PendingDepositWarning />
+        )}
 
       {/* Transaction cards */}
       {transactions?.map(tx =>
