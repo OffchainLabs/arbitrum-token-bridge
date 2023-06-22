@@ -134,21 +134,18 @@ jobs:
       - id: set-matrix
         run: |
           content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq .files`
-          # end of optional handling for multi line json
           echo "e2eFiles=$content" >> $GITHUB_OUTPUT
-      - run: |
-          echo "${{fromJson(steps.set-matrix.outputs.e2eFiles)}}"
 
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
-    needs: [install, check-files]
+    needs: [install, check-files, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true'
     strategy:
       fail-fast: false # If one test fails, let the other tests run
       matrix:
         tests:
-          ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
+          ${{ fromJson('[{"name":"Login and balance check","file":"tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}"},{"name":"Deposit ETH","file":"tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}"},{"name":"Withdraw ETH","file":"tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}"},{"name":"Deposit ERC20","file":"tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}"},{"name":"Withdraw ERC20","file":"tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}"},{"name":"TX history","file":"tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}"},{"name":"Approve ERC20","file":"tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}"},{"name":"Import test ERC20","file":"tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}"},{"name":"URL Query Param","file":"tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}"},{"name":"Read classic deposits","file":"tests/e2e/specs/**/readClassicDeposits.cy.{js,jsx,ts,tsx}"},{"name":"Switch network","file":"tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}"},{"name":"Vercel","file":"tests/e2e/specs/**/vercel.cy.{js,jsx,ts,tsx}"}]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
