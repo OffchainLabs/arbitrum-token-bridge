@@ -20,6 +20,9 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { isTokenMainnetUSDC } from '../../util/TokenUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { USDCDepositWithArbBridgeInfo } from '../common/USDCDepositWithArbBridgeInfo'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -41,6 +44,7 @@ export function DepositConfirmationDialog(
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
   const bridgeInfo = NonCanonicalTokensBridgeInfo[tokenAddress]
+  const isMainnetUSDC = isTokenMainnetUSDC(selectedToken?.address ?? '')
 
   if (!bridgeInfo) {
     return null
@@ -93,12 +97,32 @@ export function DepositConfirmationDialog(
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
-                  To get the canonical variant of {tokenSymbol} directly onto{' '}
-                  {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
-                  has fully integrated with.{' '}
+                  {isMainnetUSDC ? (
+                    <>
+                      To bridge{' '}
+                      <ExternalLink
+                        className="arb-hover text-blue-link underline"
+                        href={`https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`}
+                      >
+                        mainnet USDC
+                      </ExternalLink>{' '}
+                      to the{' '}
+                      <ExternalLink
+                        className="arb-hover text-blue-link underline"
+                        href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
+                      >
+                        native USDC
+                      </ExternalLink>{' '}
+                      on {networkName}
+                    </>
+                  ) : (
+                    `To get the canonical variant of ${tokenSymbol} directly onto ${networkName}`
+                  )}
+                  , you’ll have to use a bridge that {tokenSymbol} has fully
+                  integrated with.{' '}
                   <ExternalLink
                     href={bridgeInfo.learnMoreUrl}
-                    className="underline"
+                    className="arb-hover text-blue-link underline"
                   >
                     Learn more
                   </ExternalLink>
@@ -123,41 +147,46 @@ export function DepositConfirmationDialog(
 
           {tokenSymbol && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-              <div className="flex flex-col space-y-3">
-                <p className="font-light">
-                  If you choose to use Arbitrum’s bridge instead, you’ll have to
-                  do two transfers.
-                </p>
-                <ol className="list-decimal px-4 font-light">
-                  <li>
-                    Transfer on Arbitrum’s bridge to get {tokenSymbolOnArbitrum}
-                  </li>
-                  <li>
-                    Transfer on {tokenSymbol}&apos;s bridge to swap{' '}
-                    {tokenSymbolOnArbitrum} for {tokenSymbol}
-                  </li>
-                </ol>
-                <div>
-                  <button
-                    className="arb-hover ml-4 rounded-xl border border-ocl-blue bg-gray-300 px-6 py-3"
-                    onClick={() => {
-                      copy(bridgeInfo.bridgeUrl)
-                      trackEvent('Copy Bridge Link Click', { tokenSymbol })
-                    }}
-                  >
-                    <div className="flex flex-row items-center space-x-3">
-                      <span className="font-light">
-                        {showCopied
-                          ? 'Copied to clipboard!'
-                          : `Copy link for ${tokenSymbol} bridge`}
-                      </span>
-                      {!showCopied && (
-                        <DocumentDuplicateIcon className="h-4 w-4" />
-                      )}
-                    </div>
-                  </button>
+              {isMainnetUSDC ? (
+                <USDCDepositWithArbBridgeInfo />
+              ) : (
+                <div className="flex flex-col space-y-3">
+                  <p className="font-light">
+                    If you choose to use Arbitrum’s bridge instead, you’ll have
+                    to do two transfers.
+                  </p>
+                  <ol className="list-decimal px-4 font-light">
+                    <li>
+                      Transfer on Arbitrum’s bridge to get{' '}
+                      {tokenSymbolOnArbitrum}
+                    </li>
+                    <li>
+                      Transfer on {tokenSymbol}&apos;s bridge to swap{' '}
+                      {tokenSymbolOnArbitrum} for {tokenSymbol}
+                    </li>
+                  </ol>
+                  <div>
+                    <button
+                      className="arb-hover ml-4 rounded-xl border border-ocl-blue bg-gray-300 px-6 py-3"
+                      onClick={() => {
+                        copy(bridgeInfo.bridgeUrl)
+                        trackEvent('Copy Bridge Link Click', { tokenSymbol })
+                      }}
+                    >
+                      <div className="flex flex-row items-center space-x-3">
+                        <span className="font-light">
+                          {showCopied
+                            ? 'Copied to clipboard!'
+                            : `Copy link for ${tokenSymbol} bridge`}
+                        </span>
+                        {!showCopied && (
+                          <DocumentDuplicateIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="mt-2 flex flex-row justify-end space-x-2">
                 <Button

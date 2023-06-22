@@ -6,6 +6,7 @@ import Connext from '@/images/bridge/connext.png'
 import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
+import { CommonAddress } from './CommonAddressUtils'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -123,6 +124,13 @@ export function getFastBridges(
 }
 
 export const NonCanonicalTokensBridgeInfo = {
+  [CommonAddress.Mainnet.USDC]: {
+    tokenSymbol: 'USDC',
+    tokenSymbolOnArbitrum: 'USDC.e',
+    supportedBridges: [FastBridgeNames.Hop],
+    learnMoreUrl: '',
+    bridgeUrl: ''
+  },
   [NonCanonicalTokenAddresses.FRAX]: {
     tokenSymbol: 'FRAX',
     tokenSymbolOnArbitrum: 'arbiFRAX',
