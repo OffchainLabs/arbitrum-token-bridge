@@ -139,7 +139,10 @@ async function main() {
   const resultJson =
     JSON.stringify(
       {
-        denylist: [
+        meta: {
+          timestamp: new Date().toISOString()
+        },
+        content: [
           ...new Set(denylistedAddresses.map(address => address.toLowerCase()))
         ]
       },
