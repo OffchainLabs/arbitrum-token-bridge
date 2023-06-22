@@ -909,6 +909,7 @@ export function TransferPanelMain({
             {isSwitchingL2Chain ? (
               <StyledLoader />
             ) : (
+              destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
                 <>
                   <TokenBalance
