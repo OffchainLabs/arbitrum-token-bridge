@@ -85,7 +85,7 @@ export const AdvancedSettings = ({
   error: DestinationAddressErrors | null
 }) => {
   const {
-    app: { selectedToken, isDepositMode }
+    app: { isDepositMode }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
   const { address } = useAccount()
@@ -123,11 +123,6 @@ export const AdvancedSettings = ({
     // - destination address is not empty
     return isEOA && !destinationAddress
   }, [destinationAddress, isEOA])
-
-  // Disabled for ETH
-  if (!selectedToken) {
-    return null
-  }
 
   if (!isEOA && !isSmartContractWallet) {
     return null
