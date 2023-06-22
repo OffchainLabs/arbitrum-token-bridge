@@ -6,6 +6,7 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
+import specFiles from './tests/e2e/specfiles.json'
 
 import {
   NetworkName,
@@ -16,19 +17,7 @@ import { registerLocalNetwork } from './src/util/networks'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
-  : [
-      // order of running the tests...
-      'tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}', // login and balance check
-      'tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}', // deposit ETH
-      'tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}', // withdraw ETH
-      'tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}', // deposit ERC20
-      'tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}', // withdraw ERC20
-      'tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}', // tx history
-      'tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}', // approve ERC20
-      'tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}', // import test ERC20
-      'tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}', // URL Query Param
-      'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}' // rest of the tests...
-    ]
+  : specFiles.files.map(fileConfig => fileConfig.file)
 
 export default defineConfig({
   userAgent: 'synpress',
