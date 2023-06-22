@@ -15,7 +15,9 @@ import {
 } from './tests/support/common'
 import { registerLocalNetwork } from './src/util/networks'
 
-const tests = process.env.TEST_FILE ? [process.env.TEST_FILE] : specFiles
+const tests = process.env.TEST_FILE
+  ? [process.env.TEST_FILE]
+  : specFiles.map(file => file.file)
 
 export default defineConfig({
   userAgent: 'synpress',
