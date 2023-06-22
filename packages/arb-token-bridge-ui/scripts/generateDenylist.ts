@@ -14,9 +14,17 @@ const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json'
 ]
 
-// denylisted destination addresses in order: One, Nova, Nitro
+// denylisted destination addresses in order: One, Nova, Goerli
 const DESTINATION_ADDRESS_DENYLIST = [
   // Protocol (L1)
+  // Rollup
+  '0x5eF0D09d1E6204141B4d37530808eD19f60FBa35',
+  '0xFb209827c58283535b744575e11953DCC4bEAD88',
+  '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17',
+  // Sequencer Inbox
+  '0x1c479675ad559DC151F6Ec7ed3FbF8ceE79582B6',
+  '0x211E1c4c7f1bF5351Ac850Ed10FD68CFfCF6c21b',
+  '0x0484A87B144745A2E5b7c359552119B6EA2917A9',
   // ChallengeManager
   '0xe5896783a2F463446E1f624e64Aa6836BE4C6f58',
   '0xA59075221b50C598aED0Eae0bB9869639513af0D',
@@ -101,7 +109,8 @@ const DESTINATION_ADDRESS_DENYLIST = [
   '0x658e8123722462F888b6fa01a7dbcEFe1D6DD709',
   '0xDfB23DFE9De7dcC974467195C8B7D5cd21C9d7cB',
   '0xE27d4Ed355e5273A3D4855c8e11BC4a8d3e39b87',
-  // Testnet: Nitro Goerli Rollup
+  '0xB51EDdfc9A945e2B909905e4F242C4796Ac0C61d',
+  // Testnet: Goerli
   '0x3EABe7e5e3fcDdFB8fb8c5972EB151bF4fddf2ce',
   '0x9549263185294a7FB24bf357b0050252d3653C74',
   '0xAa01D5570E932a13eF9a06677eaf97d56a33393f',
