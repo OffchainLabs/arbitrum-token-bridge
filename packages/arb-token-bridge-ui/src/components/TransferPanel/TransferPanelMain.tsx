@@ -314,7 +314,13 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
+  }, [
+    isConnectedToArbitrum,
+    externalFrom,
+    externalTo,
+    setQueryParams,
+    walletAddress
+  ])
 
   const estimateGas = useCallback(
     async (
