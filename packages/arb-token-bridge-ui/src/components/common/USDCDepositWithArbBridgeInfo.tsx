@@ -1,12 +1,14 @@
-import { useState } from 'react'
-
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ExternalLink } from './ExternalLink'
 import { Checkbox } from './Checkbox'
 
-export function USDCDepositWithArbBridgeInfo() {
-  const [checkboxChecked, setCheckboxChecked] = useState(false)
-
+export function USDCDepositWithArbBridgeInfo({
+  USDCcheckboxChecked,
+  setUSDCcheckboxChecked
+}: {
+  USDCcheckboxChecked: boolean
+  setUSDCcheckboxChecked: React.Dispatch<React.SetStateAction<boolean>>
+}) {
   const externalLinkClassnames = 'arb-hover text-blue-link underline'
 
   return (
@@ -50,8 +52,8 @@ export function USDCDepositWithArbBridgeInfo() {
               .
             </span>
           }
-          checked={checkboxChecked}
-          onChange={setCheckboxChecked}
+          checked={USDCcheckboxChecked}
+          onChange={setUSDCcheckboxChecked}
         />
       </div>
     </div>

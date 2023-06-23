@@ -38,6 +38,7 @@ export function DepositConfirmationDialog(
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)
+  const [USDCcheckboxChecked, setUSDCcheckboxChecked] = useState(false)
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
@@ -155,7 +156,10 @@ export function DepositConfirmationDialog(
           {tokenSymbol && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               {isMainnetUSDC ? (
-                <USDCDepositWithArbBridgeInfo />
+                <USDCDepositWithArbBridgeInfo
+                  USDCcheckboxChecked={USDCcheckboxChecked}
+                  setUSDCcheckboxChecked={setUSDCcheckboxChecked}
+                />
               ) : (
                 <div className="flex flex-col space-y-3">
                   <p className="font-light">
@@ -204,8 +208,12 @@ export function DepositConfirmationDialog(
                 </Button>
                 <Button
                   variant="primary"
+                  disabled={isMainnetUSDC ? !USDCcheckboxChecked : false}
                   onClick={() => {
                     props.onClose(true)
+                    if (isMainnetUSDC) {
+                      setUSDCcheckboxChecked(false)
+                    }
                     trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
                   }}
                 >
