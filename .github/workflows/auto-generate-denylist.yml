@@ -24,7 +24,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Generate denylist
-        run: yarn generateDenylist
+        run: yarn workspace arb-token-bridge-ui generateDenylist
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v4
