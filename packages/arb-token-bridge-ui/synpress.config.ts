@@ -102,9 +102,9 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     specPattern: tests,
-    supportFile: 'tests/support/index.ts'
-  },
-  testIsolation: process.env.NEXT_PUBLIC_IS_E2E_TEST ? false : true
+    supportFile: 'tests/support/index.ts',
+    testIsolation: process.env.NEXT_PUBLIC_IS_E2E_TEST ? false : true
+  }
 })
 
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
