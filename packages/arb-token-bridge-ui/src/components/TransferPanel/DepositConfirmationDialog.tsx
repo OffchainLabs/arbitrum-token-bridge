@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Button } from '../common/Button'
@@ -72,7 +73,12 @@ export function DepositConfirmationDialog(
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col md:min-w-[725px] md:max-w-[725px]">
+      <div
+        className={twMerge(
+          'flex flex-col md:min-w-[725px]',
+          isMainnetUSDC ? '' : 'md:max-w-[725px]'
+        )}
+      >
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
@@ -90,7 +96,12 @@ export function DepositConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
-            <TabButton>Use Arbitrum’s bridge</TabButton>
+            <TabButton>
+              Use Arbitrum’s bridge{isMainnetUSDC && ' (USDC.e)'}
+            </TabButton>
+            {isMainnetUSDC && (
+              <TabButton>Use Arbitrum’s bridge (USDC)</TabButton>
+            )}
           </Tab.List>
 
           {isArbitrumOne && tokenSymbol && (
@@ -99,34 +110,30 @@ export function DepositConfirmationDialog(
                 <p className="font-light">
                   {isMainnetUSDC ? (
                     <>
-                      To bridge{' '}
-                      <ExternalLink
-                        className="arb-hover text-blue-link underline"
-                        href={`https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`}
-                      >
-                        mainnet USDC
-                      </ExternalLink>{' '}
-                      to the{' '}
+                      Receive{' '}
                       <ExternalLink
                         className="arb-hover text-blue-link underline"
                         href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
                       >
-                        native USDC
+                        USDC
                       </ExternalLink>{' '}
-                      on {networkName}
+                      on Arbitrum One using a third-party bridge with Circle’s
+                      CCTP integrated.
                     </>
                   ) : (
-                    `To get the canonical variant of ${tokenSymbol} directly onto ${networkName}`
+                    <>
+                      To get the canonical variant of {tokenSymbol} directly
+                      onto {networkName}, you’ll have to use a bridge that{' '}
+                      {tokenSymbol} has fully integrated with.{' '}
+                      <ExternalLink
+                        href={bridgeInfo.learnMoreUrl}
+                        className="arb-hover text-blue-link underline"
+                      >
+                        Learn more
+                      </ExternalLink>
+                      .
+                    </>
                   )}
-                  , you’ll have to use a bridge that {tokenSymbol} has fully
-                  integrated with.{' '}
-                  <ExternalLink
-                    href={bridgeInfo.learnMoreUrl}
-                    className="arb-hover text-blue-link underline"
-                  >
-                    Learn more
-                  </ExternalLink>
-                  .
                 </p>
               </div>
 
@@ -202,11 +209,25 @@ export function DepositConfirmationDialog(
                     trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
                   }}
                 >
-                  I want to do two swaps
+                  {isMainnetUSDC ? 'Confirm' : 'I want to do two swaps'}
                 </Button>
               </div>
             </Tab.Panel>
           )}
+
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div>
+              <p className="font-light">
+                An option to receive native USDC on Arbitrum One using
+                Arbitrum’s native bridge is coming soon.
+              </p>
+            </div>
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+            </div>
+          </Tab.Panel>
         </Tab.Group>
       </div>
     </Dialog>

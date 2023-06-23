@@ -1,62 +1,59 @@
+import { useState } from 'react'
+
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ExternalLink } from './ExternalLink'
+import { Checkbox } from './Checkbox'
 
 export function USDCDepositWithArbBridgeInfo() {
+  const [checkboxChecked, setCheckboxChecked] = useState(false)
+
   const externalLinkClassnames = 'arb-hover text-blue-link underline'
+
   return (
     <div className="flex flex-col space-y-3">
       <p className="font-light">
-        If you choose to use Arbitrum’s bridge instead, you’ll have to do two
-        transfers to obtain{' '}
+        Receive{' '}
         <ExternalLink
           className={externalLinkClassnames}
-          href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
+          href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
         >
-          native USDC
-        </ExternalLink>
-        .
+          Bridged USDC (USDC.e)
+        </ExternalLink>{' '}
+        on Arbitrum One using Arbitrum’s native bridge.
       </p>
-      <ol className="list-decimal px-4 font-light">
-        <li>
-          Transfer{' '}
-          <ExternalLink
-            className={externalLinkClassnames}
-            href={`https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`}
-          >
-            USDC
-          </ExternalLink>{' '}
-          on Arbitrum’s bridge to get{' '}
-          <ExternalLink
-            className={externalLinkClassnames}
-            href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
-          >
-            Bridged USDC (USDC.e)
-          </ExternalLink>
-        </li>
-        <li>
-          Swap{' '}
-          <ExternalLink
-            className={externalLinkClassnames}
-            href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
-          >
-            Bridged USDC (USDC.e)
-          </ExternalLink>{' '}
-          for{' '}
-          <ExternalLink
-            className={externalLinkClassnames}
-            href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
-          >
-            native USDC
-          </ExternalLink>{' '}
-          on a{' '}
-          <ExternalLink
-            className={externalLinkClassnames}
-            href="https://portal.arbitrum.io/one?categories=dex_dex-aggregator"
-          >
-            decentralized exchange on Arbitrum One
-          </ExternalLink>
-        </li>
-      </ol>
+
+      <div className="flex flex-col space-y-6">
+        <Checkbox
+          label={
+            <span className="font-light">
+              I understand{' '}
+              <ExternalLink
+                className={externalLinkClassnames}
+                href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
+              >
+                USDC.e
+              </ExternalLink>{' '}
+              is different from{' '}
+              <ExternalLink
+                className={externalLinkClassnames}
+                href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
+              >
+                USDC
+              </ExternalLink>
+              .{' '}
+              <ExternalLink
+                className={externalLinkClassnames}
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+              >
+                Learn more
+              </ExternalLink>
+              .
+            </span>
+          }
+          checked={checkboxChecked}
+          onChange={setCheckboxChecked}
+        />
+      </div>
     </div>
   )
 }

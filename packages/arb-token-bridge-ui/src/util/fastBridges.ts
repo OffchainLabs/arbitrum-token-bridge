@@ -6,6 +6,7 @@ import Connext from '@/images/bridge/connext.png'
 import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
+import Wormhole from '@/images/bridge/wormhole.svg'
 import { CommonAddress } from './CommonAddressUtils'
 
 export enum FastBridgeNames {
@@ -14,7 +15,8 @@ export enum FastBridgeNames {
   Connext = 'Connext',
   Across = 'Across',
   Stargate = 'Stargate',
-  Synapse = 'Synapse'
+  Synapse = 'Synapse',
+  Wormhole = 'Wormhole'
 }
 
 export enum NonCanonicalTokenNames {
@@ -76,6 +78,8 @@ export function getFastBridges(
         // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
+      case FastBridgeNames.Wormhole:
+        return ''
       default:
         return ''
     }
@@ -110,6 +114,10 @@ export function getFastBridges(
     [FastBridgeNames.Synapse]: {
       imageSrc: Synapse,
       href: getBridgeDeepLink(FastBridgeNames.Synapse)
+    },
+    [FastBridgeNames.Wormhole]: {
+      imageSrc: Wormhole,
+      href: getBridgeDeepLink(FastBridgeNames.Wormhole)
     }
   }
 
@@ -127,8 +135,13 @@ export const NonCanonicalTokensBridgeInfo = {
   [CommonAddress.Mainnet.USDC]: {
     tokenSymbol: 'USDC',
     tokenSymbolOnArbitrum: 'USDC.e',
-    supportedBridges: [FastBridgeNames.Hop],
-    learnMoreUrl: '',
+    supportedBridges: [
+      FastBridgeNames.Celer,
+      FastBridgeNames.Hop,
+      FastBridgeNames.Wormhole
+    ],
+    learnMoreUrl:
+      'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83',
     bridgeUrl: ''
   },
   [NonCanonicalTokenAddresses.FRAX]: {
