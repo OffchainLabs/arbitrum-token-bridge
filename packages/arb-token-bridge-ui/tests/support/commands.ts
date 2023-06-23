@@ -40,6 +40,7 @@ export function login({
   query?: { [s: string]: string }
 }) {
   function _startWebApp() {
+    console.log('**************', url, query)
     startWebApp(url, query)
   }
 
