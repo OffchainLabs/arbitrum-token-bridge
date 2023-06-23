@@ -17,11 +17,7 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import {
-  AdvancedSettings,
-  DestinationAddressErrors,
-  getDestinationAddressError
-} from './AdvancedSettings'
+import { AdvancedSettings } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import {
@@ -391,8 +387,6 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [advancedSettingsError, setAdvancedSettingsError] =
-    useState<DestinationAddressErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -517,12 +511,6 @@ export function TransferPanelMain({
       setDestinationAddress(undefined)
     }
   }, [selectedToken])
-
-  useEffect(() => {
-    setAdvancedSettingsError(
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
-    )
-  }, [destinationAddress, isSmartContractWallet])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -926,11 +914,7 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      <AdvancedSettings
-        destinationAddress={destinationAddress}
-        onChange={value => setDestinationAddress(value)}
-        error={advancedSettingsError}
-      />
+      <AdvancedSettings />
       <Dialog
         closeable
         title="Token not supported"

@@ -47,7 +47,10 @@ import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
-import { getDestinationAddressError } from './AdvancedSettings'
+import {
+  getDestinationAddressError,
+  useDestinationAddressStore
+} from './AdvancedSettings'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -202,11 +205,7 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
-  const destinationAddressError = useMemo(
-    () =>
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
-    [destinationAddress, isSmartContractWallet]
-  )
+  const destinationAddressError = useDestinationAddressStore().error
 
   function clearAmountInput() {
     // clear amount input on transfer panel
@@ -364,6 +363,10 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
+    const destinationAddressError = await getDestinationAddressError({
+      destinationAddress,
+      isSmartContractWallet
+    })
     if (destinationAddressError) {
       console.error(destinationAddressError)
       return
