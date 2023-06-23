@@ -1,4 +1,4 @@
-import fs from 'fs'
+import { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
 import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
@@ -109,49 +109,61 @@ const DESTINATION_ADDRESS_DENYLIST = [
   '0xe08339b8Da134f1e39876b7523586c4D2a4173d8'
 ]
 
-async function main() {
-  const promises = tokenListsUrls.map(url => axios.get<TokenList>(url))
-  const tokenLists = (await Promise.all(promises)).map(res => res.data)
-  const allTokens = tokenLists.map(list => list.tokens).flat()
-  const allTokenAddresses = [...new Set(allTokens.map(token => token.address))]
-
-  const denylistedAddresses = [
-    ...DESTINATION_ADDRESS_DENYLIST,
-    ...allTokenAddresses
-  ]
-
-  Object.keys(l2Networks).map(chainId => {
-    const networkObject = l2Networks[chainId]
-
-    const { ethBridge, tokenBridge } = networkObject
-    const { classicOutboxes } = ethBridge
-
-    if (classicOutboxes) {
-      denylistedAddresses.push(...Object.keys(classicOutboxes))
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<{ data: string[]; message?: string }>
+) {
+  try {
+    // validate method
+    if (req.method !== 'GET') {
+      res
+        .status(400)
+        .send({ message: `invalid_method: ${req.method}`, data: [] })
+      return
     }
 
-    delete ethBridge.classicOutboxes
-    denylistedAddresses.push(
-      ...Object.values(ethBridge),
-      ...Object.values(tokenBridge)
-    )
-  })
+    const promises = tokenListsUrls.map(url => axios.get<TokenList>(url))
+    const tokenLists = (await Promise.all(promises)).map(res => res.data)
+    const allTokens = tokenLists.map(list => list.tokens).flat()
+    const allTokenAddresses = [
+      ...new Set(allTokens.map(token => token.address))
+    ]
 
-  const resultJson =
-    JSON.stringify(
-      {
-        meta: {
-          timestamp: new Date().toISOString()
-        },
-        content: [
-          ...new Set(denylistedAddresses.map(address => address.toLowerCase()))
-        ]
-      },
-      null,
-      2
-    ) + '\n'
+    const denylistedAddresses = [
+      ...DESTINATION_ADDRESS_DENYLIST,
+      ...allTokenAddresses
+    ]
 
-  fs.writeFileSync('./public/__auto-generated-denylist.json', resultJson)
+    Object.keys(l2Networks).map(chainId => {
+      const networkObject = l2Networks[chainId]
+
+      if (!networkObject) {
+        return
+      }
+
+      const { ethBridge, tokenBridge } = networkObject
+      const { classicOutboxes } = ethBridge
+
+      if (classicOutboxes) {
+        denylistedAddresses.push(...Object.keys(classicOutboxes))
+      }
+
+      delete ethBridge.classicOutboxes
+      denylistedAddresses.push(
+        ...Object.values(ethBridge),
+        ...Object.values(tokenBridge)
+      )
+    })
+
+    const result = [
+      ...new Set(denylistedAddresses.map(address => address.toLowerCase()))
+    ]
+
+    res.status(200).json({ data: result })
+  } catch (error: any) {
+    res.status(500).json({
+      message: error?.message ?? 'Something went wrong',
+      data: []
+    })
+  }
 }
-
-main()
