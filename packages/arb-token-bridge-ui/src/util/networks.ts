@@ -99,6 +99,9 @@ export const getBlockTime = (chainId: ChainId) => {
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
   const network = l2Networks[chainId]
+  if (chainId === ChainId.ArbitrumGoerli) {
+    return 20
+  }
   if (!network) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
