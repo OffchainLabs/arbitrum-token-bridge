@@ -24,7 +24,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
   REQUIRED_ADDRESS = 'The destination address is required.',
-  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it is likely to result in losing said funds. If you think this is a mistake, contact support@arbitrum.io.'
+  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it is likely to result in losing said funds. If you think this is a mistake, please contact our support.'
 }
 
 enum DestinationAddressWarnings {
