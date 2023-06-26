@@ -139,6 +139,10 @@ export const filterTransactions = (
   return result
 }
 
+export const isTokenDeposit = (tx: MergedTransaction) => {
+  return isDeposit(tx) && tx.tokenAddress
+}
+
 export const isDeposit = (tx: MergedTransaction) => {
   return tx.direction === 'deposit' || tx.direction === 'deposit-l1'
 }
