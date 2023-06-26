@@ -65,6 +65,8 @@ export async function getDestinationAddressError({
       return DestinationAddressErrors.INVALID_ADDRESS
     }
 
+    // The denylist consists of an array of addresses from Mainnet, Arbitrum One and Goerli.
+    // We do not separate them as it's unlikely for anyone to have a wallet address matching our contract addresses.
     const denylistResponse = await fetch(
       `${getAPIBaseUrl()}/api/isAddressDenylisted?address=${destinationAddress}`,
       {
