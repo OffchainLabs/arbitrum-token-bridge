@@ -17,7 +17,10 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { AdvancedSettings } from './AdvancedSettings'
+import {
+  AdvancedSettings,
+  useDestinationAddressStore
+} from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import {
@@ -289,17 +292,11 @@ export enum TransferPanelMainErrorMessage {
 export function TransferPanelMain({
   amount,
   setAmount,
-  errorMessage,
-  destinationAddress,
-  setDestinationAddress
+  errorMessage
 }: {
   amount: string
   setAmount: (value: string) => void
   errorMessage?: TransferPanelMainErrorMessage
-  destinationAddress?: string
-  setDestinationAddress: React.Dispatch<
-    React.SetStateAction<string | undefined>
-  >
 }) {
   const actions = useActions()
 
@@ -318,6 +315,8 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
+  const { destinationAddress, setDestinationAddress } =
+    useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
   const l1WalletAddress = isDepositMode

@@ -121,9 +121,6 @@ export function TransferPanel() {
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
-  const [destinationAddress, setDestinationAddress] = useState<
-    string | undefined
-  >(undefined)
 
   const {
     app: {
@@ -205,7 +202,8 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
-  const destinationAddressError = useDestinationAddressStore().error
+  const { error: destinationAddressError, destinationAddress } =
+    useDestinationAddressStore()
 
   function clearAmountInput() {
     // clear amount input on transfer panel
@@ -974,8 +972,6 @@ export function TransferPanel() {
               ? getErrorMessage(amount, l1Balance)
               : getErrorMessage(amount, l2Balance)
           }
-          destinationAddress={destinationAddress}
-          setDestinationAddress={setDestinationAddress}
         />
 
         <div className="border-r border-gray-2" />
