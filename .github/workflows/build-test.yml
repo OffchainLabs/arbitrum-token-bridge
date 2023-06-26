@@ -227,8 +227,8 @@ jobs:
 
       - name: Delete build artifacts
         run: |
-          if gh-actions-cache list | grep build-artifacts-${{ github.run_id }}
+          if gh actions-cache list | grep build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
           then
-            gh actions-cache delete build-artifacts-${{ github.run_id }} --confirm
+            gh actions-cache delete build-artifacts-${{ github.run_id }}-${{ github.run_attempt }} --confirm
           fi
         shell: bash

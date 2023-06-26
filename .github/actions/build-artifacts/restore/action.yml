@@ -9,5 +9,5 @@ runs:
       with:
         path: |
           ./packages/arb-token-bridge-ui/build
-        key: build-artifacts-${{ github.run_id }}
+        key: build-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
         fail-on-cache-miss: true
