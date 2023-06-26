@@ -79,7 +79,7 @@ export function getFastBridges(
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
       case FastBridgeNames.Wormhole:
-        return ''
+        return 'https://www.portalbridge.com/usdc-bridge/'
       default:
         return ''
     }
