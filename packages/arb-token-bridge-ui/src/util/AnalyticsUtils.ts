@@ -170,6 +170,7 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Fast Bridge Click: Across': 'EZDV8TMY',
   'Fast Bridge Click: Synapse': 'SKUFXFQR',
   'Fast Bridge Click: Stargate': '6VZXVGEQ',
+  'Fast Bridge Click: Wormhole': '',
   //
   'FRAX: Fast Bridge Click: Celer': '6PZJPSBO',
   'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
