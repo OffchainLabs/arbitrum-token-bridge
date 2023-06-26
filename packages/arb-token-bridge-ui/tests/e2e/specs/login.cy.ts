@@ -32,5 +32,6 @@ describe('Login Account', () => {
     cy.findByText(`BALANCE: ${l2ETHbal}`).should('be.visible')
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    cy.findByRole('button', { name: 'doenst exist' }).should('exist')
   })
 })
