@@ -781,11 +781,6 @@ export function TransferPanel() {
         return undefined
       }
 
-      // ETH transfers using SC wallets not enabled yet
-      if (isSmartContractWallet && !selectedToken) {
-        return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-      }
-
       if (
         isDepositMode &&
         selectedToken &&
@@ -861,7 +856,6 @@ export function TransferPanel() {
       (isDepositMode &&
         isBridgingANewStandardToken &&
         (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !selectedToken) ||
       destinationAddressError
     )
   }, [
@@ -872,7 +866,6 @@ export function TransferPanel() {
     l1Balance,
     isBridgingANewStandardToken,
     selectedToken,
-    isSmartContractWallet,
     destinationAddressError
   ])
 
@@ -913,7 +906,6 @@ export function TransferPanel() {
       isTransferring ||
       (!isDepositMode &&
         (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !selectedToken) ||
       destinationAddressError
     )
   }, [
@@ -922,7 +914,6 @@ export function TransferPanel() {
     amountNum,
     l2Balance,
     selectedToken,
-    isSmartContractWallet,
     destinationAddressError
   ])
 
