@@ -38,7 +38,8 @@ import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL1TokenAllowance,
   getL2ERC20Address,
-  getL2GatewayAddress
+  getL2GatewayAddress,
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
@@ -48,6 +49,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
 import { getDestinationAddressError } from './AdvancedSettings'
+import { USDCDepositConfirmationDialog } from './USDCDepositConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -187,6 +189,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const [
+    USDCDepositConfirmationDialogProps,
+    openUSDCDepositConfirmationDialog
+  ] = useDialog()
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -485,6 +491,15 @@ export function TransferPanel() {
 
           if (isNonCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+          }
+
+          if (isTokenMainnetUSDC(selectedToken.address)) {
+            const waitForInput = openUSDCDepositConfirmationDialog()
             const confirmed = await waitForInput()
 
             if (!confirmed) {
@@ -959,6 +974,11 @@ export function TransferPanel() {
 
       <DepositConfirmationDialog
         {...depositConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCDepositConfirmationDialog
+        {...USDCDepositConfirmationDialogProps}
         amount={amount}
       />
 

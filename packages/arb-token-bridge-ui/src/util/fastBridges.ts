@@ -132,6 +132,16 @@ export function getFastBridges(
 }
 
 export const NonCanonicalTokensBridgeInfo = {
+  [NonCanonicalTokenAddresses.FRAX]: {
+    tokenSymbol: 'FRAX',
+    tokenSymbolOnArbitrum: 'arbiFRAX',
+    supportedBridges: [FastBridgeNames.Celer],
+    learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
+    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
+  }
+} as const
+
+export const USDCBridgeInfo = {
   [CommonAddress.Mainnet.USDC]: {
     tokenSymbol: 'USDC',
     tokenSymbolOnArbitrum: 'USDC.e',
@@ -141,14 +151,6 @@ export const NonCanonicalTokensBridgeInfo = {
       FastBridgeNames.Wormhole
     ],
     learnMoreUrl:
-      'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83',
-    bridgeUrl: ''
-  },
-  [NonCanonicalTokenAddresses.FRAX]: {
-    tokenSymbol: 'FRAX',
-    tokenSymbolOnArbitrum: 'arbiFRAX',
-    supportedBridges: [FastBridgeNames.Celer],
-    learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
-    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
+      'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
   }
-} as const
+}
