@@ -117,8 +117,6 @@ export const AdvancedSettings = ({
     return () => setWarning(null)
   }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
-  useEffect(() => setCollapsed(isEOA), [isEOA])
-
   const collapsible = useMemo(() => {
     // cannot collapse if:
     // - SCW because the destination address is mandatory

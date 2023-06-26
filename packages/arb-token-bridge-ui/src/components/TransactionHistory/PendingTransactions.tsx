@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
-import { isDeposit } from '../../state/app/utils'
+import { isDeposit, isTokenDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
@@ -11,6 +11,7 @@ import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { PendingDepositWarning } from './PendingDepositWarning'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -79,6 +80,11 @@ export const PendingTransactions = ({
           No pending transactions
         </span>
       )}
+
+      {transactions.length > 0 &&
+        transactions.some(tx => isTokenDeposit(tx)) && (
+          <PendingDepositWarning />
+        )}
 
       {/* Transaction cards */}
       {transactions?.map(tx =>
