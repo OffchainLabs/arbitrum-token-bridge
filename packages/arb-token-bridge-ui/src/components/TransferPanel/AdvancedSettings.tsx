@@ -55,14 +55,6 @@ export async function getDestinationAddressError({
   destinationAddress?: string
   isSmartContractWallet: boolean
 }): Promise<DestinationAddressErrors | null> {
-  const denylistResponse = await (
-    await fetch(`${getAPIBaseUrl()}/api/denylist`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'force-cache'
-    })
-  ).json()
-
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
     return DestinationAddressErrors.REQUIRED_ADDRESS
@@ -73,8 +65,15 @@ export async function getDestinationAddressError({
       return DestinationAddressErrors.INVALID_ADDRESS
     }
 
-    const denylist: Set<string> = new Set(denylistResponse.data)
-    if (denylist.has(destinationAddress)) {
+    const denylistResponse = await fetch(
+      `${getAPIBaseUrl()}/api/isAddressDenylisted?address=${destinationAddress}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
+    const isDenylisted = (await denylistResponse.json()).data as boolean
+    if (isDenylisted) {
       return DestinationAddressErrors.DENYLISTED_ADDRESS
     }
   }
