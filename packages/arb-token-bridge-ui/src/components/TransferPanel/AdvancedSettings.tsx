@@ -148,18 +148,24 @@ export const AdvancedSettings = () => {
   }, [destinationAddress, isSmartContractWallet, setError])
 
   useEffect(() => {
+    // isSubscribed makes sure that only the latest state is written
+    let isSubscribed = true
+
     async function updateWarning() {
-      setWarning(
-        await getDestinationAddressWarning({
-          destinationAddress,
-          isEOA,
-          destinationProvider: (isDepositMode ? l2 : l1).provider
-        })
-      )
+      const result = await getDestinationAddressWarning({
+        destinationAddress,
+        isEOA,
+        destinationProvider: (isDepositMode ? l2 : l1).provider
+      })
+      if (isSubscribed) {
+        setWarning(result)
+      }
     }
     updateWarning()
 
-    return () => setWarning(null)
+    return () => {
+      isSubscribed = false
+    }
   }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
   const collapsible = useMemo(() => {
