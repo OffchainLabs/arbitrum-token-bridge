@@ -20,6 +20,7 @@ import { trackEvent } from '../../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
+import { isTokenMainnetUSDC } from '../../../util/TokenUtils'
 
 export function USDCDepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -37,7 +38,15 @@ export function USDCDepositConfirmationDialog(
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
-  const tokenSymbol = selectedToken?.symbol as SpecialTokenSymbol.USDC
+  if (!selectedToken) {
+    return null
+  }
+
+  if (!isTokenMainnetUSDC(selectedToken.address)) {
+    return null
+  }
+
+  const tokenSymbol = SpecialTokenSymbol.USDC
 
   const fastBridges = [
     ...getFastBridges({
@@ -50,11 +59,8 @@ export function USDCDepositConfirmationDialog(
     })
   ].filter(bridge => {
     return (
-      tokenSymbol &&
-      (USDCBridgeInfo.supportedBridges as readonly FastBridgeNames[]).includes(
-        bridge.name
-      )
-    )
+      USDCBridgeInfo.supportedBridges as readonly FastBridgeNames[]
+    ).includes(bridge.name)
   })
 
   return (
@@ -81,7 +87,7 @@ export function USDCDepositConfirmationDialog(
             <TabButton>Use Arbitrum’s bridge (USDC)</TabButton>
           </Tab.List>
 
-          {isArbitrumOne && tokenSymbol && (
+          {isArbitrumOne && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
@@ -112,51 +118,46 @@ export function USDCDepositConfirmationDialog(
             </Tab.Panel>
           )}
 
-          {tokenSymbol && (
-            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-              <div className="flex flex-col space-y-3">
-                <p className="font-light">
-                  Receive{' '}
-                  <ExternalLink
-                    className="arb-hover text-blue-link underline"
-                    href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
-                  >
-                    Bridged USDC (USDC.e)
-                  </ExternalLink>{' '}
-                  on Arbitrum One using Arbitrum’s native bridge.
-                </p>
-
-                <div className="flex flex-col space-y-6">
-                  <USDCDepositConfirmationDialogCheckbox
-                    checked={USDCcheckboxChecked}
-                    onChange={setUSDCcheckboxChecked}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-2 flex flex-row justify-end space-x-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => props.onClose(false)}
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
+              <p className="font-light">
+                Receive{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={!USDCcheckboxChecked}
-                  onClick={() => {
-                    props.onClose(true)
-                    setUSDCcheckboxChecked(false)
-                    trackEvent('Use Arbitrum Bridge Click', {
-                      tokenSymbol
-                    })
-                  }}
-                >
-                  Confirm
-                </Button>
+                  Bridged USDC (USDC.e)
+                </ExternalLink>{' '}
+                on Arbitrum One using Arbitrum’s native bridge.
+              </p>
+
+              <div className="flex flex-col space-y-6">
+                <USDCDepositConfirmationDialogCheckbox
+                  checked={USDCcheckboxChecked}
+                  onChange={setUSDCcheckboxChecked}
+                />
               </div>
-            </Tab.Panel>
-          )}
+            </div>
+
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!USDCcheckboxChecked}
+                onClick={() => {
+                  props.onClose(true)
+                  setUSDCcheckboxChecked(false)
+                  trackEvent('Use Arbitrum Bridge Click', {
+                    tokenSymbol
+                  })
+                }}
+              >
+                Confirm
+              </Button>
+            </div>
+          </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div>
