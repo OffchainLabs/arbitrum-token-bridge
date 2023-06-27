@@ -4,19 +4,8 @@ export function ExternalLink({
   onClick = () => {},
   ...props
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
-  function onClickHandler(event: React.MouseEvent<HTMLAnchorElement>) {
-    event.stopPropagation()
-    event.nativeEvent.stopImmediatePropagation()
-    onClick(event)
-  }
-
   return (
-    <a
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={onClickHandler}
-      {...props}
-    >
+    <a target="_blank" rel="noopener noreferrer" onClick={onClick} {...props}>
       {children}
     </a>
   )

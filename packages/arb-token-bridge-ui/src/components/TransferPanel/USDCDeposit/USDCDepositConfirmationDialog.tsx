@@ -19,7 +19,7 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { trackEvent } from '../../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { USDCDepositWithArbBridgeInfo } from './USDCDepositWithArbBridgeInfo'
+import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 
 export function USDCDepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -114,10 +114,25 @@ export function USDCDepositConfirmationDialog(
 
           {tokenSymbol && (
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-              <USDCDepositWithArbBridgeInfo
-                USDCcheckboxChecked={USDCcheckboxChecked}
-                setUSDCcheckboxChecked={setUSDCcheckboxChecked}
-              />
+              <div className="flex flex-col space-y-3">
+                <p className="font-light">
+                  Receive{' '}
+                  <ExternalLink
+                    className="arb-hover text-blue-link underline"
+                    href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
+                  >
+                    Bridged USDC (USDC.e)
+                  </ExternalLink>{' '}
+                  on Arbitrum One using Arbitrum’s native bridge.
+                </p>
+
+                <div className="flex flex-col space-y-6">
+                  <USDCDepositConfirmationDialogCheckbox
+                    checked={USDCcheckboxChecked}
+                    onChange={setUSDCcheckboxChecked}
+                  />
+                </div>
+              </div>
 
               <div className="mt-2 flex flex-row justify-end space-x-2">
                 <Button
