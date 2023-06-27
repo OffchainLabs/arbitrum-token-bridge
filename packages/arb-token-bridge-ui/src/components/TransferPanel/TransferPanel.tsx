@@ -466,13 +466,6 @@ export function TransferPanel() {
             return
           }
 
-          const allowance = await getL1TokenAllowance({
-            account: walletAddress,
-            erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
-          })
-
           if (isNonCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
             const confirmed = await waitForInput()
@@ -490,6 +483,14 @@ export function TransferPanel() {
               return
             }
           }
+
+          // Check token allowance & show modal if needed
+          const allowance = await getL1TokenAllowance({
+            account: walletAddress,
+            erc20L1Address: selectedToken.address,
+            l1Provider: l1Provider,
+            l2Provider: l2Provider
+          })
 
           if (!allowance.gte(amountRaw)) {
             setAllowance(allowance)
