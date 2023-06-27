@@ -38,6 +38,10 @@ export function USDCDepositConfirmationDialog(
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
+  if (!isArbitrumOne) {
+    return null
+  }
+
   if (!selectedToken) {
     return null
   }
@@ -82,41 +86,36 @@ export function USDCDepositConfirmationDialog(
           </div>
 
           <Tab.List className="bg-ocl-blue">
-            {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
+            <TabButton>Use a third-party bridge</TabButton>
             <TabButton>Use Arbitrum’s bridge (USDC.e)</TabButton>
             <TabButton>Use Arbitrum’s bridge (USDC)</TabButton>
           </Tab.List>
 
-          {isArbitrumOne && (
-            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-              <div className="flex flex-col space-y-3">
-                <p className="font-light">
-                  Receive{' '}
-                  <ExternalLink
-                    className="arb-hover text-blue-link underline"
-                    href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
-                  >
-                    USDC
-                  </ExternalLink>{' '}
-                  on Arbitrum One using a third-party bridge with Circle’s CCTP
-                  integrated.
-                </p>
-              </div>
-
-              <BridgesTable
-                bridgeList={fastBridges}
-                selectedNonCanonicalToken={tokenSymbol}
-              />
-              <div className="mt-2 flex flex-row justify-end space-x-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => props.onClose(false)}
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
+              <p className="font-light">
+                Receive{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
                 >
-                  Cancel
-                </Button>
-              </div>
-            </Tab.Panel>
-          )}
+                  USDC
+                </ExternalLink>{' '}
+                on Arbitrum One using a third-party bridge with Circle’s CCTP
+                integrated.
+              </p>
+            </div>
+
+            <BridgesTable
+              bridgeList={fastBridges}
+              selectedNonCanonicalToken={tokenSymbol}
+            />
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+            </div>
+          </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">

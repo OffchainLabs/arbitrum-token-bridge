@@ -150,6 +150,7 @@ export function TransferPanel() {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
+  const { isArbitrumOne } = isNetwork(l2Network.id)
 
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
@@ -475,7 +476,7 @@ export function TransferPanel() {
             }
           }
 
-          if (isTokenMainnetUSDC(selectedToken.address)) {
+          if (isArbitrumOne && isTokenMainnetUSDC(selectedToken.address)) {
             const waitForInput = openUSDCDepositConfirmationDialog()
             const confirmed = await waitForInput()
 
