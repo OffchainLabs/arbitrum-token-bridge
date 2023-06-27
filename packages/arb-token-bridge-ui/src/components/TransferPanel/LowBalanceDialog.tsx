@@ -81,7 +81,7 @@ function ExternalLinkCard({
 export function LowBalanceDialog(props: UseDialogProps) {
   const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -90,7 +90,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
     eth: [ethBalance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: address
+    walletAddress
   })
 
   const balance = useMemo(() => ethBalance ?? constants.Zero, [ethBalance])

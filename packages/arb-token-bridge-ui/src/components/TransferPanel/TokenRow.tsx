@@ -73,7 +73,7 @@ export function TokenRow({
   onClick,
   token
 }: TokenRowProps): JSX.Element {
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
   const {
     app: {
       arbTokenBridge: { bridgeTokens },
@@ -112,11 +112,11 @@ export function TokenRow({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress: address })
+  } = useBalance({ provider: l1Provider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress: address })
+  } = useBalance({ provider: l2Provider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {

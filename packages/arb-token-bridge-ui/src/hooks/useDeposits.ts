@@ -47,13 +47,13 @@ export const useDeposits = (depositPageParams: PageParams) => {
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
     [
       'deposits',
-      address,
+      walletAddress,
       l1Provider,
       l2Provider,
       depositPageParams.pageNumber,

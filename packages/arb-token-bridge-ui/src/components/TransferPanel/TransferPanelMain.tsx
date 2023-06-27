@@ -320,17 +320,17 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { isDepositMode, selectedToken } = app
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
 
-  const destinationAddressOrWalletAddress = destinationAddress || address
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
   const l1WalletAddress = isDepositMode
-    ? address
+    ? walletAddress
     : destinationAddressOrWalletAddress
 
   const l2WalletAddress = isDepositMode
     ? destinationAddressOrWalletAddress
-    : address
+    : walletAddress
 
   const {
     eth: [ethL1Balance],
@@ -414,7 +414,13 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams, address])
+  }, [
+    isConnectedToArbitrum,
+    externalFrom,
+    externalTo,
+    setQueryParams,
+    walletAddress
+  ])
 
   const estimateGas = useCallback(
     async (
@@ -425,13 +431,13 @@ export function TransferPanelMain({
         })
       | null
     > => {
-      if (!address) {
+      if (!walletAddress) {
         return null
       }
       if (isDepositMode) {
         const result = await depositEthEstimateGas({
           amount: weiValue,
-          address,
+          address: walletAddress,
           l1Provider: l1.provider,
           l2Provider: l2.provider
         })
@@ -440,13 +446,13 @@ export function TransferPanelMain({
 
       const result = await withdrawEthEstimateGas({
         amount: weiValue,
-        address,
+        address: walletAddress,
         l2Provider: l2.provider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [isDepositMode, address, l1.provider, l2.provider]
+    [isDepositMode, walletAddress, l1.provider, l2.provider]
   )
 
   const setMaxAmount = useCallback(async () => {

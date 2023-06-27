@@ -92,9 +92,14 @@ export const defaultState: AppState = {
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
+    const account = getAccount()
+    if (!account.address) {
+      return []
+    }
+
     return filterTransactions(
       [...transactions],
-      getAccount().address || '',
+      account.address,
       s.l1NetworkChainId,
       s.l2NetworkChainId
     )

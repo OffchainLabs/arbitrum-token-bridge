@@ -122,7 +122,7 @@ function TokensPanel({
 }: {
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens },
@@ -137,11 +137,11 @@ function TokensPanel({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress: address })
+  } = useBalance({ provider: L1Provider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress: address })
+  } = useBalance({ provider: L2Provider, walletAddress })
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -253,7 +253,7 @@ function TokensPanel({
   }, [tokensFromLists, tokensFromUser, newToken, getBalance])
 
   const storeNewToken = async () => {
-    if (!address) {
+    if (!walletAddress) {
       return
     }
 
@@ -390,7 +390,7 @@ export function TokenSearch({
   close: () => void
   onImportToken: (address: string) => void
 }) {
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
   const {
     app: {
       arbTokenBridge: { token, bridgeTokens }
@@ -428,12 +428,12 @@ export function TokenSearch({
         return
       }
 
-      if (!address) {
+      if (!walletAddress) {
         return
       }
 
       const data = await getL1TokenData({
-        account: address,
+        account: walletAddress,
         erc20L1Address: _token.address,
         l1Provider: l1.provider,
         l2Provider: l2.provider

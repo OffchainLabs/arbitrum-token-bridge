@@ -46,7 +46,7 @@ export function useGasSummary(
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -110,7 +110,7 @@ export function useGasSummary(
         return
       }
 
-      if (!address) {
+      if (!walletAddress) {
         return
       }
 
@@ -128,7 +128,7 @@ export function useGasSummary(
           } else {
             const estimateGasResult = await depositEthEstimateGas({
               amount: amountDebounced,
-              address,
+              address: walletAddress,
               l1Provider: l1.provider,
               l2Provider: l2.provider
             })
@@ -157,7 +157,7 @@ export function useGasSummary(
               estimateGasResult = await withdrawTokenEstimateGas({
                 amount: amountDebounced,
                 erc20L1Address: token.address,
-                address,
+                address: walletAddress,
                 l2Provider: l2.provider
               })
             }
@@ -169,7 +169,7 @@ export function useGasSummary(
           } else {
             const estimateGasResult = await withdrawEthEstimateGas({
               amount: amountDebounced,
-              address,
+              address: walletAddress,
               l2Provider: l2.provider
             })
 
@@ -200,7 +200,7 @@ export function useGasSummary(
     shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
     l1.network.id, // when L1 and L2 network id changes
     l2.network.id,
-    address // when user switches account or if user is not connected
+    walletAddress // when user switches account or if user is not connected
   ])
 
   return {

@@ -59,12 +59,12 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   const gatewaysToUse = useL2Gateways({ l2Provider })
 
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
     [
       'withdrawals',
-      address,
+      walletAddress,
       l1Provider,
       l2Provider,
       gatewaysToUse,

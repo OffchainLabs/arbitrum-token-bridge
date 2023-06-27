@@ -529,6 +529,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
   const setDepositsInStore = (newTransactions: Transaction[]) => {
     // appends the state with a new set of transactions
     // useful when you want to display some transactions fetched from subgraph without worrying about existing state
+
     const transactionsMap: { [id: string]: Transaction } = {}
 
     ;[...transactions, ...newTransactions].forEach(tx => {

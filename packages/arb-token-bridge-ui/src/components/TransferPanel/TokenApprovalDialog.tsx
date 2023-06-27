@@ -26,7 +26,7 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { allowance, amount, isOpen, token } = props
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
 
   const allowanceParsed =
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
@@ -58,11 +58,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     async function getEstimatedGas() {
-      if (token?.address && address) {
+      if (token?.address && walletAddress) {
         setEstimatedGas(
           await approveTokenEstimateGas({
             erc20L1Address: token.address,
-            address,
+            address: walletAddress,
             l1Provider: l1.provider,
             l2Provider: l2.provider
           })
@@ -71,7 +71,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     getEstimatedGas()
-  }, [isOpen, token?.address, l1.provider, l2.provider, address])
+  }, [isOpen, token?.address, l1.provider, l2.provider, walletAddress])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)

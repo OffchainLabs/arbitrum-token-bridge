@@ -360,13 +360,12 @@ export const useArbTokenBridge = (
 
   const approveTokenL2 = async ({
     erc20L1Address,
-    l2Signer,
-    walletAddress
+    l2Signer
   }: {
     erc20L1Address: string
     l2Signer: Signer
-    walletAddress?: string
   }) => {
+    const walletAddress = await l2Signer.getAddress()
     if (typeof bridgeTokens === 'undefined' || !walletAddress) {
       return
     }

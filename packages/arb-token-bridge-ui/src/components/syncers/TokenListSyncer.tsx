@@ -14,7 +14,7 @@ const TokenListSyncer = (): JSX.Element => {
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
-  const { address } = useAccount()
+  const { address: walletAddress } = useAccount()
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -28,7 +28,7 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    if (typeof address === 'undefined') {
+    if (typeof walletAddress === 'undefined') {
       return
     }
 
@@ -47,7 +47,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [address, l2Network, arbTokenBridgeLoaded])
+  }, [walletAddress, l2Network, arbTokenBridgeLoaded])
 
   return <></>
 }
