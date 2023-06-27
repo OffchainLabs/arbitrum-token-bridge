@@ -190,7 +190,7 @@ export function TransferPanel() {
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
   const [
-    USDCDepositConfirmationDialogProps,
+    usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
   const {
@@ -977,7 +977,7 @@ export function TransferPanel() {
       />
 
       <USDCDepositConfirmationDialog
-        {...USDCDepositConfirmationDialogProps}
+        {...usdcDepositConfirmationDialogProps}
         amount={amount}
       />
 
