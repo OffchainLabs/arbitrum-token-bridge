@@ -30,14 +30,22 @@ export const DAOBanner = () => {
   return (
     <div className="bg-gradient px-4 py-4 text-center text-white">
       <span>
-        Arbitrum One and Arbitrum Nova are now under decentralized governance.
-        Learn more about Arbitrum DAO{' '}
+        Cross-Chain Transfer Protocol (
         <ExternalLink
-          href="https://arbitrum.foundation"
+          href="https://www.circle.com/en/cross-chain-transfer-protocol"
           className="arb-hover underline"
         >
-          here.
+          CCTP
         </ExternalLink>
+        ) is now live on Arbitrum, enabling direct USDC transfers to-and-from
+        Ethereum.{' '}
+        <ExternalLink
+          href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+          className="arb-hover underline"
+        >
+          Learn more
+        </ExternalLink>
+        .
       </span>
     </div>
   )
