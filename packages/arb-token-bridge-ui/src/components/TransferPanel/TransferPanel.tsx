@@ -38,7 +38,8 @@ import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL1TokenAllowance,
   getL2ERC20Address,
-  getL2GatewayAddress
+  getL2GatewayAddress,
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
@@ -48,6 +49,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
 import { getDestinationAddressError } from './AdvancedSettings'
+import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -148,6 +150,7 @@ export function TransferPanel() {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
+  const { isArbitrumOne } = isNetwork(l2Network.id)
 
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
@@ -187,6 +190,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const [
+    usdcDepositConfirmationDialogProps,
+    openUSDCDepositConfirmationDialog
+  ] = useDialog()
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -304,9 +311,8 @@ export function TransferPanel() {
       return Object.keys(NonCanonicalTokensBridgeInfo)
         .map(key => key.toLowerCase())
         .includes(selectedToken.address.toLowerCase())
-    } else {
-      return false
     }
+    return false
   }, [selectedToken])
 
   async function depositToken() {
@@ -455,6 +461,25 @@ export function TransferPanel() {
             return
           }
 
+          if (isNonCanonicalToken) {
+            const waitForInput = openDepositConfirmationDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+          }
+
+          if (isArbitrumOne && isTokenMainnetUSDC(selectedToken.address)) {
+            const waitForInput = openUSDCDepositConfirmationDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+          }
+
+          // Check token allowance & show modal if needed
           const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
@@ -479,15 +504,6 @@ export function TransferPanel() {
               erc20L1Address: selectedToken.address,
               l1Signer
             })
-          }
-
-          if (isNonCanonicalToken) {
-            const waitForInput = openDepositConfirmationDialog()
-            const confirmed = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
           }
 
           if (isSmartContractWallet) {
@@ -976,6 +992,11 @@ export function TransferPanel() {
 
       <DepositConfirmationDialog
         {...depositConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCDepositConfirmationDialog
+        {...usdcDepositConfirmationDialogProps}
         amount={amount}
       />
 
