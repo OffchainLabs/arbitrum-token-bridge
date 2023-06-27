@@ -244,7 +244,7 @@ type SanitizeTokenOptions = {
   chain: Chain // chain for which we want to retrieve the token name / symbol
 }
 
-const isTokenMainnetUSDC = (tokenAddress: string) => {
+export const isTokenMainnetUSDC = (tokenAddress: string) => {
   return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
 }
 
