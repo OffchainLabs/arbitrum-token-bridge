@@ -1,6 +1,6 @@
-import { CommonAddress } from '../../util/CommonAddressUtils'
-import { ExternalLink } from './ExternalLink'
-import { Checkbox } from './Checkbox'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { ExternalLink } from '../../common/ExternalLink'
+import { Checkbox } from '../../common/Checkbox'
 
 export function USDCDepositWithArbBridgeInfo({
   USDCcheckboxChecked,

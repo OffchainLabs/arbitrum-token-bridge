@@ -2,24 +2,24 @@ import { useState } from 'react'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
-import { Button } from '../common/Button'
-import { ExternalLink } from '../common/ExternalLink'
+import { Dialog, UseDialogProps } from '../../common/Dialog'
+import { Button } from '../../common/Button'
+import { ExternalLink } from '../../common/ExternalLink'
 import {
   USDCBridgeInfo,
   FastBridgeNames,
   getFastBridges,
   SpecialTokenSymbol
-} from '../../util/fastBridges'
-import { TabButton } from '../common/Tab'
-import { BridgesTable } from '../common/BridgesTable'
-import { useAppState } from '../../state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getNetworkName, isNetwork } from '../../util/networks'
-import { trackEvent } from '../../util/AnalyticsUtils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { CommonAddress } from '../../util/CommonAddressUtils'
-import { USDCDepositWithArbBridgeInfo } from '../common/USDCDepositWithArbBridgeInfo'
+} from '../../../util/fastBridges'
+import { TabButton } from '../../common/Tab'
+import { BridgesTable } from '../../common/BridgesTable'
+import { useAppState } from '../../../state'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { getNetworkName, isNetwork } from '../../../util/networks'
+import { trackEvent } from '../../../util/AnalyticsUtils'
+import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { USDCDepositWithArbBridgeInfo } from './USDCDepositWithArbBridgeInfo'
 
 export function USDCDepositConfirmationDialog(
   props: UseDialogProps & { amount: string }

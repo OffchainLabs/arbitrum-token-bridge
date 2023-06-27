@@ -49,7 +49,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
 import { getDestinationAddressError } from './AdvancedSettings'
-import { USDCDepositConfirmationDialog } from './USDCDepositConfirmationDialog'
+import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
