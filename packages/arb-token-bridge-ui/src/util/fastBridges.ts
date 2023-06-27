@@ -160,12 +160,10 @@ export function getFastBridges({
     },
     [FastBridgeNames.LIFI]: {
       imageSrc: LIFI,
-      // imageSrc: '/images/bridge/lifi.webp',
       href: getBridgeDeepLink(FastBridgeNames.LIFI)
     },
     [FastBridgeNames.Router]: {
       imageSrc: Router,
-      // imageSrc: '/images/bridge/router.webp',
       href: getBridgeDeepLink(FastBridgeNames.Router)
     }
   }
@@ -201,4 +199,4 @@ export const USDCBridgeInfo = {
   ],
   learnMoreUrl:
     'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
-}
+} as const

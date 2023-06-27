@@ -12,7 +12,8 @@ import {
   NonCanonicalTokenAddresses,
   NonCanonicalTokenNames,
   NonCanonicalTokenSupportedBridges,
-  FastBridgeNames
+  FastBridgeNames,
+  USDCBridgeInfo
 } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 import { getNetworkName } from './networks'
@@ -44,9 +45,7 @@ export const shouldTrackAnalytics = (
 }
 
 export type FathomEventUSDC =
-  | `USDC: Fast Bridge Click: Celer`
-  | `USDC: Fast Bridge Click: Hop`
-  | `USDC: Fast Bridge Click: Wormhole`
+  | `USDC: Fast Bridge Click: ${(typeof USDCBridgeInfo)['supportedBridges'][number]}`
 
 export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
@@ -181,7 +180,8 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Fast Bridge Click: Router': '',
   //
   'USDC: Fast Bridge Click: Celer': '',
-  'USDC: Fast Bridge Click: Hop': '',
+  'USDC: Fast Bridge Click: LI.FI': '',
+  'USDC: Fast Bridge Click: Router': '',
   'USDC: Fast Bridge Click: Wormhole': '',
   'USDC: Use Arbitrum Bridge Click': '',
   //
