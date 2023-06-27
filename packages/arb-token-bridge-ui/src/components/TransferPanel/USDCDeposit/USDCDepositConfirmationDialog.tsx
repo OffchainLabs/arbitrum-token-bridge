@@ -33,7 +33,7 @@ export function USDCDepositConfirmationDialog(
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumOne } = isNetwork(l2.network.id)
 
-  const [USDCcheckboxChecked, setUSDCcheckboxChecked] = useState(false)
+  const [usdcCheckboxChecked, setUSDCCheckboxChecked] = useState(false)
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
@@ -133,8 +133,8 @@ export function USDCDepositConfirmationDialog(
 
               <div className="flex flex-col space-y-6">
                 <USDCDepositConfirmationDialogCheckbox
-                  checked={USDCcheckboxChecked}
-                  onChange={setUSDCcheckboxChecked}
+                  checked={usdcCheckboxChecked}
+                  onChange={setUSDCCheckboxChecked}
                 />
               </div>
             </div>
@@ -145,10 +145,10 @@ export function USDCDepositConfirmationDialog(
               </Button>
               <Button
                 variant="primary"
-                disabled={!USDCcheckboxChecked}
+                disabled={!usdcCheckboxChecked}
                 onClick={() => {
                   props.onClose(true)
-                  setUSDCcheckboxChecked(false)
+                  setUSDCCheckboxChecked(false)
                   trackEvent('Use Arbitrum Bridge Click', {
                     tokenSymbol
                   })
