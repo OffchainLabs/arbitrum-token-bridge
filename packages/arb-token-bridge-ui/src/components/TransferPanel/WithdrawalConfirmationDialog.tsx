@@ -23,7 +23,7 @@ import {
   getNetworkName,
   isNetwork
 } from '../../util/networks'
-import { getFastBridges } from '../../util/fastBridges'
+import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 const SECONDS_IN_DAY = 86400
@@ -65,6 +65,16 @@ export function WithdrawalConfirmationDialog(
     to: to.id,
     tokenSymbol: selectedToken?.symbol,
     amount: props.amount
+  }).filter(fastBridge => {
+    // exclude these fast bridges for now
+    switch (fastBridge.name) {
+      case FastBridgeNames.LIFI:
+      case FastBridgeNames.Wormhole:
+      case FastBridgeNames.Router:
+        return false
+      default:
+        return true
+    }
   })
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
