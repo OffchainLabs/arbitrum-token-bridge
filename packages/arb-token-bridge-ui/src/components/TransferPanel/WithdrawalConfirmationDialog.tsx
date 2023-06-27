@@ -60,12 +60,12 @@ export function WithdrawalConfirmationDialog(
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
-  const fastBridges = getFastBridges(
-    from.id,
-    to.id,
-    selectedToken?.symbol,
-    props.amount
-  )
+  const fastBridges = getFastBridges({
+    from: from.id,
+    to: to.id,
+    tokenSymbol: selectedToken?.symbol,
+    amount: props.amount
+  })
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)

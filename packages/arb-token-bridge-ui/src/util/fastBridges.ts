@@ -6,8 +6,11 @@ import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
 import Wormhole from '@/images/bridge/wormhole.svg'
+import LIFI from '@/images/bridge/lifi.webp'
+import Router from '@/images/bridge/router.webp'
 
 import { ChainId } from './networks'
+import { isTokenMainnetUSDC } from './TokenUtils'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -47,12 +50,14 @@ export function getFastBridges({
   from,
   to,
   tokenSymbol = 'ETH',
+  fromTokenAddress,
   toTokenAddress,
   amount
 }: {
   from: ChainId
   to: ChainId
-  tokenSymbol: string
+  tokenSymbol?: string
+  fromTokenAddress?: string
   toTokenAddress?: string
   amount: string
 }): FastBridgeInfo[] {
@@ -92,12 +97,28 @@ export function getFastBridges({
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
       case FastBridgeNames.Wormhole:
+        if (isTokenMainnetUSDC(fromTokenAddress ?? '')) {
+          return 'https://www.portalbridge.com/usdc-bridge/'
+        }
         return 'https://www.portalbridge.com/'
       case FastBridgeNames.LIFI:
-        return `https://jumper.exchange/?fromChain=${from}&fromToken=${tokenSymbol}&toChain=${to}${
-          toTokenAddress && `&toToken=${toTokenAddress}`
-        }&fromAmount=${amount}`
-
+        if (!toTokenAddress) {
+          return `https://jumper.exchange/?fromChain=${from}&fromToken=${
+            fromTokenAddress ?? tokenSymbol
+          }&toChain=${to}&fromAmount=${amount}`
+        }
+        return `https://jumper.exchange/?fromChain=${from}&fromToken=${
+          fromTokenAddress ?? tokenSymbol
+        }&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+      case FastBridgeNames.Router:
+        let bridgeUrl = `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}`
+        if (fromTokenAddress) {
+          bridgeUrl += `&fromToken=${fromTokenAddress}`
+        }
+        if (toTokenAddress) {
+          bridgeUrl += `&toToken=${toTokenAddress}`
+        }
+        return bridgeUrl
       default:
         return ''
     }
@@ -138,16 +159,18 @@ export function getFastBridges({
       href: getBridgeDeepLink(FastBridgeNames.Wormhole)
     },
     [FastBridgeNames.LIFI]: {
-      imageSrc: '', //LIFI,
+      imageSrc: LIFI,
+      // imageSrc: '/images/bridge/lifi.webp',
       href: getBridgeDeepLink(FastBridgeNames.LIFI)
     },
     [FastBridgeNames.Router]: {
-      imageSrc: '', //Router,
+      imageSrc: Router,
+      // imageSrc: '/images/bridge/router.webp',
       href: getBridgeDeepLink(FastBridgeNames.Router)
     }
   }
 
-  return Object.keys(FastBridgeNames).map<FastBridgeInfo>(bridge => {
+  return Object.values(FastBridgeNames).map<FastBridgeInfo>(bridge => {
     const name = bridge as FastBridgeNames
     return {
       name,

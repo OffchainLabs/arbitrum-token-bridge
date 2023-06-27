@@ -44,6 +44,7 @@ export function USDCDepositConfirmationDialog(
       from: from.id,
       to: to.id,
       tokenSymbol,
+      fromTokenAddress: CommonAddress.Mainnet.USDC,
       toTokenAddress: CommonAddress.ArbitrumOne.USDC,
       amount: props.amount
     })
