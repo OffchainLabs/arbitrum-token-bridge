@@ -37,15 +37,12 @@ function mockClassicDepositTransaction(
 
 describe('Read classic deposit messages', () => {
   context('User has classic ETH deposit transaction', () => {
-    // log in to metamask
-    before(() => {
+    it('can read successful ETH deposit', () => {
+      // log in to metamask
       cy.login({
         networkType: 'L1',
         networkName: 'mainnet'
       })
-    })
-
-    it('can read successful ETH deposit', () => {
       window.localStorage.setItem(
         'arbTransactions',
         JSON.stringify([
@@ -79,15 +76,12 @@ describe('Read classic deposit messages', () => {
   })
 
   context('User has classic ERC-20 deposit transaction', () => {
-    // log in to metamask
-    before(() => {
+    it('can read successful ERC-20 deposit', () => {
+      // log in to metamask
       cy.login({
         networkType: 'L1',
         networkName: 'mainnet'
       })
-    })
-
-    it('can read successful ERC-20 deposit', () => {
       window.localStorage.setItem(
         'arbTransactions',
         JSON.stringify([
