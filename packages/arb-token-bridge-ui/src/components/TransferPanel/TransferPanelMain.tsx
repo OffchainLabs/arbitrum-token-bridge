@@ -5,12 +5,17 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
-import { ChainId, getL2ChainIds, isNetwork } from '../../util/networks'
+import {
+  ChainId,
+  getExplorerUrl,
+  getL2ChainIds,
+  isNetwork
+} from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
   AdvancedSettings,
@@ -42,6 +47,7 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
+import { shortenAddress } from '../../util/CommonUtils'
 
 enum NetworkType {
   l1 = 'l1',
@@ -80,13 +86,59 @@ function getListboxOptionsFromL1Network(network: Chain) {
   return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
 }
 
+function CustomAddressBanner({
+  network,
+  customAddress
+}: {
+  network: Chain
+  customAddress: string | undefined
+}) {
+  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+
+  const bannerClassName = useMemo(() => {
+    if (!isArbitrum) {
+      return 'bg-cyan border-eth-dark'
+    }
+    if (isArbitrumNova) {
+      return 'bg-orange border-arb-nova-dark'
+    }
+    return 'bg-cyan border-arb-one-dark'
+  }, [isArbitrum, isArbitrumNova])
+
+  if (!customAddress) {
+    return null
+  }
+
+  return (
+    <div
+      className={twMerge(
+        'w-full rounded-t-lg border-4 p-1 text-center text-sm',
+        bannerClassName
+      )}
+    >
+      <span>
+        Showing balance for Custom Destination Address:{' '}
+        <ExternalLink
+          className="arb-hover underline"
+          href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
+        >
+          {shortenAddress(customAddress)}
+        </ExternalLink>
+      </span>
+    </div>
+  )
+}
+
 function NetworkContainer({
   network,
+  customAddress,
   children
 }: {
   network: Chain
+  customAddress?: string
   children: React.ReactNode
 }) {
+  const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
     const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
@@ -110,18 +162,38 @@ function NetworkContainer({
     }
   }, [network])
 
+  const walletAddressLowercased = address?.toLowerCase()
+
+  const showCustomAddressBanner = useMemo(() => {
+    if (!customAddress || !walletAddressLowercased) {
+      return false
+    }
+    if (customAddress === walletAddressLowercased) {
+      return false
+    }
+    return utils.isAddress(customAddress)
+  }, [customAddress, walletAddressLowercased])
+
   return (
-    <div
-      className={`relative rounded-xl p-1 transition-colors ${backgroundClassName}`}
-    >
+    <>
+      {showCustomAddressBanner && (
+        <CustomAddressBanner network={network} customAddress={customAddress} />
+      )}
       <div
-        className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
-        style={{ backgroundImage }}
-      ></div>
-      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
-        {children}
+        className={twMerge(
+          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          showCustomAddressBanner ? 'rounded-t-none' : ''
+        )}
+      >
+        <div
+          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage }}
+        ></div>
+        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -193,7 +265,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium">
+    <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm font-extralight tracking-[.25px] text-white md:text-lg lg:font-medium">
       {children}
     </div>
   )
@@ -249,20 +321,44 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+
+  const l1WalletAddress = isDepositMode
+    ? walletAddress
+    : destinationAddressOrWalletAddress
+
+  const l2WalletAddress = isDepositMode
+    ? destinationAddressOrWalletAddress
+    : walletAddress
+
   const {
     eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
+    erc20: [erc20L1Balances, updateErc20L1Balances]
   } = useBalance({
     provider: l1.provider,
-    walletAddress
+    walletAddress: l1WalletAddress
   })
   const {
     eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
+    erc20: [erc20L2Balances, updateErc20L2Balances]
   } = useBalance({
     provider: l2.provider,
-    walletAddress
+    walletAddress: l2WalletAddress
   })
+
+  useEffect(() => {
+    if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
+      updateErc20L1Balances([selectedToken.address])
+      if (selectedToken.l2Address) {
+        updateErc20L2Balances([selectedToken.l2Address])
+      }
+    }
+  }, [
+    selectedToken,
+    updateErc20L1Balances,
+    updateErc20L2Balances,
+    destinationAddressOrWalletAddress
+  ])
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
@@ -313,7 +409,13 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
+  }, [
+    isConnectedToArbitrum,
+    externalFrom,
+    externalTo,
+    setQueryParams,
+    walletAddress
+  ])
 
   const estimateGas = useCallback(
     async (
@@ -787,29 +889,31 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer network={to}>
+      <NetworkContainer network={to} customAddress={destinationAddress}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
               <StyledLoader />
             ) : (
-              <>
-                <TokenBalance
-                  balance={
-                    app.isDepositMode
-                      ? selectedTokenBalances.l2
-                      : selectedTokenBalances.l1
-                  }
-                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                  forToken={selectedToken}
-                  prefix={selectedToken ? 'BALANCE: ' : ''}
-                />
-                <ETHBalance
-                  balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
-                  prefix={selectedToken ? '' : 'BALANCE: '}
-                />
-              </>
+              utils.isAddress(destinationAddressOrWalletAddress) && (
+                <>
+                  <TokenBalance
+                    balance={
+                      app.isDepositMode
+                        ? selectedTokenBalances.l2
+                        : selectedTokenBalances.l1
+                    }
+                    on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                    forToken={selectedToken}
+                    prefix={selectedToken ? 'BALANCE: ' : ''}
+                  />
+                  <ETHBalance
+                    balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
+                    prefix={selectedToken ? '' : 'BALANCE: '}
+                  />
+                </>
+              )
             )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
