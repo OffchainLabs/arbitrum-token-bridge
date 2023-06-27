@@ -473,21 +473,6 @@ export function TransferPanel() {
             l2Provider: l2Provider
           })
 
-          if (!allowance.gte(amountRaw)) {
-            setAllowance(allowance)
-            const waitForInput = openTokenApprovalDialog()
-            const confirmed = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-
-            await latestToken.current.approve({
-              erc20L1Address: selectedToken.address,
-              l1Signer
-            })
-          }
-
           if (isNonCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
             const confirmed = await waitForInput()
@@ -504,6 +489,21 @@ export function TransferPanel() {
             if (!confirmed) {
               return
             }
+          }
+
+          if (!allowance.gte(amountRaw)) {
+            setAllowance(allowance)
+            const waitForInput = openTokenApprovalDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+
+            await latestToken.current.approve({
+              erc20L1Address: selectedToken.address,
+              l1Signer
+            })
           }
 
           if (isSmartContractWallet) {
