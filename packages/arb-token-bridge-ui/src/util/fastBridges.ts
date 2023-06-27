@@ -1,4 +1,3 @@
-import { ChainId } from './networks'
 import { ImageProps } from 'next/image'
 import Hop from '@/images/bridge/hop.png'
 import Celer from '@/images/bridge/celer.png'
@@ -7,7 +6,8 @@ import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
 import Wormhole from '@/images/bridge/wormhole.svg'
-import { CommonAddress } from './CommonAddressUtils'
+
+import { ChainId } from './networks'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -16,7 +16,13 @@ export enum FastBridgeNames {
   Across = 'Across',
   Stargate = 'Stargate',
   Synapse = 'Synapse',
-  Wormhole = 'Wormhole'
+  Wormhole = 'Wormhole',
+  LIFI = 'LI.FI',
+  Router = 'Router'
+}
+
+export enum SpecialTokenSymbol {
+  USDC = 'USDC'
 }
 
 export enum NonCanonicalTokenNames {
@@ -37,12 +43,19 @@ export type FastBridgeInfo = {
   href: string
 }
 
-export function getFastBridges(
-  from: ChainId,
-  to: ChainId,
+export function getFastBridges({
+  from,
+  to,
   tokenSymbol = 'ETH',
+  toTokenAddress,
+  amount
+}: {
+  from: ChainId
+  to: ChainId
+  tokenSymbol: string
+  toTokenAddress?: string
   amount: string
-): FastBridgeInfo[] {
+}): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
       case ChainId.Mainnet:
@@ -79,7 +92,12 @@ export function getFastBridges(
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
       case FastBridgeNames.Wormhole:
-        return 'https://www.portalbridge.com/usdc-bridge/'
+        return 'https://www.portalbridge.com/'
+      case FastBridgeNames.LIFI:
+        return `https://jumper.exchange/?fromChain=${from}&fromToken=${tokenSymbol}&toChain=${to}${
+          toTokenAddress && `&toToken=${toTokenAddress}`
+        }&fromAmount=${amount}`
+
       default:
         return ''
     }
@@ -118,6 +136,14 @@ export function getFastBridges(
     [FastBridgeNames.Wormhole]: {
       imageSrc: Wormhole,
       href: getBridgeDeepLink(FastBridgeNames.Wormhole)
+    },
+    [FastBridgeNames.LIFI]: {
+      imageSrc: '', //LIFI,
+      href: getBridgeDeepLink(FastBridgeNames.LIFI)
+    },
+    [FastBridgeNames.Router]: {
+      imageSrc: '', //Router,
+      href: getBridgeDeepLink(FastBridgeNames.Router)
     }
   }
 
@@ -142,15 +168,14 @@ export const NonCanonicalTokensBridgeInfo = {
 } as const
 
 export const USDCBridgeInfo = {
-  [CommonAddress.Mainnet.USDC]: {
-    tokenSymbol: 'USDC',
-    tokenSymbolOnArbitrum: 'USDC.e',
-    supportedBridges: [
-      FastBridgeNames.Celer,
-      FastBridgeNames.Hop,
-      FastBridgeNames.Wormhole
-    ],
-    learnMoreUrl:
-      'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
-  }
+  tokenSymbol: 'USDC',
+  tokenSymbolOnArbitrum: 'USDC.e',
+  supportedBridges: [
+    FastBridgeNames.Celer,
+    FastBridgeNames.LIFI,
+    FastBridgeNames.Wormhole,
+    FastBridgeNames.Router
+  ],
+  learnMoreUrl:
+    'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
 }

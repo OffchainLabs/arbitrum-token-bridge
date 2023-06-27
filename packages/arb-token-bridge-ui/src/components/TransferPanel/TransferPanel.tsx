@@ -310,9 +310,8 @@ export function TransferPanel() {
       return Object.keys(NonCanonicalTokensBridgeInfo)
         .map(key => key.toLowerCase())
         .includes(selectedToken.address.toLowerCase())
-    } else {
-      return false
     }
+    return false
   }, [selectedToken])
 
   async function depositToken() {

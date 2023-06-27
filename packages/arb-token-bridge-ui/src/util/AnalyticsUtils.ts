@@ -177,6 +177,8 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Fast Bridge Click: Synapse': 'SKUFXFQR',
   'Fast Bridge Click: Stargate': '6VZXVGEQ',
   'Fast Bridge Click: Wormhole': '',
+  'Fast Bridge Click: LI.FI': '',
+  'Fast Bridge Click: Router': '',
   //
   'USDC: Fast Bridge Click: Celer': '',
   'USDC: Fast Bridge Click: Hop': '',
@@ -231,7 +233,7 @@ type AnalyticsEventMap = {
       | NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
     tokenSymbol?: NonCanonicalTokenName
   }
-  'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName }
+  'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName | 'USDC' }
   'Copy Bridge Link Click': { tokenSymbol: NonCanonicalTokenName }
   'Switch Network and Transfer': {
     type: 'Deposit' | 'Withdrawal'

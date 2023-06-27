@@ -6,11 +6,10 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import {
-  NonCanonicalTokenAddresses,
-  NonCanonicalTokenNames,
   USDCBridgeInfo,
   FastBridgeNames,
-  getFastBridges
+  getFastBridges,
+  SpecialTokenSymbol
 } from '../../util/fastBridges'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
@@ -38,20 +37,20 @@ export function USDCDepositConfirmationDialog(
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
-  const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
-  const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
-  const bridgeInfo = USDCBridgeInfo[tokenAddress]
-
-  if (!bridgeInfo) {
-    return null
-  }
+  const tokenSymbol = selectedToken?.symbol as SpecialTokenSymbol.USDC
 
   const fastBridges = [
-    ...getFastBridges(from.id, to.id, tokenSymbol, props.amount)
+    ...getFastBridges({
+      from: from.id,
+      to: to.id,
+      tokenSymbol,
+      toTokenAddress: CommonAddress.ArbitrumOne.USDC,
+      amount: props.amount
+    })
   ].filter(bridge => {
     return (
       tokenSymbol &&
-      (bridgeInfo.supportedBridges as readonly FastBridgeNames[]).includes(
+      (USDCBridgeInfo.supportedBridges as readonly FastBridgeNames[]).includes(
         bridge.name
       )
     )
