@@ -60,24 +60,26 @@ export async function getDestinationAddressError({
     return DestinationAddressErrors.REQUIRED_ADDRESS
   }
 
-  if (destinationAddress) {
-    if (!isAddress(destinationAddress)) {
-      return DestinationAddressErrors.INVALID_ADDRESS
-    }
+  if (!destinationAddress) {
+    return null
+  }
 
-    // The denylist consists of an array of addresses from Mainnet, Arbitrum One and Goerli.
-    // We do not separate them as it's unlikely for anyone to have a wallet address matching our contract addresses.
-    const denylistResponse = await fetch(
-      `${getAPIBaseUrl()}/api/isAddressDenylisted?address=${destinationAddress}`,
-      {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      }
-    )
-    const isDenylisted = (await denylistResponse.json()).data as boolean
-    if (isDenylisted) {
-      return DestinationAddressErrors.DENYLISTED_ADDRESS
+  if (!isAddress(destinationAddress)) {
+    return DestinationAddressErrors.INVALID_ADDRESS
+  }
+
+  // The denylist consists of an array of addresses from Mainnet, Arbitrum One and Goerli.
+  // We do not separate them as it's unlikely for anyone to have a wallet address matching our contract addresses.
+  const denylistResponse = await fetch(
+    `${getAPIBaseUrl()}/api/isAddressDenylisted?address=${destinationAddress}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     }
+  )
+  const isDenylisted = (await denylistResponse.json()).data as boolean
+  if (isDenylisted) {
+    return DestinationAddressErrors.DENYLISTED_ADDRESS
   }
 
   // no error
