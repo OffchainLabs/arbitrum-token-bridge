@@ -64,7 +64,6 @@ export function Layout(props: LayoutProps) {
     >
       <DAOBanner />
       <Header />
-      <WalletConnectWarning />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>

@@ -1,15 +1,7 @@
-import { useAccount } from 'wagmi'
-
 import { GET_HELP_LINK } from '../../constants'
 import { ExternalLink } from './ExternalLink'
 
 export function WalletConnectWarning() {
-  const { isConnected } = useAccount()
-
-  if (isConnected) {
-    return null
-  }
-
   return (
     <div className="m-3 max-w-md self-end rounded-md bg-cyan px-3 py-2 text-sm text-cyan-dark">
       Users connecting to the site using WalletConnect may experience errors due
