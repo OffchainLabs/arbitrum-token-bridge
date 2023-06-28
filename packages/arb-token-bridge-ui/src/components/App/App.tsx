@@ -357,8 +357,8 @@ export default function App() {
       <ArbQueryParamProvider>
         <WagmiConfig {...wagmiConfigProps}>
           <RainbowKitProvider
-            {...rainbowKitProviderProps}
             theme={rainbowkitTheme}
+            {...rainbowKitProviderProps}
           >
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <NetworkReady>
