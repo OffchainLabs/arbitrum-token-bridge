@@ -34,25 +34,23 @@ const appInfo = {
   projectId
 }
 
-const TargetChainKeys = [
-  'mainnet',
-  'arbitrum-one',
-  'arbitrum-nova',
-  'goerli',
-  'arbitrum-goerli'
-] as const
-
-type TargetChainKey = (typeof TargetChainKeys)[number]
+enum TargetChainKey {
+  Mainnet = 'mainnet',
+  ArbitrumOne = 'arbitrum-one',
+  ArbitrumNova = 'arbitrum-nova',
+  Goerli = 'goerli',
+  ArbitrumGoerli = 'arbitrum-goerli'
+}
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
   if (targetChainKey === null) {
-    return 'mainnet'
+    return TargetChainKey.Mainnet
   }
 
   // Default to Ethereum Mainnet if invalid
-  if (!(TargetChainKeys as readonly string[]).includes(targetChainKey)) {
-    return 'mainnet'
+  if (!(targetChainKey in TargetChainKey)) {
+    return TargetChainKey.Mainnet
   }
 
   return targetChainKey as TargetChainKey
@@ -60,19 +58,19 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 
 function getChainId(targetChainKey: TargetChainKey): number {
   switch (targetChainKey) {
-    case 'mainnet':
+    case TargetChainKey.Mainnet:
       return ChainId.Mainnet
 
-    case 'arbitrum-one':
+    case TargetChainKey.ArbitrumOne:
       return ChainId.ArbitrumOne
 
-    case 'arbitrum-nova':
+    case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
 
-    case 'goerli':
+    case TargetChainKey.Goerli:
       return ChainId.Goerli
 
-    case 'arbitrum-goerli':
+    case TargetChainKey.ArbitrumGoerli:
       return ChainId.ArbitrumGoerli
   }
 }
