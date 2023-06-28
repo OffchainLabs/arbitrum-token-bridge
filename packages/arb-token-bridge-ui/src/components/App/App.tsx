@@ -320,6 +320,15 @@ const targetChainKey = searchParams.get('walletConnectChain')
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 
+// Clear cache for everything related to WalletConnect v2.
+//
+// TODO: Remove this once the fix for the infinite loop / memory leak is identified.
+Object.keys(localStorage).forEach(key => {
+  if (key.startsWith('wc@2')) {
+    localStorage.removeItem(key)
+  }
+})
+
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
