@@ -49,7 +49,7 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   }
 
   // Default to Ethereum Mainnet if invalid
-  if (!(targetChainKey in TargetChainKey)) {
+  if (!(Object.values(TargetChainKey) as string[]).includes(targetChainKey)) {
     return TargetChainKey.Mainnet
   }
 
