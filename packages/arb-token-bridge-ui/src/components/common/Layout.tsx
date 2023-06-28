@@ -8,7 +8,6 @@ import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
-import { WalletConnectWarning } from './WalletConnectWarning'
 
 function Moon() {
   const { width } = useWindowSize()
