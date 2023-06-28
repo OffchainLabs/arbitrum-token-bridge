@@ -8,6 +8,7 @@ import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
+import { WalletConnectWarning } from './WalletConnectWarning'
 
 function Moon() {
   const { width } = useWindowSize()
@@ -63,6 +64,7 @@ export function Layout(props: LayoutProps) {
     >
       <DAOBanner />
       <Header />
+      <WalletConnectWarning />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>
