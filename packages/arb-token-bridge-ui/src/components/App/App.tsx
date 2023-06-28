@@ -324,7 +324,7 @@ const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 //
 // TODO: Remove this once the fix for the infinite loop / memory leak is identified.
 Object.keys(localStorage).forEach(key => {
-  if (key.startsWith('wc@2')) {
+  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
     localStorage.removeItem(key)
   }
 })
