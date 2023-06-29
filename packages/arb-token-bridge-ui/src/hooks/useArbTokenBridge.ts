@@ -859,7 +859,7 @@ export const useArbTokenBridge = (
 
     const { tokenAddress, value } = event
 
-    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
 
     const res = await messageWriter.execute(l2.provider)
 
@@ -940,7 +940,7 @@ export const useArbTokenBridge = (
 
     const { value } = event
 
-    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event)
+    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
 
     const res = await messageWriter.execute(l2.provider)
 
