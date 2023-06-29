@@ -14,6 +14,7 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
@@ -168,8 +169,16 @@ export function TransactionsTableDepositRow({
   className?: string
 }) {
   const { l1 } = useNetworksAndSigners()
-  const { isConnectedToArbitrum } = useNetworksAndSigners()
   const { redeem, isRedeeming } = useRedeemRetryable()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+
+  const isRedeemButtonDisabled = useMemo(
+    () =>
+      typeof isConnectedToArbitrum !== 'undefined'
+        ? !isConnectedToArbitrum
+        : true,
+    [isConnectedToArbitrum]
+  )
 
   const isError = useMemo(() => {
     if (
@@ -181,7 +190,7 @@ export function TransactionsTableDepositRow({
 
     if (tx.depositStatus === DepositStatus.CREATION_FAILED) {
       // In case of a retryable ticket creation failure, mark only the token deposits as errors
-      return tx.asset !== 'eth'
+      return tx.asset.toLowerCase() !== 'eth'
     }
 
     return false
@@ -241,7 +250,7 @@ export function TransactionsTableDepositRow({
       <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
         {showRedeemRetryableButton && (
           <Tooltip
-            show={!isConnectedToArbitrum}
+            show={isRedeemButtonDisabled}
             wrapperClassName=""
             content={
               <span>
@@ -254,7 +263,7 @@ export function TransactionsTableDepositRow({
             <Button
               variant="primary"
               loading={isRedeeming}
-              disabled={!isConnectedToArbitrum}
+              disabled={isRedeemButtonDisabled}
               onClick={() => redeem(tx)}
             >
               Retry

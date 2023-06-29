@@ -1,22 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
-import Image from 'next/image'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  getExplorerUrl,
   getL2ChainIds,
-  getNetworkLogo,
-  getNetworkName,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -27,7 +24,6 @@ import {
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
-import { Tooltip } from '../common/Tooltip'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -39,17 +35,24 @@ import {
   calculateEstimatedL2GasFees,
   useIsSwitchingL2Chain
 } from './TransferPanelMainUtils'
-import { NetworkType, useTokenBalances } from './useTokenBalances'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
+import { shortenAddress } from '../../util/CommonUtils'
+
+enum NetworkType {
+  l1 = 'l1',
+  l2 = 'l2'
+}
 
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
@@ -79,121 +82,63 @@ export function SwitchNetworksButton(
   )
 }
 
-type OptionsExtraProps = {
-  disabled?: boolean
-  disabledTooltip?: string
-}
-
-type NetworkListboxProps = {
-  disabled?: boolean
-  label: string
-  options: (Chain & OptionsExtraProps)[]
-  value: Chain
-  onChange: (value: Chain) => void
-}
-
-function NetworkListbox({
-  disabled = false,
-  label,
-  options,
-  value,
-  onChange
-}: NetworkListboxProps) {
-  const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
-
-    if (!isArbitrum) {
-      return 'bg-eth-primary'
-    }
-
-    if (isArbitrumNova) {
-      return 'bg-arb-nova-primary'
-    }
-
-    return 'bg-arb-one-primary'
-  }, [value])
-
-  const getOptionClassName = useCallback(
-    (index: number) => {
-      if (index === 0) {
-        return 'rounded-tl-xl rounded-tr-xl'
-      }
-
-      if (index === options.length - 1) {
-        return 'rounded-bl-xl rounded-br-xl'
-      }
-
-      return ''
-    },
-    [options.length]
-  )
-
-  return (
-    <Listbox
-      as="div"
-      className="relative"
-      disabled={disabled}
-      value={value}
-      onChange={onChange}
-    >
-      <Listbox.Button
-        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
-      >
-        <span>
-          {label} {getNetworkName(value.id)}
-        </span>
-        {!disabled && <ChevronDownIcon className="h-4 w-4" />}
-      </Listbox.Button>
-
-      <Listbox.Options className="absolute z-20 ml-2 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {options.map((option, index) => {
-          return (
-            <Tooltip
-              key={option.id}
-              show={option.disabled}
-              content={option.disabledTooltip}
-              wrapperClassName="w-full"
-              theme="dark"
-            >
-              <Listbox.Option
-                value={option}
-                className={twMerge(
-                  'flex h-12 min-w-max cursor-pointer items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)]',
-                  getOptionClassName(index),
-                  option.disabled ? 'pointer-events-none opacity-40' : ''
-                )}
-                disabled={option.disabled}
-              >
-                <div className="flex h-8 w-8 items-center justify-center">
-                  <Image
-                    src={getNetworkLogo(option.id)}
-                    alt={`${getNetworkName(option.id)} logo`}
-                    className="max-h-7 w-auto"
-                    width={36}
-                    height={36}
-                  />
-                </div>
-                <span>{getNetworkName(option.id)}</span>
-              </Listbox.Option>
-            </Tooltip>
-          )
-        })}
-      </Listbox.Options>
-    </Listbox>
-  )
-}
-
 function getListboxOptionsFromL1Network(network: Chain) {
   return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
 }
 
+function CustomAddressBanner({
+  network,
+  customAddress
+}: {
+  network: Chain
+  customAddress: string | undefined
+}) {
+  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+
+  const bannerClassName = useMemo(() => {
+    if (!isArbitrum) {
+      return 'bg-cyan border-eth-dark'
+    }
+    if (isArbitrumNova) {
+      return 'bg-orange border-arb-nova-dark'
+    }
+    return 'bg-cyan border-arb-one-dark'
+  }, [isArbitrum, isArbitrumNova])
+
+  if (!customAddress) {
+    return null
+  }
+
+  return (
+    <div
+      className={twMerge(
+        'w-full rounded-t-lg border-4 p-1 text-center text-sm',
+        bannerClassName
+      )}
+    >
+      <span>
+        Showing balance for Custom Destination Address:{' '}
+        <ExternalLink
+          className="arb-hover underline"
+          href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
+        >
+          {shortenAddress(customAddress)}
+        </ExternalLink>
+      </span>
+    </div>
+  )
+}
+
 function NetworkContainer({
   network,
+  customAddress,
   children
 }: {
   network: Chain
+  customAddress?: string
   children: React.ReactNode
 }) {
+  const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
     const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
 
@@ -217,18 +162,38 @@ function NetworkContainer({
     }
   }, [network])
 
+  const walletAddressLowercased = address?.toLowerCase()
+
+  const showCustomAddressBanner = useMemo(() => {
+    if (!customAddress || !walletAddressLowercased) {
+      return false
+    }
+    if (customAddress === walletAddressLowercased) {
+      return false
+    }
+    return utils.isAddress(customAddress)
+  }, [customAddress, walletAddressLowercased])
+
   return (
-    <div
-      className={`relative rounded-xl p-1 transition-colors ${backgroundClassName}`}
-    >
+    <>
+      {showCustomAddressBanner && (
+        <CustomAddressBanner network={network} customAddress={customAddress} />
+      )}
       <div
-        className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
-        style={{ backgroundImage }}
-      ></div>
-      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
-        {children}
+        className={twMerge(
+          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          showCustomAddressBanner ? 'rounded-t-none' : ''
+        )}
+      >
+        <div
+          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage }}
+        ></div>
+        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -236,23 +201,13 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2 } = networksAndSigners
-  const walletAddress = arbTokenBridge.walletAddress
-
-  const {
-    eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
-  const {
-    eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
-
-  const balance = on === NetworkType.l1 ? ethL1Balance : ethL2Balance
-
+function ETHBalance({
+  balance,
+  prefix = ''
+}: {
+  balance: BigNumber | null
+  prefix?: string
+}) {
   if (!balance) {
     return <StyledLoader />
   }
@@ -267,15 +222,16 @@ function ETHBalance({ on, prefix = '' }: { on: NetworkType; prefix?: string }) {
 
 function TokenBalance({
   forToken,
+  balance,
   on,
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
+  balance: BigNumber
   on: NetworkType
   prefix?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const balance = useTokenBalances(forToken?.address)[on]
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -309,7 +265,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-start break-all text-sm font-extralight tracking-[.25px] text-white md:items-end md:text-lg lg:font-medium lg:uppercase">
+    <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm font-extralight tracking-[.25px] text-white md:text-lg lg:font-medium">
       {children}
     </div>
   )
@@ -351,7 +307,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
 
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
@@ -365,16 +322,67 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+
+  const l1WalletAddress = isDepositMode
+    ? walletAddress
+    : destinationAddressOrWalletAddress
+
+  const l2WalletAddress = isDepositMode
+    ? destinationAddressOrWalletAddress
+    : walletAddress
+
   const {
-    eth: [ethL1Balance]
-  } = useBalance({ provider: l1.provider, walletAddress })
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances, updateErc20L1Balances]
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: l1WalletAddress
+  })
   const {
-    eth: [ethL2Balance]
-  } = useBalance({ provider: l2.provider, walletAddress })
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances, updateErc20L2Balances]
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress: l2WalletAddress
+  })
+
+  useEffect(() => {
+    if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
+      updateErc20L1Balances([selectedToken.address])
+      if (selectedToken.l2Address) {
+        updateErc20L2Balances([selectedToken.l2Address])
+      }
+    }
+  }, [
+    selectedToken,
+    updateErc20L1Balances,
+    updateErc20L2Balances,
+    destinationAddressOrWalletAddress
+  ])
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const tokenBalances = useTokenBalances(selectedToken?.address)
+  const selectedTokenBalances = useMemo(() => {
+    const result = {
+      l1: constants.Zero,
+      l2: constants.Zero
+    }
+
+    if (!selectedToken) {
+      return result
+    }
+
+    if (erc20L1Balances) {
+      result.l1 = erc20L1Balances[selectedToken.address] ?? constants.Zero
+    }
+
+    if (erc20L2Balances && selectedToken.l2Address) {
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+    }
+
+    return result
+  }, [erc20L1Balances, erc20L2Balances, selectedToken])
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
@@ -402,7 +410,13 @@ export function TransferPanelMain({
 
     // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
     setQueryParams({ l2ChainId })
-  }, [isConnectedToArbitrum, externalFrom, externalTo, setQueryParams])
+  }, [
+    isConnectedToArbitrum,
+    externalFrom,
+    externalTo,
+    setQueryParams,
+    walletAddress
+  ])
 
   const estimateGas = useCallback(
     async (
@@ -436,7 +450,9 @@ export function TransferPanelMain({
   const setMaxAmount = useCallback(async () => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
-    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.l1
+      : selectedTokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -483,8 +499,7 @@ export function TransferPanelMain({
     l2GasPrice,
     selectedToken,
     setAmount,
-    tokenBalances.l1,
-    tokenBalances.l2
+    selectedTokenBalances
   ])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
@@ -511,7 +526,9 @@ export function TransferPanelMain({
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-    const tokenBalance = isDepositMode ? tokenBalances.l1 : tokenBalances.l2
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.l1
+      : selectedTokenBalances.l2
 
     if (selectedToken) {
       if (!tokenBalance) {
@@ -526,7 +543,13 @@ export function TransferPanelMain({
     }
 
     return !ethBalance.isZero()
-  }, [ethL1Balance, ethL2Balance, tokenBalances, selectedToken, isDepositMode])
+  }, [
+    ethL1Balance,
+    ethL2Balance,
+    selectedTokenBalances,
+    selectedToken,
+    isDepositMode
+  ])
 
   const errorMessageText = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
@@ -790,12 +813,17 @@ export function TransferPanelMain({
               <>
                 <TokenBalance
                   on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  balance={
+                    app.isDepositMode
+                      ? selectedTokenBalances.l1
+                      : selectedTokenBalances.l2
+                  }
                   forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
+                  prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
                 <ETHBalance
-                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                  prefix={selectedToken ? '' : 'Balance: '}
+                  balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
+                  prefix={selectedToken ? '' : 'BALANCE: '}
                 />
               </>
             )}
@@ -868,24 +896,31 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer network={to}>
+      <NetworkContainer network={to} customAddress={destinationAddress}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
             {isSwitchingL2Chain ? (
               <StyledLoader />
             ) : (
-              <>
-                <TokenBalance
-                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                  forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
-                />
-                <ETHBalance
-                  on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                  prefix={selectedToken ? '' : 'Balance: '}
-                />
-              </>
+              utils.isAddress(destinationAddressOrWalletAddress) && (
+                <>
+                  <TokenBalance
+                    balance={
+                      app.isDepositMode
+                        ? selectedTokenBalances.l2
+                        : selectedTokenBalances.l1
+                    }
+                    on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                    forToken={selectedToken}
+                    prefix={selectedToken ? 'BALANCE: ' : ''}
+                  />
+                  <ETHBalance
+                    balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
+                    prefix={selectedToken ? '' : 'BALANCE: '}
+                  />
+                </>
+              )
             )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>

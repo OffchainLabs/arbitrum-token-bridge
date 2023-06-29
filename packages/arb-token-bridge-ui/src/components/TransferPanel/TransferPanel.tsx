@@ -38,15 +38,18 @@ import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL1TokenAllowance,
   getL2ERC20Address,
-  getL2GatewayAddress
+  getL2GatewayAddress,
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
 import { getDestinationAddressError } from './AdvancedSettings'
+import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -147,6 +150,7 @@ export function TransferPanel() {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
+  const { isArbitrumOne } = isNetwork(l2Network.id)
 
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
@@ -167,6 +171,7 @@ export function TransferPanel() {
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+  const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -185,6 +190,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const [
+    usdcDepositConfirmationDialogProps,
+    openUSDCDepositConfirmationDialog
+  ] = useDialog()
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -302,9 +311,8 @@ export function TransferPanel() {
       return Object.keys(NonCanonicalTokensBridgeInfo)
         .map(key => key.toLowerCase())
         .includes(selectedToken.address.toLowerCase())
-    } else {
-      return false
     }
+    return false
   }, [selectedToken])
 
   async function depositToken() {
@@ -403,7 +411,7 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (latestNetworksAndSigners.current.isConnectedToArbitrum) {
+        if (isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -419,7 +427,7 @@ export function TransferPanel() {
           )
 
           while (
-            latestNetworksAndSigners.current.isConnectedToArbitrum ||
+            isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -459,6 +467,25 @@ export function TransferPanel() {
             return
           }
 
+          if (isNonCanonicalToken) {
+            const waitForInput = openDepositConfirmationDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+          }
+
+          if (isArbitrumOne && isTokenMainnetUSDC(selectedToken.address)) {
+            const waitForInput = openUSDCDepositConfirmationDialog()
+            const confirmed = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+          }
+
+          // Check token allowance & show modal if needed
           const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
@@ -479,15 +506,6 @@ export function TransferPanel() {
               erc20L1Address: selectedToken.address,
               l1Signer
             })
-          }
-
-          if (isNonCanonicalToken) {
-            const waitForInput = openDepositConfirmationDialog()
-            const confirmed = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
           }
 
           if (isSmartContractWallet) {
@@ -558,7 +576,7 @@ export function TransferPanel() {
           })
         }
       } else {
-        if (!latestNetworksAndSigners.current.isConnectedToArbitrum) {
+        if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -574,7 +592,7 @@ export function TransferPanel() {
           )
 
           while (
-            !latestNetworksAndSigners.current.isConnectedToArbitrum ||
+            !isConnectedToArbitrum.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -728,6 +746,21 @@ export function TransferPanel() {
   )
   const { status: gasEstimationStatus } = gasSummary
 
+  const requiredGasFees = useMemo(
+    // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
+    () => {
+      if (isSmartContractWallet) {
+        if (isDepositMode) {
+          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+          return gasSummary.estimatedL2GasFees
+        }
+        return 0
+      }
+      return gasSummary.estimatedTotalGasFees
+    },
+    [isSmartContractWallet, isDepositMode, gasSummary]
+  )
+
   const getErrorMessage = useCallback(
     (
       _amountEntered: string,
@@ -773,14 +806,14 @@ export function TransferPanel() {
             // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
             const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
 
-            if (gasSummary.estimatedTotalGasFees > ethBalanceFloat) {
+            if (requiredGasFees > ethBalanceFloat) {
               return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
             }
 
             return undefined
           }
 
-          if (amountEntered + gasSummary.estimatedTotalGasFees > balance) {
+          if (amountEntered + requiredGasFees > balance) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
@@ -788,7 +821,15 @@ export function TransferPanel() {
         }
       }
     },
-    [gasSummary, ethBalance, selectedToken, isDepositMode, l2Network]
+    [
+      gasSummary,
+      ethBalance,
+      selectedToken,
+      isDepositMode,
+      l2Network,
+      requiredGasFees,
+      isSmartContractWallet
+    ]
   )
 
   const disableDeposit = useMemo(() => {
@@ -835,11 +876,19 @@ export function TransferPanel() {
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+      return requiredGasFees > ethBalanceFloat
     }
 
-    return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l1Balance)
-  }, [ethBalance, disableDeposit, selectedToken, gasSummary, amount, l1Balance])
+    return Number(amount) + requiredGasFees > Number(l1Balance)
+  }, [
+    ethBalance,
+    disableDeposit,
+    selectedToken,
+    gasSummary,
+    amount,
+    l1Balance,
+    requiredGasFees
+  ])
 
   const disableWithdrawal = useMemo(() => {
     return (
@@ -877,17 +926,18 @@ export function TransferPanel() {
     if (selectedToken) {
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return gasSummary.estimatedTotalGasFees > ethBalanceFloat
+      return requiredGasFees > ethBalanceFloat
     }
 
-    return Number(amount) + gasSummary.estimatedTotalGasFees > Number(l2Balance)
+    return Number(amount) + requiredGasFees > Number(l2Balance)
   }, [
     ethBalance,
     disableWithdrawal,
     selectedToken,
     gasSummary,
     amount,
-    l2Balance
+    l2Balance,
+    requiredGasFees
   ])
 
   const isSummaryVisible = useMemo(() => {
@@ -925,6 +975,11 @@ export function TransferPanel() {
 
       <DepositConfirmationDialog
         {...depositConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCDepositConfirmationDialog
+        {...usdcDepositConfirmationDialogProps}
         amount={amount}
       />
 

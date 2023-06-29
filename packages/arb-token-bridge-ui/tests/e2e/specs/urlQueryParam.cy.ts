@@ -15,7 +15,6 @@ describe('User enters site with query params on URL', () => {
       Cypress.env('ETH_RPC_URL'),
       Cypress.env('ADDRESS')
     ).then(val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 }))))
-    cy.login({ networkType: 'L1' })
   })
 
   it('should correctly populate amount input from query param', () => {
@@ -23,6 +22,7 @@ describe('User enters site with query params on URL', () => {
     context(
       '?amount=max should set transfer panel amount to maximum amount possible based on balance',
       () => {
+        cy.login({ networkType: 'L1' })
         cy.visit('/', { qs: { amount: 'max' } })
 
         cy.findByPlaceholderText(/Enter amount/i)

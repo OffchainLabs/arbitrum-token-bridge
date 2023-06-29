@@ -36,7 +36,7 @@ const learnMenuProps = toHeaderMenuProps([
   },
   {
     title: 'About bridging',
-    link: 'https://arbitrum.io/bridge-tutorial'
+    link: 'https://developer.arbitrum.io/getting-started-users'
   },
   {
     title: 'About Arbitrum',
@@ -210,7 +210,7 @@ export function Header() {
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
-          <a href="/" className="arb-hover flex flex-col items-center">
+          <a href="/" className="arb-hover flex shrink-0 flex-col items-center">
             <HeaderImageElement
               src={HeaderLogoMainnetSVG}
               alt="Arbitrum logo"

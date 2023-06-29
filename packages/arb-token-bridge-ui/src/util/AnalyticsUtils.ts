@@ -12,7 +12,8 @@ import {
   NonCanonicalTokenAddresses,
   NonCanonicalTokenNames,
   NonCanonicalTokenSupportedBridges,
-  FastBridgeNames
+  FastBridgeNames,
+  USDCBridgeInfo
 } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 import { getNetworkName } from './networks'
@@ -43,6 +44,9 @@ export const shouldTrackAnalytics = (
   return AnalyticsNetworkNames.includes(networkName as AnalyticsNetworkName)
 }
 
+export type FathomEventUSDC =
+  | `USDC: Fast Bridge Click: ${(typeof USDCBridgeInfo)['supportedBridges'][number]}`
+
 export type FathomEventNonCanonicalTokens =
   | `${NonCanonicalTokenNames.FRAX}: Fast Bridge Click: ${NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>}`
 
@@ -62,6 +66,7 @@ export type FathomEventMap =
   | `Fiat On-Ramp Click: ${FiatOnRampName}`
   //
   | `Fast Bridge Click: ${FastBridgeName}`
+  | `USDC: Use Arbitrum Bridge Click`
   | `${NonCanonicalTokenName}: Use Arbitrum Bridge Click`
   | `${NonCanonicalTokenName}: Copy Bridge Link Click`
   //
@@ -80,7 +85,7 @@ export type FathomEventMap =
   | `Multiple Tx Error: Get Help Click on ${AnalyticsNetworkName}`
 
 const fathomEventToEventId: { [key in FathomEventMap]: string } & {
-  [key in FathomEventNonCanonicalTokens]: string
+  [key in FathomEventNonCanonicalTokens | FathomEventUSDC]: string
 } = {
   'Address Block': 'KG4YHGXC',
   //
@@ -170,6 +175,15 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Fast Bridge Click: Across': 'EZDV8TMY',
   'Fast Bridge Click: Synapse': 'SKUFXFQR',
   'Fast Bridge Click: Stargate': '6VZXVGEQ',
+  'Fast Bridge Click: Wormhole': '',
+  'Fast Bridge Click: LI.FI': '',
+  'Fast Bridge Click: Router': '',
+  //
+  'USDC: Fast Bridge Click: Celer': '',
+  'USDC: Fast Bridge Click: LI.FI': '',
+  'USDC: Fast Bridge Click: Router': '',
+  'USDC: Fast Bridge Click: Wormhole': '',
+  'USDC: Use Arbitrum Bridge Click': '',
   //
   'FRAX: Fast Bridge Click: Celer': '6PZJPSBO',
   'FRAX: Use Arbitrum Bridge Click': 'THMMEGSP',
@@ -219,7 +233,7 @@ type AnalyticsEventMap = {
       | NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
     tokenSymbol?: NonCanonicalTokenName
   }
-  'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName }
+  'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName | 'USDC' }
   'Copy Bridge Link Click': { tokenSymbol: NonCanonicalTokenName }
   'Switch Network and Transfer': {
     type: 'Deposit' | 'Withdrawal'
@@ -233,7 +247,7 @@ type AnalyticsEventMap = {
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
   'Tx Error: Get Help Click': { network: AnalyticsNetworkName }
   'Multiple Tx Error: Get Help Click': { network: AnalyticsNetworkName }
-  'Address Block': undefined
+  'Address Block': { address: string }
   'Slow Bridge Click': undefined
   'Move More Funds Click': undefined
   'Explore: Randomize Click': undefined

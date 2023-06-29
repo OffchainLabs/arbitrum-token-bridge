@@ -23,7 +23,8 @@ import {
   getNetworkName,
   isNetwork
 } from '../../util/networks'
-import { getFastBridges } from '../../util/fastBridges'
+import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -49,7 +50,8 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2, isConnectedToArbitrum } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l1.network.id)
   const {
     app: { selectedToken }
@@ -57,12 +59,23 @@ export function WithdrawalConfirmationDialog(
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
-  const fastBridges = getFastBridges(
-    from.id,
-    to.id,
-    selectedToken?.symbol,
-    props.amount
-  )
+
+  const fastBridges = getFastBridges({
+    from: from.id,
+    to: to.id,
+    tokenSymbol: selectedToken?.symbol,
+    amount: props.amount
+  }).filter(fastBridge => {
+    // exclude these fast bridges for now
+    switch (fastBridge.name) {
+      case FastBridgeNames.LIFI:
+      case FastBridgeNames.Wormhole:
+      case FastBridgeNames.Router:
+        return false
+      default:
+        return true
+    }
+  })
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)

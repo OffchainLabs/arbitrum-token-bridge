@@ -1,7 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
 import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  InformationCircleIcon
+} from '@heroicons/react/24/outline'
+import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
+
+import { Tooltip } from '../common/Tooltip'
+import { getExplorerUrl } from '../../util/networks'
+import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -77,16 +88,19 @@ export const AdvancedSettings = ({
     app: { selectedToken, isDepositMode }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
+  const { address } = useAccount()
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
+  const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
-  useEffect(
-    // Show on page load if SC wallet since destination address mandatory
-    () => setCollapsed(!isSmartContractWallet),
-    [isSmartContractWallet]
-  )
+  useEffect(() => {
+    // Initially hide for EOA
+    setCollapsed(isEOA)
+    // Initially lock for EOA
+    setInputLocked(isEOA)
+  }, [isEOA])
 
   useEffect(() => {
     async function updateWarning() {
@@ -103,6 +117,13 @@ export const AdvancedSettings = ({
     return () => setWarning(null)
   }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
+  const collapsible = useMemo(() => {
+    // cannot collapse if:
+    // - SCW because the destination address is mandatory
+    // - destination address is not empty
+    return isEOA && !destinationAddress
+  }, [destinationAddress, isEOA])
+
   // Disabled for ETH
   if (!selectedToken) {
     return null
@@ -113,9 +134,7 @@ export const AdvancedSettings = ({
   }
 
   function handleVisibility() {
-    // Keep visible for SC wallets since destination address is mandatory
-    // Or if destination address is provided
-    if (isSmartContractWallet || destinationAddress) {
+    if (!collapsible) {
       setCollapsed(false)
       return
     }
@@ -126,33 +145,101 @@ export const AdvancedSettings = ({
     <div className="mt-6">
       <button
         onClick={handleVisibility}
-        className="flex flex-row items-center text-gray-dark"
+        className={twMerge(
+          'arb-hover flex flex-row items-center text-gray-dark',
+          collapsible ? '' : 'pointer-events-none'
+        )}
       >
-        <span className="text-lg font-semibold">Advanced Settings</span>
-        {collapsed ? (
-          <ChevronDownIcon className="ml-1 h-4 w-4" />
-        ) : (
-          <ChevronUpIcon className="ml-1 h-4 w-4" />
+        <span className="font-medium">Advanced Settings</span>
+        {collapsible && (
+          <ChevronDownIcon
+            className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
+          />
         )}
       </button>
       {!collapsed && (
         <>
           <div className="mt-2">
-            <span className="text-md text-gray-dark">
-              Destination Address
-              {!isSmartContractWallet ? ' (optional)' : ''}
-            </span>
-            <input
-              className="mt-1 w-full rounded-lg border border-gray-dark px-2 py-1 shadow-input"
-              placeholder="Enter destination address"
-              defaultValue={destinationAddress}
-              spellCheck={false}
-              onChange={e => onChange(e.target.value?.toLowerCase())}
-            />
+            <div className="flex items-center space-x-1">
+              <span className="font-medium">Custom Destination Address</span>
+              <Tooltip
+                content={
+                  <span>
+                    This is where your funds will end up at.
+                    {isEOA ? ' Defaults to your wallet address.' : ''}
+                  </span>
+                }
+              >
+                <InformationCircleIcon strokeWidth={2} height={16} />
+              </Tooltip>
+            </div>
+            <p className="my-2 text-sm font-light text-gray-dark">
+              {isEOA ? (
+                <>
+                  Send your funds to a different address.{' '}
+                  <span className="font-semibold">This is not standard.</span>{' '}
+                  Be sure you mean to send it here, or it may lead to an
+                  irrecoverable loss of funds.
+                </>
+              ) : (
+                <>
+                  With Smart Contract Wallets, you{' '}
+                  <span className="font-semibold">must specify an address</span>{' '}
+                  you&apos;d like the funds sent to.
+                </>
+              )}
+            </p>
+            <div
+              className={twMerge(
+                'my-1 flex w-full items-center rounded-lg border border-gray-dark px-2 py-1 shadow-input',
+                inputLocked ? 'bg-slate-200' : 'bg-white',
+                error ? 'border-red-400' : '',
+                warning && !error ? 'border-yellow-500' : ''
+              )}
+            >
+              <input
+                className="w-full"
+                placeholder={
+                  isEOA ? address : 'Enter Custom Destination Address'
+                }
+                value={destinationAddress}
+                disabled={inputLocked}
+                spellCheck={false}
+                onChange={e => onChange(e.target.value?.toLowerCase().trim())}
+              />
+              {isEOA && (
+                <button onClick={() => setInputLocked(!inputLocked)}>
+                  {inputLocked ? (
+                    <LockClosedIcon
+                      height={20}
+                      className="mr-2 text-slate-600"
+                    />
+                  ) : (
+                    <LockOpenIcon height={20} className="mr-2 text-slate-600" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
+
           {error && <span className="text-xs text-red-400">{error}</span>}
           {!error && warning && (
             <span className="text-xs text-yellow-500">{warning}</span>
+          )}
+          {destinationAddress && !error && (
+            <ExternalLink
+              className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
+              href={`${getExplorerUrl(
+                (isDepositMode ? l2 : l1).network.id
+              )}/address/${destinationAddress}`}
+            >
+              <ArrowDownTrayIcon
+                height={12}
+                strokeWidth={3}
+                className="mr-1 -rotate-90"
+              />
+              View account in explorer
+            </ExternalLink>
           )}
         </>
       )}

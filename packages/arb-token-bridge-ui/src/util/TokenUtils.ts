@@ -244,7 +244,7 @@ type SanitizeTokenOptions = {
   chain: Chain // chain for which we want to retrieve the token name / symbol
 }
 
-const isTokenMainnetUSDC = (tokenAddress: string) => {
+export const isTokenMainnetUSDC = (tokenAddress: string) => {
   return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
 }
 
@@ -254,17 +254,18 @@ export function sanitizeTokenSymbol(
   options: SanitizeTokenOptions
 ) {
   if (!options.erc20L1Address) {
-    return tokenSymbol.toUpperCase()
+    return tokenSymbol
   }
 
   const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
 
-  // only special case for USDC is Arbitrum One
-  if (isTokenMainnetUSDC(options.erc20L1Address) && isArbitrumOne) {
-    return 'USDC.e'
+  if (isTokenMainnetUSDC(options.erc20L1Address)) {
+    // It should be `USDC` on all chains except Arbitrum One
+    if (isArbitrumOne) return 'USDC.e'
+    return 'USDC'
   }
 
-  return tokenSymbol.toUpperCase()
+  return tokenSymbol
 }
 
 // get the exact token name for a particular chain
@@ -277,12 +278,11 @@ export function sanitizeTokenName(
   }
 
   const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
-  const isMainnet = isNetwork(options.chain.id).isMainnet
 
-  // only special case for USDC is Arbitrum One / Mainnet
   if (isTokenMainnetUSDC(options.erc20L1Address)) {
+    // It should be `USD Coin` on all chains except Arbitrum One
     if (isArbitrumOne) return 'Bridged USDC'
-    if (isMainnet) return 'USD Coin'
+    return 'USD Coin'
   }
 
   return tokenName

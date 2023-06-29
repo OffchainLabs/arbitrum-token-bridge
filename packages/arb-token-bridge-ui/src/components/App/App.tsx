@@ -50,7 +50,8 @@ import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
-import { appInfo, chains, wagmiClient } from '../../util/wagmi/setup'
+import { getProps } from '../../util/wagmi/setup'
+import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 
 declare global {
   interface Window {
@@ -134,8 +135,9 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { address, isConnected } = useAccount()
   const { chain } = useNetwork()
+  const { address, isConnected } = useAccount()
+  const { isBlocked } = useAccountIsBlocked()
 
   const networksAndSigners = useNetworksAndSigners()
 
@@ -170,11 +172,13 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
+
     if (!isConnected || !chain) {
       return
     }
 
-    const { l1, l2, isConnectedToArbitrum } = networksAndSigners
+    const { l1, l2 } = networksAndSigners
+    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
 
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
@@ -208,6 +212,20 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
+  if (address && isBlocked) {
+    return (
+      <BlockedDialog
+        address={address}
+        isOpen={true}
+        // ignoring until we use the package
+        // https://github.com/OffchainLabs/config-monorepo/pull/11
+        //
+        // eslint-disable-next-line
+        onClose={() => {}}
+      />
+    )
+  }
+
   return (
     <>
       {tokenBridgeParams && (
@@ -232,6 +250,8 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
 }
 
 function ConnectionFallback(props: FallbackProps): JSX.Element {
+  const { chain } = useNetwork()
+
   switch (props.status) {
     case UseNetworksAndSignersStatus.LOADING:
       return (
@@ -263,23 +283,8 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
         </>
       )
 
-    case UseNetworksAndSignersStatus.BLOCKED:
-      return (
-        <AppConnectionFallbackContainer>
-          <BlockedDialog
-            address={props.address}
-            isOpen={true}
-            // ignoring until we use the package
-            // https://github.com/OffchainLabs/config-monorepo/pull/11
-            //
-            // eslint-disable-next-line
-            onClose={() => {}}
-          />
-        </AppConnectionFallbackContainer>
-      )
-
     case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = getSupportedNetworks(props.chainId)
+      const supportedNetworks = getSupportedNetworks(chain?.id)
 
       return (
         <>
@@ -305,6 +310,24 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
   }
 }
+
+// We're doing this as a workaround so users can select their preferred chain on WalletConnect.
+//
+// https://github.com/orgs/WalletConnect/discussions/2733
+// https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
+const searchParams = new URLSearchParams(window.location.search)
+const targetChainKey = searchParams.get('walletConnectChain')
+
+const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+
+// Clear cache for everything related to WalletConnect v2.
+//
+// TODO: Remove this once the fix for the infinite loop / memory leak is identified.
+Object.keys(localStorage).forEach(key => {
+  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
+    localStorage.removeItem(key)
+  }
+})
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
@@ -332,11 +355,10 @@ export default function App() {
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
-        <WagmiConfig client={wagmiClient}>
+        <WagmiConfig {...wagmiConfigProps}>
           <RainbowKitProvider
-            chains={chains}
             theme={rainbowkitTheme}
-            appInfo={appInfo}
+            {...rainbowKitProviderProps}
           >
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <NetworkReady>
