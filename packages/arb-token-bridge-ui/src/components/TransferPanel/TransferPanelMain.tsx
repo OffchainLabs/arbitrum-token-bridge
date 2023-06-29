@@ -356,6 +356,9 @@ export function TransferPanelMain({
       if (selectedToken.l2Address) {
         updateErc20L2Balances([selectedToken.l2Address])
       }
+      if (isTokenMainnetUSDC(selectedToken.address)) {
+        updateErc20L2Balances([CommonAddress.ArbitrumOne.USDC])
+      }
     }
   }, [
     selectedToken,
