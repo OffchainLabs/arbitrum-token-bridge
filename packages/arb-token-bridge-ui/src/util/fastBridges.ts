@@ -1,4 +1,3 @@
-import { ChainId } from './networks'
 import { ImageProps } from 'next/image'
 import Hop from '@/images/bridge/hop.png'
 import Celer from '@/images/bridge/celer.png'
@@ -6,6 +5,12 @@ import Connext from '@/images/bridge/connext.png'
 import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
+import Wormhole from '@/images/bridge/wormhole.svg'
+import LIFI from '@/images/bridge/lifi.webp'
+import Router from '@/images/bridge/router.webp'
+
+import { ChainId } from './networks'
+import { isTokenMainnetUSDC } from './TokenUtils'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -13,7 +18,14 @@ export enum FastBridgeNames {
   Connext = 'Connext',
   Across = 'Across',
   Stargate = 'Stargate',
-  Synapse = 'Synapse'
+  Synapse = 'Synapse',
+  Wormhole = 'Wormhole',
+  LIFI = 'LI.FI',
+  Router = 'Router'
+}
+
+export enum SpecialTokenSymbol {
+  USDC = 'USDC'
 }
 
 export enum NonCanonicalTokenNames {
@@ -34,12 +46,21 @@ export type FastBridgeInfo = {
   href: string
 }
 
-export function getFastBridges(
-  from: ChainId,
-  to: ChainId,
+export function getFastBridges({
+  from,
+  to,
   tokenSymbol = 'ETH',
+  fromTokenAddress,
+  toTokenAddress,
+  amount
+}: {
+  from: ChainId
+  to: ChainId
+  tokenSymbol?: string
+  fromTokenAddress?: string
+  toTokenAddress?: string
   amount: string
-): FastBridgeInfo[] {
+}): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
       case ChainId.Mainnet:
@@ -75,6 +96,29 @@ export function getFastBridges(
         // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
+      case FastBridgeNames.Wormhole:
+        if (isTokenMainnetUSDC(fromTokenAddress ?? '')) {
+          return 'https://www.portalbridge.com/usdc-bridge/'
+        }
+        return 'https://www.portalbridge.com/'
+      case FastBridgeNames.LIFI:
+        if (!toTokenAddress) {
+          return `https://jumper.exchange/?fromChain=${from}&fromToken=${
+            fromTokenAddress ?? tokenSymbol
+          }&toChain=${to}&fromAmount=${amount}`
+        }
+        return `https://jumper.exchange/?fromChain=${from}&fromToken=${
+          fromTokenAddress ?? tokenSymbol
+        }&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+      case FastBridgeNames.Router:
+        let bridgeUrl = `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}`
+        if (fromTokenAddress) {
+          bridgeUrl += `&fromToken=${fromTokenAddress}`
+        }
+        if (toTokenAddress) {
+          bridgeUrl += `&toToken=${toTokenAddress}`
+        }
+        return bridgeUrl
       default:
         return ''
     }
@@ -109,10 +153,22 @@ export function getFastBridges(
     [FastBridgeNames.Synapse]: {
       imageSrc: Synapse,
       href: getBridgeDeepLink(FastBridgeNames.Synapse)
+    },
+    [FastBridgeNames.Wormhole]: {
+      imageSrc: Wormhole,
+      href: getBridgeDeepLink(FastBridgeNames.Wormhole)
+    },
+    [FastBridgeNames.LIFI]: {
+      imageSrc: LIFI,
+      href: getBridgeDeepLink(FastBridgeNames.LIFI)
+    },
+    [FastBridgeNames.Router]: {
+      imageSrc: Router,
+      href: getBridgeDeepLink(FastBridgeNames.Router)
     }
   }
 
-  return Object.keys(FastBridgeNames).map<FastBridgeInfo>(bridge => {
+  return Object.values(FastBridgeNames).map<FastBridgeInfo>(bridge => {
     const name = bridge as FastBridgeNames
     return {
       name,
@@ -130,4 +186,17 @@ export const NonCanonicalTokensBridgeInfo = {
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
     bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
   }
+} as const
+
+export const USDCBridgeInfo = {
+  tokenSymbol: 'USDC',
+  tokenSymbolOnArbitrum: 'USDC.e',
+  supportedBridges: [
+    FastBridgeNames.Celer,
+    FastBridgeNames.LIFI,
+    FastBridgeNames.Wormhole,
+    FastBridgeNames.Router
+  ],
+  learnMoreUrl:
+    'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
 } as const
