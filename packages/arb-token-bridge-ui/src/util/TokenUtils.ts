@@ -242,24 +242,26 @@ export async function l1TokenIsDisabled({
 type SanitizeTokenOptions = {
   erc20L1Address?: string | null // token address on L1
   chain: Chain // chain for which we want to retrieve the token name / symbol
+  skipUSDCoverride?: boolean
 }
 
-export const isTokenMainnetUSDC = (tokenAddress: string) => {
+export const isTokenMainnetUSDC = (tokenAddress: string | undefined) => {
+  if (!tokenAddress) return false
   return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
 }
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,
-  options: SanitizeTokenOptions
+  { erc20L1Address, chain, skipUSDCoverride = false }: SanitizeTokenOptions
 ) {
-  if (!options.erc20L1Address) {
+  if (!erc20L1Address) {
     return tokenSymbol
   }
 
-  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const isArbitrumOne = isNetwork(chain.id).isArbitrumOne
 
-  if (isTokenMainnetUSDC(options.erc20L1Address)) {
+  if (!skipUSDCoverride && isTokenMainnetUSDC(erc20L1Address)) {
     // It should be `USDC` on all chains except Arbitrum One
     if (isArbitrumOne) return 'USDC.e'
     return 'USDC'
@@ -271,15 +273,15 @@ export function sanitizeTokenSymbol(
 // get the exact token name for a particular chain
 export function sanitizeTokenName(
   tokenName: string,
-  options: SanitizeTokenOptions
+  { erc20L1Address, chain, skipUSDCoverride = false }: SanitizeTokenOptions
 ) {
-  if (!options.erc20L1Address) {
+  if (!erc20L1Address) {
     return tokenName
   }
 
-  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const isArbitrumOne = isNetwork(chain.id).isArbitrumOne
 
-  if (isTokenMainnetUSDC(options.erc20L1Address)) {
+  if (!skipUSDCoverride && isTokenMainnetUSDC(erc20L1Address)) {
     // It should be `USD Coin` on all chains except Arbitrum One
     if (isArbitrumOne) return 'Bridged USDC'
     return 'USD Coin'

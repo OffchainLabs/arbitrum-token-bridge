@@ -45,7 +45,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { isTokenMainnetUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 
@@ -224,12 +224,14 @@ function TokenBalance({
   forToken,
   balance,
   on,
-  prefix = ''
+  prefix = '',
+  skipUSDCoverride = false
 }: {
   forToken: ERC20BridgeToken | null
   balance: BigNumber
   on: NetworkType
   prefix?: string
+  skipUSDCoverride?: boolean
 }) {
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -240,7 +242,8 @@ function TokenBalance({
 
     return sanitizeTokenSymbol(forToken.symbol, {
       erc20L1Address: forToken.address,
-      chain: on === NetworkType.l1 ? l1.network : l2.network
+      chain: on === NetworkType.l1 ? l1.network : l2.network,
+      skipUSDCoverride
     })
   }, [forToken, on, l1, l2])
 
@@ -915,6 +918,20 @@ export function TransferPanelMain({
                     forToken={selectedToken}
                     prefix={selectedToken ? 'BALANCE: ' : ''}
                   />
+                  {app.isDepositMode &&
+                    isTokenMainnetUSDC(selectedToken?.address) && (
+                      <TokenBalance
+                        balance={
+                          erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC] ??
+                          constants.Zero
+                        }
+                        on={NetworkType.l2}
+                        forToken={Object.assign({}, selectedToken, {
+                          symbol: 'USDC'
+                        })}
+                        skipUSDCoverride
+                      />
+                    )}
                   <ETHBalance
                     balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
                     prefix={selectedToken ? '' : 'BALANCE: '}
