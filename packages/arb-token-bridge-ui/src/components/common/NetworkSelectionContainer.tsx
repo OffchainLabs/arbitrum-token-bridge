@@ -58,7 +58,7 @@ export const NetworkSelectionContainer = ({
               {supportedNetworks?.map(chainId => (
                 <button
                   key={chainId}
-                  className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white first:rounded-t-md last:rounded-b-md hover:bg-[rgba(0,0,0,0.2)] focus-visible:ring-2 focus-visible:ring-gray-4 focus-visible:ring-inset lg:px-4 lg:text-base lg:font-normal lg:text-dark"
+                  className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white first:rounded-t-md last:rounded-b-md hover:bg-[rgba(0,0,0,0.2)] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-4 lg:px-4 lg:text-base lg:font-normal lg:text-dark"
                   onClick={() => {
                     handleClick(chainId, close)
                   }}
