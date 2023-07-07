@@ -55,10 +55,10 @@ export const NetworkSelectionContainer = ({
         <Popover.Panel className="relative flex flex-col rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:bg-white lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) => (
             <>
-              {supportedNetworks?.map((chainId, i) => (
-                <div // TODO: replace with button
+              {supportedNetworks?.map(chainId => (
+                <button
                   key={chainId}
-                  className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white hover:bg-[rgba(0,0,0,0.2)] lg:px-4 lg:text-base lg:font-normal lg:text-dark"
+                  className="flex h-12 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white first:rounded-t-md last:rounded-b-md hover:bg-[rgba(0,0,0,0.2)] focus-visible:ring-2 focus-visible:ring-gray-4 focus-visible:ring-inset lg:px-4 lg:text-base lg:font-normal lg:text-dark"
                   onClick={() => {
                     handleClick(chainId, close)
                   }}
@@ -67,8 +67,7 @@ export const NetworkSelectionContainer = ({
                       handleClick(chainId, close)
                     }
                   }}
-                  role="button"
-                  tabIndex={i}
+                  type="button"
                   aria-label={`Switch to ${getNetworkName(Number(chainId))}`}
                 >
                   <div className="flex h-6 w-6 items-center justify-center lg:h-8 lg:w-8">
@@ -83,7 +82,7 @@ export const NetworkSelectionContainer = ({
                   <span className="whitespace-nowrap">
                     {getNetworkName(Number(chainId))}
                   </span>
-                </div>
+                </button>
               ))}
             </>
           )}
