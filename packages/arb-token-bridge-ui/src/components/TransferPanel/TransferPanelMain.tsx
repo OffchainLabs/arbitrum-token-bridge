@@ -415,7 +415,8 @@ export function TransferPanelMain({
     externalFrom,
     externalTo,
     setQueryParams,
-    walletAddress
+    l1.provider,
+    l2.provider
   ])
 
   const estimateGas = useCallback(
