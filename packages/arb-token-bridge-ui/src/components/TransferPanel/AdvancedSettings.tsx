@@ -18,7 +18,10 @@ import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
-import { addressIsSmartContract } from '../../util/AddressUtils'
+import {
+  addressIsSmartContract,
+  addressIsDenylisted
+} from '../../util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export enum DestinationAddressErrors {
@@ -67,18 +70,7 @@ export async function getDestinationAddressError({
   if (!isAddress(destinationAddress)) {
     return DestinationAddressErrors.INVALID_ADDRESS
   }
-
-  // The denylist consists of an array of addresses from Mainnet, Arbitrum One and Goerli.
-  // We do not separate them as it's unlikely for anyone to have a wallet address matching our contract addresses.
-  const denylistResponse = await fetch(
-    `${getAPIBaseUrl()}/api/isAddressDenylisted?address=${destinationAddress}`,
-    {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
-  const isDenylisted = (await denylistResponse.json()).data as boolean
-  if (isDenylisted) {
+  if (await addressIsDenylisted(destinationAddress)) {
     return DestinationAddressErrors.DENYLISTED_ADDRESS
   }
 
