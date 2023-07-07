@@ -361,11 +361,6 @@ export function TransferPanelMain({
     destinationAddressOrWalletAddress
   ])
 
-  useEffect(() => {
-    updateEthL1Balance()
-    updateEthL2Balance()
-  }, [walletAddress])
-
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const selectedTokenBalances = useMemo(() => {
@@ -420,7 +415,8 @@ export function TransferPanelMain({
     externalFrom,
     externalTo,
     setQueryParams,
-    walletAddress
+    l1.provider,
+    l2.provider
   ])
 
   const estimateGas = useCallback(
