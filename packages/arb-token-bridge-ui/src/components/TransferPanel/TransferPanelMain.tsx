@@ -333,14 +333,14 @@ export function TransferPanelMain({
     : walletAddress
 
   const {
-    eth: [ethL1Balance],
+    eth: [ethL1Balance, updateEthL1Balance],
     erc20: [erc20L1Balances, updateErc20L1Balances]
   } = useBalance({
     provider: l1.provider,
     walletAddress: l1WalletAddress
   })
   const {
-    eth: [ethL2Balance],
+    eth: [ethL2Balance, updateEthL2Balance],
     erc20: [erc20L2Balances, updateErc20L2Balances]
   } = useBalance({
     provider: l2.provider,
@@ -360,6 +360,11 @@ export function TransferPanelMain({
     updateErc20L2Balances,
     destinationAddressOrWalletAddress
   ])
+
+  useEffect(() => {
+    updateEthL1Balance()
+    updateEthL2Balance()
+  }, [walletAddress])
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
