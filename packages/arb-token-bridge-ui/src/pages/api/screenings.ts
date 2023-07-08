@@ -35,6 +35,21 @@ function isBlocked(response: ExternalApiResponse): boolean {
   return response.some(result => result.addressRiskIndicators.length > 0)
 }
 
+function requestLooksLikeBot(req: NextApiRequest) {
+  const httpLibraryUserAgents = [
+    'python-requests',
+    'Java/HttpClient',
+    'axios',
+    'HttpClient',
+    'Go-http-client',
+    'Ruby',
+    'curl'
+  ]
+
+  const userAgent = (req.headers['user-agent'] ?? '').toLowerCase()
+  return httpLibraryUserAgents.some(keyword => userAgent.includes(keyword))
+}
+
 export type ApiResponseSuccess = {
   blocked: boolean
 }
@@ -47,6 +62,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponseSuccess | ApiResponseError>
 ) {
+  if (requestLooksLikeBot(req)) {
+    res.status(200).send({ blocked: true })
+    return
+  }
+
   if (req.method !== 'GET') {
     res.status(400).send({ message: 'invalid_method' })
     return
