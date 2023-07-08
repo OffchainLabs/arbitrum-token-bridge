@@ -68,7 +68,7 @@ export default async function handler(
   res: NextApiResponse<ApiResponseSuccess | ApiResponseError>
 ) {
   if (requestLooksLikeBot(req)) {
-    res.status(200).send({ blocked: true })
+    res.status(200).send({ blocked: false })
     return
   }
 
