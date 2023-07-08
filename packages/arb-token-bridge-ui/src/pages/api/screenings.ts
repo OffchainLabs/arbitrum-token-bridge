@@ -47,7 +47,12 @@ function requestLooksLikeBot(req: NextApiRequest) {
   ]
 
   const userAgent = (req.headers['user-agent'] ?? '').toLowerCase()
-  return httpLibraryUserAgents.some(keyword => userAgent.includes(keyword))
+
+  return (
+    httpLibraryUserAgents
+      // Check if `user-agent` header matches any from the list of common http libraries
+      .some(value => userAgent.includes(value.toLowerCase()))
+  )
 }
 
 export type ApiResponseSuccess = {
