@@ -98,7 +98,7 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
   const { l1, l2 } = params
-  const { address, connector } = useAccount()
+  const { address: walletAddress, connector } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
@@ -108,14 +108,14 @@ export const useArbTokenBridge = (
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: address
+    walletAddress
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress: address
+    walletAddress
   })
 
   interface ExecutedMessagesCache {
@@ -182,6 +182,10 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => {
+    if (!walletAddress) {
+      return
+    }
+
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
     let tx: L1EthDepositTransaction
@@ -202,7 +206,6 @@ export const useArbTokenBridge = (
       return error.message
     }
 
-    const walletAddress = await l1Signer.getAddress()
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
@@ -241,9 +244,12 @@ export const useArbTokenBridge = (
   const withdrawEth: ArbTokenBridgeEth['withdraw'] = async ({
     amount,
     l2Signer,
-    txLifecycle,
-    walletAddress
+    txLifecycle
   }) => {
+    if (!walletAddress) {
+      return
+    }
+
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
       const tx = await ethBridger.withdraw({
@@ -325,13 +331,17 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     l1Signer: Signer
   }) => {
+    if (!walletAddress) {
+      return
+    }
+
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
       l1Signer
     })
-    const walletAddress = await l1Signer.getAddress()
+
     const { symbol } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address,
@@ -414,8 +424,10 @@ export const useArbTokenBridge = (
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string
   }) {
+    if (!walletAddress) {
+      return
+    }
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    const walletAddress = await l1Signer.getAddress()
 
     try {
       const { symbol, decimals } = await getL1TokenData({
@@ -489,9 +501,12 @@ export const useArbTokenBridge = (
     amount,
     l2Signer,
     txLifecycle,
-    destinationAddress,
-    walletAddress
+    destinationAddress
   }) => {
+    if (!walletAddress) {
+      return
+    }
+
     try {
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
       const provider = l2Signer.provider
@@ -742,7 +757,7 @@ export const useArbTokenBridge = (
     let l1Address: string
     let l2Address: string | undefined
 
-    if (!address) {
+    if (!walletAddress) {
       return
     }
 
@@ -769,7 +784,7 @@ export const useArbTokenBridge = (
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
     const { name, symbol, decimals } = await getL1TokenData({
-      account: address,
+      account: walletAddress,
       erc20L1Address: l1Address,
       l1Provider: l1.provider,
       l2Provider: l2.provider
@@ -848,13 +863,16 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
+    if (!walletAddress) {
+      return
+    }
+
     const { tokenAddress, value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
 
     const res = await messageWriter.execute(l2.provider)
 
-    const walletAddress = await l1Signer.getAddress()
     const { symbol, decimals } = await getL1TokenData({
       account: walletAddress,
       erc20L1Address: tokenAddress as string,
@@ -929,13 +947,15 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
+    if (!walletAddress) {
+      return
+    }
+
     const { value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
 
     const res = await messageWriter.execute(l2.provider)
-
-    const walletAddress = await l1Signer.getAddress()
 
     addTransaction({
       status: 'pending',
