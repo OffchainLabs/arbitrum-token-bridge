@@ -638,8 +638,7 @@ export function TransferPanel() {
 
               await latestToken.current.approveL2({
                 erc20L1Address: selectedToken.address,
-                l2Signer,
-                walletAddress: account
+                l2Signer
               })
             }
           }
@@ -682,8 +681,7 @@ export function TransferPanel() {
                 }
               },
               onTxError
-            },
-            walletAddress: account
+            }
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
@@ -691,7 +689,6 @@ export function TransferPanel() {
           await latestEth.current.withdraw({
             amount: amountRaw,
             l2Signer,
-            walletAddress: account,
             txLifecycle: {
               onTxSubmit: () => {
                 openTransactionHistoryPanel()
