@@ -21,7 +21,7 @@ export default async function handler(
     const { address } = req.query
 
     if (typeof address !== 'string') {
-      res.status(500).send({
+      res.status(400).send({
         message: `invalid_parameter: expected 'address' to be a string but got ${typeof address}`,
         data: undefined
       })

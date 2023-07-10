@@ -42,14 +42,14 @@
     "react-virtualized": "^9.22.3",
     "swr": "^2.1.2",
     "tailwind-merge": "^0.9.0",
-    "ts-node": "^10.9.1",
     "use-query-params": "^2.1.1",
     "wagmi": "^0.12.18",
     "zustand": "^4.3.8"
   },
   "scripts": {
     "dev": "next dev",
-    "build": "yarn workspace arb-token-bridge-ui generateDenylist && next build",
+    "prebuild": "yarn generateDenylist",
+    "build": "next build",
     "start": "next start",
     "test": "jest --watch",
     "test:ci": "jest --ci",
