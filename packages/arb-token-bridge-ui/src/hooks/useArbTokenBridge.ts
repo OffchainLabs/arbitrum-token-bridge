@@ -32,7 +32,9 @@ import {
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
   L2ContractCallTransactionLifecycle,
-  NodeBlockDeadlineStatusTypes
+  NodeBlockDeadlineStatusTypes,
+  ArbTokenBridgeEth,
+  ArbTokenBridgeToken
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
@@ -236,18 +238,14 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function withdrawEth({
+  const withdrawEth: ArbTokenBridgeEth['withdraw'] = async ({
     amount,
     l2Signer,
-    txLifecycle
-  }: {
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-  }) {
+    txLifecycle,
+    walletAddress
+  }) => {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-      const walletAddress = await l2Signer.getAddress()
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
@@ -365,7 +363,6 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     l2Signer: Signer
   }) => {
-    const walletAddress = await l2Signer.getAddress()
     if (typeof bridgeTokens === 'undefined' || !walletAddress) {
       return
     }
@@ -487,22 +484,16 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function withdrawToken({
+  const withdrawToken: ArbTokenBridgeToken['withdraw'] = async ({
     erc20L1Address,
     amount,
     l2Signer,
     txLifecycle,
-    destinationAddress
-  }: {
-    erc20L1Address: string
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) {
+    destinationAddress,
+    walletAddress
+  }) => {
     try {
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-      const walletAddress = await l2Signer.getAddress()
       const provider = l2Signer.provider
       const isSmartContractAddress =
         provider && (await provider.getCode(String(erc20L1Address))).length < 2

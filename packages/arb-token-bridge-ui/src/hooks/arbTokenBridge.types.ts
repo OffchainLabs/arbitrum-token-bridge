@@ -160,6 +160,7 @@ export interface ArbTokenBridgeEth {
     amount: BigNumber
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
+    walletAddress: `0x${string}`
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     id: string
@@ -180,6 +181,7 @@ export interface ArbTokenBridgeToken {
   approveL2: (params: {
     erc20L1Address: string
     l2Signer: Signer
+    walletAddress: `0x${string}`
   }) => Promise<void>
   deposit: (params: {
     erc20L1Address: string
@@ -194,6 +196,7 @@ export interface ArbTokenBridgeToken {
     l2Signer: Signer
     txLifecycle?: L2ContractCallTransactionLifecycle
     destinationAddress?: string
+    walletAddress: `0x${string}`
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     id: string
