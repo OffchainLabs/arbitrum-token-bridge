@@ -17,7 +17,7 @@ import {
   addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
-import { getL1TokenData } from '../../util/TokenUtils'
+import { getL1TokenData, isArbOneNativeUSDC } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import {
   useTokensFromLists,
@@ -26,10 +26,12 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { TokenRow } from './TokenRow'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 
 enum Panel {
   TOKENS,
@@ -184,7 +186,8 @@ function TokensPanel({
       // Deduplicate addresses
       ...new Set([
         ...Object.keys(tokensFromUser),
-        ...Object.keys(tokensFromLists)
+        ...Object.keys(tokensFromLists),
+        CommonAddress.ArbitrumOne.USDC
       ])
     ]
     return tokens
@@ -201,6 +204,10 @@ function TokensPanel({
 
           // Always show official ARB token
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
+            return true
+          }
+
+          if (isArbOneNativeUSDC(address)) {
             return true
           }
 
@@ -358,6 +365,15 @@ function TokensPanel({
                 if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
+
+                  if (isArbOneNativeUSDC(address)) {
+                    token = {
+                      listIds: new Set<number>(),
+                      type: TokenType.ERC20,
+                      l2Address: CommonAddress.ArbitrumOne.USDC,
+                      ...ArbOneNativeUSDC
+                    }
+                  }
                 }
 
                 return (
@@ -415,6 +431,11 @@ export function TokenSearch({
     }
 
     try {
+      if (isArbOneNativeUSDC(_token.address)) {
+        alert('arb one native usdc')
+        return
+      }
+
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         onImportToken(_token.address)

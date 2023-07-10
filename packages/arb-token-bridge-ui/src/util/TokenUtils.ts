@@ -248,6 +248,12 @@ export const isTokenMainnetUSDC = (tokenAddress: string) => {
   return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
 }
 
+export const isArbOneNativeUSDC = (tokenAddress: string | undefined) => {
+  return (
+    tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
+  )
+}
+
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,

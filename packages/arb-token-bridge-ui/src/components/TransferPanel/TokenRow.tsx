@@ -16,7 +16,11 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { sanitizeTokenName, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isArbOneNativeUSDC,
+  sanitizeTokenName,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
@@ -107,6 +111,10 @@ export function TokenRow({
     [token, isDepositMode, l2Network, l1Network]
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
+  const tokenIsArbOneNativeUSDC = useMemo(
+    () => isArbOneNativeUSDC(token?.address),
+    [token]
+  )
 
   const {
     eth: [ethL1Balance],
@@ -206,6 +214,10 @@ export function TokenRow({
       return true
     }
 
+    if (tokenIsArbOneNativeUSDC) {
+      return true
+    }
+
     return typeof bridgeTokens[token.address] !== 'undefined'
   }, [token, bridgeTokens])
 
@@ -268,10 +280,10 @@ export function TokenRow({
       type="button"
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
-      disabled={!tokenIsBridgeable}
+      disabled={!tokenIsBridgeable && !tokenIsArbOneNativeUSDC}
       className={twMerge(
         'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
-        tokenIsBridgeable
+        tokenIsBridgeable || tokenIsArbOneNativeUSDC
           ? 'cursor-pointer opacity-100'
           : 'cursor-not-allowed opacity-50'
       )}
@@ -349,9 +361,10 @@ export function TokenRow({
                     )}
                   </>
                 )}
-                {tokenIsBridgeable && tokenBalanceContent}
+                {(tokenIsBridgeable || tokenIsArbOneNativeUSDC) &&
+                  tokenBalanceContent}
               </div>
-              {isL2NativeToken ? (
+              {isL2NativeToken && !tokenIsArbOneNativeUSDC ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
                     l2Network.id
