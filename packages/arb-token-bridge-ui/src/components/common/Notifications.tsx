@@ -27,8 +27,8 @@ function Notification({
   return (
     <div
       className={twMerge(
-        'mx-2 flex w-auto gap-2 rounded-md p-2 px-4 text-sm',
-        mode === 'light' ? 'bg-cyan text-dark' : 'bg-dark text-cyan'
+        'mx-6 flex w-auto gap-2 rounded-md text-sm lg:mx-0',
+        mode === 'light' ? 'text-dark' : 'text-cyan'
       )}
     >
       {infoIcon && (

@@ -28,7 +28,7 @@ function Moon() {
 
 export const DAOBanner = () => {
   return (
-    <div className="bg-gradient px-4 py-4 text-center text-white">
+    <div className="bg-gradient px-4 py-2 text-center text-sm text-white lg:text-base">
       <span>
         Cross-Chain Transfer Protocol (
         <ExternalLink
