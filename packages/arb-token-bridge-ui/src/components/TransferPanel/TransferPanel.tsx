@@ -847,12 +847,6 @@ export function TransferPanel() {
       return true
     }
 
-    if (selectedToken) {
-      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
-      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return requiredGasFees > ethBalanceFloat
-    }
-
     return false
   }, [
     amountNum,
@@ -888,6 +882,12 @@ export function TransferPanel() {
       }
     }
 
+    if (selectedToken) {
+      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      return requiredGasFees > ethBalanceFloat
+    }
+
     return Number(amount) + requiredGasFees > Number(l1Balance)
   }, [
     disableDepositAndWithdrawal,
@@ -916,6 +916,12 @@ export function TransferPanel() {
       ].includes(selectedToken.address.toLowerCase())
     ) {
       return true
+    }
+
+    if (selectedToken) {
+      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
+      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      return requiredGasFees > ethBalanceFloat
     }
 
     return Number(amount) + requiredGasFees > Number(l2Balance)
