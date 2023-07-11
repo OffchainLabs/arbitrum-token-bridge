@@ -20,6 +20,10 @@
     "file": "tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}"
   },
   {
+    "name": "Advanced Settings",
+    "file": "tests/e2e/specs/**/advancedSettings.cy.{js,jsx,ts,tsx}"
+  },
+  {
     "name": "TX history",
     "file": "tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}"
   },

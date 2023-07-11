@@ -145,6 +145,7 @@ export const AdvancedSettings = ({
     <div className="mt-6">
       <button
         onClick={handleVisibility}
+        disabled={!collapsible}
         className={twMerge(
           'arb-hover flex flex-row items-center text-gray-dark',
           collapsible ? '' : 'pointer-events-none'

@@ -2,12 +2,37 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
+import { getInitialETHBalance } from '../../support/common'
+import { formatAmount } from '../../../src/util/NumberUtils'
+
 describe('Switch Networks', () => {
+  let l1ETHbal
+  let l2ETHbal
+
+  before(() => {
+    getInitialETHBalance(Cypress.env('ETH_RPC_URL')).then(
+      val => (l1ETHbal = formatAmount(val, { symbol: 'ETH' }))
+    )
+    getInitialETHBalance(Cypress.env('ARB_RPC_URL')).then(
+      val => (l2ETHbal = formatAmount(val, { symbol: 'ETH' }))
+    )
+  })
+
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
       cy.login({ networkType: 'L1' })
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
+    })
+
+    it('should show different balances after changing network', () => {
+      cy.login({ networkType: 'L1' })
+      cy.findByText(`BALANCE: ${l1ETHbal}`).should('be.visible')
+      cy.findByText(`BALANCE: ${l2ETHbal}`).should('be.visible')
+      cy.changeMetamaskNetwork('mainnet').then(() => {
+        cy.findByText(`BALANCE: ${l1ETHbal}`).should('not.exist')
+        cy.findByText(`BALANCE: ${l2ETHbal}`).should('not.exist')
+      })
     })
 
     context('Test Networks dropdown in Nav bar', () => {

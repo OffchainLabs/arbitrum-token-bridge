@@ -141,6 +141,4 @@ describe('Deposit ERC20 Token', () => {
     'user has some ERC-20 tokens which require token approval permission and is on L1',
     () => {}
   )
-  // TODO
-  context('approve and send ERC-20 successfully', () => {})
 })
