@@ -184,6 +184,10 @@ export function TokenRow({
       return null
     }
 
+    if (tokenIsArbOneNativeUSDC) {
+      return 'Native USDC on Arbitrum One'
+    }
+
     const listIds: Set<number> = token.listIds
     const listIdsSize = listIds.size
     if (listIdsSize === 0) {

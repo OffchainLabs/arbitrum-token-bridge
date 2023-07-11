@@ -32,6 +32,7 @@ import { warningToast } from '../common/atoms/Toast'
 import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
+import { isNetwork } from '../../util/networks'
 
 enum Panel {
   TOKENS,
@@ -131,7 +132,7 @@ function TokensPanel({
   } = useAppState()
   const {
     l1: { provider: L1Provider },
-    l2: { provider: L2Provider }
+    l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
@@ -181,14 +182,17 @@ function TokensPanel({
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
+    const tokenAddresses = [
+      ...Object.keys(tokensFromUser),
+      ...Object.keys(tokensFromLists)
+    ]
+    if (!isDepositMode && isNetwork(l2Network.id).isArbitrumOne) {
+      tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+    }
     const tokens = [
       ETH_IDENTIFIER,
       // Deduplicate addresses
-      ...new Set([
-        ...Object.keys(tokensFromUser),
-        ...Object.keys(tokensFromLists),
-        CommonAddress.ArbitrumOne.USDC
-      ])
+      ...new Set(tokenAddresses)
     ]
     return tokens
       .filter(address => {
@@ -255,7 +259,7 @@ function TokensPanel({
         }
         return bal1.gt(bal2) ? -1 : 1
       })
-  }, [tokensFromLists, tokensFromUser, newToken, getBalance])
+  }, [tokensFromLists, tokensFromUser, newToken, getBalance, l2Network])
 
   const storeNewToken = async () => {
     let error = 'Token not found on this network.'

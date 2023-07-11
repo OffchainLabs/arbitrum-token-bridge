@@ -43,6 +43,7 @@ import {
   l1TokenIsDisabled
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
+import { CommonAddress } from '../util/CommonAddressUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -701,7 +702,9 @@ export const useArbTokenBridge = (
     // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
     setBridgeTokens(oldBridgeTokens => {
       const l1Addresses: string[] = []
-      const l2Addresses: string[] = []
+      // USDC is not on any token list as it's unbridgeable
+      // but we still want to detect its balance on user's wallet
+      const l2Addresses: string[] = [CommonAddress.ArbitrumOne.USDC]
 
       for (const tokenAddress in bridgeTokensToAdd) {
         const tokenToAdd = bridgeTokensToAdd[tokenAddress]
