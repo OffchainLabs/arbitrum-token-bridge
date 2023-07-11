@@ -10,7 +10,7 @@ import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 
 import { ChainId } from './networks'
-import { isTokenMainnetUSDC } from './TokenUtils'
+import { isArbOneNativeUSDC, isTokenMainnetUSDC } from './TokenUtils'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -97,7 +97,10 @@ export function getFastBridges({
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
       case FastBridgeNames.Wormhole:
-        if (isTokenMainnetUSDC(fromTokenAddress ?? '')) {
+        if (
+          isTokenMainnetUSDC(fromTokenAddress) ||
+          isArbOneNativeUSDC(fromTokenAddress)
+        ) {
           return 'https://www.portalbridge.com/usdc-bridge/'
         }
         return 'https://www.portalbridge.com/'

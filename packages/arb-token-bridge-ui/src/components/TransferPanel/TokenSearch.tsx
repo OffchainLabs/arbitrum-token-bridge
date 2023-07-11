@@ -33,6 +33,7 @@ import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
+import { useUSDCWithdrawalConfirmationDialogStore } from './TransferPanel'
 
 enum Panel {
   TOKENS,
@@ -413,6 +414,8 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
+  const { openDialog: openUSDCWithdrawalConfirmationDialog } =
+    useUSDCWithdrawalConfirmationDialogStore()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -436,7 +439,7 @@ export function TokenSearch({
 
     try {
       if (isArbOneNativeUSDC(_token.address)) {
-        alert('arb one native usdc')
+        openUSDCWithdrawalConfirmationDialog()
         return
       }
 
