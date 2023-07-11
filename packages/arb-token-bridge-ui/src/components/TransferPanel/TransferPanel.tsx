@@ -897,7 +897,7 @@ export function TransferPanel() {
     l1Balance,
     amountNum,
     l2Network.id,
-    isDepositMode
+    requiredGasFees
   ])
 
   const disableWithdrawal = useMemo(() => {
@@ -926,7 +926,8 @@ export function TransferPanel() {
     gasSummary.estimatedTotalGasFees,
     isSmartContractWallet,
     l2Balance,
-    selectedToken
+    selectedToken,
+    requiredGasFees
   ])
 
   const isSummaryVisible = useMemo(() => {
