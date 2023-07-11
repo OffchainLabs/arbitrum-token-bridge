@@ -20,11 +20,10 @@ export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network.id)
 
   const from = l2.network
   const to = l1.network
-
+  const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
   const fastBridges = [
@@ -48,7 +47,7 @@ export function USDCWithdrawalConfirmationDialog(
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {networkName}
+              Move funds to {toNetworkName}
             </HeadlessUIDialog.Title>
             <button
               className="arb-hover"
@@ -65,8 +64,8 @@ export function USDCWithdrawalConfirmationDialog(
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
+            <div className="flex flex-col space-y-3 font-light">
+              <p>
                 Receive{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -76,6 +75,10 @@ export function USDCWithdrawalConfirmationDialog(
                 </ExternalLink>{' '}
                 on Ethereum Mainnet using a third-party bridge with Circle’s
                 CCTP integrated.
+              </p>
+              <p>
+                USDC native to Arbitrum One cannot be withdrawn using Arbitrum's
+                bridge.
               </p>
             </div>
 
