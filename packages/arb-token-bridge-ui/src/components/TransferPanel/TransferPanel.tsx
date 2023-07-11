@@ -857,6 +857,7 @@ export function TransferPanel() {
   }, [
     amountNum,
     destinationAddressError,
+    isSmartContractWallet,
     ethBalance,
     requiredGasFees,
     gasSummary.status,
@@ -893,9 +894,8 @@ export function TransferPanel() {
     isBridgingANewStandardToken,
     selectedToken,
     amount,
-    gasSummary.estimatedTotalGasFees,
-    l1Balance,
     amountNum,
+    l1Balance,
     l2Network.id,
     requiredGasFees
   ])
@@ -923,8 +923,6 @@ export function TransferPanel() {
     amount,
     amountNum,
     disableDepositAndWithdrawal,
-    gasSummary.estimatedTotalGasFees,
-    isSmartContractWallet,
     l2Balance,
     selectedToken,
     requiredGasFees
