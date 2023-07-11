@@ -168,6 +168,10 @@ function TokensPanel({
         return null
       }
 
+      if (isArbOneNativeUSDC(address)) {
+        return erc20L2Balances?.[address.toLowerCase()]
+      }
+
       const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
       return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
@@ -209,10 +213,6 @@ function TokensPanel({
 
           // Always show official ARB token
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
-            return true
-          }
-
-          if (isArbOneNativeUSDC(address)) {
             return true
           }
 
