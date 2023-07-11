@@ -137,7 +137,7 @@ export function TransferPanel() {
   } = useAppState()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const { address: account, isConnected } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const provider = useProvider()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -197,11 +197,11 @@ export function TransferPanel() {
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress: account })
+  } = useBalance({ provider: l1Provider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress: account })
+  } = useBalance({ provider: l2Provider, walletAddress })
 
   const ethBalance = useMemo(() => {
     return isDepositMode ? ethL1Balance : ethL2Balance
@@ -235,7 +235,7 @@ export function TransferPanel() {
 
   useEffect(() => {
     // Check in case of an account switch or network switch
-    if (typeof account === 'undefined') {
+    if (typeof walletAddress === 'undefined') {
       return
     }
 
@@ -249,7 +249,7 @@ export function TransferPanel() {
     }
   }, [
     ethL1Balance,
-    account,
+    walletAddress,
     isMainnet,
     isDepositMode,
     arbTokenBridge,
@@ -353,7 +353,7 @@ export function TransferPanel() {
       return
     }
 
-    if (!account) {
+    if (!walletAddress) {
       return
     }
 
@@ -483,7 +483,7 @@ export function TransferPanel() {
 
           // Check token allowance & show modal if needed
           const allowance = await getL1TokenAllowance({
-            account,
+            account: walletAddress,
             erc20L1Address: selectedToken.address,
             l1Provider: l1Provider,
             l2Provider: l2Provider
@@ -627,7 +627,7 @@ export function TransferPanel() {
             const allowed = await isAllowedL2({
               l1TokenAddress: selectedToken.address,
               l2TokenAddress: selectedToken.l2Address,
-              walletAddress: account,
+              walletAddress,
               amountNeeded: amountRaw,
               l2Provider: latestNetworksAndSigners.current.l2.provider
             })
