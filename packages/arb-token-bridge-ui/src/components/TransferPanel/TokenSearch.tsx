@@ -40,6 +40,13 @@ enum Panel {
   LISTS
 }
 
+const ARB_ONE_NATIVE_USDC_TOKEN = {
+  listIds: new Set<number>(),
+  type: TokenType.ERC20,
+  l2Address: CommonAddress.ArbitrumOne.USDC,
+  ...ArbOneNativeUSDC
+}
+
 function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
@@ -202,7 +209,10 @@ function TokensPanel({
     return tokens
       .filter(address => {
         // Derive the token object from the address string
-        const token = tokensFromUser[address] || tokensFromLists[address]
+        const token = isArbOneNativeUSDC(address)
+          ? // for token search as Arb One native USDC isn't in any lists
+            ARB_ONE_NATIVE_USDC_TOKEN
+          : tokensFromUser[address] || tokensFromLists[address]
 
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
@@ -367,18 +377,11 @@ function TokensPanel({
                 }
 
                 let token: ERC20BridgeToken | null = null
-                if (address) {
+                if (isArbOneNativeUSDC(address)) {
+                  token = ARB_ONE_NATIVE_USDC_TOKEN
+                } else if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
-
-                  if (isArbOneNativeUSDC(address)) {
-                    token = {
-                      listIds: new Set<number>(),
-                      type: TokenType.ERC20,
-                      l2Address: CommonAddress.ArbitrumOne.USDC,
-                      ...ArbOneNativeUSDC
-                    }
-                  }
                 }
 
                 return (

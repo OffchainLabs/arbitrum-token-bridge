@@ -23,7 +23,7 @@ import {
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
@@ -124,6 +124,11 @@ export function TokenRow({
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
+
+  const withdrawalModeArbOneUSDC =
+    tokenIsArbOneNativeUSDC &&
+    !isDepositMode &&
+    isNetwork(l2Network.id).isArbitrumOne
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -284,10 +289,10 @@ export function TokenRow({
       type="button"
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
-      disabled={!tokenIsBridgeable && !tokenIsArbOneNativeUSDC}
+      disabled={!tokenIsBridgeable && !withdrawalModeArbOneUSDC}
       className={twMerge(
         'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
-        tokenIsBridgeable || tokenIsArbOneNativeUSDC
+        tokenIsBridgeable || withdrawalModeArbOneUSDC
           ? 'cursor-pointer opacity-100'
           : 'cursor-not-allowed opacity-50'
       )}
@@ -365,10 +370,10 @@ export function TokenRow({
                     )}
                   </>
                 )}
-                {(tokenIsBridgeable || tokenIsArbOneNativeUSDC) &&
+                {(tokenIsBridgeable || withdrawalModeArbOneUSDC) &&
                   tokenBalanceContent}
               </div>
-              {isL2NativeToken && !tokenIsArbOneNativeUSDC ? (
+              {isL2NativeToken && !withdrawalModeArbOneUSDC ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
                     l2Network.id
