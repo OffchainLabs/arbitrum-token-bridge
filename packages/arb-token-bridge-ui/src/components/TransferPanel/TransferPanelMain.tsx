@@ -226,7 +226,7 @@ function TokenBalance({
   prefix = ''
 }: {
   forToken: ERC20BridgeToken | null
-  balance: BigNumber
+  balance: BigNumber | null
   on: NetworkType
   prefix?: string
 }) {
@@ -359,9 +359,12 @@ export function TransferPanelMain({
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const selectedTokenBalances = useMemo(() => {
-    const result = {
-      l1: constants.Zero,
-      l2: constants.Zero
+    const result: {
+      l1: BigNumber | null
+      l2: BigNumber | null
+    } = {
+      l1: null,
+      l2: null
     }
 
     if (!selectedToken) {
@@ -369,11 +372,11 @@ export function TransferPanelMain({
     }
 
     if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[selectedToken.address] ?? constants.Zero
+      result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
     if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
     }
 
     return result
