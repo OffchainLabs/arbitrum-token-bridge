@@ -58,6 +58,7 @@ export const transformDeposits = (
 ): MergedTransaction[] => {
   return deposits.map(tx => {
     return {
+      sender: tx.sender,
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
@@ -87,6 +88,7 @@ export const transformWithdrawals = (
     const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
 
     return {
+      sender: tx.sender,
       direction: 'outbox',
       status:
         tx.nodeBlockDeadline ===

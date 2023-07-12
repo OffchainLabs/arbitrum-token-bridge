@@ -9,6 +9,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
     l2ChainId: string
     address: string
     search?: string
+    fetchInternal?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -30,11 +31,14 @@ export default async function handler(
       address,
       search = '',
       l2ChainId,
+      fetchInternal,
       page = '0',
       pageSize = '10',
       fromBlock,
       toBlock
     } = req.query
+
+    const isInternal = fetchInternal === 'true'
 
     // validate method
     if (req.method !== 'GET') {
@@ -56,11 +60,20 @@ export default async function handler(
       })
     }
 
+    const addressQuery = isInternal
+      ? `
+      sender: "${address}",
+    `
+      : `
+      sender_not: "${address}",
+      receiver: "${address}",
+    `
+
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
             withdrawals(
                 where: {
-                sender: "${address}",
+                ${addressQuery}
                 ${
                   typeof fromBlock !== 'undefined'
                     ? `l2BlockNum_gte: ${Number(fromBlock)}`

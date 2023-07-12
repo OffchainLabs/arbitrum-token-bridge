@@ -11,6 +11,7 @@ import {
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { useAppContextState } from '../components/App/AppContext'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -56,6 +57,10 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
+  const {
+    layout: { isTransactionHistoryShowingInternalTx: fetchInternal }
+  } = useAppContextState()
+
   const gatewaysToUse = useL2Gateways({ l2Provider })
 
   const {
@@ -72,6 +77,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       l1Provider,
       l2Provider,
       gatewaysToUse,
+      fetchInternal,
       withdrawalPageParams.pageNumber,
       withdrawalPageParams.pageSize,
       withdrawalPageParams.searchString
@@ -82,6 +88,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _l1Provider,
       _l2Provider,
       _gatewayAddresses,
+      _fetchInternal,
       _pageNumber,
       _pageSize,
       _searchString
@@ -91,6 +98,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         gatewayAddresses: _gatewayAddresses,
+        fetchInternal: _fetchInternal,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString

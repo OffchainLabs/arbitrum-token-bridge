@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
+import { TransactionsTableCustomAddressBanner } from './TransactionsTableCustomAddressBanner'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
@@ -370,33 +371,36 @@ export function TransactionsTableWithdrawalRow({
   )
 
   return (
-    <tr
-      className={`text-sm text-dark ${
-        bgClassName || `bg-cyan even:bg-white`
-      } ${className}`}
-      data-testid={`withdrawal-row-${tx.txId}`}
-    >
-      <td className="w-1/5 py-3 pl-6 pr-3">
-        <WithdrawalRowStatus tx={tx} />
-      </td>
+    <>
+      <tr
+        className={`text-sm text-dark ${
+          bgClassName || `bg-cyan even:bg-white`
+        } ${className}`}
+        data-testid={`withdrawal-row-${tx.txId}`}
+      >
+        <td className="w-1/5 py-3 pl-6 pr-3">
+          <WithdrawalRowStatus tx={tx} />
+        </td>
 
-      <td className="w-1/5 px-3 py-3">
-        <WithdrawalRowTime tx={tx} />
-      </td>
+        <td className="w-1/5 px-3 py-3">
+          <WithdrawalRowTime tx={tx} />
+        </td>
 
-      <td className="w-1/5 whitespace-nowrap px-3 py-3">
-        {formatAmount(Number(tx.value), {
-          symbol: tokenSymbol
-        })}
-      </td>
+        <td className="w-1/5 whitespace-nowrap px-3 py-3">
+          {formatAmount(Number(tx.value), {
+            symbol: tokenSymbol
+          })}
+        </td>
 
-      <td className="w-1/5 px-3 py-3">
-        <WithdrawalRowTxID tx={tx} />
-      </td>
+        <td className="w-1/5 px-3 py-3">
+          <WithdrawalRowTxID tx={tx} />
+        </td>
 
-      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
-        <WithdrawalRowAction tx={tx} isError={isError} />
-      </td>
-    </tr>
+        <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
+          <WithdrawalRowAction tx={tx} isError={isError} />
+        </td>
+      </tr>
+      <TransactionsTableCustomAddressBanner senderAddress={tx.sender} />
+    </>
   )
 }

@@ -15,6 +15,7 @@ import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useAppState } from '../../../state'
 import { useAccountType } from '../../../hooks/useAccountType'
+import { useAppContextActions, useAppContextState } from '../../App/AppContext'
 
 export type PageParams = {
   searchString: string
@@ -86,6 +87,12 @@ export function TransactionsTable({
   error
 }: TransactionsTableProps) {
   const { isSmartContractWallet = false } = useAccountType()
+
+  const {
+    layout: { isTransactionHistoryShowingInternalTx }
+  } = useAppContextState()
+
+  const { setShowInternalTransactions } = useAppContextActions()
 
   const {
     app: { mergedTransactions: locallyStoredTransactions }
@@ -170,6 +177,22 @@ export function TransactionsTable({
         transactions={transactions}
         loading={loading}
       />
+
+      <div className="bg-white">
+        <h1>Type of tx</h1>
+        <div>
+          <button
+            onClick={() =>
+              setShowInternalTransactions(
+                !isTransactionHistoryShowingInternalTx
+              )
+            }
+          >
+            Change tx type
+          </button>
+        </div>
+        {isTransactionHistoryShowingInternalTx ? 'Internal' : 'External'}
+      </div>
 
       {
         <table className="w-full overflow-hidden rounded-b-lg bg-white">

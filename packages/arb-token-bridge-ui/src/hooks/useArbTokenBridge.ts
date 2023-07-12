@@ -282,6 +282,7 @@ export const useArbTokenBridge = (
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
+          sender: tx.from,
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
@@ -561,6 +562,7 @@ export const useArbTokenBridge = (
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
+          sender: tx.from,
           type: AssetType.ERC20,
           tokenAddress: erc20L1Address,
           value: amount,
