@@ -883,6 +883,9 @@ export function TransferPanel() {
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -919,6 +922,9 @@ export function TransferPanel() {
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
