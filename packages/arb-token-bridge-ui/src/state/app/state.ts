@@ -140,15 +140,12 @@ export const defaultState: AppState = {
     )
   }),
   withdrawalsTransformed: derived((s: AppState) => {
-    console.log('pendingWithdrawalsMap', s.arbTokenBridge?.pendingWithdrawalsMap)
     const withdrawals = Object.values(
       s.arbTokenBridge?.pendingWithdrawalsMap || []
     ) as L2ToL1EventResultPlus[]
-    console.log('with22', withdrawals)
     return transformWithdrawals(withdrawals)
   }),
   mergedTransactions: derived((s: AppState) => {
-    console.log('withdrawalsTransformed', s.withdrawalsTransformed)
     return _reverse(
       _sortBy([...s.depositsTransformed, ...s.withdrawalsTransformed], item => {
         if (_isEmpty(item.createdAt)) {

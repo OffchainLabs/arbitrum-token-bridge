@@ -113,7 +113,7 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
 
   const setShowSentTransactions = (payload: boolean) => {
     dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload })
-  } 
+  }
 
   const closeTransactionHistoryPanel = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
