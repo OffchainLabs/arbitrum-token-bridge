@@ -90,7 +90,7 @@ export const transformWithdrawals = (
 
     return {
       sender: tx.sender ?? '',
-      destination: tx.destination,
+      destination: tx.destinationAddress,
       direction: 'outbox',
       status:
         tx.nodeBlockDeadline ===

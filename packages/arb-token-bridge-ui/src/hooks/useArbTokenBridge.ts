@@ -567,7 +567,7 @@ export const useArbTokenBridge = (
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
           sender: walletAddress,
-          destination: destinationAddress ?? walletAddress,
+          destinationAddress: destinationAddress ?? walletAddress,
           type: AssetType.ERC20,
           tokenAddress: erc20L1Address,
           value: amount,
