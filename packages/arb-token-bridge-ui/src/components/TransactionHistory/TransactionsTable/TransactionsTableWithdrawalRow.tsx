@@ -391,6 +391,8 @@ export function TransactionsTableWithdrawalRow({
     return null
   }
 
+  // both sent and received PENDING txs are stored together
+  // here we make sure we display a correct tx (sent or received)
   if (isTransactionHistoryShowingSentTx) {
     if (tx.sender.toLowerCase() !== address.toLowerCase()) {
       return null
