@@ -58,7 +58,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const {
-    layout: { isTransactionHistoryShowingInternalTx: fetchInternal }
+    layout: { isTransactionHistoryShowingSentTx: fetchInternal }
   } = useAppContextState()
 
   const gatewaysToUse = useL2Gateways({ l2Provider })

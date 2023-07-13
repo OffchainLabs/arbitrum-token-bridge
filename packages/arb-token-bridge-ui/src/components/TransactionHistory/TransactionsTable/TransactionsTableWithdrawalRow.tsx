@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
+import { useAccount } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 import dayjs from 'dayjs'
 
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
-import { TransactionsTableCustomAddressBanner } from './TransactionsTableCustomAddressBanner'
+import { TransactionsTableRowBanner } from './TransactionsTableRowBanner'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
@@ -28,6 +30,7 @@ import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { useAppContextState } from '../../App/AppContext'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -354,6 +357,10 @@ export function TransactionsTableWithdrawalRow({
 }) {
   const isError = tx.status === 'Failure'
   const { l2 } = useNetworksAndSigners()
+  const {
+    layout: { isTransactionHistoryShowingSentTx }
+  } = useAppContextState()
+  const { address } = useAccount()
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
@@ -370,37 +377,77 @@ export function TransactionsTableWithdrawalRow({
     [l2.network, tx.tokenAddress, tx.asset]
   )
 
+  const isCustomAddressTx = useMemo(() => {
+    if (!address) {
+      return false
+    }
+    return tx.sender.toLowerCase() !== address.toLowerCase()
+  }, [tx.sender, address])
+
+  if (!address) {
+    return null
+  }
+
+  if (isTransactionHistoryShowingSentTx) {
+    if (tx.sender.toLowerCase() !== address.toLowerCase()) {
+      return null
+    }
+  } else {
+    if (tx.sender.toLowerCase() === address.toLowerCase()) {
+      return null
+    }
+  }
+
   return (
-    <>
-      <tr
-        className={`text-sm text-dark ${
-          bgClassName || `bg-cyan even:bg-white`
-        } ${className}`}
-        data-testid={`withdrawal-row-${tx.txId}`}
+    <tr
+      className={twMerge(
+        'relative text-sm text-dark',
+        bgClassName || 'bg-cyan even:bg-white',
+        className
+      )}
+      data-testid={`withdrawal-row-${tx.txId}`}
+    >
+      <td
+        className={twMerge(
+          'w-1/5 py-3 pl-6 pr-3',
+          isCustomAddressTx ? 'pb-10' : ''
+        )}
       >
-        <td className="w-1/5 py-3 pl-6 pr-3">
-          <WithdrawalRowStatus tx={tx} />
-        </td>
+        <WithdrawalRowStatus tx={tx} />
+      </td>
 
-        <td className="w-1/5 px-3 py-3">
-          <WithdrawalRowTime tx={tx} />
-        </td>
+      <td
+        className={twMerge('w-1/5 px-3 py-3', isCustomAddressTx ? 'pb-10' : '')}
+      >
+        <WithdrawalRowTime tx={tx} />
+      </td>
 
-        <td className="w-1/5 whitespace-nowrap px-3 py-3">
-          {formatAmount(Number(tx.value), {
-            symbol: tokenSymbol
-          })}
-        </td>
+      <td
+        className={twMerge(
+          'w-1/5 whitespace-nowrap px-3 py-3',
+          isCustomAddressTx ? 'pb-10' : ''
+        )}
+      >
+        {formatAmount(Number(tx.value), {
+          symbol: tokenSymbol
+        })}
+      </td>
 
-        <td className="w-1/5 px-3 py-3">
-          <WithdrawalRowTxID tx={tx} />
-        </td>
+      <td
+        className={twMerge('w-1/5 px-3 py-3', isCustomAddressTx ? 'pb-10' : '')}
+      >
+        <WithdrawalRowTxID tx={tx} />
+      </td>
 
-        <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
-          <WithdrawalRowAction tx={tx} isError={isError} />
-        </td>
-      </tr>
-      <TransactionsTableCustomAddressBanner senderAddress={tx.sender} />
-    </>
+      <td
+        className={twMerge(
+          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          isCustomAddressTx ? 'pb-10' : ''
+        )}
+      >
+        <WithdrawalRowAction tx={tx} isError={isError} />
+      </td>
+      {isCustomAddressTx && <TransactionsTableRowBanner tx={tx} />}
+    </tr>
   )
 }

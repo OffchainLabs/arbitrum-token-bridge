@@ -5,7 +5,7 @@ type AppContextState = {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
-    isTransactionHistoryShowingInternalTx: boolean
+    isTransactionHistoryShowingSentTx: boolean
     isPreferencesPanelVisible: boolean
   }
 }
@@ -15,7 +15,7 @@ const initialState: AppContextState = {
     isTransferPanelVisible: true,
     isTransferring: false,
     isTransactionHistoryPanelVisible: false,
-    isTransactionHistoryShowingInternalTx: true,
+    isTransactionHistoryShowingSentTx: true,
     isPreferencesPanelVisible: false
   }
 }
@@ -29,7 +29,7 @@ type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
-  | { type: 'layout.set_txhistory_show_internal_tx'; payload: boolean }
+  | { type: 'layout.set_txhistory_show_sent_tx'; payload: boolean }
   | { type: 'layout.set_preferences_panel_visible'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
@@ -49,12 +49,12 @@ function reducer(state: AppContextState, action: Action) {
         }
       }
 
-    case 'layout.set_txhistory_show_internal_tx':
+    case 'layout.set_txhistory_show_sent_tx':
       return {
         ...state,
         layout: {
           ...state.layout,
-          isTransactionHistoryShowingInternalTx: action.payload
+          isTransactionHistoryShowingSentTx: action.payload
         }
       }
 
@@ -111,8 +111,8 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
 
-  const setShowInternalTransactions = (payload: boolean) => {
-    dispatch({ type: 'layout.set_txhistory_show_internal_tx', payload })
+  const setShowSentTransactions = (payload: boolean) => {
+    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload })
   } 
 
   const closeTransactionHistoryPanel = () => {
@@ -131,7 +131,7 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     setTransferring,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
-    setShowInternalTransactions,
+    setShowSentTransactions,
     openPreferences,
     closePreferences
   }

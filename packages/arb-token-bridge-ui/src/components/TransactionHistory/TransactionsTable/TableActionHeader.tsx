@@ -72,11 +72,7 @@ export const TableActionHeader = ({
     (searchString && loading) || pageParams.searchString !== trimmedSearchString // for immediate UX feedback of search results fetching while typing
 
   return (
-    <div
-      className={`sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm ${
-        type !== 'deposits' && 'rounded-tl-lg'
-      }`}
-    >
+    <div className="sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 bg-white p-3 text-sm">
       {/* Search bar */}
       <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
         <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
