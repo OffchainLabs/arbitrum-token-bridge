@@ -26,16 +26,14 @@ export function USDCWithdrawalConfirmationDialog(
   const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
-  const fastBridges = [
-    ...getFastBridges({
-      from: from.id,
-      to: to.id,
-      tokenSymbol,
-      fromTokenAddress: CommonAddress.ArbitrumOne.USDC,
-      toTokenAddress: CommonAddress.Mainnet.USDC,
-      amount: props.amount
-    })
-  ].filter(bridge => {
+  const fastBridges = getFastBridges({
+    from: from.id,
+    to: to.id,
+    tokenSymbol,
+    fromTokenAddress: CommonAddress.ArbitrumOne.USDC,
+    toTokenAddress: CommonAddress.Mainnet.USDC,
+    amount: props.amount
+  }).filter(bridge => {
     return (
       USDCBridgeInfo.supportedBridges as readonly FastBridgeNames[]
     ).includes(bridge.name)
@@ -73,8 +71,8 @@ export function USDCWithdrawalConfirmationDialog(
                 >
                   USDC
                 </ExternalLink>{' '}
-                on Ethereum Mainnet using a third-party bridge with Circle’s
-                CCTP integrated.
+                on Ethereum Mainnet using a third-party bridge with
+                Circle&apos;s CCTP integrated.
               </p>
               <p>
                 USDC native to Arbitrum One cannot be withdrawn using Arbitrum's

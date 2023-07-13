@@ -1,4 +1,5 @@
 import { ChainId } from '../util/networks'
+import { CommonAddress } from './CommonAddressUtils'
 
 export type L2NativeToken = {
   name: string
@@ -11,7 +12,7 @@ export type L2NativeToken = {
 export const ArbOneNativeUSDC = {
   name: 'USD Coin',
   symbol: 'USDC',
-  address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+  address: CommonAddress.ArbitrumOne.USDC,
   decimals: 6,
   logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png'
 }

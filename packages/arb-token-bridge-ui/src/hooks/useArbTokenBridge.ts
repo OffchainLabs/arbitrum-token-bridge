@@ -703,10 +703,10 @@ export const useArbTokenBridge = (
     // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
     setBridgeTokens(oldBridgeTokens => {
       const l1Addresses: string[] = []
-      // USDC is not on any token list as it's unbridgeable
-      // but we still want to detect its balance on user's wallet
       const l2Addresses: string[] = []
 
+      // USDC is not on any token list as it's unbridgeable
+      // but we still want to detect its balance on user's wallet
       if (isNetwork(l2ChainID).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }

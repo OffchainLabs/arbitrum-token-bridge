@@ -41,10 +41,10 @@ enum Panel {
 }
 
 const ARB_ONE_NATIVE_USDC_TOKEN = {
+  ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
-  l2Address: CommonAddress.ArbitrumOne.USDC,
-  ...ArbOneNativeUSDC
+  l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
 function TokenListsPanel() {
