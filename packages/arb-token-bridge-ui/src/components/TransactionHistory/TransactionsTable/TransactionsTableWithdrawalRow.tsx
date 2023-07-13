@@ -378,7 +378,7 @@ export function TransactionsTableWithdrawalRow({
   )
 
   const isCustomAddressTx = useMemo(() => {
-    if (!address) {
+    if (!address || !tx.destination) {
       return false
     }
     return (

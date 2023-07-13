@@ -23,7 +23,7 @@ export const TransactionsTableRowBanner = ({
   }, [tx.sender, address])
 
   const isCustomDestinationTx = useMemo(() => {
-    if (!address) {
+    if (!address || !tx.destination) {
       return false
     }
     return tx.destination.toLowerCase() !== address.toLowerCase()
@@ -45,7 +45,7 @@ export const TransactionsTableRowBanner = ({
     return l2.network.id
   }, [isCustomSenderTx, isCustomDestinationTx, l1, l2])
 
-  if (!explorerChainId) {
+  if (!explorerChainId || !tx.destination) {
     return null
   }
 

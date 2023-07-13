@@ -215,7 +215,7 @@ export function TransactionsTableDepositRow({
   )
 
   const isCustomAddressTx = useMemo(() => {
-    if (!address) {
+    if (!address || !tx.destination) {
       return false
     }
     return (

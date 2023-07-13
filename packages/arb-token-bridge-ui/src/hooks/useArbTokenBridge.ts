@@ -197,6 +197,7 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
+      destination: walletAddress,
       l1NetworkID,
       l2NetworkID
     })
@@ -254,6 +255,7 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
+        destination: walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID
@@ -442,6 +444,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         tokenAddress: erc20L1Address,
         sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         l1NetworkID,
         l2NetworkID
       })
@@ -538,6 +541,7 @@ export const useArbTokenBridge = (
         assetName: symbol,
         assetType: AssetType.ERC20,
         sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID

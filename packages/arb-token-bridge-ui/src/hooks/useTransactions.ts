@@ -88,7 +88,7 @@ type TransactionBase = {
   assetType: AssetType
   tokenAddress?: string
   sender: string
-  destination: string
+  destination?: string
   blockNumber?: number
   l1NetworkID: string
   l2NetworkID?: string
