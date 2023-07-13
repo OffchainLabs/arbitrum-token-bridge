@@ -381,7 +381,10 @@ export function TransactionsTableWithdrawalRow({
     if (!address) {
       return false
     }
-    return tx.sender.toLowerCase() !== address.toLowerCase()
+    return (
+      tx.sender.toLowerCase() !== address.toLowerCase() ||
+      tx.destination.toLowerCase() !== address.toLowerCase()
+    )
   }, [tx.sender, address])
 
   if (!address) {

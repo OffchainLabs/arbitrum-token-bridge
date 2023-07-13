@@ -79,7 +79,7 @@ export type NodeBlockDeadlineStatus =
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 
 export type L2ToL1EventResultPlus = L2ToL1EventResult & {
-  sender: string
+  sender?: string
   l2TxHash?: string
   type: AssetType
   value: BigNumber
