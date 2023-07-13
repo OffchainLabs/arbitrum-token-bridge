@@ -10,7 +10,7 @@ export const TableSourceToggle = () => {
   const buttonInactiveClassName = 'arb-hover border-b-2 pb-[1px] border-gray'
 
   return (
-    <div className="sticky left-0 top-0 bg-white p-4 pt-6 text-xl">
+    <div className="sticky left-0 top-0 bg-white p-4 pt-6 text-lg">
       <button
         onClick={() => setShowSentTransactions(true)}
         className={
@@ -19,7 +19,7 @@ export const TableSourceToggle = () => {
             : buttonInactiveClassName
         }
       >
-        <span className="px-6">Funds Sent</span>
+        <span className="px-4">Funds Sent</span>
       </button>
 
       <button
@@ -30,7 +30,7 @@ export const TableSourceToggle = () => {
             : buttonActiveClassName
         }
       >
-        <span className="px-6">Funds Received</span>
+        <span className="px-4">Funds Received</span>
       </button>
     </div>
   )

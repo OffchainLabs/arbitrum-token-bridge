@@ -62,7 +62,9 @@ export const TransactionsTableRowBanner = ({
       )}
       <ExternalLink
         className="arb-hover underline"
-        href={getExplorerUrl(explorerChainId)}
+        href={`${getExplorerUrl(explorerChainId)}/address/${
+          isCustomSenderTx ? tx.sender : tx.destination
+        }`}
       >
         {shortenAddress(isCustomSenderTx ? tx.sender : tx.destination)}
       </ExternalLink>

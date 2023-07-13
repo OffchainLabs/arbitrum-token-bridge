@@ -58,7 +58,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const {
-    layout: { isTransactionHistoryShowingSentTx: fetchInternal }
+    layout: { isTransactionHistoryShowingSentTx: fetchSentTx }
   } = useAppContextState()
 
   const gatewaysToUse = useL2Gateways({ l2Provider })
@@ -77,7 +77,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       l1Provider,
       l2Provider,
       gatewaysToUse,
-      fetchInternal,
+      fetchSentTx,
       withdrawalPageParams.pageNumber,
       withdrawalPageParams.pageSize,
       withdrawalPageParams.searchString
@@ -88,7 +88,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _l1Provider,
       _l2Provider,
       _gatewayAddresses,
-      _fetchInternal,
+      _fetchSentTx,
       _pageNumber,
       _pageSize,
       _searchString
@@ -98,7 +98,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         gatewayAddresses: _gatewayAddresses,
-        fetchInternal: _fetchInternal,
+        fetchSentTx: _fetchSentTx,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString

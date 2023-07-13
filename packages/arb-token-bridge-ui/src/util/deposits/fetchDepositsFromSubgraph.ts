@@ -39,6 +39,7 @@ export const fetchDepositsFromSubgraph = async ({
   fromBlock,
   toBlock,
   l2ChainId,
+  fetchSentTx,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
@@ -47,6 +48,7 @@ export const fetchDepositsFromSubgraph = async ({
   fromBlock: number
   toBlock: number
   l2ChainId: number
+  fetchSentTx?: boolean
   pageSize?: number
   pageNumber?: number
   searchString?: string
@@ -62,6 +64,7 @@ export const fetchDepositsFromSubgraph = async ({
       fromBlock,
       toBlock,
       l2ChainId,
+      fetchSentTx,
       pageSize,
       page: pageNumber,
       search: searchString

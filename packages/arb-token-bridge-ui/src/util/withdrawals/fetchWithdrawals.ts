@@ -19,7 +19,7 @@ export type FetchWithdrawalsParams = {
   toBlock?: number
   l1Provider: Provider
   l2Provider: Provider
-  fetchInternal: boolean
+  fetchSentTx: boolean
   gatewayAddresses: string[]
   pageNumber?: number
   pageSize?: number
@@ -32,7 +32,7 @@ export const fetchWithdrawals = async ({
   walletAddress, // wallet address
   l1Provider,
   l2Provider,
-  fetchInternal,
+  fetchSentTx,
   gatewayAddresses,
   pageNumber = 0,
   pageSize,
@@ -69,7 +69,7 @@ export const fetchWithdrawals = async ({
       fromBlock: fromBlock,
       toBlock: toBlock,
       l2ChainId: l2ChainID,
-      fetchInternal,
+      fetchSentTx,
       pageNumber,
       pageSize,
       searchString

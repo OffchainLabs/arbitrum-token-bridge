@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
+import { useAppContextState } from '../components/App/AppContext'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformDeposits } from '../state/app/utils'
 import {
@@ -48,6 +49,10 @@ export const useDeposits = (depositPageParams: PageParams) => {
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const {
+    layout: { isTransactionHistoryShowingSentTx: fetchSentTx }
+  } = useAppContextState()
+
+  const {
     app: {
       arbTokenBridge: { walletAddress }
     }
@@ -60,6 +65,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       walletAddress,
       l1Provider,
       l2Provider,
+      fetchSentTx,
       depositPageParams.pageNumber,
       depositPageParams.pageSize,
       depositPageParams.searchString
@@ -69,6 +75,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _walletAddress,
       _l1Provider,
       _l2Provider,
+      _fetchSentTx,
       _pageNumber,
       _pageSize,
       _searchString
@@ -77,6 +84,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
         walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
+        fetchSentTx: _fetchSentTx,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString

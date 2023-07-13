@@ -33,7 +33,7 @@ export async function fetchWithdrawalsFromSubgraph({
   fromBlock,
   toBlock,
   l2ChainId,
-  fetchInternal = true,
+  fetchSentTx = true,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
@@ -42,7 +42,7 @@ export async function fetchWithdrawalsFromSubgraph({
   fromBlock: number
   toBlock: number
   l2ChainId: number
-  fetchInternal?: boolean
+  fetchSentTx?: boolean
   pageSize?: number
   pageNumber?: number
   searchString?: string
@@ -58,7 +58,7 @@ export async function fetchWithdrawalsFromSubgraph({
       fromBlock,
       toBlock,
       l2ChainId,
-      fetchInternal,
+      fetchSentTx,
       pageSize,
       page: pageNumber,
       search: searchString

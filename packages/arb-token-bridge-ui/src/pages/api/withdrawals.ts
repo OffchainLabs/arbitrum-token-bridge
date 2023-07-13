@@ -9,7 +9,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
     l2ChainId: string
     address: string
     search?: string
-    fetchInternal?: string
+    fetchSentTx?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -31,14 +31,14 @@ export default async function handler(
       address,
       search = '',
       l2ChainId,
-      fetchInternal,
+      fetchSentTx,
       page = '0',
       pageSize = '10',
       fromBlock,
       toBlock
     } = req.query
 
-    const isInternal = fetchInternal === 'true'
+    const fetchSent = fetchSentTx === 'true'
 
     // validate method
     if (req.method !== 'GET') {
@@ -60,7 +60,7 @@ export default async function handler(
       })
     }
 
-    const addressQuery = isInternal
+    const addressQuery = fetchSent
       ? `
       sender: "${address}",
     `

@@ -13,6 +13,7 @@ export type FetchDepositParams = {
   walletAddress: string
   fromBlock?: number
   toBlock?: number
+  fetchSentTx?: boolean
   l1Provider: Provider
   l2Provider: Provider
   pageSize?: number
@@ -27,6 +28,7 @@ export const fetchDeposits = async ({
   walletAddress,
   fromBlock,
   toBlock,
+  fetchSentTx,
   l1Provider,
   l2Provider,
   pageSize = 10,
@@ -64,6 +66,7 @@ export const fetchDeposits = async ({
     fromBlock,
     toBlock,
     l2ChainId,
+    fetchSentTx,
     pageSize,
     pageNumber,
     searchString
@@ -99,7 +102,8 @@ export const fetchDeposits = async ({
         ),
         txID: tx.transactionHash,
         tokenAddress: assetDetails.tokenAddress,
-        sender: walletAddress,
+        sender: tx.sender,
+        destination: tx.receiver,
 
         asset: assetDetails.asset,
         assetName: assetDetails.assetName,

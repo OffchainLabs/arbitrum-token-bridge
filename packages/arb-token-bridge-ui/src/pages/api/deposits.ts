@@ -9,6 +9,7 @@ type NextApiRequestWithDepositParams = NextApiRequest & {
     l2ChainId: string
     address: string
     search?: string
+    fetchSentTx?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -30,11 +31,14 @@ export default async function handler(
       address,
       search = '',
       l2ChainId,
+      fetchSentTx,
       page = '0',
       pageSize = '10',
       fromBlock,
       toBlock
     } = req.query
+
+    const fetchSent = fetchSentTx === 'true'
 
     // validate method
     if (req.method !== 'GET') {
@@ -56,11 +60,20 @@ export default async function handler(
       })
     }
 
+    const addressQuery = fetchSent
+      ? `
+      sender: "${address}",
+    `
+      : `
+      sender_not: "${address}",
+      receiver: "${address}",
+    `
+
     const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
       query: gql(`{
         deposits(
           where: {            
-            sender: "${address}"          
+            ${addressQuery}        
             ${
               typeof fromBlock !== 'undefined'
                 ? `blockCreatedAt_gte: ${Number(fromBlock)}`

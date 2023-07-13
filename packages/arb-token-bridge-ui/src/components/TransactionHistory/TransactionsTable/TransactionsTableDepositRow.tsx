@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 
 import { DepositStatus, MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
@@ -16,6 +18,8 @@ import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { useAppContextState } from '../../App/AppContext'
+import { TransactionsTableRowBanner } from './TransactionsTableRowBanner'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -169,8 +173,12 @@ export function TransactionsTableDepositRow({
   className?: string
 }) {
   const { l1 } = useNetworksAndSigners()
+  const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const {
+    layout: { isTransactionHistoryShowingSentTx }
+  } = useAppContextState()
 
   const isRedeemButtonDisabled = useMemo(
     () =>
@@ -206,6 +214,16 @@ export function TransactionsTableDepositRow({
     [tx]
   )
 
+  const isCustomAddressTx = useMemo(() => {
+    if (!address) {
+      return false
+    }
+    return (
+      tx.sender.toLowerCase() !== address.toLowerCase() ||
+      tx.destination.toLowerCase() !== address.toLowerCase()
+    )
+  }, [tx.sender, address])
+
   const bgClassName = useMemo(() => {
     if (isError || showRedeemRetryableButton || showRetryableExpiredText)
       return 'bg-brick'
@@ -222,32 +240,67 @@ export function TransactionsTableDepositRow({
     [l1.network, tx.asset, tx.tokenAddress]
   )
 
+  if (!address) {
+    return null
+  }
+
+  if (isTransactionHistoryShowingSentTx) {
+    if (tx.sender.toLowerCase() !== address.toLowerCase()) {
+      return null
+    }
+  } else {
+    if (tx.sender.toLowerCase() === address.toLowerCase()) {
+      return null
+    }
+  }
+
   return (
     <tr
-      className={`text-sm text-dark ${
-        bgClassName || `bg-cyan even:bg-white`
-      } ${className}`}
+      className={twMerge(
+        'relative text-sm text-dark',
+        bgClassName || 'bg-cyan even:bg-white',
+        className
+      )}
       data-testid={`deposit-row-${tx.txId}`}
     >
-      <td className="w-1/5 py-3 pl-6 pr-3">
+      <td
+        className={twMerge(
+          'w-1/5 py-3 pl-6 pr-3',
+          isCustomAddressTx ? 'pb-10' : ''
+        )}
+      >
         <DepositRowStatus tx={tx} />
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td
+        className={twMerge('w-1/5 px-3 py-3', isCustomAddressTx ? 'pb-10' : '')}
+      >
         <DepositRowTime tx={tx} />
       </td>
 
-      <td className="w-1/5 whitespace-nowrap px-3 py-3">
+      <td
+        className={twMerge(
+          'w-1/5 whitespace-nowrap px-3 py-3',
+          isCustomAddressTx ? 'pb-10' : ''
+        )}
+      >
         {formatAmount(Number(tx.value), {
           symbol: tokenSymbol
         })}
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td
+        className={twMerge('w-1/5 px-3 py-3', isCustomAddressTx ? 'pb-10' : '')}
+      >
         <DepositRowTxID tx={tx} />
       </td>
 
-      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
+      <td
+        className={twMerge(
+          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          isCustomAddressTx ? 'pb-10' : ''
+        )}
+      >
         {showRedeemRetryableButton && (
           <Tooltip
             show={isRedeemButtonDisabled}
@@ -287,6 +340,7 @@ export function TransactionsTableDepositRow({
           </Tooltip>
         )}
       </td>
+      {isCustomAddressTx && <TransactionsTableRowBanner tx={tx} />}
     </tr>
   )
 }

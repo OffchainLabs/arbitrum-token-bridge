@@ -58,8 +58,8 @@ export const transformDeposits = (
 ): MergedTransaction[] => {
   return deposits.map(tx => {
     return {
-      sender: tx.sender ?? '',
-      destination: '',
+      sender: tx.sender,
+      destination: tx.destination,
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
