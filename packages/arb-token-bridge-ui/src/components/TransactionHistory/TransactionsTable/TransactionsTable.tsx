@@ -1,5 +1,6 @@
 import React, { Dispatch, SetStateAction, useMemo } from 'react'
 import dayjs from 'dayjs'
+
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import {
@@ -13,7 +14,7 @@ import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
-import { TableSourceToggle } from './TableSourceToggle'
+import { TableTransactorTypeToggle } from './TableTransactorTypeToggle'
 import { useAppState } from '../../../state'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { useAccount } from 'wagmi'
@@ -69,7 +70,7 @@ export const TransactionDateTime = ({
 }
 
 export function isCustomAddressTx(tx: MergedTransaction) {
-  if (!tx.destination) {
+  if (!tx.sender || !tx.destination) {
     return false
   }
   return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
@@ -86,7 +87,7 @@ export const CustomAddressTxExplorer = ({
   const { l1, l2 } = useNetworksAndSigners()
 
   const isCustomSenderTx = useMemo(() => {
-    if (!address) {
+    if (!tx.sender || !address) {
       return false
     }
     return tx.sender.toLowerCase() !== address.toLowerCase()
@@ -119,7 +120,7 @@ export const CustomAddressTxExplorer = ({
     return null
   }
 
-  if (!tx.destination) {
+  if (!tx.sender || !tx.destination) {
     return null
   }
 
@@ -242,7 +243,9 @@ export function TransactionsTable({
 
   return (
     <>
-      <TableSourceToggle />
+      <TableTransactorTypeToggle
+        className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
+      />
 
       {/* search and pagination buttons */}
       <TableActionHeader

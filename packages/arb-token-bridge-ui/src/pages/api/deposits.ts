@@ -38,8 +38,6 @@ export default async function handler(
       toBlock
     } = req.query
 
-    const fetchSent = fetchSentTx === 'true'
-
     // validate method
     if (req.method !== 'GET') {
       res
@@ -60,11 +58,12 @@ export default async function handler(
       })
     }
 
-    const addressQuery = fetchSent
-      ? `
+    const addressQuery =
+      fetchSentTx === 'true'
+        ? `
       sender: "${address}",
     `
-      : `
+        : `
       sender_not: "${address}",
       receiver: "${address}",
     `

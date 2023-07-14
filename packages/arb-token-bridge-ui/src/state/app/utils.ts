@@ -89,7 +89,7 @@ export const transformWithdrawals = (
     const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
 
     return {
-      sender: tx.sender ?? '',
+      sender: tx.sender,
       destination: tx.destinationAddress,
       direction: 'outbox',
       status:

@@ -44,6 +44,8 @@ export enum DepositStatus {
 }
 
 export interface MergedTransaction {
+  sender?: string
+  destination?: string
   direction: TxnType
   status: string
   createdAt: string | null
@@ -55,8 +57,6 @@ export interface MergedTransaction {
   isWithdrawal: boolean
   blockNum: number | null
   tokenAddress: string | null
-  sender: string
-  destination?: string
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData

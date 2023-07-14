@@ -197,6 +197,7 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
+      // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
       destination: walletAddress,
       l1NetworkID,
       l2NetworkID
@@ -255,6 +256,7 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
+        // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
         destination: walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
@@ -285,6 +287,7 @@ export const useArbTokenBridge = (
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
           sender: tx.from,
+          // TODO: add destinationAddress: destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,

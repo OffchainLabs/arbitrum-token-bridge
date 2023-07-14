@@ -1,6 +1,12 @@
+import { twMerge } from 'tailwind-merge'
+
 import { useAppContextActions, useAppContextState } from '../../App/AppContext'
 
-export const TableSourceToggle = () => {
+export const TableTransactorTypeToggle = ({
+  className
+}: {
+  className: string
+}) => {
   const {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
@@ -10,7 +16,12 @@ export const TableSourceToggle = () => {
   const buttonInactiveClassName = 'arb-hover border-b-2 pb-[1px] border-gray'
 
   return (
-    <div className="sticky left-0 top-0 bg-white p-4 pt-6 text-lg">
+    <div
+      className={twMerge(
+        'sticky left-0 top-0 rounded-tr-lg bg-white p-4 pt-6 text-lg',
+        className
+      )}
+    >
       <button
         onClick={() => setShowSentTransactions(true)}
         className={
