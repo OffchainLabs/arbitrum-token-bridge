@@ -53,7 +53,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
               L1 transaction: Will show after claiming
             </span>
             {isCustomAddressTx(tx) && (
-              <span className="flex mt-2 flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
+              <span className="mt-2 flex flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
                 <CustomAddressTxExplorer
                   tx={tx}
                   explorerClassName="arb-hover text-blue-link"
