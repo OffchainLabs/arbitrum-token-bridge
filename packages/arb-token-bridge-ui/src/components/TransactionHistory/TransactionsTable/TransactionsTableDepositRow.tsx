@@ -335,7 +335,7 @@ export function TransactionsTableDepositRow({
           </Tooltip>
         )}
       </td>
-      {customAddressTx && <TransactionsTableRowBanner tx={tx} />}
+      <TransactionsTableRowBanner tx={tx} />
     </tr>
   )
 }

@@ -444,7 +444,7 @@ export function TransactionsTableWithdrawalRow({
       >
         <WithdrawalRowAction tx={tx} isError={isError} />
       </td>
-      {customAddressTx && <TransactionsTableRowBanner tx={tx} />}
+      <TransactionsTableRowBanner tx={tx} />
     </tr>
   )
 }
