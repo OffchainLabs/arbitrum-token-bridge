@@ -126,7 +126,8 @@ export const filterTransactions = (
     const txL1NetworkID = tx.l1NetworkID
     const txL2NetworkID = tx.l2NetworkID
 
-    const isSenderWallet = txSender === walletAddress
+    const isSenderWallet =
+      txSender.toLowerCase() === walletAddress.toLowerCase()
     const matchesL1 = txL1NetworkID === String(l1ChainId)
 
     // The `l2NetworkID` field was added later, so not all transactions will have it
