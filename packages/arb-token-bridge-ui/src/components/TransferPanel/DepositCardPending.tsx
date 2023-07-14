@@ -49,7 +49,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
               L2 transaction: <DepositL2TxStatus tx={tx} />
             </span>
             {isCustomAddressTx(tx) && (
-              <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+              <span className="flex mt-2 flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
                 <CustomAddressTxExplorer
                   tx={tx}
                   explorerClassName="arb-hover text-blue-link"
