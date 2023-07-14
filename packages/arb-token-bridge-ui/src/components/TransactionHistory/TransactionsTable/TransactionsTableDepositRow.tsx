@@ -13,7 +13,11 @@ import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { isCustomAddressTx, isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
+import {
+  isCustomAddressTx,
+  isDepositReadyToRedeem,
+  isPending
+} from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
