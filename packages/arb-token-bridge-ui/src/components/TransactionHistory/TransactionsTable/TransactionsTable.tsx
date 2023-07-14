@@ -16,6 +16,11 @@ import { TableActionHeader } from './TableActionHeader'
 import { TableSourceToggle } from './TableSourceToggle'
 import { useAppState } from '../../../state'
 import { useAccountType } from '../../../hooks/useAccountType'
+import { useAccount } from 'wagmi'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { ExternalLink } from '../../common/ExternalLink'
+import { getExplorerUrl } from '../../../util/networks'
+import { shortenAddress } from '../../../util/CommonUtils'
 
 export type PageParams = {
   searchString: string
@@ -60,6 +65,80 @@ export const TransactionDateTime = ({
         {getStandardizedTime(standardizedDate)}
       </span>
     </div>
+  )
+}
+
+export function isCustomAddressTx(tx: MergedTransaction) {
+  if (!tx.destination) {
+    return false
+  }
+  return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+}
+
+export const CustomAddressTxExplorer = ({
+  tx,
+  explorerClassName = 'arb-hover underline'
+}: {
+  tx: MergedTransaction
+  explorerClassName?: string
+}) => {
+  const { address } = useAccount()
+  const { l1, l2 } = useNetworksAndSigners()
+
+  const isCustomSenderTx = useMemo(() => {
+    if (!address) {
+      return false
+    }
+    return tx.sender.toLowerCase() !== address.toLowerCase()
+  }, [tx.sender, address])
+
+  const isCustomDestinationTx = useMemo(() => {
+    if (!address || !tx.destination) {
+      return false
+    }
+    return tx.destination.toLowerCase() !== address.toLowerCase()
+  }, [tx.destination, address])
+
+  const explorerChainId = useMemo(() => {
+    if (!isCustomSenderTx && !isCustomDestinationTx) {
+      return null
+    }
+    if (tx.isWithdrawal) {
+      if (isCustomSenderTx) {
+        return l2.network.id
+      }
+      return l1.network.id
+    }
+    if (isCustomSenderTx) {
+      return l1.network.id
+    }
+    return l2.network.id
+  }, [isCustomSenderTx, isCustomDestinationTx, l1, l2])
+
+  if (!explorerChainId || !isCustomAddressTx(tx)) {
+    return null
+  }
+
+  if (!tx.destination) {
+    return null
+  }
+
+  return (
+    <>
+      {isCustomSenderTx ? (
+        <span>Funds received from: </span>
+      ) : (
+        <span>Funds sent to: </span>
+      )}
+      <ExternalLink
+        className={explorerClassName}
+        href={`${getExplorerUrl(explorerChainId)}/address/${
+          isCustomSenderTx ? tx.sender : tx.destination
+        }`}
+      >
+        {shortenAddress(isCustomSenderTx ? tx.sender : tx.destination)}
+      </ExternalLink>
+    </>
   )
 }
 

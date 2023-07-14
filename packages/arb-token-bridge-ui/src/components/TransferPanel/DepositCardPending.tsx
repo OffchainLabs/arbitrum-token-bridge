@@ -10,6 +10,10 @@ import {
 } from './DepositCard'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isCustomAddressTx,
+  CustomAddressTxExplorer
+} from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
@@ -46,6 +50,14 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
             <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L2 transaction: <DepositL2TxStatus tx={tx} />
             </span>
+            {isCustomAddressTx(tx) && (
+              <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                <CustomAddressTxExplorer
+                  tx={tx}
+                  explorerClassName="arb-hover text-blue-link"
+                />
+              </span>
+            )}
           </div>
         </div>
 
