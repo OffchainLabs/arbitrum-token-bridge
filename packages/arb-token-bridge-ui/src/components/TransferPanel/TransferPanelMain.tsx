@@ -19,8 +19,7 @@ import {
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
   AdvancedSettings,
-  DestinationAddressErrors,
-  getDestinationAddressError
+  useDestinationAddressStore
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
@@ -228,7 +227,7 @@ function TokenBalance({
   skipUSDCoverride = false
 }: {
   forToken: ERC20BridgeToken | null
-  balance: BigNumber
+  balance: BigNumber | null
   on: NetworkType
   prefix?: string
   skipUSDCoverride?: boolean
@@ -296,17 +295,11 @@ export enum TransferPanelMainErrorMessage {
 export function TransferPanelMain({
   amount,
   setAmount,
-  errorMessage,
-  destinationAddress,
-  setDestinationAddress
+  errorMessage
 }: {
   amount: string
   setAmount: (value: string) => void
   errorMessage?: TransferPanelMainErrorMessage
-  destinationAddress?: string
-  setDestinationAddress: React.Dispatch<
-    React.SetStateAction<string | undefined>
-  >
 }) {
   const actions = useActions()
 
@@ -325,6 +318,8 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { walletAddress } = arbTokenBridge
 
+  const { destinationAddress, setDestinationAddress } =
+    useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
   const l1WalletAddress = isDepositMode
@@ -370,9 +365,12 @@ export function TransferPanelMain({
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   const selectedTokenBalances = useMemo(() => {
-    const result = {
-      l1: constants.Zero,
-      l2: constants.Zero
+    const result: {
+      l1: BigNumber | null
+      l2: BigNumber | null
+    } = {
+      l1: null,
+      l2: null
     }
 
     if (!selectedToken) {
@@ -380,11 +378,11 @@ export function TransferPanelMain({
     }
 
     if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[selectedToken.address] ?? constants.Zero
+      result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
     if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
     }
 
     return result
@@ -397,8 +395,6 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [advancedSettingsError, setAdvancedSettingsError] =
-    useState<DestinationAddressErrors | null>(null)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -421,7 +417,8 @@ export function TransferPanelMain({
     externalFrom,
     externalTo,
     setQueryParams,
-    walletAddress
+    l1.provider,
+    l2.provider
   ])
 
   const estimateGas = useCallback(
@@ -523,12 +520,6 @@ export function TransferPanelMain({
       setDestinationAddress(undefined)
     }
   }, [selectedToken])
-
-  useEffect(() => {
-    setAdvancedSettingsError(
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet })
-    )
-  }, [destinationAddress, isSmartContractWallet])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -946,11 +937,7 @@ export function TransferPanelMain({
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 
-      <AdvancedSettings
-        destinationAddress={destinationAddress}
-        onChange={value => setDestinationAddress(value)}
-        error={advancedSettingsError}
-      />
+      <AdvancedSettings />
       <Dialog
         closeable
         title="Token not supported"
