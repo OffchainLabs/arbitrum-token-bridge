@@ -5,13 +5,11 @@ import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
+import { isCustomAddressTx } from '../../state/app/utils'
 import { formatAmount } from '../../util/NumberUtils'
 import { useMemo } from 'react'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import {
-  isCustomAddressTx,
-  CustomAddressTxExplorer
-} from '../TransactionHistory/TransactionsTable/TransactionsTable'
+import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()

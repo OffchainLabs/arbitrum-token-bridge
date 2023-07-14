@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction, useMemo } from 'react'
+import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
@@ -6,6 +7,7 @@ import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow
 import {
   getStandardizedDate,
   getStandardizedTime,
+  isCustomAddressTx,
   isDeposit,
   isWithdrawal
 } from '../../../state/app/utils'
@@ -17,7 +19,6 @@ import { TableActionHeader } from './TableActionHeader'
 import { TableTransactorTypeToggle } from './TableTransactorTypeToggle'
 import { useAppState } from '../../../state'
 import { useAccountType } from '../../../hooks/useAccountType'
-import { useAccount } from 'wagmi'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
@@ -67,13 +68,6 @@ export const TransactionDateTime = ({
       </span>
     </div>
   )
-}
-
-export function isCustomAddressTx(tx: MergedTransaction) {
-  if (!tx.sender || !tx.destination) {
-    return false
-  }
-  return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
 }
 
 export const CustomAddressTxExplorer = ({

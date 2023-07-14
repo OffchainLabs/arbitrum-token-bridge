@@ -180,6 +180,13 @@ export const isFailed = (tx: MergedTransaction) => {
   )
 }
 
+export function isCustomAddressTx(tx: MergedTransaction) {
+  if (!tx.sender || !tx.destination) {
+    return false
+  }
+  return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
+}
+
 export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
   return (
     isWithdrawal(tx) &&

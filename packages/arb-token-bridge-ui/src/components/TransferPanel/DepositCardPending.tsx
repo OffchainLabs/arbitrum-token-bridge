@@ -9,11 +9,9 @@ import {
   DepositL2TxStatus
 } from './DepositCard'
 import { formatAmount } from '../../util/NumberUtils'
+import { isCustomAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import {
-  isCustomAddressTx,
-  CustomAddressTxExplorer
-} from '../TransactionHistory/TransactionsTable/TransactionsTable'
+import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()

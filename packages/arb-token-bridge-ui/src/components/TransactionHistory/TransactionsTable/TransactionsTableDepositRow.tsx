@@ -13,14 +13,13 @@ import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
+import { isCustomAddressTx, isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { TransactionsTableRowBanner } from './TransactionsTableRowBanner'
-import { isCustomAddressTx } from './TransactionsTable'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {

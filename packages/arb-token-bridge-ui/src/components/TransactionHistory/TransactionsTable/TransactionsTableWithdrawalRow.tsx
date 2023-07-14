@@ -23,10 +23,11 @@ import {
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import {
+  isCustomAddressTx,
   findMatchingL1TxForWithdrawal,
   isPending
 } from '../../../state/app/utils'
-import { TransactionDateTime, isCustomAddressTx } from './TransactionsTable'
+import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'

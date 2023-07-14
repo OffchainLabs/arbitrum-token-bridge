@@ -8,11 +8,9 @@ import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { isCustomAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import {
-  isCustomAddressTx,
-  CustomAddressTxExplorer
-} from '../TransactionHistory/TransactionsTable/TransactionsTable'
+import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l2 } = useNetworksAndSigners()
