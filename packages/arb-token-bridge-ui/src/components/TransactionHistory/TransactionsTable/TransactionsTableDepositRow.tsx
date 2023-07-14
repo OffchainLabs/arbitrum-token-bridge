@@ -20,6 +20,7 @@ import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitru
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useAppContextState } from '../../App/AppContext'
 import { TransactionsTableRowBanner } from './TransactionsTableRowBanner'
+import { isCustomAddressTx } from './TransactionsTable'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -214,16 +215,6 @@ export function TransactionsTableDepositRow({
     [tx]
   )
 
-  const isCustomAddressTx = useMemo(() => {
-    if (!address || !tx.destination) {
-      return false
-    }
-    return (
-      tx.sender.toLowerCase() !== address.toLowerCase() ||
-      tx.destination.toLowerCase() !== address.toLowerCase()
-    )
-  }, [tx.sender, address])
-
   const bgClassName = useMemo(() => {
     if (isError || showRedeemRetryableButton || showRetryableExpiredText)
       return 'bg-brick'
@@ -239,6 +230,8 @@ export function TransactionsTableDepositRow({
       }),
     [l1.network, tx.asset, tx.tokenAddress]
   )
+
+  const customAddressTx = useMemo(() => isCustomAddressTx(tx), [tx])
 
   if (!address) {
     return null
@@ -268,14 +261,14 @@ export function TransactionsTableDepositRow({
       <td
         className={twMerge(
           'w-1/5 py-3 pl-6 pr-3',
-          isCustomAddressTx ? 'pb-10' : ''
+          customAddressTx ? 'pb-10' : ''
         )}
       >
         <DepositRowStatus tx={tx} />
       </td>
 
       <td
-        className={twMerge('w-1/5 px-3 py-3', isCustomAddressTx ? 'pb-10' : '')}
+        className={twMerge('w-1/5 px-3 py-3', customAddressTx ? 'pb-10' : '')}
       >
         <DepositRowTime tx={tx} />
       </td>
@@ -283,7 +276,7 @@ export function TransactionsTableDepositRow({
       <td
         className={twMerge(
           'w-1/5 whitespace-nowrap px-3 py-3',
-          isCustomAddressTx ? 'pb-10' : ''
+          customAddressTx ? 'pb-10' : ''
         )}
       >
         {formatAmount(Number(tx.value), {
@@ -292,7 +285,7 @@ export function TransactionsTableDepositRow({
       </td>
 
       <td
-        className={twMerge('w-1/5 px-3 py-3', isCustomAddressTx ? 'pb-10' : '')}
+        className={twMerge('w-1/5 px-3 py-3', customAddressTx ? 'pb-10' : '')}
       >
         <DepositRowTxID tx={tx} />
       </td>
@@ -300,7 +293,7 @@ export function TransactionsTableDepositRow({
       <td
         className={twMerge(
           'relative w-1/5 py-3 pl-3 pr-6 text-right',
-          isCustomAddressTx ? 'pb-10' : ''
+          customAddressTx ? 'pb-10' : ''
         )}
       >
         {showRedeemRetryableButton && (
@@ -342,7 +335,7 @@ export function TransactionsTableDepositRow({
           </Tooltip>
         )}
       </td>
-      {isCustomAddressTx && <TransactionsTableRowBanner tx={tx} />}
+      {customAddressTx && <TransactionsTableRowBanner tx={tx} />}
     </tr>
   )
 }
