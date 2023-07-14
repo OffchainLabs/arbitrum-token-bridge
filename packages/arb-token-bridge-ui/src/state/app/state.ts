@@ -108,12 +108,7 @@ export const defaultState: AppState = {
     )
   }),
   pendingTransactions: derived((s: AppState) => {
-    return s.sortedTransactions.filter(tx => {
-      if (tx.status === 'pending') {
-        console.log('pending tx', tx)
-        return tx.status === 'pending'
-      }
-    })
+    return s.sortedTransactions.filter(tx => tx.status === 'pending')
   }),
   l1DepositsWithUntrackedL2Messages: derived((s: AppState) => {
     // check 'deposit' and 'deposit-l1' for backwards compatibility with old client side cache
@@ -143,6 +138,7 @@ export const defaultState: AppState = {
     const withdrawals = Object.values(
       s.arbTokenBridge?.pendingWithdrawalsMap || []
     ) as L2ToL1EventResultPlus[]
+
     return transformWithdrawals(withdrawals)
   }),
   mergedTransactions: derived((s: AppState) => {
