@@ -31,7 +31,7 @@ export default async function handler(
       address,
       search = '',
       l2ChainId,
-      fetchSentTx,
+      fetchSentTx = 'true',
       page = '0',
       pageSize = '10',
       fromBlock,
