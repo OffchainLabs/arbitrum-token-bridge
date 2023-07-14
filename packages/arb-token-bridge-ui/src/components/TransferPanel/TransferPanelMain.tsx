@@ -224,13 +224,13 @@ function TokenBalance({
   balance,
   on,
   prefix = '',
-  skipUSDCoverride = false
+  tokenSymbolOverride
 }: {
   forToken: ERC20BridgeToken | null
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
-  skipUSDCoverride?: boolean
+  tokenSymbolOverride?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -239,12 +239,13 @@ function TokenBalance({
       return undefined
     }
 
-    return skipUSDCoverride
-      ? 'USDC'
-      : sanitizeTokenSymbol(forToken.symbol, {
-          erc20L1Address: forToken.address,
-          chain: on === NetworkType.l1 ? l1.network : l2.network
-        })
+    return (
+      tokenSymbolOverride ??
+      sanitizeTokenSymbol(forToken.symbol, {
+        erc20L1Address: forToken.address,
+        chain: on === NetworkType.l1 ? l1.network : l2.network
+      })
+    )
   }, [forToken, on, l1, l2])
 
   if (!forToken) {
@@ -867,8 +868,9 @@ export function TransferPanelMain({
                 href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
                 className="arb-hover underline"
               >
-                Learn more.
+                Learn more
               </ExternalLink>
+              .
             </p>
           )}
         </div>
@@ -913,7 +915,7 @@ export function TransferPanelMain({
                             ? { ...selectedToken, symbol: 'USDC' }
                             : null
                         }
-                        skipUSDCoverride
+                        tokenSymbolOverride="USDC"
                       />
                     )}
                   <ETHBalance
