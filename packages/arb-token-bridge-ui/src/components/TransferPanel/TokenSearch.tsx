@@ -47,6 +47,14 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
+const ARB_GOERLI_NATIVE_USDC_TOKEN = {
+  ...ArbOneNativeUSDC,
+  listIds: new Set<number>(),
+  type: TokenType.ERC20,
+  address: CommonAddress.ArbGoerli.USDC,
+  l2Address: CommonAddress.ArbGoerli.USDC
+}
+
 function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
@@ -152,6 +160,8 @@ function TokensPanel({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
+
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
@@ -198,7 +208,11 @@ function TokensPanel({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
-    if (!isDepositMode && isNetwork(l2Network.id).isArbitrumOne) {
+    if (
+      !isDepositMode &&
+      (isNetwork(l2Network.id).isArbitrumOne ||
+        isNetwork(l2Network.id).isArbitrumGoerli)
+    ) {
       tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
     }
     const tokens = [
@@ -209,10 +223,17 @@ function TokensPanel({
     return tokens
       .filter(address => {
         // Derive the token object from the address string
-        const token = isArbOneNativeUSDC(address)
-          ? // for token search as Arb One native USDC isn't in any lists
-            ARB_ONE_NATIVE_USDC_TOKEN
-          : tokensFromUser[address] || tokensFromLists[address]
+        let token = tokensFromUser[address] || tokensFromLists[address]
+
+        if (isArbOneNativeUSDC(address)) {
+          // for token search as Arb One native USDC isn't in any lists
+          if (isArbitrumOne) {
+            token = ARB_ONE_NATIVE_USDC_TOKEN
+          }
+          if (isArbitrumGoerli) {
+            token = ARB_GOERLI_NATIVE_USDC_TOKEN
+          }
+        }
 
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
@@ -378,7 +399,12 @@ function TokensPanel({
 
                 let token: ERC20BridgeToken | null = null
                 if (isArbOneNativeUSDC(address)) {
-                  token = ARB_ONE_NATIVE_USDC_TOKEN
+                  if (isArbitrumOne) {
+                    token = ARB_ONE_NATIVE_USDC_TOKEN
+                  }
+                  if (isArbitrumGoerli) {
+                    token = ARB_GOERLI_NATIVE_USDC_TOKEN
+                  }
                 } else if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null

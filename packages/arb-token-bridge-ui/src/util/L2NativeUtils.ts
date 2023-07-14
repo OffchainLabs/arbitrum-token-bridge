@@ -36,7 +36,12 @@ const L2NativeTokens: { [chainId: number]: L2NativeToken[] } = {
     ArbOneNativeUSDC
   ],
   [ChainId.ArbitrumNova]: [],
-  [ChainId.ArbitrumGoerli]: []
+  [ChainId.ArbitrumGoerli]: [
+    {
+      ...ArbOneNativeUSDC,
+      address: CommonAddress.ArbGoerli.USDC
+    }
+  ]
 }
 
 function find(erc20L2Address: string, l2ChainId: number) {

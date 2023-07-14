@@ -252,7 +252,10 @@ export const isTokenMainnetUSDC = (tokenAddress: string | undefined) => {
 
 export const isArbOneNativeUSDC = (tokenAddress: string | undefined) => {
   return (
-    tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
+    tokenAddress?.toLowerCase() ===
+      CommonAddress.ArbitrumOne.USDC.toLowerCase() ||
+    // for arb goerli e2e tests
+    tokenAddress?.toLowerCase() === CommonAddress.ArbGoerli.USDC.toLowerCase()
   )
 }
 

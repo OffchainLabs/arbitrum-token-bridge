@@ -13,13 +13,15 @@ import {
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { getNetworkName } from '../../../util/networks'
+import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
+
+  const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
   const from = l2.network
   const to = l1.network
@@ -30,7 +32,9 @@ export function USDCWithdrawalConfirmationDialog(
     from: from.id,
     to: to.id,
     tokenSymbol,
-    fromTokenAddress: CommonAddress.ArbitrumOne.USDC,
+    fromTokenAddress: isArbitrumGoerli
+      ? CommonAddress.ArbGoerli.USDC
+      : CommonAddress.ArbitrumOne.USDC,
     toTokenAddress: CommonAddress.Mainnet.USDC,
     amount: props.amount
   }).filter(bridge => {
@@ -67,7 +71,11 @@ export function USDCWithdrawalConfirmationDialog(
                 Receive{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
-                  href={`https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`}
+                  href={
+                    isArbitrumGoerli
+                      ? `https://goerli.etherscan.io/token/${CommonAddress.Goerli.USDC}`
+                      : `https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`
+                  }
                 >
                   USDC
                 </ExternalLink>{' '}
