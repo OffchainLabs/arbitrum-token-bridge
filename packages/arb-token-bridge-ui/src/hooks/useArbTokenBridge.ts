@@ -31,7 +31,6 @@ import {
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle,
   NodeBlockDeadlineStatusTypes,
   ArbTokenBridgeEth,
   ArbTokenBridgeToken
