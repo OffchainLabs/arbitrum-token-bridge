@@ -114,9 +114,11 @@ export function TokenRow({
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
-    () =>
-      isTokenArbitrumOneNativeUSDC(token?.address) ||
-      isTokenArbitrumGoerliNativeUSDC(token?.address),
+    () => isTokenArbitrumOneNativeUSDC(token?.address),
+    [token]
+  )
+  const tokenIsArbGoerliNativeUSDC = useMemo(
+    () => isTokenArbitrumGoerliNativeUSDC(token?.address),
     [token]
   )
 
@@ -130,9 +132,9 @@ export function TokenRow({
   } = useBalance({ provider: l2Provider, walletAddress })
 
   const withdrawalModeArbOneUSDC =
-    tokenIsArbOneNativeUSDC &&
     !isDepositMode &&
-    (isArbitrumOne || isArbitrumGoerli)
+    ((tokenIsArbOneNativeUSDC && isArbitrumOne) ||
+      (tokenIsArbGoerliNativeUSDC && isArbitrumGoerli))
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -197,6 +199,10 @@ export function TokenRow({
       return 'Native USDC on Arbitrum One'
     }
 
+    if (tokenIsArbGoerliNativeUSDC) {
+      return 'Native USDC on Arbitrum Goerli'
+    }
+
     const listIds: Set<number> = token.listIds
     const listIdsSize = listIds.size
     if (listIdsSize === 0) {
@@ -227,7 +233,7 @@ export function TokenRow({
       return true
     }
 
-    if (tokenIsArbOneNativeUSDC) {
+    if (tokenIsArbOneNativeUSDC || tokenIsArbGoerliNativeUSDC) {
       return true
     }
 
