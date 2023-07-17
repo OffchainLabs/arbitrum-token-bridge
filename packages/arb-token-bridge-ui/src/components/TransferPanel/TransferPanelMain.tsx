@@ -309,6 +309,7 @@ export function TransferPanelMain({
 
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
@@ -404,7 +405,7 @@ export function TransferPanelMain({
 
   const showUSDCNotice =
     selectedToken?.address === CommonAddress.Mainnet.USDC &&
-    isNetwork(l2.network.id).isArbitrumOne
+    (isArbitrumOne || isArbitrumGoerli)
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -905,6 +906,7 @@ export function TransferPanelMain({
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
                   {app.isDepositMode &&
+                    isArbitrumOne &&
                     isTokenMainnetUSDC(selectedToken?.address) && (
                       <TokenBalance
                         balance={
