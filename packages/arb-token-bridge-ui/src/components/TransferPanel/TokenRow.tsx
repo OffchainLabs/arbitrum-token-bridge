@@ -17,7 +17,8 @@ import {
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import {
-  isArbOneNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumGoerliNativeUSDC,
   sanitizeTokenName,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
@@ -112,7 +113,9 @@ export function TokenRow({
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
-    () => isArbOneNativeUSDC(token?.address),
+    () =>
+      isTokenArbitrumOneNativeUSDC(token?.address) ||
+      isTokenArbitrumGoerliNativeUSDC(token?.address),
     [token]
   )
 

@@ -9,7 +9,7 @@ export const CommonAddress = {
   Goerli: {
     USDC: '0x65aFADD39029741B3b8f0756952C74678c9cEC93'
   },
-  ArbGoerli: {
+  ArbitrumGoerli: {
     USDC: '0xfd064a18f3bf249cf1f87fc203e90d8f650f2d63'
   }
 }

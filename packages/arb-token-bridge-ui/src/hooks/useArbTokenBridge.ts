@@ -710,9 +710,8 @@ export const useArbTokenBridge = (
       if (isNetwork(l2ChainID).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      // Arb Goerli is for e2e tests
       if (isNetwork(l2ChainID).isArbitrumGoerli) {
-        l2Addresses.push(CommonAddress.ArbGoerli.USDC)
+        l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
       }
 
       for (const tokenAddress in bridgeTokensToAdd) {

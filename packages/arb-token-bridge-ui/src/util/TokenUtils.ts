@@ -250,14 +250,16 @@ export const isTokenMainnetUSDC = (tokenAddress: string | undefined) => {
   )
 }
 
-export const isArbOneNativeUSDC = (tokenAddress: string | undefined) => {
-  return (
-    tokenAddress?.toLowerCase() ===
-      CommonAddress.ArbitrumOne.USDC.toLowerCase() ||
-    // for arb goerli e2e tests
-    tokenAddress?.toLowerCase() === CommonAddress.ArbGoerli.USDC.toLowerCase()
-  )
-}
+export const isTokenArbitrumOneNativeUSDC = (
+  tokenAddress: string | undefined
+) =>
+  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
+
+export const isTokenArbitrumGoerliNativeUSDC = (
+  tokenAddress: string | undefined
+) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumGoerli.USDC.toLowerCase()
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(

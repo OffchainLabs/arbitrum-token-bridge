@@ -17,7 +17,11 @@ import {
   addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
-import { getL1TokenData, isArbOneNativeUSDC } from '../../util/TokenUtils'
+import {
+  getL1TokenData,
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumGoerliNativeUSDC
+} from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import {
   useTokensFromLists,
@@ -51,8 +55,8 @@ const ARB_GOERLI_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
-  address: CommonAddress.ArbGoerli.USDC,
-  l2Address: CommonAddress.ArbGoerli.USDC
+  address: CommonAddress.ArbitrumGoerli.USDC,
+  l2Address: CommonAddress.ArbitrumGoerli.USDC
 }
 
 function TokenListsPanel() {
@@ -185,7 +189,10 @@ function TokensPanel({
         return null
       }
 
-      if (isArbOneNativeUSDC(address)) {
+      if (
+        isTokenArbitrumOneNativeUSDC(address) ||
+        isTokenArbitrumGoerliNativeUSDC(address)
+      ) {
         return erc20L2Balances?.[address.toLowerCase()]
       }
 
@@ -225,14 +232,13 @@ function TokensPanel({
         // Derive the token object from the address string
         let token = tokensFromUser[address] || tokensFromLists[address]
 
-        if (isArbOneNativeUSDC(address)) {
+        if (isTokenArbitrumOneNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          if (isArbitrumOne) {
-            token = ARB_ONE_NATIVE_USDC_TOKEN
-          }
-          if (isArbitrumGoerli) {
-            token = ARB_GOERLI_NATIVE_USDC_TOKEN
-          }
+          token = ARB_ONE_NATIVE_USDC_TOKEN
+        }
+        if (isTokenArbitrumGoerliNativeUSDC(address)) {
+          // for token search as Arb One native USDC isn't in any lists
+          token = ARB_GOERLI_NATIVE_USDC_TOKEN
         }
 
         // Which tokens to show while the search is not active
@@ -398,13 +404,10 @@ function TokensPanel({
                 }
 
                 let token: ERC20BridgeToken | null = null
-                if (isArbOneNativeUSDC(address)) {
-                  if (isArbitrumOne) {
-                    token = ARB_ONE_NATIVE_USDC_TOKEN
-                  }
-                  if (isArbitrumGoerli) {
-                    token = ARB_GOERLI_NATIVE_USDC_TOKEN
-                  }
+                if (isTokenArbitrumOneNativeUSDC(address)) {
+                  token = ARB_ONE_NATIVE_USDC_TOKEN
+                } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
+                  token = ARB_GOERLI_NATIVE_USDC_TOKEN
                 } else if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
@@ -467,7 +470,10 @@ export function TokenSearch({
     }
 
     try {
-      if (isArbOneNativeUSDC(_token.address)) {
+      if (
+        isTokenArbitrumOneNativeUSDC(_token.address) ||
+        isTokenArbitrumGoerliNativeUSDC(_token.address)
+      ) {
         openUSDCWithdrawalConfirmationDialog()
         return
       }

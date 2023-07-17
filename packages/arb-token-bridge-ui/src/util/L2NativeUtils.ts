@@ -39,7 +39,7 @@ const L2NativeTokens: { [chainId: number]: L2NativeToken[] } = {
   [ChainId.ArbitrumGoerli]: [
     {
       ...ArbOneNativeUSDC,
-      address: CommonAddress.ArbGoerli.USDC
+      address: CommonAddress.ArbitrumGoerli.USDC
     }
   ]
 }

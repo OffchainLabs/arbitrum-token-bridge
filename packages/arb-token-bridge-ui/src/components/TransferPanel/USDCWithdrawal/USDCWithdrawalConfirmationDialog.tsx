@@ -33,7 +33,7 @@ export function USDCWithdrawalConfirmationDialog(
     to: to.id,
     tokenSymbol,
     fromTokenAddress: isArbitrumGoerli
-      ? CommonAddress.ArbGoerli.USDC
+      ? CommonAddress.ArbitrumGoerli.USDC
       : CommonAddress.ArbitrumOne.USDC,
     toTokenAddress: CommonAddress.Mainnet.USDC,
     amount: props.amount

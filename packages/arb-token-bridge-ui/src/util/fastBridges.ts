@@ -10,7 +10,11 @@ import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 
 import { ChainId } from './networks'
-import { isArbOneNativeUSDC, isTokenMainnetUSDC } from './TokenUtils'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenMainnetUSDC
+} from './TokenUtils'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -99,7 +103,8 @@ export function getFastBridges({
       case FastBridgeNames.Wormhole:
         if (
           isTokenMainnetUSDC(fromTokenAddress) ||
-          isArbOneNativeUSDC(fromTokenAddress)
+          isTokenArbitrumOneNativeUSDC(fromTokenAddress) ||
+          isTokenArbitrumGoerliNativeUSDC(fromTokenAddress)
         ) {
           return 'https://www.portalbridge.com/usdc-bridge/'
         }
