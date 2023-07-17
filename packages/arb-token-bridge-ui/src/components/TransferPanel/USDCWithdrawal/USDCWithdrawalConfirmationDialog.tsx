@@ -79,12 +79,12 @@ export function USDCWithdrawalConfirmationDialog(
                 >
                   USDC
                 </ExternalLink>{' '}
-                on Ethereum Mainnet using a third-party bridge with
-                Circle&apos;s CCTP integrated.
+                on {isArbitrumGoerli ? 'Goerli' : 'Ethereum Mainnet'} using a
+                third-party bridge with Circle&apos;s CCTP integrated.
               </p>
               <p>
-                USDC native to Arbitrum One cannot be withdrawn using Arbitrum's
-                bridge.
+                USDC native to Arbitrum {isArbitrumGoerli ? 'Goerli' : 'One'}{' '}
+                cannot be withdrawn using Arbitrum's bridge.
               </p>
             </div>
 
