@@ -215,12 +215,13 @@ function TokensPanel({
       ...Object.keys(tokensFromUser),
       ...Object.keys(tokensFromLists)
     ]
-    if (
-      !isDepositMode &&
-      (isNetwork(l2Network.id).isArbitrumOne ||
-        isNetwork(l2Network.id).isArbitrumGoerli)
-    ) {
-      tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+    if (!isDepositMode) {
+      if (isArbitrumOne) {
+        tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+      }
+      if (isArbitrumGoerli) {
+        tokenAddresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      }
     }
     const tokens = [
       ETH_IDENTIFIER,
