@@ -212,10 +212,10 @@ function ETHBalance({
   }
 
   return (
-    <span>
-      {prefix}
-      {formatAmount(balance, { symbol: 'ETH' })}
-    </span>
+    <p>
+      <span className="font-light">{prefix}</span>
+      <span>{formatAmount(balance, { symbol: 'ETH' })}</span>
+    </p>
   )
 }
 
