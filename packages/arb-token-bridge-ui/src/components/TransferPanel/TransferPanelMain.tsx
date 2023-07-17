@@ -902,6 +902,8 @@ export function TransferPanelMain({
                     forToken={selectedToken}
                     prefix={selectedToken ? 'BALANCE: ' : ''}
                   />
+                  {/* In deposit mode, when user selected USDC on mainnet,
+                  the UI shows the Arb One balance of both USDC.e and native USDC */}
                   {app.isDepositMode &&
                     isTokenMainnetUSDC(selectedToken?.address) && (
                       <TokenBalance
