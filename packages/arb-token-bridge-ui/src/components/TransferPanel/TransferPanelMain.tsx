@@ -366,8 +366,9 @@ export function TransferPanelMain({
       l1: null,
       l2: null
     }
+    const { bridgeTokens } = arbTokenBridge
 
-    if (!selectedToken) {
+    if (!selectedToken || !bridgeTokens) {
       return result
     }
 
@@ -375,12 +376,25 @@ export function TransferPanelMain({
       result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
-    if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    const erc20L2Address =
+      bridgeTokens[selectedToken.address.toLowerCase()]?.l2Address
+
+    if (erc20L2Balances) {
+      if (erc20L2Address) {
+        result.l2 = erc20L2Balances[erc20L2Address] ?? null
+      } else {
+        result.l2 = constants.Zero
+      }
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [
+    erc20L1Balances,
+    erc20L2Balances,
+    selectedToken,
+    arbTokenBridge,
+    destinationAddressOrWalletAddress
+  ])
 
   const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
   const externalTo = isConnectedToArbitrum ? l1.network : l2.network
