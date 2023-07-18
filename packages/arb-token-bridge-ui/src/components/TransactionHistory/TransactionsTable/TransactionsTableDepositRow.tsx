@@ -234,7 +234,10 @@ export function TransactionsTableDepositRow({
     [l1.network, tx.asset, tx.tokenAddress]
   )
 
-  const customAddressTx = useMemo(() => isCustomAddressTx(tx), [tx])
+  const customAddressTxPadding = useMemo(
+    () => (isCustomAddressTx(tx) ? 'pb-10' : ''),
+    [tx]
+  )
 
   if (!tx.sender || !address) {
     return null
@@ -261,25 +264,18 @@ export function TransactionsTableDepositRow({
       )}
       data-testid={`deposit-row-${tx.txId}`}
     >
-      <td
-        className={twMerge(
-          'w-1/5 py-3 pl-6 pr-3',
-          customAddressTx ? 'pb-10' : ''
-        )}
-      >
+      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
         <DepositRowStatus tx={tx} />
       </td>
 
-      <td
-        className={twMerge('w-1/5 px-3 py-3', customAddressTx ? 'pb-10' : '')}
-      >
+      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
         <DepositRowTime tx={tx} />
       </td>
 
       <td
         className={twMerge(
           'w-1/5 whitespace-nowrap px-3 py-3',
-          customAddressTx ? 'pb-10' : ''
+          customAddressTxPadding
         )}
       >
         {formatAmount(Number(tx.value), {
@@ -287,16 +283,14 @@ export function TransactionsTableDepositRow({
         })}
       </td>
 
-      <td
-        className={twMerge('w-1/5 px-3 py-3', customAddressTx ? 'pb-10' : '')}
-      >
+      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
         <DepositRowTxID tx={tx} />
       </td>
 
       <td
         className={twMerge(
           'relative w-1/5 py-3 pl-3 pr-6 text-right',
-          customAddressTx ? 'pb-10' : ''
+          customAddressTxPadding
         )}
       >
         {showRedeemRetryableButton && (
