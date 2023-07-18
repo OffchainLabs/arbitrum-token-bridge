@@ -160,7 +160,7 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const {
     app: { mergedTransactions: locallyStoredTransactions }
@@ -224,7 +224,8 @@ export function TransactionsTable({
   }, [locallyStoredTransactions])
 
   const status = (() => {
-    if (loading) return TableStatus.LOADING
+    if (loading || typeof isSmartContractWallet === 'undefined')
+      return TableStatus.LOADING
     if (error) return TableStatus.ERROR
     return TableStatus.SUCCESS
   })()
@@ -265,61 +266,69 @@ export function TransactionsTable({
           </thead>
 
           <tbody>
-            {status === TableStatus.LOADING && <TableBodyLoading />}
+            {isSmartContractWallet ? (
+              <div className="px-6 pb-4">
+                <span>
+                  You can see transaction history in your smart contract wallet.
+                </span>
+              </div>
+            ) : (
+              <>
+                {status === TableStatus.LOADING && <TableBodyLoading />}
 
-            {status === TableStatus.ERROR && <TableBodyError />}
+                {status === TableStatus.ERROR && <TableBodyError />}
 
-            {/* when there are no search results found */}
-            {status === TableStatus.SUCCESS && noSearchResults && (
-              <NoDataOverlay />
+                {/* when there are no search results found */}
+                {status === TableStatus.SUCCESS && noSearchResults && (
+                  <NoDataOverlay />
+                )}
+
+                {/* when there are no transactions present */}
+                {status === TableStatus.SUCCESS &&
+                  !noSearchResults &&
+                  !_transactions.length && (
+                    <EmptyTableRow>
+                      <span className="text-sm font-medium">
+                        No transactions
+                      </span>
+                    </EmptyTableRow>
+                  )}
+
+                {/* finally, when transactions are present, show rows */}
+                {status === TableStatus.SUCCESS &&
+                  !noSearchResults &&
+                  _transactions.map((tx, index) => {
+                    const isLastRow = index === _transactions.length - 1
+
+                    // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
+                    // this will make sure the row updates with any updates in the local app state
+                    // else show static subgraph table data
+                    const locallyStoredTransaction =
+                      locallyStoredTransactionsMap.get(tx.txId)
+                    const finalTx = locallyStoredTransaction ?? tx
+
+                    if (isDeposit(finalTx)) {
+                      return (
+                        <TransactionsTableDepositRow
+                          key={`${finalTx.txId}-${finalTx.direction}`}
+                          tx={finalTx}
+                          className={!isLastRow ? 'border-b border-black' : ''}
+                        />
+                      )
+                    } else if (isWithdrawal(finalTx)) {
+                      return (
+                        <TransactionsTableWithdrawalRow
+                          key={`${finalTx.txId}-${finalTx.direction}`}
+                          tx={finalTx}
+                          className={!isLastRow ? 'border-b border-black' : ''}
+                        />
+                      )
+                    } else {
+                      return null
+                    }
+                  })}
+              </>
             )}
-
-            {/* when there are no transactions present */}
-            {status === TableStatus.SUCCESS &&
-              !noSearchResults &&
-              !_transactions.length && (
-                <EmptyTableRow>
-                  <span className="text-sm font-medium">
-                    {isSmartContractWallet
-                      ? 'You can see tx history in your smart contract wallet'
-                      : 'No transactions'}
-                  </span>
-                </EmptyTableRow>
-              )}
-
-            {/* finally, when transactions are present, show rows */}
-            {status === TableStatus.SUCCESS &&
-              !noSearchResults &&
-              _transactions.map((tx, index) => {
-                const isLastRow = index === _transactions.length - 1
-
-                // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
-                // this will make sure the row updates with any updates in the local app state
-                // else show static subgraph table data
-                const locallyStoredTransaction =
-                  locallyStoredTransactionsMap.get(tx.txId)
-                const finalTx = locallyStoredTransaction ?? tx
-
-                if (isDeposit(finalTx)) {
-                  return (
-                    <TransactionsTableDepositRow
-                      key={`${finalTx.txId}-${finalTx.direction}`}
-                      tx={finalTx}
-                      className={!isLastRow ? 'border-b border-black' : ''}
-                    />
-                  )
-                } else if (isWithdrawal(finalTx)) {
-                  return (
-                    <TransactionsTableWithdrawalRow
-                      key={`${finalTx.txId}-${finalTx.direction}`}
-                      tx={finalTx}
-                      className={!isLastRow ? 'border-b border-black' : ''}
-                    />
-                  )
-                } else {
-                  return null
-                }
-              })}
           </tbody>
         </table>
       }
