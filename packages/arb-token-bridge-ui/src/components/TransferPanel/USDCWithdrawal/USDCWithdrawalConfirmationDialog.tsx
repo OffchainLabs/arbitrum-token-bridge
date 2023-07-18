@@ -25,6 +25,7 @@ export function USDCWithdrawalConfirmationDialog(
 
   const from = l2.network
   const to = l1.network
+  const fromNetworkName = getNetworkName(from.id)
   const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
@@ -79,12 +80,12 @@ export function USDCWithdrawalConfirmationDialog(
                 >
                   USDC
                 </ExternalLink>{' '}
-                on {getNetworkName(l1.network.id)} using a third-party bridge
-                with Circle&apos;s CCTP integrated.
+                on {toNetworkName} using a third-party bridge with Circle&apos;s
+                CCTP integrated.
               </p>
               <p>
-                USDC native to {getNetworkName(l2.network.id)} cannot be
-                withdrawn using Arbitrum's bridge.
+                USDC native to {fromNetworkName} cannot be withdrawn using
+                Arbitrum's bridge.
               </p>
             </div>
 
