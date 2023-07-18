@@ -950,6 +950,7 @@ export function TransferPanelMain({
       </Dialog>
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
+        onClose={() => setOneNovaTransferDestinationNetworkId(null)}
         destinationChainId={oneNovaTransferDestinationNetworkId}
         amount={amount}
       />

@@ -3,6 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import Hop from '@/images/bridge/hop.png'
 
 import { useAppState } from '../../state'
+import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -45,7 +46,7 @@ export function OneNovaTransferDialog(
   ]
 
   return (
-    <Dialog {...props} actionButtonProps={{ hidden: true }}>
+    <Dialog {...props} isCustom>
       <div className="flex flex-col md:min-w-[725px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
@@ -65,7 +66,6 @@ export function OneNovaTransferDialog(
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use a third-party bridge</TabButton>
-            <TabButton>Use Arbitrum’s bridge</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -77,14 +77,10 @@ export function OneNovaTransferDialog(
             </div>
 
             <BridgesTable bridgeList={fastBridgeList} />
-          </Tab.Panel>
-
-          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                Arbitrum’s native bridge between Arbitrum One and Arbitrum Nova
-                is coming soon.
-              </p>
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
             </div>
           </Tab.Panel>
         </Tab.Group>
