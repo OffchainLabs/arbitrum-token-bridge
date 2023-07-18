@@ -131,7 +131,7 @@ export function TokenRow({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
-  const withdrawalModeArbOneUSDC =
+  const withdrawalModeArbOneOrArbGoerliUSDC =
     !isDepositMode &&
     ((tokenIsArbOneNativeUSDC && isArbitrumOne) ||
       (tokenIsArbGoerliNativeUSDC && isArbitrumGoerli))
@@ -299,10 +299,10 @@ export function TokenRow({
       type="button"
       onClick={onClick}
       style={{ ...style, minHeight: '84px' }}
-      disabled={!tokenIsBridgeable && !withdrawalModeArbOneUSDC}
+      disabled={!tokenIsBridgeable && !withdrawalModeArbOneOrArbGoerliUSDC}
       className={twMerge(
         'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
-        tokenIsBridgeable || withdrawalModeArbOneUSDC
+        tokenIsBridgeable || withdrawalModeArbOneOrArbGoerliUSDC
           ? 'cursor-pointer opacity-100'
           : 'cursor-not-allowed opacity-50'
       )}
@@ -380,10 +380,10 @@ export function TokenRow({
                     )}
                   </>
                 )}
-                {(tokenIsBridgeable || withdrawalModeArbOneUSDC) &&
+                {(tokenIsBridgeable || withdrawalModeArbOneOrArbGoerliUSDC) &&
                   tokenBalanceContent}
               </div>
-              {isL2NativeToken && !withdrawalModeArbOneUSDC ? (
+              {isL2NativeToken && !withdrawalModeArbOneOrArbGoerliUSDC ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
                     l2Network.id
