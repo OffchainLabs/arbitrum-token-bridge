@@ -410,7 +410,7 @@ export function TransferPanelMain({
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
-  const showUSDCNotice =
+  const showUSDCSpecificInfo =
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
     (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
 
@@ -854,7 +854,7 @@ export function TransferPanelMain({
             }}
           />
 
-          {showUSDCNotice && (
+          {showUSDCSpecificInfo && (
             <p className="mt-1 text-xs font-light text-white">
               Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
               <ExternalLink
@@ -912,28 +912,24 @@ export function TransferPanelMain({
                   />
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
-                  {app.isDepositMode &&
-                    ((isArbitrumOne &&
-                      isTokenMainnetUSDC(selectedToken?.address)) ||
-                      (isArbitrumGoerli &&
-                        isTokenGoerliUSDC(selectedToken?.address))) && (
-                      <TokenBalance
-                        balance={
-                          (isArbitrumOne
-                            ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
-                            : erc20L2Balances?.[
-                                CommonAddress.ArbitrumGoerli.USDC
-                              ]) ?? constants.Zero
-                        }
-                        on={NetworkType.l2}
-                        forToken={
-                          selectedToken
-                            ? { ...selectedToken, symbol: 'USDC' }
-                            : null
-                        }
-                        tokenSymbolOverride="USDC"
-                      />
-                    )}
+                  {app.isDepositMode && showUSDCSpecificInfo && (
+                    <TokenBalance
+                      balance={
+                        (isArbitrumOne
+                          ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
+                          : erc20L2Balances?.[
+                              CommonAddress.ArbitrumGoerli.USDC
+                            ]) ?? constants.Zero
+                      }
+                      on={NetworkType.l2}
+                      forToken={
+                        selectedToken
+                          ? { ...selectedToken, symbol: 'USDC' }
+                          : null
+                      }
+                      tokenSymbolOverride="USDC"
+                    />
+                  )}
                   <ETHBalance
                     balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
                     prefix={selectedToken ? '' : 'BALANCE: '}
