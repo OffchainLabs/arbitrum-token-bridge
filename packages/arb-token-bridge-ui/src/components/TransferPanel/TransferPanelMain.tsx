@@ -44,7 +44,11 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isTokenGoerliUSDC,
+  isTokenMainnetUSDC,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 
@@ -212,10 +216,10 @@ function ETHBalance({
   }
 
   return (
-    <span>
-      {prefix}
-      {formatAmount(balance, { symbol: 'ETH' })}
-    </span>
+    <p>
+      <span className="font-light">{prefix}</span>
+      <span>{formatAmount(balance, { symbol: 'ETH' })}</span>
+    </p>
   )
 }
 
@@ -223,12 +227,14 @@ function TokenBalance({
   forToken,
   balance,
   on,
-  prefix = ''
+  prefix = '',
+  tokenSymbolOverride
 }: {
   forToken: ERC20BridgeToken | null
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
+  tokenSymbolOverride?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -237,10 +243,13 @@ function TokenBalance({
       return undefined
     }
 
-    return sanitizeTokenSymbol(forToken.symbol, {
-      erc20L1Address: forToken.address,
-      chain: on === NetworkType.l1 ? l1.network : l2.network
-    })
+    return (
+      tokenSymbolOverride ??
+      sanitizeTokenSymbol(forToken.symbol, {
+        erc20L1Address: forToken.address,
+        chain: on === NetworkType.l1 ? l1.network : l2.network
+      })
+    )
   }, [forToken, on, l1, l2])
 
   if (!forToken) {
@@ -252,13 +261,15 @@ function TokenBalance({
   }
 
   return (
-    <span>
-      {prefix}
-      {formatAmount(balance, {
-        decimals: forToken.decimals,
-        symbol
-      })}
-    </span>
+    <p>
+      <span className="font-light">{prefix}</span>
+      <span>
+        {formatAmount(balance, {
+          decimals: forToken.decimals,
+          symbol
+        })}
+      </span>
+    </p>
   )
 }
 
@@ -302,6 +313,7 @@ export function TransferPanelMain({
 
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
@@ -347,6 +359,12 @@ export function TransferPanelMain({
       updateErc20L1Balances([selectedToken.address])
       if (selectedToken.l2Address) {
         updateErc20L2Balances([selectedToken.l2Address])
+      }
+      if (isTokenMainnetUSDC(selectedToken.address)) {
+        updateErc20L2Balances([CommonAddress.ArbitrumOne.USDC])
+      }
+      if (isTokenGoerliUSDC(selectedToken.address)) {
+        updateErc20L2Balances([CommonAddress.ArbitrumGoerli.USDC])
       }
     }
   }, [
@@ -406,9 +424,9 @@ export function TransferPanelMain({
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
-  const showUSDCNotice =
-    selectedToken?.address === CommonAddress.Mainnet.USDC &&
-    isNetwork(l2.network.id).isArbitrumOne
+  const showUSDCSpecificInfo =
+    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
+    (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -850,6 +868,19 @@ export function TransferPanelMain({
             }}
           />
 
+          {showUSDCSpecificInfo && (
+            <p className="mt-1 text-xs font-light text-white">
+              Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
+            </p>
+          )}
+
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have ETH in your L2 wallet, you’ll need it to power
@@ -857,33 +888,6 @@ export function TransferPanelMain({
               <br />
               <ExternalLink
                 href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
-                className="arb-hover underline"
-              >
-                Learn more.
-              </ExternalLink>
-            </p>
-          )}
-
-          {showUSDCNotice && (
-            <p className="mt-1 text-xs font-light text-white">
-              Native USDC is live on Arbitrum One!
-              <br />
-              <ExternalLink
-                href="https://arbiscan.io/token/0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"
-                className="arb-hover underline"
-              >
-                Bridged USDC (USDC.e)
-              </ExternalLink>{' '}
-              will work but is different from{' '}
-              <ExternalLink
-                href="https://arbiscan.io/token/0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
-                className="arb-hover underline"
-              >
-                Native USDC
-              </ExternalLink>
-              .{' '}
-              <ExternalLink
-                href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
                 className="arb-hover underline"
               >
                 Learn more
@@ -920,6 +924,26 @@ export function TransferPanelMain({
                     forToken={selectedToken}
                     prefix={selectedToken ? 'BALANCE: ' : ''}
                   />
+                  {/* In deposit mode, when user selected USDC on mainnet,
+                  the UI shows the Arb One balance of both USDC.e and native USDC */}
+                  {app.isDepositMode && showUSDCSpecificInfo && (
+                    <TokenBalance
+                      balance={
+                        (isArbitrumOne
+                          ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
+                          : erc20L2Balances?.[
+                              CommonAddress.ArbitrumGoerli.USDC
+                            ]) ?? constants.Zero
+                      }
+                      on={NetworkType.l2}
+                      forToken={
+                        selectedToken
+                          ? { ...selectedToken, symbol: 'USDC' }
+                          : null
+                      }
+                      tokenSymbolOverride="USDC"
+                    />
+                  )}
                   <ETHBalance
                     balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
                     prefix={selectedToken ? '' : 'BALANCE: '}

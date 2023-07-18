@@ -97,7 +97,7 @@ export function getFastBridges({
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
       case FastBridgeNames.Wormhole:
-        if (isTokenMainnetUSDC(fromTokenAddress ?? '')) {
+        if (isTokenMainnetUSDC(fromTokenAddress)) {
           return 'https://www.portalbridge.com/usdc-bridge/'
         }
         return 'https://www.portalbridge.com/'
