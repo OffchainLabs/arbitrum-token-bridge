@@ -249,6 +249,11 @@ export const isTokenMainnetUSDC = (tokenAddress: string | undefined) => {
   return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
 }
 
+export const isTokenGoerliUSDC = (tokenAddress: string | undefined) => {
+  if (!tokenAddress) return false
+  return tokenAddress.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
+}
+
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,

@@ -44,7 +44,11 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { isTokenMainnetUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isTokenGoerliUSDC,
+  isTokenMainnetUSDC,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 
@@ -358,6 +362,9 @@ export function TransferPanelMain({
       }
       if (isTokenMainnetUSDC(selectedToken.address)) {
         updateErc20L2Balances([CommonAddress.ArbitrumOne.USDC])
+      }
+      if (isTokenGoerliUSDC(selectedToken.address)) {
+        updateErc20L2Balances([CommonAddress.ArbitrumGoerli.USDC])
       }
     }
   }, [
@@ -906,12 +913,17 @@ export function TransferPanelMain({
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
                   {app.isDepositMode &&
-                    isArbitrumOne &&
-                    isTokenMainnetUSDC(selectedToken?.address) && (
+                    ((isArbitrumOne &&
+                      isTokenMainnetUSDC(selectedToken?.address)) ||
+                      (isArbitrumGoerli &&
+                        isTokenGoerliUSDC(selectedToken?.address))) && (
                       <TokenBalance
                         balance={
-                          erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC] ??
-                          constants.Zero
+                          (isArbitrumOne
+                            ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
+                            : erc20L2Balances?.[
+                                CommonAddress.ArbitrumGoerli.USDC
+                              ]) ?? constants.Zero
                         }
                         on={NetworkType.l2}
                         forToken={
