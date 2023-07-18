@@ -245,11 +245,11 @@ type SanitizeTokenOptions = {
   chain: Chain // chain for which we want to retrieve the token name / symbol
 }
 
-export const isTokenMainnetUSDC = (tokenAddress: string | undefined) => {
-  return (
-    tokenAddress?.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
-  )
-}
+export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+
+export const isTokenGoerliUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
 
 export const isTokenArbitrumOneNativeUSDC = (
   tokenAddress: string | undefined
