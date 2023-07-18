@@ -411,8 +411,8 @@ export function TransferPanelMain({
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const showUSDCNotice =
-    selectedToken?.address === CommonAddress.Mainnet.USDC &&
-    (isArbitrumOne || isArbitrumGoerli)
+    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
+    (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
 
   const [, setQueryParams] = useArbQueryParams()
 
