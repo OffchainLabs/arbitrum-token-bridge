@@ -244,8 +244,14 @@ type SanitizeTokenOptions = {
   chain: Chain // chain for which we want to retrieve the token name / symbol
 }
 
-export const isTokenMainnetUSDC = (tokenAddress: string) => {
+export const isTokenMainnetUSDC = (tokenAddress: string | undefined) => {
+  if (!tokenAddress) return false
   return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+}
+
+export const isTokenGoerliUSDC = (tokenAddress: string | undefined) => {
+  if (!tokenAddress) return false
+  return tokenAddress.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
 }
 
 // get the exact token symbol for a particular chain
