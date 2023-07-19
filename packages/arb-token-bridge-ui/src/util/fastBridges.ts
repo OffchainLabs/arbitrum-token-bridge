@@ -1,4 +1,5 @@
-import { ImageProps } from 'next/image'
+import { ImageProps, StaticImageData } from 'next/image'
+
 import Hop from '@/images/bridge/hop.png'
 import Celer from '@/images/bridge/celer.png'
 import Connext from '@/images/bridge/connext.png'
@@ -10,11 +11,6 @@ import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 
 import { ChainId } from './networks'
-import {
-  isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC,
-  isTokenMainnetUSDC
-} from './TokenUtils'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -46,7 +42,7 @@ export type NonCanonicalTokenSupportedBridges<
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
-  imageSrc: ImageProps['src']
+  imageSrc: StaticImageData
   href: string
 }
 
@@ -54,15 +50,11 @@ export function getFastBridges({
   from,
   to,
   tokenSymbol = 'ETH',
-  fromTokenAddress,
-  toTokenAddress,
   amount
 }: {
   from: ChainId
   to: ChainId
   tokenSymbol?: string
-  fromTokenAddress?: string
-  toTokenAddress?: string
   amount: string
 }): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
@@ -100,40 +92,16 @@ export function getFastBridges({
         // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
         // We make sure to prompt a network switch to Arbitrum prior to showing this.
         return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
-      case FastBridgeNames.Wormhole:
-        if (
-          isTokenMainnetUSDC(fromTokenAddress) ||
-          isTokenArbitrumOneNativeUSDC(fromTokenAddress) ||
-          isTokenArbitrumGoerliNativeUSDC(fromTokenAddress)
-        ) {
-          return 'https://www.portalbridge.com/usdc-bridge/'
-        }
-        return 'https://www.portalbridge.com/'
-      case FastBridgeNames.LIFI:
-        if (!toTokenAddress) {
-          return `https://jumper.exchange/?fromChain=${from}&fromToken=${
-            fromTokenAddress ?? tokenSymbol
-          }&toChain=${to}&fromAmount=${amount}`
-        }
-        return `https://jumper.exchange/?fromChain=${from}&fromToken=${
-          fromTokenAddress ?? tokenSymbol
-        }&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
-      case FastBridgeNames.Router:
-        let bridgeUrl = `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}`
-        if (fromTokenAddress) {
-          bridgeUrl += `&fromToken=${fromTokenAddress}`
-        }
-        if (toTokenAddress) {
-          bridgeUrl += `&toToken=${toTokenAddress}`
-        }
-        return bridgeUrl
       default:
         return ''
     }
   }
 
   const bridgeInfo: {
-    [bridge in FastBridgeNames]: {
+    [bridge in Exclude<
+      FastBridgeNames,
+      FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+    >]: {
       imageSrc: ImageProps['src']
       href: string
     }
@@ -161,26 +129,17 @@ export function getFastBridges({
     [FastBridgeNames.Synapse]: {
       imageSrc: Synapse,
       href: getBridgeDeepLink(FastBridgeNames.Synapse)
-    },
-    [FastBridgeNames.Wormhole]: {
-      imageSrc: Wormhole,
-      href: getBridgeDeepLink(FastBridgeNames.Wormhole)
-    },
-    [FastBridgeNames.LIFI]: {
-      imageSrc: LIFI,
-      href: getBridgeDeepLink(FastBridgeNames.LIFI)
-    },
-    [FastBridgeNames.Router]: {
-      imageSrc: Router,
-      href: getBridgeDeepLink(FastBridgeNames.Router)
     }
   }
 
   return Object.values(FastBridgeNames).map<FastBridgeInfo>(bridge => {
-    const name = bridge as FastBridgeNames
+    const name = bridge as Exclude<
+      FastBridgeNames,
+      FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+    >
     return {
       name,
-      imageSrc: bridgeInfo[name].imageSrc,
+      imageSrc: bridgeInfo[name].imageSrc as StaticImageData,
       href: bridgeInfo[name].href
     }
   })
@@ -208,3 +167,78 @@ export const USDCBridgeInfo = {
   learnMoreUrl:
     'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
 } as const
+
+type getHrefParams = {
+  from: ChainId
+  to: ChainId
+  fromTokenAddress: string
+  toTokenAddress: string
+  amount?: string
+  transferMode: 'deposit' | 'withdraw'
+}
+
+type USDCFastBridgeInfo = {
+  name: FastBridgeNames
+  imageSrc: StaticImageData
+  getHref: (params: getHrefParams) => string
+}
+
+export const USDCFastBridges: USDCFastBridgeInfo[] = [
+  {
+    name: FastBridgeNames.Celer,
+    imageSrc: Celer,
+    getHref: ({ transferMode }) => {
+      switch (transferMode) {
+        case 'deposit':
+          return 'https://cbridge.celer.network/bridge/ethereum-arbitrum/'
+        case 'withdraw':
+        default:
+          return 'https://cbridge.celer.network/bridge/arbitrum-ethereum/'
+      }
+    }
+  },
+  {
+    name: FastBridgeNames.LIFI,
+    imageSrc: LIFI,
+    getHref: ({
+      from,
+      to,
+      fromTokenAddress,
+      toTokenAddress,
+      amount,
+      transferMode
+    }: getHrefParams) => {
+      switch (transferMode) {
+        case 'deposit':
+          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+        case 'withdraw':
+        default:
+          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+      }
+    }
+  },
+  {
+    name: FastBridgeNames.Wormhole,
+    imageSrc: Wormhole,
+    getHref: () => 'https://www.portalbridge.com/usdc-bridge/'
+  },
+  {
+    name: FastBridgeNames.Router,
+    imageSrc: Router,
+    getHref: ({
+      from,
+      to,
+      fromTokenAddress,
+      toTokenAddress,
+      transferMode
+    }: getHrefParams) => {
+      switch (transferMode) {
+        case 'deposit':
+          return `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
+        case 'withdraw':
+        default:
+          return `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
+      }
+    }
+  }
+]

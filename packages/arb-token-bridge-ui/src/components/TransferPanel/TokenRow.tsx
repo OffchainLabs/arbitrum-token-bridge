@@ -88,7 +88,6 @@ export function TokenRow({
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
 
   const isSmallScreen = useMedia('(max-width: 419px)')
 

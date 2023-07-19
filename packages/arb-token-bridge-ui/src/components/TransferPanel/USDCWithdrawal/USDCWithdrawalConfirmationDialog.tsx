@@ -5,10 +5,9 @@ import { Dialog, UseDialogProps } from '../../common/Dialog'
 import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
-  USDCBridgeInfo,
-  FastBridgeNames,
-  getFastBridges,
-  SpecialTokenSymbol
+  SpecialTokenSymbol,
+  USDCFastBridges,
+  FastBridgeInfo
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
@@ -29,20 +28,22 @@ export function USDCWithdrawalConfirmationDialog(
   const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
-  const fastBridges = getFastBridges({
-    from: from.id,
-    to: to.id,
-    tokenSymbol,
-    fromTokenAddress: isArbitrumGoerli
-      ? CommonAddress.ArbitrumGoerli.USDC
-      : CommonAddress.ArbitrumOne.USDC,
-    toTokenAddress: CommonAddress.Mainnet.USDC,
-    amount: props.amount
-  }).filter(bridge => {
-    return (
-      USDCBridgeInfo.supportedBridges as readonly FastBridgeNames[]
-    ).includes(bridge.name)
-  })
+  const fastBridges: FastBridgeInfo[] = USDCFastBridges.map(USDCFastBridge => ({
+    name: USDCFastBridge.name,
+    imageSrc: USDCFastBridge.imageSrc,
+    href: USDCFastBridge.getHref({
+      from: from.id,
+      to: to.id,
+      fromTokenAddress: isArbitrumGoerli
+        ? CommonAddress.ArbitrumGoerli.USDC
+        : CommonAddress.ArbitrumOne.USDC,
+      toTokenAddress: isArbitrumGoerli
+        ? CommonAddress.Goerli.USDC
+        : CommonAddress.Mainnet.USDC,
+      amount: props.amount,
+      transferMode: 'withdraw'
+    })
+  }))
 
   return (
     <Dialog {...props} isCustom>

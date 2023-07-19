@@ -1,4 +1,5 @@
 import useLocalStorage from '@rehooks/local-storage'
+import Image from 'next/image'
 import {
   StarIcon as StarIconOutline,
   ArrowTopRightOnSquareIcon
@@ -13,7 +14,6 @@ import {
   SpecialTokenSymbol
 } from '../../util/fastBridges'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import Image from 'next/image'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
@@ -26,6 +26,7 @@ export function BridgesTable(props: {
 
   function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedNonCanonicalToken) {
+      console.log('bridgeName: ', bridgeName)
       trackEvent('Fast Bridge Click', {
         bridge: bridgeName,
         tokenSymbol: props.selectedNonCanonicalToken

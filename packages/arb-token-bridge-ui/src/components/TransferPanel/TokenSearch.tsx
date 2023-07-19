@@ -48,6 +48,9 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
+  // the address field is for L1 address but native USDC does not have an L1 address
+  // the L2 address is used instead to avoid errors
+  address: CommonAddress.ArbitrumOne.USDC,
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
