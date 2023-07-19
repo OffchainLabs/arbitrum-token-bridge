@@ -69,7 +69,7 @@ describe('Transaction History', () => {
       // search for invalid address substring
       cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER)
         .typeRecursively('0xx') // 0xx is invalid tx hash
-        .then(($input) => {
+        .then($input => {
           cy.wrap($input).scrollIntoView()
           cy.findByText(
             /Oops! Looks like nothing matched your search query/i
@@ -150,7 +150,7 @@ describe('Transaction History', () => {
       // search for invalid address substring
       cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER)
         .typeRecursively('0xx') // 0xx is invalid tx hash
-        .then(($input) => {
+        .then($input => {
           cy.wrap($input).scrollIntoView()
           cy.findByText(
             /Oops! Looks like nothing matched your search query/i
