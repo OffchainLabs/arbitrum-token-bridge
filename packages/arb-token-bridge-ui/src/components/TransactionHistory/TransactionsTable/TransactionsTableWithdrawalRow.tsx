@@ -7,7 +7,7 @@ import dayjs from 'dayjs'
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
-import { TransactionsTableRowBanner } from './TransactionsTableRowBanner'
+import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
@@ -439,7 +439,7 @@ export function TransactionsTableWithdrawalRow({
       >
         <WithdrawalRowAction tx={tx} isError={isError} />
       </td>
-      <TransactionsTableRowBanner tx={tx} />
+      <TransactionsTableCustomAddressLabel tx={tx} />
     </tr>
   )
 }

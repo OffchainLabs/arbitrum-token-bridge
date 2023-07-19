@@ -23,7 +23,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { useAppContextState } from '../../App/AppContext'
-import { TransactionsTableRowBanner } from './TransactionsTableRowBanner'
+import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -332,7 +332,7 @@ export function TransactionsTableDepositRow({
           </Tooltip>
         )}
       </td>
-      <TransactionsTableRowBanner tx={tx} />
+      <TransactionsTableCustomAddressLabel tx={tx} />
     </tr>
   )
 }

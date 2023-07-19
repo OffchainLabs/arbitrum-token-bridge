@@ -2,7 +2,7 @@ import { MergedTransaction } from '../../../state/app/state'
 import { isCustomAddressTx } from '../../../state/app/utils'
 import { CustomAddressTxExplorer } from './TransactionsTable'
 
-export const TransactionsTableRowBanner = ({
+export const TransactionsTableCustomAddressLabel = ({
   tx
 }: {
   tx: MergedTransaction
