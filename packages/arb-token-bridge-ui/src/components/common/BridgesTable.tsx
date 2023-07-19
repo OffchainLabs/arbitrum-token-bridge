@@ -26,7 +26,6 @@ export function BridgesTable(props: {
 
   function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedNonCanonicalToken) {
-      console.log('bridgeName: ', bridgeName)
       trackEvent('Fast Bridge Click', {
         bridge: bridgeName,
         tokenSymbol: props.selectedNonCanonicalToken
