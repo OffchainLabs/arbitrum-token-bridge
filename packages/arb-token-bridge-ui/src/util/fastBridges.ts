@@ -102,7 +102,7 @@ export function getFastBridges({
       FastBridgeNames,
       FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
     >]: {
-      imageSrc: ImageProps['src']
+      imageSrc: StaticImageData
       href: string
     }
   } = {
@@ -132,17 +132,29 @@ export function getFastBridges({
     }
   }
 
-  return Object.values(FastBridgeNames).map<FastBridgeInfo>(bridge => {
-    const name = bridge as Exclude<
-      FastBridgeNames,
-      FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
-    >
-    return {
-      name,
-      imageSrc: bridgeInfo[name].imageSrc as StaticImageData,
-      href: bridgeInfo[name].href
-    }
-  })
+  return Object.values(FastBridgeNames)
+    .filter(fastBridgeName => {
+      // exclude these fast bridges for now
+      switch (fastBridgeName) {
+        case FastBridgeNames.LIFI:
+        case FastBridgeNames.Wormhole:
+        case FastBridgeNames.Router:
+          return false
+        default:
+          return true
+      }
+    })
+    .map<FastBridgeInfo>(bridge => {
+      const name = bridge as Exclude<
+        FastBridgeNames,
+        FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+      >
+      return {
+        name,
+        imageSrc: bridgeInfo[name].imageSrc,
+        href: bridgeInfo[name].href
+      }
+    })
 }
 
 export const NonCanonicalTokensBridgeInfo = {
