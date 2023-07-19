@@ -18,7 +18,6 @@ import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { TableTransactorTypeToggle } from './TableTransactorTypeToggle'
 import { useAppState } from '../../../state'
-import { useAccountType } from '../../../hooks/useAccountType'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
@@ -148,6 +147,7 @@ export type TransactionsTableProps = {
   pageParams: PageParams
   setPageParams: Dispatch<SetStateAction<PageParams>>
   transactions: MergedTransaction[]
+  isSmartContractWallet?: boolean
   loading: boolean
   error: boolean
 }
@@ -157,11 +157,10 @@ export function TransactionsTable({
   pageParams,
   setPageParams,
   transactions,
+  isSmartContractWallet,
   loading,
   error
 }: TransactionsTableProps) {
-  const { isSmartContractWallet } = useAccountType()
-
   const {
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
@@ -224,8 +223,7 @@ export function TransactionsTable({
   }, [locallyStoredTransactions])
 
   const status = (() => {
-    if (loading || typeof isSmartContractWallet === 'undefined')
-      return TableStatus.LOADING
+    if (loading) return TableStatus.LOADING
     if (error) return TableStatus.ERROR
     return TableStatus.SUCCESS
   })()
@@ -238,9 +236,11 @@ export function TransactionsTable({
 
   return (
     <>
-      <TableTransactorTypeToggle
-        className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
-      />
+      {!isSmartContractWallet && (
+        <TableTransactorTypeToggle
+          className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
+        />
+      )}
 
       {/* search and pagination buttons */}
       <TableActionHeader
@@ -248,90 +248,78 @@ export function TransactionsTable({
         pageParams={pageParams}
         setPageParams={setPageParams}
         transactions={transactions}
+        isSmartContractWallet={isSmartContractWallet}
         loading={loading}
       />
 
-      {
-        <table className="w-full overflow-hidden rounded-b-lg bg-white">
-          <thead className="text-gray-10 text-left text-sm">
-            <tr>
-              <th className="py-3 pl-6 pr-3 font-normal">Status</th>
-              <th className="px-3 py-3 font-normal">Time</th>
-              <th className="px-3 py-3 font-normal">Amount</th>
-              <th className="px-3 py-3 font-normal">TxID</th>
-              <th className="py-3 pl-3 pr-6 font-normal">
-                {/* Empty header text */}
-              </th>
-            </tr>
-          </thead>
+      <table className="w-full overflow-hidden rounded-b-lg bg-white">
+        <thead className="text-gray-10 text-left text-sm">
+          <tr>
+            <th className="py-3 pl-6 pr-3 font-normal">Status</th>
+            <th className="px-3 py-3 font-normal">Time</th>
+            <th className="px-3 py-3 font-normal">Amount</th>
+            <th className="px-3 py-3 font-normal">TxID</th>
+            <th className="py-3 pl-3 pr-6 font-normal">
+              {/* Empty header text */}
+            </th>
+          </tr>
+        </thead>
 
-          <tbody>
-            {isSmartContractWallet ? (
-              <div className="px-6 pb-4">
-                <span>
-                  You can see transaction history in your smart contract wallet.
-                </span>
-              </div>
-            ) : (
-              <>
-                {status === TableStatus.LOADING && <TableBodyLoading />}
+        <tbody>
+          {status === TableStatus.LOADING && <TableBodyLoading />}
 
-                {status === TableStatus.ERROR && <TableBodyError />}
+          {status === TableStatus.ERROR && <TableBodyError />}
 
-                {/* when there are no search results found */}
-                {status === TableStatus.SUCCESS && noSearchResults && (
-                  <NoDataOverlay />
-                )}
+          {/* when there are no search results found */}
+          {status === TableStatus.SUCCESS && noSearchResults && (
+            <NoDataOverlay />
+          )}
 
-                {/* when there are no transactions present */}
-                {status === TableStatus.SUCCESS &&
-                  !noSearchResults &&
-                  !_transactions.length && (
-                    <EmptyTableRow>
-                      <span className="text-sm font-medium">
-                        No transactions
-                      </span>
-                    </EmptyTableRow>
-                  )}
-
-                {/* finally, when transactions are present, show rows */}
-                {status === TableStatus.SUCCESS &&
-                  !noSearchResults &&
-                  _transactions.map((tx, index) => {
-                    const isLastRow = index === _transactions.length - 1
-
-                    // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
-                    // this will make sure the row updates with any updates in the local app state
-                    // else show static subgraph table data
-                    const locallyStoredTransaction =
-                      locallyStoredTransactionsMap.get(tx.txId)
-                    const finalTx = locallyStoredTransaction ?? tx
-
-                    if (isDeposit(finalTx)) {
-                      return (
-                        <TransactionsTableDepositRow
-                          key={`${finalTx.txId}-${finalTx.direction}`}
-                          tx={finalTx}
-                          className={!isLastRow ? 'border-b border-black' : ''}
-                        />
-                      )
-                    } else if (isWithdrawal(finalTx)) {
-                      return (
-                        <TransactionsTableWithdrawalRow
-                          key={`${finalTx.txId}-${finalTx.direction}`}
-                          tx={finalTx}
-                          className={!isLastRow ? 'border-b border-black' : ''}
-                        />
-                      )
-                    } else {
-                      return null
-                    }
-                  })}
-              </>
+          {/* when there are no transactions present */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            !_transactions.length && (
+              <EmptyTableRow>
+                <span className="text-sm font-medium">No transactions</span>
+              </EmptyTableRow>
             )}
-          </tbody>
-        </table>
-      }
+
+          {/* finally, when transactions are present, show rows */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            _transactions.map((tx, index) => {
+              const isLastRow = index === _transactions.length - 1
+
+              // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
+              // this will make sure the row updates with any updates in the local app state
+              // else show static subgraph table data
+              const locallyStoredTransaction = locallyStoredTransactionsMap.get(
+                tx.txId
+              )
+              const finalTx = locallyStoredTransaction ?? tx
+
+              if (isDeposit(finalTx)) {
+                return (
+                  <TransactionsTableDepositRow
+                    key={`${finalTx.txId}-${finalTx.direction}`}
+                    tx={finalTx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else if (isWithdrawal(finalTx)) {
+                return (
+                  <TransactionsTableWithdrawalRow
+                    key={`${finalTx.txId}-${finalTx.direction}`}
+                    tx={finalTx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+        </tbody>
+      </table>
     </>
   )
 }

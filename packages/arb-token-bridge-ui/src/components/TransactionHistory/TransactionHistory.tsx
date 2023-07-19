@@ -4,7 +4,7 @@ import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
 import { useAppState } from '../../state'
-import { getNetworkLogo, getNetworkName } from '../../util/networks'
+import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
 import {
   PageParams,
   TransactionsTable
@@ -14,6 +14,9 @@ import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useAppContextActions } from '../App/AppContext'
+import { useNetwork } from 'wagmi'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -38,8 +41,10 @@ export const TransactionHistory = ({
   setDepositsPageParams: Dispatch<SetStateAction<PageParams>>
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
+  const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
-
+  const { isSmartContractWallet } = useAccountType()
+  const { setShowSentTransactions } = useAppContextActions()
   const {
     app: { mergedTransactions }
   } = useAppState()
@@ -55,6 +60,26 @@ export const TransactionHistory = ({
   const roundedTabClasses =
     'roundedTab ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white'
 
+  function handlePanelChange(index: number) {
+    if (!isSmartContractWallet || !chain) {
+      return
+    }
+    const isDeposit = index === 0
+    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+    // SCW address is tied to a specific network, so we must ensure that:
+    if (isDeposit) {
+      // if showing deposits, we always show:
+      // - sent txs if connected to L1
+      // - received txs if connected to L2
+      setShowSentTransactions(!isConnectedToArbitrum)
+    } else {
+      // if showing withdrawals, we always show:
+      // - sent txs if connected to L2
+      // - received txs if connected to L1
+      setShowSentTransactions(isConnectedToArbitrum)
+    }
+  }
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
@@ -69,7 +94,7 @@ export const TransactionHistory = ({
 
       {/* Transaction history table */}
       <div>
-        <Tab.Group>
+        <Tab.Group onChange={handlePanelChange}>
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
@@ -106,6 +131,7 @@ export const TransactionHistory = ({
               pageParams={depositsPageParams}
               setPageParams={setDepositsPageParams}
               transactions={depositsData.transformedDeposits}
+              isSmartContractWallet={isSmartContractWallet}
               loading={depositsLoading}
               error={depositsError}
             />
@@ -116,6 +142,7 @@ export const TransactionHistory = ({
               pageParams={withdrawalsPageParams}
               setPageParams={setWithdrawalsPageParams}
               transactions={withdrawalsData.transformedWithdrawals}
+              isSmartContractWallet={isSmartContractWallet}
               loading={withdrawalsLoading}
               error={withdrawalsError}
             />
