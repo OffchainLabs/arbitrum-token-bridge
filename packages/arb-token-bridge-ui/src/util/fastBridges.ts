@@ -24,7 +24,6 @@ export enum FastBridgeNames {
   LIFI = 'LI.FI',
   Wanchain = 'Wanchain',
   Router = 'Router'
-  
 }
 
 export enum SpecialTokenSymbol {
