@@ -6,6 +6,7 @@ import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
 import Wormhole from '@/images/bridge/wormhole.svg'
+import Wanchain from '@/images/bridge/wanchain.png'
 import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 
@@ -21,7 +22,9 @@ export enum FastBridgeNames {
   Synapse = 'Synapse',
   Wormhole = 'Wormhole',
   LIFI = 'LI.FI',
+  Wanchain = 'Wanchain',
   Router = 'Router'
+  
 }
 
 export enum SpecialTokenSymbol {
@@ -110,6 +113,8 @@ export function getFastBridges({
         return `https://jumper.exchange/?fromChain=${from}&fromToken=${
           fromTokenAddress ?? tokenSymbol
         }&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+      case FastBridgeNames.Wanchain:
+        return `https://bridge.wanchain.org/#/?asset=${tokenSymbol}&from=${chainIdToSlug(from)}`
       case FastBridgeNames.Router:
         let bridgeUrl = `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}`
         if (fromTokenAddress) {
@@ -161,6 +166,10 @@ export function getFastBridges({
     [FastBridgeNames.LIFI]: {
       imageSrc: LIFI,
       href: getBridgeDeepLink(FastBridgeNames.LIFI)
+    },
+    [FastBridgeNames.Wanchain]: {
+      imageSrc: Wanchain,
+      href: getBridgeDeepLink(FastBridgeNames.Wanchain)
     },
     [FastBridgeNames.Router]: {
       imageSrc: Router,

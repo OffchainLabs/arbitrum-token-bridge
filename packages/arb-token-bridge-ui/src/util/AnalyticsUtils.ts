@@ -177,6 +177,7 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Fast Bridge Click: Stargate': '6VZXVGEQ',
   'Fast Bridge Click: Wormhole': '',
   'Fast Bridge Click: LI.FI': '',
+  'Fast Bridge Click: Wanchain': '',
   'Fast Bridge Click: Router': '',
   //
   'USDC: Fast Bridge Click: Celer': '',
