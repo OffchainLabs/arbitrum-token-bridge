@@ -39,7 +39,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, getSupportedNetworks, ChainId } from '../../util/networks'
+import { isNetwork, getSupportedNetworks } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -52,7 +52,6 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { fetchCCTPDeposits } from '../../util/cctp/fetchCCTPDeposits'
 
 declare global {
   interface Window {
@@ -211,13 +210,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         console.warn('Failed to fetch warning tokens:', err)
       })
   }, [])
-
-  useEffect(() => {
-    fetchCCTPDeposits({
-      walletAddress: '0x054b7db5f5ddbc9748d3e7d8ded296fe37b1fd46',
-      l1ChainId: ChainId.Mainnet
-    })
-  })
 
   if (address && isBlocked) {
     return (
