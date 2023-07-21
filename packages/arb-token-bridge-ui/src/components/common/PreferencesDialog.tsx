@@ -1,7 +1,9 @@
 import useLocalStorage from '@rehooks/local-storage'
+
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
+import { AddCustomNetwork } from './AddCustomNetwork'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
@@ -71,6 +73,12 @@ export const PreferencesDialog = () => {
               isArbitrumStatsVisible ? closeArbitrumStats : openArbitrumStats
             }
           />
+        </div>
+
+        {/* Add custom network */}
+        <div className="w-full">
+          <SectionTitle>Add Custom Network</SectionTitle>
+          <AddCustomNetwork />
         </div>
       </div>
     </SidePanel>
