@@ -1,19 +1,15 @@
-import { Provider } from '@ethersproject/providers'
 import { ChainId } from '../networks'
 import { getAPIBaseUrl, sanitizeQueryParams } from '..'
 
-export type FetchDepositParams = {
+export type FetchParams = {
   walletAddress: string
   l1ChainId: ChainId
 }
 
-/* Fetch complete deposits - both ETH and Token deposits from subgraph into one list */
-/* Also fills in any additional data required per transaction for our UI logic to work well */
-/* TODO : Add event logs as well */
 export const fetchCCTPDeposits = async ({
   walletAddress,
   l1ChainId
-}: FetchDepositParams): Promise<[]> => {
+}: FetchParams): Promise<[]> => {
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       walletAddress,
@@ -30,7 +26,28 @@ export const fetchCCTPDeposits = async ({
   )
 
   const deposits = (await response.json()).data
+  return deposits
+}
 
-  console.log(deposits)
-  return []
+export const fetchCCTPWithdrawals = async ({
+  walletAddress,
+  l1ChainId
+}: FetchParams): Promise<[]> => {
+  const urlParams = new URLSearchParams(
+    sanitizeQueryParams({
+      walletAddress,
+      l1ChainId
+    })
+  )
+
+  const response = await fetch(
+    `${getAPIBaseUrl()}/api/cctp/withdrawals?${urlParams}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    }
+  )
+
+  const withdrawals = (await response.json()).data
+  return withdrawals
 }

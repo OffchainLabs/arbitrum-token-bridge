@@ -2,14 +2,6 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { NextApiRequest } from 'next'
 import { ChainId } from '../../../util/networks'
 
-export function getCircleAttestationURL(l1ChainId: ChainId) {
-  if (l1ChainId === ChainId.Mainnet) {
-    return 'https://iris-api.circle.com'
-  }
-
-  return 'https://iris-api-sandbox.circle.com'
-}
-
 export function getSubgraphClient(subgraph: string) {
   return new ApolloClient({
     link: new HttpLink({
@@ -28,7 +20,7 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
   }
 }
 
-export type MessageReceiveds = {
+export type MessageReceived = {
   blockNumber: number
   blockTimestamp: number
   caller: `0x${string}`
@@ -40,7 +32,7 @@ export type MessageReceiveds = {
   transactionHash: `0x${string}`
 }
 
-export type MessageSents = {
+export type MessageSent = {
   attestationHash: `0x${string}`
   blockNumber: number
   blockTimestamp: number
@@ -55,8 +47,8 @@ export type MessageSents = {
 export type Response =
   | {
       data: {
-        messageSents: MessageSents[]
-        messageReceiveds: MessageReceiveds[]
+        messageSents: MessageSent[]
+        messageReceiveds: MessageReceived[]
       }
     }
   | {

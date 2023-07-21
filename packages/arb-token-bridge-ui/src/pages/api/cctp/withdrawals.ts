@@ -3,11 +3,22 @@ import { ApolloQueryResult, gql } from '@apollo/client'
 import { ChainId } from '../../../util/networks'
 import {
   getSubgraphClient,
-  MessageSents,
-  MessageReceiveds,
-  NextApiRequestWithCCTPParams,
-  Response
+  MessageSent,
+  MessageReceived,
+  NextApiRequestWithCCTPParams
 } from './utils'
+
+export type Response =
+  | {
+      data: {
+        pending: MessageSent[]
+        fulfilled: MessageSent[]
+      }
+    }
+  | {
+      data: null
+      message: string // in case of any error
+    }
 
 export default async function handler(
   req: NextApiRequestWithCCTPParams,
@@ -37,7 +48,7 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-goerli' : 'cctp'
+      l1ChainId === ChainId.Mainnet ? 'cctp' : 'cctp-goerli'
     )
     const l2Subgraph = getSubgraphClient(
       l1ChainId === ChainId.Mainnet ? 'arb1-cctp' : 'arb1-cctp-goerli'
@@ -48,9 +59,9 @@ export default async function handler(
         messageSents(
           where: {            
             sender: "${walletAddress}"
-            orderDirection: desc
-            orderBy: blockTimestamp
           }
+          orderDirection: "desc"
+          orderBy: "blockTimestamp"
         ) {
           attestationHash
           blockNumber
@@ -68,11 +79,11 @@ export default async function handler(
     const messageReceivedQuery = l1Subgraph.query({
       query: gql(`{
         messageReceiveds(
-          where: {            
+          where: {          
             caller: "${walletAddress}"
-            orderDirection: desc
-            orderBy: blockTimestamp
           }
+          orderDirection: "desc"
+          orderBy: "blockTimestamp"
         ) {
           id
           caller
@@ -89,17 +100,46 @@ export default async function handler(
     })
 
     const [messageSentsResult, messageReceivedResult]: [
-      ApolloQueryResult<{ messageSents: MessageSents[] }>,
-      ApolloQueryResult<{ messageReceiveds: MessageReceiveds[] }>
+      ApolloQueryResult<{ messageSents: MessageSent[] }>,
+      ApolloQueryResult<{ messageReceiveds: MessageReceived[] }>
     ] = await Promise.all([messageSentsQuery, messageReceivedQuery])
 
     const { messageSents } = messageSentsResult.data
     const { messageReceiveds } = messageReceivedResult.data
 
+    // MessageSents from L2 can be link to MessageSents on L1 with the tuple (sourceDomain, nonce)
+    // Multiple MessageSent can have the same tuple, we should consider only the most recent one
+    const messageReceivedMap = new Map(
+      messageReceiveds.map(messageReceived => [
+        messageReceived.id,
+        messageReceived
+      ])
+    )
+
+    const { pending, fulfilled } = messageSents.reduce(
+      (acc, message) => {
+        // If the MessageSent has a corresponding MessageReceived
+        if (messageReceivedMap.has(message.id)) {
+          acc.fulfilled.push(message)
+        } else {
+          acc.pending.push(message)
+        }
+
+        return acc
+      },
+      {
+        fulfilled: [],
+        pending: []
+      } as {
+        fulfilled: MessageSent[]
+        pending: MessageSent[]
+      }
+    )
+
     res.status(200).json({
       data: {
-        messageSents,
-        messageReceiveds
+        pending,
+        fulfilled
       }
     })
   } catch (error: any) {
