@@ -31,6 +31,10 @@ export const AddCustomNetwork = () => {
         networks.l1Network.isCustom = true
       }
 
+      if (!networks.l2Network) {
+        throw new Error("'l2Network' property is missing")
+      }
+
       networks.l2Network.isCustom = true
 
       addCustomNetwork({
