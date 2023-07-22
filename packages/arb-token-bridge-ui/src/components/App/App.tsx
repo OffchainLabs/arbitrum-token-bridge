@@ -52,6 +52,7 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
+import { localStorageKey as addCustomNetworkLocalStorageKey } from '../common/AddCustomNetwork'
 
 declare global {
   interface Window {
@@ -200,6 +201,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   }, [networksAndSigners, chain, isConnected, initBridge])
 
   useEffect(() => {
+    sessionStorage.removeItem(addCustomNetworkLocalStorageKey)
+
     axios
       .get(
         'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/aff40a59608678cfd9b034dd198011c90b65b8b6/src/WarningList/warningTokens.json'

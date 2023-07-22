@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 
 import { Button } from './Button'
 
-const localStorageKey = 'arbitrum-custom-networks'
+export const localStorageKey = 'arbitrum-custom-networks'
 
 type CustomNetwork = {
   l1Network?: L1Network
@@ -17,8 +16,6 @@ export const AddCustomNetwork = () => {
   )
   const [networksJson, setNetworksJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
-
-  const storedCustomNetworks = getNetworksFromLocalStorage()
 
   function onAddNetwork() {
     setError(null)
@@ -48,7 +45,7 @@ export const AddCustomNetwork = () => {
   }
 
   function getNetworksFromLocalStorage(): CustomNetwork[] {
-    const customNetworks = localStorage.getItem(localStorageKey)
+    const customNetworks = sessionStorage.getItem(localStorageKey)
 
     if (customNetworks) {
       return JSON.parse(customNetworks)
@@ -58,18 +55,9 @@ export const AddCustomNetwork = () => {
   }
 
   function saveNetworkToLocalStorage(customNetwork: CustomNetwork) {
-    const customNetworks = getNetworksFromLocalStorage()
-    const newCustomNetworks = [...customNetworks, customNetwork]
-    localStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
-    setCustomNetworks(newCustomNetworks)
-  }
-
-  function removeNetworkFromLocalStorage(l2ChainId: number) {
-    const customNetworks = getNetworksFromLocalStorage()
-    const newCustomNetworks = customNetworks.filter(
-      network => network.l2Network.chainID !== l2ChainId
-    )
-    localStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
+    const customNetworksFromLocalStorage = getNetworksFromLocalStorage()
+    const newCustomNetworks = [...customNetworksFromLocalStorage, customNetwork]
+    sessionStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
     setCustomNetworks(newCustomNetworks)
   }
 
@@ -79,39 +67,30 @@ export const AddCustomNetwork = () => {
         <div className="mb-4 w-full">
           <div className="flex w-full">
             <span className="w-2/12" />
-            <span className="w-4/12">L1 Network</span>
-            <span className="w-4/12">L2 Network</span>
+            <span className="w-5/12">L1 Network</span>
+            <span className="w-5/12">L2 Network</span>
           </div>
-          {storedCustomNetworks.map(network => (
+          {customNetworks.map(network => (
             <div className="relative flex w-full flex-col border-b border-gray-700">
               <div>
                 <div className="flex w-full">
-                  <span className="w-2/12 opacity-40">Name</span>
-                  <span className="w-4/12 opacity-40">
-                    {network.l1Network?.name}
+                  <span className="w-2/12 opacity-40">Name:</span>
+                  <span className="w-5/12 opacity-40">
+                    {network.l1Network?.name ?? '-'}
                   </span>
-                  <span className="w-4/12 opacity-40">
-                    {network.l2Network.name}
+                  <span className="w-5/12 opacity-40">
+                    {network.l2Network.name ?? '-'}
                   </span>
                 </div>
                 <div className="flex w-full">
-                  <span className="w-2/12 opacity-40">Chain ID</span>
-                  <span className="w-4/12 opacity-40">
-                    {network.l1Network?.chainID}
+                  <span className="w-2/12 opacity-40">Chain ID:</span>
+                  <span className="w-5/12 opacity-40">
+                    {network.l1Network?.chainID ?? '-'}
                   </span>
-                  <span className="w-4/12 opacity-40">
-                    {network.l2Network.chainID}
+                  <span className="w-5/12 opacity-40">
+                    {network.l2Network.chainID ?? '-'}
                   </span>
                 </div>
-              </div>
-              <div className="absolute bottom-4 right-0 flex justify-end">
-                <button
-                  onClick={() =>
-                    removeNetworkFromLocalStorage(network.l2Network.chainID)
-                  }
-                >
-                  <XMarkIcon className="text-error" width={16} />
-                </button>
               </div>
             </div>
           ))}
