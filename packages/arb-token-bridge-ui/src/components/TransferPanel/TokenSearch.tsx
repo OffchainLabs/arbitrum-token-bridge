@@ -17,7 +17,11 @@ import {
   addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
-import { getL1TokenData } from '../../util/TokenUtils'
+import {
+  getL1TokenData,
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumGoerliNativeUSDC
+} from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import {
   useTokensFromLists,
@@ -26,14 +30,36 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { useUSDCWithdrawalConfirmationDialogStore } from './TransferPanel'
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { TokenRow } from './TokenRow'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
+import { isNetwork } from '../../util/networks'
 
 enum Panel {
   TOKENS,
   LISTS
+}
+
+const ARB_ONE_NATIVE_USDC_TOKEN = {
+  ...ArbOneNativeUSDC,
+  listIds: new Set<number>(),
+  type: TokenType.ERC20,
+  // the address field is for L1 address but native USDC does not have an L1 address
+  // the L2 address is used instead to avoid errors
+  address: CommonAddress.ArbitrumOne.USDC,
+  l2Address: CommonAddress.ArbitrumOne.USDC
+}
+
+const ARB_GOERLI_NATIVE_USDC_TOKEN = {
+  ...ArbOneNativeUSDC,
+  listIds: new Set<number>(),
+  type: TokenType.ERC20,
+  address: CommonAddress.ArbitrumGoerli.USDC,
+  l2Address: CommonAddress.ArbitrumGoerli.USDC
 }
 
 function TokenListsPanel() {
@@ -129,7 +155,7 @@ function TokensPanel({
   } = useAppState()
   const {
     l1: { provider: L1Provider },
-    l2: { provider: L2Provider }
+    l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
@@ -140,6 +166,8 @@ function TokensPanel({
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
+
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -164,6 +192,13 @@ function TokensPanel({
         return null
       }
 
+      if (
+        isTokenArbitrumOneNativeUSDC(address) ||
+        isTokenArbitrumGoerliNativeUSDC(address)
+      ) {
+        return erc20L2Balances?.[address.toLowerCase()]
+      }
+
       const l2Address = bridgeTokens[address.toLowerCase()]?.l2Address
       return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
@@ -179,18 +214,36 @@ function TokensPanel({
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
+    const tokenAddresses = [
+      ...Object.keys(tokensFromUser),
+      ...Object.keys(tokensFromLists)
+    ]
+    if (!isDepositMode) {
+      if (isArbitrumOne) {
+        tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+      }
+      if (isArbitrumGoerli) {
+        tokenAddresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      }
+    }
     const tokens = [
       ETH_IDENTIFIER,
       // Deduplicate addresses
-      ...new Set([
-        ...Object.keys(tokensFromUser),
-        ...Object.keys(tokensFromLists)
-      ])
+      ...new Set(tokenAddresses)
     ]
     return tokens
       .filter(address => {
         // Derive the token object from the address string
-        const token = tokensFromUser[address] || tokensFromLists[address]
+        let token = tokensFromUser[address] || tokensFromLists[address]
+
+        if (isTokenArbitrumOneNativeUSDC(address)) {
+          // for token search as Arb One native USDC isn't in any lists
+          token = ARB_ONE_NATIVE_USDC_TOKEN
+        }
+        if (isTokenArbitrumGoerliNativeUSDC(address)) {
+          // for token search as Arb One native USDC isn't in any lists
+          token = ARB_GOERLI_NATIVE_USDC_TOKEN
+        }
 
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
@@ -248,7 +301,7 @@ function TokensPanel({
         }
         return bal1.gt(bal2) ? -1 : 1
       })
-  }, [tokensFromLists, tokensFromUser, newToken, getBalance])
+  }, [tokensFromLists, tokensFromUser, newToken, getBalance, l2Network])
 
   const storeNewToken = async () => {
     let error = 'Token not found on this network.'
@@ -355,7 +408,11 @@ function TokensPanel({
                 }
 
                 let token: ERC20BridgeToken | null = null
-                if (address) {
+                if (isTokenArbitrumOneNativeUSDC(address)) {
+                  token = ARB_ONE_NATIVE_USDC_TOKEN
+                } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
+                  token = ARB_GOERLI_NATIVE_USDC_TOKEN
+                } else if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
                 }
@@ -393,6 +450,8 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
+  const { openDialog: openUSDCWithdrawalConfirmationDialog } =
+    useUSDCWithdrawalConfirmationDialogStore()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -415,6 +474,14 @@ export function TokenSearch({
     }
 
     try {
+      if (
+        isTokenArbitrumOneNativeUSDC(_token.address) ||
+        isTokenArbitrumGoerliNativeUSDC(_token.address)
+      ) {
+        openUSDCWithdrawalConfirmationDialog()
+        return
+      }
+
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         onImportToken(_token.address)

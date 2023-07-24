@@ -11415,9 +11415,9 @@ wildcard@^2.0.0:
   integrity sha512-CC1bOL87PIWSBhDcTrdeLo6eGT7mCFtrg0uIJtqJUFyK+eJnzl8A1niH56uu7KMa5XFrtiV+AQuHO3n7DsHnLQ==
 
 word-wrap@^1.2.3, word-wrap@~1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.3.tgz#610636f6b1f703891bd34771ccb17fb93b47079c"
-  integrity sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.4.tgz#cb4b50ec9aca570abd1f52f33cd45b6c61739a9f"
+  integrity sha512-2V81OA4ugVo5pRo46hAoD2ivUJx8jXmWXfUkY4KFNw0hEptvN0QfH3K4nHiwzGeKl5rFKedV48QVoqYavy4YpA==
 
 wrap-ansi@^6.2.0:
   version "6.2.0"
@@ -11608,9 +11608,16 @@ zod@3.21.4:
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.21.4.tgz#10882231d992519f0a10b5dd58a38c9dabbb64db"
   integrity sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==
 
-zustand@^4.3.1, zustand@^4.3.8:
+zustand@^4.3.1:
   version "4.3.8"
   resolved "https://registry.yarnpkg.com/zustand/-/zustand-4.3.8.tgz#37113df8e9e1421b0be1b2dca02b49b76210e7c4"
   integrity sha512-4h28KCkHg5ii/wcFFJ5Fp+k1J3gJoasaIbppdgZFO4BPJnsNxL0mQXBSFgOgAdCdBj35aDTPvdAJReTMntFPGg==
+  dependencies:
+    use-sync-external-store "1.2.0"
+
+zustand@^4.3.9:
+  version "4.3.9"
+  resolved "https://registry.yarnpkg.com/zustand/-/zustand-4.3.9.tgz#a7d4332bbd75dfd25c6848180b3df1407217f2ad"
+  integrity sha512-Tat5r8jOMG1Vcsj8uldMyqYKC5IZvQif8zetmLHs9WoZlntTHmIoNM8TpLRY31ExncuUvUOXehd0kvahkuHjDw==
   dependencies:
     use-sync-external-store "1.2.0"
