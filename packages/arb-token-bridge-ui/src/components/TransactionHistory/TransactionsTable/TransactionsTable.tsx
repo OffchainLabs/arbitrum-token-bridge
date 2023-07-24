@@ -217,7 +217,7 @@ export function TransactionsTable({
     return [...newerTransactions.reverse(), ...subgraphTransactions]
   }, [transactions, localTransactionsKey])
 
-  const transactionsByTransactoType = useMemo(() => {
+  const transactionsByTransactorType = useMemo(() => {
     if (!address) return []
     // both sent and received PENDING txs are stored together
     // here we make sure we display a correct tx (sent or received)
@@ -301,7 +301,7 @@ export function TransactionsTable({
           {/* when there are no transactions present */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            !transactionsByTransactoType.length && (
+            !transactionsByTransactorType.length && (
               <EmptyTableRow>
                 <span className="text-sm font-medium">No transactions</span>
               </EmptyTableRow>
@@ -310,8 +310,9 @@ export function TransactionsTable({
           {/* finally, when transactions are present, show rows */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            transactionsByTransactoType.map((tx, index) => {
-              const isLastRow = index === transactionsByTransactoType.length - 1
+            transactionsByTransactorType.map((tx, index) => {
+              const isLastRow =
+                index === transactionsByTransactorType.length - 1
 
               // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
               // this will make sure the row updates with any updates in the local app state
