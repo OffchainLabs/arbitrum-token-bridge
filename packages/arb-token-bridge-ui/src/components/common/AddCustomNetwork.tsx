@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 
 import { Button } from './Button'
@@ -12,20 +13,39 @@ type CustomNetwork = {
 
 export const AddCustomNetwork = () => {
   const [customNetworks, setCustomNetworks] = useState<CustomNetwork[]>(
-    getNetworksFromLocalStorage()
+    getCustomNetworksFromLocalStorage()
   )
   const [networksJson, setNetworksJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    // custom networks do not persists between sessions
+    // we add locally stored custom networks
+    try {
+      getCustomNetworksFromLocalStorage().forEach(networks =>
+        addCustomNetwork({
+          customL1Network: networks.l1Network,
+          customL2Network: networks.l2Network
+        })
+      )
+    } catch (error: any) {
+      //
+    }
+  }, [])
 
   function onAddNetwork() {
     setError(null)
 
     try {
       const networks = (
-        networksJson
+        networksJson.trim()
           ? JSON.parse(networksJson.replace(/[\r\n]+/g, ''))
           : undefined
       ) as CustomNetwork
+
+      if (!networks) {
+        throw new Error('JSON input is empty')
+      }
 
       if (networks.l1Network) {
         networks.l1Network.isCustom = true
@@ -42,26 +62,35 @@ export const AddCustomNetwork = () => {
         customL2Network: networks.l2Network
       })
 
-      saveNetworkToLocalStorage(networks)
+      saveCustomNetworkToLocalStorage(networks)
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong')
     }
   }
 
-  function getNetworksFromLocalStorage(): CustomNetwork[] {
-    const customNetworks = sessionStorage.getItem(localStorageKey)
+  function getCustomNetworksFromLocalStorage(): CustomNetwork[] {
+    const customNetworksFromLocalStorage = localStorage.getItem(localStorageKey)
 
-    if (customNetworks) {
-      return JSON.parse(customNetworks)
+    if (customNetworksFromLocalStorage) {
+      return JSON.parse(customNetworksFromLocalStorage)
     }
 
     return []
   }
 
-  function saveNetworkToLocalStorage(customNetwork: CustomNetwork) {
-    const customNetworksFromLocalStorage = getNetworksFromLocalStorage()
+  function saveCustomNetworkToLocalStorage(customNetwork: CustomNetwork) {
+    const customNetworksFromLocalStorage = getCustomNetworksFromLocalStorage()
     const newCustomNetworks = [...customNetworksFromLocalStorage, customNetwork]
-    sessionStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
+    localStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
+    setCustomNetworks(newCustomNetworks)
+  }
+
+  function removeCustomNetworkFromLocalStorage(l2ChainId: number) {
+    const customNetworksFromLocalStorage = getCustomNetworksFromLocalStorage()
+    const newCustomNetworks = customNetworksFromLocalStorage.filter(
+      networks => networks.l2Network.chainID !== l2ChainId
+    )
+    localStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
     setCustomNetworks(newCustomNetworks)
   }
 
@@ -74,28 +103,38 @@ export const AddCustomNetwork = () => {
             <span className="w-5/12">L1 Network</span>
             <span className="w-5/12">L2 Network</span>
           </div>
-          {customNetworks.map(network => (
+          {customNetworks.map(networks => (
             <div className="relative flex w-full flex-col border-b border-gray-700">
               <div>
                 <div className="flex w-full">
                   <span className="w-2/12 opacity-40">Name:</span>
                   <span className="w-5/12 opacity-40">
-                    {network.l1Network?.name ?? '-'}
+                    {networks.l1Network?.name ?? '-'}
                   </span>
                   <span className="w-5/12 opacity-40">
-                    {network.l2Network.name ?? '-'}
+                    {networks.l2Network.name ?? '-'}
                   </span>
                 </div>
                 <div className="flex w-full">
                   <span className="w-2/12 opacity-40">Chain ID:</span>
                   <span className="w-5/12 opacity-40">
-                    {network.l1Network?.chainID ?? '-'}
+                    {networks.l1Network?.chainID ?? '-'}
                   </span>
                   <span className="w-5/12 opacity-40">
-                    {network.l2Network.chainID ?? '-'}
+                    {networks.l2Network.chainID ?? '-'}
                   </span>
                 </div>
               </div>
+              <button
+                onClick={() =>
+                  removeCustomNetworkFromLocalStorage(
+                    networks.l2Network.chainID
+                  )
+                }
+                className="arb-hover absolute bottom-4 right-0 text-error"
+              >
+                <XMarkIcon width={16} />
+              </button>
             </div>
           ))}
         </div>
