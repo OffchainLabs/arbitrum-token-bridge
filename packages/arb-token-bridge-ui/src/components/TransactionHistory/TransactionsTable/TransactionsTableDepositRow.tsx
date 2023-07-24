@@ -22,7 +22,6 @@ import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
-import { useAppContextState } from '../../App/AppContext'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
@@ -180,9 +179,6 @@ export function TransactionsTableDepositRow({
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const {
-    layout: { isTransactionHistoryShowingSentTx }
-  } = useAppContextState()
 
   const isRedeemButtonDisabled = useMemo(
     () =>
@@ -241,18 +237,6 @@ export function TransactionsTableDepositRow({
 
   if (!tx.sender || !address) {
     return null
-  }
-
-  // both sent and received PENDING txs are stored together
-  // here we make sure we display a correct tx (sent or received)
-  if (isTransactionHistoryShowingSentTx) {
-    if (tx.sender.toLowerCase() !== address.toLowerCase()) {
-      return null
-    }
-  } else {
-    if (tx.sender.toLowerCase() === address.toLowerCase()) {
-      return null
-    }
   }
 
   return (

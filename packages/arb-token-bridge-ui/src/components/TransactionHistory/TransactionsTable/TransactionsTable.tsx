@@ -18,6 +18,7 @@ import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { TableTransactorTypeToggle } from './TableTransactorTypeToggle'
 import { useAppState } from '../../../state'
+import { useAppContextState } from '../../App/AppContext'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
@@ -164,6 +165,10 @@ export function TransactionsTable({
   const {
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
+  const {
+    layout: { isTransactionHistoryShowingSentTx }
+  } = useAppContextState()
+  const { address } = useAccount()
 
   // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
   const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])
@@ -211,6 +216,24 @@ export function TransactionsTable({
     // if newer txns found, append it to the existing subgraph transactions
     return [...newerTransactions.reverse(), ...subgraphTransactions]
   }, [transactions, localTransactionsKey])
+
+  const transactionsByTransactoType = useMemo(() => {
+    if (!address) return []
+    // both sent and received PENDING txs are stored together
+    // here we make sure we display a correct tx (sent or received)
+    return _transactions.filter(tx => {
+      if (isTransactionHistoryShowingSentTx) {
+        if (tx.sender?.toLowerCase() !== address.toLowerCase()) {
+          return false
+        }
+      } else {
+        if (tx.sender?.toLowerCase() === address.toLowerCase()) {
+          return false
+        }
+      }
+      return true
+    })
+  }, [_transactions, address])
 
   const locallyStoredTransactionsMap = useMemo(() => {
     // map of all the locally-stored transactions (pending + recently executed)
@@ -278,7 +301,7 @@ export function TransactionsTable({
           {/* when there are no transactions present */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            !_transactions.length && (
+            !transactionsByTransactoType.length && (
               <EmptyTableRow>
                 <span className="text-sm font-medium">No transactions</span>
               </EmptyTableRow>
@@ -287,8 +310,8 @@ export function TransactionsTable({
           {/* finally, when transactions are present, show rows */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            _transactions.map((tx, index) => {
-              const isLastRow = index === _transactions.length - 1
+            transactionsByTransactoType.map((tx, index) => {
+              const isLastRow = index === transactionsByTransactoType.length - 1
 
               // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
               // this will make sure the row updates with any updates in the local app state

@@ -31,7 +31,6 @@ import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
-import { useAppContextState } from '../../App/AppContext'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
@@ -358,9 +357,6 @@ export function TransactionsTableWithdrawalRow({
 }) {
   const isError = tx.status === 'Failure'
   const { l2 } = useNetworksAndSigners()
-  const {
-    layout: { isTransactionHistoryShowingSentTx }
-  } = useAppContextState()
   const { address } = useAccount()
 
   const bgClassName = useMemo(() => {
@@ -385,18 +381,6 @@ export function TransactionsTableWithdrawalRow({
 
   if (!tx.sender || !address) {
     return null
-  }
-
-  // both sent and received PENDING txs are stored together
-  // here we make sure we display a correct tx (sent or received)
-  if (isTransactionHistoryShowingSentTx) {
-    if (tx.sender.toLowerCase() !== address.toLowerCase()) {
-      return null
-    }
-  } else {
-    if (tx.sender.toLowerCase() === address.toLowerCase()) {
-      return null
-    }
   }
 
   return (
