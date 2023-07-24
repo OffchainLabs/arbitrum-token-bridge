@@ -16,10 +16,15 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { sanitizeTokenName, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumGoerliNativeUSDC,
+  sanitizeTokenName,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
@@ -108,6 +113,14 @@ export function TokenRow({
     [token, isDepositMode, l2Network, l1Network]
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
+  const tokenIsArbOneNativeUSDC = useMemo(
+    () => isTokenArbitrumOneNativeUSDC(token?.address),
+    [token]
+  )
+  const tokenIsArbGoerliNativeUSDC = useMemo(
+    () => isTokenArbitrumGoerliNativeUSDC(token?.address),
+    [token]
+  )
 
   const {
     eth: [ethL1Balance],
@@ -177,6 +190,14 @@ export function TokenRow({
       return null
     }
 
+    if (tokenIsArbOneNativeUSDC) {
+      return 'Native USDC on Arbitrum One'
+    }
+
+    if (tokenIsArbGoerliNativeUSDC) {
+      return 'Native USDC on Arbitrum Goerli'
+    }
+
     const listIds: Set<number> = token.listIds
     const listIdsSize = listIds.size
     if (listIdsSize === 0) {
@@ -204,6 +225,10 @@ export function TokenRow({
     }
 
     if (!token) {
+      return true
+    }
+
+    if (tokenIsArbOneNativeUSDC || tokenIsArbGoerliNativeUSDC) {
       return true
     }
 

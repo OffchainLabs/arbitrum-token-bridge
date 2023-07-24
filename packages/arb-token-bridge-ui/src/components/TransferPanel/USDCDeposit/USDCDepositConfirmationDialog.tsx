@@ -6,10 +6,9 @@ import { Dialog, UseDialogProps } from '../../common/Dialog'
 import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
-  USDCBridgeInfo,
-  FastBridgeNames,
-  getFastBridges,
-  SpecialTokenSymbol
+  SpecialTokenSymbol,
+  USDCFastBridges,
+  FastBridgeInfo
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
@@ -31,7 +30,7 @@ export function USDCDepositConfirmationDialog(
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l2.network.id)
-  const { isArbitrumOne } = isNetwork(l2.network.id)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
 
   const [usdcCheckboxChecked, setUSDCCheckboxChecked] = useState(false)
 
@@ -52,20 +51,22 @@ export function USDCDepositConfirmationDialog(
 
   const tokenSymbol = SpecialTokenSymbol.USDC
 
-  const fastBridges = [
-    ...getFastBridges({
+  const fastBridges: FastBridgeInfo[] = USDCFastBridges.map(USDCFastBridge => ({
+    name: USDCFastBridge.name,
+    imageSrc: USDCFastBridge.imageSrc,
+    href: USDCFastBridge.getHref({
       from: from.id,
       to: to.id,
-      tokenSymbol,
-      fromTokenAddress: CommonAddress.Mainnet.USDC,
-      toTokenAddress: CommonAddress.ArbitrumOne.USDC,
-      amount: props.amount
+      fromTokenAddress: isArbitrumGoerli
+        ? CommonAddress.Goerli.USDC
+        : CommonAddress.Mainnet.USDC,
+      toTokenAddress: isArbitrumGoerli
+        ? CommonAddress.ArbitrumGoerli.USDC
+        : CommonAddress.ArbitrumOne.USDC,
+      amount: props.amount,
+      transferMode: 'deposit'
     })
-  ].filter(bridge => {
-    return (
-      USDCBridgeInfo.supportedBridges as readonly FastBridgeNames[]
-    ).includes(bridge.name)
-  })
+  }))
 
   return (
     <Dialog {...props} isCustom>
