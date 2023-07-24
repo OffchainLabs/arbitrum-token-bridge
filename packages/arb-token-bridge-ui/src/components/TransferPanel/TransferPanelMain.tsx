@@ -51,6 +51,7 @@ import {
 } from '../../util/TokenUtils'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
+import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 
 enum NetworkType {
   l1 = 'l1',
@@ -408,6 +409,11 @@ export function TransferPanelMain({
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
+  const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
+  const [
+    oneNovaTransferDestinationNetworkId,
+    setOneNovaTransferDestinationNetworkId
+  ] = useState<number | null>(null)
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const showUSDCSpecificInfo =
@@ -629,42 +635,29 @@ export function TransferPanelMain({
 
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
       // Add L1 network to the list
-      return [l1.network, ...options]
-        .filter(option => {
-          // Remove the origin network from the destination list for contract wallets
-          // It's done so that the origin network is not changed
-          if (
-            isSmartContractWallet &&
-            direction === 'to' &&
-            option.id === from.id
-          ) {
-            return false
-          }
-          // Remove selected network from the list
-          return option.id !== selectedChainId
-        })
-        .map(option => {
-          // Set disabled options (currently One<>Nova is disabled)
-          return {
-            ...option,
-            disabled:
-              direction === 'from'
-                ? (to.id === ChainId.ArbitrumNova &&
-                    option.id === ChainId.ArbitrumOne) ||
-                  (to.id === ChainId.ArbitrumOne &&
-                    option.id === ChainId.ArbitrumNova)
-                : (from.id === ChainId.ArbitrumNova &&
-                    option.id === ChainId.ArbitrumOne) ||
-                  (from.id === ChainId.ArbitrumOne &&
-                    option.id === ChainId.ArbitrumNova),
-            // That's the only possible tooltip combination
-            disabledTooltip: "One<>Nova transfers aren't enabled yet"
-          }
-        })
+      return [l1.network, ...options].filter(option => {
+        // Remove the origin network from the destination list for contract wallets
+        // It's done so that the origin network is not changed
+        if (
+          isSmartContractWallet &&
+          direction === 'to' &&
+          option.id === from.id
+        ) {
+          return false
+        }
+        // Remove selected network from the list
+        return option.id !== selectedChainId
+      })
     }
 
     const fromOptions = modifyOptions(from.id, 'from')
     const toOptions = modifyOptions(to.id, 'to')
+
+    function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
+      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
+        selectedChainIds.includes(chainId)
+      )
+    }
 
     if (isDepositMode) {
       return {
@@ -676,6 +669,12 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
+            if (shouldOpenOneNovaDialog([network.id, to.id])) {
+              setOneNovaTransferDestinationNetworkId(to.id)
+              openOneNovaTransferDialog()
+              return
+            }
+
             const { isEthereum } = isNetwork(network.id)
 
             // Selecting the same chain or L1 network
@@ -705,6 +704,12 @@ export function TransferPanelMain({
           onChange: async network => {
             // Selecting the same chain
             if (to.id === network.id) {
+              return
+            }
+
+            if (shouldOpenOneNovaDialog([network.id, from.id])) {
+              setOneNovaTransferDestinationNetworkId(network.id)
+              openOneNovaTransferDialog()
               return
             }
 
@@ -751,6 +756,12 @@ export function TransferPanelMain({
             return
           }
 
+          if (shouldOpenOneNovaDialog([network.id, to.id])) {
+            setOneNovaTransferDestinationNetworkId(to.id)
+            openOneNovaTransferDialog()
+            return
+          }
+
           const { isEthereum } = isNetwork(network.id)
 
           // Switch networks if selecting L1 network
@@ -778,6 +789,12 @@ export function TransferPanelMain({
 
           // Selecting the same chain or L1 network
           if (to.id === network.id || isEthereum) {
+            return
+          }
+
+          if (shouldOpenOneNovaDialog([network.id, from.id])) {
+            setOneNovaTransferDestinationNetworkId(network.id)
+            openOneNovaTransferDialog()
             return
           }
 
@@ -955,6 +972,12 @@ export function TransferPanelMain({
           , please ask the {selectedToken?.symbol} team for more info.
         </p>
       </Dialog>
+      <OneNovaTransferDialog
+        {...oneNovaTransferDialogProps}
+        onClose={() => setOneNovaTransferDestinationNetworkId(null)}
+        destinationChainId={oneNovaTransferDestinationNetworkId}
+        amount={amount}
+      />
     </div>
   )
 }
