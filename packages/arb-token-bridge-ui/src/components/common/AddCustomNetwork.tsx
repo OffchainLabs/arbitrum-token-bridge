@@ -16,6 +16,7 @@ export const AddCustomNetwork = () => {
     getCustomNetworksFromLocalStorage()
   )
   const [networksJson, setNetworksJson] = useState<string>('')
+  const [needsReload, setNeedsReload] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export const AddCustomNetwork = () => {
     )
     localStorage.setItem(localStorageKey, JSON.stringify(newCustomNetworks))
     setCustomNetworks(newCustomNetworks)
+    setNeedsReload(true)
   }
 
   return (
@@ -137,6 +139,13 @@ export const AddCustomNetwork = () => {
               </button>
             </div>
           ))}
+        </div>
+      )}
+      {needsReload && (
+        <div className="mb-2 text-xs text-yellow-400">
+          <span>
+            To apply the removal of the custom network, please reload the page.
+          </span>
         </div>
       )}
       <div>
