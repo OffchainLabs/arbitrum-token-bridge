@@ -45,6 +45,8 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
   isTokenMainnetUSDC,
   sanitizeTokenSymbol
@@ -368,6 +370,13 @@ export function TransferPanelMain({
       if (isTokenGoerliUSDC(selectedToken.address)) {
         updateErc20L2Balances([CommonAddress.ArbitrumGoerli.USDC])
       }
+
+      if (isTokenArbitrumGoerliNativeUSDC(selectedToken.address)) {
+        updateErc20L1Balances([CommonAddress.Goerli.USDC])
+      }
+      if (isTokenArbitrumOneNativeUSDC(selectedToken.address)) {
+        updateErc20L1Balances([CommonAddress.Mainnet.USDC])
+      }
     }
   }, [
     selectedToken,
@@ -397,6 +406,27 @@ export function TransferPanelMain({
 
     if (erc20L2Balances && selectedToken.l2Address) {
       result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    }
+
+    if (
+      isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+      erc20L1Balances &&
+      erc20L2Balances
+    ) {
+      return {
+        l1: erc20L1Balances[CommonAddress.Mainnet.USDC] ?? null,
+        l2: erc20L2Balances[selectedToken.address] ?? null
+      }
+    }
+    if (
+      isTokenArbitrumGoerliNativeUSDC(selectedToken.address) &&
+      erc20L1Balances &&
+      erc20L2Balances
+    ) {
+      return {
+        l1: erc20L1Balances[CommonAddress.Goerli.USDC] ?? null,
+        l2: erc20L2Balances[selectedToken.address] ?? null
+      }
     }
 
     return result

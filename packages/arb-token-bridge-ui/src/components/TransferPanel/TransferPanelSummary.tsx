@@ -16,9 +16,17 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-
-export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
+import {
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
+export type GasEstimationStatus =
+  | 'idle'
+  | 'loading'
+  | 'success'
+  | 'error'
+  | 'unavailable'
 
 export type GasEstimationResult = {
   estimatedL1Gas: BigNumber
@@ -41,7 +49,6 @@ export function useGasSummary(
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
@@ -148,6 +155,16 @@ export function useGasSummary(
                 estimatedL1Gas: BigNumber.from(5_000),
                 estimatedL2Gas: BigNumber.from(10_000)
               }
+            } else if (
+              isTokenArbitrumOneNativeUSDC(token.address) ||
+              isTokenArbitrumGoerliNativeUSDC(token.address)
+            ) {
+              estimateGasResult = {
+                estimatedL1Gas: constants.Zero,
+                estimatedL2Gas: constants.Zero
+              }
+              setStatus('unavailable')
+              return
             } else {
               estimateGasResult = await withdrawTokenEstimateGas({
                 amount: amountDebounced,
@@ -293,6 +310,26 @@ export function TransferPanelSummary({
             <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
           </>
         )}
+      </TransferPanelSummaryContainer>
+    )
+  }
+
+  if (status === 'unavailable') {
+    return (
+      <TransferPanelSummaryContainer>
+        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+          Gas estimates are not available for withdrawing Arbitrum-native USDC.
+        </div>
+        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+          <span className="w-2/5 font-light">You’re moving</span>
+          <div className="flex w-3/5 flex-row justify-between">
+            <span>
+              {formatAmount(amount, {
+                symbol: tokenSymbol
+              })}
+            </span>
+          </div>
+        </div>
       </TransferPanelSummaryContainer>
     )
   }

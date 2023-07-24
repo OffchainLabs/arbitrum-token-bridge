@@ -41,6 +41,8 @@ import {
   getL2ERC20Address,
   getL2GatewayAddress,
   getTokenAllowanceForSpender,
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
@@ -67,19 +69,6 @@ const onTxError = (error: any) => {
   }
 }
 
-type USDCWithdrawalConfirmationDialogStore = {
-  isOpen: boolean
-  openDialog: () => void
-  closeDialog: () => void
-}
-
-export const useUSDCWithdrawalConfirmationDialogStore =
-  create<USDCWithdrawalConfirmationDialogStore>(set => ({
-    isOpen: false,
-    openDialog: () => set({ isOpen: true }),
-    closeDialog: () => set({ isOpen: false })
-  }))
-
 const isAllowedL2 = async ({
   l1TokenAddress,
   l2TokenAddress,
@@ -94,10 +83,12 @@ const isAllowedL2 = async ({
   l2Provider: JsonRpcProvider
 }) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
+
   const gatewayAddress = await getL2GatewayAddress({
     erc20L1Address: l1TokenAddress,
     l2Provider
   })
+
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -181,16 +172,11 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const {
-    deposit,
-    fetchAttestation,
-    redeem,
-    tokenMessengerContractAddress,
-    USDCContractAddress
-  } = useCCTP({
-    chainId: isDepositMode ? l1Network.id : l2Network.id,
-    walletAddress: account
-  })
+  const { deposit, tokenMessengerContractAddress, USDCContractAddress } =
+    useCCTP({
+      chainId: isDepositMode ? l1Network.id : l2Network.id,
+      walletAddress: account
+    })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -221,10 +207,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
-  const {
-    isOpen: isOpenUSDCWithdrawalConfirmationDialog,
-    closeDialog: closeUSDCWithdrawalConfirmationDialog
-  } = useUSDCWithdrawalConfirmationDialogStore()
+  const [
+    usdcWithdrawalConfirmationDialogProps,
+    openUSDCWithdrawalConfirmationDialog
+  ] = useDialog()
   const [
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
@@ -315,10 +301,15 @@ export function TransferPanel() {
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL2 = selectedToken.l2Address
-        ? erc20L2Balances?.[selectedToken.l2Address.toLowerCase()]
-        : undefined
+      let addressLookup =
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+        isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+          ? selectedToken.address.toLowerCase()
+          : (selectedToken.l2Address || '').toLowerCase()
+
+      const balanceL2 = erc20L2Balances?.[addressLookup]
       const { decimals } = selectedToken
+
       if (!balanceL2) {
         return null
       }
@@ -554,7 +545,7 @@ export function TransferPanel() {
                   USDCContractAddress,
                   l1Signer
                 )
-                const tx = await contract.functions.approve(spender, amount)
+                const tx = await contract.functions.approve(spender, amountRaw)
                 await tx.wait()
               } else {
                 await latestToken.current.approve({
@@ -702,6 +693,54 @@ export function TransferPanel() {
         }
 
         if (!isSmartContractWallet) {
+          if (
+            selectedToken &&
+            (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+              isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+          ) {
+            const waitForInput = openUSDCWithdrawalConfirmationDialog()
+            const [confirmed] = await waitForInput()
+
+            if (!confirmed) {
+              return
+            }
+
+            const { decimals } = selectedToken
+
+            const amountRaw = utils.parseUnits(amount, decimals)
+
+            const allowance = await getTokenAllowanceForSpender({
+              account: walletAddress,
+              erc20Address: selectedToken.address,
+              provider: l2Provider,
+              spender: tokenMessengerContractAddress
+            })
+
+            try {
+              if (allowance.lte(amountRaw)) {
+                setAllowance(allowance)
+                // TODO: extract to approveUSDC for deposit/withdraw
+                const contract = ERC20__factory.connect(
+                  USDCContractAddress,
+                  l2Signer
+                )
+                const tx = await contract.functions.approve(
+                  tokenMessengerContractAddress,
+                  amountRaw
+                )
+                await tx.wait()
+              }
+              await deposit(amountRaw)
+              setTransferring(false)
+              clearAmountInput()
+            } catch (error: any) {
+              if (!isUserRejectedError(error)) {
+                Sentry.captureException(error)
+              }
+            }
+            return
+          }
+
           const waitForInput = openWithdrawalConfirmationDialog()
           const [confirmed] = await waitForInput()
 
@@ -942,7 +981,10 @@ export function TransferPanel() {
     }
 
     // Keep the button disabled while loading gas summary
-    if (!ethBalance || gasSummary.status !== 'success') {
+    if (
+      !ethBalance ||
+      (gasSummary.status !== 'success' && gasSummary.status !== 'unavailable')
+    ) {
       return true
     }
 
@@ -1078,8 +1120,7 @@ export function TransferPanel() {
       />
 
       <USDCWithdrawalConfirmationDialog
-        isOpen={isOpenUSDCWithdrawalConfirmationDialog}
-        onClose={closeUSDCWithdrawalConfirmationDialog}
+        {...usdcWithdrawalConfirmationDialogProps}
         amount={amount}
       />
 

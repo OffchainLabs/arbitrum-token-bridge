@@ -182,6 +182,7 @@ export interface ArbTokenBridgeToken {
   approveL2: (params: {
     erc20L1Address: string
     l2Signer: Signer
+    spender?: string
   }) => Promise<void>
   deposit: (params: {
     erc20L1Address: string

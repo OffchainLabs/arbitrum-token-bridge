@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { useChainId } from 'wagmi'
+
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -12,13 +15,20 @@ import {
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { getNetworkName, isNetwork } from '../../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork
+} from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
+  const chainId = useChainId()
+  const [allCheckboxesCheched, setAllCheckboxesCheched] = useState(false)
 
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
@@ -65,6 +75,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use a third-party bridge</TabButton>
+            <TabButton>Use Arbitrum’s bridge (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -97,6 +108,58 @@ export function USDCWithdrawalConfirmationDialog(
             <div className="mt-2 flex flex-row justify-end space-x-2">
               <Button variant="secondary" onClick={() => props.onClose(false)}>
                 Cancel
+              </Button>
+            </div>
+          </Tab.Panel>
+
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
+              <p className="font-light">
+                Receive{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href={`${getExplorerUrl(chainId)}/token/${
+                    CommonAddress.ArbitrumOne
+                  }`}
+                >
+                  Native USDC
+                </ExternalLink>{' '}
+                on Arbitrum One using Arbitrum’s native bridge with Circle's{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                >
+                  CCTP
+                </ExternalLink>{' '}
+                integrated.
+              </p>
+
+              <div className="flex flex-col space-y-6">
+                <USDCWithdrawalConfirmationDialogCheckbox
+                  onAllCheckboxesCheched={() => {
+                    setAllCheckboxesCheched(true)
+                  }}
+                  onChange={checked => {
+                    if (!checked) {
+                      setAllCheckboxesCheched(false)
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!allCheckboxesCheched}
+                onClick={() => {
+                  props.onClose(true)
+                  setAllCheckboxesCheched(false)
+                }}
+              >
+                Confirm
               </Button>
             </div>
           </Tab.Panel>

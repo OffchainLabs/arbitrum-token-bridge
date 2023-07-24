@@ -20,7 +20,8 @@ import {
 import {
   getL1TokenData,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC
+  isTokenArbitrumGoerliNativeUSDC,
+  getL2TokenData
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import {
@@ -30,7 +31,6 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
-import { useUSDCWithdrawalConfirmationDialogStore } from './TransferPanel'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
@@ -450,8 +450,6 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
-  const { openDialog: openUSDCWithdrawalConfirmationDialog } =
-    useUSDCWithdrawalConfirmationDialogStore()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -474,10 +472,30 @@ export function TokenSearch({
     }
 
     try {
+      // Native USDC on L2 won't have a corresponding L1 address
       if (
         isTokenArbitrumOneNativeUSDC(_token.address) ||
         isTokenArbitrumGoerliNativeUSDC(_token.address)
       ) {
+        const { contract } = await getL2TokenData({
+          account: walletAddress,
+          erc20L2Address: _token.address,
+          l2Provider: l2.provider
+        })
+
+        const [decimals, symbol, name] = await Promise.all([
+          contract.decimals(),
+          contract.symbol(),
+          contract.name()
+        ])
+        setSelectedToken({
+          name,
+          type: TokenType.ERC20,
+          symbol,
+          address: _token.address,
+          decimals,
+          listIds: new Set()
+        })
         return
       }
 
