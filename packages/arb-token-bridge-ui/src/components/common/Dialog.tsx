@@ -6,9 +6,11 @@ import { twMerge } from 'tailwind-merge'
 import { Button, ButtonProps } from './Button'
 import { getTransitionProps } from './Transition'
 /**
- * Returns a promise which resolves to a boolean value, `false` if the action was canceled and `true` if it was confirmed.
+ * Returns a promise which resolves to an array [boolean, unknown] value,
+ * `false` if the action was canceled and `true` if it was confirmed.
+ * Second index contain any additional information
  */
-type WaitForInputFunction = () => Promise<boolean>
+type WaitForInputFunction = () => Promise<[boolean, unknown]>
 
 /**
  * Opens the dialog and returns a function which can be called to retreive a {@link WaitForInputFunction}.
@@ -45,7 +47,10 @@ type UseDialogParams = {
 }
 
 export function useDialog(params?: UseDialogParams): UseDialogResult {
-  const resolveRef = useRef<(value: boolean | PromiseLike<boolean>) => void>()
+  const resolveRef =
+    useRef<
+      (value: [boolean, unknown] | PromiseLike<[boolean, unknown]>) => void
+    >()
 
   // Whether the dialog is currently open
   const [isOpen, setIsOpen] = useState(params?.defaultIsOpen ?? false)
@@ -63,13 +68,16 @@ export function useDialog(params?: UseDialogParams): UseDialogResult {
     }
   }, [])
 
-  const closeDialog = useCallback((confirmed: boolean) => {
-    if (typeof resolveRef.current !== 'undefined') {
-      resolveRef.current(confirmed)
-    }
+  const closeDialog = useCallback(
+    (confirmed: boolean, onCloseData?: unknown) => {
+      if (typeof resolveRef.current !== 'undefined') {
+        resolveRef.current([confirmed, onCloseData])
+      }
 
-    setIsOpen(false)
-  }, [])
+      setIsOpen(false)
+    },
+    []
+  )
 
   return [{ isOpen, onClose: closeDialog }, openDialog, { didOpen }]
 }
@@ -83,7 +91,7 @@ export type DialogProps = {
   cancelButtonProps?: Partial<ButtonProps>
   actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
-  onClose: (confirmed: boolean) => void
+  onClose: (confirmed: boolean, onCloseData?: unknown) => void
   className?: string
   children?: React.ReactNode
 }

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, constants, Signer, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
@@ -40,6 +40,8 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
+  getTokenAllowanceForSpender,
+  isTokenGoerliUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
@@ -55,6 +57,9 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { useCCTP } from '../../hooks/useCCTP'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -176,6 +181,17 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
+  const {
+    deposit,
+    fetchAttestation,
+    redeem,
+    tokenMessengerContractAddress,
+    USDCContractAddress
+  } = useCCTP({
+    chainId: isDepositMode ? l1Network.id : l2Network.id,
+    walletAddress: account
+  })
+
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
 
@@ -213,6 +229,7 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
+
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -362,7 +379,7 @@ export function TransferPanel() {
       setTokenDepositCheckDialogType(dialogType)
 
       const waitForInput = openTokenCheckDialog()
-      const confirmed = await waitForInput()
+      const [confirmed] = await waitForInput()
 
       if (confirmed) {
         transfer()
@@ -496,43 +513,94 @@ export function TransferPanel() {
 
           if (isNonCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
-            const confirmed = await waitForInput()
+            const [confirmed] = await waitForInput()
 
             if (!confirmed) {
               return
             }
           }
 
-          if (isArbitrumOne && isTokenMainnetUSDC(selectedToken.address)) {
+          async function checkAllowance(
+            selectedToken: ERC20BridgeToken,
+            l1Signer: Signer,
+            spender?: string
+          ) {
+            // Check token allowance & show modal if needed
+            const allowance = spender
+              ? await getTokenAllowanceForSpender({
+                  account: walletAddress,
+                  erc20Address: selectedToken.address,
+                  provider: l1Provider,
+                  spender
+                })
+              : await getL1TokenAllowance({
+                  account: walletAddress,
+                  erc20L1Address: selectedToken.address,
+                  l1Provider: l1Provider,
+                  l2Provider: l2Provider
+                })
+
+            if (!allowance.gte(amountRaw)) {
+              setAllowance(allowance)
+              const waitForInput = openTokenApprovalDialog()
+              const [confirmed] = await waitForInput()
+
+              if (!confirmed) {
+                return false
+              }
+
+              if (spender) {
+                const contract = ERC20__factory.connect(
+                  USDCContractAddress,
+                  l1Signer
+                )
+                const tx = await contract.functions.approve(spender, amount)
+                await tx.wait()
+              } else {
+                await latestToken.current.approve({
+                  erc20L1Address: selectedToken.address,
+                  l1Signer
+                })
+              }
+            }
+            return true
+          }
+
+          if (
+            isTokenMainnetUSDC(selectedToken.address) ||
+            isTokenGoerliUSDC(selectedToken.address)
+          ) {
             const waitForInput = openUSDCDepositConfirmationDialog()
-            const confirmed = await waitForInput()
+            const result = await waitForInput()
+            const [confirmed, primaryButtonClicked] = result
+
+            if (confirmed && primaryButtonClicked === 'cctp') {
+              try {
+                const allowanceConfirmation = await checkAllowance(
+                  selectedToken,
+                  l1Signer,
+                  tokenMessengerContractAddress
+                )
+                if (!allowanceConfirmation) {
+                  return
+                }
+                await deposit(amountRaw)
+                clearAmountInput()
+              } catch (error: any) {
+                if (!isUserRejectedError(error)) {
+                  Sentry.captureException(error)
+                }
+              }
+              return
+            }
 
             if (!confirmed) {
               return
             }
           }
 
-          // Check token allowance & show modal if needed
-          const allowance = await getL1TokenAllowance({
-            account: walletAddress,
-            erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
-          })
-
-          if (!allowance.gte(amountRaw)) {
-            setAllowance(allowance)
-            const waitForInput = openTokenApprovalDialog()
-            const confirmed = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-
-            await latestToken.current.approve({
-              erc20L1Address: selectedToken.address,
-              l1Signer
-            })
+          if (!checkAllowance(selectedToken, l1Signer)) {
+            return false
           }
 
           if (isSmartContractWallet) {
@@ -635,7 +703,7 @@ export function TransferPanel() {
 
         if (!isSmartContractWallet) {
           const waitForInput = openWithdrawalConfirmationDialog()
-          const confirmed = await waitForInput()
+          const [confirmed] = await waitForInput()
 
           if (!confirmed) {
             return

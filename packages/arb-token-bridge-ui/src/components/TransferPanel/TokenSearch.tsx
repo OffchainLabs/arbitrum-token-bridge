@@ -478,7 +478,6 @@ export function TokenSearch({
         isTokenArbitrumOneNativeUSDC(_token.address) ||
         isTokenArbitrumGoerliNativeUSDC(_token.address)
       ) {
-        openUSDCWithdrawalConfirmationDialog()
         return
       }
 
