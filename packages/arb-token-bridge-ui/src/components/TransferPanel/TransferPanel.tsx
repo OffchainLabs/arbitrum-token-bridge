@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { create } from 'zustand'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -53,12 +54,26 @@ import {
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
     Sentry.captureException(error)
   }
 }
+
+type USDCWithdrawalConfirmationDialogStore = {
+  isOpen: boolean
+  openDialog: () => void
+  closeDialog: () => void
+}
+
+export const useUSDCWithdrawalConfirmationDialogStore =
+  create<USDCWithdrawalConfirmationDialogStore>(set => ({
+    isOpen: false,
+    openDialog: () => set({ isOpen: true }),
+    closeDialog: () => set({ isOpen: false })
+  }))
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -190,6 +205,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const {
+    isOpen: isOpenUSDCWithdrawalConfirmationDialog,
+    closeDialog: closeUSDCWithdrawalConfirmationDialog
+  } = useUSDCWithdrawalConfirmationDialogStore()
   const [
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
@@ -976,6 +995,12 @@ export function TransferPanel() {
 
       <DepositConfirmationDialog
         {...depositConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCWithdrawalConfirmationDialog
+        isOpen={isOpenUSDCWithdrawalConfirmationDialog}
+        onClose={closeUSDCWithdrawalConfirmationDialog}
         amount={amount}
       />
 
