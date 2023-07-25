@@ -1,4 +1,5 @@
 import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { USDC_LEARN_MORE_LINK } from '../../../constants'
 import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 
@@ -39,7 +40,7 @@ export function USDCDepositConfirmationDialogCheckbox({
           .{' '}
           <ExternalLink
             className={externalLinkClassnames}
-            href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
+            href={USDC_LEARN_MORE_LINK}
             onClick={linksOnClickHandler}
           >
             Learn more
