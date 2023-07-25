@@ -3,7 +3,11 @@
   Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]"
 */
 
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import {
+  CheckCircleIcon,
+  InformationCircleIcon
+} from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -45,10 +49,29 @@ export const TransactionStatusInfo = ({
     return null
 
   return (
-    <div className="mx-2 flex flex-wrap items-center gap-1 rounded-md bg-orange p-2 text-base text-brick-dark lg:mx-0 lg:flex-nowrap">
-      <div className="flex flex-wrap items-center gap-1">
-        <InformationCircleIcon className="h-4 w-4" />
-        You have
+    <div
+      className={twMerge(
+        'mx-0 flex cursor-pointer flex-wrap items-center gap-1  p-2 text-sm lg:flex-nowrap lg:rounded-md lg:text-base',
+        numRetryablesToRedeem
+          ? 'bg-brick text-brick-dark'
+          : 'bg-lime text-lime-dark'
+      )}
+      onClick={() => {
+        openTransactionHistoryPanel()
+        if (shouldTrackAnalytics(l2NetworkName)) {
+          trackEvent('Open Transaction History Click', {
+            pageElement: 'Tx Info Banner'
+          })
+        }
+      }}
+    >
+      <div className="inline">
+        {numRetryablesToRedeem ? (
+          <InformationCircleIcon className="-mt-1 mr-2 inline h-4 w-4" />
+        ) : (
+          <CheckCircleIcon className="-mt-1 mr-2 inline h-4 w-4" />
+        )}
+        You have{` `}
         {/* deposits ready to retry */}
         {numRetryablesToRedeem ? (
           <span className="font-bold">
@@ -59,7 +82,9 @@ export const TransactionStatusInfo = ({
         ) : null}
         {/* and */}
         {numRetryablesToRedeem && numWithdrawalsReadyToClaim ? (
-          <span>and</span>
+          <span>
+            {` `}and{` `}
+          </span>
         ) : null}
         {/* withdrawals ready to claim text */}
         {numWithdrawalsReadyToClaim ? (
@@ -69,23 +94,12 @@ export const TransactionStatusInfo = ({
             } ready to claim`}
           </span>
         ) : null}
-        <span className="-ml-1">.</span>
+        <span>.{` `}</span>
+        {/* open tx history panel cta */}
+        <ExternalLink className="arb-hover text-sm underline lg:text-base">
+          Open Transaction History panel.
+        </ExternalLink>
       </div>
-
-      {/* open tx history panel cta */}
-      <ExternalLink
-        className="arb-hover cursor-pointer text-sm text-blue-link underline"
-        onClick={() => {
-          openTransactionHistoryPanel()
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Open Transaction History Click', {
-              pageElement: 'Tx Info Banner'
-            })
-          }
-        }}
-      >
-        Open Transaction History panel.
-      </ExternalLink>
     </div>
   )
 }

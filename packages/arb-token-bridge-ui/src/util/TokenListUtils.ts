@@ -53,7 +53,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     originChainID: 42161,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_gemini_token_list.json',
     name: 'Arbed Gemini List',
-    isDefault: false,
+    isDefault: true,
     logoURI: GeminiLogo
   },
   {

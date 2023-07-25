@@ -26,31 +26,6 @@ function Moon() {
   )
 }
 
-export const DAOBanner = () => {
-  return (
-    <div className="bg-gradient px-4 py-4 text-center text-white">
-      <span>
-        Cross-Chain Transfer Protocol (
-        <ExternalLink
-          href="https://www.circle.com/en/cross-chain-transfer-protocol"
-          className="arb-hover underline"
-        >
-          CCTP
-        </ExternalLink>
-        ) is now live on Arbitrum, enabling direct USDC transfers to-and-from
-        Ethereum.{' '}
-        <ExternalLink
-          href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
-          className="arb-hover underline"
-        >
-          Learn more
-        </ExternalLink>
-        .
-      </span>
-    </div>
-  )
-}
-
 export type LayoutProps = {
   children: React.ReactNode
 }
@@ -61,7 +36,6 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      <DAOBanner />
       <Header />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">

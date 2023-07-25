@@ -13,7 +13,8 @@ import {
   NonCanonicalTokenNames,
   NonCanonicalTokenSupportedBridges,
   FastBridgeNames,
-  USDCBridgeInfo
+  USDCBridgeInfo,
+  SpecialTokenSymbol
 } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 import { getNetworkName } from './networks'
@@ -231,7 +232,7 @@ type AnalyticsEventMap = {
     bridge:
       | FastBridgeName
       | NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
-    tokenSymbol?: NonCanonicalTokenName
+    tokenSymbol?: NonCanonicalTokenName | SpecialTokenSymbol.USDC
   }
   'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName | 'USDC' }
   'Copy Bridge Link Click': { tokenSymbol: NonCanonicalTokenName }
@@ -259,7 +260,7 @@ type AnalyticsEvent = keyof AnalyticsEventMap
 function payloadToFathomEvent<T extends AnalyticsEvent>(
   event: T,
   properties?: AnalyticsEventMap[T]
-): FathomEventMap | FathomEventNonCanonicalTokens {
+): FathomEventMap | FathomEventNonCanonicalTokens | FathomEventUSDC {
   switch (event) {
     case 'Deposit':
       const depositProps = properties as AnalyticsEventMap['Deposit']
@@ -291,6 +292,11 @@ function payloadToFathomEvent<T extends AnalyticsEvent>(
       const fastBridgeProps =
         properties as AnalyticsEventMap['Fast Bridge Click']
       if (fastBridgeProps.tokenSymbol) {
+        if (fastBridgeProps.tokenSymbol === SpecialTokenSymbol.USDC) {
+          return `${SpecialTokenSymbol.USDC}: Fast Bridge Click: ${
+            fastBridgeProps.bridge as (typeof USDCBridgeInfo)['supportedBridges'][number]
+          }`
+        }
         // FRAX: Fast Bridge Click: Celer
         return `${fastBridgeProps.tokenSymbol}: Fast Bridge Click: ${
           fastBridgeProps.bridge as NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>

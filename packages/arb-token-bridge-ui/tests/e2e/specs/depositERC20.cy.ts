@@ -68,7 +68,11 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        cy.findByText(`BALANCE: ${l1ERC20bal}`).should('be.visible')
+        // BALANCE: is in a different element so we check for siblings
+        cy.findByText(l1ERC20bal)
+          .should('be.visible')
+          .siblings()
+          .contains('BALANCE: ')
       })
 
       context('should show summary', () => {

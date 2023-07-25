@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { create } from 'zustand'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -48,14 +49,31 @@ import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
-import { getDestinationAddressError } from './AdvancedSettings'
+import {
+  getDestinationAddressError,
+  useDestinationAddressStore
+} from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
     Sentry.captureException(error)
   }
 }
+
+type USDCWithdrawalConfirmationDialogStore = {
+  isOpen: boolean
+  openDialog: () => void
+  closeDialog: () => void
+}
+
+export const useUSDCWithdrawalConfirmationDialogStore =
+  create<USDCWithdrawalConfirmationDialogStore>(set => ({
+    isOpen: false,
+    openDialog: () => set({ isOpen: true }),
+    closeDialog: () => set({ isOpen: false })
+  }))
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -120,9 +138,6 @@ export function TransferPanel() {
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
-  const [destinationAddress, setDestinationAddress] = useState<
-    string | undefined
-  >(undefined)
 
   const {
     app: {
@@ -190,6 +205,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const {
+    isOpen: isOpenUSDCWithdrawalConfirmationDialog,
+    closeDialog: closeUSDCWithdrawalConfirmationDialog
+  } = useUSDCWithdrawalConfirmationDialogStore()
   const [
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
@@ -209,11 +228,8 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
-  const destinationAddressError = useMemo(
-    () =>
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
-    [destinationAddress, isSmartContractWallet]
-  )
+  const { error: destinationAddressError, destinationAddress } =
+    useDestinationAddressStore()
 
   function clearAmountInput() {
     // clear amount input on transfer panel
@@ -370,6 +386,10 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
+    const destinationAddressError = await getDestinationAddressError({
+      destinationAddress,
+      isSmartContractWallet
+    })
     if (destinationAddressError) {
       console.error(destinationAddressError)
       return
@@ -978,6 +998,12 @@ export function TransferPanel() {
         amount={amount}
       />
 
+      <USDCWithdrawalConfirmationDialog
+        isOpen={isOpenUSDCWithdrawalConfirmationDialog}
+        onClose={closeUSDCWithdrawalConfirmationDialog}
+        amount={amount}
+      />
+
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
         amount={amount}
@@ -992,8 +1018,6 @@ export function TransferPanel() {
               ? getErrorMessage(amount, l1Balance)
               : getErrorMessage(amount, l2Balance)
           }
-          destinationAddress={destinationAddress}
-          setDestinationAddress={setDestinationAddress}
         />
 
         <div className="border-r border-gray-2" />
