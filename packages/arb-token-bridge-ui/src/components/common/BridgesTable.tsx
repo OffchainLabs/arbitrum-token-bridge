@@ -5,7 +5,7 @@ import {
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
-import { usePostHog } from 'posthog-js/react';
+import { usePostHog } from 'posthog-js/react'
 
 import { ExternalLink } from './ExternalLink'
 import {
