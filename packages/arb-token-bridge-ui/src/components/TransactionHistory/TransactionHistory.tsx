@@ -1,5 +1,7 @@
 import { Tab } from '@headlessui/react'
 import { Dispatch, SetStateAction, useMemo } from 'react'
+import { useNetwork } from 'wagmi'
+
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
@@ -16,7 +18,6 @@ import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppContextActions } from '../App/AppContext'
-import { useNetwork } from 'wagmi'
 
 export const TransactionHistory = ({
   depositsPageParams,
