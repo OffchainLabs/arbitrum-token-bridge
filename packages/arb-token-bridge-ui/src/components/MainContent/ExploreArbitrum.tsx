@@ -3,9 +3,9 @@ import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useWindowSize } from 'react-use'
+import { usePostHog } from 'posthog-js/react'
 
 import { preloadImages } from '../../util'
-import { trackEvent } from '../../util/AnalyticsUtils'
 import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import { TabButton } from '../common/Tab'
@@ -67,6 +67,8 @@ function ProjectCard({
   href,
   imageSrc
 }: ProjectCardProps) {
+  const posthog = usePostHog()
+
   return (
     <ExternalLink
       href={href}
@@ -74,9 +76,9 @@ function ProjectCard({
       style={{ backgroundImage: `url(${imageSrc}` }}
       onClick={() => {
         if (type === 'defi') {
-          trackEvent('Explore: DeFi Project Click', { project: name })
+          posthog?.capture('Explore: DeFi Project Click', { project: name })
         } else {
-          trackEvent('Explore: NFT Project Click', { project: name })
+          posthog?.capture('Explore: NFT Project Click', { project: name })
         }
       }}
     >
@@ -116,6 +118,7 @@ const defiMaxIndex = ExploreArbitrumContent.defi.length - 1
 const nftMaxIndex = ExploreArbitrumContent.nfts.length - 1
 
 export function ExploreArbitrum() {
+  const posthog = usePostHog()
   const { width } = useWindowSize()
 
   const [playImageNumber, setPlayImageNumber] = useState(
@@ -147,7 +150,7 @@ export function ExploreArbitrum() {
   }, [width, playImageNumber])
 
   function randomize() {
-    trackEvent('Explore: Randomize Click')
+    posthog?.capture('Explore: Randomize Click')
 
     setDefiProjectIndex(
       getRandomInt({ from: 0, to: defiMaxIndex, except: defiProjectIndex })

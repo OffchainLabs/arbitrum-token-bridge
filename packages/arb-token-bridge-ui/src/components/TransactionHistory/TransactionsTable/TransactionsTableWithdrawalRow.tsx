@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import dayjs from 'dayjs'
+import { usePostHog } from 'posthog-js/react'
 
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
@@ -17,7 +18,6 @@ import {
   EllipsisVerticalIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
-import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import {
   findMatchingL1TxForWithdrawal,
@@ -255,6 +255,7 @@ function WithdrawalRowAction({
   tx: MergedTransaction
   isError: boolean
 }) {
+  const posthog = usePostHog()
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -275,9 +276,7 @@ function WithdrawalRowAction({
     window.open(GET_HELP_LINK, '_blank')
 
     // track the button click
-    if (shouldTrackAnalytics(l2NetworkName)) {
-      trackEvent('Tx Error: Get Help Click', { network: l2NetworkName })
-    }
+    posthog?.capture('Tx Error: Get Help Click', { network: l2NetworkName })
   }
 
   if (tx.status === 'Unconfirmed') {

@@ -4,12 +4,12 @@ import {
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
+import { usePostHog } from 'posthog-js/react';
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
@@ -20,6 +20,7 @@ export type UseRedeemRetryableResult = {
 }
 
 export function useRedeemRetryable(): UseRedeemRetryableResult {
+  const posthog = usePostHog()
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -74,9 +75,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       setIsRedeeming(false)
 
       // track in analytics
-      if (shouldTrackAnalytics(l2NetworkName)) {
-        trackEvent('Redeem Retryable', { network: l2NetworkName })
-      }
+        posthog?.capture('Redeem Retryable', { network: l2NetworkName })
     }
 
     // update in store

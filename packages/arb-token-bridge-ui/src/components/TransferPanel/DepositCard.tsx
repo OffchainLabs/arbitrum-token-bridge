@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
+import { usePostHog } from 'posthog-js/react'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
-import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { DepositCardPending } from './DepositCardPending'
 import { DepositCardL1Failure } from './DepositCardL1Failure'
@@ -87,6 +87,7 @@ export function DepositCardContainer({
   tx,
   children
 }: DepositCardContainerProps) {
+  const posthog = usePostHog()
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransferPanelVisible }
@@ -138,7 +139,7 @@ export function DepositCardContainer({
         <button
           className="arb-hover absolute bottom-4 right-4 text-blue-link underline"
           onClick={() => {
-            trackEvent('Move More Funds Click')
+            posthog?.capture('Move More Funds Click')
             closeTransactionHistoryPanel()
           }}
         >

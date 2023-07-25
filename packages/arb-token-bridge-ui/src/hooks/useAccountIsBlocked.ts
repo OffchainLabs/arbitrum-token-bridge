@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
+import { usePostHog } from 'posthog-js/react'
 
 import { ApiResponseSuccess } from '../pages/api/screenings'
-import { trackEvent } from '../util/AnalyticsUtils'
 
 async function isBlocked(address: `0x${string}`): Promise<boolean> {
   if (
@@ -26,17 +26,21 @@ async function isBlocked(address: `0x${string}`): Promise<boolean> {
   return ((await response.json()) as ApiResponseSuccess).blocked
 }
 
-async function fetcher(address: `0x${string}`): Promise<boolean> {
+async function fetcher(
+  address: `0x${string}`,
+  onAccountBlocked: () => void
+): Promise<boolean> {
   const accountIsBlocked = await isBlocked(address)
 
   if (accountIsBlocked) {
-    trackEvent('Address Block', { address })
+    onAccountBlocked()
   }
 
   return accountIsBlocked
 }
 
 export function useAccountIsBlocked() {
+  const posthog = usePostHog()
   const { address } = useAccount()
 
   const queryKey = useMemo(() => {
@@ -48,10 +52,14 @@ export function useAccountIsBlocked() {
     return [address.toLowerCase(), 'useAccountIsBlocked']
   }, [address])
 
+  function onAccountBlocked() {
+    posthog?.capture('Address Block', { address })
+  }
+
   const { data: isBlocked } = useSWRImmutable<boolean>(
     queryKey,
     // Extracts the first element of the query key as the fetcher param
-    ([_address]) => fetcher(_address)
+    ([_address]) => fetcher(_address, onAccountBlocked)
   )
 
   return { isBlocked }

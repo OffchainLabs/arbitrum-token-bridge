@@ -5,6 +5,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
+import { usePostHog } from 'posthog-js/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
 
@@ -16,7 +17,6 @@ import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
-import { trackEvent } from '../../util/AnalyticsUtils'
 import {
   getBlockTime,
   getConfirmPeriodBlocks,
@@ -50,6 +50,7 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
+  const posthog = usePostHog()
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l1.network.id)
@@ -194,7 +195,9 @@ export function WithdrawalConfirmationDialog(
                         selectedToken?.symbol || 'ETH',
                         getNetworkName(l2.network.id)
                       )}
-                      onClick={() => trackEvent('Add to Google Calendar Click')}
+                      onClick={() =>
+                        posthog?.capture('Add to Google Calendar Click')
+                      }
                       className="arb-hover flex space-x-2 rounded border border-ocl-blue px-4 py-2 text-ocl-blue"
                     >
                       <Image
@@ -222,7 +225,7 @@ export function WithdrawalConfirmationDialog(
                 disabled={!bothCheckboxesChecked}
                 onClick={() => {
                   closeWithReset(true)
-                  trackEvent('Slow Bridge Click')
+                  posthog?.capture('Slow Bridge Click')
                 }}
               >
                 Continue

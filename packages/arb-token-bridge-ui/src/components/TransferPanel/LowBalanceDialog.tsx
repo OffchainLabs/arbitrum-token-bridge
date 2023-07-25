@@ -5,12 +5,12 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import Image from 'next/image'
+import { usePostHog } from 'posthog-js/react'
 
 import { useBalance } from '../../hooks/useBalance'
 import { useAppState } from '../../state'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { trackEvent } from '../../util/AnalyticsUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -46,15 +46,17 @@ function ExternalLinkCard({
   href,
   imageSrc
 }: ExternalLinkCardProps) {
+  const posthog = usePostHog()
+
   return (
     <ExternalLink
       href={href}
       className="arb-hover"
       onClick={() => {
         if (type === 'cex') {
-          trackEvent('CEX Click', { project: title })
+          posthog?.capture('CEX Click', { project: title })
         } else {
-          trackEvent('Fiat On-Ramp Click', { project: title })
+          posthog?.capture('Fiat On-Ramp Click', { project: title })
         }
       }}
     >

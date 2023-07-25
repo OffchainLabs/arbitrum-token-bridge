@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { usePostHog } from 'posthog-js/react'
 import { create } from 'zustand'
 
 import { useAppState } from '../../state'
@@ -28,7 +29,6 @@ import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
   TransferPanelMainErrorMessage
@@ -158,6 +158,7 @@ export function TransferPanel() {
     isSwitchingNetworkBeforeTx: true
   })
   const latestConnectedProvider = useLatest(provider)
+  const posthog = usePostHog()
 
   const networksAndSigners = useNetworksAndSigners()
   const latestNetworksAndSigners = useLatest(networksAndSigners)
@@ -432,16 +433,14 @@ export function TransferPanel() {
           )
         }
         if (isConnectedToArbitrum.current) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Deposit',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
+          posthog?.capture('Switch Network and Transfer', {
+            type: 'Deposit',
+            tokenSymbol: selectedToken?.symbol,
+            assetType: selectedToken ? 'ERC-20' : 'ETH',
+            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+            network: l2NetworkName,
+            amount: Number(amount)
+          })
           await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l1.network.id
           )
@@ -531,15 +530,13 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the deposit method because tx is executed in an external app
-            if (shouldTrackAnalytics(l2NetworkName)) {
-              trackEvent('Deposit', {
-                tokenSymbol: selectedToken.symbol,
-                assetType: 'ERC-20',
-                accountType: 'Smart Contract',
-                network: l2NetworkName,
-                amount: Number(amount)
-              })
-            }
+            posthog?.capture('Deposit', {
+              tokenSymbol: selectedToken.symbol,
+              assetType: 'ERC-20',
+              accountType: 'Smart Contract',
+              network: l2NetworkName,
+              amount: Number(amount)
+            })
           }
 
           await latestToken.current.deposit({
@@ -552,11 +549,8 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Deposit', {
+                if (!isSmartContractWallet) {
+                  posthog?.capture('Deposit', {
                     tokenSymbol: selectedToken.symbol,
                     assetType: 'ERC-20',
                     accountType: 'EOA',
@@ -579,11 +573,8 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Deposit', {
+                if (!isSmartContractWallet) {
+                  posthog?.capture('Deposit', {
                     assetType: 'ETH',
                     accountType: 'EOA',
                     network: l2NetworkName,
@@ -597,16 +588,14 @@ export function TransferPanel() {
         }
       } else {
         if (!isConnectedToArbitrum.current) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Withdrawal',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
+          posthog?.capture('Switch Network and Transfer', {
+            type: 'Withdrawal',
+            tokenSymbol: selectedToken?.symbol,
+            assetType: selectedToken ? 'ERC-20' : 'ETH',
+            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+            network: l2NetworkName,
+            amount: Number(amount)
+          })
           await switchNetworkAsync?.(
             latestNetworksAndSigners.current.l2.network.id
           )
@@ -670,15 +659,13 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the withdraw method because tx is executed in an external app
-            if (shouldTrackAnalytics(l2NetworkName)) {
-              trackEvent('Withdraw', {
-                tokenSymbol: selectedToken.symbol,
-                assetType: 'ERC-20',
-                accountType: 'Smart Contract',
-                network: l2NetworkName,
-                amount: Number(amount)
-              })
-            }
+            posthog?.capture('Withdraw', {
+              tokenSymbol: selectedToken.symbol,
+              assetType: 'ERC-20',
+              accountType: 'Smart Contract',
+              network: l2NetworkName,
+              amount: Number(amount)
+            })
           }
 
           await latestToken.current.withdraw({
@@ -691,11 +678,8 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Withdraw', {
+                if (!isSmartContractWallet) {
+                  posthog?.capture('Withdraw', {
                     tokenSymbol: selectedToken.symbol,
                     assetType: 'ERC-20',
                     accountType: 'EOA',
@@ -718,11 +702,8 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Withdraw', {
+                if (!isSmartContractWallet) {
+                  posthog?.capture('Withdraw', {
                     assetType: 'ETH',
                     accountType: 'EOA',
                     network: l2NetworkName,

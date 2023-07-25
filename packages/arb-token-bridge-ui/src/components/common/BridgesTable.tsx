@@ -5,6 +5,7 @@ import {
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { usePostHog } from 'posthog-js/react';
 
 import { ExternalLink } from './ExternalLink'
 import {
@@ -13,12 +14,12 @@ import {
   FastBridgeNames,
   SpecialTokenSymbol
 } from '../../util/fastBridges'
-import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
   selectedNonCanonicalToken?: NonCanonicalTokenNames | SpecialTokenSymbol.USDC
 }) {
+  const posthog = usePostHog()
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',
     []
@@ -26,12 +27,12 @@ export function BridgesTable(props: {
 
   function onClick(bridgeName: FastBridgeNames) {
     if (props.selectedNonCanonicalToken) {
-      trackEvent('Fast Bridge Click', {
+      posthog?.capture('Fast Bridge Click', {
         bridge: bridgeName,
         tokenSymbol: props.selectedNonCanonicalToken
       })
     } else {
-      trackEvent('Fast Bridge Click', { bridge: bridgeName })
+      posthog?.capture('Fast Bridge Click', { bridge: bridgeName })
     }
   }
 

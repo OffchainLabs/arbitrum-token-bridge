@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { usePostHog } from 'posthog-js/react'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Button } from '../common/Button'
@@ -18,12 +19,12 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { trackEvent } from '../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
+  const posthog = usePostHog()
   const {
     app: { selectedToken }
   } = useAppState()
@@ -147,7 +148,9 @@ export function DepositConfirmationDialog(
                     className="arb-hover ml-4 rounded-xl border border-ocl-blue bg-gray-300 px-6 py-3"
                     onClick={() => {
                       copy(bridgeInfo.bridgeUrl)
-                      trackEvent('Copy Bridge Link Click', { tokenSymbol })
+                      posthog?.capture('Copy Bridge Link Click', {
+                        tokenSymbol
+                      })
                     }}
                   >
                     <div className="flex flex-row items-center space-x-3">
@@ -175,7 +178,9 @@ export function DepositConfirmationDialog(
                   variant="primary"
                   onClick={() => {
                     props.onClose(true)
-                    trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
+                    posthog?.capture('Use Arbitrum Bridge Click', {
+                      tokenSymbol
+                    })
                   }}
                 >
                   I want to do two swaps

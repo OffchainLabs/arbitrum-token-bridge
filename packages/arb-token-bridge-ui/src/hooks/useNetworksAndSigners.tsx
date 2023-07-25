@@ -25,11 +25,11 @@ import { getL1Network, getL2Network } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
+import { usePostHog } from 'posthog-js/react';
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
-import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
 
@@ -149,6 +149,7 @@ function getWalletName(connectorName: string): ProviderName {
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
+  const posthog = usePostHog()
   const { selectedL2ChainId } = props
   const { address, connector, isDisconnected, isConnected } = useAccount()
   const { chain } = useNetwork()
@@ -170,7 +171,7 @@ export function NetworksAndSignersProvider(
     }
     if (isConnected && connector) {
       const walletName = getWalletName(connector.name)
-      trackEvent('Connect Wallet Click', { walletName })
+      posthog?.capture('Connect Wallet Click', { walletName })
     }
   }, [isDisconnected, isConnected, connector])
 

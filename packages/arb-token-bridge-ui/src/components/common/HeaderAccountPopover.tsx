@@ -12,6 +12,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
+import { usePostHog } from 'posthog-js/react'
 import {
   useAccount,
   useDisconnect,
@@ -26,7 +27,6 @@ import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
-import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 
 type UDInfo = { name: string | null }
@@ -74,6 +74,7 @@ export function HeaderAccountPopover({
 }: {
   isCorrectNetworkConnected?: boolean // is the app connected to a correct network? if no, then show limited options in the menu
 }) {
+  const posthog = usePostHog()
   const l1Provider = useProvider({ chainId: 1 })
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
@@ -124,7 +125,9 @@ export function HeaderAccountPopover({
 
   function openTransactionHistory() {
     openTransactionHistoryPanel()
-    trackEvent('Open Transaction History Click', { pageElement: 'Header' })
+    posthog?.capture('Open Transaction History Click', {
+      pageElement: 'Header'
+    })
   }
 
   const headerItemsClassName =

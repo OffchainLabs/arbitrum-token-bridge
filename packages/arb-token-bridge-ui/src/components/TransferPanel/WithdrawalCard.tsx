@@ -1,18 +1,18 @@
 import React, { useMemo } from 'react'
+import { usePostHog } from 'posthog-js/react';
+import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
-import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
 import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
-import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
-import Image from 'next/image'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -84,6 +84,7 @@ export function WithdrawalCardContainer({
   tx,
   children
 }: WithdrawalCardContainerProps) {
+  const posthog = usePostHog()
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransferPanelVisible }
@@ -120,7 +121,7 @@ export function WithdrawalCardContainer({
         <button
           className="arb-hover absolute bottom-4 right-4 text-ocl-blue underline"
           onClick={() => {
-            trackEvent('Move More Funds Click')
+            posthog?.capture('Move More Funds Click')
             closeTransactionHistoryPanel()
           }}
         >

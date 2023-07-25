@@ -8,6 +8,8 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
+import { usePostHog } from 'posthog-js/react'
+
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
@@ -15,7 +17,6 @@ import {
   isDepositReadyToRedeem,
   isWithdrawalReadyToClaim
 } from '../../state/app/utils'
-import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
@@ -25,6 +26,7 @@ export const TransactionStatusInfo = ({
 }: {
   deposits: MergedTransaction[]
 }) => {
+  const posthog = usePostHog()
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -58,11 +60,9 @@ export const TransactionStatusInfo = ({
       )}
       onClick={() => {
         openTransactionHistoryPanel()
-        if (shouldTrackAnalytics(l2NetworkName)) {
-          trackEvent('Open Transaction History Click', {
-            pageElement: 'Tx Info Banner'
-          })
-        }
+        posthog?.capture('Open Transaction History Click', {
+          pageElement: 'Tx Info Banner'
+        })
       }}
     >
       <div className="inline">

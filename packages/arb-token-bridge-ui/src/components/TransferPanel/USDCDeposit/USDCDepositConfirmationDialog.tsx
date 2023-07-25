@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { usePostHog } from 'posthog-js/react';
 
 import { Dialog, UseDialogProps } from '../../common/Dialog'
 import { Button } from '../../common/Button'
@@ -15,7 +16,6 @@ import { BridgesTable } from '../../common/BridgesTable'
 import { useAppState } from '../../../state'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
-import { trackEvent } from '../../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
@@ -24,6 +24,7 @@ import { isTokenMainnetUSDC } from '../../../util/TokenUtils'
 export function USDCDepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
+  const posthog = usePostHog()
   const {
     app: { selectedToken }
   } = useAppState()
@@ -123,7 +124,7 @@ export function USDCDepositConfirmationDialog(
                 onClick={() => {
                   props.onClose(true)
                   setUSDCCheckboxChecked(false)
-                  trackEvent('Use Arbitrum Bridge Click', {
+                  posthog?.capture('Use Arbitrum Bridge Click', {
                     tokenSymbol
                   })
                 }}

@@ -6,10 +6,11 @@
 
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
+import { usePostHog } from 'posthog-js/react'
+
 import { GET_HELP_LINK } from '../../constants'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
-import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -18,6 +19,7 @@ export const FailedTransactionsWarning = ({
 }: {
   transactions: MergedTransaction[]
 }) => {
+  const posthog = usePostHog()
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -47,11 +49,9 @@ export const FailedTransactionsWarning = ({
         href={GET_HELP_LINK}
         className="arb-hover cursor-pointer text-sm text-blue-link underline"
         onClick={() => {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Multiple Tx Error: Get Help Click', {
-              network: l2NetworkName
-            })
-          }
+          posthog?.capture('Multiple Tx Error: Get Help Click', {
+            network: l2NetworkName
+          })
         }}
       >
         Get Help.
