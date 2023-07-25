@@ -873,11 +873,11 @@ export function TransferPanel() {
     }
 
     if (isBridgingANewStandardToken) {
-      if (l1Balance === null || amountNum > +l1Balance) {
+      if (l1Balance === null || amountNum > Number(l1Balance)) {
         return true
       }
     } else {
-      if (!amountNum || !l1Balance || amountNum > +l1Balance) {
+      if (!l1Balance || amountNum > Number(l1Balance)) {
         return true
       }
     }
@@ -909,7 +909,7 @@ export function TransferPanel() {
     }
 
     if (!l2Balance) return true
-    if (amountNum > +l2Balance) return true
+    if (amountNum > Number(l2Balance)) return true
 
     if (
       selectedToken &&
