@@ -349,6 +349,9 @@ function TokensPanel({
 
   useEffect(() => {
     async function addNewToken() {
+      if (!isAddress(newToken) || isAddingToken) {
+        return
+      }
       const newTokenLowercased = newToken.toLowerCase()
       const foundL1AddressInTokenList =
         typeof bridgeTokens?.[newTokenLowercased] !== 'undefined'
@@ -356,12 +359,14 @@ function TokensPanel({
         tokensL2AddressOnly.findIndex(
           token => token?.toLowerCase() === newTokenLowercased
         ) !== -1
+      const isNativeUSDC =
+        isTokenArbitrumOneNativeUSDC(newTokenLowercased) ||
+        isTokenArbitrumGoerliNativeUSDC(newTokenLowercased)
 
       if (
         foundL1AddressInTokenList ||
         foundL2AddressInTokenList ||
-        !isAddress(newToken) ||
-        isAddingToken
+        isNativeUSDC
       ) {
         return
       }
