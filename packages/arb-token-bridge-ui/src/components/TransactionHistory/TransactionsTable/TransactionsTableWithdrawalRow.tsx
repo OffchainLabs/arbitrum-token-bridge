@@ -375,7 +375,7 @@ export function TransactionsTableWithdrawalRow({
   )
 
   const customAddressTxPadding = useMemo(
-    () => (isCustomAddressTx(tx) ? 'pb-10' : ''),
+    () => (isCustomAddressTx(tx) ? 'pb-11' : ''),
     [tx]
   )
 

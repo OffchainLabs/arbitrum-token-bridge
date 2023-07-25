@@ -231,7 +231,7 @@ export function TransactionsTableDepositRow({
   )
 
   const customAddressTxPadding = useMemo(
-    () => (isCustomAddressTx(tx) ? 'pb-10' : ''),
+    () => (isCustomAddressTx(tx) ? 'pb-11' : ''),
     [tx]
   )
 
