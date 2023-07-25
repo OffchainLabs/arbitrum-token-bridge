@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { usePostHog } from 'posthog-js/react';
+import { usePostHog } from 'posthog-js/react'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 

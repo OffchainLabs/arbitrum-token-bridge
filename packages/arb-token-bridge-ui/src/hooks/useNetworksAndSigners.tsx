@@ -25,7 +25,7 @@ import { getL1Network, getL2Network } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
-import { usePostHog } from 'posthog-js/react';
+import { usePostHog } from 'posthog-js/react'
 
 import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'

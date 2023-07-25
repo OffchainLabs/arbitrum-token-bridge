@@ -4,7 +4,7 @@ import {
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
-import { usePostHog } from 'posthog-js/react';
+import { usePostHog } from 'posthog-js/react'
 
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -75,7 +75,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       setIsRedeeming(false)
 
       // track in analytics
-        posthog?.capture('Redeem Retryable', { network: l2NetworkName })
+      posthog?.capture('Redeem Retryable', { network: l2NetworkName })
     }
 
     // update in store

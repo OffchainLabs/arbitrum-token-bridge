@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { usePostHog } from 'posthog-js/react';
+import { usePostHog } from 'posthog-js/react'
 
 import { Dialog, UseDialogProps } from '../../common/Dialog'
 import { Button } from '../../common/Button'
