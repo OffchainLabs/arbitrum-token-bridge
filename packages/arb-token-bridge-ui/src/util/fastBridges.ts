@@ -1,4 +1,4 @@
-import { ImageProps, StaticImageData } from 'next/image'
+import { StaticImageData } from 'next/image'
 
 import Hop from '@/images/bridge/hop.png'
 import Celer from '@/images/bridge/celer.png'
@@ -11,6 +11,7 @@ import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 
 import { ChainId } from './networks'
+import { USDC_LEARN_MORE_LINK } from '../constants'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -176,8 +177,7 @@ export const USDCBridgeInfo = {
     FastBridgeNames.Wormhole,
     FastBridgeNames.Router
   ],
-  learnMoreUrl:
-    'https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83'
+  learnMoreUrl: USDC_LEARN_MORE_LINK
 } as const
 
 type getHrefParams = {
