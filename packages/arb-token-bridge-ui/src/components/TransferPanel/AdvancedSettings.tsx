@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
+import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
 import {
@@ -12,36 +13,65 @@ import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
+import { getAPIBaseUrl } from '../../util'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
-import { addressIsSmartContract } from '../../util/AddressUtils'
+import {
+  addressIsSmartContract,
+  addressIsDenylisted
+} from '../../util/AddressUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
-  REQUIRED_ADDRESS = 'The destination address is required.'
+  REQUIRED_ADDRESS = 'The destination address is required.',
+  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.'
 }
 
 enum DestinationAddressWarnings {
   CONTRACT_ADDRESS = 'The destination address is a contract address. Please make sure it is the right address.'
 }
 
-export function getDestinationAddressError({
+type DestinationAddressStore = {
+  error: DestinationAddressErrors | null
+  destinationAddress: string | undefined
+  setError: (error: DestinationAddressErrors | null) => void
+  setDestinationAddress: (destinationAddress: string | undefined) => void
+}
+
+export const useDestinationAddressStore = create<DestinationAddressStore>(
+  set => ({
+    error: null,
+    destinationAddress: undefined,
+    setError: error => set(() => ({ error })),
+    setDestinationAddress: destinationAddress =>
+      set(() => ({ destinationAddress }))
+  })
+)
+
+export async function getDestinationAddressError({
   destinationAddress,
   isSmartContractWallet
 }: {
   destinationAddress?: string
   isSmartContractWallet: boolean
-}): DestinationAddressErrors | null {
+}): Promise<DestinationAddressErrors | null> {
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
     return DestinationAddressErrors.REQUIRED_ADDRESS
   }
 
-  if (destinationAddress && !isAddress(destinationAddress)) {
+  if (!destinationAddress) {
+    return null
+  }
+
+  if (!isAddress(destinationAddress)) {
     return DestinationAddressErrors.INVALID_ADDRESS
+  }
+  if (await addressIsDenylisted(destinationAddress)) {
+    return DestinationAddressErrors.DENYLISTED_ADDRESS
   }
 
   // no error
@@ -53,10 +83,14 @@ async function getDestinationAddressWarning({
   isEOA,
   destinationProvider
 }: {
-  destinationAddress: string
+  destinationAddress: string | undefined
   isEOA: boolean
   destinationProvider: Provider
 }) {
+  if (!destinationAddress) {
+    return null
+  }
+
   if (!isAddress(destinationAddress)) {
     return null
   }
@@ -75,15 +109,7 @@ async function getDestinationAddressWarning({
   return null
 }
 
-export const AdvancedSettings = ({
-  destinationAddress = '',
-  onChange,
-  error
-}: {
-  destinationAddress?: string
-  onChange: (value?: string) => void
-  error: DestinationAddressErrors | null
-}) => {
+export const AdvancedSettings = () => {
   const {
     app: { selectedToken, isDepositMode }
   } = useAppState()
@@ -95,6 +121,9 @@ export const AdvancedSettings = ({
   const [inputLocked, setInputLocked] = useState(true)
   const [warning, setWarning] = useState<string | null>(null)
 
+  const { error, setError, destinationAddress, setDestinationAddress } =
+    useDestinationAddressStore()
+
   useEffect(() => {
     // Initially hide for EOA
     setCollapsed(isEOA)
@@ -103,18 +132,36 @@ export const AdvancedSettings = ({
   }, [isEOA])
 
   useEffect(() => {
-    async function updateWarning() {
-      setWarning(
-        await getDestinationAddressWarning({
+    async function updateError() {
+      setError(
+        await getDestinationAddressError({
           destinationAddress,
-          isEOA,
-          destinationProvider: (isDepositMode ? l2 : l1).provider
+          isSmartContractWallet
         })
       )
     }
+    updateError()
+  }, [destinationAddress, isSmartContractWallet, setError])
+
+  useEffect(() => {
+    // isSubscribed makes sure that only the latest state is written
+    let isSubscribed = true
+
+    async function updateWarning() {
+      const result = await getDestinationAddressWarning({
+        destinationAddress,
+        isEOA,
+        destinationProvider: (isDepositMode ? l2 : l1).provider
+      })
+      if (isSubscribed) {
+        setWarning(result)
+      }
+    }
     updateWarning()
 
-    return () => setWarning(null)
+    return () => {
+      isSubscribed = false
+    }
   }, [destinationAddress, isDepositMode, isEOA, l2, l1])
 
   const collapsible = useMemo(() => {
@@ -205,7 +252,9 @@ export const AdvancedSettings = ({
                 value={destinationAddress}
                 disabled={inputLocked}
                 spellCheck={false}
-                onChange={e => onChange(e.target.value?.toLowerCase().trim())}
+                onChange={e =>
+                  setDestinationAddress(e.target.value?.toLowerCase().trim())
+                }
               />
               {isEOA && (
                 <button onClick={() => setInputLocked(!inputLocked)}>
@@ -222,9 +271,9 @@ export const AdvancedSettings = ({
             </div>
           </div>
 
-          {error && <span className="text-xs text-red-400">{error}</span>}
+          {error && <p className="text-xs text-red-400">{error}</p>}
           {!error && warning && (
-            <span className="text-xs text-yellow-500">{warning}</span>
+            <p className="text-xs text-yellow-500">{warning}</p>
           )}
           {destinationAddress && !error && (
             <ExternalLink
