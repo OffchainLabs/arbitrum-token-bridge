@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAccount, useNetwork, useSwitchNetwork, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
@@ -39,7 +39,7 @@ import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, getSupportedNetworks, ChainId } from '../../util/networks'
+import { isNetwork, getSupportedNetworks } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -52,8 +52,6 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { useCCTP } from '../../hooks/useCCTP'
-import { BigNumber } from 'ethers'
 
 declare global {
   interface Window {
@@ -140,13 +138,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const { deposit, fetchAttestation, redeem } = useCCTP({
-    chainId: chain?.id,
-    walletAddress: address
-  })
-  const { switchNetworkAsync } = useSwitchNetwork({
-    chainId: ChainId.ArbitrumGoerli
-  })
 
   const networksAndSigners = useNetworksAndSigners()
 
@@ -220,29 +211,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
         console.warn('Failed to fetch warning tokens:', err)
       })
   }, [])
-
-  useEffect(() => {
-    async function depositAndRedeem() {
-      const depositResult = await deposit(BigNumber.from(2))
-      if (!depositResult) {
-        return
-      }
-      const { attestationHash, messageBytes } = depositResult
-      const attestation = await fetchAttestation(attestationHash)
-
-      if (!switchNetworkAsync) {
-        return
-      }
-
-      await switchNetworkAsync()
-      redeem({
-        attestation,
-        messageBytes
-      })
-    }
-
-    window.aaa = depositAndRedeem
-  }, [deposit, redeem])
 
   if (address && isBlocked) {
     return (
