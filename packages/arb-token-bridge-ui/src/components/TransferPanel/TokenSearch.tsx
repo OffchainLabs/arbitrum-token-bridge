@@ -353,8 +353,9 @@ function TokensPanel({
       const foundL1AddressInTokenList =
         typeof bridgeTokens?.[newTokenLowercased] !== 'undefined'
       const foundL2AddressInTokenList =
-        tokensL2AddressOnly.findIndex(token => token === newTokenLowercased) !==
-        -1
+        tokensL2AddressOnly.findIndex(
+          token => token?.toLowerCase() === newTokenLowercased
+        ) !== -1
 
       if (
         foundL1AddressInTokenList ||
