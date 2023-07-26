@@ -60,11 +60,18 @@ export function WithdrawalConfirmationDialog(
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
-  const fastBridges = getFastBridges({
-    from: from.id,
-    to: to.id,
-    tokenSymbol: selectedToken?.symbol,
-    amount: props.amount
+  const fastBridges = getFastBridges<'bridge'>({
+    deepLinkInfo: {
+      from: from.id,
+      to: to.id,
+      tokenSymbol: selectedToken?.symbol,
+      amount: props.amount
+    },
+    disabledFastBridgeNames: [
+      FastBridgeNames.LIFI,
+      FastBridgeNames.Router,
+      FastBridgeNames.Wormhole
+    ]
   })
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
@@ -97,7 +104,7 @@ export function WithdrawalConfirmationDialog(
   }
 
   return (
-    <Dialog {...props} onClose={closeWithReset} isCustom>
+    <Dialog {...props} onClose={closeWithReset} isCustom isOpen>
       <div className="flex flex-col md:min-w-[725px] md:max-w-[725px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">

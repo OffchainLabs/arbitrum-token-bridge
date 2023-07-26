@@ -1,13 +1,12 @@
 import { Dialog as HeadlessUIDialog, Tab } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import Hop from '@/images/bridge/hop.png'
 
 import { useAppState } from '../../state'
 import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
+import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
 import { ChainId, getNetworkName } from '../../util/networks'
 
 export function OneNovaTransferDialog(
@@ -31,19 +30,15 @@ export function OneNovaTransferDialog(
       ? ChainId.ArbitrumOne
       : ChainId.ArbitrumNova
 
-  const sourceNetworkSlug =
-    sourceChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
-  const destinationNetworkSlug =
-    destinationChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
-
-  const bridgeDeepLink = `https://app.hop.exchange/#/send?sourceNetwork=${sourceNetworkSlug}&destNetwork=${destinationNetworkSlug}&token=${
-    selectedToken?.symbol || 'ETH'
-  }&amount=${props.amount}`
-
-  // only enable Hop for now
-  const fastBridgeList: FastBridgeInfo[] = [
-    { name: FastBridgeNames.Hop, imageSrc: Hop, href: bridgeDeepLink }
-  ]
+  const fastBridges = getFastBridges<'bridge'>({
+    deepLinkInfo: {
+      from: sourceChainId,
+      to: destinationChainId,
+      tokenSymbol: selectedToken?.symbol || 'ETH',
+      amount: props.amount
+    },
+    supportedFastBridgeNames: [FastBridgeNames.Hop]
+  })
 
   return (
     <Dialog {...props} isCustom>
@@ -76,7 +71,7 @@ export function OneNovaTransferDialog(
               </p>
             </div>
 
-            <BridgesTable bridgeList={fastBridgeList} />
+            <BridgesTable bridgeList={fastBridges} />
             <div className="mt-2 flex flex-row justify-end space-x-2">
               <Button variant="secondary" onClick={() => props.onClose(false)}>
                 Cancel

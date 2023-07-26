@@ -7,8 +7,8 @@ import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
-  USDCFastBridges,
-  FastBridgeInfo
+  getFastBridges,
+  FastBridgeNames
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
@@ -51,22 +51,26 @@ export function USDCDepositConfirmationDialog(
 
   const tokenSymbol = SpecialTokenSymbol.USDC
 
-  const fastBridges: FastBridgeInfo[] = USDCFastBridges.map(USDCFastBridge => ({
-    name: USDCFastBridge.name,
-    imageSrc: USDCFastBridge.imageSrc,
-    href: USDCFastBridge.getHref({
-      from: from.id,
-      to: to.id,
-      fromTokenAddress: isArbitrumGoerli
-        ? CommonAddress.Goerli.USDC
-        : CommonAddress.Mainnet.USDC,
-      toTokenAddress: isArbitrumGoerli
-        ? CommonAddress.ArbitrumGoerli.USDC
-        : CommonAddress.ArbitrumOne.USDC,
-      amount: props.amount,
-      transferMode: 'deposit'
+  const fastBridges = [
+    ...getFastBridges<'bridge'>({
+      deepLinkInfo: { from: from.id, to: to.id, amount: props.amount },
+      supportedFastBridgeNames: [FastBridgeNames.Celer]
+    }),
+    ...getFastBridges<'swap'>({
+      deepLinkInfo: {
+        from: from.id,
+        to: to.id,
+        fromTokenAddress: isArbitrumGoerli
+          ? CommonAddress.Goerli.USDC
+          : CommonAddress.Mainnet.USDC,
+        toTokenAddress: isArbitrumGoerli
+          ? CommonAddress.ArbitrumGoerli.USDC
+          : CommonAddress.ArbitrumOne.USDC,
+        amount: props.amount
+      },
+      supportedFastBridgeNames: [FastBridgeNames.LIFI, FastBridgeNames.Wormhole]
     })
-  }))
+  ]
 
   return (
     <Dialog {...props} isCustom>

@@ -50,11 +50,13 @@ export function DepositConfirmationDialog(
     tokenAddress && bridgeInfo && bridgeInfo.tokenSymbolOnArbitrum
 
   const fastBridges = [
-    ...getFastBridges({
-      from: from.id,
-      to: to.id,
-      tokenSymbol,
-      amount: props.amount
+    ...getFastBridges<'bridge'>({
+      deepLinkInfo: {
+        from: from.id,
+        to: to.id,
+        tokenSymbol,
+        amount: props.amount
+      }
     })
   ].filter(bridge => {
     return (
