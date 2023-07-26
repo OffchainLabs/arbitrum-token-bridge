@@ -271,11 +271,14 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
 
-  if (isTokenMainnetUSDC(options.erc20L1Address)) {
-    // It should be `USDC` on all chains except Arbitrum One
-    if (isArbitrumOne) return 'USDC.e'
+  if (
+    isTokenMainnetUSDC(options.erc20L1Address) ||
+    isTokenGoerliUSDC(options.erc20L1Address)
+  ) {
+    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Goerli
+    if (isArbitrumOne || isArbitrumGoerli) return 'USDC.e'
     return 'USDC'
   }
 
@@ -291,11 +294,14 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
 
-  if (isTokenMainnetUSDC(options.erc20L1Address)) {
-    // It should be `USD Coin` on all chains except Arbitrum One
-    if (isArbitrumOne) return 'Bridged USDC'
+  if (
+    isTokenMainnetUSDC(options.erc20L1Address) ||
+    isTokenGoerliUSDC(options.erc20L1Address)
+  ) {
+    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Goerli
+    if (isArbitrumOne || isArbitrumGoerli) return 'Bridged USDC'
     return 'USD Coin'
   }
 
