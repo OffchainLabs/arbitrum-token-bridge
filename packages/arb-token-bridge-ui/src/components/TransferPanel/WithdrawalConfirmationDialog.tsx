@@ -104,7 +104,7 @@ export function WithdrawalConfirmationDialog(
   }
 
   return (
-    <Dialog {...props} onClose={closeWithReset} isCustom isOpen>
+    <Dialog {...props} onClose={closeWithReset} isCustom>
       <div className="flex flex-col md:min-w-[725px] md:max-w-[725px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
