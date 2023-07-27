@@ -30,22 +30,30 @@ export function USDCWithdrawalConfirmationDialog(
 
   const fastBridges = [
     ...getFastBridges<'bridge'>({
-      deepLinkInfo: { from: from.id, to: to.id, amount: props.amount },
-      supportedFastBridgeNames: [FastBridgeNames.Celer]
+      deepLinkInfo: {
+        from: from.id,
+        to: to.id,
+        tokenSymbol: 'USDC',
+        amount: props.amount
+      },
+      supportedFastBridgeNames: [
+        FastBridgeNames.Celer,
+        FastBridgeNames.Wormhole
+      ]
     }),
     ...getFastBridges<'swap'>({
       deepLinkInfo: {
         from: from.id,
         to: to.id,
         fromTokenAddress: isArbitrumGoerli
-          ? CommonAddress.Goerli.USDC
-          : CommonAddress.Mainnet.USDC,
-        toTokenAddress: isArbitrumGoerli
           ? CommonAddress.ArbitrumGoerli.USDC
           : CommonAddress.ArbitrumOne.USDC,
+        toTokenAddress: isArbitrumGoerli
+          ? CommonAddress.Goerli.USDC
+          : CommonAddress.Mainnet.USDC,
         amount: props.amount
       },
-      supportedFastBridgeNames: [FastBridgeNames.LIFI, FastBridgeNames.Wormhole]
+      supportedFastBridgeNames: [FastBridgeNames.LIFI, FastBridgeNames.Router]
     })
   ]
 

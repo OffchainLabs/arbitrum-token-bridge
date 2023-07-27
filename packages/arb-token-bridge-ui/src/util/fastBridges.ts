@@ -67,6 +67,8 @@ function getFastBridgeSlugs(fastBridgeName: FastBridgeNames): {
 } {
   switch (fastBridgeName) {
     case FastBridgeNames.Hop:
+    case FastBridgeNames.Connext:
+    case FastBridgeNames.Stargate:
       return {
         [ChainId.Mainnet]: 'ethereum',
         [ChainId.ArbitrumOne]: 'arbitrum',
@@ -121,13 +123,11 @@ function getBridgeDeepLink(
     case FastBridgeNames.Connext:
       return `https://bridge.connext.network/${tokenSymbol}-from-${slugFrom}-to-${slugTo}?amount=${amount}`
     case FastBridgeNames.Across:
-      return `https://across.to/?from=${from}&to=${to}&asset=${tokenSymbol}&amount=${amount}`
+      return 'https://across.to/bridge'
     case FastBridgeNames.Stargate:
       return `https://stargate.finance/transfer?srcChain=${slugFrom}&dstChain=${slugTo}&srcToken=${tokenSymbol}`
     case FastBridgeNames.Synapse:
-      // We can't specify the input chain for Synapse, as it will use whatever the user is connected to.
-      // We make sure to prompt a network switch to Arbitrum prior to showing this.
-      return `https://synapseprotocol.com/?inputCurrency=${tokenSymbol}&outputCurrency=${tokenSymbol}&outputChain=${to}`
+      return 'https://synapseprotocol.com/'
     case FastBridgeNames.Wormhole:
       return 'https://www.portalbridge.com/usdc-bridge/'
     default:
@@ -198,11 +198,5 @@ export const NonCanonicalTokensBridgeInfo = {
 export const USDCBridgeInfo = {
   tokenSymbol: 'USDC',
   tokenSymbolOnArbitrum: 'USDC.e',
-  supportedBridges: [
-    FastBridgeNames.Celer,
-    FastBridgeNames.LIFI,
-    FastBridgeNames.Wormhole,
-    FastBridgeNames.Router
-  ],
   learnMoreUrl: USDC_LEARN_MORE_LINK
 } as const
