@@ -72,13 +72,17 @@ function getFastBridgeSlugs(fastBridgeName: FastBridgeNames): {
       return {
         [ChainId.Mainnet]: 'ethereum',
         [ChainId.ArbitrumOne]: 'arbitrum',
-        [ChainId.ArbitrumNova]: 'nova'
+        [ChainId.ArbitrumNova]: 'nova',
+        [ChainId.Goerli]: 'goerli',
+        [ChainId.ArbitrumGoerli]: 'arbitrum-goerli'
       }
     default:
       return {
         [ChainId.Mainnet]: 'mainnet',
         [ChainId.ArbitrumOne]: 'arbitrum',
-        [ChainId.ArbitrumNova]: 'arbitrum-nova'
+        [ChainId.ArbitrumNova]: 'arbitrum-nova',
+        [ChainId.Goerli]: 'goerli',
+        [ChainId.ArbitrumGoerli]: 'arbitrum-goerli'
       }
   }
 }
